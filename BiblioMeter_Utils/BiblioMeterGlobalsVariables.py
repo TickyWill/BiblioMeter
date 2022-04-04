@@ -32,11 +32,18 @@ OTP_LIST = {
         'SIRE': ['MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'],
     
         'STHB': ['Vielle appelation'],
-        '(DEHT)': ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 'EMEPE', 'SYS2E', 'SYSIE', 'TEENV'],
-        'DEHT': ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 'EMEPE', 'SYS2E', 'SYSIE', 'TEENV'],
-        '(DTNM)': ['INDIB', 'PROH2', 'STSH2', 'ASMAT', 'INNAN', 'TEENV', 'CHECC', 'NRBCT', 'COTHE', 'FAB3D', 'ELORG'],
+    
+        'DEHT': ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 'EMEPE', 'SYS2E', 'SYSIE', 'TEENV'], # OK
+        'DTBH': ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 'INREL', 'MATEP', 'ESQVE', 'MATNA', 'TECNA', 'IDNES', 'COTHE', 'SYS2E', 'SYSIE', 'CHECC'], # OK
+        'DTCH': ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 'INREL', 'MATEP', 'ESQVE', 'MATNA', 'TECNA', 'IDNES', 'COTHE', 'SYS2E', 'SYSIE', 'CHECC'], # OK
+        'DTNM': ['PROH2', 'COTHE', 'ASMAT', 'FAB3D', 'INDIB', 'STSH2', 'INNAN', 'TEENV', 'CHECC', 'NRBCT', 'ELORG'], # OK
+        'DTS' : ['MACPV', 'HETPV', 'MSYPV', 'TEENV', 'MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'], # OK
+        
+        '(LITEN)' : ['A rajouter'],
+
+
         'S2CE': ['Vieille appellation'],
-        'S3E': ['Vieille appellation'],
+        'S3E' : ['Vieille appellation'],
         'SBST': ['Vieille appellation'],
         'SCTR': ['Vieille appellation'],
         'SMCP': ['Vieille appellation'],
@@ -48,26 +55,29 @@ OTP_STRING = {
         'STB': "MSBAT, INDIB, TEENV",
         'SAMA': "MSBAT, INDIB, COBH2, STSH2, EMEPE, SYS2E, SYSIE",
         'STP': "COBH2, STSH2, TEENV",
-    
+
         'STH2': "PROH2",
         'SCPC': "STSH2, ASMAT, SECSY, INREL, MATEP, ESQVE, MATNA, TECNA, IDNES",
         'SSETI': "COTHE, SYS2E, SYSIE, CHECC",
-    
+
         'SA3D': "PROH2, COTHE, ASMAT, FAB3D",
         'STDC': "INDIB, PROH2, STSH2, ASMAT, INNAN, TEENV, CHECC, NRBCT",
         'SCSF': "PROH2, ELORG",
-    
+
         'SCPV': "MACPV, HETPV",
         'SMSP': "MSYPV, TEENV",
         'SIRE': "MSBAT, EMEPE, SYS2E, SYSIE",
+
+        'DEHT': "MSBAT, INDIB, COBH2, STSH2, EMEPE, SYS2E, SYSIE, TEENV",
+        'DTBH': "PROH2, STSH2, ASMAT, SECSY, INREL, MATEP, ESQVE, MATNA, TECNA, IDNES, COTHE, SYS2E, SYSIE, CHECC",
+        'DTCH': "PROH2, STSH2, ASMAT, SECSY, INREL, MATEP, ESQVE, MATNA, TECNA, IDNES, COTHE, SYS2E, SYSIE, CHECC",
+        'DTNM': "PROH2, COTHE, ASMAT, FAB3D, INDIB, STSH2, INNAN, TEENV, CHECC, NRBCT, ELORG",
+        'DTS' : "MACPV, HETPV, MSYPV, TEENV, MSBAT, EMEPE, SYS2E, SYSIE",
     
-        '(DEHT)': "MSBAT, INDIB, COBH2, STSH2, EMEPE, SYS2E, SYSIE, TEENV",
-        '(DTCH)': "INDIB, PROH2, STSH2, ASMAT, INNAN, TEENV, CHECC, NRBCT, COTHE, FAB3D, ELORG",
-        '(DTNM)': "PROH2, COTHE, ASMAT, FAB3D, INDIB, STSH2, INNAN, TEENV, CHECC, NRBCT, ELORG",
-        '(DTS)' : "MACPV, HETPV, MSYPV, TEENV, MSBAT, EMEPE, SYS2E, SYSIE",
+        '(LITEN)': "A rajouter",
     
-        'STHB': "Vieille appelation",
-        'S2CE': "Vieille appelation",
+        'STHB': "Vieille appellation",
+        'S2CE': "Vieille appellation",
         'S3E' : "Vieille appellation",
         'SBST': "Vieille appellation",
         'SCTR': "Vieille appellation",
@@ -75,3 +85,4 @@ OTP_STRING = {
         'SBST': "Vieille appellation",
         'SMPV': "Vieille appellation"    
 }
+

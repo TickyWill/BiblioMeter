@@ -2,13 +2,14 @@ __all__ = ['common_files',
            '_get_indexer',
            'concatenate_dat',
            'df_with_no_more_doubles',
-          'get_the_doubles',
-          'complete_deduplicate_and_save_articles',
-          'deduplicated_all_but_articles',
-          'you_got_OTPed',
-          'liste_de_validation']
+           'get_the_doubles',
+           'complete_deduplicate_and_save_articles',
+           'deduplicated_all_but_articles',
+           'you_got_OTPed',
+           'liste_de_validation',
+           'get_unique_numbers']
 
-def common_files(path_1 = None,path_2 = None):
+def common_files(path_wos,path_scopus):
     
     '''Builds a list containing the list of the names of the files present in both 
     scopus and wos parsing file
@@ -18,37 +19,35 @@ def common_files(path_1 = None,path_2 = None):
     'references.dat','subjects.dat', 'subjects2.dat', 'titlekeywords.dat']
     
     Args : 
-        path_1 (string) : the path leading to where the .dat documents are saved
-        path_2 (string) : the path leading to where the .dat documents are saved
+        path_wos (string) : the path leading to where the .dat documents are saved
+        path_scopus (string) : the path leading to where the .dat documents are saved
         
     Returns :
         The list of common_files'''
     
-    # Local library imports
-    if path_1 is None:
-        from .BiblioMeterGlobalsVariables import PATH_SCOPUS_PARSING
-        path_1 = PATH_SCOPUS_PARSING
-    if path_2 is None:
-        from .BiblioMeterGlobalsVariables import PATH_WOS_PARSING
-        path_2 = PATH_WOS_PARSING
-        
-    # Standard and 3rd party library imports
+    # Standard library imports
     import os
+    from pathlib import Path
+    
+    # Local library imports
+    
+    # 3rd party library imports
     import pandas as pd
     
-    list_dir_1=set(os.listdir(path_1))
-
-    list_dir_2=set(os.listdir(path_2))
-
-    union = list_dir_1.union(list_dir_2)
+    list_dir_wos=set(os.listdir(path_wos))
+    list_dir_scopus=set(os.listdir(path_scopus)) # TO DO, POURQUOI DEDOUBLONNER AVEC SET ? Pratique et rapide grâce à l'union
+    list_files = list_dir_wos.union(list_dir_scopus)
     
-    union.remove('failed.json')
+    union = list_files.copy()
+    for item in list_files:
+        if item[-4:] != ".dat":
+            union.remove(item)
 
     print('\nThe common files list of documents.dat is : ', union)
     
     return union
     
-def _get_indexer(path = None, document_name ='articles.dat'):
+def _get_indexer(path):
     
     '''Returns the length of articles.dat from wos or scopus, to later be used to 
     increment when concatening before getting rid of doublons. If path isn't specified
@@ -62,21 +61,21 @@ def _get_indexer(path = None, document_name ='articles.dat'):
         The number by which we need to increment Pub_id when concatening articles.dat 
         from wos to scopus'''
     
-    # Global variable imports
-    if path is None:
-        from .BiblioMeterGlobalsVariables import PATH_SCOPUS_PARSING
-        path = PATH_SCOPUS_PARSING
-        
-    # Standard and 3rd party library imports
-    import pandas as pd
+    # Standard library imports
+    import os
+    from pathlib import Path
     
-    df = pd.DataFrame()
-    df = pd.read_csv(path + document_name,sep="\t")
-    indexer = df.shape[0]
+    # Local library imports   
+    
+    # 3rd party library imports
+    import pandas as pd
+
+    df = pd.read_csv(path, sep="\t") # TO DO
+    indexer = len(df)
     
     return indexer
 
-def concatenate_dat(document_name, indexer = _get_indexer(), path_1 = None, path_2 = None, path_3 = None):
+def concatenate_dat(document_name, indexer, path_wos, path_scopus, path_concat):
     
     '''Concatenates the documents.dat having the same name from the wos parsing and the 
     scopus parsing.
@@ -84,30 +83,24 @@ def concatenate_dat(document_name, indexer = _get_indexer(), path_1 = None, path
     Args : 
         document_name (string) : name of the document wanting to be concatenated3
         indexer (int) : number by which we increment the Pub_ids
-        path_1 (string) : path leading to where the .dat documents are saved
-        path_2 (string) : path leading to where the .dat documents are saved
+        path_wos (string) : path leading to where the .dat documents are saved
+        path_scopus (string) : path leading to where the .dat documents are saved
         path_3 (string) : path leading to where the new concatenated .dat will be saved
         
     Returns :
-        A .dat file saved in path_3'''
+        A .dat file saved in path_concat'''
+    
+    # Standard library imports
+    from pathlib import Path
     
     # Local library imports
-    if path_1 is None:
-        from .BiblioMeterGlobalsVariables import PATH_SCOPUS_PARSING
-        path_1 = PATH_SCOPUS_PARSING
-    if path_2 is None:
-        from .BiblioMeterGlobalsVariables import PATH_WOS_PARSING
-        path_2 = PATH_WOS_PARSING
-    if path_3 is None:
-        from .BiblioMeterGlobalsVariables import PATH_DAT_CONCATENATED
-        path_3 = PATH_DAT_CONCATENATED
         
-    # Standard and 3rd party library imports
+    # 3rd party library imports
     import pandas as pd
     
-    df_scopus = pd.read_csv(path_1 + document_name, sep="\t")
+    df_scopus = pd.read_csv(path_wos / Path(document_name), sep="\t")
     
-    df_wos = pd.read_csv(path_2 + document_name, sep="\t")
+    df_wos = pd.read_csv(path_scopus / Path(document_name), sep="\t")
     df_wos['Pub_id']=df_wos['Pub_id']+indexer
     
     list_df = [df_wos,df_scopus]
@@ -115,14 +108,13 @@ def concatenate_dat(document_name, indexer = _get_indexer(), path_1 = None, path
     df_inter.set_index('Pub_id',inplace=True)
     df_inter.sort_index(inplace=True)
     
-    df_inter.to_csv(path_3 + document_name,
+    df_inter.to_csv(path_concat / Path(document_name),
                     index=True,
                     columns=df_inter.columns.tolist(),
                     sep='\t',
                     header=True)
-    return document_name, 'Document was successfully concatenated and saved in ', path_3
-
-def df_with_no_more_doubles(path = None):
+    
+def df_with_no_more_doubles(path_concat):
     
     '''Uses the concatenated articles.dat document and applies a succesion of filters
     to get rid of doubled information and returns a df containing an index of Pub_ids
@@ -134,15 +126,15 @@ def df_with_no_more_doubles(path = None):
     Returns :
         A df with no duplicates but unfull information and a list with the index of this df'''
     
-    # Global imports
-    if path is None:
-        from .BiblioMeterGlobalsVariables import PATH_DAT_CONCATENATED
-        path = PATH_DAT_CONCATENATED
+    # Standard library imports
+    from pathlib import Path
     
-    # Standard and 3rd party library imports
+    # Local library imports   
+    
+    # 3rd party library imports
     import pandas as pd
     
-    df_articles_concat = pd.read_csv(path + '/articles.dat',
+    df_articles_concat = pd.read_csv(path_concat,
                                      sep="\t",
                                      index_col='Pub_id')
 
@@ -158,17 +150,17 @@ def df_with_no_more_doubles(path = None):
     # On les rajoutera après
 
     filtre_DOI_NA = (df_articles_concat['DOI'].isna())
-    df_inter_1=df_articles_concat[~filtre_DOI_NA]
-    df_inter_1 = df_inter_1.drop_duplicates(subset=['DOI'],
+    df_inter_wos=df_articles_concat[~filtre_DOI_NA]
+    df_inter_wos = df_inter_wos.drop_duplicates(subset=['DOI'],
                                             keep='first')
 
     # On rajoute les articles sans DOI
-    df_inter_2 = pd.concat([df_inter_1,df_articles_concat[filtre_DOI_NA]])
+    df_inter_scopus = pd.concat([df_inter_wos,df_articles_concat[filtre_DOI_NA]])
 
     # Pour gérer les DOI isna(), on va simplement récépérer la DataFrame qui ne possède que les DOI isna()
     # On fera un filtre sur la colonne Title et Document Type (sinon risque de perdre de l'information)
 
-    df_no_doubles = df_inter_2.drop_duplicates(subset=['Document_type','Title'], 
+    df_no_doubles = df_inter_scopus.drop_duplicates(subset=['Document_type','Title'], 
                                                keep='first')
 
     indices_of_duplicates = df_no_doubles.index.tolist()
@@ -185,7 +177,12 @@ def get_the_doubles(indice, df_DOI, df_no_DOI, df_articles_concat):
     Returns :
         A list of the duplicats of indice'''
     
-    # Standard and 3rd party library imports
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports   
+    
+    # 3rd party library imports
     import pandas as pd
     
     list_df_dup=[]
@@ -201,7 +198,7 @@ def get_the_doubles(indice, df_DOI, df_no_DOI, df_articles_concat):
         
     return [df_inter,df_inter.index.tolist()]
 
-def complete_deduplicate_and_save_articles(list_df_dup = None, indices_of_duplicates = None, path = None):
+def complete_deduplicate_and_save_articles(list_df_dup, indices_of_duplicates, path):
     
     '''_____
     
@@ -210,23 +207,14 @@ def complete_deduplicate_and_save_articles(list_df_dup = None, indices_of_duplic
     
     Returns :
         Nothing, but saves documents in path'''
+    # Standard library imports
+    from pathlib import Path
     
-    # Local imports
+    # Local library imports   
     import BiblioMeter_Utils as bmu
     
-    # Standard and 3rd party library imports
+    # 3rd party library imports
     import pandas as pd
-    
-    # Global variable imports
-    if path is None:
-        from .BiblioMeterGlobalsVariables import PATH_DAT_DEDUPLICATED
-        path = PATH_DAT_DEDUPLICATED
-    
-    if list_df_dup is None:
-        raise Exception('''None case for list_df_dup hasn't been taken cared of yet, please enter a value for list_of_dup''')
-        
-    if indices_of_duplicates is None:
-        [_,indices_of_duplicates] = bmu.df_with_no_more_doubles()
 
     df_dup_full_unique=pd.DataFrame()
     tour = 0
@@ -253,15 +241,15 @@ def complete_deduplicate_and_save_articles(list_df_dup = None, indices_of_duplic
     df_AAH=pd.DataFrame()        
     df_AAH = df_AAH.append([df_dup_full_unique[df_dup_full_unique['Pub_id'] == i] for i in indices_of_duplicates])
 
-    df_AAH.to_csv(path + 'articles.dat',
-                        index=False,
-                        columns=df_AAH.columns.tolist(),
-                        sep='\t',
-                        header=True)    
+    df_AAH.to_csv(path, 
+                  index=False, 
+                  columns=df_AAH.columns.tolist(), 
+                  sep='\t', 
+                  header=True)    
 
     print('Etape terminée')
     
-def deduplicated_all_but_articles(file_name, indices_of_duplicates = None, path_1 = None, path_2 = None):
+def deduplicated_all_but_articles(file_name, indices_of_duplicates, path_concat, path_dedupli):
     
     '''_____
     
@@ -271,27 +259,15 @@ def deduplicated_all_but_articles(file_name, indices_of_duplicates = None, path_
     Returns :
         Nothing, but saves documents in path'''
     
-    # Local imports
-    import BiblioMeter_Utils as bmu
+    # Standard library imports
+    from pathlib import Path
     
-    # Standard and 3rd party library imports
+    # Local library imports   
+    
+    # 3rd party library imports
     import pandas as pd
     
-    # Global variable imports
-    if path_1 is None:
-        from .BiblioMeterGlobalsVariables import PATH_DAT_CONCATENATED
-        path_1 = PATH_DAT_CONCATENATED
-    
-    if path_2 is None:
-        from .BiblioMeterGlobalsVariables import PATH_DAT_DEDUPLICATED
-        path_2 = PATH_DAT_DEDUPLICATED
-        
-    if indices_of_duplicates is None:
-        [_,indices_of_duplicates] = bmu.df_with_no_more_doubles()
-        
-    
-    
-    exported_df = pd.read_csv(path_1 + file_name, sep="\t")
+    exported_df = pd.read_csv(path_concat / Path(file_name), sep="\t")
     
     filt = (exported_df['Pub_id'].isin(indices_of_duplicates))
     exported_df=exported_df[filt]
@@ -302,8 +278,8 @@ def deduplicated_all_but_articles(file_name, indices_of_duplicates = None, path_
         exported_df.sort_values(['Pub_id','Idx_address'], inplace=True)
         
     # Terminer les cas particuliers sur le tri des lignes
-            
-    exported_df.to_csv(path_2 + file_name,
+    
+    exported_df.to_csv(path_dedupli / Path(file_name),
                     index=False,
                     columns=exported_df.columns.tolist(),
                     sep='\t',
@@ -319,20 +295,51 @@ def you_got_OTPed(df,i):
     Returns :
         Adds OTP to df'''
     
-    # Local imports
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports   
     import BiblioMeter_Utils as bmu
     
-    # Standard and 3rd party library imports
+    # 3rd party library imports
     import pandas as pd
+    from openpyxl.utils.cell import get_column_letter
     
     # Global variable imports
     from .BiblioMeterGlobalsVariables import OTP_STRING
     
+    columns_to_keep = ['Pub_id', 
+                   'Idx_author', 
+                   'Authors',  
+                   'DOI', 
+                   'ISSN', 
+                   'Secondary_institutions', 
+                   'Document_type',
+                   'Matricule', 
+                   'Nom', 
+                   'Prénom', 
+                   'Dpt/DOB (lib court)', 
+                   'Service (lib court)', 
+                   'Laboratoire (lib court)', 
+                   'Laboratoire (lib long)',
+                   'List_of_OTP',
+                   'HOMONYM']
+    
     if 'List_of_OTP' in df.columns:
-        df['List_of_OTP'].iloc[i] = OTP_STRING[df.iloc[i]['Service (lib court)']]
+        #if df['Pub_id'].iloc[i-1] == df['Pub_id'].iloc[i] and df['Dpt/DOB (lib court)'].iloc[i-1] == df['Dpt/DOB (lib court)'].iloc[i]: VERSION AMAL
+        if df['Pub_id'].iloc[i-1] == df['Pub_id'].iloc[i]: # VERSION DE JP
+            
+            lien_otp = '='+get_column_letter(columns_to_keep.index('List_of_OTP')+1)+str(i+1) # ---------------------------> rendre robuste 
+
+            #truc = '"'+','.join(lien_otp)+'"'
+            
+            df['List_of_OTP'].iloc[i] = lien_otp
+            
+        else:
+            df['List_of_OTP'].iloc[i] = OTP_STRING[df.iloc[i]['Dpt/DOB (lib court)']]
     else:
         df['List_of_OTP'] = pd.Series()
-        df['List_of_OTP'].iloc[i] = OTP_STRING[df.iloc[i]['Service (lib court)']]
+        df['List_of_OTP'].iloc[i] = OTP_STRING[df.iloc[i]['Dpt/DOB (lib court)']]
     
     return df
 
@@ -352,8 +359,19 @@ def liste_de_validation(df,i):
     # Global variable imports
     from .BiblioMeterGlobalsVariables import OTP_LIST
     
-    validation_list = OTP_LIST[df.iloc[i]['Service (lib court)']]
+    validation_list = OTP_LIST[df.iloc[i]['Dpt/DOB (lib court)']]
     
     truc = '"'+','.join(validation_list)+'"'
     
     return truc
+
+def get_unique_numbers(numbers):
+
+    list_of_unique_numbers = []
+
+    unique_numbers = set(numbers)
+
+    for number in unique_numbers:
+        list_of_unique_numbers.append(number)
+
+    return list_of_unique_numbers
