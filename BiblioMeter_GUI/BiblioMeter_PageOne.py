@@ -1,222 +1,382 @@
-__all__ = ['data_parsing','existing_corpuses','concatenate_and_deduplicate']
+__all__ = ['create_PageOne']
 
-def data_parsing(annee, source, results, second_inst):
-    
+def _data_parsing(corpus_year, database_type, bibliometer_path):
+
     """
-    Description à venir
+    Description : Parses corpuses from wos or scopus (depending on the arg database_type
+    using the function biblio_parser from BiblioAnalysis_Utils. 
+
+    Uses the following globals :
+    - DIC_OUTIR_PARSING
+    - FOLDER_NAMES
+
+    Args :
+    - corpus_year : The year of the extracted corpuses
+    - database_type : Either wos or scopus depending from where comes the corpuses
+    - results : A list of list of zeros and ones displaying available or not
+    rawdata and parsing where documents are stocked by year.
+    [[2018, 2019, 2020, 2021, 2022],   #Years
+     [0, 0, 0, 0, 0],                  #Wos Rawdata
+     [0, 0, 0, 0, 0],                  #Scopus Rawdata
+     [0, 0, 0, 0, 0],                  #Wos Parsing
+     [0, 0, 0, 0, 0],                  #Scopus Parsing
+     [0, 0, 0, 0, 0]]                  #Concatenation & Deduplication
+    - second_inst : For the time being it is a binary value, 1 meaning that secondary institutions 
+    should be parsed, 0 meaning it shouldn't. Secondary institutions can (for the time being) be
+    found in the inst_filter_dic variable inside of data_parsing
+
+    Returns :
+    Display the number of articles parsed, and via the function biblio_parser, create a set of
+    documents (.dat) which are results of the parsing of the treated corpuses.
+
     """
-    
+
     # Standard library imports
     import os
     import json
     from pathlib import Path
-    
+
     # 3rd party imports
     import tkinter as tk
     from tkinter import messagebox
-    
+
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
-    from BiblioMeter_GUI.Globals_GUI import WOS_PATH
-    from BiblioMeter_GUI.Globals_GUI import RAWDATA_PATH
-    from BiblioMeter_GUI.Globals_GUI import PARSING_PATH
-    from BiblioMeter_GUI.Globals_GUI import SCOPUS_PATH
-    from BiblioMeter_GUI.Globals_GUI import REFUTILS_PATH
 
-    # Eclaircissage de la variable results
-    list_annee = results[0]
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+        
+    ### On récupère la présence ou non des fichiers #################################        
+    results = _existing_corpuses(bibliometer_path)
+
+    list_corpus_year = results[0]
     list_wos_rawdata = results[1]
     list_wos_parsing = results[2]
     list_scopus_rawdata = results[3]
     list_scopus_parsing = results[4]
+    list_concatenation = results[5]
+    #################################################################################
+    
+    # Création des alias pour simplifier les accès
+    wos_alias = FOLDER_NAMES['wos']
+    scopus_alias = FOLDER_NAMES['scopus']
+    corpus_path_alias = FOLDER_NAMES['corpus']
 
-    # TO DO : Changer la manière dont est renseigné database_type ET expert ET venv ET rep_utils
-    venv = False
-    expert =  False
-    database_type = source
+    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
+    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
 
-    # Création de la variable path_rawdata, path_parsing et parser_done qui correspond au chemin pour aller au rawdata
-    # avec ici la première vérification de disponibilité du fichier rawdata et de demande de parsing
-    if source == 'wos':
-        if list_wos_rawdata[list_annee.index(annee)] == False:
-            messagebox.showwarning('Missing files', f"Warning : le fichier rawdata de {source} de l'année {annee} n'est pas disponible")
-            return
+    parsing_path_alias = FOLDER_NAMES['parsing']
+    rawdata_path_alias = FOLDER_NAMES['rawdata']
+
+    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
+    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
+
+    article_path_alias = DIC_OUTDIR_PARSING['A']
+    
+    expert = False
+    
+    answer_1 = messagebox.askokcancel('Information', f"Une procédure de parsing a été lancée, continuer à parser ?")
+    if answer_1:
+        # Creation of path_rawdata, path_parsing, rep_utils and parser_done
+        if database_type == 'wos':
+            if list_wos_rawdata[list_corpus_year.index(corpus_year)] == False:
+                messagebox.showwarning('Fichiers manquants', f"Warning : le fichier rawdata de {database_type} de l'année {corpus_year} n'est pas disponible")
+                return
+            else:
+                path_rawdata = Path(bibliometer_path) / Path(corpus_year) / Path(wos_path_alias) / Path(rawdata_path_alias) 
+                path_parsing = Path(bibliometer_path) / Path(corpus_year) / Path(wos_path_alias) / Path(parsing_path_alias)
+                parser_done = list_wos_parsing[list_corpus_year.index(corpus_year)]
         else:
-            rep_utils = '' # TO DO, changer la manière dont est rensigné le ref_utils
-            path_rawdata = Path(ROOT_PATH) / Path(annee) / Path(WOS_PATH) / Path(RAWDATA_PATH) 
-            path_parsing = Path(ROOT_PATH) / Path(annee) / Path(WOS_PATH) / Path(PARSING_PATH)
-            parser_done = list_wos_parsing[list_annee.index(annee)]
-    else:
 
-        if list_scopus_rawdata[list_annee.index(annee)] == False:
-            messagebox.showwarning('Missing files', f"Warning : le fichier rawdata de {source} de l'année {annee} n'est pas disponible")
-            return
+            if list_scopus_rawdata[list_corpus_year.index(corpus_year)] == False:
+                messagebox.showwarning('Missing files', f"Warning : le fichier rawdata de {database_type} de l'année {corpus_year} n'est pas disponible")
+                return
+            else:
+                path_rawdata = Path(bibliometer_path) / Path(corpus_year) / Path(scopus_path_alias) / Path(rawdata_path_alias)
+                path_parsing = Path(bibliometer_path) / Path(corpus_year) / Path(scopus_path_alias) / Path(parsing_path_alias)
+                parser_done = list_scopus_parsing[list_corpus_year.index(corpus_year)]
+
+        if not os.path.exists(path_parsing):
+            os.mkdir(path_parsing)
+
+        if parser_done == 1:
+            # Ask to carry on with parsing if already done
+            answer_2 = messagebox.askokcancel('Information', f"Le parsing pour le corpus {database_type} de l'année {corpus_year} est déjà disponible, continuer à parser ?")
+            if answer_2:
+                bau.biblio_parser(path_rawdata, path_parsing, database_type, expert) 
+                with open(Path(path_parsing) / Path('failed.json'), 'r') as failed_json:
+                    data_failed=failed_json.read()
+                dic_failed = json.loads(data_failed)
+
+                articles_number = dic_failed["number of article"]
+
+                messagebox.showinfo('Information', f"Parsing effectué \n Parsing processed on full corpus \n Number of articles in the corpus : {articles_number}")
+            else:
+                messagebox.showinfo('Information', f"Parsing annulé car déjà présent")
+                return
         else:
-            rep_utils = REFUTILS_PATH # TO DO, changer la manière dont est renseigné le ref_utils
-            path_rawdata = Path(ROOT_PATH) / Path(annee) / Path(SCOPUS_PATH) / Path(RAWDATA_PATH)
-            path_parsing = Path(ROOT_PATH) / Path(annee) / Path(SCOPUS_PATH) / Path(PARSING_PATH)
-            parser_done = list_scopus_parsing[list_annee.index(annee)]
-
-    ## Building the names of the useful folders
-    in_dir_parsing = path_rawdata
-    out_dir_parsing = path_parsing
-
-    if not os.path.exists(out_dir_parsing):
-        os.mkdir(out_dir_parsing)
-
-    ## Running function biblio_parser
-    # TO DO : IL FAUT REPONDRE NON SINON BUG POUR LE MOMENT
-    if parser_done == False:
-        # Setting the specific affiliations filter (default = None)
-
-        # TO DO : IL FAUT REPONDRE OUI SINON BUG POUR LE MOMENT
-        
-        if second_inst == 1: 
-            inst_filter_dic = [('Liten','France'),('Ines','France'),('Simap','France')]
-        else:
-            inst_filter_dic = None
-            
-        bau.biblio_parser(in_dir_parsing, out_dir_parsing, database_type, expert, rep_utils, inst_filter_dic) 
-        with open(Path(out_dir_parsing) / Path('failed.json'), 'r') as failed_json:
+            # Parse immediately when not parsed yet
+            bau.biblio_parser(path_rawdata, path_parsing, database_type, expert) 
+            with open(Path(path_parsing) / Path('failed.json'), 'r') as failed_json:
                 data_failed=failed_json.read()
-        dic_failed = json.loads(data_failed)
-        articles_number = dic_failed["number of article"]
+            dic_failed = json.loads(data_failed)
 
-    #print("\n\nCorpus parsing saved in folder:\n", str(out_dir_parsing))
-    #print('\nNumber of articles in the corpus : ', articles_number)
+            articles_number = dic_failed["number of article"]
 
-    messagebox.showinfo('Information', f"Parsing effectué \n Parsing processed on full corpus \n Number of articles in the corpus : {articles_number}")
-
-def existing_corpuses(emplacement_BM):
+            messagebox.showinfo('Information', f"Parsing effectué \n Parsing processed on full corpus \n Number of articles in the corpus : {articles_number}")
+    else:
+        return
     
-    """ Renvoie une liste des corpus disponibles par année et par source """
-    
+    # Ajouter _update() si pas trop la flemme
+
+def _existing_corpuses(bibliometer_path):
+
+    """ 
+    Description : Returns a list of list of zeros and ones displaying available or not
+    rawdata and parsing where documents are stocked by year.
+    [[2018, 2019, 2020, 2021, 2022],   #Years
+     [0, 0, 0, 0, 0],                  #Wos Rawdata
+     [0, 0, 0, 0, 0],                  #Scopus Rawdata
+     [0, 0, 0, 0, 0],                  #Wos Parsing
+     [0, 0, 0, 0, 0],                  #Scopus Parsing
+     [0, 0, 0, 0, 0]]                  #Concatenation & Deduplication
+
+    Uses the following globals :
+    - DIC_OUTIR_PARSING
+    - FOLDER_NAMES
+
+    Args : 
+    - root_path is where the first foler of BilioMeter is, inside this folder is where all
+    useful and necessary files for BiblioMeter to be working are placed in a very specific way.
+
+    Returns : A list of lists
+
+    """
+
     # Standard library imports
     import os
     from pathlib import Path
-    
-    # 3rd party imports
-    # None
-    
+
     # Local imports
-    from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
-    from BiblioMeter_GUI.Globals_GUI import WOS_PATH
-    from BiblioMeter_GUI.Globals_GUI import RAWDATA_PATH
-    from BiblioMeter_GUI.Globals_GUI import PARSING_PATH
-    from BiblioMeter_GUI.Globals_GUI import SCOPUS_PATH
-    from BiblioMeter_GUI.Globals_GUI import CONCATENATION_PATH
-    from BiblioMeter_GUI.Globals_GUI import ARTICLE_PATH
-    from BiblioMeter_GUI.Globals_GUI import WOS_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import SCOPUS_FILE_NAME
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+
+    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
+    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import get_corpus_filename_by_year
     
-    
-    # Recherche des années disponibles
-    root_path = emplacement_BM
-    
-    # Récupérer les corpus disponibles
-    list_dir = os.listdir(ROOT_PATH)
+    list_dir = five_last_available_years(bibliometer_path)
+
+    # Création des alias pour simplifier les accès
+    wos_alias = FOLDER_NAMES['wos']
+    scopus_alias = FOLDER_NAMES['scopus']
+    corpus_path_alias = FOLDER_NAMES['corpus']
+
+    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
+    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
+
+    parsing_path_alias = FOLDER_NAMES['parsing']
+    rawdata_path_alias = FOLDER_NAMES['rawdata']
+
+    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
+    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
+
+    article_path_alias = DIC_OUTDIR_PARSING['A']
+
+    # Set of variables
     list_annee = list()
     list_wos_rawdata = list()
     list_wos_parsing = list()
     list_scopus_rawdata = list()
     list_scopus_parsing = list()
-    list_concatenation = list()
+    list_deduplication = list()
 
-    for i,annee in enumerate(list_dir):
-        if len(annee) == 4: # TO DO : Bancale, à reprendre
-            list_annee.append(annee)
-            
-            # Concatenation (by year)
-            path_concat = Path(ROOT_PATH) / Path(list_annee[i]) / Path(CONCATENATION_PATH) / Path(ARTICLE_PATH)
-            list_concatenation.append(path_concat.is_file())
-            
-            # Wos
-            path_wos_parsing = Path(ROOT_PATH) / Path(list_annee[i]) / Path(WOS_PATH) / Path(PARSING_PATH) / Path(ARTICLE_PATH)
-            list_wos_parsing.append(path_wos_parsing.is_file())
-            path_wos_rawdata = Path(ROOT_PATH) / Path(list_annee[i]) / Path(WOS_PATH) / Path(RAWDATA_PATH) / Path(WOS_FILE_NAME)
-            list_wos_rawdata.append(path_wos_rawdata.is_file())
-            
-            # Scopus
-            path_scopus_parsing = Path(ROOT_PATH) / Path(list_annee[i]) / Path(SCOPUS_PATH) / Path(PARSING_PATH) / Path(ARTICLE_PATH)
-            list_scopus_parsing.append(path_scopus_parsing.is_file())
-            path_scopus_rawdata = Path(ROOT_PATH) / Path(list_annee[i]) / Path(SCOPUS_PATH) / Path(RAWDATA_PATH) / Path(SCOPUS_FILE_NAME)
-            list_scopus_rawdata.append(path_scopus_rawdata.is_file())
-            
-    return list_annee, list_wos_rawdata, list_wos_parsing, list_scopus_rawdata, list_scopus_parsing, list_concatenation
+    for i, annee in enumerate(list_dir):
+        list_annee.append(annee)
 
-def concatenate_and_deduplicate(annee):
-    
+        # Concatenation and deduplication (by year)
+        path_dedupli = Path(bibliometer_path) / Path(list_annee[i]) / Path(dedupli_path_alias) / Path(parsing_path_alias) / Path(article_path_alias)
+        list_deduplication.append(path_dedupli.is_file())
+
+        # Wos
+        path_wos_parsing = Path(bibliometer_path) / Path(list_annee[i]) / Path(wos_path_alias) / Path(parsing_path_alias) / Path(article_path_alias)
+        list_wos_parsing.append(path_wos_parsing.is_file())
+        path_wos_rawdata = get_corpus_filename_by_year(Path(bibliometer_path) / Path(list_annee[i]), 'wos')
+        list_wos_rawdata.append(path_wos_rawdata.is_file())
+
+        # Scopus
+        path_scopus_parsing = Path(bibliometer_path) / Path(list_annee[i]) / Path(scopus_path_alias) / Path(parsing_path_alias) / Path(article_path_alias)
+        list_scopus_parsing.append(path_scopus_parsing.is_file())
+        path_scopus_rawdata = get_corpus_filename_by_year(Path(bibliometer_path) / Path(list_annee[i]), 'scopus')
+        list_scopus_rawdata.append(path_scopus_rawdata.is_file())
+
+    return list_annee, list_wos_rawdata, list_wos_parsing, list_scopus_rawdata, list_scopus_parsing, list_deduplication
+
+def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK):
+        
     """
-    Description et consolidation/correction à venir
+    Description : 
+
+    Uses the following globals :
+
+    Args :
+
+    Returns :
+
     """
     
     # Standard library imports
     from pathlib import Path
     
     # Local imports
-    import BiblioMeter_Utils as bmu
-    from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
-    from BiblioMeter_GUI.Globals_GUI import WOS_PATH
-    from BiblioMeter_GUI.Globals_GUI import PARSING_PATH
-    from BiblioMeter_GUI.Globals_GUI import SCOPUS_PATH
-    from BiblioMeter_GUI.Globals_GUI import ARTICLE_PATH
-    from BiblioMeter_GUI.Globals_GUI import CONCAT_PATH
-    from BiblioMeter_GUI.Globals_GUI import DEDUPLI_PATH
+    import BiblioAnalysis_Utils as bau
     
-    # 3rd party library imports
-    import pandas as pd
+    # 3rd party imports
+    import tkinter as tk
     
-    # Creation des chemins vers les corpus
-    path_wos_parsing = Path(ROOT_PATH) / Path(annee) / Path(WOS_PATH) / Path(PARSING_PATH)
-    path_scopus_parsing = Path(ROOT_PATH) / Path(annee) / Path(SCOPUS_PATH) / Path(PARSING_PATH)
-    path_concat = Path(ROOT_PATH) / Path(annee) / Path(CONCAT_PATH)
-    path_dedupli = Path(ROOT_PATH) / Path(annee) / Path(DEDUPLI_PATH)
+    ### On récupère la présence ou non des fichiers #################################        
+    results = _existing_corpuses(bibliometer_path)
 
-    # Allows us to get a list of the documents.dat that will be concatenated
-    list_files = bmu.common_files(path_wos_parsing, path_scopus_parsing)
+    list_annee = results[0]
+    list_wos_rawdata = results[1]
+    list_wos_parsing = results[2]
+    list_scopus_rawdata = results[3]
+    list_scopus_parsing = results[4]
+    list_concatenation = results[5]
+    #################################################################################
 
-    # Allows us to get the number by which we need to increment the Pub_id so they can
-    # all be unique
-    indexer = bmu._get_indexer(path_wos_parsing / Path(ARTICLE_PATH))
-    
-    # Now we'll concatenate each documents.dat that was returned by _common_files
-    _=[bmu.concatenate_dat(i, indexer, path_wos_parsing, path_scopus_parsing, path_concat) for i in list_files]
-    
-    print(f'Documents were successfully concatenated and saved in {path_concat}')
-    
-    # Now we'll try and get the a clean and full as possible df and store it in a new folder
+    # Mise en page tableau
+    wos_rawdata = tk.Label(self, text = 'Wos Rawdata')
+    wos_rawdata.place(x = POSITION_SELON_X_CHECK + 100, y = 215, anchor = 'center')
 
-    df_articles_concat = pd.read_csv(path_concat / Path(ARTICLE_PATH), 
-                                         sep="\t", 
-                                         index_col='Pub_id')
+    wos_parsing = tk.Label(self, text = 'Wos Parsing')
+    wos_parsing.place(x = POSITION_SELON_X_CHECK + 200, y = 215, anchor = 'center')
+
+    scopus_rawdata = tk.Label(self, text = 'Scopus Rawdata')
+    scopus_rawdata.place(x = POSITION_SELON_X_CHECK + 300, y = 215, anchor = 'center')
+
+    scopus_parsing = tk.Label(self, text = 'Scopus Parsing')
+    scopus_parsing.place(x = POSITION_SELON_X_CHECK + 400, y = 215, anchor = 'center')
+
+    concat = tk.Label(self, text = 'Concatenation \n and dédoublonnage')
+    concat.place(x = POSITION_SELON_X_CHECK + 500, y = 215, anchor = 'center')
+
+    # TITRE ZONE PARSING et CONCATENATION
+    label = tk.Label(self, text="Parsing et concatenation", font = ("Helvetica", 14))
+    label.place(anchor = 'center', relx = 0.5, y = (len(list_annee)+1)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK-15)
+
+    # CHOIX DE L'ANNEE POUR LE PARSING
+    variable_1 = tk.StringVar(self)
+    variable_1.set(list_annee[0])
+    YearOptionButton = tk.OptionMenu(self, variable_1, *list_annee)
+    YearOptionButton.place(anchor = 'center', relx = 0.25, y = (len(list_annee)+2)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK)
+
+    # CHOIX DU TYPE DE DOCUMENT POUR LE PARSING WOS/SCOPUS
+    variable_2 = tk.StringVar(self)
+    variable_2.set('wos')
+    SourceOptionButton = tk.OptionMenu(self, variable_2, *['wos','scopus'])
+    SourceOptionButton.place(anchor = 'center', relx = 0.5, y = (len(list_annee)+2)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK)
+
+    # BOUTON POUR LANCER LE PARSING
+    launch_button_parsing = tk.Button(self, text = 'Lancement du parsing', command = lambda: _data_parsing(variable_1.get(), 
+                                                                                                           variable_2.get(), 
+                                                                                                           bibliometer_path))
+    launch_button_parsing.place(anchor = 'center', relx = 0.75, y = (len(list_annee)+2)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK)
+
+    # CHOIX DE L'ANNEE POUR LA CONCATENATION
+    variable_3 = tk.StringVar(self)
+    variable_3.set(list_annee[0])
+    YearOptionButton = tk.OptionMenu(self, variable_3, *list_annee)
+    YearOptionButton.place(anchor = 'center', relx = 0.33, y = (len(list_annee)+4.5)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK-15)
+
+    # CONCATENATION DE WOS ET SCOPUS D'UNE ou PLUSIEURS ANNEESl
+    concat_button = tk.Button(self, text="Lancement de la concatenation", command = lambda: bau.parsing_concatenate_deduplicate(bibliometer_path / Path(variable_3.get())))
+    concat_button.place(anchor = 'center', relx = 0.66, y = (len(list_annee)+4.5)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK-15)
+
+def create_PageOne(self, bibliometer_path):
+
+    """
+    Description : 
     
-    filtre_DOI_NA = (df_articles_concat['DOI'].isna())
+    Uses the following globals :
     
-    df_inter_1 = df_articles_concat[~filtre_DOI_NA]
-    df_inter_2 = df_articles_concat[filtre_DOI_NA]
+    Args :
+    
+    Returns :
+    
+    """
 
-    [df_no_doubles,L]=bmu.df_with_no_more_doubles(path_concat / Path(ARTICLE_PATH))
+    # Standard library imports
+    import os
+    from pathlib import Path
 
-    LL=[]
-    df_LL = []
+    # 3rd party imports
+    import tkinter as tk
+    from tkinter import filedialog
+    from tkinter import messagebox
 
-    for i in L:
-        A = bmu.get_the_doubles(i, df_inter_1, df_inter_2, df_articles_concat)
-        LL.append(A[1])
-        df_LL.append(A[0])
+    # Local imports
+    import BiblioAnalysis_Utils as bau
+    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
+
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+
+    # Liste des checkbox des corpuses
+    CHECK = list()
+
+    # Placement de CHECKBOXCORPUSES : TO DO
+    POSITION_SELON_X_CHECK = 245
+    POSITION_SELON_Y_CHECK = 250
+    ESPACE_ENTRE_LIGNE_CHECK = 35
+    
+    ### On récupère la présence ou non des fichiers #################################        
+    results = _existing_corpuses(bibliometer_path)
+
+    list_annee = results[0]
+    list_wos_rawdata = results[1]
+    list_wos_parsing = results[2]
+    list_scopus_rawdata = results[3]
+    list_scopus_parsing = results[4]
+    list_concatenation = results[5]
+    #################################################################################
+    
+    # Bouton pour actualiser la zone de stockage
+    exist_button = tk.Button(self, 
+                             text = '''Mettre à jour l'état des fichiers''', 
+                             command = lambda: _update())
+    exist_button.place(relx = 0.5, y = 150, anchor = 'center')
+    
+    def _update():
         
+        """
+        Description : 
 
-    # Il reste l'import vers déduplicated à faire
+        Uses the following globals :
 
-    bmu.complete_deduplicate_and_save_articles(list_df_dup = df_LL, indices_of_duplicates = L, path = path_dedupli / Path(ARTICLE_PATH))
+        Args :
 
-    list_files_without_articles = list_files
-    list_files_without_articles.remove('articles.dat')
+        Returns :
 
-    _ = [bmu.deduplicated_all_but_articles(file_name, 
-                                           indices_of_duplicates = L, 
-                                           path_concat = path_concat,
-                                           path_dedupli = path_dedupli) for file_name in list_files_without_articles]
+        """
+        # Local imports
+        from BiblioMeter_GUI.BiblioMeter_UsefulClasses import CheckBoxCorpuses
+        
+        ### On récupère la présence ou non des fichiers #################################        
+        results = _existing_corpuses(bibliometer_path)
 
-    print(f'Documents were successfully deduplicated and saved in {path_dedupli}')
+        list_annee = results[0]
+        list_wos_rawdata = results[1]
+        list_wos_parsing = results[2]
+        list_scopus_rawdata = results[3]
+        list_scopus_parsing = results[4]
+        list_concatenation = results[5]
+        #################################################################################
+
+        for i, annee in enumerate(list_annee):
+            tmp = CheckBoxCorpuses(self, annee, list_wos_rawdata[i], list_wos_parsing[i], list_scopus_rawdata[i], list_scopus_parsing[i], list_concatenation[i])
+            tmp.place(x=POSITION_SELON_X_CHECK, y=i*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK)
+            CHECK.append(tmp)
+        
+        _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
+    
+    _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
