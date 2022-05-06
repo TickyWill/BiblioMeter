@@ -4,6 +4,7 @@ __all__ = ['biblio_parser',
            'check_and_drop_columns',
            'country_normalization',
            'extend_author_institutions',
+           'getting_secondary_inst_list',
            'merge_database',
            'name_normalizer',
            'normalize_journal_names',
@@ -427,8 +428,6 @@ def biblio_parser(in_dir_parsing, out_dir_parsing, database, expert, rep_utils=N
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import SCOPUS
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import WOS
     
-    if inst_filter_list== None: inst_filter_list = INST_FILTER_LIST
-    
     if database == WOS:
         biblio_parser_wos(in_dir_parsing, out_dir_parsing, inst_filter_list)
     elif database == SCOPUS:
@@ -602,6 +601,50 @@ def extend_author_institutions(in_dir,inst_filter_list):
     df_I2.to_csv(in_dir/ Path(DIC_OUTDIR_PARSING[item]), 
                  index=False,
                  sep='\t') 
+    
+    
+def getting_secondary_inst_list(out_dir_parsing):
+    '''The `getting_secondary_inst_list` function provides the list of institutions of the corpus.
+   
+    Args:
+        out_dir_parsing (path): the corpus parsing path for reading the "DIC_OUTDIR_PARSING['I2']" file 
+                                that lists the authors with their institutions for each article.
+       
+    Returns:
+        (list): list of strings 'country:institution'
+       
+    Notes:
+        The globals 'COL_NAMES'and 'DIC_OUTDIR_PARSING' are used.       
+    '''
+   
+    # Standard library imports
+    from pathlib import Path
+   
+    # 3rd party imports
+    import numpy as np
+    import pandas as pd
+   
+    # Local imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+   
+    
+    institutions_alias = COL_NAMES['auth_inst'][4]
+    country_alias = COL_NAMES['country'][2]   
+    
+    df_auth_inst = pd.read_csv(Path(out_dir_parsing) / Path(DIC_OUTDIR_PARSING['I2']),
+                                sep = '\t')
+    raw_institutions_list = []
+    for auth_inst in df_auth_inst[institutions_alias]:
+        raw_institutions_list.append(auth_inst)
+       
+    institutions_list = list(np.concatenate([raw_inst.split(';') for raw_inst in raw_institutions_list]))
+    institutions_list  = sorted(list(set(institutions_list)))
+ 
+    country_institution_list = [x.split('_')[1] + ':' + x.split('_')[0] for x in institutions_list]
+    country_institution_list = sorted(country_institution_list)
+   
+    return country_institution_list
             
             
             

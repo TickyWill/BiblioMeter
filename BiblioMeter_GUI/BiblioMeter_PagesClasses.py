@@ -185,27 +185,21 @@ class PageFour(tk.Frame):
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
         self.controller = controller
+
+        # Standard library imports
+        from pathlib import Path
+        
+        # Local imports
+        import BiblioAnalysis_Utils as bau
+        from BiblioMeter_GUI.BiblioMeter_PageFour import create_PageFour
+        
+        # Creation of the class object PageFour
+        create_PageFour(self, bibliometer_path)    
         
         label = tk.Label(self, 
                          text="Filtres à OTP", 
                          font = ("Helvetica", 25))
         label.place(anchor = 'n', relx = 0.5, rely = 0)
-        
-        Button_DTNM = tk.Button(self, text = 'DTNM', 
-                                font = ("Helvetica", 18))
-        Button_DTNM.place(anchor = 'center', relx = 0.25, rely = 0.25)
-        
-        Button_DTBH = tk.Button(self, text = 'DTBM', 
-                                font = ("Helvetica", 18))
-        Button_DTBH.place(anchor = 'center', relx = 0.75, rely = 0.25)
-        
-        Button_DTS = tk.Button(self, text = 'DTS', 
-                               font = ("Helvetica", 18))
-        Button_DTS.place(anchor = 'center', relx = 0.25, rely = 0.75)
-        
-        Button_DEHT = tk.Button(self, text = 'DEHT', 
-                                font = ("Helvetica", 18))
-        Button_DEHT.place(anchor = 'center', relx = 0.75, rely = 0.75)
         
         button = tk.Button(container_button, text = 'OTP', command = lambda: controller.show_frame("PageFour"))
         button.grid(row = 0, column = 4)

@@ -226,12 +226,31 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     
     # Standard library imports
     from pathlib import Path
+    import os
     
     # Local imports
     import BiblioAnalysis_Utils as bau
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     
     # 3rd party imports
     import tkinter as tk
+    
+    # Création des alias pour simplifier les accès
+    wos_alias = FOLDER_NAMES['wos']
+    scopus_alias = FOLDER_NAMES['scopus']
+    corpus_path_alias = FOLDER_NAMES['corpus']
+
+    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
+    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
+
+    parsing_path_alias = FOLDER_NAMES['parsing']
+    rawdata_path_alias = FOLDER_NAMES['rawdata']
+
+    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
+    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
+
+    article_path_alias = DIC_OUTDIR_PARSING['A']
     
     ### On récupère la présence ou non des fichiers #################################        
     results = _existing_corpuses(bibliometer_path)
@@ -289,8 +308,30 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     YearOptionButton.place(anchor = 'center', relx = 0.33, y = (len(list_annee)+4.5)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK-15)
 
     # CONCATENATION DE WOS ET SCOPUS D'UNE ou PLUSIEURS ANNEESl
-    concat_button = tk.Button(self, text="Lancement de la concatenation", command = lambda: bau.parsing_concatenate_deduplicate(bibliometer_path / Path(variable_3.get())))
+    concat_button = tk.Button(self, text="Lancement de la concatenation", command = lambda: _reset_year_and_launch_parsing_concat_dedup())
     concat_button.place(anchor = 'center', relx = 0.66, y = (len(list_annee)+4.5)*ESPACE_ENTRE_LIGNE_CHECK+POSITION_SELON_Y_CHECK-15)
+    
+    def _reset_year_and_launch_parsing_concat_dedup():
+        
+        # Setting the useful paths
+        path_scopus_parsing = bibliometer_path / Path(variable_3.get()) / Path(scopus_path_alias) / Path(parsing_path_alias)
+        path_scopus_rawdata = bibliometer_path / Path(variable_3.get()) / Path(scopus_path_alias) / Path(rawdata_path_alias) 
+        path_wos_parsing = bibliometer_path / Path(variable_3.get()) / Path(wos_path_alias) / Path(parsing_path_alias)
+        path_wos_rawdata = bibliometer_path / Path(variable_3.get()) / Path(wos_path_alias) / Path(rawdata_path_alias) 
+        path_concat = bibliometer_path / Path(variable_3.get()) / Path(concat_path_alias)
+        path_concat_parsing = path_concat / Path(parsing_path_alias)
+        if not os.path.exists(path_concat_parsing):
+            if not os.path.exists(path_concat): os.mkdir(path_concat)
+            os.mkdir(path_concat_parsing)
+        path_rational = bibliometer_path / Path(variable_3.get()) / Path(dedupli_path_alias)
+        path_rational_parsing = path_rational / Path(parsing_path_alias)
+        if not os.path.exists(path_rational_parsing):
+            if not os.path.exists(path_rational): os.mkdir(path_rational)
+            os.mkdir(path_rational_parsing)
+            
+        useful_path_list = [path_scopus_parsing, path_wos_parsing, path_concat_parsing, path_rational_parsing]    
+        
+        bau.parsing_concatenate_deduplicate(useful_path_list)
 
 def create_PageOne(self, bibliometer_path):
 

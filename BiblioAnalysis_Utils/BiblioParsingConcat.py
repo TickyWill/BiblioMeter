@@ -20,7 +20,7 @@ def parsing_concatenate_deduplicate(useful_path_list, inst_filter_list=None):
         The globals 'CONCATENATED_XLSX', 'DEDUPLICATED_XLSX', 'DIC_OUTDIR_PARSING' and 'FOLDER_NAMES' are used.
                                   
     '''
-
+    
     # Standard libraries import
     import os
     from pathlib import Path
@@ -263,7 +263,7 @@ def _deduplicate_articles(path_in):
     # Dropping duplicated article lines after merging by doi or, for unknown doi, by title and document type 
     df_list = []
     for doi, dg in df_articles_concat.groupby(doi_alias):
-        if doi != 'unknown':
+        if doi != UNKNOWN:
             # Deduplicating article lines by DOI
             dg[title_alias] = _find_value_to_keep(title_alias)
             dg[doc_type_alias] = _find_value_to_keep(doc_type_alias)
@@ -354,7 +354,7 @@ def _deduplicate_dat(file_name, pub_id_to_drop, path_in, path_out ):
     df = pd.read_csv(path_in / Path(file_name), sep="\t")
     
     filt = (df[pub_id_alias].isin(pub_id_to_drop))
-    df = df[filt]
+    df = df[~filt]
     df.sort_values([pub_id_alias], inplace=True)
 
     if file_name == DIC_OUTDIR_PARSING['AU']:

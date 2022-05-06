@@ -1,30 +1,44 @@
+Abylsen : Abylsen
 ADEME : ADEME
-ANDRA : ANDRA
-ARMOR : ARMOR
-ARaymond : ARaymond
-ATAMOS : ATAMOS
-ATOS : ATOS
+Agence de l'Environnement et de la Maîtrise de l'Energie : ADEME
+ALLIOS : ALLIOS
+ALLIOS Les Docks II : ALLIOS
 Altran : Altran
+ANDRA : ANDRA
+ARaymond : ARaymond
+ARMOR : ARMOR
 Arts & Metiers : Arts & Metiers
 Assystem : Assystem
+ATAMOS : ATAMOS
+ATOS : ATOS
+Austrian Inst Technol : Aust Inst Tech
+Austrian Institute of Technology : Aust Inst Tech
+Bubendorff : Bubendorff
+CCIAG : CCIAG
 CEA : CEA
 CNRS : CNRS
+Commissariat Energie Atom & Energies Alternat : CEA
 CRG : ESRF
 CSEM : CSEM
 CSIC : CSIC
-Commissariat Energie Atom & Energies Alternat : CEA
+CSTB : CSTB
 DAM : DAM
+DavidsonGrenoble : Davidson
 DEN : DEN
 DRF : DRF
-ENEA : ENEA
-EPFL : EPFL
 Ecole Polytech Fed Lausanne : EPFL
+Elcogen : Elcogen
+ENEA : ENEA
+EnergyVille : EnergyVille
+Energyville : EnergyVille
+EPFL : EPFL
 European Synchrotron : ESRF
-FRAMATOME : FRAMATOME
 Fed University : Fed Univ
 Forschungszentrum Julich : Julich Institutes
+FRAMATOME : FRAMATOME
 Fraunhofer : FhG Institutes
 GmbH : Compagnies
+Grenoble INP : G-INP
 Helmholtz : Helmholtz Institutes
 HotBlock OnBoard : HBOB
 IBS : IBS
@@ -35,9 +49,11 @@ IMEC : IMEC
 INAC : INAC
 INERIS : INERIS
 INES : INES
+INiBICA : INiBICA
 INP Grenoble : G-INP
 INSA : INSA
-INiBICA : INiBICA
+Inst Laue Langevin : ILL
+Instituut Voor Kern- en Stralingsfysica : VKS Inst
 IPC : IPC
 IPVF : IPVF
 IRAMIS : IRAMIS
@@ -46,30 +62,34 @@ IREIS : IREIS
 IRIG : IRIG
 ISEN : ISEN
 ITER : ITER
-Inst Laue Langevin : ILL
 Jozef Stefan Inst : Jozef Stefan Inst 
-KIT : KIT
 Karlsruhe Inst Technol : KIT
+KIT : KIT
+Laboratoire national de métrologie et d'essais (LNE): LNE
+Laboratory for Plasma Physics : Plasma Phys Lab
 LETI : LETI
-LITEN : LITEN
 LIST : LIST
+LITEN : LITEN
 LONGi : LONGi
 Nanyang Technol University : NTU
+National Research Council Canada : Nat Res Council
 Natl Inst Appl Sci : INSA
 Nebrija : Nebrija Univ
 PELLENC : PELLENC
-PROMES : PROMES
 Phys Tech Bundesanstalt : PTB Inst
+PROMES : PROMES
 RAGT : RAGT
 SILVACO : SILVACO
 SOLEIL : SOLEIL
 Synchrotron : Synchrotrons
 TOTAL : TOTAL-TRTG
+Toyota Motor Europe : Toyota 
 TRTG :  TOTAL-TRTG
 TU Wien : TU Wien
 UCL : UCL
 UCLouvain : UCLouvain
 UGA : UGA
+Umicore Research : Umicore Res
 UMR : CNRS
 University : Universities
 University Complutense : University Complutense
@@ -80,4 +100,3 @@ University Savoie Mt Blanc : USMB
 University Toulouse : Toulouse Universities
 VICAT : VICAT
 VTT : VTT
-Grenoble INP : G-INP

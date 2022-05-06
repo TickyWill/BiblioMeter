@@ -115,7 +115,7 @@ def _generate_cooc_graph(df_corpus, size_min, item):
              2    unknown 
         ========= =======
     
-    First, `df_corpus` is cleaned by eliminating duplicated rows or with the item-value `unknown`.
+    First, `df_corpus` is cleaned by eliminating duplicated rows or with the item-value equal to UNKNOWN global.
     This results in:
         ========= =======
          pub_id    item    
@@ -182,14 +182,15 @@ def _generate_cooc_graph(df_corpus, size_min, item):
     
     # Local imports
     from BiblioAnalysis_Utils.BiblioGeneralGlobals import COUNTRIES_GPS
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
 
     #                           Cleaning of the dataframe
     # -----------------------------------------------------------------------------------------
     df_corpus.drop_duplicates(inplace=True)  # Keeps unique occurrence of an item
     # per article
     df_corpus.drop(
-        index=df_corpus[df_corpus["item"] == "unknown"].index, inplace=True
-    )  # Drops rows with "unknown" items
+        index=df_corpus[df_corpus["item"] == UNKNOWN].index, inplace=True
+    )  # Drops rows with UNKNOWN items
 
     dg = (
         df_corpus.groupby("item").count().reset_index()

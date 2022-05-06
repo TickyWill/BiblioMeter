@@ -265,6 +265,7 @@ def add_item_attribute(G, item, m_max_attrs,
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COUPL_AUTHORIZED_ITEMS
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_DESCRIPTION
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
     
     # Check valid input arguments
     add_item_attribute.__annotations__ = {'G': nx.Graph, 'item': str, 'm_max_attrs': int,
@@ -312,19 +313,19 @@ def add_item_attribute(G, item, m_max_attrs,
     nodes = set(G.nodes)
     unaffected_nodes = nodes - set(dic_freq_node.keys())
     for node in unaffected_nodes:
-        dic_freq_node[node] = [('unknown', 0)] * m_max_attrs
+        dic_freq_node[node] = [(UNKNOWN, 0)] * m_max_attrs
 
     # Adds m_max_attrs node attributes to the graph G
     dic_freq_node_attr = {}
     for i in range(m_max_attrs):
         for x, y in dic_freq_node.items():
             try:
-                if y[i][0] != 'unknown':
+                if y[i][0] != UNKNOWN:
                     dic_freq_node_attr[x] = f'{y[i][0]}({y[i][1]:.2f})'
                 else:
-                    dic_freq_node_attr[x] = 'unknown'
+                    dic_freq_node_attr[x] = UNKNOWN
             except:
-                dic_freq_node_attr[x] = 'unknown'
+                dic_freq_node_attr[x] = UNKNOWN
         nx.set_node_attributes(G, dic_freq_node_attr, f"{item}_{i}")
 
     return G

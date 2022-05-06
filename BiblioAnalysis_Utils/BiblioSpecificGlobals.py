@@ -313,7 +313,7 @@ GUI_WIDGET_RATIO = 1.2
 HEADER = True
 
 # Authors affiliations filter (default: None) as a list of tuples (instituion,country)
-INST_FILTER_LIST = None 
+INST_FILTER_LIST = [('LITEN','France'),('INES','France')]
 
 LABEL_MEANING = {'AU':'Authors',          # ex: Nom1 J, Nom2 E, Nom3 J-P
                  'CU':'Countries',        # ex: France, United States

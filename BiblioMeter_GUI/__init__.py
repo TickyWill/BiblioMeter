@@ -3,6 +3,7 @@ __author__ = 'BiblioAnalysis team'
 __license__ = 'MIT'
 
 from .BiblioMeter_AllPagesFunctions import *
+from .BiblioMeter_PageFour import *
 from .BiblioMeter_PageOne import *
 from .BiblioMeter_PagesClasses import *
 from .BiblioMeter_PageThree import *
