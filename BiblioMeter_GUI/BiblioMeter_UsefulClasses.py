@@ -42,9 +42,13 @@ class LabelEntry:
         self.val.set(value)
         
     def get_file(self):
+        
+        # 3rd party imports
+        import tkinter as tk
+        
         fic = tk.filedialog.askdirectory(title='Choisir un fichier petit pingouin des Alpes')
         if fic == '':
-            return messagebox.showwarning("Attention","Chemin non renseigné")
+            return tk.messagebox.showwarning("Attention","Chemin non renseigné")
         self.val.set(fic)
         
     def efface(self):
