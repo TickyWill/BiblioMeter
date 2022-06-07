@@ -130,3 +130,7 @@ dmypy.json
 
 # MacOS DS_Store files
 **/.DS_Store
+
+# My stuff
+main.py
+freeze.txt

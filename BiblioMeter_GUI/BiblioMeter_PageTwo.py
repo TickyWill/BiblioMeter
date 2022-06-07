@@ -799,8 +799,6 @@ def _mise_en_forme(year, bibliometer_path):
             data_val.add(ws[get_column_letter(columns_to_keep.index('List_of_OTP')+1)+str(r+2)])
 
     wb.save(Path(bibliometer_path) / Path(year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path('PubliXEffectifs.xlsx'))
-
-    print('Done')
     
 def _build_pubs_authors_Liten(year, bibliometer_path):
 
@@ -959,20 +957,27 @@ def create_PageTwo(self, bibliometer_path):
     # Standard library imports
     import os
     from pathlib import Path
+    from datetime import datetime
 
     # 3rd party imports
     import tkinter as tk
     from tkinter import filedialog
     from tkinter import messagebox
+    import pandas as pd
 
     # Local imports
     import BiblioAnalysis_Utils as bau
     from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
+    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES    
-    
-        # Récupérer les corpus disponibles
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES  
+
+    # Useful alias
+    bdd_mensuelle_alias = STOCKAGE_ARBORESCENCE['general'][0]
+    bdd_annuelle_alias = STOCKAGE_ARBORESCENCE['general'][1]
+
+    # Récupérer les corpus disponibles
     list_annee = five_last_available_years(bibliometer_path)
 
     variable = tk.StringVar(self)
@@ -1000,7 +1005,19 @@ def create_PageTwo(self, bibliometer_path):
     Button_recursive.place(anchor = 'center', relx = 0.5, rely = 0.65)
 
     Button_mise_en_forme = tk.Button(self, 
-                                     text = 'Mise en forme de submit', 
+                                     text = 'Concat 5 dernières années des submits', 
                                      font = ("Helvetica", 18), 
-                                     command = lambda: _mise_en_forme(variable.get(), bibliometer_path))
+                                     command = lambda: _concat_submit())
     Button_mise_en_forme.place(anchor = 'center', relx = 0.5, rely = 0.80)
+    
+    def _concat_submit():
+        
+        df_concat = pd.DataFrame()
+    
+        for i in range(len(list_annee)):
+            path = Path(bibliometer_path) / Path(list_annee[i]) / Path(bdd_mensuelle_alias) / Path(f'submit.xlsx')
+            df_inter = pd.read_excel(path)
+            df_concat = df_concat.append(df_inter)
+            
+        date = str(datetime.now())[:16].replace(':', '')
+        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_submit_{os.getlogin()}.xlsx'))

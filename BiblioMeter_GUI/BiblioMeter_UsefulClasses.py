@@ -45,6 +45,7 @@ class LabelEntry:
         
         # 3rd party imports
         import tkinter as tk
+        from tkinter import filedialog
         
         fic = tk.filedialog.askdirectory(title='Choisir un fichier petit pingouin des Alpes')
         if fic == '':
@@ -105,3 +106,96 @@ class CheckBoxCorpuses:
     def efface(self):
         for x in (self.lab, self.wos_r, self.wos_p, self.scopus_r, self.scopus_p, self.concat):
             x.place_forget()
+            
+
+class ColumnFilter:
+    
+    """
+    """
+    
+    def __init__(self, parent, text_label, df, *arg, **kargs):
+        
+        # 3rd party imports
+        import tkinter as tk
+        
+        self.check_var_1 = tk.IntVar()
+        self.check_column = tk.Checkbutton(parent, variable = self.check_var_1, command = lambda : self.ables_disables_1())
+
+        self.check_var_2 = tk.IntVar()
+        self.check_value = tk.Checkbutton(parent, variable = self.check_var_2, command = lambda : self.ables_disables_2(), state = 'disable')
+
+        self.column_name = tk.Label(parent, text = text_label + ' : ', state = 'disable')
+        
+        self.drop_down = tk.Button(parent, text = 'Choix filtre inter colonne', command = lambda : self.open_list_box_create_filter(df, text_label, parent))
+        self.drop_down.configure(state = 'disable')
+        
+        self.val = tk.StringVar(parent)
+        self.val.set(text_label)
+        self.real_column_name = tk.Entry(parent, textvariable = self.val)        
+        
+    def place(self, y):
+        self.check_column.grid(row = y, column = 0)
+        self.column_name.grid(row = y, column = 1)
+        self.drop_down.grid(row = y, column = 3)
+        self.check_value.grid(row = y, column = 2)
+    
+    def efface(self):
+        pass
+    
+    def get_check_1(self):
+        return self.check_var_1.get()
+    
+    def get_label(self):
+        return self.real_column_name.get()
+    
+    def ables_disables_1(self):
+        if self.check_var_1.get() == 1:
+            self.column_name.configure(state = 'normal')
+            self.check_value.configure(state = 'normal')
+        else:
+            self.column_name.configure(state = 'disable')
+            self.check_value.configure(state = 'disable')
+            self.drop_down.configure(state = 'disable')
+            self.check_var_2.set(0)
+            
+    def ables_disables_2(self):
+        if self.check_var_2.get() == 1:
+            self.drop_down.configure(state = 'normal')
+        else:
+            self.drop_down.configure(state = 'disable')
+            
+    def open_list_box_create_filter(self, df, column, parent):
+        
+        # 3rd party imports
+        import tkinter as tk
+        from tkinter import Toplevel
+        
+        def _access_values(df, column):
+            values = df[column].unique().tolist()
+            #values.sort()
+            return values
+        
+        newWindow = tk.Toplevel(parent)
+        newWindow.title('Selection des filtres inter colonnes')
+
+        newWindow.geometry(f"600x600+{parent.winfo_rootx()}+{parent.winfo_rooty()}")
+
+        yscrollbar = tk.Scrollbar(newWindow)
+        yscrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+
+        my_listbox = tk.Listbox(newWindow, 
+                                selectmode = tk.MULTIPLE, 
+                                yscrollcommand = yscrollbar.set)
+        my_listbox.place(anchor = 'center', width = 400, height = 400, relx = 0.5, rely = 0.5)
+
+        x = _access_values(df, column)
+        for idx, item in enumerate(x):
+            my_listbox.insert(idx, item)
+            my_listbox.itemconfig(idx,
+                                  bg = "white" if idx % 2 == 0 else "white")
+            
+        button = tk.Button(newWindow, text = "Valider la sélection")
+        button.place(anchor = 'n', relx = 0.5, rely = 0.9)
+        
+                
+        

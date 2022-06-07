@@ -35,6 +35,7 @@ class App_Test(tk.Tk):
         
         self.geometry(f"{window_height}x{window_width}+{center_x}+{center_y}")
         self.title('BiblioMeter Beta Test')
+        self.resizable(False, False)
         
         self.REP = list()
         
@@ -72,7 +73,7 @@ class App_Test(tk.Tk):
         Vérifie qu'un chemin a été renseigné et continue le cas échant, sinon redemande de renseigner un chemin.
         """
         if bibliometer_path == '':
-            messagebox.showwarning("Attention","Chemin non renseigné, l'application ne peut pas être lancée. \n Veuillez le faire.")
+            messagebox.showwarning("Attention","Chemin non renseigné, l'application ne peut pas être lancée. \nVeuillez le faire.")
 
         else:
             # Bouton création des autres pages
@@ -151,7 +152,7 @@ class PageTwo(tk.Frame):
         label = tk.Label(self, 
                          text="Analyse multi mensuelle", 
                          font = ("Helvetica", 25))
-        label.place(anchor = 'n', relx = 0.5, rely = 0)
+        label.place(anchor = 'n', relx = 0.5, rely = 0.1)
         
         button = tk.Button(container_button, text = 'Analyse multi mensuelle', command = lambda: controller.show_frame("PageTwo"))
         button.grid(row = 0, column = 2)
@@ -197,9 +198,9 @@ class PageFour(tk.Frame):
         create_PageFour(self, bibliometer_path)    
         
         label = tk.Label(self, 
-                         text="Filtres à OTP", 
+                         text="Filtrer le fichier submit", 
                          font = ("Helvetica", 25))
         label.place(anchor = 'n', relx = 0.5, rely = 0)
         
-        button = tk.Button(container_button, text = 'OTP', command = lambda: controller.show_frame("PageFour"))
+        button = tk.Button(container_button, text = 'Filtre sur Submit', command = lambda: controller.show_frame("PageFour"))
         button.grid(row = 0, column = 4)

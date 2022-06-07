@@ -29,6 +29,8 @@ def create_PageThree(self, bibliometer_path):
     # Local imports
     import BiblioAnalysis_Utils as bau
     from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
+    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import existing_corpuses
+
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -40,11 +42,11 @@ def create_PageThree(self, bibliometer_path):
     
         # Création de l'optionbutton des années
     OptionButton = tk.OptionMenu(self, variable, *years_list)
-    OptionButton.place(anchor = 'center', relx = 0.60, rely = 0.20)
+    OptionButton.place(anchor = 'center', relx = 0.40, rely = 0.20)
     
         # Création du label
     Label = tk.Label(self, text = '''Choisir l'année de travail :''')
-    Label.place(anchor = 'center', relx = 0.40, rely = 0.20)
+    Label.place(anchor = 'center', relx = 0.20, rely = 0.20)
     ###############################################################################################################################################################
     
     
@@ -52,7 +54,7 @@ def create_PageThree(self, bibliometer_path):
     Button = tk.Button(self, 
                        text = 'Choisir les affiliations', 
                        command = lambda: _setting_extend())
-    Button.place(anchor = 'center', relx = 0.5, rely = 0.5)
+    Button.place(anchor = 'center', relx = 0.70, rely = 0.2)
     ###############################################################################################################################################################
     
     def _setting_extend():
@@ -69,7 +71,22 @@ def create_PageThree(self, bibliometer_path):
 
         # Setting path_to_folder
         path_to_folder = bibliometer_path / Path(variable.get()) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
+        
+        ### On récupère la présence ou non des fichiers #################################        
+        results = existing_corpuses(bibliometer_path)
 
+        list_corpus_year = results[0]
+        list_wos_rawdata = results[1]
+        list_wos_parsing = results[2]
+        list_scopus_rawdata = results[3]
+        list_scopus_parsing = results[4]
+        list_concatenation = results[5]
+        #################################################################################
+        
+        if list_wos_parsing[list_corpus_year.index(variable.get())] == False:
+            messagebox.showwarning('Fichiers manquants', f"Warning : le fichier authorsinst.dat de wos de l'année {variable.get()} n'est pas disponible. \nVeuillez effectuer le parsing avant de parser les instituts")
+            return
+        
         full_list = bau.getting_secondary_inst_list(path_to_folder)
 
         _open_list_box_filter(self, full_list, path_to_folder)
@@ -87,6 +104,7 @@ def create_PageThree(self, bibliometer_path):
         """
 
         newWindow = tk.Toplevel(self)
+        newWindow.grab_set()
         newWindow.title('Selection des institutions à parser')
 
         newWindow.geometry(f"600x600+{self.winfo_rootx()}+{self.winfo_rooty()}")
@@ -109,10 +127,24 @@ def create_PageThree(self, bibliometer_path):
             my_listbox.insert(idx, item)
             my_listbox.itemconfig(idx,
                                   bg = "white" if idx % 2 == 0 else "white")
+        # TO DO : Utiliser la global INST_FILTER_LIST quand feu vert de Amal et François
+        n = x.index('France:LITEN')
+        my_listbox.selection_set(first = n)
+        n = x.index('France:INES')
+        my_listbox.selection_set(first = n)
             
         # TO DO : Nommer la variable dans la commande
         
         button = tk.Button(newWindow, text ="Lancer le parsing des institutions", 
-                           command = lambda: bau.extend_author_institutions(path_to_folder, 
-                                                                            [(x.split(':')[1].strip(),x.split(':')[0].strip()) for x in [my_listbox.get(i) for i in my_listbox.curselection()]]))
+                           command = lambda: launch())
         button.place(anchor = 'n', relx = 0.5, rely = 0.9)
+    
+        def launch():
+            
+            bau.extend_author_institutions(path_to_folder, [(x.split(':')[1].strip(),x.split(':')[0].strip()) for x in [my_listbox.get(i) for i in my_listbox.curselection()]])
+            
+            messagebox.showinfo('Information', f"Le parsing des institutions sélectionnées a été efectué.")
+            
+            newWindow.destroy()
+            
+            
