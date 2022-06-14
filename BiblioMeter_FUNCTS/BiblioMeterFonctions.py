@@ -207,7 +207,7 @@ def complete_deduplicate_and_save_articles(list_df_dup, indices_of_duplicates, p
     from pathlib import Path
     
     # Local library imports   
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
     
     # 3rd party library imports
     import pandas as pd
@@ -295,7 +295,7 @@ def you_got_OTPed(df,i):
     from pathlib import Path
     
     # Local library imports   
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
     
     # 3rd party library imports
     import pandas as pd
@@ -351,7 +351,7 @@ def liste_de_validation(df,i):
         Adds OTP to df'''
     
     # Local imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
     
     # Global variable imports
     from .BiblioMeterGlobalsVariables import OTP_LIST
@@ -465,7 +465,7 @@ def consolidation_anonymat(in_path, out_path):
     from openpyxl.styles.colors import Color
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -513,7 +513,7 @@ def consolidation_anonymat(in_path, out_path):
 
     # Liste unique des Pub_id conservé
     list_of_Pub_id = df_submit['Pub_id'].to_list()
-    list_of_Pub_id = bmu.get_unique_numbers(list_of_Pub_id)
+    list_of_Pub_id = bmf.get_unique_numbers(list_of_Pub_id)
 
     #########################
     # Ouverture du workbook #
@@ -575,7 +575,7 @@ def ajout_OTP(in_path, out_path):
     from pathlib import Path
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     # 3rd party import
     import pandas as pd
@@ -624,7 +624,7 @@ def ajout_OTP(in_path, out_path):
     df_submit.reset_index(inplace = True)
     df_submit.drop_duplicates(subset = ['Pub_id'], inplace = True)
     
-    _=[bmu.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
+    _=[bmf.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
 
     columns_to_keep = df_submit.columns.to_list()
 
@@ -652,7 +652,7 @@ def ajout_OTP(in_path, out_path):
             if df_DTNM['Pub_id'].iloc[r-1] == df_DTNM['Pub_id'].iloc[r]: 
                 'Yo'
             else:        
-                validation_list = bmu.liste_de_validation(df_submit,r)
+                validation_list = bmf.liste_de_validation(df_submit,r)
 
                 data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
                 ws.add_data_validation(data_val)
@@ -677,7 +677,7 @@ def ajout_OTP(in_path, out_path):
             if df_DTS['Pub_id'].iloc[r-1] == df_DTS['Pub_id'].iloc[r]: 
                 'Yo'
             else:        
-                validation_list = bmu.liste_de_validation(df_submit,r)
+                validation_list = bmf.liste_de_validation(df_submit,r)
 
                 data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
                 ws.add_data_validation(data_val)
@@ -702,7 +702,7 @@ def ajout_OTP(in_path, out_path):
             if df_DEHT['Pub_id'].iloc[r-1] == df_DEHT['Pub_id'].iloc[r]: 
                 'Yo'
             else:        
-                validation_list = bmu.liste_de_validation(df_submit,r)
+                validation_list = bmf.liste_de_validation(df_submit,r)
 
                 data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
                 ws.add_data_validation(data_val)
@@ -727,7 +727,7 @@ def ajout_OTP(in_path, out_path):
             if df_DTCH['Pub_id'].iloc[r-1] == df_DTCH['Pub_id'].iloc[r]: 
                 'Yo'
             else:        
-                validation_list = bmu.liste_de_validation(df_submit,r)
+                validation_list = bmf.liste_de_validation(df_submit,r)
 
                 data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
                 ws.add_data_validation(data_val)

@@ -15,7 +15,7 @@ class App_Test(tk.Tk):
         
         # Local library imports
         from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
-        from BiblioMeter_GUI.BiblioMeter_UsefulClasses import LabelEntry
+        from BiblioMeter_GUI.Useful_Classes import LabelEntry
         
         # To do :
         global screen_width
@@ -77,10 +77,10 @@ class App_Test(tk.Tk):
 
         else:
             # Bouton création des autres pages
-            Pages = (PageOne,
-                     PageThree,
-                     PageTwo, 
-                     PageFour)
+            Pages = (Page_ParsingConcat,
+                     Page_ParsingInstitution,
+                     Page_MergeEffectif, 
+                     Page_WorkSubmit)
 
             # Création de mes deux containers
             container_button = tk.Frame(self, height = 50, bg = 'red')
@@ -109,7 +109,7 @@ class App_Test(tk.Tk):
 
 ####################################################################### PREMIERE PAGE #######################################################################
 
-class PageOne(tk.Frame):    
+class Page_ParsingConcat(tk.Frame):    
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
         self.controller = controller
@@ -119,22 +119,22 @@ class PageOne(tk.Frame):
         
         # Local library imports
         import BiblioAnalysis_Utils as bau
-        from BiblioMeter_GUI.BiblioMeter_PageOne import create_PageOne
+        from BiblioMeter_GUI.Page_ParsingConcat import create_ParsingConcat
         
         # Creation of the class object PageOne
-        create_PageOne(self, bibliometer_path)
+        create_ParsingConcat(self, bibliometer_path)
         
         label = tk.Label(self, 
                          text="Parser les corpus", 
                          font = ("Helvetica", 25))
         label.place(anchor = 'n', relx = 0.5, rely = 0.1)
         
-        button = tk.Button(container_button, text = 'Parsing des corpus', command = lambda: controller.show_frame("PageOne"))
+        button = tk.Button(container_button, text = 'Parsing des corpus', command = lambda: controller.show_frame("Page_ParsingConcat"))
         button.grid(row = 0, column = 0)
         
 
 ####################################################################### DEUXIEME PAGE #######################################################################
-class PageTwo(tk.Frame):    
+class Page_MergeEffectif(tk.Frame):    
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
         self.controller = controller
@@ -144,21 +144,21 @@ class PageTwo(tk.Frame):
         
         # Local imports
         import BiblioAnalysis_Utils as bau
-        from BiblioMeter_GUI.BiblioMeter_PageTwo import create_PageTwo
+        from BiblioMeter_GUI.Page_MergeEffectif import create_MergeEffectif
         
         # Creation of the class object PageTwo
-        create_PageTwo(self, bibliometer_path)
+        create_MergeEffectif(self, bibliometer_path)
         
         label = tk.Label(self, 
                          text="Analyse multi mensuelle", 
                          font = ("Helvetica", 25))
         label.place(anchor = 'n', relx = 0.5, rely = 0.1)
         
-        button = tk.Button(container_button, text = 'Analyse multi mensuelle', command = lambda: controller.show_frame("PageTwo"))
+        button = tk.Button(container_button, text = 'Analyse multi mensuelle', command = lambda: controller.show_frame("Page_MergeEffectif"))
         button.grid(row = 0, column = 2)
 
 ####################################################################### TROISIEME PAGE #######################################################################
-class PageThree(tk.Frame):    
+class Page_ParsingInstitution(tk.Frame):    
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
         self.controller = controller
@@ -168,21 +168,21 @@ class PageThree(tk.Frame):
         
         # Local imports
         import BiblioAnalysis_Utils as bau
-        from BiblioMeter_GUI.BiblioMeter_PageThree import create_PageThree
+        from BiblioMeter_GUI.Page_ParsingInstitution import create_ParsingInstitution
         
         # Creation of the class object PageThree
-        create_PageThree(self, bibliometer_path)       
+        create_ParsingInstitution(self, bibliometer_path)       
         
         label = tk.Label(self, 
                          text="Travailler sur les fichiers parsés", 
                          font = ("Helvetica", 25))
         label.place(anchor = 'n', relx = 0.5, rely = 0.1)
         
-        button = tk.Button(container_button, text = 'Travailler sur les fichiers parsés', command = lambda: controller.show_frame("PageThree"))
+        button = tk.Button(container_button, text = 'Travailler sur les fichiers parsés', command = lambda: controller.show_frame("Page_ParsingInstitution"))
         button.grid(row = 0, column = 1)
 
 ####################################################################### QUATRIEME PAGE #######################################################################
-class PageFour(tk.Frame):    
+class Page_WorkSubmit(tk.Frame):    
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
         self.controller = controller
@@ -192,15 +192,15 @@ class PageFour(tk.Frame):
         
         # Local imports
         import BiblioAnalysis_Utils as bau
-        from BiblioMeter_GUI.BiblioMeter_PageFour import create_PageFour
+        from BiblioMeter_GUI.Page_WorkSubmit import create_WorkSubmit
         
         # Creation of the class object PageFour
-        create_PageFour(self, bibliometer_path)    
+        create_WorkSubmit(self, bibliometer_path)    
         
         label = tk.Label(self, 
                          text="Filtrer le fichier submit", 
                          font = ("Helvetica", 25))
         label.place(anchor = 'n', relx = 0.5, rely = 0)
         
-        button = tk.Button(container_button, text = 'Filtre sur Submit', command = lambda: controller.show_frame("PageFour"))
+        button = tk.Button(container_button, text = 'Filtre sur Submit', command = lambda: controller.show_frame("Page_WorkSubmit"))
         button.grid(row = 0, column = 4)

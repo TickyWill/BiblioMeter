@@ -1,6 +1,6 @@
-__all__ = ['create_PageThree']
+__all__ = ['create_ParsingInstitution']
 
-def create_PageThree(self, bibliometer_path):
+def create_ParsingInstitution(self, bibliometer_path):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -28,8 +28,8 @@ def create_PageThree(self, bibliometer_path):
 
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
 
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING

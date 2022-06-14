@@ -96,8 +96,8 @@ def existing_corpuses(bibliometer_path):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
 
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import get_corpus_filename_by_year
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    from BiblioMeter_GUI.Useful_Functions import get_corpus_filename_by_year
     
     list_dir = five_last_available_years(bibliometer_path)
 

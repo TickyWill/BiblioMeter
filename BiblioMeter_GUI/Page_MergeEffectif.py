@@ -1,4 +1,4 @@
-__all__ = ['create_PageTwo']
+__all__ = ['create_MergeEffectif']
 
 def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_case=False):
 
@@ -31,7 +31,7 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
     import pandas as pd
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
@@ -215,6 +215,8 @@ def build_fichier_rh_all_years(years, file_name, sheet_names_all, bibliometer_pa
     import pandas as pd
 
     list_fichier_rh = [(year, build_year_month_dpt(year, sheet_names_all, bibliometer_path)) for year in years]
+    
+    print(list_fichier_rh)
 
     path = Path(bibliometer_path) / Path('Results') / Path(file_name)
     with pd.ExcelWriter(path, engine='xlsxwriter') as writer:
@@ -236,7 +238,7 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
     import pandas as pd
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
@@ -464,7 +466,7 @@ def _single_year_search(year, bibliometer_path):
     import pandas as pd
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
@@ -541,7 +543,7 @@ def _recursive_year_search(corpus_year, bibliometer_path):
     import pandas as pd
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -630,7 +632,7 @@ def _recursive_year_search(corpus_year, bibliometer_path):
         df_submit.to_excel(Path(bibliometer_path) / Path(corpus_year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(year_submit_file_name))
         df_orphan.to_excel(Path(bibliometer_path) / Path(corpus_year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(year_orphan_file_name)) 
 
-    #_=[bmu.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
+    #_=[bmf.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
 
     #####################################################################
     # Saving results in `SUBMIT_FILE_NAME` and `ORPHAN_FILE_NAME` files #
@@ -658,7 +660,7 @@ def _mise_en_forme(year, bibliometer_path):
     from openpyxl.styles.colors import Color
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -683,7 +685,7 @@ def _mise_en_forme(year, bibliometer_path):
     # Réajustement de List_of_OTP #
     ###############################
 
-    _=[bmu.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
+    _=[bmf.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
 
     ############################################
     # Getting rid of the columns we don't want #
@@ -716,7 +718,7 @@ def _mise_en_forme(year, bibliometer_path):
 
     # Liste unique des Pub_id conservé
     list_of_Pub_id = df_submit['Pub_id'].to_list()
-    list_of_Pub_id = bmu.get_unique_numbers(list_of_Pub_id)
+    list_of_Pub_id = bmf.get_unique_numbers(list_of_Pub_id)
 
     #########################
     # Ouverture du workbook #
@@ -791,7 +793,7 @@ def _mise_en_forme(year, bibliometer_path):
         if df_submit['Pub_id'].iloc[r-1] == df_submit['Pub_id'].iloc[r]: # VERSION JEAN PIERRE
             'Yo'
         else:        
-            validation_list = bmu.liste_de_validation(df_submit,r)
+            validation_list = bmf.liste_de_validation(df_submit,r)
 
             data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
             ws.add_data_validation(data_val)
@@ -823,7 +825,7 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     import pandas as pd
 
     # Local library imports
-    import BiblioMeter_Utils as bmu
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -941,7 +943,7 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
 
     return  merged_df_Liten
 
-def create_PageTwo(self, bibliometer_path):
+def create_MergeEffectif(self, bibliometer_path):
     
     """
     Description : 
@@ -967,7 +969,7 @@ def create_PageTwo(self, bibliometer_path):
 
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
     from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING

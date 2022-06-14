@@ -1,4 +1,4 @@
-__all__ = ['create_PageOne']
+__all__ = ['create_ParsingConcat']
 
 def _data_parsing(corpus_year, database_type, bibliometer_path):
 
@@ -46,7 +46,7 @@ def _data_parsing(corpus_year, database_type, bibliometer_path):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
 
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         
     ### On récupère la présence ou non des fichiers #################################        
     results = existing_corpuses(bibliometer_path)
@@ -129,7 +129,7 @@ def _data_parsing(corpus_year, database_type, bibliometer_path):
     else:
         return
     
-    # Ajouter _update() si pas trop la flemme
+    # TO DO : Ajouter _update() si pas trop la flemme
 
 def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK):
         
@@ -152,7 +152,7 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     import BiblioAnalysis_Utils as bau
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     
     # 3rd party imports
     import tkinter as tk
@@ -296,7 +296,7 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
         
         messagebox.showinfo('Information', f"La concatenation et le dédoublement \n sont terminés")
 
-def create_PageOne(self, bibliometer_path):
+def create_ParsingConcat(self, bibliometer_path):
 
     """
     Description : 
@@ -320,8 +320,8 @@ def create_PageOne(self, bibliometer_path):
 
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -365,7 +365,7 @@ def create_PageOne(self, bibliometer_path):
 
         """
         # Local imports
-        from BiblioMeter_GUI.BiblioMeter_UsefulClasses import CheckBoxCorpuses
+        from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
         
         ### On récupère la présence ou non des fichiers #################################        
         results = existing_corpuses(bibliometer_path)

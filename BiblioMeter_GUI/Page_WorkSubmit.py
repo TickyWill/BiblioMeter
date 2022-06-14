@@ -1,6 +1,6 @@
-__all__ = ['create_PageFour']
+__all__ = ['create_WorkSubmit']
 
-def create_PageFour(self, bibliometer_path):
+def create_WorkSubmit(self, bibliometer_path):
 
     """
     Description : 
@@ -27,16 +27,16 @@ def create_PageFour(self, bibliometer_path):
 
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import five_last_available_years
-    from BiblioMeter_GUI.BiblioMeter_AllPagesFunctions import la_liste_des_filtres_disponibles
-    from BiblioMeter_GUI.BiblioMeter_UsefulClasses import ColumnFilter
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    from BiblioMeter_GUI.Useful_Functions import la_liste_des_filtres_disponibles
+    from BiblioMeter_GUI.Useful_Classes import ColumnFilter
     from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioMeter_GUI.Globals_GUI import SET_1
     from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
     
-    from BiblioMeter_Utils.BiblioMeterFonctions import filtrer_par_departement
-    from BiblioMeter_Utils.BiblioMeterFonctions import consolidation_anonymat
-    from BiblioMeter_Utils.BiblioMeterFonctions import ajout_OTP
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_anonymat
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
