@@ -1,11 +1,185 @@
-__all__ = ['you_got_OTPed',
+__all__ = ['concatenate_dat',
+           'df_with_no_more_doubles',
+           'get_the_doubles',
+           'complete_deduplicate_and_save_articles',
+           'deduplicated_all_but_articles',
+           'you_got_OTPed',
            'liste_de_validation',
            'get_unique_numbers',
            'filtrer_par_departement', 
            'consolidation_anonymat', 
-           'ajout_OTP', 
-           'add_authors_name_list', 
-           'concat_name_firstname']
+           'ajout_OTP']
+
+def df_with_no_more_doubles(path_concat):
+    
+    '''Uses the concatenated articles.dat document and applies a succesion of filters
+    to get rid of doubled information and returns a df containing an index of Pub_ids
+    with no doubled lines.
+    
+    Args :
+        path (string) : path leading to where the .dat document is saved
+        
+    Returns :
+        A df with no duplicates but unfull information and a list with the index of this df'''
+    
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports   
+    
+    # 3rd party library imports
+    import pandas as pd
+    
+    df_articles_concat = pd.read_csv(path_concat,
+                                     sep="\t",
+                                     index_col='Pub_id')
+
+    # Get rid of unusable lines (Title and Document Type both empty as well as DOI)
+    filtre_Title_DT = (df_articles_concat['Title'].isna()) & (df_articles_concat['Document_type'].isna())
+    filtre_Title_DOI = (df_articles_concat['Title'].isna()) & (df_articles_concat['DOI'].isna())
+    df_articles_concat=df_articles_concat[~filtre_Title_DOI]
+    df_articles_concat=df_articles_concat[~filtre_Title_DT]
+
+    # On récupère un indice unique des duplicats sur le DOI, on traitera les cas particulier après.
+    # On les retire donc pour les gérer séparement en les rajouter à la DF une fois traités
+    # Pour ce faire on va utiliser DateFrame.drop_duplicates pour récupérer l'index
+    # On les rajoutera après
+
+    filtre_DOI_NA = (df_articles_concat['DOI'].isna())
+    df_inter_wos = df_articles_concat[~filtre_DOI_NA]
+    df_inter_wos = df_inter_wos.drop_duplicates(subset=['DOI'],
+                                            keep='first')
+
+    # On rajoute les articles sans DOI
+    df_inter_scopus = pd.concat([df_inter_wos,df_articles_concat[filtre_DOI_NA]])
+
+    # Pour gérer les DOI isna(), on va simplement récépérer la DataFrame qui ne possède que les DOI isna()
+    # On fera un filtre sur la colonne Title et Document Type (sinon risque de perdre de l'information)
+
+    df_no_doubles = df_inter_scopus.drop_duplicates(subset=['Document_type','Title'], 
+                                               keep='first')
+
+    indices_of_duplicates = df_no_doubles.index.tolist()
+    
+    return [df_no_doubles, indices_of_duplicates]
+
+def get_the_doubles(indice, df_DOI, df_no_DOI, df_articles_concat):
+    
+    '''_____
+    
+    Args : 
+       _____
+        
+    Returns :
+        A list of the duplicats of indice'''
+    
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports   
+    
+    # 3rd party library imports
+    import pandas as pd
+    
+    list_df_dup=[]
+    
+    filt_inter_DOI = (df_DOI['DOI'] == df_articles_concat['DOI'].loc[indice]) # Renvoie un filtre intermédiaire des mêmes DOI
+    df_inter_DOI = df_DOI[filt_inter_DOI] # On récupère une DF avec les doublons, pour permettre de choisir quoi garder ensuite
+
+    filt_inter_Title_DT = (df_no_DOI['Title'] == df_articles_concat['Title'].loc[indice]) & (df_no_DOI['Document_type'] == df_articles_concat['Document_type'].loc[indice])
+    df_inter_Title_DT = df_no_DOI[filt_inter_Title_DT]
+
+    if df_inter_DOI.index.tolist() != df_inter_Title_DT.index.tolist():
+        df_inter = pd.concat([df_inter_DOI,df_inter_Title_DT])
+        
+    return [df_inter,df_inter.index.tolist()]
+
+def complete_deduplicate_and_save_articles(list_df_dup, indices_of_duplicates, path):
+    
+    '''_____
+    
+    Args : 
+       _____
+    
+    Returns :
+        Nothing, but saves documents in path'''
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports   
+    import BiblioMeter_FUNCTS as bmf
+    
+    # 3rd party library imports
+    import pandas as pd
+
+    df_dup_full_unique=pd.DataFrame()
+    tour = 0
+
+    for i in range(len(list_df_dup)):
+        working_df = list_df_dup[i]
+        nombre_duplication = working_df.shape[0]
+        nombre_colonne = working_df.shape[1]
+        if nombre_duplication != 1:
+            for j in range(nombre_colonne):
+                if working_df.iloc[[0],[j]].isna().bool():
+                    for k in range(1,nombre_duplication):
+                        if working_df.iloc[[k],[j]].isna().bool():
+                            working_df.iloc[[0],[j]] = working_df.iloc[[k],[j]]
+
+        if tour == 0:
+            tour = 1
+            df_dup_full_unique = working_df
+        else:
+            df_dup_full_unique = pd.concat([df_dup_full_unique,working_df])
+
+    df_dup_full_unique.reset_index(inplace = True)
+
+    df_AAH=pd.DataFrame()        
+    df_AAH = df_AAH.append([df_dup_full_unique[df_dup_full_unique['Pub_id'] == i] for i in indices_of_duplicates])
+
+    df_AAH.to_csv(path, 
+                  index=False, 
+                  columns=df_AAH.columns.tolist(), 
+                  sep='\t', 
+                  header=True)    
+
+    print('Etape terminée')
+    
+def deduplicated_all_but_articles(file_name, indices_of_duplicates, path_concat, path_dedupli):
+    
+    '''_____
+    
+    Args : 
+       _____
+        
+    Returns :
+        Nothing, but saves documents in path'''
+    
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports   
+    
+    # 3rd party library imports
+    import pandas as pd
+    
+    exported_df = pd.read_csv(path_concat / Path(file_name), sep="\t")
+    
+    filt = (exported_df['Pub_id'].isin(indices_of_duplicates))
+    exported_df=exported_df[filt]
+
+    if file_name == 'authors.dat':
+        exported_df.sort_values(['Pub_id','Idx_author'], inplace=True)
+    if file_name == 'addresses.dat':
+        exported_df.sort_values(['Pub_id','Idx_address'], inplace=True)
+        
+    # Terminer les cas particuliers sur le tri des lignes
+    
+    exported_df.to_csv(path_dedupli / Path(file_name),
+                    index=False,
+                    columns=exported_df.columns.tolist(),
+                    sep='\t',
+                    header=True)
     
 def you_got_OTPed(df,i):
     
@@ -31,22 +205,22 @@ def you_got_OTPed(df,i):
     from .BiblioMeterGlobalsVariables import OTP_STRING
     
     columns_to_keep = ['Pub_id', 
-                       'Idx_author', 
-                       'Authors',  
-                       'DOI', 
-                       'ISSN', 
-                       'LITEN_France',
-                       'Secondary_institutions', 
-                       'Document_type',
-                       'Matricule', 
-                       'Nom', 
-                       'Prénom', 
-                       'Dpt/DOB (lib court)', 
-                       'Service (lib court)', 
-                       'Laboratoire (lib court)', 
-                       'Laboratoire (lib long)',
-                       'List_of_OTP',
-                       'HOMONYM']
+                   'Idx_author', 
+                   'Authors',  
+                   'DOI', 
+                   'ISSN', 
+                   'LITEN_France',
+                   'Secondary_institutions', 
+                   'Document_type',
+                   'Matricule', 
+                   'Nom', 
+                   'Prénom', 
+                   'Dpt/DOB (lib court)', 
+                   'Service (lib court)', 
+                   'Laboratoire (lib court)', 
+                   'Laboratoire (lib long)',
+                   'List_of_OTP',
+                   'HOMONYM']
     
     if 'List_of_OTP' in df.columns:
         #if df['Pub_id'].iloc[i-1] == df['Pub_id'].iloc[i] and df['Dpt/DOB (lib court)'].iloc[i-1] == df['Dpt/DOB (lib court)'].iloc[i]: VERSION AMAL
@@ -66,7 +240,7 @@ def you_got_OTPed(df,i):
     
     return df
 
-def liste_de_validation(df, i):
+def liste_de_validation(df,i):
     
     '''_____
     
@@ -134,7 +308,38 @@ def filtrer_par_departement(in_path, out_path):
     
     df_OTP.fillna('', inplace=True)
     df_OTP.set_index('Pub_id', inplace = True)
-   
+
+    #data = [0] * len(df_OTP)
+    #df_OTP['DTNM'] = data
+    #df_OTP['DTS'] = data
+    #df_OTP['DTCH'] = data
+    #df_OTP['DEHT'] = data
+    ################################################################################################################################################################
+#
+    #for i in df_OTP.index.unique().to_list():
+#
+        #if isinstance(df_OTP.loc[i], pd.Series):
+            #df_inter_pub_id = df_OTP.loc[i].to_frame().T
+        #else:
+            #df_inter_pub_id = df_OTP.loc[i]
+#
+        #for j in df_inter_pub_id['Idx_author']:
+#
+            #filtre_inter_author = df_inter_pub_id['Idx_author'] == j
+            #df_inter_inter = df_inter_pub_id[filtre_inter_author]
+#
+            #if df_inter_inter['Dpt/DOB (lib court)'].to_list()[0] == 'DTNM':
+                #df_OTP.loc[i,'DTNM'] = 1
+#
+            #elif df_inter_inter['Dpt/DOB (lib court)'].to_list()[0] == 'DTS':
+                #df_OTP.loc[i,'DTS'] = 1
+#
+            #elif df_inter_inter['Dpt/DOB (lib court)'].to_list()[0] == 'DEHT':
+                #df_OTP.loc[i,'DEHT'] = 1
+#
+            #else:
+                #df_OTP.loc[i,'DTCH'] = 1
+    
     df_OTP.sort_values(['Pub_id','Idx_author'], inplace = True)
     df_OTP.drop(['Idx_author'], axis=1, inplace = True)
     df_OTP.reset_index(inplace = True)
@@ -431,81 +636,3 @@ def ajout_OTP(in_path, out_path):
 
     wb.save(out_path / Path(f'fichier_ajout_OTP_DTCH.xlsx'))
 
-def add_authors_name_list(in_path, out_path):
-    
-    '''
-    The `add_authors_fullname_list` function etc... TO FINISH
-    
-    Args:
-        in_path (Path):
-        out_path (Path):
-    
-    Returns:
-        None.
-    
-    Notes:
-    
-    '''
-    
-    # Local imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # 3rd party imports
-    import pandas as pd
-    
-    # Useful alias
-    pub_id_alias = COL_NAMES['pub_id']
-    
-    # Read of the excel file
-    df_in = pd.read_excel(in_path)
-    
-    # Add of the column 'Nom Prénom' that will be used to create the authors fullname list
-    df_in = concat_name_firstname(df_in)
-    
-    # Sort on Pub_id and then add the authors fullname list
-    if pub_id_alias not in df_in:
-        raise KeyError(f"The column {pub_id_alias} is not in DataFrame. Cannot carry on. Please make sure the DataFrame has a column named 'Pub_id'.")
-    
-    df_out = pd.DataFrame()
-    unique_pub_id_list = df_in['Pub_id'].unique().tolist()
-    
-    for i in unique_pub_id_list:
-        filtre_inter_pub_id = (df_in[pub_id_alias] == i)
-        df_inter = df_in[filtre_inter_pub_id]
-        authors_fullname_list = '; '.join(df_inter['Nom Prénom'].tolist())
-        df_inter['Authors Fullname List'] = authors_fullname_list
-        df_out = df_out.append(df_inter)
-        
-    # Save in an excel file where leads out_path
-    df_out.to_excel(out_path)
-    
-def concat_name_firstname(df):
-    
-    '''
-    The `concat_name_firstname` function checks if the given variable is a of type DataFrame.
-    Then it verifies if the columns 'Nom', 'Prénom' are in the given dataframe.
-    If so, it combines the column 'Nom' and 'Prénom' adding a ', ' in between the two values of the columns, into a new column named 'Nom Prénom'.
-    
-    Args:
-        df (dataframe): dataframe in which we want to combine the Nom and Prénom.
-        
-    Returns:
-        df (dataframe): the dataframe given as variable but with the new column.
-    '''
-    
-    # 3rd party imports
-    import pandas as pd
-    
-    # Check is df is a DataFrame and if it contains the colomns needed which are 'Nom' and 'Prénom' and 'Pub_id'
-    if isinstance(df, pd.DataFrame):
-        to_check = ['Nom', 'Prénom']
-        for i in to_check:
-            if 'Nom' not in df:
-                raise KeyError(f"The column {i} is not in DataFrame")
-    else:
-        raise TypeError(f"The variable {df} is not of proper type, it has to be a DataFrame")
-        
-    # Add of the colomn 'Nom Prénom' meaning full name.
-    df['Nom Prénom'] = df['Nom'] + ', ' + df['Prénom']
-    
-    return df
