@@ -433,18 +433,21 @@ def ajout_OTP(in_path, out_path):
 
 def add_authors_name_list(in_path, out_path):
     
-    '''
-    The `add_authors_fullname_list` function etc... TO FINISH
+    ''' The `add_authors_fullname_list` function fetches an EXCEL file and saves it in 'df_in'. It then uses `concat_name_firstname` to create the column 'Nom Prénom'.
+    Then it goes through a unique list of Pub_id and adds in every single row of a new dataframe, which is a slice of df_in by the Pub_id, called 'df_inter' a new column 
+    called 'Authors Fullname List', a list of all the authors who participated in writting the article. Happens this new dataframe to 'df_out' and when done going through
+    all of the different Pub_id, it saves it into out_path as an EXCEL file.
     
     Args:
-        in_path (Path):
-        out_path (Path):
+        in_path (path): path (including name of the file) leading to the working excel file. 
+        out_path (path): path (including name of the file) leading to where the file will be saved after going through its treatment.
     
     Returns:
         None.
     
     Notes:
-    
+        The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module of 'BiblioAnalysis_Utils' package.
+        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' module of 'BiblioMeter_FUNCTS' package.    
     '''
     
     # Local imports
@@ -481,8 +484,7 @@ def add_authors_name_list(in_path, out_path):
     
 def concat_name_firstname(df):
     
-    '''
-    The `concat_name_firstname` function checks if the given variable is a of type DataFrame.
+    ''' The `concat_name_firstname` function checks if the given variable is a of type DataFrame.
     Then it verifies if the columns 'Nom', 'Prénom' are in the given dataframe.
     If so, it combines the column 'Nom' and 'Prénom' adding a ', ' in between the two values of the columns, into a new column named 'Nom Prénom'.
     
@@ -491,6 +493,9 @@ def concat_name_firstname(df):
         
     Returns:
         df (dataframe): the dataframe given as variable but with the new column.
+    
+    Notes:
+        None.
     '''
     
     # 3rd party imports
