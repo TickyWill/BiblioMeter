@@ -1,15 +1,15 @@
-__all__ = ['create_MergeEffectif']
+__all__ = ['recursive_year_search']
 
-def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_case=False):
+def _build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_case=False):
 
     '''The excel workbook, with full pass `file`, contains a worksheet per month labelled mmyyyy 
     where mm stands for the month (01,02,...,12) and yyyy stands for the year (2019,2020,...). 
-    All the worksheets must at least contain the two columns entitled: `Matricule` and `Dpt/DOB (lib court)`. 
+    All the worksheets must at least contain the two columns entitled: `ID` and `Dpt/DOB (lib court)`. 
     The function `build_month_dpt` builds out, using at most 12 worksheets, a new dataframe with
-    an additional column entitled: 'Matricule' and 'Dpt_month'.
+    an additional column entitled: 'ID' and 'Dpt_month'.
     The columns 'Dpt_month' contains the lists of at most 12 tuples
     [(current_year,month_1,dept_1),...,(current_year,month_n,dept_n)].
-    If a matricule is not present in a spreadsheat the tuple is replace by (year,month_1,None).
+    If a ID is not present in a spreadsheat the tuple is replace by (year,month_1,None).
 
     Uses the following globals:
     PATH_TO_EFFECTIFS
@@ -37,7 +37,8 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
 
     from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_RH
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
     def _recast_to_tuple(df,col):
         df[col] = df[col].apply(lambda x: x if isinstance(x, list) else [x])
@@ -92,13 +93,13 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
         # For the dataframe 'df_rh_month' that contents the sheet 'sheet_name' content
         # replacing each cell of column 'COL_NAMES_RH['Dpt']' that specifies the employee departement dpt
         # by a tuple (month,year,dpt)
-        col = COL_NAMES_RH['Dpt']
+        col = COL_NAMES_RH['dpt']
         df_rh_month[col] = df_rh_month[col].apply(lambda x:(month,year,x))
 
         # For the dataframe 'df_rh_month' that contents the sheet 'sheet_name' content
         # replacing each cell of column 'COL_NAMES_RH['Service']' that specifies the employee service serv
         # by a tuple (month,year,serv) 
-        col = COL_NAMES_RH['Service']
+        col = COL_NAMES_RH['service']
         df_rh_month[col] = df_rh_month[col].apply(lambda x:(month,year,x))
 
         # Getting the columns names of 'df_rh_month' 
@@ -118,10 +119,10 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
     ###if ###:df_rh_year.to_excel(PATH_OF_CHECKS / Path('df_rh_year.xlsx'))    
 
     # Building a dict 'rh_dict' from dataframe 'df_rh_year' 
-    # with information keyed by employee matricule COL_NAMES_RH['Matricule']
-    # and its structure is {matricule : dataframe which content is df_rh_year for COL_NAMES_RH['Matricule'] equal to matricule}
+    # with information keyed by employee matricule COL_NAMES_RH['ID']
+    # and its structure is {matricule : dataframe which content is df_rh_year for COL_NAMES_RH['ID'] equal to matricule}
     rh_dict = {}
-    for matricule, df_matricule in df_rh_year.groupby([COL_NAMES_RH['Matricule']]):
+    for matricule, df_matricule in df_rh_year.groupby([COL_NAMES_RH['ID']]):
         # Setting unique occcurence of items in a given column of the dataframe df_matricule
         rh_dict[matricule] = [df_matricule[item].unique() for item in df_matricule.columns]
 
@@ -137,10 +138,10 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
 
     # Recasting into list of items whatever the number of items for selected columns
     # To Do: Doing the recasting for all columns
-    col_list = [COL_NAMES_RH['Dpt'],
-                COL_NAMES_RH['Service'],
-                COL_NAMES_RH['Nom'],
-                COL_NAMES_RH['Prénom']]
+    col_list = [COL_NAMES_RH['dpt'],
+                COL_NAMES_RH['service'],
+                COL_NAMES_RH['nom'],
+                COL_NAMES_RH['prénom']]
     for col in col_list:
         _recast_to_tuple(df_rh_year_singlemat,col)
 
@@ -149,8 +150,8 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
 
     # Transforming list of tuples into lists of lists ex [(x,c,d),((e,f,g))] -->[[x,e],[c,f],[d,g]] for 'Dpt' and 'Service' columns
     # and putting them in 'Dpts' and 'Servs' new columns
-    cols_tup_list = [(COL_NAMES_RH['Dpt'],COL_NAMES_BM['Dpts']), 
-                     (COL_NAMES_RH['Service'],COL_NAMES_BM['Servs'])]
+    cols_tup_list = [(COL_NAMES_RH['dpt'],COL_NAMES_BM['Dpts']), 
+                     (COL_NAMES_RH['service'],COL_NAMES_BM['Servs'])]
     for cols_tup in cols_tup_list:
         _tuples_to_lists(df_rh_year_singlemat,cols_tup) 
 
@@ -162,31 +163,31 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
     ###if save_case:df_rh_year_singlemat.to_excel(PATH_OF_CHECKS / Path('df_rh_year_singlemat_addedcols.xlsx'))
 
     # Dealing with same matricule for different lastnames 
-    col = COL_NAMES_RH['Nom']
+    col = COL_NAMES_RH['nom']
     df_effectif = _manage_duplicate_matricule(df_rh_year_singlemat,col)
 
     # Dealing with same matricule for different firstnames
-    col = COL_NAMES_RH['Prénom']
+    col = COL_NAMES_RH['prénom']
     df_effectif = _manage_duplicate_matricule(df_rh_year_singlemat,col)
 
     # Creating a column with first name initials as a list
     # ex PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM 
-    col_in, col_out = COL_NAMES_RH['Prénom'], COL_NAMES_BM['First_name']
+    col_in, col_out = COL_NAMES_RH['prénom'], COL_NAMES_BM['First_name']
     df_effectif[col_out] = df_effectif.apply(lambda row : 
                                              [_get_firstname_initiales(x) for x in row[col_in]],
                                              axis=1)
 
     # Recasting single-element list into string for specific columns
-    cols_list = [COL_NAMES_RH['Nom'],COL_NAMES_RH['Prénom'],COL_NAMES_BM['First_name']]
+    cols_list = [COL_NAMES_RH['nom'],COL_NAMES_RH['prénom'],COL_NAMES_BM['First_name']]
     for col in cols_list:
         df_effectif[col] = df_effectif[col].apply(lambda x : x[0])
 
     # Creating the column ['Full_name'] by combining COL_NAMES_RH['Nom'] and COL_NAMES_BM['First_name']
     new_col = COL_NAMES_RH['Full_name']
-    df_effectif[new_col] = df_effectif[COL_NAMES_RH['Nom']] + ' ' + df_effectif[COL_NAMES_BM['First_name']]
+    df_effectif[new_col] = df_effectif[COL_NAMES_RH['nom']] + ' ' + df_effectif[COL_NAMES_BM['First_name']]
 
     # Keeping only the last element of the first tuple (the first occurrence in the year) for specific columns
-    cols_list = [COL_NAMES_RH['Dpt'],COL_NAMES_RH['Service']]
+    cols_list = [COL_NAMES_RH['dpt'],COL_NAMES_RH['service']]
     for col in cols_list:
         df_effectif[col] = df_effectif[col].apply(lambda x: x[0][-1])    
 
@@ -196,34 +197,8 @@ def build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_c
     ###if ###:df_effectif.to_excel(PATH_OF_CHECKS / Path('df_effectif_test.xlsx'))  
 
     return df_effectif
-
-def build_fichier_rh_all_years(years, file_name, sheet_names_all, bibliometer_path):
-
-    '''Function `build_fichier_rh_all_years` builds employees dataframes for a list of years `years`
-       and saves the results in 'file_name' file
-
-    Uses the following globals:
-    PATH_OF_RESULTS
-
-    '''
-
-    #Standard Library imports
-    import os
-    from pathlib import Path
-
-    # 3rd party import
-    import pandas as pd
-
-    list_fichier_rh = [(year, build_year_month_dpt(year, sheet_names_all, bibliometer_path)) for year in years]
-    
-    print(list_fichier_rh)
-
-    path = Path(bibliometer_path) / Path('Results') / Path(file_name)
-    with pd.ExcelWriter(path, engine='xlsxwriter') as writer:
-        for sheet_name,x in list_fichier_rh:
-            x.to_excel(writer, sheet_name=sheet_name)
-
-def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
+            
+def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
 
     """
     Description à venir
@@ -241,9 +216,9 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
     import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_RH
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
     # Création chemin vers résultats pour effectuer des checks étapes
     PATH_OF_CHECKS = Path(bibliometer_path) / Path('Results')
@@ -261,8 +236,8 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
         if len(df_eff_pub_match)!=0:
             print('\nMatch found for author lastname:',pub_lastname)
             print(' Nb of matches:',len(df_eff_pub_match))
-            print(' Employee matricule:',df_eff_pub_match[COL_NAMES_RH['Matricule']].to_list()[0])
-            print(' Employee lastname:',df_eff_pub_match[COL_NAMES_RH['Nom']].to_list()[0])
+            print(' Employee matricule:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list()[0])
+            print(' Employee lastname:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list()[0])
         else:
             print('\nNo match for author lastname:',pub_lastname)
             print('  Nb first matches:',len(df_eff_pub_match))
@@ -272,9 +247,9 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
         print('  Lastname flag match:', flag_lastname_match)
         print('  Nb similarities by orphan reduction:',len(lastname_match_list))
         print('  List of lastnames with similarities:', lastname_match_list)
-        print('  Employee matricules:',df_eff_pub_match[COL_NAMES_RH['Matricule']].to_list())
-        print('  Employee lastnames:',df_eff_pub_match[COL_NAMES_RH['Nom']].to_list())
-        print('  Employee firstnames:',df_eff_pub_match[COL_NAMES_RH['Prénom']].to_list())
+        print('  Employee matricules:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list())
+        print('  Employee lastnames:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list())
+        print('  Employee firstnames:',df_eff_pub_match[COL_NAMES_RH['prénom']].to_list())
         print('  Employee fullnames:',df_eff_pub_match[COL_NAMES_RH['Full_name']].to_list())    
 
     def _test_no_similarity():
@@ -309,7 +284,7 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
     df_orphan = pd.DataFrame()
 
     # Building the set of lastnames (without duplicates) of the dataframe 'df_eff' 
-    eff_lastnames = set(df_eff[COL_NAMES_RH['Nom']].to_list())
+    eff_lastnames = set(df_eff[COL_NAMES_RH['nom']].to_list())
     eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
 
     # Setting the useful info for testing the function if verbose = True
@@ -345,7 +320,7 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
 
         # Building the dataframe 'df_eff_pub_match' with rows of dataframe df_eff 
         # where item at COL_NAMES_RH['Nom'] matches author lastname 'pub_lastname'
-        df_eff_pub_match = df_eff[df_eff[COL_NAMES_RH['Nom']] == pub_lastname].copy()
+        df_eff_pub_match = df_eff[df_eff[COL_NAMES_RH['nom']] == pub_lastname].copy()
 
         # Adding column COL_NAMES_BM['Full_name'] + '_eff' by combination of 
         # df_eff_pub_match[COL_NAMES_RH['Nom']] and df_eff_pub_match[COL_NAMES_BM['First_name']]
@@ -362,10 +337,10 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
             if lastname_match_list: 
                 # Concatenating in the dataframe 'df_eff_pub_match', the rows of the dataframe 'df_eff'
                 # corresponding to each of the found similarities by orphan reduction
-                col = COL_NAMES_RH['Nom']
+                col = COL_NAMES_RH['nom']
                 frames = []
                 for lastname_match in lastname_match_list:
-                    df_temp = df_eff[df_eff[COL_NAMES_RH['Nom']] == lastname_match].copy()
+                    df_temp = df_eff[df_eff[COL_NAMES_RH['nom']] == lastname_match].copy()
                     # Replacing the employee last name by the publication last name
                     # for df_pub_rh_join building
                     df_temp[COL_NAMES_RH['Full_name']] = pub_lastname + ' ' + df_temp[COL_NAMES_BM['First_name']] #------------------------------------------
@@ -393,7 +368,7 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
 
             # List of firstnames initiales of a given name in the rh effectif
             eff_firstnames = df_eff_pub_match[COL_NAMES_BM['First_name']].to_list()
-            eff_lastnames_spec = df_eff_pub_match[COL_NAMES_RH['Nom']].to_list()
+            eff_lastnames_spec = df_eff_pub_match[COL_NAMES_RH['nom']].to_list()
 
             #if pub_lastname == 'MARTIN': 
                 #print(eff_firstnames)
@@ -452,356 +427,6 @@ def build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
 
     return df_submit, df_orphan
 
-def _single_year_search(year, bibliometer_path):
-
-    """
-    Description à venir
-    """
-
-    #Standard Library imports
-    import os
-    from pathlib import Path
-
-    # 3rd party import
-    import pandas as pd
-
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME #TO DO : faire une seule variable pour ça 
-
-    ###################################
-    # Building the articles dataframe #
-    ###################################
-
-    df_pub = _build_pubs_authors_Liten(year, bibliometer_path)
-
-    #################################################
-    # Setting the file names for saving the results #
-    #################################################
-
-    year_submit_file_name = year + '_' + SUBMIT_FILE_NAME
-    year_orphan_file_name = year + '_' + ORPHAN_FILE_NAME
-
-    ##################################################################
-    # Building the list of available years in the employees database #
-    ##################################################################
-
-    df = pd.ExcelFile(Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][2]))
-    sheet_names_all = df.sheet_names
-    sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
-    years_db = set([sheet_names_all[index][2:] for index in range(len(sheet_names_all))])
-
-    if year not in years_db :
-        print('Year ',year,'is not available in the employees database which is limited to',years_db)
-        print('Please define a new testing year.')
-    else:
-        #######################################################
-        # Building the 'df_eff' dataframe for year `year` #
-        #######################################################
-
-        save_case=False
-        df_eff = build_year_month_dpt(year, sheet_names_all, bibliometer_path, save_case=save_case)
-
-        ##############################################################################################
-        # Building the `df_submit` and `df_orphan` dataframes using `df_eff` dataframe of year `year` #
-        ##############################################################################################
-
-        test_list = ['Full match',            
-                     'Lower value similarity',
-                     'Upper value similarity',
-                     'No similarity',
-                     'No test'
-                    ]
-        test_case = 'Upper value similarity'
-        df_submit, df_orphan =  build_df_submit(df_eff, df_pub, bibliometer_path, test_case = test_case)
-
-        #############################################################################
-        # Save results in 'year_submit_file_name' and 'year_orphan_file_name' files #
-        #############################################################################
-
-        df_submit.to_excel(Path(bibliometer_path) / Path(year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(year_submit_file_name))
-        df_orphan.to_excel(Path(bibliometer_path) / Path(year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(year_orphan_file_name))  
-        print('The dataframe to be submitted is built and saved')
-
-def _recursive_year_search(corpus_year, bibliometer_path):
-
-    """
-    Description à venir
-    """
-
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party import
-    import pandas as pd
-
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_ORPHAN
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME
-
-    ###################################
-    # Building the articles dataframe #
-    ###################################
-
-    df_pub = _build_pubs_authors_Liten(corpus_year, bibliometer_path)
-
-    ##################################################################
-    # Building the list of available years in the employees database #
-    ##################################################################
-
-    df = pd.ExcelFile(Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][2]))
-    sheet_names_all = df.sheet_names
-    sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
-    years_db = set([sheet_names_all[index][2:] for index in range(len(sheet_names_all))])
-
-    ##########################################################
-    # Building the search time extension of Liten co-authors #
-    ##########################################################
-
-    today_year = 2022
-    time_line_history = 5
-    years = [str(i) for i in range(today_year - time_line_history,today_year)]
-    years = years[::-1]
-
-    ##################################################################################
-    # building an employees dataframe for the list of years and saving as EXCEL file #
-    ##################################################################################
-
-    #build_fichier_rh_all_years(years,EFFECTIFS_FILE,sheet_names_all)
-
-    #####################################################################################################
-    # Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years #
-    #####################################################################################################
-
-    # Initializing the dataframes to be built
-    df_submit = pd.DataFrame() # Data frame containing all match between publi author name name and rh name name
-    df_orphan = pd.DataFrame() # No match found between article LITEN author and rh names
-
-    # Setting the test case
-    test_list = ['Full match',            
-                 'Lower value similarity',
-                 'Upper value similarity',
-                 'No similarity',
-                 'No test'
-                ]
-
-    test_case = 'Upper value similarity'
-
-    for step, year in enumerate(years): 
-
-        # Read the sheet `year` of `EFFECTIFS_FILE` file
-        effectifs_path = Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][1]) # Récupère ALL_Effectifs.xlsx
-
-        df_eff = pd.read_excel(effectifs_path, sheet_name = year)
-        df_eff.drop(['Unnamed: 0'], axis=1, inplace = True)
-
-        if step == 0:
-            df = pd.ExcelFile(Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][2]))
-            sheet_names_all = df.sheet_names
-            sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
-            df_eff = build_year_month_dpt(year,sheet_names_all, bibliometer_path)
-
-            # Building the initial dataframes
-            df_submit, df_orphan =  build_df_submit(df_eff, df_pub, bibliometer_path, test_case=test_case)
-
-        else:
-            # Updating the dataframes 
-            df_submit_add, df_orphan =  build_df_submit(df_eff, df_orphan, bibliometer_path, test_case)
-            # Updating df_submit 
-            df_submit = df_submit.append(df_submit_add)        
-
-        year_submit_file_name = year + '_' + SUBMIT_FILE_NAME
-        year_orphan_file_name = year + '_' + ORPHAN_FILE_NAME
-
-        df_submit.to_excel(Path(bibliometer_path) / Path(corpus_year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(year_submit_file_name))
-        df_orphan.to_excel(Path(bibliometer_path) / Path(corpus_year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(year_orphan_file_name)) 
-
-    #_=[bmf.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
-
-    #####################################################################
-    # Saving results in `SUBMIT_FILE_NAME` and `ORPHAN_FILE_NAME` files #
-    #####################################################################
-
-    df_submit.to_excel(Path(bibliometer_path) / Path(corpus_year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(SUBMIT_FILE_NAME)) 
-    df_orphan = df_orphan.reindex(columns = COL_NAMES_ORPHAN)
-    df_orphan.to_excel(Path(bibliometer_path) / Path(corpus_year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(ORPHAN_FILE_NAME))         
-    print('Results saved')
-
-def _mise_en_forme(year, bibliometer_path):
-
-    # Standard library imports
-    from pathlib import Path
-    import math
-
-    # 3rd party import
-    import pandas as pd
-    from openpyxl import Workbook, load_workbook
-    from openpyxl.worksheet.datavalidation import DataValidation
-    from openpyxl.utils.dataframe import dataframe_to_rows
-    from openpyxl.utils.cell import get_column_letter
-    from openpyxl.comments import Comment
-    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
-    from openpyxl.styles.colors import Color
-
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME
-
-    ###########################
-    # Getting the submit file #
-    ###########################
-
-    df_submit = pd.read_excel(Path(bibliometer_path) / Path(year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(SUBMIT_FILE_NAME))
-
-    # Remettre les Pub_ID dans l'ordre
-    df_submit.sort_values(by=['Pub_id', 'Dpt/DOB (lib court)'], ascending=False, inplace = True)
-    df_submit.sort_values(by=['Pub_id', 'Idx_author'], ascending=True, inplace = True)
-    #df_submit.sort_values(by=['Pub_id'], inplace = True)
-
-    ###############################
-    # Réajustement de List_of_OTP #
-    ###############################
-
-    _=[bmf.you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
-
-    ############################################
-    # Getting rid of the columns we don't want #
-    ############################################
-
-    columns_to_keep = ['Pub_id', 
-                       'Idx_author', 
-                       'Authors',  
-                       'DOI', 
-                       'ISSN', 
-                       'LITEN_France',  
-                       'Document_type',
-                       'Matricule', 
-                       'Nom', 
-                       'Prénom', 
-                       'Dpt/DOB (lib court)', 
-                       'Service (lib court)', 
-                       'Laboratoire (lib court)', 
-                       'Laboratoire (lib long)',
-                       'List_of_OTP',
-                       'HOMONYM']
-
-    df_submit = df_submit[columns_to_keep].copy()
-
-    # La colonne 0/1 pour afficher ou pas
-    list_de_1 = [1] * len(df_submit)
-    df_submit['Affichage'] = list_de_1
-
-    columns_to_keep = df_submit.columns.to_list()
-
-    # Liste unique des Pub_id conservé
-    list_of_Pub_id = df_submit['Pub_id'].to_list()
-    list_of_Pub_id = bmf.get_unique_numbers(list_of_Pub_id)
-
-    #########################
-    # Ouverture du workbook #
-    #########################
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Publi x Effectifs'
-
-    yellow_ft = PatternFill(fgColor = '00FFFF00', fill_type = "solid")
-    red_ft = PatternFill(fgColor = '00FF0000', fill_type = "solid")
-    blue_ft = PatternFill(fgColor = '0000FFFF', fill_type = "solid")
-    bd = Side(style='medium', color="000000")
-    active_color = 'red'
-
-    for indice, r in enumerate(dataframe_to_rows(df_submit, index=False, header=True)):
-        ws.append(r)
-        last_row = ws[ws.max_row]
-        if r[columns_to_keep.index('HOMONYM')] == 'HOMONYM' and indice > 0:
-            cell = last_row[columns_to_keep.index('Nom')]
-            cell.fill = yellow_ft
-            cell = last_row[columns_to_keep.index('Prénom')]
-            cell.fill = yellow_ft
-
-            column_letter = get_column_letter(columns_to_keep.index('Nom')+1)
-            excel_cell_id = column_letter + str(indice+1)
-
-            # Adds comments to the highlighted cells ---------------------> CREER UNE FONCTION
-            comment = Comment("Homonymy detected, please chose one of the following yellow rows by choosing 1 or 0 in the 'Affichage' column", "Author")
-            comment.width = 300
-            comment.height = 60
-
-            ws[excel_cell_id].comment = comment
-
-            cell = last_row[columns_to_keep.index('Affichage')]
-            cell.fill = yellow_ft
-            column_letter = get_column_letter(columns_to_keep.index('Affichage')+1)
-            excel_cell_id = column_letter + str(indice+1)
-
-            # Adds comments to the highlighted cells ---------------------> CREER UNE FONCTION
-            comment = Comment("1 to keep, 0 to get rid of", "Author")
-            comment.width = 155
-            comment.height = 20
-
-            ws[excel_cell_id].comment = comment
-
-
-        if ws.max_row > 1 and r[0] in list_of_Pub_id:
-            if list_of_Pub_id.index(r[0])%2 == 0:
-                cell = last_row[0]
-                cell.fill = red_ft
-                if active_color != 'red':
-                    for cell_bis in last_row:
-                        cell_bis.border = Border(top=bd)
-                        active_color = 'red'
-            else:
-                cell = last_row[0]
-                cell.fill = blue_ft
-                if active_color != 'blue':
-                    for cell_bis in last_row:
-                        cell_bis.border = Border(top=bd)
-                        active_color = 'blue'
-
-
-    for cell in ws['A'] + ws[1]:
-        cell.font = Font(bold=True)
-        cell.border = Border(left=bd, top=bd, right=bd, bottom=bd)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    for r in range(0,ws.max_row-2):
-        #if df_jp['Pub_id'].iloc[r-1] == df_jp['Pub_id'].iloc[r] and df_jp['Dpt/DOB (lib court)'].iloc[r-1] == df_jp['Dpt/DOB (lib court)'].iloc[r]: VERSION AMAL
-        if df_submit['Pub_id'].iloc[r-1] == df_submit['Pub_id'].iloc[r]: # VERSION JEAN PIERRE
-            'Yo'
-        else:        
-            validation_list = bmf.liste_de_validation(df_submit,r)
-
-            data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
-            ws.add_data_validation(data_val)
-
-            data_val.add(ws[get_column_letter(columns_to_keep.index('List_of_OTP')+1)+str(r+2)])
-
-    wb.save(Path(bibliometer_path) / Path(year) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path('PubliXEffectifs.xlsx'))
-    
 def _build_pubs_authors_Liten(year, bibliometer_path):
 
     """ 
@@ -886,7 +511,7 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
                 - false elsewhere.
         '''
 
-        filt_authors_inst = df_authorsinst_authors['LITEN_France']==1 # TO DO : faire en sorte qu'on construise en fonction de ce l'on souhaite chercher
+        filt_authors_inst = (df_authorsinst_authors['LITEN_France']==1) | (df_authorsinst_authors['INES_France']==1) # TO DO : faire en sorte qu'on construise en fonction de ce l'on souhaite chercher
 
         return filt_authors_inst
 
@@ -943,83 +568,119 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
 
     return  merged_df_Liten
 
-def create_MergeEffectif(self, bibliometer_path):
-    
+def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer_path, corpus_year, go_back_years):
+
     """
-    Description : 
-    
-    Uses the following globals :
-    
-    Args :
-    
-    Returns :
-    
+    Description à venir
     """
-    
+
     # Standard library imports
-    import os
     from pathlib import Path
-    from datetime import datetime
 
-    # 3rd party imports
-    import tkinter as tk
-    from tkinter import filedialog
-    from tkinter import messagebox
+    # 3rd party import
     import pandas as pd
+    from datetime import date
 
-    # Local imports
-    import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
+    # Local library imports
+    import BiblioMeter_FUNCTS as bmf
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES  
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    # Useful alias
-    bdd_mensuelle_alias = STOCKAGE_ARBORESCENCE['general'][0]
-    bdd_annuelle_alias = STOCKAGE_ARBORESCENCE['general'][1]
-
-    # Récupérer les corpus disponibles
-    list_annee = five_last_available_years(bibliometer_path)
-
-    variable = tk.StringVar(self)
-    variable.set(list_annee[0])
-
-    OptionButton = tk.OptionMenu(self, variable, *list_annee)
-    OptionButton.place(anchor = 'center', relx = 0.50, rely = 0.20)
-
-    Button_merged = tk.Button(self, 
-                              text = "Création de la liste des auteurs Liten à \n partir des fichiers concaténés et dédoublonnés \n pour l'année sélectionnée", 
-                              font = ("Helvetica", 9), 
-                              command = lambda: _build_pubs_authors_Liten(variable.get(), bibliometer_path))
-    Button_merged.place(anchor = 'center', relx = 0.5, rely = 0.35)
-
-    Button_single_year = tk.Button(self, 
-                                   text = 'PubliXEffectifs Single Year', 
-                                   font = ("Helvetica", 18), 
-                                   command = lambda: _single_year_search(variable.get(), bibliometer_path))
-    Button_single_year.place(anchor = 'center', relx = 0.5, rely = 0.50)
-
-    Button_recursive = tk.Button(self, 
-                                 text = 'PubliXEffectifs Recursive', 
-                                 font = ("Helvetica", 18), 
-                                 command = lambda: _recursive_year_search(variable.get(), bibliometer_path))
-    Button_recursive.place(anchor = 'center', relx = 0.5, rely = 0.65)
-
-    Button_mise_en_forme = tk.Button(self, 
-                                     text = 'Concat 5 dernières années des submits', 
-                                     font = ("Helvetica", 18), 
-                                     command = lambda: _concat_submit())
-    Button_mise_en_forme.place(anchor = 'center', relx = 0.5, rely = 0.80)
+    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
+    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
+    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_ORPHAN
+    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
+    from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME
     
-    def _concat_submit():
-        
-        df_concat = pd.DataFrame()
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_biblio_list
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
+
+    ###################################
+    # Building the articles dataframe #
+    ###################################
+
+    df_pub = _build_pubs_authors_Liten(corpus_year, bibliometer_path)
     
-        for i in range(len(list_annee)):
-            path = Path(bibliometer_path) / Path(list_annee[i]) / Path(bdd_mensuelle_alias) / Path(f'submit.xlsx')
-            df_inter = pd.read_excel(path)
-            df_concat = df_concat.append(df_inter)
+    ##################################################################
+    # Building the list of available years in the employees database #
+    ##################################################################
+
+    df = pd.ExcelFile(path_eff_2)
+    sheet_names_all = df.sheet_names
+    sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
+    years_db = set([sheet_names_all[index][2:] for index in range(len(sheet_names_all))])
+
+    ##########################################################
+    # Building the search time extension of Liten co-authors #
+    ##########################################################
+
+    today_year = int(date.today().year)
+    time_line_history = int(go_back_years)
+    years = [str(i) for i in range(today_year - time_line_history, today_year)]
+    years = years[::-1]
+
+    #################################################################################################
+    # Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years #
+    #################################################################################################
+
+    # Initializing the dataframes to be built
+    df_submit = pd.DataFrame() # Data frame containing all match between publi author name name and rh name name
+    df_orphan = pd.DataFrame() # No match found between article LITEN author and rh names
+
+    # Setting the test case
+    test_list = ['Full match',            
+                 'Lower value similarity',
+                 'Upper value similarity',
+                 'No similarity',
+                 'No test'
+                ]
+
+    test_case = 'Upper value similarity'
+
+    for step, year in enumerate(years): 
+
+        # Read the sheet `year` of `EFFECTIFS_FILE` file
+        effectifs_path = path_eff_1 # Récupère ALL_Effectifs.xlsx
+
+        df_eff = pd.read_excel(effectifs_path, sheet_name = year)
+        df_eff.drop(['Unnamed: 0'], axis=1, inplace = True)
+
+        if step == 0:
+            df = pd.ExcelFile(path_eff_2)
+            sheet_names_all = df.sheet_names
+            sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
+            df_eff = _build_year_month_dpt(year,sheet_names_all, bibliometer_path)
+
+            # Building the initial dataframes
+            df_submit, df_orphan =  _build_df_submit(df_eff, df_pub, bibliometer_path, test_case=test_case)
+
+        else:
+            # Updating the dataframes 
+            df_submit_add, df_orphan =  _build_df_submit(df_eff, df_orphan, bibliometer_path, test_case)
             
-        date = str(datetime.now())[:16].replace(':', '')
-        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_submit_{os.getlogin()}.xlsx'))
+            # Updating df_submit 
+            df_submit = df_submit.append(df_submit_add)        
+
+        year_submit_file_name = year + '_' + SUBMIT_FILE_NAME
+        year_orphan_file_name = year + '_' + ORPHAN_FILE_NAME
+
+        df_submit.to_excel(path_out / Path(year_submit_file_name))
+        df_orphan.to_excel(path_out / Path(year_orphan_file_name)) 
+
+    #####################################################################
+    # Saving results in `SUBMIT_FILE_NAME` and `ORPHAN_FILE_NAME` files #
+    #####################################################################
+
+    df_submit.to_excel(path_out / Path(SUBMIT_FILE_NAME))
+    
+    ### Adding biblio
+    add_biblio_list(path_out / Path(SUBMIT_FILE_NAME), path_out / Path(SUBMIT_FILE_NAME))
+    
+    ### Adding Impact Factor
+    ajout_IF(path_out / Path(SUBMIT_FILE_NAME), path_out / Path(SUBMIT_FILE_NAME), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), corpus_year)
+    
+    df_orphan = df_orphan.reindex(columns = COL_NAMES_ORPHAN)
+    df_orphan.to_excel(path_out / Path(ORPHAN_FILE_NAME))         
+    print('Results saved')

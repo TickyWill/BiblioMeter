@@ -26,7 +26,7 @@ def five_last_available_years(bibliometer_path):
     # Standard library imports
     import os
     
-    # Récupérer les corpus disponibles
+    # Récupérer les corpus disponibles TO DO : consolider le choix des années
     list_dir = os.listdir(bibliometer_path)
     list_annee = list()
     for annee in list_dir:

@@ -10,10 +10,12 @@ __all__ = ['ROOT_PATH',
 
 # Local imports
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
 # Generals
-
-ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/111- Ludovic Desmeuzes/BiblioMeter_Files"
+ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/110-Alternants/2021-22 Ludovic Desmeuzes/BiblioMeter_Files"
+#ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
 
 # To be removed
 STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos', 
@@ -23,14 +25,15 @@ STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos',
                                      'BiblioAnalysis_RefFiles'], 
                          'effectif' : ['Listing RH', 
                                        'All_effectifs.xlsx', 
-                                       'Effectifs_2010_2022.xlsx'],
-                         'general' : ['BDD multi mensuelle', 
+                                       'Effectifs_2010_2022.xlsx', 'MAJ.txt'],
+                         'general' : ['0 - BDD multi mensuelle', 
                                       'BDD multi annuelle',
                                       'Filtres', 
-                                      'OTP', 
-                                      'Consolidation Homonymes', 
-                                      'Résultats', 
-                                      'Results']
+                                      '2 - OTP', 
+                                      '1 - Consolidation Homonymes', 
+                                      '3 - Résultats Finaux', 
+                                      'Results', 
+                                      'Impact Factor']
                         }
 
 COL_NAMES_BM = {'Dpts':'list of Dpt/DOB (lib court)', 
@@ -41,14 +44,6 @@ COL_NAMES_BM = {'Dpts':'list of Dpt/DOB (lib court)',
                 'Homonym': 'HOMONYM',
                }
 
-# Setting useful column names from the employees file (To Do: to be set as globals)
-COL_NAMES_RH = {'Dpt': 'Dpt/DOB (lib court)',
-                'Service': 'Service (lib court)',
-                'Matricule':'Matricule',
-                'Nom':'Nom',
-                'Prénom':'Prénom',
-                'Full_name': 'Full_name_eff',
-                }
 
 # Building of 'COL_NAMES_ORPHAN' for setting the columns order in orphan file
 # from 'COL_NAMES' imported from BiblioAnalysis_Utils and from 'COL_NAMES_BM' and 'COL_NAMES_BAU'
@@ -60,7 +55,6 @@ COL_NAMES_ORPHAN.extend([COL_NAMES_BM['Last_name']])
 # Setting the results file names
 SUBMIT_FILE_NAME = 'submit.xlsx'
 ORPHAN_FILE_NAME = 'orphan.xlsx'
-
 
 # Première sélection des colonnes de submit
 SET_1 = ['Pub_id', 'Idx_author', 'Address', 'Country',
@@ -82,4 +76,41 @@ SET_1 = ['Pub_id', 'Idx_author', 'Address', 'Country',
        'list of Service (lib court)']
 
 # Selection des colonnes à garder lorsque qu'on veut faire un fichier à OTP
-SET_OTP = ['Pub_id', 'Idx_author', 'DOI', 'Title', 'ISSN', 'Document_type', 'Journal', 'Dpt/DOB (lib court)']
+SET_OTP = ['Pub_id', 'Idx_author', 'DOI', 'Title', 'Year', 'ISSN', 'Document_type', 'Journal', 'Dpt/DOB (lib court)']
+
+# Global du nom des colonnes à garder
+SUBMIT_COL_NAMES = { 
+    'pub_id': COL_NAMES['pub_id'], 
+    # 'authors' : COL_NAMES['articles'][1],
+    'idx_authors' : COL_NAMES['authors'][1],
+    'co_authors' : COL_NAMES['authors'][2], 
+    'address' : COL_NAMES['address'][2], 
+    'country' : COL_NAMES['auth_inst'][3],  
+    'year' : COL_NAMES['articles'][2], 
+    'journal' : COL_NAMES['articles'][3], 
+    'volume' : COL_NAMES['articles'][4], 
+    'page' : COL_NAMES['articles'][5], 
+    'DOI' : COL_NAMES['articles'][6], 
+    'document_type' : COL_NAMES['articles'][7], 
+    'language' : COL_NAMES['articles'][8], 
+    'title' : COL_NAMES['articles'][9], 
+    'ISSN' : COL_NAMES['articles'][10],
+    'nom prénom' : COL_NAMES_BONUS['nom prénom'], 
+    'nom prénom liste' : COL_NAMES_BONUS['nom prénom liste'], 
+    'ID' : COL_NAMES_RH['ID'], 
+    'nom' : COL_NAMES_RH['nom'],
+    'prénom' : COL_NAMES_RH['prénom'], 
+    'sexe' : COL_NAMES_RH['sexe'], 
+    'nation' : COL_NAMES_RH['nation'], 
+    'catégorie' : COL_NAMES_RH['catégorie'],
+    'statut' : COL_NAMES_RH['statut'],
+    'qualification classement' : COL_NAMES_RH['qualification classement'],
+    'dpt' : COL_NAMES_RH['dpt'],
+    'service' : COL_NAMES_RH['service'],
+    'labo' : COL_NAMES_RH['labo'],
+    'affiliation complete' : COL_NAMES_RH['affiliation complete'],
+    'date naissance' : COL_NAMES_RH['date naissance'], 
+    'nom prénom' : COL_NAMES_BONUS['nom prénom'], 
+    'nom prénom liste' : COL_NAMES_BONUS['nom prénom liste'], 
+    'liste biblio' : COL_NAMES_BONUS['liste biblio']
+}

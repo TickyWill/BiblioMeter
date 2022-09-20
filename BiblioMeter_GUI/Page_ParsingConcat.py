@@ -294,6 +294,9 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
         
         bau.parsing_concatenate_deduplicate(useful_path_list)
         
+        path_to_folder = bibliometer_path / Path(variable_3.get()) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
+        bau.extend_author_institutions(path_to_folder, [('INES', 'France'), ('LITEN', 'France')])
+        
         messagebox.showinfo('Information', f"La concatenation et le dédoublement \n sont terminés")
 
 def create_ParsingConcat(self, bibliometer_path):
@@ -384,5 +387,6 @@ def create_ParsingConcat(self, bibliometer_path):
             self.CHECK.append(tmp)
         
         _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
-    
+        
     _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
+    _update()

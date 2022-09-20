@@ -1,6 +1,6 @@
-__all__ = ['create_WorkSubmit']
+__all__ = ['create_Allyears']
 
-def create_WorkSubmit(self, bibliometer_path):
+def create_Allyears(self, bibliometer_path):
 
     """
     Description : 
@@ -21,8 +21,6 @@ def create_WorkSubmit(self, bibliometer_path):
     # 3rd party imports
     import tkinter as tk
     from tkinter import ttk
-    from tkinter import filedialog
-    from tkinter import messagebox
     import pandas as pd
 
     # Local imports
@@ -33,10 +31,6 @@ def create_WorkSubmit(self, bibliometer_path):
     from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioMeter_GUI.Globals_GUI import SET_1
     from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_anonymat
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -50,27 +44,34 @@ def create_WorkSubmit(self, bibliometer_path):
     R_path_alias = STOCKAGE_ARBORESCENCE['general'][5]
     R_bis_path_alias = STOCKAGE_ARBORESCENCE['general'][6]
     submit_alias = SUBMIT_FILE_NAME
+    
+    # Récupérer les corpus disponibles
+    list_annee = five_last_available_years(bibliometer_path)
 
+    Button_concat = tk.Button(self, 
+                                     text = 'Concat 5 dernières années des submits', 
+                                     font = ("Helvetica", 18), 
+                                     command = lambda: _concat_submit())
+    Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.2)
+
+    def _concat_submit():
+
+        df_concat = pd.DataFrame()
+
+        for i in range(len(list_annee)):
+            path = Path(bibliometer_path) / Path(list_annee[i]) / Path(bdd_mensuelle_alias) / Path(f'submit.xlsx')
+            df_inter = pd.read_excel(path)
+            df_concat = df_concat.append(df_inter)
+
+        date = str(datetime.now())[:16].replace(':', '')
+        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_submit_{os.getlogin()}.xlsx'))
     
-    ### Choose which year you want to be working with #############################################################################################################
-    years_list = five_last_available_years(bibliometer_path)
-    variable_years = tk.StringVar(self)
-    variable_years.set(years_list[0])
-    
-        # Création de l'optionbutton des années
-    OptionButton_years = tk.OptionMenu(self, variable_years, *years_list)
-    OptionButton_years.place(anchor = 'center', relx = 0.25, rely = 0.15)
-    
-        # Création du label du choix de l'année
-    Label_1 = tk.Label(self, text = '''Choisir l'année de travail :''')
-    Label_1.place(anchor = 'center', relx = 0.10, rely = 0.15)
-    ###############################################################################################################################################################
     
     ### Bouton qui va permettre de lancer la création du filtre ###################################################################################################
     Button_1 = tk.Button(self, 
                        text = '''Création d'un filtre''', 
-                       command = lambda: _create_filter(OptionButton))
-    Button_1.place(anchor = 'center', relx = 0.45, rely = 0.15)
+                       command = lambda: _create_filter(OptionButton_filtre))
+    Button_1.place(anchor = 'center', relx = 0.5, rely = 0.3)
     ###############################################################################################################################################################
     
     ### Choose which filter you want to be working with #############################################################################################################
@@ -78,112 +79,49 @@ def create_WorkSubmit(self, bibliometer_path):
     variable_bis = tk.StringVar(self)
     variable_bis.set(filter_list[0])
     
-        # Création de l'optionbutton des années
-    OptionButton = tk.OptionMenu(self, variable_bis, *filter_list)
-    OptionButton.place(anchor = 'center', relx = 0.25, rely = 0.35)
+        # Création de l'optionbutton des filtres
+    OptionButton_filtre = tk.OptionMenu(self, variable_bis, *filter_list)
+    OptionButton_filtre.place(anchor = 'center', relx = 0.25, rely = 0.4)
     
         # Création du label
     Label = tk.Label(self, text = '''Choisir le filtre :''')
-    Label.place(anchor = 'center', relx = 0.10, rely = 0.35)
+    Label.place(anchor = 'center', relx = 0.10, rely = 0.4)
     
             # Nom du fichier à sauvegarder
     Entry_bis = tk.Entry(self)
-    Entry_bis.place(anchor = 'center', relx = 0.45, rely = 0.35)
+    Entry_bis.place(anchor = 'center', relx = 0.45, rely = 0.4)
     
         # Buton pour creer fichier excel
     Button = tk.Button(self, 
                        text = 'Création du fichier excel', 
                        command = lambda: _save_to_excel(variable_bis.get(), Entry_bis.get()))
-    Button.place(anchor = 'center', relx = 0.75, rely = 0.35)
+    Button.place(anchor = 'center', relx = 0.75, rely = 0.4)
     ###############################################################################################################################################################
-    
-    
-    # PREMIERE PARTIE : CONSOLIDATION    
-    Button_mise_en_forme = tk.Button(self, 
-                                     text = 'Consolidation homonymes', 
-                                     command = lambda: consolidation_anonymat(Path(bibliometer_path) / 
-                                                                      Path(variable_years.get()) / 
-                                                                      Path(bdd_mensuelle_alias) / 
-                                                                      Path(submit_alias), 
-                                                                      Path(bibliometer_path) / 
-                                                                      Path(variable_years.get()) / 
-                                                                      Path(Homonyme_path_alias) / 
-                                                                      Path(f'fichier_consolidation_{variable_years.get()}.xlsx')))
-    Button_mise_en_forme.place(anchor = 'center', relx = 0.25, rely = 0.55)
-    
-    # DEUXIEME PARTIE : DEFINITION DE L'OTP
-    
-    Button_mise_en_forme = tk.Button(self, 
-                                     text = 'Ajouter OTP à \nfichier consolidé', 
-                                     command = lambda: ajout_OTP(Path(bibliometer_path) / 
-                                                                      Path(variable_years.get()) / 
-                                                                      Path(Homonyme_path_alias) / 
-                                                                      Path(f'fichier_consolidation_{variable_years.get()}.xlsx'), 
-                                                                      Path(bibliometer_path) / 
-                                                                      Path(variable_years.get()) / 
-                                                                      Path(OTP_path_alias)))
-    Button_mise_en_forme.place(anchor = 'center', relx = 0.50, rely = 0.55)
-    
-    # TROISIEME PARTIE : CONSTRUCTION DU FICHIER FINAL
-        
-    # Buton pour creer fichier excel d'une filtre par département
-    Button = tk.Button(self, 
-                       text = 'Fichier départements qui \npublient ensemble', 
-                       command = lambda: filtrer_par_departement(Path(bibliometer_path) / 
-                                                                 Path(variable_years.get()) / 
-                                                                 Path(OTP_path_alias), 
-                                                                 Path(bibliometer_path) / 
-                                                                 Path(variable_years.get()) / 
-                                                                 Path(R_path_alias) / 
-                                                                 Path(f'filtre_par_departement_{variable_years.get()}.xlsx')))
-    Button.place(anchor = 'center', relx = 0.75, rely = 0.55)
-    
-    # QUATRIEME PARTIE : CONCATENER LES 5 DERNIERS ANNEES
-    Button = tk.Button(self, 
-                       text = 'Concat sur 5 dernières \nannées dispo', 
-                       command = lambda: _concat_filtre_depar())
-    
-    Button.place(anchor = 'center', relx = 0.5, rely = 0.75)
-    
-    ###############################################################################################################################################################
-    
-    def _concat_filtre_depar():
-        
-        '''
-        '''
-        
-        df_concat = pd.DataFrame()
-    
-        for i in range(len(years_list)):
-            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f'filtre_par_departement_{years_list[i]}.xlsx')
-            df_inter = pd.read_excel(path)
-            df_concat = df_concat.append(df_inter)
-            
-        date = str(datetime.now())[:16].replace(':', '')
-        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_dep_{os.getlogin()}.xlsx'))
         
     def _save_to_excel(filtre, nom):
         
         ### Path to the submit file ###################################################################################################################################
-        submit_path = Path(bibliometer_path) / Path(variable_years.get()) / Path(bdd_mensuelle_alias) / Path(submit_alias)
+        submit_path = Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(os.listdir(Path(bibliometer_path) / Path(bdd_annuelle_alias))[-1])
         ###############################################################################################################################################################
         
         ### Charger la df #############################################################################################################################################
         df = pd.read_excel(submit_path)
         df['Nom Prénom']=df.apply(lambda x:'%s %s' % (x['Nom'], x['Prénom']),axis=1)
-        df_1 = df[SET_1]
+        #df_1 = df[SET_1]
+        df_1 = df.copy()
         df_1.fillna('', inplace=True)
         ###############################################################################################################################################################
         
         filter_path = Path(bibliometer_path) / Path(filtre_path_alias) / Path(filtre)
         df_filtre = pd.read_excel(filter_path)
+        print(df_filtre)
         list_filtre = df_filtre[0].tolist()
         
         df_to_save = df_1[df_filtre[0].tolist()]
         
         df_to_save.to_excel(Path(bibliometer_path) / Path(R_bis_path_alias) / Path(nom + '.xlsx'))
         
-    def _create_filter(OptionButton):
+    def _create_filter(OptionButton_filtre):
         
         newWindow = tk.Toplevel(self)
         newWindow.title('Création du filtre')
@@ -217,14 +155,15 @@ def create_WorkSubmit(self, bibliometer_path):
         # Add that new frame to a window in the canvas
         my_canvas.create_window((0,0), window = second_frame, anchor = 'nw')
 
-        ### Path to the submit file ###################################################################################################################################
-        submit_path = Path(bibliometer_path) / Path(variable_years.get()) / Path(bdd_mensuelle_alias) / Path(submit_alias)
+        ### Path to the submit file ###################################################################################################################################       
+        submit_path = Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(os.listdir(Path(bibliometer_path) / Path(bdd_annuelle_alias))[-1])
         ###############################################################################################################################################################
 
         ### Charger la df #############################################################################################################################################
         df = pd.read_excel(submit_path)
         df['Nom Prénom']=df.apply(lambda x:'%s %s' % (x['Nom'], x['Prénom']),axis=1)
-        df_1 = df[SET_1]
+        #df_1 = df[SET_1]
+        df_1 = df.copy()
         df_1.fillna('', inplace=True)
         ###############################################################################################################################################################
         
@@ -242,11 +181,11 @@ def create_WorkSubmit(self, bibliometer_path):
         ### Bouton qui va permettre de sauvegarder le filtre #########################################################################################################
         Button = tk.Button(backup_frame, 
                            text = 'Sauvegarde du filtre', 
-                           command = lambda: _save_filter(OptionButton))
+                           command = lambda: _save_filter(OptionButton_filtre))
         Button.place(anchor = 'center', relx = 0.45, rely = 0.35)
         ###############################################################################################################################################################
         
-        def _save_filter(OptionButton):
+        def _save_filter(OptionButton_filtre):
             filter_name = Entry.get() + ".xlsx"
             
             list_to_keep = []
@@ -274,14 +213,14 @@ def create_WorkSubmit(self, bibliometer_path):
             
             new_df.to_excel(save_path)
             
-            OptionButton.destroy()
+            #OptionButton_filtre.destroy()
             
-            filter_list = la_liste_des_filtres_disponibles(bibliometer_path)
-            variable_bis = tk.StringVar(self)
-            variable_bis.set(filter_list[0])
+            #filter_list = la_liste_des_filtres_disponibles(bibliometer_path)
+            #variable_bis = tk.StringVar(self)
+            #variable_bis.set(filter_list[0])
 
                 # Création de l'optionbutton des années
-            OptionButton = tk.OptionMenu(self, variable_bis, *filter_list)
-            OptionButton.place(anchor = 'center', relx = 0.25, rely = 0.35)
+            #OptionButton_filtre = tk.OptionMenu(self, variable_bis, *filter_list)
+            #OptionButton_filtre.place(anchor = 'center', relx = 0.25, rely = 0.4)
             
             newWindow.destroy()
