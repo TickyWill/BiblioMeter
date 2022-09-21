@@ -634,23 +634,27 @@ def add_biblio_list(in_path, out_path):
 def ajout_IF(in_path, out_path, IF_path, year):
     
     ''' 
-    
+
     Args:
-        in_path (path): path (including name of the file) leading to the working excel file. 
+        in_path (path): path (including name of the file if year != None) leading to the working excel file. 
         out_path (path): path (including name of the file) leading to where the file will be saved after going through its treatment.
+        IF_path (path): path (including name of the file) leading to the impact factor excel file.
+        year (int):
     
     Returns:
     
     Notes:
     
     '''
-
+        
     # Standard imports
     from pathlib import Path
 
     # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_OTP
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILL_EMPTY_KEY_WORD
 
     # 3rd party imports
     import pandas as pd
@@ -658,34 +662,125 @@ def ajout_IF(in_path, out_path, IF_path, year):
     # Useful alias
     ISSN_alias = COL_NAMES['articles'][10]
     EISSN_alias = COL_NAMES_BONUS['EISSN']
-    IF_alias = 'IF'
-    Impact_Factor_alias = COL_NAMES_BONUS['IF']
-
-    # df_IF = pd.read_excel(IF_path, sheet_name = str(year)) # Fichier excel qui me permet de construire mon dictionnaire
-    df_IF = pd.read_excel(IF_path, sheet_name = str(2022))
+    IF_alias = COL_NAMES_BONUS['IF clarivate']
+    IF_cours_alias = COL_NAMES_BONUS['IF en cours']
+    IF_publi_alias = COL_NAMES_BONUS['IF année publi']
+    
     df_submit = pd.read_excel(in_path) # Ma DataFrame
-
-    dict1 = dict(zip(df_IF[ISSN_alias], df_IF[IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
-
-    s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-
-    r = s.map(dict1) # Je map la Series avec mon dictionnaire
-
-    df_submit[Impact_Factor_alias] = r # Je rajoute la colonne à ma DataFrame
     
-    # Appliquer nan --> unknow to df TO DO
-    
-    df_submit[Impact_Factor_alias] = df_submit[Impact_Factor_alias].fillna('unknown')
-    
-    # # Faire test EISSN sur les unknow
-    # filtre_unknowm = df_submit[Impact_Factor_alias] == 'unknowm'
-    # dict2 = dict(zip(df_submit[filtre_unknowm][EISSN_alias], df_IF[IF_alias]))
-    
-    # s = df_submit[filtre_unknowm][EISSN_alias] # Je récup la colonne clef de ma DF en Series
+    if year == None:
+        df_IF = pd.read_excel(IF_path, sheet_name = None)
+        
+        # using dictionary to convert type of  Year column
+        convert_dict = {'Year': str}
+        df_submit = df_submit.astype(convert_dict)
 
-    # r = s.map(dict2) # Je map la Series avec mon dictionnaire
+        list_annee = list(df_submit['Year'].unique())
+        try :
+            list_annee.remove(FILL_EMPTY_KEY_WORD)
+        except ValueError:
+            pass
+        
+        # Maintenant qu'on a les années, on boucle dessus pour appliquer un filtre sur la df et changer les IF en conséquence.
+        df_submit_bis = pd.DataFrame()
+        for annee in list_annee:
+            print(f"L'année en cours de traitement est la suivante : {annee}")
+            df_inter = df_submit[df_submit['Year'] == annee]
+            
+            try:
+                dict1 = dict(zip(df_IF[annee][ISSN_alias], df_IF[annee][IF_alias]))
+                s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1) # Je map la Series avec mon dictionnaire
+                df_inter[IF_publi_alias] = r # Je rajoute la colonne à ma DataFrame
+                
+                # Appliquer nan --> unknow to df
+                df_inter[IF_publi_alias] = df_inter[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+                
+                print(f"La colonne {IF_publi_alias} a été rajoutée avec succès pour l'année {annee}")
 
-    df_submit.to_excel(out_path)
+                dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
+                s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1) # Je map la Series avec mon dictionnaire
+                df_inter[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
+                
+                # Appliquer nan --> unknow to df
+                df_inter[IF_cours_alias] = df_inter[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                
+                print(f"La colonne {IF_cours_alias} a été rajoutée avec succès pour l'année {annee}, avec les IF de l'année {list(df_IF.keys())[-1]}")
+
+                df_submit_bis = df_submit_bis.append(df_inter)
+                
+            except KeyError:
+                
+                dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
+                s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1) # Je map la Series avec mon dictionnaire
+
+                df_inter[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
+                df_inter[IF_publi_alias] = 'Not available' # Je rajoute la colonne à ma DataFrame
+
+                # Appliquer nan --> unknow to df
+                df_inter[IF_cours_alias] = df_inter[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_inter[IF_publi_alias] = df_inter[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+                
+                print(f"Les colonnes {IF_publi_alias} et {IF_cours_alias} ont été rajoutées avec succès pour l'année {annee}")
+
+                df_submit_bis = df_submit_bis.append(df_inter)
+            
+        df_submit_bis.to_excel(out_path, index = False, columns = COL_OTP)
+                
+    
+    else: # Mode de fonctionnement par année
+        # Check if the year is available
+        try:
+            df_IF = pd.read_excel(IF_path, sheet_name = str(year))
+            # Ca fonctionne, alors on ajoute la colonne IF de l'année de publication
+            print(f"Les IF sortis en {year} sont utilisés pour créer la colonne {IF_publi_alias}")
+
+            dict1 = dict(zip(df_IF[ISSN_alias], df_IF[IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
+            s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
+            r = s.map(dict1) # Je map la Series avec mon dictionnaire
+            df_submit[IF_publi_alias] = r # Je rajoute la colonne à ma DataFrame
+
+            # Appliquer nan --> unknow to df
+            df_submit[IF_publi_alias] = df_submit[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+
+            # Et on fait pareil avec les IF de l'année en cours
+            df_IF = pd.read_excel(IF_path, sheet_name = None)
+            print(f"Les IF sortis en {int(list(df_IF.keys())[-1])} sont utilisés pour créer la colonne {IF_cours_alias}")
+
+            dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
+            s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
+            r = s.map(dict1) # Je map la Series avec mon dictionnaire
+            df_submit[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
+
+            # Appliquer nan --> unknow to df
+            df_submit[IF_cours_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+
+            df_submit.to_excel(out_path, index = False, columns = COL_OTP)
+
+        except ValueError:
+            # Check if the year is available, if not, terminate function
+            try:
+                # Et on fait pareil avec les IF de l'année en cours
+                df_IF = pd.read_excel(IF_path, sheet_name = None)
+                print(f"Les IF sortis en {int(list(df_IF.keys())[-1])} sont utilisés pour créer la colonne {IF_cours_alias}")
+
+                dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
+                s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1) # Je map la Series avec mon dictionnaire
+
+                df_submit[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
+                df_submit[IF_publi_alias] = r # Je rajoute la colonne à ma DataFrame
+
+                # Appliquer nan --> unknow to df
+                df_submit[IF_cours_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_submit[IF_publi_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+
+                df_submit.to_excel(out_path, index = False, columns = COL_OTP)
+
+            except ValueError:
+                print('Mettre à jour le fichier Impact Factor')
 
 def clean_reorder_rename_submit(in_path, out_path):
     
@@ -748,7 +843,7 @@ def maj_listing_RH():
     
     # 3rd party library imports
     import pandas as pd 
-    from openpyxl import load_workbook 
+    from openpyxl import load_workbook
     
     # useful alias
     bibliometer = Path(ROOT_PATH)

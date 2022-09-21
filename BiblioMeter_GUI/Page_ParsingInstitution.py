@@ -52,7 +52,7 @@ def create_ParsingInstitution(self, bibliometer_path):
     
         # Création de l'option button des années
     OptionButton = tk.OptionMenu(self, variable_years, *years_list)
-    OptionButton.place(anchor = 'center', relx = 0.40, rely = 0.20)
+    OptionButton.place(anchor = 'center', relx = 0.32, rely = 0.20)
     
         # Création du label
     Label = tk.Label(self, text = '''Choisir l'année de travail :''')
@@ -182,7 +182,7 @@ def create_ParsingInstitution(self, bibliometer_path):
                               Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
                               Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
                               Path(bibliometer_path),
-                              Path(variable_years.get()), 
+                              variable_years.get(), 
                               go_back_years.get())
         
         messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes dans l'ordre :\n1 - Consolidation\n2- OTP\n3 - Création fichier final")

@@ -118,10 +118,14 @@ COL_NAMES_BONUS = {
     'nom prénom' : 'Nom Prénom du premier auteur Liten', 
     'nom prénom liste' : 'Liste des auteurs Liten participant à la publication', 
     'liste biblio' : 'Référence bibliographique complète', 
-    'list OTP' : "Choix de l'OTP",
-    'IF' : 'Impact Factor', 
+    'list OTP' : "Choix de l'OTP", 
+    'IF en cours' : "IF de l'année en cours", 
+    'IF année publi' : "IF de l'année de publication",
+    'IF clarivate' : 'IF', 
     'EISSN' : 'EISSN'
 }
+
+FILL_EMPTY_KEY_WORD = 'unknow'
 
 COL_NAMES_DPT = {
     'DTNM' : 'DTNM',
@@ -140,7 +144,8 @@ COL_NAMES_RH['prénom'],  # 'Prénom',
 COL_NAMES['articles'][9],  # 'Title', 
 COL_NAMES['articles'][1],  # 'Authors',
 COL_NAMES['articles'][3],  # 'Journal',
-COL_NAMES_BONUS['IF'], # IF
+COL_NAMES_BONUS['IF en cours'], # IF en crous, 
+COL_NAMES_BONUS['IF année publi'], # IF année de la publi
 COL_NAMES['articles'][6],  # 'DOI', 
 COL_NAMES['articles'][10],  # 'ISSN', 
 COL_NAMES['articles'][7],  # 'Document_type', 
@@ -168,7 +173,8 @@ COL_NAMES_BONUS['liste biblio'],
 COL_NAMES['articles'][9],  # 'Title', 
 COL_NAMES['articles'][1],  # 'Authors',
 COL_NAMES['articles'][3],  # 'Journal',
-COL_NAMES_BONUS['IF'], # IF
+COL_NAMES_BONUS['IF en cours'], # IF en cours, 
+COL_NAMES_BONUS['IF année publi'], # IF année de la publi
 COL_NAMES['articles'][6],  # 'DOI', 
 COL_NAMES['articles'][10],  # 'ISSN', 
 COL_NAMES['articles'][7],  # 'Document_type', 
