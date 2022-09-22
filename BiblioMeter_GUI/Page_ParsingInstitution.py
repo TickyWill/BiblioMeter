@@ -41,9 +41,91 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
+    from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import place_bellow
+    from BiblioMeter_GUI.Useful_Functions import encadre
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
+    from BiblioMeter_GUI.Coordinates import X_YEAR_PI
+    from BiblioMeter_GUI.Coordinates import Y_YEAR_PI
+
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import X_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import Y_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_1
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import X_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import Y_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_2
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import X_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import Y_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_3
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_AFFI
+    from BiblioMeter_GUI.Coordinates import X_AFFI
+    from BiblioMeter_GUI.Coordinates import Y_AFFI
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT
+    from BiblioMeter_GUI.Coordinates import FONT_CROISEMENT
+    from BiblioMeter_GUI.Coordinates import X_CROISEMENT
+    from BiblioMeter_GUI.Coordinates import Y_CROISEMENT
+
+    from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT_L
+    from BiblioMeter_GUI.Coordinates import FONT_CROISEMENT_L
+    from BiblioMeter_GUI.Coordinates import FORMAT_CROISEMENT_L
+
+    from BiblioMeter_GUI.Coordinates import FONT_GOBACK
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_CONSOLIDATION
+    from BiblioMeter_GUI.Coordinates import FONT_CONSOLIDATION
+    from BiblioMeter_GUI.Coordinates import X_CONSOLIDATION
+    from BiblioMeter_GUI.Coordinates import Y_CONSOLIDATION
+
+    from BiblioMeter_GUI.Coordinates import FONT_OTP
+    
+    from BiblioMeter_GUI.Coordinates import FONT_FINALE
+
+    from BiblioMeter_GUI.Coordinates import FONT_CONCAT
+
+    ### DECORATION DE LA PAGE
+    # - Canvas
+    fond = tk.Canvas(self, width = 700, height = 900)
+    fond.place(x = 0, y = 0)
+    
+    # - Labels
+    etape_1 = tk.Label(self, 
+                       text = TEXT_ETAPE_1, 
+                       justify = FORMAT_TEXT_ETAPE_1, 
+                       font = FONT_ETAPE_1, 
+                       underline = UNDERLINE_ETAPE_1)
+    etape_1.place(x = X_ETAPE_1, y = Y_ETAPE_1)
+    
+    etape_2 = tk.Label(self, 
+                       text = TEXT_ETAPE_2, 
+                       justify = FORMAT_TEXT_ETAPE_2, 
+                       font = FONT_ETAPE_2, 
+                       underline = UNDERLINE_ETAPE_2)
+    etape_2.place(x = X_ETAPE_2, y = Y_ETAPE_2)
+    
+    etape_3 = tk.Label(self, 
+                       text = TEXT_ETAPE_3, 
+                       justify = FORMAT_TEXT_ETAPE_3, 
+                       font = FONT_ETAPE_3, 
+                       underline = UNDERLINE_ETAPE_3)
+    etape_3.place(x = X_ETAPE_3, y = Y_ETAPE_3)
+    
     
     ### Choose which year you want to be working with #############################################################################################################
     years_list = five_last_available_years(bibliometer_path)
@@ -51,20 +133,23 @@ def create_ParsingInstitution(self, bibliometer_path):
     variable_years.set(years_list[0])
     
         # Création de l'option button des années
-    OptionButton = tk.OptionMenu(self, variable_years, *years_list)
-    OptionButton.place(anchor = 'center', relx = 0.32, rely = 0.20)
+    OptionButton_years = tk.OptionMenu(self, variable_years, *years_list)
     
         # Création du label
-    Label = tk.Label(self, text = '''Choisir l'année de travail :''')
-    Label.place(anchor = 'center', relx = 0.20, rely = 0.20)
+    Label_years = tk.Label(self, text = TEXT_YEAR_PI)
+    Label_years.place(x = X_YEAR_PI, y = Y_YEAR_PI)
+    
+    place_after(Label_years, OptionButton_years, dy = -6)
+    encadre(fond, Label_years, OptionButton_years, ds = 5)
     ###############################################################################################################################################################
     
     
     ### Bouton qui va permettre d'utiliser seeting_secondary_inst_filter sur un corpus concatené ##################################################################
-    Button = tk.Button(self, 
-                       text = 'Choix d’affiliations supplémentaires\nautres que LITEN et INES', 
+    Button_affi = tk.Button(self, 
+                       text = TEXT_AFFI, 
                        command = lambda: _setting_extend())
-    Button.place(anchor = 'center', relx = 0.70, rely = 0.2)
+    place_after(Label_years, Button_affi, dx = 400, dy = -6)
+    #Button_affi.place(x = X_AFFI, y = Y_AFFI)
     ###############################################################################################################################################################
     
     def _setting_extend():
@@ -159,11 +244,13 @@ def create_ParsingInstitution(self, bibliometer_path):
             newWindow.destroy()
     
     ### Bouton qui va permettre d'utiliser seeting_secondary_inst_filter sur un corpus concatené ##################################################################
-    Button = tk.Button(self, 
-                       text = 'Croiser les publications avec les effectifs Liten des N dernières années', 
+    Button_croisement = tk.Button(self, 
+                       text = TEXT_CROISEMENT,
+                       font = FONT_CROISEMENT, 
                        command = lambda: _launch_recursive_year_search())
     
-    Button.place(anchor = 'center', relx = 0.30, rely = 0.4)
+    place_bellow(etape_1, Button_croisement, dy = 13)
+    #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
     
     def _launch_recursive_year_search():
         
@@ -188,18 +275,23 @@ def create_ParsingInstitution(self, bibliometer_path):
         messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes dans l'ordre :\n1 - Consolidation\n2- OTP\n3 - Création fichier final")
     
     ### Choix du nombre d'année du recursive_year_search
-    Label = tk.Label(self, 
-                     text = "Revenir en arrière sur combien d'année ?  N =")
-    Label.place(anchor = 'center', relx = 0.65, rely = 0.4)
+    Label_croisement = tk.Label(self, 
+                     text = TEXT_CROISEMENT_L, 
+                     font = FONT_CROISEMENT_L, 
+                     justify = FORMAT_CROISEMENT_L)
+    
+    place_bellow(Button_croisement, Label_croisement, dy = 16)
+
     
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
     go_back_years = tk.StringVar(self)
     go_back_years.set(go_back_years_list_rh[4])
     
         # Création de l'option button des années
-    OptionButton = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
-    OptionButton.place(anchor = 'center', relx = 0.82, rely = 0.4)
-    ###############################################################################################################################################################
+    OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
+    OptionButton_goback.configure(font = FONT_GOBACK)
+    
+    place_after(Label_croisement, OptionButton_goback, dy = -6) ###########################################################################################################################################################
     
     # Useful alias
     bdd_mensuelle_alias = STOCKAGE_ARBORESCENCE['general'][0]
@@ -211,10 +303,11 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     # PREMIERE PARTIE : CONSOLIDATION    
     Button_mise_en_forme = tk.Button(self, 
-                                     text = 'Consolidation homonymes', 
+                                     text = TEXT_CONSOLIDATION, font = FONT_CONSOLIDATION, 
                                      command = lambda: _launch_consolidation_homonyme())
     
-    Button_mise_en_forme.place(anchor = 'center', relx = 0.25, rely = 0.55)
+    # Button_mise_en_forme.place(x = X_CONSOLIDATION, y = Y_CONSOLIDATION)
+    place_bellow(Label_croisement, Button_mise_en_forme, dy = 13)
     
     def _launch_consolidation_homonyme():
         
@@ -225,24 +318,25 @@ def create_ParsingInstitution(self, bibliometer_path):
                               Path(bibliometer_path) / 
                               Path(variable_years.get()) / 
                               Path(Homonyme_path_alias) / 
-                              Path(f'Fichier Consolisation {variable_years.get()}.xlsx'))
+                              Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
         
         messagebox.showinfo('Information', f"Aller dans le dossier\n1 - Consolidation Homonymes / Fichier Consolidation\nde l'année de travail pour supprimer les mauvais homonymes")
     
     # DEUXIEME PARTIE : DEFINITION DE L'OTP
     
-    Button_mise_en_forme = tk.Button(self, 
-                                     text = 'Ajouter OTP à\nfichier consolidé', 
-                                     command = lambda: _launch_ajout_OTP())
+    Button_OTP = tk.Button(self, 
+                           text = 'Ajouter OTP à\nfichier consolidé', 
+                           font = FONT_OTP,  
+                           command = lambda: _launch_ajout_OTP())
     
-    Button_mise_en_forme.place(anchor = 'center', relx = 0.50, rely = 0.55)
+    place_bellow(etape_2, Button_OTP, dy = 13)
     
     def _launch_ajout_OTP():
         
         ajout_OTP(Path(bibliometer_path) / 
                   Path(variable_years.get()) / 
                   Path(Homonyme_path_alias) / 
-                  Path(f'Fichier Consolisation {variable_years.get()}.xlsx'), 
+                  Path(f'Fichier Consolidation {variable_years.get()}.xlsx'), 
                   Path(bibliometer_path) / 
                   Path(variable_years.get()) / 
                   Path(OTP_path_alias))
@@ -251,12 +345,13 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     # TROISIEME PARTIE : CONSTRUCTION DU FICHIER FINAL  
     # Buton pour creer fichier excel d'une filtre par département
-    Button = tk.Button(self, 
-                       text = "Création fichier final\npour l'année sélectionnée", 
-                       command = lambda: launch_filtrer_par_departement())
+    Button_finale = tk.Button(self, 
+                              text = "Création fichier final\npour l'année sélectionnée", 
+                              font = FONT_FINALE, 
+                              command = lambda: launch_filtrer_par_departement())
     
-    Button.place(anchor = 'center', relx = 0.75, rely = 0.55)
-    
+    place_bellow(etape_3, Button_finale, dy = 13)
+
     def launch_filtrer_par_departement():
         
         a = filtrer_par_departement(Path(bibliometer_path) / 
@@ -273,11 +368,14 @@ def create_ParsingInstitution(self, bibliometer_path):
             messagebox.showinfo('Information', f"La création de la liste finale n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement sous le bon nom (fichier_ajout_OTP_XXXX_ok")
     
     # QUATRIEME PARTIE : CONCATENER LES 5 DERNIERS ANNEES
-    Button = tk.Button(self, 
-                       text = 'Concat sur 5 dernières\nannées dispo', 
-                       command = lambda: _concat_filtre_depar())
+    Button_concat = tk.Button(self, 
+                              text = 'Concat sur 5 dernières\nannées dispo', 
+                              font = FONT_CONCAT, 
+                              command = lambda: _concat_filtre_depar())
     
-    Button.place(anchor = 'center', relx = 0.5, rely = 0.75)
+    place_after(Button_finale, Button_concat, dx = 420)
+    
+    #Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.75)
     
     def _concat_filtre_depar():
         

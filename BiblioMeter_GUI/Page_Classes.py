@@ -22,16 +22,15 @@ class App_Test(tk.Tk):
         from BiblioMeter_GUI.Useful_Classes import LabelEntry
         from BiblioMeter_FUNCTS.BiblioMeterFonctions import maj_listing_RH
         
+        from BiblioMeter_GUI.Coordinates import WINDOW_HEIGHT
+        from BiblioMeter_GUI.Coordinates import WINDOW_WIDTH
+        
         # To do :
-        global screen_width
         screen_width = self.winfo_screenwidth()
-        global screen_height
         screen_height = self.winfo_screenheight()
         
-        global window_width
-        window_width = 700
-        global window_heigth
-        window_height = 900
+        window_height = WINDOW_HEIGHT
+        window_width = WINDOW_WIDTH
         
         global center_x 
         center_x = int(screen_width/2 - window_width)

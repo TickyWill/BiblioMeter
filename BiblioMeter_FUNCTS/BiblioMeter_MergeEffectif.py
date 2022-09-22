@@ -672,6 +672,9 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     #####################################################################
     # Saving results in `SUBMIT_FILE_NAME` and `ORPHAN_FILE_NAME` files #
     #####################################################################
+    
+    ### Normalisation des titres de journaux
+    df_submit['Journal'] = df_submit['Journal'].apply(lambda x : x.title())
 
     df_submit.to_excel(path_out / Path(SUBMIT_FILE_NAME))
     

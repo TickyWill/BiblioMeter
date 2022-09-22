@@ -1,7 +1,10 @@
 __all__ = ['five_last_available_years', 
            'get_corpus_filename_by_year',
            'la_liste_des_filtres_disponibles',
-           'existing_corpuses']
+           'existing_corpuses', 
+           'place_after', 
+           'place_bellow', 
+           'encadre']
 
 def la_liste_des_filtres_disponibles(bibliometer_path):
     
@@ -145,3 +148,29 @@ def existing_corpuses(bibliometer_path):
         list_scopus_rawdata.append(path_scopus_rawdata.is_file())
 
     return list_annee, list_wos_rawdata, list_wos_parsing, list_scopus_rawdata, list_scopus_parsing, list_deduplication
+
+def place_after(gauche, droite, dx = 5, dy = 0):
+    gauche_info = gauche.place_info()
+    x = int(gauche_info['x']) + gauche.winfo_reqwidth() + dx
+    y = int(gauche_info['y']) + dy
+    droite.place(x = x, y = y)
+    
+def place_bellow(haut, bas, dx = 0, dy = 5):
+    haut_info = haut.place_info()
+    x = int(haut_info['x']) + dx
+    y = int(haut_info['y']) + haut.winfo_reqheight() + dy
+    bas.place(x = x, y = y)
+    
+def encadre(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
+    
+    gauche_info = gauche.place_info()
+    droite_info = droite.place_info()
+
+    x1 = int(gauche_info['x']) - dw
+    y1 = int(gauche_info['y']) - dn
+    
+    x2 = int(gauche_info['x']) + gauche.winfo_reqwidth() + droite.winfo_reqwidth() + de
+    y2 = int(droite_info['y']) + max(gauche.winfo_reqheight(), droite.winfo_reqheight()) + ds
+
+    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
+    fond.place(x = 0, y = 0)

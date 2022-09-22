@@ -757,7 +757,7 @@ def ajout_IF(in_path, out_path, IF_path, year):
             # Appliquer nan --> unknow to df
             df_submit[IF_cours_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
 
-            df_submit.to_excel(out_path, index = False, columns = COL_OTP)
+            df_submit.to_excel(out_path, index = False)
 
         except ValueError:
             # Check if the year is available, if not, terminate function
@@ -771,13 +771,13 @@ def ajout_IF(in_path, out_path, IF_path, year):
                 r = s.map(dict1) # Je map la Series avec mon dictionnaire
 
                 df_submit[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
-                df_submit[IF_publi_alias] = r # Je rajoute la colonne à ma DataFrame
+                df_submit[IF_publi_alias] = 'Not available' # Je rajoute la colonne à ma DataFrame
 
                 # Appliquer nan --> unknow to df
                 df_submit[IF_cours_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
-                df_submit[IF_publi_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_submit[IF_publi_alias] = df_submit[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
 
-                df_submit.to_excel(out_path, index = False, columns = COL_OTP)
+                df_submit.to_excel(out_path, index = False)
 
             except ValueError:
                 print('Mettre à jour le fichier Impact Factor')
