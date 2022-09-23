@@ -675,8 +675,43 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     
     ### Normalisation des titres de journaux
     df_submit['Journal'] = df_submit['Journal'].apply(lambda x : x.title())
+    
+    
+    def _unique_pub_id(df):
+
+        '''The `_unique_pub_id`transforms the column 'Pub_id' of the df by adding _yyyy to the value of the row.
+
+        Args: 
+            df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
+
+        Returns:
+            (pandas.DataFrame()): the df with its changed column.
+        '''
+
+        # Local libray imports
+        from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+
+        # 3rd party library imports
+        import pandas as pd
+
+        # Useful alias
+        year_alias = COL_NAMES['articles'][2]
+        pub_id_alias = COL_NAMES['pub_id']
+
+        annee = df[year_alias].iloc[0]
+        
+        def _rename_pub_id(old, annee):
+            return f"{int(old)}_{annee}"
+
+        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, f"{annee}"))
+        
+        return df
+    
+    # Changing Pub_id columns to a unique Pub_id depending on the year
+    df_submit = _unique_pub_id(df_submit)
 
     df_submit.to_excel(path_out / Path(SUBMIT_FILE_NAME))
+
     
     ### Adding biblio
     add_biblio_list(path_out / Path(SUBMIT_FILE_NAME), path_out / Path(SUBMIT_FILE_NAME))

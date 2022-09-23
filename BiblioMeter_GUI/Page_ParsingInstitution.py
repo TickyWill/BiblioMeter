@@ -17,7 +17,7 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     Returns : nothing, it create the page in self
     """
-    
+
     # Standard library imports
     import os
     from pathlib import Path
@@ -41,9 +41,14 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
+    
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
-    from BiblioMeter_GUI.Useful_Functions import encadre
+    from BiblioMeter_GUI.Useful_Functions import encadre_RL
+    from BiblioMeter_GUI.Useful_Functions import encadre_UD
+    
+    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -53,25 +58,49 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_GUI.Coordinates import Y_YEAR_PI
 
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_1
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_1
+    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_1
     from BiblioMeter_GUI.Coordinates import X_ETAPE_1
     from BiblioMeter_GUI.Coordinates import Y_ETAPE_1
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_1
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_1
     
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_2
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_2
+    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_2
     from BiblioMeter_GUI.Coordinates import X_ETAPE_2
     from BiblioMeter_GUI.Coordinates import Y_ETAPE_2
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_2
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_2
     
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_3
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_3
+    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_3
     from BiblioMeter_GUI.Coordinates import X_ETAPE_3
     from BiblioMeter_GUI.Coordinates import Y_ETAPE_3
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_3
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_3
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import X_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import Y_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_4
+
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import X_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import Y_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_5
     
     from BiblioMeter_GUI.Coordinates import TEXT_AFFI
     from BiblioMeter_GUI.Coordinates import X_AFFI
@@ -92,16 +121,21 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_GUI.Coordinates import FONT_CONSOLIDATION
     from BiblioMeter_GUI.Coordinates import X_CONSOLIDATION
     from BiblioMeter_GUI.Coordinates import Y_CONSOLIDATION
-
-    from BiblioMeter_GUI.Coordinates import FONT_OTP
     
+    from BiblioMeter_GUI.Coordinates import TEXT_OTP
+    from BiblioMeter_GUI.Coordinates import FONT_OTP
+
+    from BiblioMeter_GUI.Coordinates import TEXT_FINALE
     from BiblioMeter_GUI.Coordinates import FONT_FINALE
 
     from BiblioMeter_GUI.Coordinates import FONT_CONCAT
+    
+    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_IF
+    from BiblioMeter_GUI.Coordinates import FONT_MAJ_IF
 
     ### DECORATION DE LA PAGE
     # - Canvas
-    fond = tk.Canvas(self, width = 700, height = 900)
+    fond = tk.Canvas(self, width = 900, height = 700)
     fond.place(x = 0, y = 0)
     
     # - Labels
@@ -112,6 +146,9 @@ def create_ParsingInstitution(self, bibliometer_path):
                        underline = UNDERLINE_ETAPE_1)
     etape_1.place(x = X_ETAPE_1, y = Y_ETAPE_1)
     
+    sous_text_etape_1 = tk.Label(self, text = SOUS_TEXT_ETAPE_1, justify = FORMAT_TEXT_ETAPE_1, font = FONT_SOUS_ETAPE_1)
+    place_after(etape_1, sous_text_etape_1, dx = 2, dy = 2)
+    
     etape_2 = tk.Label(self, 
                        text = TEXT_ETAPE_2, 
                        justify = FORMAT_TEXT_ETAPE_2, 
@@ -119,12 +156,38 @@ def create_ParsingInstitution(self, bibliometer_path):
                        underline = UNDERLINE_ETAPE_2)
     etape_2.place(x = X_ETAPE_2, y = Y_ETAPE_2)
     
+    sous_text_etape_2 = tk.Label(self, text = SOUS_TEXT_ETAPE_2, justify = FORMAT_TEXT_ETAPE_2, font = FONT_SOUS_ETAPE_2)
+    place_after(etape_2, sous_text_etape_2, dx = 2, dy = 4)
+    
     etape_3 = tk.Label(self, 
                        text = TEXT_ETAPE_3, 
                        justify = FORMAT_TEXT_ETAPE_3, 
                        font = FONT_ETAPE_3, 
                        underline = UNDERLINE_ETAPE_3)
     etape_3.place(x = X_ETAPE_3, y = Y_ETAPE_3)
+
+    sous_text_etape_3 = tk.Label(self, text = SOUS_TEXT_ETAPE_3, justify = FORMAT_TEXT_ETAPE_3, font = FONT_SOUS_ETAPE_3)
+    place_after(etape_3, sous_text_etape_3, dx = 2, dy = 4)
+    
+    etape_4 = tk.Label(self, 
+                       text = TEXT_ETAPE_4, 
+                       justify = FORMAT_TEXT_ETAPE_4, 
+                       font = FONT_ETAPE_4, 
+                       underline = UNDERLINE_ETAPE_4)
+    etape_4.place(x = X_ETAPE_4, y = Y_ETAPE_4)
+
+    sous_text_etape_4 = tk.Label(self, text = SOUS_TEXT_ETAPE_4, justify = FORMAT_TEXT_ETAPE_4, font = FONT_SOUS_ETAPE_4)
+    place_after(etape_4, sous_text_etape_4, dx = 2, dy = 4)
+
+    etape_5 = tk.Label(self, 
+                       text = TEXT_ETAPE_5, 
+                       justify = FORMAT_TEXT_ETAPE_5, 
+                       font = FONT_ETAPE_5, 
+                       underline = UNDERLINE_ETAPE_5)
+    etape_5.place(x = X_ETAPE_5, y = Y_ETAPE_5)
+
+    sous_text_etape_5 = tk.Label(self, text = SOUS_TEXT_ETAPE_5, justify = FORMAT_TEXT_ETAPE_5, font = FONT_SOUS_ETAPE_5)
+    place_after(etape_5, sous_text_etape_5, dx = 2, dy = 4)
     
     
     ### Choose which year you want to be working with #############################################################################################################
@@ -140,7 +203,7 @@ def create_ParsingInstitution(self, bibliometer_path):
     Label_years.place(x = X_YEAR_PI, y = Y_YEAR_PI)
     
     place_after(Label_years, OptionButton_years, dy = -6)
-    encadre(fond, Label_years, OptionButton_years, ds = 5)
+    encadre_RL(fond, Label_years, OptionButton_years, ds = 5)
     ###############################################################################################################################################################
     
     
@@ -249,7 +312,7 @@ def create_ParsingInstitution(self, bibliometer_path):
                        font = FONT_CROISEMENT, 
                        command = lambda: _launch_recursive_year_search())
     
-    place_bellow(etape_1, Button_croisement, dy = 13)
+    place_bellow(etape_1, Button_croisement, dx = 25, dy = 18)
     #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
     
     def _launch_recursive_year_search():
@@ -280,7 +343,7 @@ def create_ParsingInstitution(self, bibliometer_path):
                      font = FONT_CROISEMENT_L, 
                      justify = FORMAT_CROISEMENT_L)
     
-    place_bellow(Button_croisement, Label_croisement, dy = 16)
+    place_bellow(Button_croisement, Label_croisement, dx = 25, dy = 16)
 
     
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
@@ -291,7 +354,10 @@ def create_ParsingInstitution(self, bibliometer_path):
     OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
     OptionButton_goback.configure(font = FONT_GOBACK)
     
-    place_after(Label_croisement, OptionButton_goback, dy = -6) ###########################################################################################################################################################
+    place_after(Label_croisement, OptionButton_goback, dy = -6)
+    
+    encadre_UD(fond, etape_1, OptionButton_goback, "black", dn = 5, de = 5000, ds = -25, dw = 5000)
+    ###########################################################################################################################################################
     
     # Useful alias
     bdd_mensuelle_alias = STOCKAGE_ARBORESCENCE['general'][0]
@@ -307,7 +373,8 @@ def create_ParsingInstitution(self, bibliometer_path):
                                      command = lambda: _launch_consolidation_homonyme())
     
     # Button_mise_en_forme.place(x = X_CONSOLIDATION, y = Y_CONSOLIDATION)
-    place_bellow(Label_croisement, Button_mise_en_forme, dy = 13)
+    place_bellow(etape_2, Button_mise_en_forme, dx = 25, dy = 2)
+
     
     def _launch_consolidation_homonyme():
         
@@ -325,11 +392,12 @@ def create_ParsingInstitution(self, bibliometer_path):
     # DEUXIEME PARTIE : DEFINITION DE L'OTP
     
     Button_OTP = tk.Button(self, 
-                           text = 'Ajouter OTP à\nfichier consolidé', 
+                           text = TEXT_OTP, 
                            font = FONT_OTP,  
                            command = lambda: _launch_ajout_OTP())
     
-    place_bellow(etape_2, Button_OTP, dy = 13)
+    place_bellow(etape_3, Button_OTP, dx = 25, dy = 16)
+    encadre_UD(fond, etape_3, Button_OTP, "black", dn = 5, de = 5000, ds = -22, dw = 5000)
     
     def _launch_ajout_OTP():
         
@@ -350,7 +418,7 @@ def create_ParsingInstitution(self, bibliometer_path):
                               font = FONT_FINALE, 
                               command = lambda: launch_filtrer_par_departement())
     
-    place_bellow(etape_3, Button_finale, dy = 13)
+    place_bellow(etape_4, Button_finale, dx = 25, dy = 16)
 
     def launch_filtrer_par_departement():
         
@@ -369,11 +437,12 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     # QUATRIEME PARTIE : CONCATENER LES 5 DERNIERS ANNEES
     Button_concat = tk.Button(self, 
-                              text = 'Concat sur 5 dernières\nannées dispo', 
+                              text = TEXT_FINALE, 
                               font = FONT_CONCAT, 
                               command = lambda: _concat_filtre_depar())
     
-    place_after(Button_finale, Button_concat, dx = 420)
+    place_bellow(etape_5, Button_concat, dx = 70, dy = 18)
+    encadre_UD(fond, etape_5, Button_concat, "black", dn = 2, de = 5000, ds = 5000, dw = 5000)
     
     #Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.75)
     
@@ -393,5 +462,32 @@ def create_ParsingInstitution(self, bibliometer_path):
         df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_dep_{os.getlogin()}.xlsx'))
         
         messagebox.showinfo('Information', f"La concatenation des documents finaux des dernières années disponibles a été faite, vous pouvez la retrouver dans BDD Multi-annuelle")
-
+        
     
+    Button_MAJ_IF = tk.Button(self, 
+                              text = TEXT_MAJ_IF, 
+                              font = FONT_MAJ_IF, 
+                              command = lambda: _launch_maj_if())
+    
+    place_after(Button_concat, Button_MAJ_IF, dx = 130, dy = -5)
+
+    LabelEntry_MAJ_IF = LabelEntry_toFile(self, text_label = f"Fichier dont les IF\nsont à mettre à jour", width = 15)
+    LabelEntry_MAJ_IF.set("")
+    place_bellow(Button_MAJ_IF, LabelEntry_MAJ_IF, dx = 125, dy = 10)
+    
+        
+    def _launch_maj_if():
+        
+        '''
+        '''
+        
+        try:
+            ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), None)
+        
+        except:
+            messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+        
+        messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
+        
+        pass
+        

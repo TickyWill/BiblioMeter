@@ -3,8 +3,8 @@ __all__ = ['five_last_available_years',
            'la_liste_des_filtres_disponibles',
            'existing_corpuses', 
            'place_after', 
-           'place_bellow', 
-           'encadre']
+           'place_bellow', 'place_bellow_LabelEntry', 
+           'encadre_RL', 'encadre_UD']
 
 def la_liste_des_filtres_disponibles(bibliometer_path):
     
@@ -161,7 +161,7 @@ def place_bellow(haut, bas, dx = 0, dy = 5):
     y = int(haut_info['y']) + haut.winfo_reqheight() + dy
     bas.place(x = x, y = y)
     
-def encadre(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
+def encadre_RL(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
     
     gauche_info = gauche.place_info()
     droite_info = droite.place_info()
@@ -174,3 +174,24 @@ def encadre(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw =
 
     rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
     fond.place(x = 0, y = 0)
+    
+def encadre_UD(fond, haut, bas, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
+    
+    haut_info = haut.place_info()
+    bas_info = bas.place_info()
+
+    x1 = int(haut_info['x']) - dw
+    y1 = int(haut_info['y']) - dn
+    
+    x2 = int(bas_info['x']) + max(haut.winfo_reqwidth(), bas.winfo_reqwidth()) + de
+    y2 = int(bas_info['y']) + haut.winfo_reqheight() + bas.winfo_reqheight() + ds
+
+    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
+    fond.place(x = 0, y = 0)
+    
+def place_bellow_LabelEntry(haut, label_entry, dx = 0, dy = 5):
+    
+    haut_info = haut.place_info()
+    x = int(haut_info['x']) + dx
+    y = int(haut_info['y']) + haut.winfo_reqheight() + dy
+    label_entry.place(x = x, y = y)

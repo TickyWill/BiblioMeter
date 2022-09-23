@@ -84,7 +84,7 @@ class App_Test(tk.Tk):
         tmp = tk.Label(self, text = f"Date de la dernière mise à jour des effectifs Liten : {last_MAJ}")
         tmp.place(anchor = 'w', relx = 0.15, rely = 0.7)
         
-        tmp = tk.Label(self, text = f"Mettre à jour le fichier ? (NE PAS COCHER si le document 'Effectifs_2010_2022.xlsx' n'a pas été mis à jour ce mois ci)")
+        tmp = tk.Label(self, text = f"Mettre à jour le fichier ? (COCHER UNIQUEMENT SI le document 'Effectifs_2010_2022.xlsx' n'a pas été mis à jour ce mois ci)")
         tmp.place(anchor = 'w', relx = 0.15, rely = 0.75)
         
         tmp_var_check = tk.IntVar()

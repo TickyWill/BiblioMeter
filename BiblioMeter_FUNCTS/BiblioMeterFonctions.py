@@ -527,28 +527,34 @@ def filtrer_par_departement(in_path, out_path):
     
     # Useful alias
     pub_id_alias = COL_NAMES['pub_id']
-    chemin_DTNM = in_path / Path('fichier_ajout_OTP_DTNM.xlsx')
-    chemin_DTS = in_path / Path('fichier_ajout_OTP_DTS.xlsx')
-    chemin_DEHT = in_path / Path('fichier_ajout_OTP_DEHT.xlsx')
-    chemin_DTCH = in_path / Path('fichier_ajout_OTP_DTCH.xlsx')
+    chemin_DTNM = in_path / Path('fichier_ajout_OTP_DTNM_ok.xlsx')
+    chemin_DTS = in_path / Path('fichier_ajout_OTP_DTS_ok.xlsx')
+    chemin_DEHT = in_path / Path('fichier_ajout_OTP_DEHT_ok.xlsx')
+    chemin_DTCH = in_path / Path('fichier_ajout_OTP_DTCH_ok.xlsx')
 
     ### Charger les df et ajouter les 4 colonnes ###################################################################################################################
     if os.path.exists(chemin_DTNM):
         df_DTNM = pd.read_excel(chemin_DTNM)
     else:
-        return 0
+        chemin_DTNM = in_path / Path('fichier_ajout_OTP_DTNM.xlsx')
+        df_DTNM = pd.read_excel(chemin_DTNM)
+
     if os.path.exists(chemin_DTS):
         df_DTS = pd.read_excel(chemin_DTS)
     else:
-        return 0
+        chemin_DTS = in_path / Path('fichier_ajout_OTP_DTS.xlsx')
+        df_DTS = pd.read_excel(chemin_DTS)
     if os.path.exists(chemin_DEHT):
         df_DEHT = pd.read_excel(chemin_DEHT)
     else:
-        return 0
+        chemin_DEHT = in_path / Path('fichier_ajout_OTP_DEHT.xlsx')
+        df_DEHT = pd.read_excel(chemin_DEHT)
     if os.path.exists(chemin_DTCH):
         df_DTCH = pd.read_excel(chemin_DTCH)
     else:
-        return 0    
+        chemin_DTCH = in_path / Path('fichier_ajout_OTP_DTCH.xlsx')
+        df_DTCH = pd.read_excel(chemin_DTCH)
+
     df_OTP = df_DTNM.copy()
     df_OTP = df_OTP.append(df_DTS)
     df_OTP = df_OTP.append(df_DEHT)
