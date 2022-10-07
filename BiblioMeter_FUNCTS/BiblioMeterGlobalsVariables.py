@@ -3,7 +3,8 @@ __all__ = ['OTP_LIST',
            'COL_NAMES_RH', 
            'COL_NAMES_BONUS', 
            'COL_NAMES_DPT', 
-           'COL_CONSOLIDATION']
+           'COL_CONSOLIDATION', 
+           'COL_NAMES_FINALE', 'COL_SIZES']
 
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 #from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
@@ -127,6 +128,10 @@ COL_NAMES_BONUS = {
 
 FILL_EMPTY_KEY_WORD = 'unknow'
 
+COL_NAMES_FINALE = {
+'Authors' : 'Premier auteur de la publication', 
+'Document_type' : 'Type du document'}
+
 COL_NAMES_DPT = {
     'DTNM' : 'DTNM',
     'DTCH' : 'DTCH',
@@ -171,13 +176,13 @@ COL_NAMES_BONUS['nom prénom liste'], #Liste des auteurs
 COL_NAMES_BONUS['liste biblio'],
     
 COL_NAMES['articles'][9],  # 'Title', 
-COL_NAMES['articles'][1],  # 'Authors',
+COL_NAMES_FINALE['Authors'],  # 'Authors',
 COL_NAMES['articles'][3],  # 'Journal',
 COL_NAMES_BONUS['IF en cours'], # IF en cours, 
 COL_NAMES_BONUS['IF année publi'], # IF année de la publi
 COL_NAMES['articles'][6],  # 'DOI', 
 COL_NAMES['articles'][10],  # 'ISSN', 
-COL_NAMES['articles'][7],  # 'Document_type', 
+COL_NAMES_FINALE['Document_type'],  # 'Document_type', 
 COL_NAMES['articles'][2],  # 'Year',
     
 
@@ -188,3 +193,24 @@ COL_NAMES_DPT['DTS'],
 
 COL_NAMES_BONUS['list OTP']
 ]
+
+COL_SIZES = {
+'Pub_id' : 15,
+'Idx_authors' : 15,
+'Matricule' : 15,
+'Nom' : 15,
+'Prénom' : 15,
+'Title' : 35,
+'Authors' : 15,
+"IF de l'année en cours" : 21,
+"IF de l'année de publication" : 26,
+'DOI' : 15,
+'ISSN': 15,
+'Year': 15,
+'Dpt/DOB (lib court)': 15,
+'Service (lib court)': 15,
+'Laboratoire (lib court)': 15,
+'Référence bibliographique complète': 55,
+'HOMONYM': 20, 
+"Choix de l'OTP" : 75
+}

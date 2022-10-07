@@ -12,7 +12,11 @@ __all__ = ['get_unique_numbers',
            'ajout_IF',
            'clean_reorder_rename_submit', 
           
-           'maj_listing_RH']
+           'maj_listing_RH',
+           
+           'mise_en_page', 
+           
+           'rename_column_names']
 
 def get_unique_numbers(numbers):
 
@@ -43,7 +47,7 @@ def consolidation_homonyme(in_path, out_path):
 
     # Local library imports
     import BiblioMeter_FUNCTS as bmf
-    
+        
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
     
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
@@ -55,52 +59,38 @@ def consolidation_homonyme(in_path, out_path):
     from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME
     
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_CONSOLIDATION 
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_CONSOLIDATION
 
     # Useful alias
     pub_id_alias = COL_NAMES['pub_id']
     idx_author = COL_NAMES['authors'][1]
     dpt_alias = COL_NAMES_RH['dpt']
     homonym_alias = 'HOMONYM'
-       
+    col_conso_alias = COL_CONSOLIDATION
+        
     ###########################
     # Getting the submit file #
     ###########################
 
     df_submit = pd.read_excel(in_path)
     
-    # Remettre les Pub_ID dans l'ordre
-    df_submit.sort_values(by=[pub_id_alias, dpt_alias], ascending=False, inplace = True)
-    df_submit.sort_values(by=[pub_id_alias, idx_author], ascending=True, inplace = True)
-
     ############################################
     # Getting rid of the columns we don't want #
     ############################################
-
-    # Useful alias
-    col_conso_alias = COL_CONSOLIDATION
-    
     df_submit = df_submit[col_conso_alias].copy()
-
-    col_conso_alias = df_submit.columns.to_list()
-
-    # Liste unique des Pub_id conservé
-    list_of_Pub_id = df_submit[pub_id_alias].to_list()
-    list_of_Pub_id = bmf.get_unique_numbers(list_of_Pub_id)
-
-    #########################
-    # Ouverture du workbook #
-    #########################
-
+    
+    ## Remettre les Pub_ID dans l'ordre
+    #df_submit.sort_values(by=[pub_id_alias, dpt_alias], ascending=False, inplace = True)
+    #df_submit.sort_values(by=[pub_id_alias, idx_author], ascending=True, inplace = True)
+    
+    #wb, ws = mise_en_page(df_submit)
+    
     wb = Workbook()
     ws = wb.active
-    ws.title = 'Publi x Effectifs'
-
+    
+    ws.title = 'Consolidation Homonymes'
+    
     yellow_ft = PatternFill(fgColor = '00FFFF00', fill_type = "solid")
-    red_ft = PatternFill(fgColor = '00FF0000', fill_type = "solid")
-    blue_ft = PatternFill(fgColor = '0000FFFF', fill_type = "solid")
-    bd = Side(style='medium', color="000000")
-    active_color = 'red'
 
     for indice, r in enumerate(dataframe_to_rows(df_submit, index=False, header=True)):
         ws.append(r)
@@ -110,32 +100,7 @@ def consolidation_homonyme(in_path, out_path):
             cell.fill = yellow_ft
             cell = last_row[col_conso_alias.index('Prénom')]
             cell.fill = yellow_ft
-
-            column_letter = get_column_letter(col_conso_alias.index('Nom')+1)
-            excel_cell_id = column_letter + str(indice+1)
-
-        if ws.max_row > 1 and r[0] in list_of_Pub_id:
-            if list_of_Pub_id.index(r[0])%2 == 0:
-                cell = last_row[0]
-                cell.fill = red_ft
-                if active_color != 'red':
-                    for cell_bis in last_row:
-                        cell_bis.border = Border(top=bd)
-                        active_color = 'red'
-            else:
-                cell = last_row[0]
-                cell.fill = blue_ft
-                if active_color != 'blue':
-                    for cell_bis in last_row:
-                        cell_bis.border = Border(top=bd)
-                        active_color = 'blue'
-
-
-    for cell in ws['A'] + ws[1]:
-        cell.font = Font(bold=True)
-        cell.border = Border(left=bd, top=bd, right=bd, bottom=bd)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-
+            
     wb.save(out_path)
     
 def _you_got_OTPed(df, i):
@@ -168,16 +133,6 @@ def _you_got_OTPed(df, i):
     pub_id_alias = COL_NAMES['pub_id']
     
     if OTP_alias in df.columns:
-        #if df[pub_id_alias].iloc[i-1] == df['Pub_id'].iloc[i] and df[dpt_alias].iloc[i-1] == df[dpt_alias].iloc[i]: # VERSION AMAL
-        if df[pub_id_alias].iloc[i-1] == df[pub_id_alias].iloc[i]: # VERSION DE JP
-            
-            lien_otp = '='+get_column_letter(columns_to_keep.index(OTP_alias)+1)+str(i+1) # ---------------------------> rendre robuste 
-
-            #truc = '"'+','.join(lien_otp)+'"'
-            
-            df[OTP_alias].iloc[i] = lien_otp
-            
-        else:
             df[OTP_alias].iloc[i] = OTP_STRING[df.iloc[i][dpt_alias]]
     else:
         df[OTP_alias] = pd.Series()
@@ -335,12 +290,12 @@ def ajout_OTP(in_path, out_path):
     from openpyxl.utils.cell import get_column_letter
 
     # Useful alias
-    pub_id_alias = COL_NAMES['pub_id']
-    dpt_alias = COL_NAMES_RH['dpt']
-    OTP_alias = COL_NAMES_BONUS['list OTP']
-    idx_author = COL_NAMES['authors'][1]
+    pub_id_alias = COL_NAMES['pub_id'] # Pub_id
+    dpt_alias = COL_NAMES_RH['dpt'] # Dpt/DOB (lib court)
+    OTP_alias = COL_NAMES_BONUS['list OTP'] # Choix de l'OTP
+    idx_author = COL_NAMES['authors'][1] # Idx_author
     
-    add_authors_name_list(in_path, in_path)
+    add_authors_name_list(in_path, in_path) # Adds a column with a list of the authors
     
     df_submit = pd.read_excel(in_path)
     df_submit.fillna('', inplace=True)
@@ -383,122 +338,88 @@ def ajout_OTP(in_path, out_path):
     df_submit.sort_values([pub_id_alias, idx_author], inplace = True)
     df_submit.reset_index(inplace = True)
     df_submit.drop_duplicates(subset = [pub_id_alias], inplace = True)
-        
-    _=[_you_got_OTPed(df_submit,i) for i in range(len(df_submit))]
     
-    #df_submit[OTP_alias] = ""
-    
-    # columns_to_keep = df_submit.columns.to_list()
-    columns_to_keep = COL_OTP
-    
-    df_submit = df_submit[COL_OTP]
-    
+    ### DTNM
     filtre_DTNM = df_submit[dpt_alias] == 'DTNM'
-    filtre_DTS = df_submit[dpt_alias] == 'DTS'
-    filtre_DEHT = df_submit[dpt_alias] == 'DEHT'
-    filtre_DTCH = (df_submit[dpt_alias] == 'DTCH') | (df_submit[dpt_alias] == 'DTBH')
-
-    #########################
-    # Ouverture du workbook #
-    #########################
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Publi x Effectifs'
-
-    df_DTNM = df_submit[filtre_DTNM]
-
-    for indice, r in enumerate(dataframe_to_rows(df_DTNM, index=False, header=True)):
-        ws.append(r)
+    df_DTNM = df_submit[filtre_DTNM].copy()
+    _=[_you_got_OTPed(df_DTNM, i) for i in range(len(df_DTNM))]
     
-    df_DTNM.reset_index(inplace = True)
+    df_DTNM = df_DTNM.reindex(columns = COL_OTP)
     
-    for r in range(0,ws.max_row-2):
-            if df_DTNM[pub_id_alias].iloc[r-1] == df_DTNM[pub_id_alias].iloc[r]: 
-                'Hello World'
-            else:        
-                validation_list = _liste_de_validation(df_submit,r)
+    wb, ws = mise_en_page(df_DTNM)
+    ws.title = 'OTP DTNM'
+         
+    for i in range(2, len(df_DTNM)+2):
+            
+            validation_list = _liste_de_validation(df_DTNM, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
-                data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
-                ws.add_data_validation(data_val)
-
-                data_val.add(ws[get_column_letter(columns_to_keep.index(OTP_alias)+1)+str(r+2)])
+            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
+            ws.add_data_validation(data_val)
+            
+            data_val.add(ws[get_column_letter(list(df_DTNM.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
     wb.save(out_path / Path(f'fichier_ajout_OTP_DTNM.xlsx'))
     
-
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Publi x Effectifs'
-
-    df_DTS = df_submit[filtre_DTS]
-
-    for indice, r in enumerate(dataframe_to_rows(df_DTS, index=False, header=True)):
-        ws.append(r)
+    ### DTS
+    filtre_DTS = df_submit[dpt_alias] == 'DTS'
+    df_DTS = df_submit[filtre_DTS].copy()
+    _=[_you_got_OTPed(df_DTS, i) for i in range(len(df_DTS))]
+    
+    df_DTS = df_DTS.reindex(columns = COL_OTP)
+    
+    wb, ws = mise_en_page(df_DTS)
+    ws.title = 'OTP DTS'
         
-    df_DTS.reset_index(inplace = True)
+    for i in range(2, len(df_DTS)+2):
+            
+            validation_list = _liste_de_validation(df_DTS, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
-    for r in range(0,ws.max_row-2):
-            if df_DTS[pub_id_alias].iloc[r-1] == df_DTS[pub_id_alias].iloc[r]: 
-                'Yo'
-            else:        
-                validation_list = _liste_de_validation(df_submit,r)
-
-                data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
-                ws.add_data_validation(data_val)
-
-                data_val.add(ws[get_column_letter(columns_to_keep.index(OTP_alias)+1)+str(r+2)])
+            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
+            ws.add_data_validation(data_val)
+            
+            data_val.add(ws[get_column_letter(list(df_DTS.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
     wb.save(out_path / Path(f'fichier_ajout_OTP_DTS.xlsx'))
+    
+    ### DEHT
+    filtre_DEHT = df_submit[dpt_alias] == 'DEHT'
+    df_DEHT = df_submit[filtre_DEHT].copy()
+    _=[_you_got_OTPed(df_DEHT, i) for i in range(len(df_DEHT))]
+    
+    df_DEHT = df_DEHT.reindex(columns = COL_OTP)
+    
+    wb, ws = mise_en_page(df_DEHT)
+    ws.title = 'OTP DEHT'
+    
+    for i in range(2, len(df_DEHT)+2):
+            
+            validation_list = _liste_de_validation(df_DEHT, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Publi x Effectifs'
-
-    df_DEHT = df_submit[filtre_DEHT]
-
-    for indice, r in enumerate(dataframe_to_rows(df_DEHT, index=False, header=True)):
-        ws.append(r)
-        
-    df_DEHT.reset_index(inplace = True)
-
-    for r in range(0,ws.max_row-2):
-            if df_DEHT[pub_id_alias].iloc[r-1] == df_DEHT[pub_id_alias].iloc[r]: 
-                'Yo'
-            else:        
-                validation_list = _liste_de_validation(df_submit,r)
-
-                data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
-                ws.add_data_validation(data_val)
-
-                data_val.add(ws[get_column_letter(columns_to_keep.index(OTP_alias)+1)+str(r+2)])
+            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
+            ws.add_data_validation(data_val)
+            
+            data_val.add(ws[get_column_letter(list(df_DEHT.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
     wb.save(out_path / Path(f'fichier_ajout_OTP_DEHT.xlsx'))
-
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Publi x Effectifs'
-
-    df_DTCH = df_submit[filtre_DTCH]
-
-    for indice, r in enumerate(dataframe_to_rows(df_DTCH, index=False, header=True)):
-        ws.append(r)
+    
+    ### DTCH
+    filtre_DTCH = (df_submit[dpt_alias] == 'DTCH') | (df_submit[dpt_alias] == 'DTBH')
+    df_DTCH = df_submit[filtre_DTCH].copy()
+    _=[_you_got_OTPed(df_DTCH, i) for i in range(len(df_DTCH))]
+    
+    df_DTCH = df_DTCH.reindex(columns = COL_OTP)
+    
+    wb, ws = mise_en_page(df_DTCH)
+    ws.title = 'OTP DTCH'
         
-    df_DTCH.reset_index(inplace = True)
+    for i in range(2, len(df_DTCH)+2):
+            
+            validation_list = _liste_de_validation(df_DTCH, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
-    for r in range(0,ws.max_row-2):
-            if df_DTCH[pub_id_alias].iloc[r-1] == df_DTCH[pub_id_alias].iloc[r]: 
-                'Yo'
-            else:        
-                validation_list = _liste_de_validation(df_submit,r)
-
-                data_val = DataValidation(type="list",formula1=validation_list, showErrorMessage=False)
-                ws.add_data_validation(data_val)
-
-                data_val.add(ws[get_column_letter(columns_to_keep.index(OTP_alias)+1)+str(r+2)])
+            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
+            ws.add_data_validation(data_val)
+            
+            data_val.add(ws[get_column_letter(list(df_DTCH.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
     wb.save(out_path / Path(f'fichier_ajout_OTP_DTCH.xlsx'))
 
@@ -567,6 +488,7 @@ def filtrer_par_departement(in_path, out_path):
     df_OTP.reset_index(inplace = True)
     df_OTP.drop_duplicates(subset = [pub_id_alias], inplace = True)
     df_OTP.set_index(pub_id_alias, inplace = True)
+    rename_column_names(df_OTP)
     df_OTP.to_excel(out_path)
     return 1
 
@@ -635,7 +557,7 @@ def add_biblio_list(in_path, out_path):
         df_out = df_out.append(df_inter)
 
     # Save in an excel file where leads out_path
-    df_out.to_excel(out_path)
+    df_out.to_excel(out_path, index = False)
     
 def ajout_IF(in_path, out_path, IF_path, year):
     
@@ -828,7 +750,7 @@ def clean_reorder_rename_submit(in_path, out_path):
                         SUBMIT_COL_NAMES['document_type'], 
                         SUBMIT_COL_NAMES['language'], 
                         SUBMIT_COL_NAMES['title'], 
-                        SUBMIT_COL_NAMES['ISSN'], ]]
+                        SUBMIT_COL_NAMES['ISSN'] ]]
     
     # Save in an excel file where leads out_path
     df_reordered.to_excel(out_path)
@@ -855,6 +777,7 @@ def maj_listing_RH():
     bibliometer = Path(ROOT_PATH)
 
     def date_compare(list_of_dates, comparator):
+
         '''
         Args:
             list_of_dates (list of strings): a list of string of dates in format mmyyyy, mm being the number of the month and yyyy being the number of the year.
@@ -876,6 +799,7 @@ def maj_listing_RH():
         return L
 
     def concat_df_with_multidf_and_drop_dup(multi_df, df = pd.DataFrame()):
+
         '''
         Args:
             multi_df (DataFrame):
@@ -883,6 +807,7 @@ def maj_listing_RH():
         Returns:
             df (DataFrame):
         '''
+
         for i in range(len(multi_df)):
             clef = list(df_month.keys())[i]
             df = df.append(multi_df[clef])
@@ -890,18 +815,21 @@ def maj_listing_RH():
         return df
 
     def different_years(list_of_dates):
+
         '''
         Args:
             list_of_dates (list of strings): a list of string of dates in format mmyyyy, mm being the number of the month and yyyy being the number of the year.
         Returns:
             L (list of strings):
         '''
+
         L = []
         for i in list_of_dates:
             L.append(i[2:6])
         return list(set(L))
 
     def dates_of_the_given_year(given_year, list_of_dates):
+
         '''
         Args:
             given_year (string):
@@ -909,6 +837,7 @@ def maj_listing_RH():
         Returns:
             L (list of strings):
         '''
+
         L = []
         for i in list_of_dates:
             if i[2:6] == given_year:
@@ -971,3 +900,100 @@ def maj_listing_RH():
     writer.close()
 
     print('Terminé, vous pouvez ouvrir le fichier excel')
+
+def mise_en_page(df):
+
+    # 3rd party import
+    import pandas as pd
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows
+    from openpyxl.utils import get_column_letter
+    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+    from openpyxl.styles.colors import Color
+
+    # Local library import
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_SIZES
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+
+    wb = Workbook()
+    ws = wb.active
+
+    red_ft = PatternFill(fgColor = '00FF0000', fill_type = "solid")
+    blue_ft = PatternFill(fgColor = '0000FFFF', fill_type = "solid")
+    bd = Side(style='medium', color="000000")
+    active_color = 'red'
+
+    pub_id_unique_list = list(df[COL_NAMES['pub_id']].unique())
+    columns_list = list(df.columns)
+
+    def _le_reste(num, la_list):
+        return la_list.index(num)%2 == 0
+
+    for indice, r in enumerate(dataframe_to_rows(df, index=False, header=True)):
+        ws.append(r)        
+        last_row = ws[ws.max_row]
+        if indice >= 1:
+            if _le_reste(df[COL_NAMES['pub_id']].iloc[indice-1], pub_id_unique_list):
+                cell = last_row[0]
+                cell.fill = red_ft
+                if active_color != 'red':
+                    for cell_bis in last_row:
+                        cell_bis.border = Border(top = bd)
+                        active_color = 'red'
+            else:
+                cell = last_row[0]
+                cell.fill = blue_ft
+                if active_color != 'blue':
+                    for cell_bis in last_row:
+                        cell_bis.border = Border(top = bd)
+                        active_color = 'blue'
+
+    for cell in ws['A'] + ws[1]:
+        cell.font = Font(bold=True)
+        cell.border = Border(left = bd, top = bd, right = bd, bottom = bd)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for i, col in enumerate(columns_list):
+        if i >= 1:
+            try:
+                ws.column_dimensions[get_column_letter(i+1)].width = COL_SIZES[col]
+                # ws.column_dimensions[get_column_letter(i+1)].set_text_wrap()
+            except:
+                ws.column_dimensions[get_column_letter(i+1)].width = 15
+                
+    #format = wb.add_format({'text_wrap': True})
+
+    ## Setting the format but not setting the column width.
+    #ws.set_column('H:I', None, format)
+
+
+    ws.row_dimensions[1].height = 30
+
+    return wb, ws
+
+def rename_column_names(df, dictionnary = None):
+    '''
+    The function `rename_column_names` changes names of columns of the DataFrame.
+    
+    Args:
+        df (pandas.DataFrame()):
+        dictionnary (dict):
+    
+    Returns:
+        df (pandas.DataFrame()):
+    
+    Notes:
+        Uses COL_NAMES_FINALE from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables
+    '''
+    
+    # 3rd Library imports
+    import pandas as pd
+    
+    if dictionnary == None:
+        # Local library imports
+        from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE
+        dictionnary = COL_NAMES_FINALE
+        
+    df.rename(columns = dictionnary, inplace = True)
+    
+    return df

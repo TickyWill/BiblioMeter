@@ -17,6 +17,20 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     Returns : nothing, it create the page in self
     """
+    # New imports to sort
+    
+    from BiblioMeter_GUI.Coordinates import root_properties
+    
+    from tkinter import font as tkFont
+
+    from BiblioMeter_GUI.Useful_Functions import font_size
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+
+    from BiblioMeter_GUI.Globals_GUI import DISPLAYS
+    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
+    from BiblioMeter_GUI.Globals_GUI import PPI
+    
+    win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
 
     # Standard library imports
     import os
@@ -47,8 +61,6 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_GUI.Useful_Functions import place_bellow
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import encadre_UD
-    
-    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
@@ -92,15 +104,6 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_GUI.Coordinates import Y_ETAPE_4
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_4
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_4
-
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import X_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import Y_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_5
     
     from BiblioMeter_GUI.Coordinates import TEXT_AFFI
     from BiblioMeter_GUI.Coordinates import X_AFFI
@@ -135,60 +138,50 @@ def create_ParsingInstitution(self, bibliometer_path):
 
     ### DECORATION DE LA PAGE
     # - Canvas
-    fond = tk.Canvas(self, width = 900, height = 700)
+    fond = tk.Canvas(self, width = win_width, height = win_height)
     fond.place(x = 0, y = 0)
     
     # - Labels
+    font_etape = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     etape_1 = tk.Label(self, 
                        text = TEXT_ETAPE_1, 
                        justify = FORMAT_TEXT_ETAPE_1, 
-                       font = FONT_ETAPE_1, 
+                       font = font_etape, 
                        underline = UNDERLINE_ETAPE_1)
-    etape_1.place(x = X_ETAPE_1, y = Y_ETAPE_1)
+    etape_1.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(40, PPI)*min(SFH, SFHP))
     
-    sous_text_etape_1 = tk.Label(self, text = SOUS_TEXT_ETAPE_1, justify = FORMAT_TEXT_ETAPE_1, font = FONT_SOUS_ETAPE_1)
-    place_after(etape_1, sous_text_etape_1, dx = 2, dy = 2)
+    #sous_text_etape_1 = tk.Label(self, text = SOUS_TEXT_ETAPE_1, justify = FORMAT_TEXT_ETAPE_1, font = FONT_SOUS_ETAPE_1)
+    #place_after(etape_1, sous_text_etape_1, dx = 2, dy = 2)
     
     etape_2 = tk.Label(self, 
                        text = TEXT_ETAPE_2, 
                        justify = FORMAT_TEXT_ETAPE_2, 
-                       font = FONT_ETAPE_2, 
+                       font = font_etape, 
                        underline = UNDERLINE_ETAPE_2)
-    etape_2.place(x = X_ETAPE_2, y = Y_ETAPE_2)
+    etape_2.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(74, PPI)*min(SFH, SFHP))
     
-    sous_text_etape_2 = tk.Label(self, text = SOUS_TEXT_ETAPE_2, justify = FORMAT_TEXT_ETAPE_2, font = FONT_SOUS_ETAPE_2)
-    place_after(etape_2, sous_text_etape_2, dx = 2, dy = 4)
+    #sous_text_etape_2 = tk.Label(self, text = SOUS_TEXT_ETAPE_2, justify = FORMAT_TEXT_ETAPE_2, font = FONT_SOUS_ETAPE_2)
+    #place_after(etape_2, sous_text_etape_2, dx = 2, dy = 4)
     
     etape_3 = tk.Label(self, 
                        text = TEXT_ETAPE_3, 
                        justify = FORMAT_TEXT_ETAPE_3, 
-                       font = FONT_ETAPE_3, 
+                       font = font_etape, 
                        underline = UNDERLINE_ETAPE_3)
-    etape_3.place(x = X_ETAPE_3, y = Y_ETAPE_3)
+    etape_3.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(101, PPI)*min(SFH, SFHP))
 
-    sous_text_etape_3 = tk.Label(self, text = SOUS_TEXT_ETAPE_3, justify = FORMAT_TEXT_ETAPE_3, font = FONT_SOUS_ETAPE_3)
-    place_after(etape_3, sous_text_etape_3, dx = 2, dy = 4)
+    #sous_text_etape_3 = tk.Label(self, text = SOUS_TEXT_ETAPE_3, justify = FORMAT_TEXT_ETAPE_3, font = FONT_SOUS_ETAPE_3)
+    #place_after(etape_3, sous_text_etape_3, dx = 2, dy = 4)
     
     etape_4 = tk.Label(self, 
                        text = TEXT_ETAPE_4, 
                        justify = FORMAT_TEXT_ETAPE_4, 
-                       font = FONT_ETAPE_4, 
+                       font = font_etape, 
                        underline = UNDERLINE_ETAPE_4)
-    etape_4.place(x = X_ETAPE_4, y = Y_ETAPE_4)
+    etape_4.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(129, PPI)*min(SFH, SFHP))
 
-    sous_text_etape_4 = tk.Label(self, text = SOUS_TEXT_ETAPE_4, justify = FORMAT_TEXT_ETAPE_4, font = FONT_SOUS_ETAPE_4)
-    place_after(etape_4, sous_text_etape_4, dx = 2, dy = 4)
-
-    etape_5 = tk.Label(self, 
-                       text = TEXT_ETAPE_5, 
-                       justify = FORMAT_TEXT_ETAPE_5, 
-                       font = FONT_ETAPE_5, 
-                       underline = UNDERLINE_ETAPE_5)
-    etape_5.place(x = X_ETAPE_5, y = Y_ETAPE_5)
-
-    sous_text_etape_5 = tk.Label(self, text = SOUS_TEXT_ETAPE_5, justify = FORMAT_TEXT_ETAPE_5, font = FONT_SOUS_ETAPE_5)
-    place_after(etape_5, sous_text_etape_5, dx = 2, dy = 4)
-    
+    #sous_text_etape_4 = tk.Label(self, text = SOUS_TEXT_ETAPE_4, justify = FORMAT_TEXT_ETAPE_4, font = FONT_SOUS_ETAPE_4)
+    #place_after(etape_4, sous_text_etape_4, dx = 2, dy = 4)
     
     ### Choose which year you want to be working with #############################################################################################################
     years_list = five_last_available_years(bibliometer_path)
@@ -196,11 +189,16 @@ def create_ParsingInstitution(self, bibliometer_path):
     variable_years.set(years_list[0])
     
         # Création de l'option button des années
+    font_OptionButton_years = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     OptionButton_years = tk.OptionMenu(self, variable_years, *years_list)
+    OptionButton_years.config(font = font_OptionButton_years)
     
         # Création du label
-    Label_years = tk.Label(self, text = TEXT_YEAR_PI)
-    Label_years.place(x = X_YEAR_PI, y = Y_YEAR_PI)
+    font_Label_years = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    Label_years = tk.Label(self, 
+                           text = TEXT_YEAR_PI, 
+                           font = font_Label_years)
+    Label_years.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(26, PPI)*min(SFH, SFHP))
     
     place_after(Label_years, OptionButton_years, dy = -6)
     encadre_RL(fond, Label_years, OptionButton_years, ds = 5)
@@ -208,10 +206,8 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     
     ### Bouton qui va permettre d'utiliser seeting_secondary_inst_filter sur un corpus concatené ##################################################################
-    Button_affi = tk.Button(self, 
-                       text = TEXT_AFFI, 
-                       command = lambda: _setting_extend())
-    place_after(Label_years, Button_affi, dx = 400, dy = -6)
+    #Button_affi = tk.Button(self, text = TEXT_AFFI, command = lambda: _setting_extend())
+    #place_after(Label_years, Button_affi, dx = 400, dy = -6)
     #Button_affi.place(x = X_AFFI, y = Y_AFFI)
     ###############################################################################################################################################################
     
@@ -307,12 +303,13 @@ def create_ParsingInstitution(self, bibliometer_path):
             newWindow.destroy()
     
     ### Bouton qui va permettre d'utiliser seeting_secondary_inst_filter sur un corpus concatené ##################################################################
+    font_croisement = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_croisement = tk.Button(self, 
                        text = TEXT_CROISEMENT,
-                       font = FONT_CROISEMENT, 
+                       font = font_croisement, 
                        command = lambda: _launch_recursive_year_search())
     
-    place_bellow(etape_1, Button_croisement, dx = 25, dy = 18)
+    place_bellow(etape_1, Button_croisement, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
     #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
     
     def _launch_recursive_year_search():
@@ -340,10 +337,10 @@ def create_ParsingInstitution(self, bibliometer_path):
     ### Choix du nombre d'année du recursive_year_search
     Label_croisement = tk.Label(self, 
                      text = TEXT_CROISEMENT_L, 
-                     font = FONT_CROISEMENT_L, 
+                     font = font_croisement, 
                      justify = FORMAT_CROISEMENT_L)
     
-    place_bellow(Button_croisement, Label_croisement, dx = 25, dy = 16)
+    place_bellow(Button_croisement, Label_croisement, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
 
     
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
@@ -352,11 +349,11 @@ def create_ParsingInstitution(self, bibliometer_path):
     
         # Création de l'option button des années
     OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
-    OptionButton_goback.configure(font = FONT_GOBACK)
+    OptionButton_goback.configure(font = font_croisement)
     
-    place_after(Label_croisement, OptionButton_goback, dy = -6)
+    place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*min(SFH, SFHP))
     
-    encadre_UD(fond, etape_1, OptionButton_goback, "black", dn = 5, de = 5000, ds = -25, dw = 5000)
+    #encadre_UD(fond, etape_1, OptionButton_goback, "black", dn = 5, de = 5000, ds = -25, dw = 5000)
     ###########################################################################################################################################################
     
     # Useful alias
@@ -367,13 +364,15 @@ def create_ParsingInstitution(self, bibliometer_path):
     R_path_alias = STOCKAGE_ARBORESCENCE['general'][5]
     submit_alias = SUBMIT_FILE_NAME
     
-    # PREMIERE PARTIE : CONSOLIDATION    
+    # PREMIERE PARTIE : CONSOLIDATION  
+    font_consolidation = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_mise_en_forme = tk.Button(self, 
-                                     text = TEXT_CONSOLIDATION, font = FONT_CONSOLIDATION, 
+                                     text = TEXT_CONSOLIDATION, 
+                                     font = font_consolidation, 
                                      command = lambda: _launch_consolidation_homonyme())
     
     # Button_mise_en_forme.place(x = X_CONSOLIDATION, y = Y_CONSOLIDATION)
-    place_bellow(etape_2, Button_mise_en_forme, dx = 25, dy = 2)
+    place_bellow(etape_2, Button_mise_en_forme, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
 
     
     def _launch_consolidation_homonyme():
@@ -390,14 +389,14 @@ def create_ParsingInstitution(self, bibliometer_path):
         messagebox.showinfo('Information', f"Aller dans le dossier\n1 - Consolidation Homonymes / Fichier Consolidation\nde l'année de travail pour supprimer les mauvais homonymes")
     
     # DEUXIEME PARTIE : DEFINITION DE L'OTP
-    
+    font_OTP = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_OTP = tk.Button(self, 
                            text = TEXT_OTP, 
-                           font = FONT_OTP,  
+                           font = font_OTP,  
                            command = lambda: _launch_ajout_OTP())
     
-    place_bellow(etape_3, Button_OTP, dx = 25, dy = 16)
-    encadre_UD(fond, etape_3, Button_OTP, "black", dn = 5, de = 5000, ds = -22, dw = 5000)
+    place_bellow(etape_3, Button_OTP, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    #encadre_UD(fond, etape_3, Button_OTP, "black", dn = 5, de = 5000, ds = -22, dw = 5000)
     
     def _launch_ajout_OTP():
         
@@ -413,12 +412,13 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     # TROISIEME PARTIE : CONSTRUCTION DU FICHIER FINAL  
     # Buton pour creer fichier excel d'une filtre par département
+    font_finale = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_finale = tk.Button(self, 
-                              text = "Création fichier final\npour l'année sélectionnée", 
-                              font = FONT_FINALE, 
+                              text = "Lancer la création du fichier de la liste consolidée des publications", 
+                              font = font_finale, 
                               command = lambda: launch_filtrer_par_departement())
     
-    place_bellow(etape_4, Button_finale, dx = 25, dy = 16)
+    place_bellow(etape_4, Button_finale, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
 
     def launch_filtrer_par_departement():
         
@@ -435,59 +435,4 @@ def create_ParsingInstitution(self, bibliometer_path):
         else:
             messagebox.showinfo('Information', f"La création de la liste finale n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement sous le bon nom (fichier_ajout_OTP_XXXX_ok")
     
-    # QUATRIEME PARTIE : CONCATENER LES 5 DERNIERS ANNEES
-    Button_concat = tk.Button(self, 
-                              text = TEXT_FINALE, 
-                              font = FONT_CONCAT, 
-                              command = lambda: _concat_filtre_depar())
     
-    place_bellow(etape_5, Button_concat, dx = 70, dy = 18)
-    encadre_UD(fond, etape_5, Button_concat, "black", dn = 2, de = 5000, ds = 5000, dw = 5000)
-    
-    #Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.75)
-    
-    def _concat_filtre_depar():
-        
-        '''
-        '''
-        
-        df_concat = pd.DataFrame()
-    
-        for i in range(len(years_list)):
-            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f'Liste finale publication {years_list[i]}.xlsx')
-            df_inter = pd.read_excel(path)
-            df_concat = df_concat.append(df_inter)
-            
-        date = str(datetime.now())[:16].replace(':', '')
-        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_dep_{os.getlogin()}.xlsx'))
-        
-        messagebox.showinfo('Information', f"La concatenation des documents finaux des dernières années disponibles a été faite, vous pouvez la retrouver dans BDD Multi-annuelle")
-        
-    
-    Button_MAJ_IF = tk.Button(self, 
-                              text = TEXT_MAJ_IF, 
-                              font = FONT_MAJ_IF, 
-                              command = lambda: _launch_maj_if())
-    
-    place_after(Button_concat, Button_MAJ_IF, dx = 130, dy = -5)
-
-    LabelEntry_MAJ_IF = LabelEntry_toFile(self, text_label = f"Fichier dont les IF\nsont à mettre à jour", width = 15)
-    LabelEntry_MAJ_IF.set("")
-    place_bellow(Button_MAJ_IF, LabelEntry_MAJ_IF, dx = 125, dy = 10)
-    
-        
-    def _launch_maj_if():
-        
-        '''
-        '''
-        
-        try:
-            ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), None)
-        
-        except:
-            messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
-        
-        messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
-        
-        pass
-        

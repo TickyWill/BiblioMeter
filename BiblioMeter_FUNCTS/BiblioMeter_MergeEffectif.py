@@ -550,8 +550,8 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     merged_df_Liten[col] = merged_df_Liten[col].str.upper()
 
     # Spliting the LITEN author name to firstname initiales and lastname
-    # and putting them as a tupple in column COL_NAMES_BM['Last_name']
-    col_in, col_out = COL_NAMES['authors'][2], COL_NAMES_BM['Full_name'] #COL_NAMES_BM['Last_name'] 
+    # and putting them as a tupple in column COL_NAMES_BM['Full_name']
+    col_in, col_out = COL_NAMES['authors'][2], COL_NAMES_BM['Full_name'] #COL_NAMES_BM['Full_name'] 
     merged_df_Liten[col_out] = merged_df_Liten.apply(lambda row: 
                                                      _split_lastname_firstname(row[col_in]),
                                                      axis=1)
@@ -602,7 +602,7 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     ###################################
 
     df_pub = _build_pubs_authors_Liten(corpus_year, bibliometer_path)
-    
+        
     ##################################################################
     # Building the list of available years in the employees database #
     ##################################################################
@@ -654,7 +654,7 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
             df_eff = _build_year_month_dpt(year,sheet_names_all, bibliometer_path)
 
             # Building the initial dataframes
-            df_submit, df_orphan =  _build_df_submit(df_eff, df_pub, bibliometer_path, test_case=test_case)
+            df_submit, df_orphan =  _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = test_case)
 
         else:
             # Updating the dataframes 
@@ -666,8 +666,8 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
         year_submit_file_name = year + '_' + SUBMIT_FILE_NAME
         year_orphan_file_name = year + '_' + ORPHAN_FILE_NAME
 
-        df_submit.to_excel(path_out / Path(year_submit_file_name))
-        df_orphan.to_excel(path_out / Path(year_orphan_file_name)) 
+        df_submit.to_excel(path_out / Path(year_submit_file_name), index = False)
+        df_orphan.to_excel(path_out / Path(year_orphan_file_name), index = False) 
 
     #####################################################################
     # Saving results in `SUBMIT_FILE_NAME` and `ORPHAN_FILE_NAME` files #
@@ -710,7 +710,7 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
 
-    df_submit.to_excel(path_out / Path(SUBMIT_FILE_NAME))
+    df_submit.to_excel(path_out / Path(SUBMIT_FILE_NAME), index = False)
 
     
     ### Adding biblio
@@ -718,7 +718,9 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     
     ### Adding Impact Factor
     ajout_IF(path_out / Path(SUBMIT_FILE_NAME), path_out / Path(SUBMIT_FILE_NAME), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), corpus_year)
+       
+    # df_orphan = df_orphan.reindex(columns = COL_NAMES_ORPHAN)
     
-    df_orphan = df_orphan.reindex(columns = COL_NAMES_ORPHAN)
-    df_orphan.to_excel(path_out / Path(ORPHAN_FILE_NAME))         
+    df_orphan.to_excel(path_out / Path(ORPHAN_FILE_NAME), index = False)
+    
     print('Results saved')

@@ -6,7 +6,7 @@ __all__ = ['ROOT_PATH',
            'SUBMIT_FILE_NAME', 
            'ORPHAN_FILE_NAME', 
            'SET_1', 
-           'SET_OTP']
+           'SET_OTP', 'PPI', 'GUI_DISP', 'DISPLAYS']
 
 # Local imports
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
@@ -14,8 +14,8 @@ from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
 from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
 # Generals
-ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/110-Alternants/2021-22 Ludovic Desmeuzes/BiblioMeter_Files"
-#ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
+#ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/110-Alternants/2021-22 Ludovic Desmeuzes/BiblioMeter_Files"
+ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
 
 # To be removed
 STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos', 
@@ -114,3 +114,12 @@ SUBMIT_COL_NAMES = {
     'nom prénom liste' : COL_NAMES_BONUS['nom prénom liste'], 
     'liste biblio' : COL_NAMES_BONUS['liste biblio']
 }
+
+from BiblioMeter_GUI.Useful_Functions import get_displays
+
+# Get screens
+DISPLAYS = get_displays()
+
+displays_nb = len(DISPLAYS)
+GUI_DISP = [i for i in range(displays_nb) if DISPLAYS[i]['is_primary']][0]
+PPI = DISPLAYS[GUI_DISP]["ppi"]

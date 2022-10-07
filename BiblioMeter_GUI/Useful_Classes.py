@@ -18,23 +18,23 @@ class LabelEntry:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, *args, **kargs):
+    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):
         
         # 3rd party imports
         import tkinter as tk
         
-        self.lab = tk.Label(parent, text=text_label)
+        self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
-        self.entree = tk.Entry(parent, textvariable=self.val, *args, **kargs)
-        self.but = tk.Button(parent, text='...',command = self.get_file)
+        self.entree = tk.Entry(parent, textvariable = self.val, *args, **kargs)
+        self.but = tk.Button(parent, text = "Changer de dossier", font = font_button, command = self.get_file)
 
-    def place(self,x,y,align=True):
+    def place(self, x, y, align = True):
         a,b = self.lab.winfo_reqwidth(),0
         if not align:
             a,b = b,a
-        self.lab.place(x=x-a,y=y)
-        self.entree.place(x=x+b,y=y)
-        self.but.place(x=x+b+self.entree.winfo_reqwidth()+6,y=y-2)
+        self.lab.place(x = x - a, y = y, anchor = "w")
+        self.entree.place(x = x + b, y = y, anchor = "w")
+        self.but.place(x = x + b + self.entree.winfo_reqwidth() + 6, y = y - 2, anchor = "w")
         
     def get(self):
         return self.val.get()
@@ -48,9 +48,9 @@ class LabelEntry:
         import tkinter as tk
         from tkinter import filedialog
         
-        fic = tk.filedialog.askdirectory(title='Choisir un fichier petit pingouin des Alpes')
+        fic = tk.filedialog.askdirectory(title = "Choisir un nouveau dossier de travail")
         if fic == '':
-            return tk.messagebox.showwarning("Attention","Chemin non renseigné")
+            return tk.messagebox.showwarning("Attention", "Chemin non renseigné")
         self.val.set(fic)
         
     def efface(self):
@@ -70,9 +70,24 @@ class CheckBoxCorpuses:
         
         # 3rd library imports
         import tkinter as tk
+        from tkinter import font as tkFont
         
-        self.ESPACE_ENTRE_BOX_CHECK = 100
-        self.lab = tk.Label(parent, text = 'Année ' + year)
+        from BiblioMeter_GUI.Coordinates import root_properties
+        
+        from BiblioMeter_GUI.Useful_Functions import font_size
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        
+        from BiblioMeter_GUI.Globals_GUI import GUI_DISP
+        from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
+        from BiblioMeter_GUI.Globals_GUI import PPI
+        
+        win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(parent)
+        
+        self.ESPACE_ENTRE_BOX_CHECK = mm_to_px(25, PPI) * min(SFW, SFWP)
+        font = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+        self.lab = tk.Label(parent, 
+                            text = 'Année ' + year, 
+                            font = font)
         
         self.wos_r = tk.Checkbutton(parent)
         if wos_r == True:
@@ -214,22 +229,22 @@ class LabelEntry_toFile:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, *args, **kargs):
+    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):
         
         # 3rd party imports
         import tkinter as tk
         
-        self.lab = tk.Label(parent, text=text_label)
+        self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable=self.val, *args, **kargs)
-        self.but = tk.Button(parent, text='...',command = self.get_file)
+        self.but = tk.Button(parent, text = "Choix du fichier", font = font_button, command = self.get_file)
 
     def place(self,x,y,align=True):
         a,b = self.lab.winfo_reqwidth(),0
         if not align:
             a,b = b,a
         self.lab.place(x=x-a,y=y)
-        self.entree.place(x=x+b,y=y)
+        self.entree.place(x = x + b, y = y)
         self.but.place(x=x+b+self.entree.winfo_reqwidth()+6,y=y-2)
         
     def get(self):
