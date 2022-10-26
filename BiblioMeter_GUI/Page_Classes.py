@@ -173,7 +173,7 @@ class Page_ParsingConcat(tk.Frame):
         win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(controller)
         
         # Creation of the class object PageOne
-        create_ParsingConcat(self, bibliometer_path)
+        create_ParsingConcat(self, bibliometer_path, controller)
         
         label_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
         label = tk.Label(self, 
@@ -213,7 +213,7 @@ class Page_MergeEffectif(tk.Frame):
         win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(controller)
         
         # Creation of the class object PageTwo
-        create_MergeEffectif(self, bibliometer_path)
+        create_MergeEffectif(self, bibliometer_path, controller)
         
         label_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
         label = tk.Label(self, 
@@ -252,7 +252,7 @@ class Page_ParsingInstitution(tk.Frame):
         win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(controller)
         
         # Creation of the class object PageTwo
-        create_ParsingInstitution(self, bibliometer_path)
+        create_ParsingInstitution(self, bibliometer_path, controller)
         
         label_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
         label = tk.Label(self, 
@@ -280,7 +280,7 @@ class Page_WorkSubmit(tk.Frame):
         from BiblioMeter_GUI.Page_WorkSubmit import create_WorkSubmit
         
         # Creation of the class object PageFour
-        create_WorkSubmit(self, bibliometer_path)    
+        create_WorkSubmit(self, bibliometer_path, controller)    
         
         label = tk.Label(self, 
                          text="Filtrer le fichier submit", 
@@ -303,7 +303,7 @@ class Page_Allyears(tk.Frame):
         from BiblioMeter_GUI.Page_Allyears import create_Allyears
         
         # Creation of the class object PageFour
-        create_Allyears(self, bibliometer_path)    
+        create_Allyears(self, bibliometer_path, controller)    
         
         label = tk.Label(self, 
                          text="Extraire sur les 5 ans", 
@@ -338,7 +338,7 @@ class Page_MultiAnnuelle(tk.Frame):
         win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(controller)
         
         # Creation of the class object PageFour
-        create_MultiAnnuelle(self, bibliometer_path)
+        create_MultiAnnuelle(self, bibliometer_path, controller)
 
         label_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
         label = tk.Label(self, 

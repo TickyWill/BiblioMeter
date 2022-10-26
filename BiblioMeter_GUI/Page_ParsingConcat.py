@@ -400,7 +400,7 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
 
     _create_table(self, bibliometer_path, pos_x, pos_y, esp_ligne)
 
-def create_ParsingConcat(self, bibliometer_path):
+def create_ParsingConcat(self, bibliometer_path, parent):
 
     """
     Description : 
@@ -560,3 +560,6 @@ def create_ParsingConcat(self, bibliometer_path):
                              font = font_exist_button, 
                              command = lambda: _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK))
     exist_button.place(x = mm_to_px(40, PPI)*min(SFW, SFWP), y = mm_to_px(92, PPI)*min(SFH, SFHP), anchor = 'n')
+    
+    # Boutou pour sortir de la page
+    button_quit = tk.Button(self, text = "Sauvegarder et quitter", command = parent.destroy).place(x = mm_to_px(203, PPI)*min(SFW, SFWP), y = mm_to_px(155, PPI)*min(SFH, SFHP), anchor = 'n')

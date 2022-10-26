@@ -1,6 +1,6 @@
 __all__ = ['create_MultiAnnuelle']
 
-def create_MultiAnnuelle(self, bibliometer_path):
+def create_MultiAnnuelle(self, bibliometer_path, parent):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -165,4 +165,7 @@ def create_MultiAnnuelle(self, bibliometer_path):
             messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
         except:
             messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
-        
+            
+
+    # Boutou pour sortir de la page
+    button_quit = tk.Button(self, text = "Sauvegarder et quitter", command = parent.destroy).place(x = mm_to_px(203, PPI)*min(SFW, SFWP), y = mm_to_px(155, PPI)*min(SFH, SFHP), anchor = 'n')       

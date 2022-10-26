@@ -1,6 +1,6 @@
 __all__ = ['create_ParsingInstitution']
 
-def create_ParsingInstitution(self, bibliometer_path):
+def create_ParsingInstitution(self, bibliometer_path, parent):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -302,53 +302,15 @@ def create_ParsingInstitution(self, bibliometer_path):
             messagebox.showinfo('Information', f"Le parsing des institutions sélectionnées a été efectué.")
             
             newWindow.destroy()
-    
-    ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
-    font_croisement = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_croisement = tk.Button(self, 
-                       text = TEXT_CROISEMENT,
-                       font = font_croisement, 
-                       command = lambda: _launch_recursive_year_search())
-    
-    place_bellow(etape_1, Button_croisement, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
-    #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
-    
-    def _launch_recursive_year_search():
-        
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
-        if answer_1:
-            try:
-                recursive_year_search(Path(bibliometer_path) / 
-                                      Path(variable_years.get()) / 
-                                      Path(FOLDER_NAMES['corpus']) / 
-                                      Path(FOLDER_NAMES['dedup']) / 
-                                      Path(FOLDER_NAMES['parsing']),
-                                      Path(bibliometer_path) / 
-                                      Path(variable_years.get()) / 
-                                      Path(STOCKAGE_ARBORESCENCE['general'][0]), 
-                                      Path(bibliometer_path) / 
-                                      Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                                      Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
-                                      Path(bibliometer_path) / 
-                                      Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                                      Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
-                                      Path(bibliometer_path),
-                                      variable_years.get(), 
-                                      go_back_years.get())
-
-                messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
-            except FileNotFoundError:
-                messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
-            except:
-                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
-    
+            
     ### Choix du nombre d'année du recursive_year_search
+    font_croisement = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Label_croisement = tk.Label(self, 
                      text = TEXT_CROISEMENT_L, 
                      font = font_croisement, 
                      justify = FORMAT_CROISEMENT_L)
     
-    place_bellow(Button_croisement, Label_croisement, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(etape_1, Label_croisement, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
 
     
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
@@ -361,7 +323,75 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*min(SFH, SFHP))
     
-    #encadre_UD(fond, etape_1, OptionButton_goback, "black", dn = 5, de = 5000, ds = -25, dw = 5000)
+    ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
+    Button_croisement = tk.Button(self, 
+                       text = TEXT_CROISEMENT,
+                       font = font_croisement, 
+                       command = lambda: _launch_recursive_year_search())
+    
+    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
+    
+    def _launch_recursive_year_search():
+        
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
+        if answer_1:  
+            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing']) / Path("articles.dat")):
+                if messagebox.askokcancel('Information', f"Le croisement pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
+                    try:
+                        recursive_year_search(Path(bibliometer_path) / 
+                                              Path(variable_years.get()) / 
+                                              Path(FOLDER_NAMES['corpus']) / 
+                                              Path(FOLDER_NAMES['dedup']) / 
+                                              Path(FOLDER_NAMES['parsing']),
+                                              Path(bibliometer_path) / 
+                                              Path(variable_years.get()) / 
+                                              Path(STOCKAGE_ARBORESCENCE['general'][0]), 
+                                              Path(bibliometer_path) / 
+                                              Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
+                                              Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
+                                              Path(bibliometer_path) / 
+                                              Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
+                                              Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
+                                              Path(bibliometer_path),
+                                              variable_years.get(), 
+                                              go_back_years.get())
+
+                        messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
+                    except FileNotFoundError:
+                        messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
+                    except:
+                        messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                else:
+                    messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
+            else:
+                try:
+                    recursive_year_search(Path(bibliometer_path) / 
+                                          Path(variable_years.get()) / 
+                                          Path(FOLDER_NAMES['corpus']) / 
+                                          Path(FOLDER_NAMES['dedup']) / 
+                                          Path(FOLDER_NAMES['parsing']),
+                                          Path(bibliometer_path) / 
+                                          Path(variable_years.get()) / 
+                                          Path(STOCKAGE_ARBORESCENCE['general'][0]), 
+                                          Path(bibliometer_path) / 
+                                          Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
+                                          Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
+                                          Path(bibliometer_path) / 
+                                          Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
+                                          Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
+                                          Path(bibliometer_path),
+                                          variable_years.get(), 
+                                          go_back_years.get())
+
+                    messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
+                except FileNotFoundError:
+                    messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
+                except:
+                    messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+        else:
+            messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
+    
     ###########################################################################################################################################################
     
     # Useful alias
@@ -386,21 +416,43 @@ def create_ParsingInstitution(self, bibliometer_path):
     def _launch_consolidation_homonyme():
         answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier résolution des homonymies a été lancée, continuer ?")
         if answer_1:
-            try:
-                consolidation_homonyme(Path(bibliometer_path) / 
-                                      Path(variable_years.get()) / 
-                                      Path(bdd_mensuelle_alias) / 
-                                      Path(submit_alias), 
-                                      Path(bibliometer_path) / 
-                                      Path(variable_years.get()) / 
-                                      Path(Homonyme_path_alias) / 
-                                      Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
+            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(bdd_mensuelle_alias) / Path(submit_alias)):
+                if messagebox.askokcancel('Information', f"Le fichier de consolidation pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
+                    try:
+                        consolidation_homonyme(Path(bibliometer_path) / 
+                                              Path(variable_years.get()) / 
+                                              Path(bdd_mensuelle_alias) / 
+                                              Path(submit_alias), 
+                                              Path(bibliometer_path) / 
+                                              Path(variable_years.get()) / 
+                                              Path(Homonyme_path_alias) / 
+                                              Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
 
-                messagebox.showinfo('Information', f"""La procédure est terminée. Vous pouvez vous rendre dans\n"1 - Consolidations Homonymes" et supprimer les homonymes.""")
-            except FileNotFoundError:
-                messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
-            except:
-                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                        messagebox.showinfo('Information', f"""La procédure est terminée. Vous pouvez vous rendre dans\n"1 - Consolidations Homonymes", supprimer les homonymes et enregistrer le fichier sous le même nom.""")
+                    except FileNotFoundError:
+                        messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
+                    except:
+                        messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                else:
+                    messagebox.showinfo('Information', f"La procédure n'a pas été effectuée.")
+            else:
+                try:
+                    consolidation_homonyme(Path(bibliometer_path) / 
+                                          Path(variable_years.get()) / 
+                                          Path(bdd_mensuelle_alias) / 
+                                          Path(submit_alias), 
+                                          Path(bibliometer_path) / 
+                                          Path(variable_years.get()) / 
+                                          Path(Homonyme_path_alias) / 
+                                          Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
+
+                    messagebox.showinfo('Information', f"""La procédure est terminée. Vous pouvez vous rendre dans\n"1 - Consolidations Homonymes", supprimer les homonymes et enregistrer le fichier sous le même nom.""")
+                except FileNotFoundError:
+                    messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
+                except:
+                    messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+        else:
+            messagebox.showinfo('Information', f"La procédure n'a pas été effectuée.")
     
     # DEUXIEME PARTIE : DEFINITION DE L'OTP
     font_OTP = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
@@ -469,5 +521,7 @@ def create_ParsingInstitution(self, bibliometer_path):
                 messagebox.showwarning('Fichier manquant', f"""La création de la liste consolidée n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement (2 - OTP) et sous le bon nom "fichier_ajout_OTP_XXXX_ok". Veuillez revenir à l'étape précédente pour les créer si besoin.""")
             except:
                 messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
-    
-    
+                
+
+    # Boutou pour sortir de la page
+    button_quit = tk.Button(self, text = "Sauvegarder et quitter", command = parent.destroy).place(x = mm_to_px(203, PPI)*min(SFW, SFWP), y = mm_to_px(155, PPI)*min(SFH, SFHP), anchor = 'n')
