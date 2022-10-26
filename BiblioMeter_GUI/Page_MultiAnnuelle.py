@@ -47,6 +47,7 @@ def create_MultiAnnuelle(self, bibliometer_path):
     from BiblioMeter_GUI.Coordinates import Y_ETAPE_5
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_5
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_5
     
     from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioMeter_GUI.Useful_Functions import five_last_available_years
@@ -87,9 +88,18 @@ def create_MultiAnnuelle(self, bibliometer_path):
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_5)
     etape_5.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(25, PPI)*min(SFH, SFHP))
+    
+    
 
     #sous_text_etape_5 = tk.Label(self, text = SOUS_TEXT_ETAPE_5, justify = FORMAT_TEXT_ETAPE_5, font = FONT_SOUS_ETAPE_5)
     #place_after(etape_5, sous_text_etape_5, dx = 2, dy = 4)
+    
+    help_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    help_label = tk.Label(self, 
+                          text = HELP_ETAPE_5, 
+                          justify = "left", 
+                          font = help_font_label)
+    place_bellow(etape_5, help_label)
     
 
     # QUATRIEME PARTIE : CONCATENER LES 5 DERNIERS ANNEES
@@ -99,7 +109,7 @@ def create_MultiAnnuelle(self, bibliometer_path):
                               font = font_Button_concat, 
                               command = lambda: _concat_filtre_depar())
     
-    place_bellow(etape_5, Button_concat, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    #place_bellow(etape_5, Button_concat, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
     #encadre_UD(fond, etape_5, Button_concat, "black", dn = 2, de = 5000, ds = 5000, dw = 5000)
     
     #Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.75)
@@ -109,10 +119,12 @@ def create_MultiAnnuelle(self, bibliometer_path):
         '''
         '''
         
+        from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILE_NAMES
+        
         df_concat = pd.DataFrame()
     
         for i in range(len(years_list)):
-            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f'Liste finale publication {years_list[i]}.xlsx')
+            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f"""{FILE_NAMES['liste conso']} {years_list[i]}.xlsx""")
             df_inter = pd.read_excel(path)
             df_concat = df_concat.append(df_inter)
             
@@ -121,32 +133,36 @@ def create_MultiAnnuelle(self, bibliometer_path):
         
         messagebox.showinfo('Information', f"La concatenation des documents finaux des dernières années disponibles a été faite, vous pouvez la retrouver dans BDD Multi-annuelle")
         
+
+    
+    #place_after(Button_concat, Button_MAJ_IF, dx = mm_to_px(65, PPI)*min(SFW, SFWP), dy = -mm_to_px(0.5, PPI)*min(SFH, SFHP))
+
+    LE_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    LE_font_button = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    
+    LabelEntry_MAJ_IF = LabelEntry_toFile(self, 
+                                          text_label = f"", font_label = LE_font_label, font_button = LE_font_button, 
+                                          width = int(90*min(SFW, SFWP)))
+    #LabelEntry_MAJ_IF.set2("Selectionner un fichier ---->")
+    
+    place_bellow(help_label, LabelEntry_MAJ_IF, dx = mm_to_px(5, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    
     font_MAJ_IF = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_MAJ_IF = tk.Button(self, 
                               text = TEXT_MAJ_IF, 
                               font = font_MAJ_IF, 
                               command = lambda: _launch_maj_if())
     
-    place_after(Button_concat, Button_MAJ_IF, dx = mm_to_px(65, PPI)*min(SFW, SFWP), dy = -mm_to_px(0.5, PPI)*min(SFH, SFHP))
-
-    LE_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    LE_font_button = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-        
-    LabelEntry_MAJ_IF = LabelEntry_toFile(self, 
-                                          text_label = f"Fichier dont les IF\nsont à mettre à jour", font_label = LE_font_label, font_button = LE_font_button, 
-                                          width = int(20*min(SFW, SFWP)))
-    LabelEntry_MAJ_IF.set("")
-    place_bellow(Button_MAJ_IF, LabelEntry_MAJ_IF, dx = mm_to_px(15, PPI)*min(SFW, SFWP))
+    place_bellow(help_label, Button_MAJ_IF, dx = mm_to_px(0, PPI)*min(SFW, SFWP), dy = mm_to_px(20, PPI)*min(SFH, SFHP))
     
-        
     def _launch_maj_if():
         
         '''
         '''
         
-    #try:
-        ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), None)
-        messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
-    #except:
-        messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+        try:
+            ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), None)
+            messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
+        except:
+            messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
         

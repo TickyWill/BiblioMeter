@@ -10,7 +10,9 @@ __all__ = ['get_unique_numbers',
            
            'add_biblio_list',
            'ajout_IF',
-           'clean_reorder_rename_submit', 
+           'clean_reorder_rename_submit',
+           
+           'concat_listes_consolidees',
           
            'maj_listing_RH',
            
@@ -755,6 +757,39 @@ def clean_reorder_rename_submit(in_path, out_path):
     # Save in an excel file where leads out_path
     df_reordered.to_excel(out_path)
     
+def concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_annuelle_alias):
+    
+    """
+    """
+    # Standard library imports
+    from pathlib import Path
+    import os
+    from datetime import datetime
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILE_NAMES
+    
+    # 3rd library imports
+    import pandas as pd
+    
+    df_concat = pd.DataFrame()
+    
+    available_liste_conso = ""
+    
+    for i in range(len(years_list)):
+        try:
+            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f"""{FILE_NAMES['liste conso']} {years_list[i]}.xlsx""")
+            df_inter = pd.read_excel(path)
+            df_concat = df_concat.append(df_inter)
+        
+            available_liste_conso = available_liste_conso + f""" {years_list[i]}"""
+        
+        except FileNotFoundError:
+            pass
+
+    date = str(datetime.now())[:16].replace(':', '')
+    df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f"""{date} Concaténation des {FILE_NAMES['liste consoS']} par {os.getlogin()}{available_liste_conso}.xlsx"""))
+        
 def maj_listing_RH():
     
     '''

@@ -56,6 +56,7 @@ def create_ParsingInstitution(self, bibliometer_path):
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_listes_consolidees
     
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
@@ -302,7 +303,7 @@ def create_ParsingInstitution(self, bibliometer_path):
             
             newWindow.destroy()
     
-    ### Bouton qui va permettre d'utiliser seeting_secondary_inst_filter sur un corpus concatené ##################################################################
+    ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
     font_croisement = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_croisement = tk.Button(self, 
                        text = TEXT_CROISEMENT,
@@ -314,25 +315,32 @@ def create_ParsingInstitution(self, bibliometer_path):
     
     def _launch_recursive_year_search():
         
-        recursive_year_search(Path(bibliometer_path) / 
-                              Path(variable_years.get()) / 
-                              Path(FOLDER_NAMES['corpus']) / 
-                              Path(FOLDER_NAMES['dedup']) / 
-                              Path(FOLDER_NAMES['parsing']),
-                              Path(bibliometer_path) / 
-                              Path(variable_years.get()) / 
-                              Path(STOCKAGE_ARBORESCENCE['general'][0]), 
-                              Path(bibliometer_path) / 
-                              Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                              Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
-                              Path(bibliometer_path) / 
-                              Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                              Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
-                              Path(bibliometer_path),
-                              variable_years.get(), 
-                              go_back_years.get())
-        
-        messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes dans l'ordre :\n1 - Consolidation\n2- OTP\n3 - Création fichier final")
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
+        if answer_1:
+            try:
+                recursive_year_search(Path(bibliometer_path) / 
+                                      Path(variable_years.get()) / 
+                                      Path(FOLDER_NAMES['corpus']) / 
+                                      Path(FOLDER_NAMES['dedup']) / 
+                                      Path(FOLDER_NAMES['parsing']),
+                                      Path(bibliometer_path) / 
+                                      Path(variable_years.get()) / 
+                                      Path(STOCKAGE_ARBORESCENCE['general'][0]), 
+                                      Path(bibliometer_path) / 
+                                      Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
+                                      Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
+                                      Path(bibliometer_path) / 
+                                      Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
+                                      Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
+                                      Path(bibliometer_path),
+                                      variable_years.get(), 
+                                      go_back_years.get())
+
+                messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
+            except FileNotFoundError:
+                messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
+            except:
+                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
     
     ### Choix du nombre d'année du recursive_year_search
     Label_croisement = tk.Label(self, 
@@ -376,17 +384,23 @@ def create_ParsingInstitution(self, bibliometer_path):
 
     
     def _launch_consolidation_homonyme():
-        
-        consolidation_homonyme(Path(bibliometer_path) / 
-                              Path(variable_years.get()) / 
-                              Path(bdd_mensuelle_alias) / 
-                              Path(submit_alias), 
-                              Path(bibliometer_path) / 
-                              Path(variable_years.get()) / 
-                              Path(Homonyme_path_alias) / 
-                              Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
-        
-        messagebox.showinfo('Information', f"Aller dans le dossier\n1 - Consolidation Homonymes / Fichier Consolidation\nde l'année de travail pour supprimer les mauvais homonymes")
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier résolution des homonymies a été lancée, continuer ?")
+        if answer_1:
+            try:
+                consolidation_homonyme(Path(bibliometer_path) / 
+                                      Path(variable_years.get()) / 
+                                      Path(bdd_mensuelle_alias) / 
+                                      Path(submit_alias), 
+                                      Path(bibliometer_path) / 
+                                      Path(variable_years.get()) / 
+                                      Path(Homonyme_path_alias) / 
+                                      Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
+
+                messagebox.showinfo('Information', f"""La procédure est terminée. Vous pouvez vous rendre dans\n"1 - Consolidations Homonymes" et supprimer les homonymes.""")
+            except FileNotFoundError:
+                messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
+            except:
+                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
     
     # DEUXIEME PARTIE : DEFINITION DE L'OTP
     font_OTP = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
@@ -399,16 +413,22 @@ def create_ParsingInstitution(self, bibliometer_path):
     #encadre_UD(fond, etape_3, Button_OTP, "black", dn = 5, de = 5000, ds = -22, dw = 5000)
     
     def _launch_ajout_OTP():
-        
-        ajout_OTP(Path(bibliometer_path) / 
-                  Path(variable_years.get()) / 
-                  Path(Homonyme_path_alias) / 
-                  Path(f'Fichier Consolidation {variable_years.get()}.xlsx'), 
-                  Path(bibliometer_path) / 
-                  Path(variable_years.get()) / 
-                  Path(OTP_path_alias))
-        
-        messagebox.showinfo('Information', f"Les fichiers OTP ont été créés dans 2 - OTP, il faut sélectionner le bon OTP et enregistrer le document sous le nom fichier_ajout_OTP_XXXX_ok")
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de création des quatre fichiers permettant l'ajout des OTP a été lancée, continuer ?")
+        if answer_1:
+            try:
+                ajout_OTP(Path(bibliometer_path) / 
+                          Path(variable_years.get()) / 
+                          Path(Homonyme_path_alias) / 
+                          Path(f'Fichier Consolidation {variable_years.get()}.xlsx'), 
+                          Path(bibliometer_path) / 
+                          Path(variable_years.get()) / 
+                          Path(OTP_path_alias))
+
+                messagebox.showinfo('Information', f"""Les fichiers OTP ont été créés dans "2 - OTP". Vous pouvez vous y rendre pour les remplir en indiquant le bon OTP. Veuillez enregistrer le document sous le nom fichier_ajout_OTP_XXXX_ok une fois chose faite.""")
+            except FileNotFoundError:
+                messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le fichier résolution des homonymies de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
+            except:
+                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
     
     # TROISIEME PARTIE : CONSTRUCTION DU FICHIER FINAL  
     # Buton pour creer fichier excel d'une filtre par département
@@ -416,23 +436,38 @@ def create_ParsingInstitution(self, bibliometer_path):
     Button_finale = tk.Button(self, 
                               text = "Lancer la création du fichier de la liste consolidée des publications", 
                               font = font_finale, 
-                              command = lambda: launch_filtrer_par_departement())
+                              command = lambda: _launch_filtrer_par_departement())
     
     place_bellow(etape_4, Button_finale, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
 
-    def launch_filtrer_par_departement():
+    def _launch_filtrer_par_departement():
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier de la liste consolidée des publications a été lancée, continuer ?")
+        if answer_1:
+            try:
+                from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILE_NAMES
+
+                a = filtrer_par_departement(Path(bibliometer_path) / 
+                                            Path(variable_years.get()) / 
+                                            Path(OTP_path_alias), 
+                                            Path(bibliometer_path) / 
+                                            Path(variable_years.get()) / 
+                                            Path(R_path_alias) / 
+                                            Path(f"""{FILE_NAMES['liste conso']} {variable_years.get()}.xlsx"""))
         
-        a = filtrer_par_departement(Path(bibliometer_path) / 
-                                    Path(variable_years.get()) / 
-                                    Path(OTP_path_alias), 
-                                    Path(bibliometer_path) / 
-                                    Path(variable_years.get()) / 
-                                    Path(R_path_alias) / 
-                                    Path(f'Liste finale publication {variable_years.get()}.xlsx'))
-        
-        if a:
-            messagebox.showinfo('Information', f"Le document final a été créé, vous pouvez le retrouver dans\n3 - Résultats Finaux")
-        else:
-            messagebox.showinfo('Information', f"La création de la liste finale n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement sous le bon nom (fichier_ajout_OTP_XXXX_ok")
+                if a:
+                    messagebox.showinfo('Information', f"""La liste consolidée a été créé, vous pouvez la retrouver dans "3 - Résultats finaux".""")
+                    
+                    # Concaténer avec les années disponibles
+                    concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_annuelle_alias)
+                    
+                    messagebox.showinfo('Information', f"""De plus, une concatenation des listes consolidées des différentes années disponibles a été faite. Vous pouvez retrouver le document dans "BDD multi annuelle".""")
+                    
+                else:
+                    messagebox.showwarning('Fichier manquant', f"""La création de la liste consolidée n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement (2 - OTP) et sous le bon nom "fichier_ajout_OTP_XXXX_ok". Veuillez revenir à l'étape précédente pour les créer si besoin.""")
+                        
+            except FileNotFoundError:
+                messagebox.showwarning('Fichier manquant', f"""La création de la liste consolidée n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement (2 - OTP) et sous le bon nom "fichier_ajout_OTP_XXXX_ok". Veuillez revenir à l'étape précédente pour les créer si besoin.""")
+            except:
+                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
     
     

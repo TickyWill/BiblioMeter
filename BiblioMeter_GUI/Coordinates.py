@@ -162,7 +162,7 @@ Y_CROISEMENT = 200
 UNDERLINE_CROISEMENT = -1
 
 # - Label croisement des publications
-TEXT_CROISEMENT_L = f"Revenir en arrière sur combien d'année depuis aujourd'hui ?  N ="
+TEXT_CROISEMENT_L = f"Nombre années de profondeur de recherche des auteurs dans les effectifs du LITEN.  N ="
 FONT_CROISEMENT_L = ("Helvetica", taille_font_1)
 FORMAT_CROISEMENT_L = 'left'
 
@@ -218,6 +218,7 @@ FORMAT_TEXT_ETAPE_5 = 'left'
 X_ETAPE_5 = x_etapes
 Y_ETAPE_5 = 120
 UNDERLINE_ETAPE_5 = -1
+HELP_ETAPE_5 = """Dans cette partie sont mis à jour les IF lorsqu'ils sont diponibles en juillet de chaque année.\nVeuillez sélectionner, dans le dossier BDD multi annuelle, le fichier de liste consolidée de publications à mettre à jour."""
 
 # - Finale
 TEXT_FINALE = "Concatener les fichiers listes finales\ndes différentes années"
@@ -227,5 +228,5 @@ FONT_FINALE = ("Helvetica", taille_font_1)
 FONT_CONCAT = ("Helvetica", taille_font_1)
 
 # - MAJ_IF
-TEXT_MAJ_IF = "Mettre à jour les IF\nde toutes les années confondues"
+TEXT_MAJ_IF = "Lancement de la mise à jour des IF"
 FONT_MAJ_IF = ("Helvetica", taille_font_1)

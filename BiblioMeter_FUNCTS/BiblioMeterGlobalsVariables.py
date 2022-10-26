@@ -4,7 +4,7 @@ __all__ = ['OTP_LIST',
            'COL_NAMES_BONUS', 
            'COL_NAMES_DPT', 
            'COL_CONSOLIDATION', 
-           'COL_NAMES_FINALE', 'COL_SIZES']
+           'COL_NAMES_FINALE', 'COL_SIZES', 'FILE_NAMES']
 
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 #from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
@@ -127,6 +127,10 @@ COL_NAMES_BONUS = {
 }
 
 FILL_EMPTY_KEY_WORD = 'unknow'
+
+FILE_NAMES = {
+'liste conso' : 'Liste consolidée', 
+'liste consoS' : 'listes consolidées'}
 
 COL_NAMES_FINALE = {
 'Authors' : 'Premier auteur de la publication', 

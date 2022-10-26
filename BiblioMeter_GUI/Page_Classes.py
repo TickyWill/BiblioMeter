@@ -53,6 +53,7 @@ class App_Test(tk.Tk):
                             font_button = LE_font_button, 
                             width = int(80*min(SFW, SFWP))) # Ici width est en nombre de caractères
         LE_BMF.set(ROOT_PATH)
+        LE_BMF.set2(ROOT_PATH)
         LE_BMF.place(x = (mm_to_px(str_size_mm(TEXT_LE_BMF, LE_font_label, PPI)[0] + 5, PPI)), 
                      y = (mm_to_px(45, PPI))*min(SFH, SFHP),  
                      align = True)
@@ -341,13 +342,13 @@ class Page_MultiAnnuelle(tk.Frame):
 
         label_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
         label = tk.Label(self, 
-                         text="Synthèse multi-annuelle des corpus", 
+                         text="Mise à jour des IF", 
                          font = label_font)
         label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*min(SFH, SFHP), anchor = "center")
         
         button_font = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
         button = tk.Button(container_button, 
-                           text = "Synthèse multi-annuelle des corpus", 
+                           text = "Mise à jour des IF", 
                            font = button_font, 
                            command = lambda: controller._show_frame("Page_MultiAnnuelle"))
         button.grid(row = 0, column = 3)

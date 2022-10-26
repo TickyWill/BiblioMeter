@@ -25,7 +25,9 @@ class LabelEntry:
         
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
-        self.entree = tk.Entry(parent, textvariable = self.val, *args, **kargs)
+        self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
+        self.entree = tk.Entry(parent, textvariable = self.val)
+        self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
         self.but = tk.Button(parent, text = "Changer de dossier", font = font_button, command = self.get_file)
 
     def place(self, x, y, align = True):
@@ -33,14 +35,19 @@ class LabelEntry:
         if not align:
             a,b = b,a
         self.lab.place(x = x - a, y = y, anchor = "w")
-        self.entree.place(x = x + b, y = y, anchor = "w")
-        self.but.place(x = x + b + self.entree.winfo_reqwidth() + 6, y = y - 2, anchor = "w")
+        self.entree2.place(x = x + b, y = y, anchor = "w")
+        self.but.place(x = x + b + self.entree2.winfo_reqwidth() + 15, y = y - 2, anchor = "w")
         
     def get(self):
         return self.val.get()
     
     def set(self, value):
         self.val.set(value)
+        
+    def set2(self, value):
+        from pathlib import Path
+        p = Path(value)
+        self.val2.set(p.parts[0] / Path("...") / ('/'.join(p.parts[-3:])))
         
     def get_file(self):
         
@@ -52,6 +59,10 @@ class LabelEntry:
         if fic == '':
             return tk.messagebox.showwarning("Attention", "Chemin non renseigné")
         self.val.set(fic)
+        
+        from pathlib import Path
+        p = Path(fic)
+        self.val2.set(p.parts[0] / Path("...") / ('/'.join(p.parts[-3:])))
         
     def efface(self):
         for x in (self.lab, self.entree):
@@ -236,7 +247,9 @@ class LabelEntry_toFile:
         
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
-        self.entree = tk.Entry(parent, textvariable=self.val, *args, **kargs)
+        self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
+        self.entree = tk.Entry(parent, textvariable=self.val)
+        self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
         self.but = tk.Button(parent, text = "Choix du fichier", font = font_button, command = self.get_file)
 
     def place(self,x,y,align=True):
@@ -244,14 +257,19 @@ class LabelEntry_toFile:
         if not align:
             a,b = b,a
         self.lab.place(x=x-a,y=y)
-        self.entree.place(x = x + b, y = y)
-        self.but.place(x=x+b+self.entree.winfo_reqwidth()+6,y=y-2)
+        self.entree2.place(x = x + b, y = y)
+        self.but.place(x=x+b+self.entree2.winfo_reqwidth()+10,y=y-2)
         
     def get(self):
         return self.val.get()
     
     def set(self, value):
         self.val.set(value)
+        
+    def set2(self, value):
+        from pathlib import Path
+        p = Path(value)
+        self.val2.set(p.name)
         
     def get_file(self):
         
@@ -263,6 +281,10 @@ class LabelEntry_toFile:
         if fic == '':
             return tk.messagebox.showwarning("Attention","Chemin non renseigné")
         self.val.set(fic)
+        
+        from pathlib import Path
+        p = Path(fic)
+        self.val2.set(p.name)
         
     def efface(self):
         for x in (self.lab, self.entree):

@@ -82,7 +82,7 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
         # Creation of path_rawdata, path_parsing, rep_utils and parser_done
         if database_type == 'wos':
             if list_wos_rawdata[list_corpus_year.index(corpus_year)] == False:
-                messagebox.showwarning('Fichiers manquants', f"Warning : le fichier rawdata de {database_type} de l'année {corpus_year} n'est pas disponible")
+                messagebox.showwarning('Fichiers manquants', f"Attention : le fichier rawdata de {database_type} de l'année {corpus_year} n'est pas disponible")
                 return
             else:
                 path_rawdata = Path(bibliometer_path) / Path(corpus_year) / Path(wos_path_alias) / Path(rawdata_path_alias) 
@@ -91,7 +91,7 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
         else:
 
             if list_scopus_rawdata[list_corpus_year.index(corpus_year)] == False:
-                messagebox.showwarning('Missing files', f"Warning : le fichier rawdata de {database_type} de l'année {corpus_year} n'est pas disponible")
+                messagebox.showwarning('Fichiers manquants', f"Attention : le fichier rawdata de {database_type} de l'année {corpus_year} n'est pas disponible")
                 return
             else:
                 path_rawdata = Path(bibliometer_path) / Path(corpus_year) / Path(scopus_path_alias) / Path(rawdata_path_alias)
@@ -114,7 +114,7 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
 
                 messagebox.showinfo('Information', f"Parsing effectué \nParsing processed on full corpus \nNumber of articles in the corpus : {articles_number}")
             else:
-                messagebox.showinfo('Information', f"Parsing annulé car déjà présent")
+                messagebox.showinfo('Information', f"Le parsing n'a pas été fait.")
                 return
         else:
             # Parse immediately when not parsed yet
@@ -281,47 +281,89 @@ def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELO
     list_scopus_parsing = results[4]
     list_concatenation = results[5]
     #################################################################################
-
-    if list_wos_parsing[list_corpus_year.index(corpus_year)] == False:
-        messagebox.showwarning('Fichiers manquants', f"Warning : le fichier articles.dat de wos de l'année {corpus_year} n'est pas disponible")
-        return
-
-    if list_scopus_parsing[list_corpus_year.index(corpus_year)] == False:
-        messagebox.showwarning('Fichiers manquants', f"Warning : le fichier articles.dat de scopus de l'année {corpus_year} n'est pas disponible")
-        return
-
-    # Setting the useful paths
-    path_scopus_parsing = bibliometer_path / Path(corpus_year) / Path(scopus_path_alias) / Path(parsing_path_alias)
-    path_scopus_rawdata = bibliometer_path / Path(corpus_year) / Path(scopus_path_alias) / Path(rawdata_path_alias) 
-    path_wos_parsing = bibliometer_path / Path(corpus_year) / Path(wos_path_alias) / Path(parsing_path_alias)
-    path_wos_rawdata = bibliometer_path / Path(corpus_year) / Path(wos_path_alias) / Path(rawdata_path_alias) 
-    path_concat = bibliometer_path / Path(corpus_year) / Path(concat_path_alias)
-    path_concat_parsing = path_concat / Path(parsing_path_alias)
-
-    if not os.path.exists(path_concat_parsing):
-        if not os.path.exists(path_concat): os.mkdir(path_concat)
-        os.mkdir(path_concat_parsing)
-
-    path_rational = bibliometer_path / Path(corpus_year) / Path(dedupli_path_alias)
-    path_rational_parsing = path_rational / Path(parsing_path_alias)
-
-    print(path_rational)
-    print(path_rational_parsing)
-
-    if not os.path.exists(path_rational_parsing):
-        if not os.path.exists(path_rational): os.mkdir(path_rational)
-        os.mkdir(path_rational_parsing)
-
-    useful_path_list = [path_scopus_parsing, path_wos_parsing, path_concat_parsing, path_rational_parsing]    
-
-    bau.parsing_concatenate_deduplicate(useful_path_list)
-
-    path_to_folder = bibliometer_path / Path(corpus_year) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
-    bau.extend_author_institutions(path_to_folder, [('INES', 'France'), ('LITEN', 'France')])
     
-    _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
+    answer_1 = messagebox.askokcancel('Information', f"Une procédure de synthèse a été lancée, continuer la procédure ?")
+    if answer_1: # Alors on lance la synthèse
+        
+        # Vérification de la présence des fichiers
+        if list_wos_parsing[list_corpus_year.index(corpus_year)] == False:
+            messagebox.showwarning('Fichiers manquants', f"Warning : le fichier articles.dat de wos de l'année {corpus_year} n'est pas disponible. Veuillez effectuer le parsing pour cette année.")
+            return
 
-    messagebox.showinfo('Information', f"La concatenation et le dédoublement \n sont terminés")
+        if list_scopus_parsing[list_corpus_year.index(corpus_year)] == False:
+            messagebox.showwarning('Fichiers manquants', f"Warning : le fichier articles.dat de scopus de l'année {corpus_year} n'est pas disponible. Veuillez effectuer le parsing pour cette année.")
+            return
+        if list_concatenation[list_corpus_year.index(corpus_year)]:
+
+            answer_2 = messagebox.askokcancel('Information', f"La synthèse pour l'année {corpus_year} est déjà disponible, voulez-vous quand même l'effectuer ?")
+            if answer_2: # Alors on effectue la synthèse
+                # Setting the useful paths
+                path_scopus_parsing = bibliometer_path / Path(corpus_year) / Path(scopus_path_alias) / Path(parsing_path_alias)
+                path_scopus_rawdata = bibliometer_path / Path(corpus_year) / Path(scopus_path_alias) / Path(rawdata_path_alias) 
+                path_wos_parsing = bibliometer_path / Path(corpus_year) / Path(wos_path_alias) / Path(parsing_path_alias)
+                path_wos_rawdata = bibliometer_path / Path(corpus_year) / Path(wos_path_alias) / Path(rawdata_path_alias) 
+                path_concat = bibliometer_path / Path(corpus_year) / Path(concat_path_alias)
+                path_concat_parsing = path_concat / Path(parsing_path_alias)
+
+                if not os.path.exists(path_concat_parsing):
+                    if not os.path.exists(path_concat): os.mkdir(path_concat)
+                    os.mkdir(path_concat_parsing)
+
+                path_rational = bibliometer_path / Path(corpus_year) / Path(dedupli_path_alias)
+                path_rational_parsing = path_rational / Path(parsing_path_alias)
+
+                print(path_rational)
+                print(path_rational_parsing)
+
+                if not os.path.exists(path_rational_parsing):
+                    if not os.path.exists(path_rational): os.mkdir(path_rational)
+                    os.mkdir(path_rational_parsing)
+
+                useful_path_list = [path_scopus_parsing, path_wos_parsing, path_concat_parsing, path_rational_parsing]    
+
+                bau.parsing_concatenate_deduplicate(useful_path_list)
+
+                path_to_folder = bibliometer_path / Path(corpus_year) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
+                bau.extend_author_institutions(path_to_folder, [('INES', 'France'), ('LITEN', 'France')])
+
+                _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
+
+                messagebox.showinfo('Information', f"La synthèse est terminée.")
+            else:
+                messagebox.showinfo('Information', f"La synthèse n'a pas été faite.")
+        else:
+            # Setting the useful paths
+            path_scopus_parsing = bibliometer_path / Path(corpus_year) / Path(scopus_path_alias) / Path(parsing_path_alias)
+            path_scopus_rawdata = bibliometer_path / Path(corpus_year) / Path(scopus_path_alias) / Path(rawdata_path_alias) 
+            path_wos_parsing = bibliometer_path / Path(corpus_year) / Path(wos_path_alias) / Path(parsing_path_alias)
+            path_wos_rawdata = bibliometer_path / Path(corpus_year) / Path(wos_path_alias) / Path(rawdata_path_alias) 
+            path_concat = bibliometer_path / Path(corpus_year) / Path(concat_path_alias)
+            path_concat_parsing = path_concat / Path(parsing_path_alias)
+
+            if not os.path.exists(path_concat_parsing):
+                if not os.path.exists(path_concat): os.mkdir(path_concat)
+                os.mkdir(path_concat_parsing)
+
+            path_rational = bibliometer_path / Path(corpus_year) / Path(dedupli_path_alias)
+            path_rational_parsing = path_rational / Path(parsing_path_alias)
+
+            print(path_rational)
+            print(path_rational_parsing)
+
+            if not os.path.exists(path_rational_parsing):
+                if not os.path.exists(path_rational): os.mkdir(path_rational)
+                os.mkdir(path_rational_parsing)
+
+            useful_path_list = [path_scopus_parsing, path_wos_parsing, path_concat_parsing, path_rational_parsing]    
+
+            bau.parsing_concatenate_deduplicate(useful_path_list)
+
+            path_to_folder = bibliometer_path / Path(corpus_year) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
+            bau.extend_author_institutions(path_to_folder, [('INES', 'France'), ('LITEN', 'France')])
+
+            _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
+
+            messagebox.showinfo('Information', f"La synthèse est terminée.")
 
 def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
 
