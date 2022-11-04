@@ -33,7 +33,11 @@ class App_Test(tk.Tk):
         from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
         from BiblioMeter_GUI.Globals_GUI import PPI
         
-        get_monitors() # OBLIGATOIRE
+        a = get_monitors() # OBLIGATOIRE
+        print(a)
+        self.lift()
+        self.attributes("-topmost", True)
+        self.after_idle(self.attributes,'-topmost',False)
         self, win_width, win_height, SFW, SFH, SFWP, SFHP = general_properties(self)
         
         # TITRE DE LA PAGE

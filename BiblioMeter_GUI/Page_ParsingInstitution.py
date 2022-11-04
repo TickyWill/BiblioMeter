@@ -149,7 +149,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        justify = FORMAT_TEXT_ETAPE_1, 
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_1)
-    etape_1.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(40, PPI)*min(SFH, SFHP))
+    etape_1.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(40, PPI)*SFH)
     
     #sous_text_etape_1 = tk.Label(self, text = SOUS_TEXT_ETAPE_1, justify = FORMAT_TEXT_ETAPE_1, font = FONT_SOUS_ETAPE_1)
     #place_after(etape_1, sous_text_etape_1, dx = 2, dy = 2)
@@ -159,7 +159,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        justify = FORMAT_TEXT_ETAPE_2, 
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_2)
-    etape_2.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(74, PPI)*min(SFH, SFHP))
+    etape_2.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(74, PPI)*SFH)
     
     #sous_text_etape_2 = tk.Label(self, text = SOUS_TEXT_ETAPE_2, justify = FORMAT_TEXT_ETAPE_2, font = FONT_SOUS_ETAPE_2)
     #place_after(etape_2, sous_text_etape_2, dx = 2, dy = 4)
@@ -169,7 +169,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        justify = FORMAT_TEXT_ETAPE_3, 
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_3)
-    etape_3.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(101, PPI)*min(SFH, SFHP))
+    etape_3.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(101, PPI)*SFH)
 
     #sous_text_etape_3 = tk.Label(self, text = SOUS_TEXT_ETAPE_3, justify = FORMAT_TEXT_ETAPE_3, font = FONT_SOUS_ETAPE_3)
     #place_after(etape_3, sous_text_etape_3, dx = 2, dy = 4)
@@ -179,7 +179,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        justify = FORMAT_TEXT_ETAPE_4, 
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_4)
-    etape_4.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(129, PPI)*min(SFH, SFHP))
+    etape_4.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(129, PPI)*SFH)
 
     #sous_text_etape_4 = tk.Label(self, text = SOUS_TEXT_ETAPE_4, justify = FORMAT_TEXT_ETAPE_4, font = FONT_SOUS_ETAPE_4)
     #place_after(etape_4, sous_text_etape_4, dx = 2, dy = 4)
@@ -199,7 +199,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     Label_years = tk.Label(self, 
                            text = TEXT_YEAR_PI, 
                            font = font_Label_years)
-    Label_years.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(26, PPI)*min(SFH, SFHP))
+    Label_years.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(26, PPI)*SFH)
     
     place_after(Label_years, OptionButton_years, dy = -6)
     encadre_RL(fond, Label_years, OptionButton_years, ds = 5)
@@ -310,7 +310,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                      font = font_croisement, 
                      justify = FORMAT_CROISEMENT_L)
     
-    place_bellow(etape_1, Label_croisement, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(etape_1, Label_croisement, dy = mm_to_px(5, PPI)*SFH)
 
     
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
@@ -321,7 +321,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
     OptionButton_goback.configure(font = font_croisement)
     
-    place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*min(SFH, SFHP))
+    place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*SFH)
     
     ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
     Button_croisement = tk.Button(self, 
@@ -329,14 +329,14 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        font = font_croisement, 
                        command = lambda: _launch_recursive_year_search())
     
-    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
     #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
     
     def _launch_recursive_year_search():
         
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs maxutes, ne pas fermer BiblioMeter pendant ce temps.")
         if answer_1:  
-            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing']) / Path("articles.dat")):
+            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(SUBMIT_FILE_NAME)):
                 if messagebox.askokcancel('Information', f"Le croisement pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
                     try:
                         recursive_year_search(Path(bibliometer_path) / 
@@ -360,8 +360,8 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                         messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
                     except FileNotFoundError:
                         messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
-                    except:
-                        messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                    #except:
+                        #messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
                 else:
                     messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
             else:
@@ -387,8 +387,8 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                     messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
                 except FileNotFoundError:
                     messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
-                except:
-                    messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                #except:
+                    #messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
         else:
             messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
     
@@ -410,7 +410,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                      command = lambda: _launch_consolidation_homonyme())
     
     # Button_mise_en_forme.place(x = X_CONSOLIDATION, y = Y_CONSOLIDATION)
-    place_bellow(etape_2, Button_mise_en_forme, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(etape_2, Button_mise_en_forme, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
 
     
     def _launch_consolidation_homonyme():
@@ -461,7 +461,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                            font = font_OTP,  
                            command = lambda: _launch_ajout_OTP())
     
-    place_bellow(etape_3, Button_OTP, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(etape_3, Button_OTP, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
     #encadre_UD(fond, etape_3, Button_OTP, "black", dn = 5, de = 5000, ds = -22, dw = 5000)
     
     def _launch_ajout_OTP():
@@ -490,7 +490,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                               font = font_finale, 
                               command = lambda: _launch_filtrer_par_departement())
     
-    place_bellow(etape_4, Button_finale, dx = mm_to_px(10, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(etape_4, Button_finale, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
 
     def _launch_filtrer_par_departement():
         answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier de la liste consolidée des publications a été lancée, continuer ?")
@@ -523,5 +523,14 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
                 
 
+    def _launch_exit():
+        answer_1 = messagebox.askokcancel('Information', f"Vous allez fermer BiblioMeter, rien ne sera perdu et vous pourrez reprendre votre travail plus tard, souhaitez-vous fermer BiblioMeter ?")
+        if answer_1:
+            parent.destroy()
+        
     # Boutou pour sortir de la page
-    button_quit = tk.Button(self, text = "Sauvegarder et quitter", command = parent.destroy).place(x = mm_to_px(203, PPI)*min(SFW, SFWP), y = mm_to_px(155, PPI)*min(SFH, SFHP), anchor = 'n')
+    font_button_quit = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+    button_quit = tk.Button(self, 
+                            text = "Mettre en pause", 
+                            font = font_button_quit, 
+                            command = lambda: _launch_exit()).place(x = mm_to_px(203, PPI)*SFW, y = mm_to_px(155, PPI)*SFH, anchor = 'n')

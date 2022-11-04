@@ -205,35 +205,35 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     wos_rawdata = tk.Label(self, 
                            text = 'Wos\nDonnées brutes', 
                            font = font_1)
-    wos_rawdata.place(x = POSITION_SELON_X_CHECK + mm_to_px(25, PPI) * min(SFW, SFWP), y = mm_to_px(35, PPI) * min(SFH, SFHP), anchor = 'center')
+    wos_rawdata.place(x = POSITION_SELON_X_CHECK + mm_to_px(25, PPI) * SFW, y = mm_to_px(35, PPI) * SFH, anchor = 'center')
     self.TABLE.append(wos_rawdata)
 
     font_2 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     wos_parsing = tk.Label(self, 
                            text = 'Wos\nParsing', 
                            font = font_2)
-    wos_parsing.place(x = POSITION_SELON_X_CHECK + 2 * mm_to_px(25, PPI) * min(SFW, SFWP), y = mm_to_px(35, PPI) * min(SFH, SFHP), anchor = 'center')
+    wos_parsing.place(x = POSITION_SELON_X_CHECK + 2 * mm_to_px(25, PPI) * SFW, y = mm_to_px(35, PPI) * SFH, anchor = 'center')
     self.TABLE.append(wos_parsing)
 
     font_3 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     scopus_rawdata = tk.Label(self, 
                               text = 'Scopus\nDonnées brutes', 
                               font = font_3)
-    scopus_rawdata.place(x = POSITION_SELON_X_CHECK + 3 * mm_to_px(25, PPI) * min(SFW, SFWP), y = mm_to_px(35, PPI) * min(SFH, SFHP), anchor = 'center')
+    scopus_rawdata.place(x = POSITION_SELON_X_CHECK + 3 * mm_to_px(25, PPI) * SFW, y = mm_to_px(35, PPI) * SFH, anchor = 'center')
     self.TABLE.append(scopus_rawdata)
 
     font_4 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     scopus_parsing = tk.Label(self, 
                               text = 'Scopus\nParsing', 
                               font = font_4)
-    scopus_parsing.place(x = POSITION_SELON_X_CHECK + 4 * mm_to_px(25, PPI) * min(SFW, SFWP), y = mm_to_px(35, PPI) * min(SFH, SFHP), anchor = 'center')
+    scopus_parsing.place(x = POSITION_SELON_X_CHECK + 4 * mm_to_px(25, PPI) * SFW, y = mm_to_px(35, PPI) * SFH, anchor = 'center')
     self.TABLE.append(scopus_parsing)
 
     font_5 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     concat = tk.Label(self, 
                       text = "Synthèse du\nparsing des BDD", 
                       font = font_5)
-    concat.place(x = POSITION_SELON_X_CHECK + 5 * mm_to_px(25, PPI) * min(SFW, SFWP), y = mm_to_px(35, PPI) * min(SFH, SFHP), anchor = 'center')
+    concat.place(x = POSITION_SELON_X_CHECK + 5 * mm_to_px(25, PPI) * SFW, y = mm_to_px(35, PPI) * SFH, anchor = 'center')
     self.TABLE.append(concat)
     
 def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK, bibliometer_path):
@@ -461,48 +461,48 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     self.TABLE = []
     
     # Placement de CHECKBOXCORPUSES :
-    POSITION_SELON_X_CHECK = mm_to_px(70, PPI) * min(SFW, SFWP)
-    POSITION_SELON_Y_CHECK = mm_to_px(45, PPI) * min(SFH, SFHP)
-    ESPACE_ENTRE_LIGNE_CHECK = mm_to_px(10, PPI) * min(SFH, SFHP)
+    POSITION_SELON_X_CHECK = mm_to_px(70, PPI) * SFW
+    POSITION_SELON_Y_CHECK = mm_to_px(45, PPI) * SFH
+    ESPACE_ENTRE_LIGNE_CHECK = mm_to_px(10, PPI) * SFH
     _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
     
     from BiblioMeter_GUI.Coordinates import TEXT_STATUT
     font_statut = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     label_statut = tk.Label(self, text = TEXT_STATUT, font = font_statut)
-    label_statut.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(30, PPI)*min(SFH, SFHP), anchor = "nw")
+    label_statut.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(30, PPI)*SFH, anchor = "nw")
     
     ### Zone Construction des fichiers de "parsing" par BDD
     from BiblioMeter_GUI.Coordinates import TEXT_CONSTRU
     font_constru = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     label_constru = tk.Label(self, text = TEXT_CONSTRU, font = font_constru)
-    y_constru = mm_to_px(102, PPI)*min(SFH, SFHP)
-    label_constru.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = y_constru, anchor = "nw")
+    y_constru = mm_to_px(102, PPI)*SFH
+    label_constru.place(x = mm_to_px(10, PPI)*SFW, y = y_constru, anchor = "nw")
 
     # Choix de l'année
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
     font_year_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     label_year_pc_1 = tk.Label(self, text = TEXT_YEAR_PC, font = font_year_pc_1)
-    label_year_pc_1.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = y_constru + mm_to_px(10, PPI)*min(SFH, SFHP), anchor = "nw")
+    label_year_pc_1.place(x = mm_to_px(10, PPI)*SFW, y = y_constru + mm_to_px(10, PPI)*SFH, anchor = "nw")
     
     var_year_pc_1 = tk.StringVar(self)
     var_year_pc_1.set(list_annee[0])
     OM_year_pc_1 = tk.OptionMenu(self, var_year_pc_1, *list_annee)
     font_year_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     OM_year_pc_1.config(font = font_year_pc_1)
-    place_after(label_year_pc_1, OM_year_pc_1, dx = mm_to_px(1, PPI)*min(SFW, SFWP), dy = -mm_to_px(1, PPI)*min(SFH, SFHP))
+    place_after(label_year_pc_1, OM_year_pc_1, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
     
     # Choix de la BDD
     from BiblioMeter_GUI.Coordinates import TEXT_BDD_PC
     font_bdd_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     label_bdd_pc_1 = tk.Label(self, text = TEXT_BDD_PC, font = font_bdd_pc_1)
-    place_after(OM_year_pc_1, label_bdd_pc_1, dx = mm_to_px(15, PPI)*min(SFW, SFWP), dy = mm_to_px(1, PPI)*min(SFH, SFHP))
+    place_after(OM_year_pc_1, label_bdd_pc_1, dx = mm_to_px(15, PPI)*SFW, dy = mm_to_px(1, PPI)*SFH)
     
     var_bdd_pc_1 = tk.StringVar(self)
     var_bdd_pc_1.set('wos')
     OM_bdd_pc_1 = tk.OptionMenu(self, var_bdd_pc_1, *['wos','scopus'])
     font_bdd_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     OM_bdd_pc_1.config(font = font_bdd_pc_1)
-    place_after(label_bdd_pc_1, OM_bdd_pc_1, dx = mm_to_px(1, PPI)*min(SFW, SFWP), dy = -mm_to_px(1, PPI)*min(SFH, SFHP))
+    place_after(label_bdd_pc_1, OM_bdd_pc_1, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
     
     # Lancement du parsing
     from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_PARSING
@@ -517,27 +517,27 @@ def create_ParsingConcat(self, bibliometer_path, parent):
                                                                       POSITION_SELON_Y_CHECK, 
                                                                       ESPACE_ENTRE_LIGNE_CHECK, 
                                                                       bibliometer_path))
-    place_after(OM_bdd_pc_1, button_launch_parsing, dx = mm_to_px(25, PPI)*min(SFW, SFWP), dy = mm_to_px(0.2, PPI)*min(SFH, SFHP))
+    place_after(OM_bdd_pc_1, button_launch_parsing, dx = mm_to_px(25, PPI)*SFW, dy = mm_to_px(0.2, PPI)*SFH)
     
     ### Zone Synthèse des fichiers de parsing de toutes les BDD
     from BiblioMeter_GUI.Coordinates import TEXT_SYNTHESE
     font_synthese = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     label_synthese = tk.Label(self, text = TEXT_SYNTHESE, font = font_synthese)
-    y_synthese = mm_to_px(130, PPI)*min(SFH, SFHP)
-    label_synthese.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = y_synthese, anchor = "nw")
+    y_synthese = mm_to_px(130, PPI)*SFH
+    label_synthese.place(x = mm_to_px(10, PPI)*SFW, y = y_synthese, anchor = "nw")
     
     # Choix de l'année
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
     font_year_pc_2 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     label_year_pc_2 = tk.Label(self, text = TEXT_YEAR_PC, font = font_year_pc_2)
-    label_year_pc_2.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = y_synthese + mm_to_px(10, PPI)*min(SFH, SFHP), anchor = "nw")
+    label_year_pc_2.place(x = mm_to_px(10, PPI)*SFW, y = y_synthese + mm_to_px(10, PPI)*SFH, anchor = "nw")
     
     var_year_pc_2 = tk.StringVar(self)
     var_year_pc_2.set(list_annee[0])
     OM_year_pc_2 = tk.OptionMenu(self, var_year_pc_2, *list_annee)
     font_year_pc_2 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     OM_year_pc_2.config(font = font_year_pc_2)
-    place_after(label_year_pc_2, OM_year_pc_2, dx = mm_to_px(1, PPI)*min(SFW, SFWP), dy = -mm_to_px(1, PPI)*min(SFH, SFHP))
+    place_after(label_year_pc_2, OM_year_pc_2, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
     
     # Lancement de la concatenation
     from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_SYNTHESE
@@ -551,7 +551,7 @@ def create_ParsingConcat(self, bibliometer_path, parent):
                                                                                                    POSITION_SELON_Y_CHECK, 
                                                                                                    ESPACE_ENTRE_LIGNE_CHECK, 
                                                                                                    bibliometer_path))
-    place_after(OM_year_pc_2, button_launch_concat, dx = mm_to_px(25, PPI)*min(SFW, SFWP), dy = mm_to_px(0.2, PPI)*min(SFH, SFHP))
+    place_after(OM_year_pc_2, button_launch_concat, dx = mm_to_px(25, PPI)*SFW, dy = mm_to_px(0.2, PPI)*SFH)
     
     # Bouton pour actualiser la zone de stockage
     font_exist_button = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
@@ -559,7 +559,16 @@ def create_ParsingConcat(self, bibliometer_path, parent):
                              text = "Mettre à jour le statut des fichiers", 
                              font = font_exist_button, 
                              command = lambda: _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK))
-    exist_button.place(x = mm_to_px(40, PPI)*min(SFW, SFWP), y = mm_to_px(92, PPI)*min(SFH, SFHP), anchor = 'n')
+    exist_button.place(x = mm_to_px(40, PPI)*SFW, y = mm_to_px(92, PPI)*SFH, anchor = 'n')
     
+    def _launch_exit():
+        answer_1 = messagebox.askokcancel('Information', f"Vous allez fermer BiblioMeter, rien ne sera perdu et vous pourrez reprendre votre travail plus tard, souhaitez-vous fermer BiblioMeter ?")
+        if answer_1:
+            parent.destroy()
+        
     # Boutou pour sortir de la page
-    button_quit = tk.Button(self, text = "Sauvegarder et quitter", command = parent.destroy).place(x = mm_to_px(203, PPI)*min(SFW, SFWP), y = mm_to_px(155, PPI)*min(SFH, SFHP), anchor = 'n')
+    font_button_quit = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+    button_quit = tk.Button(self, 
+                            text = "Mettre en pause", 
+                            font = font_button_quit, 
+                            command = lambda: _launch_exit()).place(x = mm_to_px(203, PPI)*SFW, y = mm_to_px(155, PPI)*SFH, anchor = 'n')

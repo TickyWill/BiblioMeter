@@ -166,6 +166,14 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         except:
             messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
             
-
+    def _launch_exit():
+        answer_1 = messagebox.askokcancel('Information', f"Vous allez fermer BiblioMeter, rien ne sera perdu et vous pourrez reprendre votre travail plus tard, souhaitez-vous fermer BiblioMeter ?")
+        if answer_1:
+            parent.destroy()
+        
     # Boutou pour sortir de la page
-    button_quit = tk.Button(self, text = "Sauvegarder et quitter", command = parent.destroy).place(x = mm_to_px(203, PPI)*min(SFW, SFWP), y = mm_to_px(155, PPI)*min(SFH, SFHP), anchor = 'n')       
+    font_button_quit = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+    button_quit = tk.Button(self, 
+                            text = "Mettre en pause", 
+                            font = font_button_quit, 
+                            command = lambda: _launch_exit()).place(x = mm_to_px(203, PPI)*SFW, y = mm_to_px(155, PPI)*SFH, anchor = 'n')

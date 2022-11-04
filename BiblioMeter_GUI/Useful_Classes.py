@@ -94,7 +94,7 @@ class CheckBoxCorpuses:
         
         win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(parent)
         
-        self.ESPACE_ENTRE_BOX_CHECK = mm_to_px(25, PPI) * min(SFW, SFWP)
+        self.ESPACE_ENTRE_BOX_CHECK = mm_to_px(25, PPI) * SFW
         font = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
         self.lab = tk.Label(parent, 
                             text = 'Année ' + year, 

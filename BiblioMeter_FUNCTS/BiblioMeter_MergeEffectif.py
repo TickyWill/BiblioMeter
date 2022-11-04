@@ -617,9 +617,11 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     ##########################################################
 
     today_year = int(date.today().year)
+    start_year = int(corpus_year)
     time_line_history = int(go_back_years)
-    years = [str(i) for i in range(today_year - time_line_history, today_year)]
+    years = [str(i) for i in range(start_year - time_line_history, start_year)]
     years = years[::-1]
+    print(years)
 
     #################################################################################################
     # Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years #
