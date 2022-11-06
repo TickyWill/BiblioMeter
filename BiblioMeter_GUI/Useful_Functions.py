@@ -304,5 +304,8 @@ def str_size_mm(text, font, ppi):
 def font_size(size, scale_factor):
 
     fontsize = int(size * scale_factor)
+    
+    if fontsize < 8:
+        fontsize = 8
 
     return fontsize

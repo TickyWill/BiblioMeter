@@ -321,7 +321,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
     OptionButton_goback.configure(font = font_croisement)
     
-    place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*SFH)
+    #place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*SFH)
     
     ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
     Button_croisement = tk.Button(self, 
@@ -329,8 +329,10 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        font = font_croisement, 
                        command = lambda: _launch_recursive_year_search())
     
-    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
+    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(-5, PPI)*SFH)
     #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
+    
+    Label_croisement.destroy()
     
     def _launch_recursive_year_search():
         
@@ -533,4 +535,4 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     button_quit = tk.Button(self, 
                             text = "Mettre en pause", 
                             font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = mm_to_px(203, PPI)*SFW, y = mm_to_px(155, PPI)*SFH, anchor = 'n')
+                            command = lambda: _launch_exit()).place(x = mm_to_px(193, PPI)*SFW, y = mm_to_px(145, PPI)*SFH, anchor = 'n')

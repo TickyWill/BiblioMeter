@@ -34,10 +34,11 @@ class App_Test(tk.Tk):
         from BiblioMeter_GUI.Globals_GUI import PPI
         
         a = get_monitors() # OBLIGATOIRE
-        print(a)
+        
         self.lift()
         self.attributes("-topmost", True)
         self.after_idle(self.attributes,'-topmost',False)
+        
         self, win_width, win_height, SFW, SFH, SFWP, SFHP = general_properties(self)
         
         # TITRE DE LA PAGE
@@ -45,7 +46,7 @@ class App_Test(tk.Tk):
                               text = TEXT_TITLE, 
                               font = ("Helvetica", font_size(30, min(SFW, SFWP))), 
                               justify = "center")
-        Page_Title.place(x = (win_width/2), y = (mm_to_px(20, PPI))*min(SFH, SFHP), anchor = "center")
+        Page_Title.place(x = (win_width/2), y = (mm_to_px(20, PPI))*SFH, anchor = "center")
         
         self.REP = list()
         
@@ -59,7 +60,7 @@ class App_Test(tk.Tk):
         LE_BMF.set(ROOT_PATH)
         LE_BMF.set2(ROOT_PATH)
         LE_BMF.place(x = (mm_to_px(str_size_mm(TEXT_LE_BMF, LE_font_label, PPI)[0] + 5, PPI)), 
-                     y = (mm_to_px(45, PPI))*min(SFH, SFHP),  
+                     y = (mm_to_px(45, PPI))*SFH,  
                      align = True)
         
         Lancement_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
@@ -67,7 +68,7 @@ class App_Test(tk.Tk):
                                      text = TEXT_BOUTON_LANCEMENT, 
                                      font = Lancement_font, 
                                      command = lambda: self._generate_pages(LE_BMF.get()))
-        Bouton_Lancement.place(x = (win_width/2), y = (win_height/2) + 20*min(SFH, SFHP), anchor = "s")
+        Bouton_Lancement.place(x = (win_width/2), y = (win_height/2) + 20*SFH, anchor = "s")
         
         ## TO DO : METTRE CHEMIN EN GLOBAL
         #listing_alias = STOCKAGE_ARBORESCENCE['effectif'][0]
@@ -183,7 +184,7 @@ class Page_ParsingConcat(tk.Frame):
         label = tk.Label(self, 
                          text="Analyse élémentaire des corpus", 
                          font = label_font)
-        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*min(SFH, SFHP), anchor = "center")
+        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*SFH, anchor = "center")
         
         button_font = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
         button = tk.Button(container_button, 
@@ -223,7 +224,7 @@ class Page_MergeEffectif(tk.Frame):
         label = tk.Label(self, 
                          text="Consolidation annuelle des corpus", 
                          font = label_font)
-        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*min(SFH, SFHP), anchor = "center")
+        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*SFH, anchor = "center")
         
         button_font = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
         button = tk.Button(container_button, 
@@ -262,7 +263,7 @@ class Page_ParsingInstitution(tk.Frame):
         label = tk.Label(self, 
                          text="Consolidation annuelle des corpus", 
                          font = label_font)
-        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*min(SFH, SFHP), anchor = "center")
+        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*SFH, anchor = "center")
         
         button_font = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
         button = tk.Button(container_button, 
@@ -348,7 +349,7 @@ class Page_MultiAnnuelle(tk.Frame):
         label = tk.Label(self, 
                          text="Mise à jour des IF", 
                          font = label_font)
-        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*min(SFH, SFHP), anchor = "center")
+        label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*SFH, anchor = "center")
         
         button_font = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
         button = tk.Button(container_button, 

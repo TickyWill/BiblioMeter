@@ -571,4 +571,4 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     button_quit = tk.Button(self, 
                             text = "Mettre en pause", 
                             font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = mm_to_px(203, PPI)*SFW, y = mm_to_px(155, PPI)*SFH, anchor = 'n')
+                            command = lambda: _launch_exit()).place(x = mm_to_px(193, PPI)*SFW, y = mm_to_px(145, PPI)*SFH, anchor = 'n')

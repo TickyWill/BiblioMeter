@@ -87,7 +87,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                        justify = FORMAT_TEXT_ETAPE_5, 
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_5)
-    etape_5.place(x = mm_to_px(10, PPI)*min(SFW, SFWP), y = mm_to_px(25, PPI)*min(SFH, SFHP))
+    etape_5.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(25, PPI)*SFH)
     
     
 
@@ -135,7 +135,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         
 
     
-    #place_after(Button_concat, Button_MAJ_IF, dx = mm_to_px(65, PPI)*min(SFW, SFWP), dy = -mm_to_px(0.5, PPI)*min(SFH, SFHP))
+    #place_after(Button_concat, Button_MAJ_IF, dx = mm_to_px(65, PPI)*min(SFW, SFWP), dy = -mm_to_px(0.5, PPI)*SFH)
 
     LE_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     LE_font_button = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
@@ -145,7 +145,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                                           width = int(90*min(SFW, SFWP)))
     #LabelEntry_MAJ_IF.set2("Selectionner un fichier ---->")
     
-    place_bellow(help_label, LabelEntry_MAJ_IF, dx = mm_to_px(5, PPI)*min(SFW, SFWP), dy = mm_to_px(5, PPI)*min(SFH, SFHP))
+    place_bellow(help_label, LabelEntry_MAJ_IF, dx = mm_to_px(5, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
     
     font_MAJ_IF = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_MAJ_IF = tk.Button(self, 
@@ -153,7 +153,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                               font = font_MAJ_IF, 
                               command = lambda: _launch_maj_if())
     
-    place_bellow(help_label, Button_MAJ_IF, dx = mm_to_px(0, PPI)*min(SFW, SFWP), dy = mm_to_px(20, PPI)*min(SFH, SFHP))
+    place_bellow(help_label, Button_MAJ_IF, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(20, PPI)*SFH)
     
     def _launch_maj_if():
         
@@ -176,4 +176,4 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     button_quit = tk.Button(self, 
                             text = "Mettre en pause", 
                             font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = mm_to_px(203, PPI)*SFW, y = mm_to_px(155, PPI)*SFH, anchor = 'n')
+                            command = lambda: _launch_exit()).place(x = mm_to_px(193, PPI)*SFW, y = mm_to_px(145, PPI)*SFH, anchor = 'n')

@@ -155,7 +155,7 @@ UNDERLINE_ETAPE_1 = -1
 taille_font_1 = 13
 
 # - Bouton croisement des publications
-TEXT_CROISEMENT = f"Croiser les publications avec les effectifs Liten des N dernières années"
+TEXT_CROISEMENT = f"Croiser les publications avec les effectifs Liten"
 FONT_CROISEMENT = ("Helvetica", taille_font_1)
 X_CROISEMENT = 20
 Y_CROISEMENT = 200
