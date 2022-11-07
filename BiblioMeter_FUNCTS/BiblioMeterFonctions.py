@@ -788,7 +788,7 @@ def concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_an
             pass
 
     date = str(datetime.now())[:16].replace(':', '')
-    df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f"""{date} Concaténation des {FILE_NAMES['liste consoS']} par {os.getlogin()}{available_liste_conso}.xlsx"""))
+    df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f"""{date} Concaténation par {os.getlogin()}{available_liste_conso}.xlsx"""))
         
 def maj_listing_RH():
     

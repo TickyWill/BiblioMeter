@@ -133,8 +133,8 @@ FILE_NAMES = {
 'liste consoS' : 'listes consolidées'}
 
 COL_NAMES_FINALE = {
-'Authors' : 'Premier auteur de la publication', 
-'Document_type' : 'Type du document'}
+'Authors' : 'Premier auteur de la publication'}#, 
+#'Document_type' : 'Type du document'}
 
 COL_NAMES_DPT = {
     'DTNM' : 'DTNM',
@@ -186,7 +186,8 @@ COL_NAMES_BONUS['IF en cours'], # IF en cours,
 COL_NAMES_BONUS['IF année publi'], # IF année de la publi
 COL_NAMES['articles'][6],  # 'DOI', 
 COL_NAMES['articles'][10],  # 'ISSN', 
-COL_NAMES_FINALE['Document_type'],  # 'Document_type', 
+COL_NAMES['articles'][7],
+#COL_NAMES_FINALE['Document_type'],  # 'Document_type', 
 COL_NAMES['articles'][2],  # 'Year',
     
 

@@ -336,7 +336,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
     def _launch_recursive_year_search():
         
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs maxutes, ne pas fermer BiblioMeter pendant ce temps.")
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
         if answer_1:  
             if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(SUBMIT_FILE_NAME)):
                 if messagebox.askokcancel('Information', f"Le croisement pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
@@ -418,7 +418,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     def _launch_consolidation_homonyme():
         answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier résolution des homonymies a été lancée, continuer ?")
         if answer_1:
-            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(bdd_mensuelle_alias) / Path(submit_alias)):
+            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(Homonyme_path_alias) / Path(f'Fichier Consolidation {variable_years.get()}.xlsx')):
                 if messagebox.askokcancel('Information', f"Le fichier de consolidation pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
                     try:
                         consolidation_homonyme(Path(bibliometer_path) / 
