@@ -24,6 +24,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     import tkinter as tk
     
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ISSN_manquant
 
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
@@ -161,7 +162,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         '''
         
         try:
-            ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), None)
+            ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7]) / Path('IF all years.xlsx'), None)
             messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
         except:
             messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
@@ -177,3 +178,26 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                             text = "Mettre en pause", 
                             font = font_button_quit, 
                             command = lambda: _launch_exit()).place(x = mm_to_px(193, PPI)*SFW, y = mm_to_px(145, PPI)*SFH, anchor = 'n')
+    
+    # RETROUVER LES ISSN MANQUANTS
+    missing_ISSN_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    missing_ISSN_label = tk.Label(self, 
+                                  text = """Dans cette partie, vous pouvez générer un fichier excel qui recherche les ISSN dont l'IF est inconnu.\nLe fichier sera nommé "ISSN_manquants", et sera disponible dans le dossier "Impact Factor".\nLa recherche se fera dans le document sélectionné au dessus.""", 
+                                  justify = "left", 
+                                  font = missing_ISSN_font_label)
+    place_bellow(Button_MAJ_IF, missing_ISSN_label, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(20, PPI)*SFH)
+    
+    font_Button_missing_ISSN = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
+    Button_missing_ISSN = tk.Button(self, 
+                                    text = "Lancer la recherche des ISSN manquants", 
+                                    font = font_Button_missing_ISSN, 
+                                    command = lambda: _launch_ISSN_manquant())
+    
+    place_bellow(missing_ISSN_label, Button_missing_ISSN, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
+    
+    def _launch_ISSN_manquant():
+        try:
+            ISSN_manquant(bibliometer_path, LabelEntry_MAJ_IF.get())
+            messagebox.showinfo('Information', f"""Les ISSN manquants ont été trouvés et mis dans un fichier excel dans le dossier "Impact Factor".""")
+        except:
+            messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier.")

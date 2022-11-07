@@ -18,7 +18,9 @@ __all__ = ['get_unique_numbers',
            
            'mise_en_page', 
            
-           'rename_column_names']
+           'rename_column_names', 
+          
+           'ISSN_manquant']
 
 def get_unique_numbers(numbers):
 
@@ -1032,3 +1034,38 @@ def rename_column_names(df, dictionnary = None):
     df.rename(columns = dictionnary, inplace = True)
     
     return df
+
+def ISSN_manquant(bibliometer_path, in_path):
+    
+    '''
+    Genère un fichier des ISSN dont l'impact factor n'est pas dans la base de donnée
+    '''
+    
+    # Standard library imports
+    from pathlib import Path
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
+    
+    # 3rd party library imports
+    import pandas as pd 
+    
+    # useful alias
+    alias_IF_annee_publi = COL_NAMES_BONUS['IF année publi']
+    
+    ISSN_Liste = list()
+    out_path = bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7])
+
+    df = pd.read_excel(in_path)
+    
+    for i in range(len(df)):
+        if df[alias_IF_annee_publi][i] == 'unknow' or df[alias_IF_annee_publi][i] == 'Not available':
+            ISSN_Liste.append([df['ISSN'][i], df['Year'][i]])
+    
+    df = pd.DataFrame(ISSN_Liste, columns = ['ISSN', 'Year'])
+    df.drop_duplicates(inplace = True)
+    
+    df.to_excel(out_path / Path('ISSN_manquants.xlsx'))
+    
+    return print('Done')
