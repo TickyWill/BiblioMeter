@@ -586,6 +586,7 @@ def ajout_IF(in_path, out_path, IF_path, year):
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_OTP
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_MAJ_IF
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILL_EMPTY_KEY_WORD
 
     # 3rd party imports
@@ -659,7 +660,7 @@ def ajout_IF(in_path, out_path, IF_path, year):
 
                 df_submit_bis = df_submit_bis.append(df_inter)
             
-        df_submit_bis.to_excel(out_path, index = False, columns = COL_OTP)
+        df_submit_bis.to_excel(out_path, index = False, columns = COL_MAJ_IF)
                 
     
     else: # Mode de fonctionnement par année
@@ -1061,9 +1062,9 @@ def ISSN_manquant(bibliometer_path, in_path):
     
     for i in range(len(df)):
         if df[alias_IF_annee_publi][i] == 'unknow' or df[alias_IF_annee_publi][i] == 'Not available':
-            ISSN_Liste.append([df['ISSN'][i], df['Year'][i]])
+            ISSN_Liste.append([df['ISSN'][i], df['Year'][i], df['Journal'][i]])
     
-    df = pd.DataFrame(ISSN_Liste, columns = ['ISSN', 'Year'])
+    df = pd.DataFrame(ISSN_Liste, columns = ['ISSN', 'Year', 'Journal'])
     df.drop_duplicates(inplace = True)
     
     df.to_excel(out_path / Path('ISSN_manquants.xlsx'))

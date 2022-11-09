@@ -33,7 +33,9 @@ STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos',
                                       '1 - Consolidation Homonymes', 
                                       '3 - Résultats Finaux', 
                                       'Results', 
-                                      'Impact Factor']
+                                      'Impact Factor', 
+                                      'Sauvegarde de secours'], 
+                         'all IF' : 'IF all years.xlsx'
                         }
 
 COL_NAMES_BM = {'Dpts':'list of Dpt/DOB (lib court)', 

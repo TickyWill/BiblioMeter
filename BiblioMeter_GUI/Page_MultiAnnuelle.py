@@ -160,12 +160,43 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         
         '''
         '''
+        # Import et alias important
+        import os
+        import shutil
+        import pandas
         
-        try:
-            ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7]) / Path('IF all years.xlsx'), None)
-            messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
-        except:
-            messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+        path_all_IF = Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['general'][7]) / Path(STOCKAGE_ARBORESCENCE['all IF'])
+        
+        # Vérifier que le fichier IF all years est là
+        if os.path.exists(path_all_IF):
+            df_IF = pd.read_excel(path_all_IF, sheet_name = None)
+            messagebox.showinfo('Information', f"Les IF des publications des années {', '.join(list(df_IF.keys()))} vont être mis à jour avec les informations disponibles dans le fichier {STOCKAGE_ARBORESCENCE['all IF']}.")
+            try:
+                ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), path_all_IF, None)
+                messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
+            except Exception as e:
+                messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+                print(e)
+                return
+        else:
+            answer_2 = messagebox.askokcancel('Fichier manquant', f"""Le fichier {STOCKAGE_ARBORESCENCE['all IF']} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
+            if answer_2:
+                # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
+                filePath = shutil.copy(bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][8]) / Path (STOCKAGE_ARBORESCENCE['all IF']), path_all_IF)
+                
+                df_IF = pd.read_excel(path_all_IF, sheet_name = None)
+                messagebox.showinfo('Information', f"Les IF des publications des années {', '.join(list(df_IF.keys()))} vont être mis à jour avec les informations disponibles dans le fichier {STOCKAGE_ARBORESCENCE['all IF']}.")
+                try:
+                    ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), path_all_IF, None)
+                    messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
+                except Exception as e:
+                    messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+                    print(e)
+                    return
+            else:
+                # Arrêt de la procédure
+                messagebox.showinfo('Information', f"La mise à jour n'a pas été faite.")
+                return
             
     def _launch_exit():
         answer_1 = messagebox.askokcancel('Information', f"Vous allez fermer BiblioMeter, rien ne sera perdu et vous pourrez reprendre votre travail plus tard, souhaitez-vous fermer BiblioMeter ?")
@@ -182,14 +213,14 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     # RETROUVER LES ISSN MANQUANTS
     missing_ISSN_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     missing_ISSN_label = tk.Label(self, 
-                                  text = """Dans cette partie, vous pouvez générer un fichier excel qui recherche les ISSN dont l'IF est inconnu.\nLe fichier sera nommé "ISSN_manquants", et sera disponible dans le dossier "Impact Factor".\nLa recherche se fera dans le document sélectionné au dessus.""", 
+                                  text = """Dans cette partie, vous pouvez générer un fichier excel qui recherche les ISSN dont l'IF est inconnu.\nLe fichier sera nommé "ISSN_manquants", et sera disponible dans le dossier "Impact Factor".\nLa recherche se fera dans le document sélectionné au dessus.\nCe fichier peut-être utilisé pour remplir manuellement le fichier qui répertorie les IF année par année.""", 
                                   justify = "left", 
                                   font = missing_ISSN_font_label)
     place_bellow(Button_MAJ_IF, missing_ISSN_label, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(20, PPI)*SFH)
     
     font_Button_missing_ISSN = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_missing_ISSN = tk.Button(self, 
-                                    text = "Lancer la recherche des ISSN manquants", 
+                                    text = "Lancer la recherche des ISSN dont l'IF est manquant", 
                                     font = font_Button_missing_ISSN, 
                                     command = lambda: _launch_ISSN_manquant())
     
@@ -199,5 +230,6 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         try:
             ISSN_manquant(bibliometer_path, LabelEntry_MAJ_IF.get())
             messagebox.showinfo('Information', f"""Les ISSN manquants ont été trouvés et mis dans un fichier excel dans le dossier "Impact Factor".""")
-        except:
+        except Exception as e:
             messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier.")
+            print(e)#

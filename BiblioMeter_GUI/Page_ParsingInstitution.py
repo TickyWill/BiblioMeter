@@ -336,7 +336,61 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
     def _launch_recursive_year_search():
         
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
+        # Import et alias important
+        import os
+        import shutil
+        import pandas
+    
+        path_all_effectifs = Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][1])
+        
+        def _annee_croisement(corpus_year):
+    
+            in_path = path_all_effectifs
+            df = pandas.read_excel(in_path, sheet_name = None)
+
+            annees_dispo = [int(x) for x in list(df.keys())]
+            print(annees_dispo)
+
+            annees_a_verifier = [int(corpus_year) - int(go_back_years.get()) + i for i in range(int(go_back_years.get()))]
+            print(annees_a_verifier)
+            annees_verifiees = list()
+
+            for i in annees_a_verifier:
+                if i in annees_dispo:
+                    annees_verifiees.append(i)
+
+            if len(annees_verifiees) > 0:
+                return annees_verifiees
+            else:
+                return None
+                
+        # Dans l'ordre, je vérifie l'existence du fichier All_effectifs.xlsx
+        if os.path.exists(path_all_effectifs):
+            # Si disponible, il faut afficher les années disponibles
+            df_effectifs = pd.read_excel(path_all_effectifs, sheet_name = None)
+            # Vérifier les années disponibles
+            annees_disponibles = _annee_croisement(variable_years.get())
+            if annees_disponibles == None:
+                messagebox.showwarning('Information', f"Il n'y a pas suffisament d'années disponibles dans le fichier effectifs LITEN pour effectuer le croisement. Procédure annulée.")
+                return
+        else:
+            answer_2 = messagebox.showwarning('Fichier manquant', f"""Le fichier {STOCKAGE_ARBORESCENCE['effectif'][1]} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
+            if answer_2:
+                # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
+                filePath = shutil.copy(bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][8]) / Path (STOCKAGE_ARBORESCENCE['effectif'][1]), path_all_effectifs)
+                
+                df_effectifs = pd.read_excel(path_all_effectifs, sheet_name = None)
+                # Vérifier les années disponibles
+                annees_disponibles = _annee_croisement(variable_years.get())
+                if annees_disponibles == None: # Si pas assez d'année disponible, alors arrêter la procédure
+                    messagebox.showwarning('Information', f"Il n'y a pas suffisament d'années disponibles dans le fichier effectifs LITEN pour effectuer le croisement. Procédure annulée.")
+                    return
+            else:
+                # Arrêt de la procédure
+                messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
+                return
+        # On passe directement ici si le document est disponible
+        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN des années : {', '.join([str(i) for i in annees_disponibles])} a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
         if answer_1:  
             if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(SUBMIT_FILE_NAME)):
                 if messagebox.askokcancel('Information', f"Le croisement pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
@@ -430,7 +484,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                               Path(Homonyme_path_alias) / 
                                               Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
 
-                        messagebox.showinfo('Information', f"""La procédure est terminée. Vous pouvez vous rendre dans\n"1 - Consolidations Homonymes", supprimer les homonymes et enregistrer le fichier sous le même nom.""")
+                        messagebox.showwarning('Information', f"""La procédure est terminée. Veuillez vous rendre dans\n"1 - Consolidations Homonymes", supprimer les homonymes et enregistrer le fichier sous le même nom.\n\nVeuillez retirer le mauvais homonyme du fichier Excel en supprimant entièrement la ligne dans le fichier Excel. Les lignes à potentiellement surpprimer sont surlignées en jaune.""")
                     except FileNotFoundError:
                         messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
                     except:
