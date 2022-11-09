@@ -374,7 +374,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 messagebox.showwarning('Information', f"Il n'y a pas suffisament d'années disponibles dans le fichier effectifs LITEN pour effectuer le croisement. Procédure annulée.")
                 return
         else:
-            answer_2 = messagebox.showwarning('Fichier manquant', f"""Le fichier {STOCKAGE_ARBORESCENCE['effectif'][1]} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
+            answer_2 = messagebox.askokcancel('Fichier manquant', f"""Le fichier {STOCKAGE_ARBORESCENCE['effectif'][1]} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
             if answer_2:
                 # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
                 filePath = shutil.copy(bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][8]) / Path (STOCKAGE_ARBORESCENCE['effectif'][1]), path_all_effectifs)
