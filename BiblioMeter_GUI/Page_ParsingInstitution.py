@@ -351,7 +351,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
             annees_dispo = [int(x) for x in list(df.keys())]
             print(annees_dispo)
 
-            annees_a_verifier = [int(corpus_year) - int(go_back_years.get()) + i for i in range(int(go_back_years.get()))]
+            annees_a_verifier = [int(corpus_year) - int(go_back_years.get()) + i + 1 for i in range(int(go_back_years.get()))]
             print(annees_a_verifier)
             annees_verifiees = list()
 

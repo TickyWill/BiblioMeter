@@ -174,8 +174,10 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
             try:
                 ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), path_all_IF, None)
                 messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
+            except KeyError:
+                messagebox.showwarning('Information', f"Il y a un problème avec le fichier excel")
             except Exception as e:
-                messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+                #messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
                 print(e)
                 return
         else:
@@ -189,8 +191,10 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                 try:
                     ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), path_all_IF, None)
                     messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
+                except KeyError:
+                    messagebox.showwarning('Information', f"Il y a un problème avec le fichier excel")
                 except Exception as e:
-                    messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+                    #messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
                     print(e)
                     return
             else:
@@ -230,6 +234,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         try:
             ISSN_manquant(bibliometer_path, LabelEntry_MAJ_IF.get())
             messagebox.showinfo('Information', f"""Les ISSN manquants ont été trouvés et mis dans un fichier excel dans le dossier "Impact Factor".""")
+        except KeyError:
+            messagebox.showwarning('Information', f"Il y a un problème avec le fichier excel")
         except Exception as e:
             messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier.")
-            print(e)#
+            print(e)

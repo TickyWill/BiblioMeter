@@ -601,6 +601,9 @@ def ajout_IF(in_path, out_path, IF_path, year):
     
     df_submit = pd.read_excel(in_path) # Ma DataFrame
     
+    #print(COL_MAJ_IF)
+    #print(df_submit.columns)
+    
     if year == None:
         df_IF = pd.read_excel(IF_path, sheet_name = None)
         
@@ -659,6 +662,8 @@ def ajout_IF(in_path, out_path, IF_path, year):
                 print(f"Les colonnes {IF_publi_alias} et {IF_cours_alias} ont été rajoutées avec succès pour l'année {annee}")
 
                 df_submit_bis = df_submit_bis.append(df_inter)
+            
+        #print(df_submit_bis.columns)
             
         df_submit_bis.to_excel(out_path, index = False, columns = COL_MAJ_IF)
                 
