@@ -253,8 +253,19 @@ class Page_ParsingInstitution(tk.Frame):
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
         
         from BiblioMeter_GUI.Globals_GUI import PPI
+    
+        from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         
         win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(controller)
+        
+        # Garder en mémoire la liste des années
+        
+        ### On récupère la présence ou non des fichiers #################################        
+        results = existing_corpuses(bibliometer_path)
+
+        self.Liste_1 = results[0]
+        #################################################################################
+        
         
         # Creation of the class object PageTwo
         create_ParsingInstitution(self, bibliometer_path, controller)
@@ -269,8 +280,37 @@ class Page_ParsingInstitution(tk.Frame):
         button = tk.Button(container_button, 
                            text = "Consolidation annuelle des corpus", 
                            font = button_font, 
-                           command = lambda: controller._show_frame("Page_ParsingInstitution"))
+                           command = lambda: _launch_ParsingInstitution())
         button.grid(row = 0, column = 1)
+        
+        def _launch_ParsingInstitution():
+            
+            ### On récupère la présence ou non des fichiers #################################        
+            results = existing_corpuses(bibliometer_path)
+
+            Liste_2 = results[0]
+            #################################################################################
+            
+            if self.Liste_1 != Liste_2:
+                
+                self.Liste_1 = Liste_2
+                
+                create_ParsingInstitution(self, bibliometer_path, controller)
+                
+                label_font = tkFont.Font(family = "Helvetica", size = font_size(25, min(SFW, SFWP)))
+                label = tk.Label(self, 
+                                 text="Consolidation annuelle des corpus", 
+                                 font = label_font)
+                label.place(x = (win_width/2), y = (mm_to_px(15, PPI))*SFH, anchor = "center")
+
+                button_font = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
+                button = tk.Button(container_button, 
+                                   text = "Consolidation annuelle des corpus", 
+                                   font = button_font, 
+                                   command = lambda: _launch_ParsingInstitution())
+                button.grid(row = 0, column = 1)
+            
+            controller._show_frame("Page_ParsingInstitution")
 
 ####################################################################### QUATRIEME PAGE #######################################################################
 class Page_WorkSubmit(tk.Frame):    

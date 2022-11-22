@@ -187,22 +187,22 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     ### Choose which year you want to be working with #############################################################################################################
     years_list = five_last_available_years(bibliometer_path)
     variable_years = tk.StringVar(self)
-    variable_years.set(years_list[0])
+    variable_years.set(years_list[-1])
     
         # Création de l'option button des années
-    font_OptionButton_years = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
-    OptionButton_years = tk.OptionMenu(self, variable_years, *years_list)
-    OptionButton_years.config(font = font_OptionButton_years)
+    self.font_OptionButton_years = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+    self.OptionButton_years = tk.OptionMenu(self, variable_years, *years_list)
+    self.OptionButton_years.config(font = self.font_OptionButton_years)
     
         # Création du label
-    font_Label_years = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    Label_years = tk.Label(self, 
+    self.font_Label_years = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    self.Label_years = tk.Label(self, 
                            text = TEXT_YEAR_PI, 
-                           font = font_Label_years)
-    Label_years.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(26, PPI)*SFH)
+                           font = self.font_Label_years)
+    self.Label_years.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(26, PPI)*SFH)
     
-    place_after(Label_years, OptionButton_years, dy = -6)
-    encadre_RL(fond, Label_years, OptionButton_years, ds = 5)
+    place_after(self.Label_years, self.OptionButton_years, dy = -6)
+    encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = 5)
     ###############################################################################################################################################################
     
     
