@@ -77,6 +77,8 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 App_Ludo.ipynb
+App_Amal.ipynb
+App_Francois.ipynb
 Snipette_effectif.ipynb
 
 
