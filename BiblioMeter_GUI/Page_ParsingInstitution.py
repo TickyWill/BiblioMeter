@@ -184,15 +184,16 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        font = font_croisement, 
                        command = lambda: _launch_recursive_year_search())
     
-    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(-8, PPI)*SFH)
+
     
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self, text = "Oui (coché) / Non (non coché)", variable = check_effectif_var, onvalue = 1, offvalue = 0)
     
     font_check = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Label_check = tk.Label(self, text = "Mettre à jour le fichier RH avant le croisement ?", font = font_check, justify = 'left')
-    
-    place_bellow(Button_croisement, Label_check, dy = mm_to_px(5, PPI)*SFH)
+
+    place_bellow(Label_croisement, Label_check, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(-8, PPI)*SFH)
+    place_bellow(Label_check, Button_croisement, dy = mm_to_px(5, PPI)*SFH)
     place_after(Label_check, check_effectif_box)
     
     Label_croisement.destroy() # car on ne l'autorise plus pour le moment
