@@ -14,7 +14,7 @@ __all__ = ['get_unique_numbers',
            
            'concat_listes_consolidees',
           
-           'maj_listing_RH',
+           'maj_rh',
            
            'mise_en_page', 
            
@@ -798,66 +798,49 @@ def concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_an
     date = str(datetime.now())[:16].replace(':', '')
     df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f"""{date} Concaténation par {os.getlogin()}{available_liste_conso}.xlsx"""))
         
-def maj_listing_RH():
-    
-    '''
-    '''
-    
-    # Standard library imports
-    import numpy as np
+def maj_rh(bibliometer_path):
+
+    # Imports
+    import pandas as pd
+    import os
     from pathlib import Path
-    
-    # Local library imports
-    from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # 3rd party library imports
-    import pandas as pd 
-    from openpyxl import load_workbook
-    
-    # useful alias
-    bibliometer = Path(ROOT_PATH)
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
 
-    def date_compare(list_of_dates, comparator):
+    # Fonctions outil
+    def _get_year(mmyyyy):
+        return(mmyyyy[2:6])
+
+    def _check_year_format(mmyyyy):
 
         '''
+        The `_check_year_format` function, checks if the string argument mmyyyy is in the right format.
+
         Args:
-            list_of_dates (list of strings): a list of string of dates in format mmyyyy, mm being the number of the month and yyyy being the number of the year.
-            comparator (string): a date in string format mmyyyy, mm being the number of the month and yyyy being the number of the year.
+            mmyyyy (string) : string formatted as mmyyyy to be checked.
 
         Returns:
-            L (list of strings): a list of the dates older than the comparator date.
-
-        '''
-        L = []
-        for i in list_of_dates:
-            if i[2:6] > comparator[2:6]:
-                # Alors ok pas besoin de vérifier
-                L.append(i)
-            elif i[2:6] == comparator[2:6]:
-                if i[0:2] > comparator[0:2]:
-                    # Okay si le mois est supérieur
-                    L.append(i)
-        return L
-
-    def concat_df_with_multidf_and_drop_dup(multi_df, df = pd.DataFrame()):
-
-        '''
-        Args:
-            multi_df (DataFrame):
-            df (DataFrame):
-        Returns:
-            df (DataFrame):
+            O or 1 (boolean) : 0 if not in the right format, 1 if in the right format.
         '''
 
-        for i in range(len(multi_df)):
-            clef = list(df_month.keys())[i]
-            df = df.append(multi_df[clef])
-        df.drop_duplicates(subset=['Matricule'], keep='first', inplace=True, ignore_index=False)
-        return df
+        # Imports
+        import datetime
 
-    def different_years(list_of_dates):
+        try:
+            today_year = datetime.date.today().year
+            taille_fourchette = 5
+            years_to_check = [str(year) for year in range(today_year - taille_fourchette, today_year + 1 + taille_fourchette)]
+            months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+            all_possible_dates = [mm + year for mm in months for year in years_to_check]
+
+            if mmyyyy in all_possible_dates:
+                return 1
+            else:
+                return 0
+        except:
+            return 0
+
+    def _different_years(list_of_dates):
 
         '''
         Args:
@@ -871,79 +854,55 @@ def maj_listing_RH():
             L.append(i[2:6])
         return list(set(L))
 
-    def dates_of_the_given_year(given_year, list_of_dates):
+    # Alias
+    path_effectif_folder = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["effectifs"])
+    path_to_add_folder = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["maj"])
+    matricule_alias = COL_NAMES_RH["ID"] # A importer depuis les globales
 
-        '''
-        Args:
-            given_year (string):
-            list_of_dates (list of strings): a list of string of dates in format mmyyyy, mm being the number of the month and yyyy being the number of the year.
-        Returns:
-            L (list of strings):
-        '''
+    # Accéder aux chemins des deux fichiers
+    try:
+        path_effectif_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["effectifs"]) / os.listdir(path_effectif_folder)[0]
+    except FileNotFoundError:
+        print(f"""Il y a un problème dans le nom du répertoire {ARCHI_RH["effectifs"]}""")
+    except IndexError:
+        print(f"Le fichier des effectifs consolidés est introuvable, vérifiez qu'il est bien présent à l'emplacement suivant : {path_effectif_folder}")
 
-        L = []
-        for i in list_of_dates:
-            if i[2:6] == given_year:
-                L.append(i)
-        return L
+    try:
+        path_to_add_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["maj"]) / os.listdir(path_to_add_folder)[0]
+    except FileNotFoundError:
+        print(f"""Il y a un problème dans le nom du répertoire {ARCHI_RH["maj"]}""")
+    except IndexError:
+        print(f"Le fichier à rajouter pour la mise à jour est introuvable, vérifiez qu'il est bien présent à l'emplacement suivant : {path_to_add_folder}")
 
-    # Mise à jour fichier RH
-    path_year = bibliometer / Path("Listing RH") / Path("All_effectifs.xlsx")
-    path_month = bibliometer / Path("Listing RH") / Path("Effectifs_2010_2022.xlsx")
-    path_maj = bibliometer / Path("Listing RH") /Path("MAJ.txt")
+    # Importer sous pandas
+    df_effectif = pd.read_excel(path_effectif_file, sheet_name = None)
+    df_to_add = pd.read_excel(path_to_add_file, sheet_name = None)
 
-    # Récupérer la date de la dernière MAJ
-    f = open(path_maj,'r')
-    last_maj = f.readline()
-    f.close()
+    # Récupérer le nom des pages de chaque fichier excel
+    effectif_sheets = list(df_effectif.keys())
+    to_add_sheets = list(df_to_add.keys())
 
-    # Récupérer les pages dont les dates sont antérieures à last_maj
-    xls = pd.ExcelFile(path_month, engine = 'openpyxl')
-    sheets = xls.sheet_names
-    excel_sheets = date_compare(sheets, last_maj)
-    print(f"Toutes les pages à maj sont {excel_sheets}")
+    # Ajouter
+    step = 0
+    for page_to_add in to_add_sheets:
+        year = _get_year(page_to_add)
+        if year in effectif_sheets:
+            df_effectif[year] = pd.concat([df_effectif[year], df_to_add[page_to_add]], ignore_index = False)
+        else:
+            df_effectif[year] = pd.DataFrame(df_to_add[page_to_add].copy())
+            effectif_sheets.append(year)
 
-    # Récupérer les différentes années et boucler dessus
-    diff_years = different_years(excel_sheets)
-    print(f"Les années différentes sur ces pages sont {diff_years}")
 
-    # Ouverture du workbook et writer
-    book = load_workbook(path_year)
-    writer = pd.ExcelWriter(path_year, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace') 
-    # writer.book = book
+    # Et dédupliquer
+    years_to_dedup = _different_years(to_add_sheets)
+    for page_to_dedup in years_to_dedup:
+        df_effectif[page_to_dedup].drop_duplicates(subset = [matricule_alias], inplace = True)
 
-    for year in diff_years:
-        # Les dates des pages à rajouter pour l'année en question
-        month_pages = dates_of_the_given_year(year, excel_sheets)
-        print(f"Pour l'année {year}, les mois sont {month_pages}")
-
-        # La multi df à récupérer de l'année en question pour mettre à jour le fichier effectif de l'année
-        df_month = pd.read_excel(path_month, sheet_name = month_pages)
-
-        # Vérifier l'excistence de la page de l'année de path_year, et si elle existe la récupérer, sinon la créer.
-        try:
-            print('Test du try')
-            df_year = pd.read_excel(path_year, sheet_name = year, engine = 'openpyxl')
-
-            print(f"La page existe ! Tout est bon, on peut continuer")
-            df_maj = concat_df_with_multidf_and_drop_dup(df_month, df_year)
-            #book.remove(year)
-            df_maj.to_excel(writer, sheet_name = year)
-
-            print('Fin du try')
-
-        except:
-            print(f"La page n'existe pas ! Il faut donc la créer lors de l'ajout de la DataFrame")
-            df_maj = concat_df_with_multidf_and_drop_dup(df_month)
-            df_maj.to_excel(writer, sheet_name = year)
-
-            print('Fin du except')
-
-    writer.save()
-    writer.close()
-
-    print('Terminé, vous pouvez ouvrir le fichier excel')
-
+    # Création de l'Excel Writer Object
+    with pd.ExcelWriter(path_effectif_file) as writer:
+        for page_effectif in effectif_sheets:
+            df_effectif[page_effectif].to_excel(writer, sheet_name = page_effectif, index = False)
+            
 def mise_en_page(df):
 
     # 3rd party import

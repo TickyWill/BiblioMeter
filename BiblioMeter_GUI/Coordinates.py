@@ -10,37 +10,28 @@ def general_properties(self):
     from BiblioMeter_GUI.Globals_GUI import GUI_DISP
     from BiblioMeter_GUI.Globals_GUI import PPI
     
-    #print("Dans la fonction general_properties()")
-     
     # Base size
     normal_width = 1920
     normal_height = 1080
 
     # Get screen size
     screen_width = self.winfo_screenwidth()
-    print(f"Screen width in pixels : {screen_width}")
     screen_height = self.winfo_screenheight()
-    print(f"Screen height in pixels : {screen_height}")
     
     # Get percentage of screen size from Base size
     p_scale_factor_W = screen_width / normal_width
-    print(f"Width scale factor in pixels : {p_scale_factor_W}")
     p_scale_factor_H = screen_height / normal_height
-    print(f"Height scale factor in pixels : {p_scale_factor_H}")
     
     # Base size mm
     normal_mm_w = 467
     normal_mm_h = 267
 
     scale_factor_W = DISPLAYS[GUI_DISP]["width_mm"] / normal_mm_w
-    print(f"Width scale factor in mm : {scale_factor_W}")
     scale_factor_H = DISPLAYS[GUI_DISP]["height_mm"] / normal_mm_h
-    print(f"Height scale factor in mm : {scale_factor_H}")
     
     # Set window size depending on scale factor
     win_width = int(mm_to_px(219, PPI) * scale_factor_W)
     win_height = int(mm_to_px(173, PPI) * scale_factor_H)
-    print(f"Width in pixels of root window is {win_width} and height in pixels is {win_height}")
 
     # Set window size depending on scalre factor
     self.geometry(f"{win_width}x{win_height}")
@@ -63,33 +54,24 @@ def root_properties(root):
     normal_width = 1920
     normal_height = 1080
     
-    #print("Dans la fonction root_properties()")
-    
     # Get screen size
     screen_width = root.winfo_screenwidth()
-    #print(f"Screen width in pixels : {screen_width}")
     screen_height = root.winfo_screenheight()
-    #print(f"Screen height in pixels : {screen_height}")
     
     # Get percentage of screen size from Base size
     p_scale_factor_W = screen_width / normal_width
-    #print(f"SFWP : {p_scale_factor_W}")
     p_scale_factor_H = screen_height / normal_height
-    #print(f"SFHP : {p_scale_factor_H}")
     
     # Base size mm
     normal_mm_w = 467
     normal_mm_h = 267
 
     scale_factor_W = DISPLAYS[GUI_DISP]["width_mm"] / normal_mm_w
-    #print(f"SFW : {scale_factor_W}")
     scale_factor_H = DISPLAYS[GUI_DISP]["height_mm"] / normal_mm_h
-    #print(f"SFH : {scale_factor_H}")
     
     # Set window size depending on scale factor
     win_width = int(mm_to_px(219, PPI) * scale_factor_W)
     win_height = int(mm_to_px(173, PPI) * scale_factor_H)
-    #print(f"Width in pixels of root window is {win_width} and height in pixels is {win_height}")
     
     return win_width, win_height, scale_factor_W, scale_factor_H, p_scale_factor_W, p_scale_factor_H
 
@@ -143,7 +125,6 @@ x_etapes = 15
 ### - Etape 1
 # - Titre
 TEXT_ETAPE_1 = f"Etape 1 : Croisement avec le fichier des efffectifs LITEN"
-SOUS_TEXT_ETAPE_1 = f"Croisement des publications avec le fichier effectifs Liten. Les fichiers créés sont situés dans 0 - BDD multi mensuelle.\nSe référer à la doc dans MOD OP pour plus d'information."
 FONT_ETAPE_1 = ("Helvetica", 14)
 FONT_SOUS_ETAPE_1 = ("Helvetica", 11)
 FORMAT_TEXT_ETAPE_1 = 'left'

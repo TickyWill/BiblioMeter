@@ -79,6 +79,7 @@ target/
 App_Ludo.ipynb
 Snipette_effectif.ipynb
 
+
 # IPython
 profile_default/
 ipython_config.py
@@ -140,3 +141,4 @@ ne pas encore ouvrir bis.py
 Stand by/
 BiblioMeter_GUI/Page_ParsingInstitution_save.py
 BiblioMeter_GUI/Page_ParsingConcat_save.py
+BiblioMeter_FUNCTS/BiblioMeter_MergeEffectif_in_dev.py

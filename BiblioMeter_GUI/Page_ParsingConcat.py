@@ -8,7 +8,7 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
 
     Uses the following globals :
     - DIC_OUTIR_PARSING
-    - FOLDER_NAMES
+    - ARCHI_YEAR
 
     Args :
     - corpus_year : The year of the extracted corpuses
@@ -42,10 +42,9 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
 
     # Local imports
     import BiblioAnalysis_Utils as bau
-
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-
+    
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         
     ### On récupère la présence ou non des fichiers #################################        
@@ -60,18 +59,18 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
     #################################################################################
     
     # Création des alias pour simplifier les accès
-    wos_alias = FOLDER_NAMES['wos']
-    scopus_alias = FOLDER_NAMES['scopus']
-    corpus_path_alias = FOLDER_NAMES['corpus']
+    wos_alias = ARCHI_YEAR["wos"]
+    scopus_alias = ARCHI_YEAR["scopus"]
+    corpus_path_alias = ARCHI_YEAR["corpus"]
 
     scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
     wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
 
-    parsing_path_alias = FOLDER_NAMES['parsing']
-    rawdata_path_alias = FOLDER_NAMES['rawdata']
+    parsing_path_alias = ARCHI_YEAR['parsing']
+    rawdata_path_alias = ARCHI_YEAR['rawdata']
 
-    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
-    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
+    concat_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['concat']
+    dedupli_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['dedup']
 
     article_path_alias = DIC_OUTDIR_PARSING['A']
 
@@ -150,13 +149,11 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     
     from BiblioMeter_GUI.Coordinates import root_properties
     
-    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
-    from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Globals_GUI import PPI    
 
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
@@ -170,22 +167,6 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     
     win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
     
-    # Création des alias pour simplifier les accès
-    wos_alias = FOLDER_NAMES['wos']
-    scopus_alias = FOLDER_NAMES['scopus']
-    corpus_path_alias = FOLDER_NAMES['corpus']
-
-    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
-    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
-
-    parsing_path_alias = FOLDER_NAMES['parsing']
-    rawdata_path_alias = FOLDER_NAMES['rawdata']
-
-    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
-    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
-
-    article_path_alias = DIC_OUTDIR_PARSING['A']
-    
     ### On récupère la présence ou non des fichiers #################################        
     results = existing_corpuses(bibliometer_path)
 
@@ -196,7 +177,23 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     list_scopus_parsing = results[4]
     list_concatenation = results[5]
     #################################################################################
-        
+    
+    # Création des alias pour simplifier les accès
+    wos_alias = ARCHI_YEAR["wos"]
+    scopus_alias = ARCHI_YEAR["scopus"]
+    corpus_path_alias = ARCHI_YEAR["corpus"]
+
+    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
+    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
+
+    parsing_path_alias = ARCHI_YEAR['parsing']
+    rawdata_path_alias = ARCHI_YEAR['rawdata']
+
+    concat_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['concat']
+    dedupli_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['dedup']
+
+    article_path_alias = DIC_OUTDIR_PARSING['A']
+            
     # Mise en page tableau
     font_1 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     wos_rawdata = tk.Label(self, 
@@ -248,25 +245,9 @@ def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELO
     import BiblioAnalysis_Utils as bau
 
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     
-    # Création des alias pour simplifier les accès
-    wos_alias = FOLDER_NAMES['wos']
-    scopus_alias = FOLDER_NAMES['scopus']
-    corpus_path_alias = FOLDER_NAMES['corpus']
-
-    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
-    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
-
-    parsing_path_alias = FOLDER_NAMES['parsing']
-    rawdata_path_alias = FOLDER_NAMES['rawdata']
-
-    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
-    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
-
-    article_path_alias = DIC_OUTDIR_PARSING['A']
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
 
     ### On récupère la présence ou non des fichiers #################################        
     results = existing_corpuses(bibliometer_path)
@@ -278,6 +259,22 @@ def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELO
     list_scopus_parsing = results[4]
     list_concatenation = results[5]
     #################################################################################
+    
+    # Création des alias pour simplifier les accès
+    wos_alias = ARCHI_YEAR["wos"]
+    scopus_alias = ARCHI_YEAR["scopus"]
+    corpus_path_alias = ARCHI_YEAR["corpus"]
+
+    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
+    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
+
+    parsing_path_alias = ARCHI_YEAR['parsing']
+    rawdata_path_alias = ARCHI_YEAR['rawdata']
+
+    concat_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['concat']
+    dedupli_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['dedup']
+
+    article_path_alias = DIC_OUTDIR_PARSING['A']
     
     answer_1 = messagebox.askokcancel('Information', f"Une procédure de synthèse a été lancée, continuer la procédure ?")
     if answer_1: # Alors on lance la synthèse
@@ -320,7 +317,7 @@ def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELO
 
                 bau.parsing_concatenate_deduplicate(useful_path_list)
 
-                path_to_folder = bibliometer_path / Path(corpus_year) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
+                path_to_folder = bibliometer_path / Path(corpus_year) / Path(ARCHI_YEAR['corpus']) / Path(ARCHI_YEAR['dedup']) / Path(ARCHI_YEAR['parsing'])
                 bau.extend_author_institutions(path_to_folder, [('INES', 'France'), ('LITEN', 'France')])
 
                 _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
@@ -355,7 +352,7 @@ def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELO
 
             bau.parsing_concatenate_deduplicate(useful_path_list)
 
-            path_to_folder = bibliometer_path / Path(corpus_year) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
+            path_to_folder = bibliometer_path / Path(corpus_year) / Path(ARCHI_YEAR['corpus']) / Path(ARCHI_YEAR['dedup']) / Path(ARCHI_YEAR['parsing'])
             bau.extend_author_institutions(path_to_folder, [('INES', 'France'), ('LITEN', 'France')])
 
             _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
@@ -365,31 +362,38 @@ def _reset_year_and_launch_parsing_concat_dedup(self, corpus_year, POSITION_SELO
 def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
 
     """
-    Description : 
+    Description: The `_update` function refreshes the current state of the files in BiblioMeter_Files. It also updates the OptionMenu buttons used to select the year to be used.
 
-    Uses the following globals :
+    Uses the following globals:
+    ARCHI_YEAR
+    PPI
 
-    Args :
+    Args:
+        bibliometer_path (Path): path leading to the data base BilioMeter_Files.
+        pos_x (int): x axe's position for widgets of Page_ParsingConcat class.
+        pos_y (int): y axe's position for widgets of Page_ParsingConcat class.
+        esp_ligne (int): space in between some widgets of Page_ParsingConcat class.
 
-    Returns :
+    Returns:
+        nothing
 
     """
     # 3rd party imports
     import tkinter as tk
     from tkinter import font as tkFont
     
-    # Local imports
-    from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
-    
+    # Local imports    
     from BiblioMeter_GUI.Coordinates import root_properties
-    #from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
 
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    from BiblioMeter_GUI.Globals_GUI import PPI
+    
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
     
-    from BiblioMeter_GUI.Globals_GUI import PPI
+    from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
     
     win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
     
@@ -414,29 +418,22 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
 
     _create_table(self, bibliometer_path, pos_x, pos_y, esp_ligne)
     
-    self.OM_year_pc_1.destroy()
+    # Destruction puis reconstruction obligatoire pour mettre à jour les boutons années lors de mise à jour de l'état de la base
     
-
-    #font_year_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    #label_year_pc_1 = tk.Label(self, text = TEXT_YEAR_PC, font = font_year_pc_1)#
-    #label_year_pc_1.place(x = mm_to_px(10, PPI)*SFW, y = y_constru + mm_to_px(10, PPI)*SFH, anchor = "nw")
+    self.OM_year_pc_1.destroy() # Destruction
     
-    var_year_pc_1 = tk.StringVar(self)
-    var_year_pc_1.set(list_annee[-1])
-    self.OM_year_pc_1 = tk.OptionMenu(self, var_year_pc_1, *list_annee)
+    self.var_year_pc_1 = tk.StringVar(self) # Reconstruction
+    self.var_year_pc_1.set(list_annee[-1])
+    self.OM_year_pc_1 = tk.OptionMenu(self, self.var_year_pc_1, *list_annee)
     font_year_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     self.OM_year_pc_1.config(font = font_year_pc_1)
     place_after(self.label_year_pc_1, self.OM_year_pc_1, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
     
-    self.OM_year_pc_2.destroy()
-    
-    #font_year_pc_2 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    #label_year_pc_2 = tk.Label(self, text = TEXT_YEAR_PC, font = font_year_pc_2)
-    #label_year_pc_2.place(x = mm_to_px(10, PPI)*SFW, y = y_constru + mm_to_px(10, PPI)*SFH, anchor = "nw")
-    
-    var_year_pc_2 = tk.StringVar(self)
-    var_year_pc_2.set(list_annee[-1])
-    self.OM_year_pc_2 = tk.OptionMenu(self, var_year_pc_2, *list_annee)
+    self.OM_year_pc_2.destroy() # Destruction
+        
+    self.var_year_pc_2 = tk.StringVar(self) # Reconstruction
+    self.var_year_pc_2.set(list_annee[-1])
+    self.OM_year_pc_2 = tk.OptionMenu(self, self.var_year_pc_2, *list_annee)
     font_year_pc_2 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     self.OM_year_pc_2.config(font = font_year_pc_2)
     place_after(self.label_year_pc_2, self.OM_year_pc_2, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
@@ -467,8 +464,15 @@ def create_ParsingConcat(self, bibliometer_path, parent):
 
     # Local imports
     import BiblioAnalysis_Utils as bau
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     
     from BiblioMeter_GUI.Coordinates import root_properties
+    from BiblioMeter_GUI.Coordinates import TEXT_BDD_PC
+    from BiblioMeter_GUI.Coordinates import TEXT_CONSTRU
+    from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_SYNTHESE
+    from BiblioMeter_GUI.Coordinates import TEXT_STATUT
+    from BiblioMeter_GUI.Coordinates import TEXT_SYNTHESE    
+    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
         
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import five_last_available_years
@@ -477,12 +481,9 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import str_size_mm
     
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
-    from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Globals_GUI import PPI
-    
+
     win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
     
     ### On récupère la présence ou non des fichiers #################################        
@@ -501,34 +502,30 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     # Liste des checkbox des corpuses
     self.CHECK = []
     self.TABLE = []
-    
-    from BiblioMeter_GUI.Coordinates import TEXT_STATUT
+
     font_statut = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     label_statut = tk.Label(self, text = TEXT_STATUT, font = font_statut)
     label_statut.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(30, PPI)*SFH, anchor = "nw")
     
     ### Zone Construction des fichiers de "parsing" par BDD
-    from BiblioMeter_GUI.Coordinates import TEXT_CONSTRU
     font_constru = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     label_constru = tk.Label(self, text = TEXT_CONSTRU, font = font_constru)
     y_constru = mm_to_px(102, PPI)*SFH
     label_constru.place(x = mm_to_px(10, PPI)*SFW, y = y_constru, anchor = "nw")
 
     # Choix de l'année
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
     font_year_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     self.label_year_pc_1 = tk.Label(self, text = TEXT_YEAR_PC, font = font_year_pc_1)
     self.label_year_pc_1.place(x = mm_to_px(10, PPI)*SFW, y = y_constru + mm_to_px(10, PPI)*SFH, anchor = "nw")
     
-    var_year_pc_1 = tk.StringVar(self)
-    var_year_pc_1.set(list_annee[-1])
-    self.OM_year_pc_1 = tk.OptionMenu(self, var_year_pc_1, *list_annee)
+    self.var_year_pc_1 = tk.StringVar(self)
+    self.var_year_pc_1.set(list_annee[-1])
+    self.OM_year_pc_1 = tk.OptionMenu(self, self.var_year_pc_1, *list_annee)
     font_year_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     self.OM_year_pc_1.config(font = font_year_pc_1)
     place_after(self.label_year_pc_1, self.OM_year_pc_1, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
     
     # Choix de la BDD
-    from BiblioMeter_GUI.Coordinates import TEXT_BDD_PC
     font_bdd_pc_1 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     label_bdd_pc_1 = tk.Label(self, text = TEXT_BDD_PC, font = font_bdd_pc_1)
     place_after(self.OM_year_pc_1, label_bdd_pc_1, dx = mm_to_px(15, PPI)*SFW, dy = mm_to_px(1, PPI)*SFH)
@@ -547,7 +544,7 @@ def create_ParsingConcat(self, bibliometer_path, parent):
                                       text = TEXT_LAUNCH_PARSING, 
                                       font = font_launch_parsing, 
                                       command = lambda: _data_parsing(self, 
-                                                                      var_year_pc_1.get(), 
+                                                                      self.var_year_pc_1.get(), 
                                                                       var_bdd_pc_1.get(), 
                                                                       POSITION_SELON_X_CHECK, 
                                                                       POSITION_SELON_Y_CHECK, 
@@ -556,33 +553,30 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     place_after(OM_bdd_pc_1, button_launch_parsing, dx = mm_to_px(25, PPI)*SFW, dy = mm_to_px(0.2, PPI)*SFH)
     
     ### Zone Synthèse des fichiers de parsing de toutes les BDD
-    from BiblioMeter_GUI.Coordinates import TEXT_SYNTHESE
     font_synthese = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
     label_synthese = tk.Label(self, text = TEXT_SYNTHESE, font = font_synthese)
     y_synthese = mm_to_px(130, PPI)*SFH
     label_synthese.place(x = mm_to_px(10, PPI)*SFW, y = y_synthese, anchor = "nw")
     
     # Choix de l'année
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
     font_year_pc_2 = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
     self.label_year_pc_2 = tk.Label(self, text = TEXT_YEAR_PC, font = font_year_pc_2)
     self.label_year_pc_2.place(x = mm_to_px(10, PPI)*SFW, y = y_synthese + mm_to_px(10, PPI)*SFH, anchor = "nw")
     
-    var_year_pc_2 = tk.StringVar(self)
-    var_year_pc_2.set(list_annee[-1])
-    self.OM_year_pc_2 = tk.OptionMenu(self, var_year_pc_2, *list_annee)
+    self.var_year_pc_2 = tk.StringVar(self)
+    self.var_year_pc_2.set(list_annee[-1])
+    self.OM_year_pc_2 = tk.OptionMenu(self, self.var_year_pc_2, *list_annee)
     font_year_pc_2 = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     self.OM_year_pc_2.config(font = font_year_pc_2)
     place_after(self.label_year_pc_2, self.OM_year_pc_2, dx = mm_to_px(1, PPI)*SFW, dy = -mm_to_px(1, PPI)*SFH)
         
     # Lancement de la concatenation
-    from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_SYNTHESE
     font_launch_concat = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
     button_launch_concat = tk.Button(self, 
                                      text = TEXT_LAUNCH_SYNTHESE, 
                                      font = font_launch_concat, 
                                      command = lambda: _reset_year_and_launch_parsing_concat_dedup(self, 
-                                                                                                   var_year_pc_2.get(), 
+                                                                                                   self.var_year_pc_2.get(), 
                                                                                                    POSITION_SELON_X_CHECK, 
                                                                                                    POSITION_SELON_Y_CHECK, 
                                                                                                    ESPACE_ENTRE_LIGNE_CHECK, 

@@ -17,7 +17,41 @@ from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 #ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/110-Alternants/2021-22 Ludovic Desmeuzes/BiblioMeter_Files"
 ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
 
-# To be removed
+# Variables organisées en fonction de l'architecture de la base de donnée
+ARCHI_YEAR = {"bdd mensuelle" : "0 - BDD multi mensuelle", 
+              "submit file name" : "submit.xlsx", 
+              "orphan file name" : "orphan.xlsx", 
+              
+              "consolidation" : "1 - Consolidation Homonymes", 
+              "consolidation file name" : "Fichier Consolidation", 
+              
+              "OTP" : "2 - OTP", 
+              "OTP file name" : "fichier_ajout_OTP", 
+              
+              "resultats" : "3 - Résultats Finaux", 
+              "resultats file name" : "Liste consolidée", 
+              
+              "corpus" : "Corpus", 
+              "concat" : "concatenation", 
+              "dedup" : "deduplication", 
+              "scopus" : "scopus", 
+              "wos" : "wos", 
+              "parsing" : "parsing", 
+              "rawdata" : "rawdata"}
+
+ARCHI_BDD_MULTI_ANNUELLE = {"root" : "BDD multi annuelle"}
+
+ARCHI_IF = {"root" : "Impact Factor",
+            "all IF" : "IF all years.xlsx",
+            "missing" : "ISSN_manquants.xlsx"}
+
+ARCHI_RH = {"root" : "Listing RH", 
+            "effectifs" : "Effectifs consolidés", 
+            "effectifs file name" : "All_effectifs.xlsx",  
+            "maj" : "A rajouter"}
+
+ARCHI_SECOURS = {"root" : "Sauvegarde de secours"}
+
 STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos', 
                                   'savedrecs.txt'], 
                          'scopus' : ['Corpus/scopus', 

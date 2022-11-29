@@ -17,20 +17,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
     Returns : nothing, it create the page in self
     """
-    # New imports to sort
-    
-    from BiblioMeter_GUI.Coordinates import root_properties
-    
-    from tkinter import font as tkFont
-
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
-
-    from BiblioMeter_GUI.Globals_GUI import DISPLAYS
-    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
-    from BiblioMeter_GUI.Globals_GUI import PPI
-    
-    win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
 
     # Standard library imports
     import os
@@ -38,105 +24,86 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from datetime import datetime
 
     # 3rd party imports
+    from datetime import date
+    import pandas as pd
     import tkinter as tk
+    from tkinter import font as tkFont
     from tkinter import filedialog
     from tkinter import messagebox
-    import pandas as pd
-    from datetime import date
-
+    
     # Local imports
     import BiblioAnalysis_Utils as bau
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+    
     from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import recursive_year_search
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_listes_consolidees
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import maj_rh
     
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import encadre_UD
-
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-    
+    from BiblioMeter_GUI.Coordinates import root_properties
+    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
-    from BiblioMeter_GUI.Coordinates import X_YEAR_PI
-    from BiblioMeter_GUI.Coordinates import Y_YEAR_PI
-
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_1
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import X_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import Y_ETAPE_1
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_1
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_1
-    
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_2
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import X_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import Y_ETAPE_2
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_2
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_2
-    
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_3
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import X_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import Y_ETAPE_3
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_3
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_3
-    
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_4
     from BiblioMeter_GUI.Coordinates import FONT_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import X_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import Y_ETAPE_4
     from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_4
     from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_4
-    
-    from BiblioMeter_GUI.Coordinates import TEXT_AFFI
-    from BiblioMeter_GUI.Coordinates import X_AFFI
-    from BiblioMeter_GUI.Coordinates import Y_AFFI
-    
     from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT
     from BiblioMeter_GUI.Coordinates import FONT_CROISEMENT
-    from BiblioMeter_GUI.Coordinates import X_CROISEMENT
-    from BiblioMeter_GUI.Coordinates import Y_CROISEMENT
-
     from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT_L
-    from BiblioMeter_GUI.Coordinates import FONT_CROISEMENT_L
     from BiblioMeter_GUI.Coordinates import FORMAT_CROISEMENT_L
-
-    from BiblioMeter_GUI.Coordinates import FONT_GOBACK
-    
     from BiblioMeter_GUI.Coordinates import TEXT_CONSOLIDATION
-    from BiblioMeter_GUI.Coordinates import FONT_CONSOLIDATION
-    from BiblioMeter_GUI.Coordinates import X_CONSOLIDATION
-    from BiblioMeter_GUI.Coordinates import Y_CONSOLIDATION
-    
     from BiblioMeter_GUI.Coordinates import TEXT_OTP
     from BiblioMeter_GUI.Coordinates import FONT_OTP
-
-    from BiblioMeter_GUI.Coordinates import TEXT_FINALE
-    from BiblioMeter_GUI.Coordinates import FONT_FINALE
-
     from BiblioMeter_GUI.Coordinates import FONT_CONCAT
-    
-    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_IF
-    from BiblioMeter_GUI.Coordinates import FONT_MAJ_IF
 
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_BDD_MULTI_ANNUELLE
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    from BiblioMeter_GUI.Globals_GUI import PPI
+    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
+    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
+    
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import encadre_RL
+    from BiblioMeter_GUI.Useful_Functions import font_size
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+    from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import place_bellow
+
+    
+    win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
+    
+    # Useful alias
+    bdd_mensuelle_alias = ARCHI_YEAR["bdd mensuelle"]
+    bdd_annuelle_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
+    OTP_path_alias = ARCHI_YEAR["OTP"]
+    Homonyme_path_alias = ARCHI_YEAR["consolidation"]
+    R_path_alias = ARCHI_YEAR["resultats"]
+    corpus_alias = ARCHI_YEAR['corpus']
+    dedup_alias = ARCHI_YEAR['dedup']
+    parsing_alias = ARCHI_YEAR['parsing']
+    submit_alias = ARCHI_YEAR["submit file name"]
+    listing_alias = ARCHI_RH["root"]
+    effectif_file_name_alias = ARCHI_RH["effectifs file name"]
+    secours_alias = ARCHI_SECOURS["root"]
+    
     ### DECORATION DE LA PAGE
     # - Canvas
     fond = tk.Canvas(self, width = win_width, height = win_height)
@@ -151,9 +118,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        underline = UNDERLINE_ETAPE_1)
     etape_1.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(40, PPI)*SFH)
     
-    #sous_text_etape_1 = tk.Label(self, text = SOUS_TEXT_ETAPE_1, justify = FORMAT_TEXT_ETAPE_1, font = FONT_SOUS_ETAPE_1)
-    #place_after(etape_1, sous_text_etape_1, dx = 2, dy = 2)
-    
     etape_2 = tk.Label(self, 
                        text = TEXT_ETAPE_2, 
                        justify = FORMAT_TEXT_ETAPE_2, 
@@ -161,18 +125,12 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        underline = UNDERLINE_ETAPE_2)
     etape_2.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(74, PPI)*SFH)
     
-    #sous_text_etape_2 = tk.Label(self, text = SOUS_TEXT_ETAPE_2, justify = FORMAT_TEXT_ETAPE_2, font = FONT_SOUS_ETAPE_2)
-    #place_after(etape_2, sous_text_etape_2, dx = 2, dy = 4)
-    
     etape_3 = tk.Label(self, 
                        text = TEXT_ETAPE_3, 
                        justify = FORMAT_TEXT_ETAPE_3, 
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_3)
     etape_3.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(101, PPI)*SFH)
-
-    #sous_text_etape_3 = tk.Label(self, text = SOUS_TEXT_ETAPE_3, justify = FORMAT_TEXT_ETAPE_3, font = FONT_SOUS_ETAPE_3)
-    #place_after(etape_3, sous_text_etape_3, dx = 2, dy = 4)
     
     etape_4 = tk.Label(self, 
                        text = TEXT_ETAPE_4, 
@@ -180,9 +138,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        font = font_etape, 
                        underline = UNDERLINE_ETAPE_4)
     etape_4.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(129, PPI)*SFH)
-
-    #sous_text_etape_4 = tk.Label(self, text = SOUS_TEXT_ETAPE_4, justify = FORMAT_TEXT_ETAPE_4, font = FONT_SOUS_ETAPE_4)
-    #place_after(etape_4, sous_text_etape_4, dx = 2, dy = 4)
     
     ### Choose which year you want to be working with #############################################################################################################
     years_list = five_last_available_years(bibliometer_path)
@@ -205,104 +160,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = 5)
     ###############################################################################################################################################################
     
-    
-    ### Bouton qui va permettre d'utiliser seeting_secondary_inst_filter sur un corpus concatené ##################################################################
-    #Button_affi = tk.Button(self, text = TEXT_AFFI, command = lambda: _setting_extend())
-    #place_after(Label_years, Button_affi, dx = 400, dy = -6)
-    #Button_affi.place(x = X_AFFI, y = Y_AFFI)
-    ###############################################################################################################################################################
-    
-    def _setting_extend():
-
-        """
-        Description :
-
-        Uses the following globals :
-
-        Args :
-
-        Returns :
-        """
-
-        # Setting path_to_folder
-        path_to_folder = bibliometer_path / Path(variable_years.get()) / Path(FOLDER_NAMES['corpus']) / Path(FOLDER_NAMES['dedup']) / Path(FOLDER_NAMES['parsing'])
-        
-        ### On récupère la présence ou non des fichiers #################################        
-        results = existing_corpuses(bibliometer_path)
-
-        list_corpus_year = results[0]
-        list_wos_rawdata = results[1]
-        list_wos_parsing = results[2]
-        list_scopus_rawdata = results[3]
-        list_scopus_parsing = results[4]
-        list_concatenation = results[5]
-        #################################################################################
-        
-        if list_wos_parsing[list_corpus_year.index(variable_years.get())] == False:
-            messagebox.showwarning('Fichiers manquants', f"Warning : le fichier authorsinst.dat de wos de l'année {variable_years.get()} n'est pas disponible.\nVeuillez effectuer le parsing avant de parser les instituts")
-            return
-        
-        full_list = bau.getting_secondary_inst_list(path_to_folder)
-
-        _open_list_box_filter(self, full_list, path_to_folder)
-
-    def _open_list_box_filter(self, full_list, path_to_folder):
-
-        """
-        Description :
-
-        Uses the following globals :
-
-        Args :
-
-        Returns :
-        """
-
-        newWindow = tk.Toplevel(self)
-        newWindow.grab_set()
-        newWindow.title('Selection des institutions à parser')
-
-        newWindow.geometry(f"600x600+{self.winfo_rootx()}+{self.winfo_rooty()}")
-
-        label = tk.Label(newWindow, text="Selectionner les\ninstitutions", font = ("Helvetica", 20))
-        label.place(anchor = 'n', relx = 0.5, rely = 0.025)
-
-        yscrollbar = tk.Scrollbar(newWindow)
-        yscrollbar.pack(side = tk.RIGHT, fill = tk.Y)
-
-        my_listbox = tk.Listbox(newWindow, 
-                                selectmode = tk.MULTIPLE, 
-                                yscrollcommand = yscrollbar.set)
-        my_listbox.place(anchor = 'center', width = 400, height = 400, relx = 0.5, rely = 0.5)
-
-        # TO DO : Ajouter une présélection
-
-        x = full_list
-        for idx, item in enumerate(x):
-            my_listbox.insert(idx, item)
-            my_listbox.itemconfig(idx,
-                                  bg = "white" if idx % 2 == 0 else "white")
-            
-        # TO DO : Utiliser la global INST_FILTER_LIST quand feu vert de Amal et François
-        n = x.index('France:LITEN')
-        my_listbox.selection_set(first = n)
-        n = x.index('France:INES')
-        my_listbox.selection_set(first = n)
-            
-        # TO DO : Nommer la variable_years dans la commande
-        
-        button = tk.Button(newWindow, text ="Lancer le parsing des institutions", 
-                           command = lambda: launch())
-        button.place(anchor = 'n', relx = 0.5, rely = 0.9)
-    
-        def launch():
-                        
-            bau.extend_author_institutions(path_to_folder, [(x.split(':')[1].strip(),x.split(':')[0].strip()) for x in [my_listbox.get(i) for i in my_listbox.curselection()]])
-            
-            messagebox.showinfo('Information', f"Le parsing des institutions sélectionnées a été efectué.")
-            
-            newWindow.destroy()
-            
     ### Choix du nombre d'année du recursive_year_search
     font_croisement = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Label_croisement = tk.Label(self, 
@@ -321,18 +178,24 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
     OptionButton_goback.configure(font = font_croisement)
     
-    #place_after(Label_croisement, OptionButton_goback, dy = -mm_to_px(1, PPI)*SFH)
-    
     ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
     Button_croisement = tk.Button(self, 
                        text = TEXT_CROISEMENT,
                        font = font_croisement, 
                        command = lambda: _launch_recursive_year_search())
     
-    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(-5, PPI)*SFH)
-    #Button_croisement.place(x = X_CROISEMENT, y = Y_CROISEMENT)
+    place_bellow(Label_croisement, Button_croisement, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(-8, PPI)*SFH)
     
-    Label_croisement.destroy()
+    check_effectif_var = tk.IntVar()
+    check_effectif_box = tk.Checkbutton(self, text = "Oui (coché) / Non (non coché)", variable = check_effectif_var, onvalue = 1, offvalue = 0)
+    
+    font_check = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
+    Label_check = tk.Label(self, text = "Mettre à jour le fichier RH avant le croisement ?", font = font_check, justify = 'left')
+    
+    place_bellow(Button_croisement, Label_check, dy = mm_to_px(5, PPI)*SFH)
+    place_after(Label_check, check_effectif_box)
+    
+    Label_croisement.destroy() # car on ne l'autorise plus pour le moment
     
     def _launch_recursive_year_search():
         
@@ -340,8 +203,12 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         import os
         import shutil
         import pandas
+        
+        if check_effectif_var.get():
+            # Lancement de la fonction MAJ Effectif
+            maj_rh(bibliometer_path)
     
-        path_all_effectifs = Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][1])
+        path_all_effectifs = Path(bibliometer_path) / Path(listing_alias) / Path(effectif_file_name_alias)
         
         def _annee_croisement(corpus_year):
     
@@ -374,10 +241,10 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 messagebox.showwarning('Information', f"Il n'y a pas suffisament d'années disponibles dans le fichier effectifs LITEN pour effectuer le croisement. Procédure annulée.")
                 return
         else:
-            answer_2 = messagebox.askokcancel('Fichier manquant', f"""Le fichier {STOCKAGE_ARBORESCENCE['effectif'][1]} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
+            answer_2 = messagebox.askokcancel('Fichier manquant', f"""Le fichier {effectif_file_name_alias} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
             if answer_2:
                 # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
-                filePath = shutil.copy(bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][8]) / Path (STOCKAGE_ARBORESCENCE['effectif'][1]), path_all_effectifs)
+                filePath = shutil.copy(bibliometer_path / Path(secours_alias) / Path (effectif_file_name_alias), path_all_effectifs)
                 
                 df_effectifs = pd.read_excel(path_all_effectifs, sheet_name = None)
                 # Vérifier les années disponibles
@@ -392,23 +259,23 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         # On passe directement ici si le document est disponible
         answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN des années : {', '.join([str(i) for i in annees_disponibles])} a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
         if answer_1:  
-            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(STOCKAGE_ARBORESCENCE['general'][0]) / Path(SUBMIT_FILE_NAME)):
+            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(bdd_mensuelle_alias) / Path(submit_alias)):
                 if messagebox.askokcancel('Information', f"Le croisement pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
                     try:
                         recursive_year_search(Path(bibliometer_path) / 
                                               Path(variable_years.get()) / 
-                                              Path(FOLDER_NAMES['corpus']) / 
-                                              Path(FOLDER_NAMES['dedup']) / 
-                                              Path(FOLDER_NAMES['parsing']),
+                                              Path(corpus_alias) / 
+                                              Path(dedup_alias) / 
+                                              Path(parsing_alias),
                                               Path(bibliometer_path) / 
                                               Path(variable_years.get()) / 
-                                              Path(STOCKAGE_ARBORESCENCE['general'][0]), 
+                                              Path(bdd_mensuelle_alias), 
                                               Path(bibliometer_path) / 
-                                              Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                                              Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
+                                              Path(listing_alias) / 
+                                              Path(effectif_file_name_alias), 
                                               Path(bibliometer_path) / 
-                                              Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                                              Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
+                                              Path(listing_alias) / 
+                                              Path(STOCKAGE_ARBORESCENCE["effectif"][2]),
                                               Path(bibliometer_path),
                                               variable_years.get(), 
                                               go_back_years.get())
@@ -424,18 +291,18 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 try:
                     recursive_year_search(Path(bibliometer_path) / 
                                           Path(variable_years.get()) / 
-                                          Path(FOLDER_NAMES['corpus']) / 
-                                          Path(FOLDER_NAMES['dedup']) / 
-                                          Path(FOLDER_NAMES['parsing']),
+                                          Path(corpus_alias) / 
+                                          Path(dedup_alias) / 
+                                          Path(parsing_alias),
                                           Path(bibliometer_path) / 
                                           Path(variable_years.get()) / 
-                                          Path(STOCKAGE_ARBORESCENCE['general'][0]), 
+                                          Path(bdd_mensuelle_alias), 
                                           Path(bibliometer_path) / 
-                                          Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                                          Path(STOCKAGE_ARBORESCENCE['effectif'][1]),
+                                          Path(listing_alias) / 
+                                          Path(effectif_file_name_alias), 
                                           Path(bibliometer_path) / 
-                                          Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / 
-                                          Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
+                                          Path(listing_alias) / 
+                                          Path(STOCKAGE_ARBORESCENCE["effectif"][2]), 
                                           Path(bibliometer_path),
                                           variable_years.get(), 
                                           go_back_years.get())
@@ -450,14 +317,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
     ###########################################################################################################################################################
     
-    # Useful alias
-    bdd_mensuelle_alias = STOCKAGE_ARBORESCENCE['general'][0]
-    bdd_annuelle_alias = STOCKAGE_ARBORESCENCE['general'][1]
-    OTP_path_alias = STOCKAGE_ARBORESCENCE['general'][3]
-    Homonyme_path_alias = STOCKAGE_ARBORESCENCE['general'][4]
-    R_path_alias = STOCKAGE_ARBORESCENCE['general'][5]
-    submit_alias = SUBMIT_FILE_NAME
-    
     # PREMIERE PARTIE : CONSOLIDATION  
     font_consolidation = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
     Button_mise_en_forme = tk.Button(self, 
@@ -465,7 +324,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                      font = font_consolidation, 
                                      command = lambda: _launch_consolidation_homonyme())
     
-    # Button_mise_en_forme.place(x = X_CONSOLIDATION, y = Y_CONSOLIDATION)
     place_bellow(etape_2, Button_mise_en_forme, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
 
     
@@ -518,7 +376,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                            command = lambda: _launch_ajout_OTP())
     
     place_bellow(etape_3, Button_OTP, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
-    #encadre_UD(fond, etape_3, Button_OTP, "black", dn = 5, de = 5000, ds = -22, dw = 5000)
     
     def _launch_ajout_OTP():
         answer_1 = messagebox.askokcancel('Information', f"Une procédure de création des quatre fichiers permettant l'ajout des OTP a été lancée, continuer ?")
