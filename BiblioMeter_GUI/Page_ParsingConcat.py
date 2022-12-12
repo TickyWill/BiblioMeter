@@ -30,26 +30,26 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
     documents (.dat) which are results of the parsing of the treated corpuses.
 
     """
-
+    
     # Standard library imports
     import os
     import json
     from pathlib import Path
-
+    
     # 3rd party imports
     import tkinter as tk
     from tkinter import messagebox
-
+    
     # Local imports
     import BiblioAnalysis_Utils as bau
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-        
+    
     ### On récupère la présence ou non des fichiers #################################        
     results = existing_corpuses(bibliometer_path)
-
+    
     list_corpus_year = results[0]
     list_wos_rawdata = results[1]
     list_wos_parsing = results[2]
@@ -62,20 +62,20 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
     wos_alias = ARCHI_YEAR["wos"]
     scopus_alias = ARCHI_YEAR["scopus"]
     corpus_path_alias = ARCHI_YEAR["corpus"]
-
+    
     scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
     wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
-
+    
     parsing_path_alias = ARCHI_YEAR['parsing']
     rawdata_path_alias = ARCHI_YEAR['rawdata']
-
+    
     concat_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['concat']
     dedupli_path_alias = Path(corpus_path_alias) / ARCHI_YEAR['dedup']
-
+    
     article_path_alias = DIC_OUTDIR_PARSING['A']
-
+    
     expert = False
-
+    
     answer_1 = messagebox.askokcancel('Information', f"Une procédure de parsing a été lancée, continuer à parser ?")
     if answer_1:
         # Creation of path_rawdata, path_parsing, rep_utils and parser_done
@@ -131,16 +131,16 @@ def _data_parsing(self, corpus_year, database_type, POSITION_SELON_X_CHECK, POSI
     _update(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK)
     
 def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON_Y_CHECK, ESPACE_ENTRE_LIGNE_CHECK):
-        
+    
     """
-    Description : 
-
+    Description :
+    
     Uses the following globals :
-
+    
     Args :
-
+    
     Returns :
-
+    
     """
     
     # Standard library imports
@@ -155,7 +155,7 @@ def _create_table(self, bibliometer_path, POSITION_SELON_X_CHECK, POSITION_SELON
     
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Globals_GUI import PPI    
-
+    
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import mm_to_px

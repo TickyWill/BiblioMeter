@@ -82,6 +82,7 @@ App_Francois.ipynb
 Snipette_effectif.ipynb
 
 
+
 # IPython
 profile_default/
 ipython_config.py
@@ -142,5 +143,8 @@ freeze.txt
 ne pas encore ouvrir bis.py
 Stand by/
 BiblioMeter_GUI/Page_ParsingInstitution_save.py
+BiblioMeter_GUI/Page_ParsingInstitution_real.py
 BiblioMeter_GUI/Page_ParsingConcat_save.py
 BiblioMeter_FUNCTS/BiblioMeter_MergeEffectif_in_dev.py
+BiblioMeter_FUNCTS/BiblioMeter_MergeEffectif_real.py
+Sauvegarde de secours

@@ -101,6 +101,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     parsing_alias = ARCHI_YEAR['parsing']
     submit_alias = ARCHI_YEAR["submit file name"]
     listing_alias = ARCHI_RH["root"]
+    effectif_folder_name_alias = ARCHI_RH["effectifs"]
     effectif_file_name_alias = ARCHI_RH["effectifs file name"]
     secours_alias = ARCHI_SECOURS["root"]
     
@@ -184,8 +185,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                        font = font_croisement, 
                        command = lambda: _launch_recursive_year_search())
     
-
-    
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self, text = "Oui (coché) / Non (non coché)", variable = check_effectif_var, onvalue = 1, offvalue = 0)
     
@@ -207,9 +206,16 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         
         if check_effectif_var.get():
             # Lancement de la fonction MAJ Effectif
-            maj_rh(bibliometer_path)
+            answer = messagebox.askokcancel('Information', f"Le fichier des effectifs LITEN va être mis à jour. Après cette mise à jour, la procédure normale reprendra et il vous faudra répondre aux messages pop-up comme quand vous ne faites pas la mise à jour des effectifs LITEN.")
+            if answer:
+                maj_rh(bibliometer_path)
+                messagebox.showinfo('Information', f"La mise à jour a été effectuée. La procédure normale de croisement va reprendre.")
+            else:
+            # Arrêt de la procédure
+                messagebox.showinfo('Information', f"La mise à jour n'a pas été effectuée, et la procédure de croisement non plus.")
+                return
     
-        path_all_effectifs = Path(bibliometer_path) / Path(listing_alias) / Path(effectif_file_name_alias)
+        path_all_effectifs = Path(bibliometer_path) / Path(listing_alias) / Path(effectif_folder_name_alias) / Path(effectif_file_name_alias)
         
         def _annee_croisement(corpus_year):
     
@@ -217,10 +223,8 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
             df = pandas.read_excel(in_path, sheet_name = None)
 
             annees_dispo = [int(x) for x in list(df.keys())]
-            print(annees_dispo)
 
             annees_a_verifier = [int(corpus_year) - int(go_back_years.get()) + i + 1 for i in range(int(go_back_years.get()))]
-            print(annees_a_verifier)
             annees_verifiees = list()
 
             for i in annees_a_verifier:
@@ -271,12 +275,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                               Path(bibliometer_path) / 
                                               Path(variable_years.get()) / 
                                               Path(bdd_mensuelle_alias), 
-                                              Path(bibliometer_path) / 
-                                              Path(listing_alias) / 
-                                              Path(effectif_file_name_alias), 
-                                              Path(bibliometer_path) / 
-                                              Path(listing_alias) / 
-                                              Path(STOCKAGE_ARBORESCENCE["effectif"][2]),
+                                              path_all_effectifs,
                                               Path(bibliometer_path),
                                               variable_years.get(), 
                                               go_back_years.get())
@@ -298,12 +297,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                           Path(bibliometer_path) / 
                                           Path(variable_years.get()) / 
                                           Path(bdd_mensuelle_alias), 
-                                          Path(bibliometer_path) / 
-                                          Path(listing_alias) / 
-                                          Path(effectif_file_name_alias), 
-                                          Path(bibliometer_path) / 
-                                          Path(listing_alias) / 
-                                          Path(STOCKAGE_ARBORESCENCE["effectif"][2]), 
+                                          path_all_effectifs, 
                                           Path(bibliometer_path),
                                           variable_years.get(), 
                                           go_back_years.get())

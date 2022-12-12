@@ -1,5 +1,5 @@
-__all__=['LabelEntry', 
-         'CheckBoxCorpuses', 
+__all__=['LabelEntry',
+         'CheckBoxCorpuses',
          'LabelEntry_toFile']
 
 class LabelEntry:

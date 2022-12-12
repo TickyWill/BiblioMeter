@@ -13,7 +13,7 @@ def general_properties(self):
     # Base size
     normal_width = 1920
     normal_height = 1080
-
+    
     # Get screen size
     screen_width = self.winfo_screenwidth()
     screen_height = self.winfo_screenheight()
@@ -25,7 +25,7 @@ def general_properties(self):
     # Base size mm
     normal_mm_w = 467
     normal_mm_h = 267
-
+    
     scale_factor_W = DISPLAYS[GUI_DISP]["width_mm"] / normal_mm_w
     scale_factor_H = DISPLAYS[GUI_DISP]["height_mm"] / normal_mm_h
     
@@ -49,7 +49,7 @@ def root_properties(root):
     from BiblioMeter_GUI.Globals_GUI import DISPLAYS
     from BiblioMeter_GUI.Globals_GUI import GUI_DISP
     from BiblioMeter_GUI.Globals_GUI import PPI
-
+    
     # Base size
     normal_width = 1920
     normal_height = 1080
@@ -65,7 +65,7 @@ def root_properties(root):
     # Base size mm
     normal_mm_w = 467
     normal_mm_h = 267
-
+    
     scale_factor_W = DISPLAYS[GUI_DISP]["width_mm"] / normal_mm_w
     scale_factor_H = DISPLAYS[GUI_DISP]["height_mm"] / normal_mm_h
     

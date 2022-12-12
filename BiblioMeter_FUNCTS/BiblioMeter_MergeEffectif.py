@@ -1,202 +1,4 @@
 __all__ = ['recursive_year_search']
-
-def _build_year_month_dpt(current_year, sheet_names_all, bibliometer_path, save_case=False):
-
-    '''The excel workbook, with full pass `file`, contains a worksheet per month labelled mmyyyy 
-    where mm stands for the month (01,02,...,12) and yyyy stands for the year (2019,2020,...). 
-    All the worksheets must at least contain the two columns entitled: `ID` and `Dpt/DOB (lib court)`. 
-    The function `build_month_dpt` builds out, using at most 12 worksheets, a new dataframe with
-    an additional column entitled: 'ID' and 'Dpt_month'.
-    The columns 'Dpt_month' contains the lists of at most 12 tuples
-    [(current_year,month_1,dept_1),...,(current_year,month_n,dept_n)].
-    If a ID is not present in a spreadsheat the tuple is replace by (year,month_1,None).
-
-    Uses the following globals:
-    PATH_TO_EFFECTIFS
-    COL_NAMES_RH
-    COL_NAMES_BM
-
-    Args:
-       current_year (string): string formatted as yyyy to build the df on a period of 12 months
-
-    Returns:
-       (dataframe)
-    '''
-
-    #Standard Library imports
-    import os
-    from pathlib import Path
-
-    # 3rd party import
-    import pandas as pd
-
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-
-    def _recast_to_tuple(df,col):
-        df[col] = df[col].apply(lambda x: x if isinstance(x, list) else [x])
-
-    def _tuples_to_lists(df,cols):
-        col_in, col_out = cols[0], cols[1]
-        df[col_out] = df[col_in].apply(lambda x: [list(x) for x in list(zip(*x))])
-
-    def _get_firstname_initiales(row):
-        row = row.replace('-',' ') 
-        row_list = row.split(' ')
-        initiale_list = [x[0] for x in row_list]
-        initiales = ''.join(initiale_list)        
-        return initiales
-
-    def _manage_duplicate_matricule(df,col):
-        # Initializing dataframe 'df_effectif' as a copy of the dataframe 'df'
-        df_effectif = df.copy()
-        dup_matricule_idx = (df[df[col].apply(lambda x:len(x)>1)]).index
-        for index in dup_matricule_idx:
-            save = df.iloc[index]
-            save_copy = save.copy()
-            sub_names = save[col].copy()    
-            for s_name_idx,sub_name in enumerate(sub_names): 
-                # For all different sub names for the same matricule
-                # Replacing the sub_names list with the current sub name from sub_names list
-                save_copy[col] = [sub_name]
-                if not s_name_idx: 
-                    # Updating the dataframe 'df_effectif' at the index 'index' for the first sub-name
-                    df_effectif.iloc[index] = save_copy
-                else:            
-                    # Adding a copy of info at the end of the dataframe 'df_effectif' with the other sub names
-                    df_effectif = df_effectif.append(save_copy.to_frame().T)                    
-        return df_effectif
-
-    # Building the list 'sheet_names' of the worksheet's name pertening to the year 'current_year'.
-    sheet_names = [x for x in sheet_names_all if str(current_year) in x]
-
-    # Reading the selected sheet_names from the excel file as a dict {sheet-name: sheet-content dataframe}
-    df_dict = pd.read_excel(Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['effectif'][0]) / Path(STOCKAGE_ARBORESCENCE['effectif'][2]),
-                            sheet_name = sheet_names)
-
-    # Building a dataframe 'df_rh_year' as a concatenation of sheets from the 'sheet_names' list
-    # by sweeping on each sheet 'sheet_name' of dict 'df_dict'
-    # and getting the dataframe 'df_rh_month' with the content of the sheet 'sheet_name'
-    for sheet_idx,(sheet_name,df_rh_month) in enumerate(df_dict.items()):
-
-        # Getting the month and year for the sheet 'sheet_name'
-        month = sheet_name[0:2]
-        year = sheet_name[2:] # Should be always the same as 'current_year'
-
-        # For the dataframe 'df_rh_month' that contents the sheet 'sheet_name' content
-        # replacing each cell of column 'COL_NAMES_RH['Dpt']' that specifies the employee departement dpt
-        # by a tuple (month,year,dpt)
-        col = COL_NAMES_RH['dpt']
-        df_rh_month[col] = df_rh_month[col].apply(lambda x:(month,year,x))
-
-        # For the dataframe 'df_rh_month' that contents the sheet 'sheet_name' content
-        # replacing each cell of column 'COL_NAMES_RH['Service']' that specifies the employee service serv
-        # by a tuple (month,year,serv) 
-        col = COL_NAMES_RH['service']
-        df_rh_month[col] = df_rh_month[col].apply(lambda x:(month,year,x))
-
-        # Getting the columns names of 'df_rh_month' 
-        # To Do: selecting the useful columns to keep
-        rh_columns = list(df_rh_month.columns)
-        rh_columns_to_keep = rh_columns
-
-        # Building the dataframe 'df_rh_year'
-        if sheet_idx == 0:    
-            # Initializing 'df_rh_year' with first sheet content
-            df_rh_year = df_rh_month[rh_columns_to_keep].copy()
-        else:
-            # Appending the next sheet content to 'df_rh_year'
-            df_rh_year = df_rh_year.append(df_rh_month[rh_columns_to_keep].copy())
-
-    #### Saving the dataframe 'df_rh_year' as an EXCEL file for checking
-    ###if ###:df_rh_year.to_excel(PATH_OF_CHECKS / Path('df_rh_year.xlsx'))    
-
-    # Building a dict 'rh_dict' from dataframe 'df_rh_year' 
-    # with information keyed by employee matricule COL_NAMES_RH['ID']
-    # and its structure is {matricule : dataframe which content is df_rh_year for COL_NAMES_RH['ID'] equal to matricule}
-    rh_dict = {}
-    for matricule, df_matricule in df_rh_year.groupby([COL_NAMES_RH['ID']]):
-        # Setting unique occcurence of items in a given column of the dataframe df_matricule
-        rh_dict[matricule] = [df_matricule[item].unique() for item in df_matricule.columns]
-
-        # Recasting array into list if len(array)>1 otherwise into string  
-        rh_dict[matricule] = [x[0] if len(x)==1 else list(x) for x in rh_dict[matricule]]     
-
-    # Recasting the dict 'rh_dict' into a dataframe 'df_rh_year_singlemat' with ad hoc columns names and index
-    # in this dataframe there is only one row per matricule
-    df_rh_year_singlemat = pd.DataFrame.from_dict(rh_dict)
-    df_rh_year_singlemat = df_rh_year_singlemat.T
-    df_rh_year_singlemat.reset_index(drop=True, inplace=True)
-    df_rh_year_singlemat.columns = rh_columns_to_keep
-
-    # Recasting into list of items whatever the number of items for selected columns
-    # To Do: Doing the recasting for all columns
-    col_list = [COL_NAMES_RH['dpt'],
-                COL_NAMES_RH['service'],
-                COL_NAMES_RH['nom'],
-                COL_NAMES_RH['prénom']]
-    for col in col_list:
-        _recast_to_tuple(df_rh_year_singlemat,col)
-
-    #### Saving the dataframe 'df_rh_year_singlemat' as an EXCEL file for checking
-    ###if save_case:df_rh_year_singlemat.to_excel(PATH_OF_CHECKS / Path('df_rh_year_singlemat.xlsx')) 
-
-    # Transforming list of tuples into lists of lists ex [(x,c,d),((e,f,g))] -->[[x,e],[c,f],[d,g]] for 'Dpt' and 'Service' columns
-    # and putting them in 'Dpts' and 'Servs' new columns
-    cols_tup_list = [(COL_NAMES_RH['dpt'],COL_NAMES_BM['Dpts']), 
-                     (COL_NAMES_RH['service'],COL_NAMES_BM['Servs'])]
-    for cols_tup in cols_tup_list:
-        _tuples_to_lists(df_rh_year_singlemat,cols_tup) 
-
-    # Spliting list of n lists into n different columns for 'Dpts' and 'Servs' columns
-    for col in [COL_NAMES_BM['Dpts'], COL_NAMES_BM['Servs']]:
-        df_rh_year_singlemat[['months', 'years', col]] = pd.DataFrame(df_rh_year_singlemat[col].tolist())
-
-    #### Saving the dataframe 'df_rh_year_singlemat' as an EXCEL file for checking
-    ###if save_case:df_rh_year_singlemat.to_excel(PATH_OF_CHECKS / Path('df_rh_year_singlemat_addedcols.xlsx'))
-
-    # Dealing with same matricule for different lastnames 
-    col = COL_NAMES_RH['nom']
-    df_effectif = _manage_duplicate_matricule(df_rh_year_singlemat,col)
-
-    # Dealing with same matricule for different firstnames
-    col = COL_NAMES_RH['prénom']
-    df_effectif = _manage_duplicate_matricule(df_rh_year_singlemat,col)
-
-    # Creating a column with first name initials as a list
-    # ex PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM 
-    col_in, col_out = COL_NAMES_RH['prénom'], COL_NAMES_BM['First_name']
-    df_effectif[col_out] = df_effectif.apply(lambda row : 
-                                             [_get_firstname_initiales(x) for x in row[col_in]],
-                                             axis=1)
-
-    # Recasting single-element list into string for specific columns
-    cols_list = [COL_NAMES_RH['nom'],COL_NAMES_RH['prénom'],COL_NAMES_BM['First_name']]
-    for col in cols_list:
-        df_effectif[col] = df_effectif[col].apply(lambda x : x[0])
-
-    # Creating the column ['Full_name'] by combining COL_NAMES_RH['Nom'] and COL_NAMES_BM['First_name']
-    new_col = COL_NAMES_RH['Full_name']
-    df_effectif[new_col] = df_effectif[COL_NAMES_RH['nom']] + ' ' + df_effectif[COL_NAMES_BM['First_name']]
-
-    # Keeping only the last element of the first tuple (the first occurrence in the year) for specific columns
-    cols_list = [COL_NAMES_RH['dpt'],COL_NAMES_RH['service']]
-    for col in cols_list:
-        df_effectif[col] = df_effectif[col].apply(lambda x: x[0][-1])    
-
-    df_effectif = df_effectif.reset_index()
-
-    #### Saving the dataframe 'df_effectif' as an EXCEL file for checking
-    ###if ###:df_effectif.to_excel(PATH_OF_CHECKS / Path('df_effectif_test.xlsx'))  
-
-    return df_effectif
             
 def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
 
@@ -376,7 +178,6 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
             # Building the list of index of firsnames initiales 
             list_idx = []
             for idx,eff_firstname in enumerate(eff_firstnames):
-
                 #if pub_lastname == 'MARTIN': 
                     #print()
                     #print('pub_lastname',pub_lastname, 'pub_firstname',pub_firstname)
@@ -385,7 +186,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
                 if (pub_firstname == eff_firstname):
                     list_idx.append(idx)
 
-                elif (pub_firstname[0] == eff_firstname[0]):
+                elif (pub_firstname == eff_firstname):
                     # Replacing the employee first name initials by the publication first name initials
                     # for df_pub_rh_join building
                     df_eff_pub_match[COL_NAMES_RH['Full_name']].iloc[idx] = pub_lastname + ' ' + pub_firstname
@@ -568,7 +369,7 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
 
     return  merged_df_Liten
 
-def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer_path, corpus_year, go_back_years):
+def recursive_year_search(path_in, path_out, path_eff_1, bibliometer_path, corpus_year, go_back_years):
 
     """
     Description à venir
@@ -602,15 +403,6 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     ###################################
 
     df_pub = _build_pubs_authors_Liten(corpus_year, bibliometer_path)
-        
-    ##################################################################
-    # Building the list of available years in the employees database #
-    ##################################################################
-
-    df = pd.ExcelFile(path_eff_2)
-    sheet_names_all = df.sheet_names
-    sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
-    years_db = set([sheet_names_all[index][2:] for index in range(len(sheet_names_all))])
 
     ##########################################################
     # Building the search time extension of Liten co-authors #
@@ -621,7 +413,6 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     time_line_history = int(go_back_years)
     years = [str(i) for i in range(start_year - time_line_history + 1, start_year + 1)]
     years = years[::-1]
-    #print(years)
 
     #################################################################################################
     # Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years #
@@ -640,31 +431,23 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
                 ]
 
     test_case = 'Upper value similarity'
+    
+    # Read the sheet `year` of `EFFECTIFS_FILE` file
+    effectifs_path = path_eff_1 # Récupère ALL_Effectifs.xlsx
+    
+    df_eff = pd.read_excel(effectifs_path, sheet_name = None)
 
-    for step, year in enumerate(years): 
+    # Building the initial dataframes
+    df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], df_pub, bibliometer_path, test_case = test_case)
+    
+    for step, year in enumerate(years):
+    
+        # Updating the dataframes 
+        df_submit_add, df_orphan =  _build_df_submit(df_eff[year], df_orphan, bibliometer_path, test_case)
 
-        # Read the sheet `year` of `EFFECTIFS_FILE` file
-        effectifs_path = path_eff_1 # Récupère ALL_Effectifs.xlsx
-
-        df_eff = pd.read_excel(effectifs_path, sheet_name = year)
-        df_eff.drop(['Unnamed: 0'], axis=1, inplace = True)
-
-        if step == 0:
-            df = pd.ExcelFile(path_eff_2)
-            sheet_names_all = df.sheet_names
-            sheet_names_all = sheet_names_all[::-1] # inverses the list of sheet names
-            df_eff = _build_year_month_dpt(year,sheet_names_all, bibliometer_path)
-
-            # Building the initial dataframes
-            df_submit, df_orphan =  _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = test_case)
-
-        else:
-            # Updating the dataframes 
-            df_submit_add, df_orphan =  _build_df_submit(df_eff, df_orphan, bibliometer_path, test_case)
-            
-            # Updating df_submit 
-            df_submit = df_submit.append(df_submit_add)        
-
+        # Updating df_submit 
+        df_submit = df_submit.append(df_submit_add)
+        
         year_submit_file_name = year + '_' + SUBMIT_FILE_NAME
         year_orphan_file_name = year + '_' + ORPHAN_FILE_NAME
 
@@ -676,7 +459,7 @@ def recursive_year_search(path_in, path_out, path_eff_1, path_eff_2, bibliometer
     #####################################################################
     
     ### Normalisation des titres de journaux
-    df_submit['Journal'] = df_submit['Journal'].apply(lambda x : x.title())
+    #df_submit['Journal'] = df_submit['Journal'].apply(lambda x : x.title())
     
     
     def _unique_pub_id(df):

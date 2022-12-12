@@ -632,7 +632,7 @@ def ajout_IF(in_path, out_path, IF_path, year):
                 # Appliquer nan --> unknow to df
                 df_inter[IF_publi_alias] = df_inter[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
                 
-                print(f"La colonne {IF_publi_alias} a été rajoutée avec succès pour l'année {annee}")
+                #print(f"La colonne {IF_publi_alias} a été rajoutée avec succès pour l'année {annee}")
 
                 dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
                 s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
@@ -642,7 +642,7 @@ def ajout_IF(in_path, out_path, IF_path, year):
                 # Appliquer nan --> unknow to df
                 df_inter[IF_cours_alias] = df_inter[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
                 
-                print(f"La colonne {IF_cours_alias} a été rajoutée avec succès pour l'année {annee}, avec les IF de l'année {list(df_IF.keys())[-1]}")
+                #print(f"La colonne {IF_cours_alias} a été rajoutée avec succès pour l'année {annee}, avec les IF de l'année {list(df_IF.keys())[-1]}")
 
                 df_submit_bis = df_submit_bis.append(df_inter)
                 
@@ -659,7 +659,7 @@ def ajout_IF(in_path, out_path, IF_path, year):
                 df_inter[IF_cours_alias] = df_inter[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
                 df_inter[IF_publi_alias] = df_inter[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
                 
-                print(f"Les colonnes {IF_publi_alias} et {IF_cours_alias} ont été rajoutées avec succès pour l'année {annee}")
+                #print(f"Les colonnes {IF_publi_alias} et {IF_cours_alias} ont été rajoutées avec succès pour l'année {annee}")
 
                 df_submit_bis = df_submit_bis.append(df_inter)
             
@@ -804,8 +804,19 @@ def maj_rh(bibliometer_path):
     import pandas as pd
     import os
     from pathlib import Path
+    import shutil
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
     from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
+    
+    # Useful alias and path
+    listing_alias = ARCHI_RH["root"]
+    effectif_folder_name_alias = ARCHI_RH["effectifs"]
+    effectif_file_name_alias = ARCHI_RH["effectifs file name"]
+    secours_alias = ARCHI_SECOURS["root"]
+    
+    path_secours = Path(bibliometer_path) / Path(secours_alias)
 
     # Fonctions outil
     def _get_year(mmyyyy):
@@ -892,16 +903,34 @@ def maj_rh(bibliometer_path):
             df_effectif[year] = pd.DataFrame(df_to_add[page_to_add].copy())
             effectif_sheets.append(year)
 
+    def _get_firstname_initiales(row):
+        row = row.replace('-',' ')
+        row_list = row.split(' ')
+        initiale_list = [x[0] for x in row_list]
+        initiales = ''.join(initiale_list)        
+        return initiales
 
-    # Et dédupliquer
+    # Et dédupliquer en ajoutant les colonnes Initials et Name + Initials
     years_to_dedup = _different_years(to_add_sheets)
     for page_to_dedup in years_to_dedup:
         df_effectif[page_to_dedup].drop_duplicates(subset = [matricule_alias], inplace = True)
+    
+        # Creating a column with first name initials as a list
+        # ex PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM 
+        col_in, col_out = COL_NAMES_RH['prénom'], COL_NAMES_BM['First_name']
+        df_effectif[page_to_dedup][col_out] = df_effectif[page_to_dedup].apply(lambda row: _get_firstname_initiales(row[col_in]), axis = 1)
+
+        # Creating the column ['Full_name'] by combining COL_NAMES_RH['Nom'] and COL_NAMES_BM['First_name']
+        new_col = COL_NAMES_RH['Full_name']
+        df_effectif[page_to_dedup][new_col] = df_effectif[page_to_dedup][COL_NAMES_RH['nom']] + ' ' + df_effectif[page_to_dedup][COL_NAMES_BM['First_name']]
 
     # Création de l'Excel Writer Object
     with pd.ExcelWriter(path_effectif_file) as writer:
         for page_effectif in effectif_sheets:
             df_effectif[page_effectif].to_excel(writer, sheet_name = page_effectif, index = False)
+    
+    # Copie de la mise à jour dans la zone de sauvegarde
+    filePath = shutil.copy(path_effectif_file, path_secours)
             
 def mise_en_page(df):
 
