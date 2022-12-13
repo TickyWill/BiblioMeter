@@ -68,6 +68,14 @@ class App_Test(tk.Tk):
                                      font = Lancement_font, 
                                      command = lambda: self._generate_pages(LE_BMF.get()))
         Bouton_Lancement.place(x = (win_width/2), y = (win_height/2) + 20*SFH, anchor = "s")
+        
+        # Auteurs et versions
+        Auteurs_font_label = tkFont.Font(family = "Helvetica", size = font_size(10, min(SFW, SFWP)))
+        Auteurs_label = tk.Label(self, 
+                                 text = "Contacts :\n- Amal Chabli : amal.chabli@orange.fr\n- François Bertin : francois.bertin7@wanadoo.fr\n- Ludovic Desmeuzes : ludovic.desmeuzes@yahoo.com\nVersion 0.0.0", 
+                                 font = Auteurs_font_label,
+                                 justify = "left")
+        Auteurs_label.place(x = (mm_to_px(5, PPI))*SFW, y = (mm_to_px(170, PPI))*SFH, anchor = "sw")
                 
     def _generate_pages(self, bibliometer_path):
         
