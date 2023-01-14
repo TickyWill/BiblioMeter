@@ -21,424 +21,679 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     # Standard library imports
     import os
     from pathlib import Path
-    from datetime import datetime
 
-    # 3rd party imports
-    from datetime import date
+    # 3rd party imports    
     import pandas as pd
     import tkinter as tk
+    from datetime import date
     from tkinter import font as tkFont
     from tkinter import filedialog
     from tkinter import messagebox
     
-    # Local imports
-    import BiblioAnalysis_Utils as bau
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    
+    # Local imports    
     from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import recursive_year_search
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_listes_consolidees
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import maj_rh
     
     from BiblioMeter_GUI.Coordinates import root_properties
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_1
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_2
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_3
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_4
-    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_4
+    from BiblioMeter_GUI.Coordinates import ETAPE_LABEL_TEXT_LIST    
     from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT
-    from BiblioMeter_GUI.Coordinates import FONT_CROISEMENT
     from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT_L
-    from BiblioMeter_GUI.Coordinates import FORMAT_CROISEMENT_L
-    from BiblioMeter_GUI.Coordinates import TEXT_CONSOLIDATION
+    from BiblioMeter_GUI.Coordinates import TEXT_HOMONYMES
+    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_EFFECTIFS
+    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
+    from BiblioMeter_GUI.Coordinates import TEXT_PUB_CONSO
     from BiblioMeter_GUI.Coordinates import TEXT_OTP
-    from BiblioMeter_GUI.Coordinates import FONT_OTP
-    from BiblioMeter_GUI.Coordinates import FONT_CONCAT
+    from BiblioMeter_GUI.Coordinates import FONT_NAME
 
     from BiblioMeter_GUI.Globals_GUI import ARCHI_BDD_MULTI_ANNUELLE
     from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
     from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
     from BiblioMeter_GUI.Globals_GUI import PPI
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     
     from BiblioMeter_GUI.Useful_Functions import five_last_available_years
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
+    
+    # Defining internal functions
+    def _etape_frame(self, num):
+        '''The local function `_etape_frame` sets the 'etape' and place in the page
+        using the global 'ETAPE_LABEL_TEXT_LIST' and the local variables 'etape_label_format', 
+        'etape_label_font', 'etape_underline', 'etape_label_pos_x' and 'etape_label_pos_y_list'.
+        
+        Args:
+            num (int): The order of the 'etape' in 'ETAPE_LABEL_TEXT_LIST'.
+        '''
+        etape = tk.Label(self, 
+                         text      = ETAPE_LABEL_TEXT_LIST[num], 
+                         justify   = etape_label_format, 
+                         font      = etape_label_font, 
+                         underline = etape_underline)
+        etape.place(x = etape_label_pos_x, 
+                    y = etape_label_pos_y_list[num])
+        return etape
+       
+    def _launch_exit():
+        ask_title = "Arrêt de BiblioMeter"
+        ask_text =  "Après la fermeture des fenêtres, "
+        ask_text += "les traitements effectués sont sauvegardés."
+        ask_text += "\nLe traitement peut être repris ultérieurement."
+        ask_text += "\nConfirmez la mise en pause ?"
+        exit_answer = messagebox.askokcancel(ask_title, ask_text)
+        if exit_answer:
+            parent.destroy()
+    
+    # Getting useful window sizes and scale factors depending on displays properties
+    sizes_tuple   = root_properties(self)
+    win_width_px  = sizes_tuple[0]    # unused here
+    win_height_px = sizes_tuple[1]    # unused here
+    width_sf_px   = sizes_tuple[2] 
+    height_sf_px  = sizes_tuple[3]    # unused here
+    width_sf_mm   = sizes_tuple[4]
+    height_sf_mm  = sizes_tuple[5]
+    width_sf_min  = min(width_sf_mm, width_sf_px)
+    
+    # Setting useful local variables for positions modification (globals to create ??)
+    # numbers  are reference values in mm for reference screen
+    eff_etape_font_size      = font_size(14, width_sf_min)
+    eff_launch_font_size     = font_size(13, width_sf_min)
+    eff_answer_font_size     = font_size(13, width_sf_min)
+    eff_select_font_size     = font_size(12, width_sf_min)
+    eff_buttons_font_size    = font_size(11, width_sf_min)                                         
+    
+    etape_label_pos_x        = mm_to_px( 10 * width_sf_mm, PPI)
+    etape_label_pos_y_list   = [mm_to_px( y * height_sf_mm, PPI) for y in [40, 74, 101, 129]]
+    etape_button_dx          = mm_to_px( 10 * width_sf_mm, PPI)
+    etape_button_dy          = mm_to_px(  5 * height_sf_mm, PPI)
+    etape_check_dy           = mm_to_px( -8 * height_sf_mm, PPI)
+    
+    exit_button_x_pos        = mm_to_px(193 * width_sf_mm,  PPI) 
+    exit_button_y_pos        = mm_to_px(145 * height_sf_mm, PPI)
+    
+    year_button_x_pos        = mm_to_px( 10 * width_sf_mm,  PPI) 
+    year_button_y_pos        = mm_to_px( 26 * height_sf_mm, PPI)    
+    dy_year                  = -6
+    ds_year                  = 5
 
+    # Setting useful aliases
+    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
+    bdd_mensuelle_alias             = ARCHI_YEAR["bdd mensuelle"] 
+    homonymes_path_alias            = ARCHI_YEAR["homonymes folder"]
+    homonymes_file_base_alias       = ARCHI_YEAR["homonymes file name base"]
+    OTP_path_alias                  = ARCHI_YEAR["OTP folder"]
+    OTP_file_base_alias             = ARCHI_YEAR["OTP file name base"]
+    pub_list_path_alias             = ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias        = ARCHI_YEAR["pub list file name base"]
+    corpus_alias                    = ARCHI_YEAR['corpus']
+    dedup_alias                     = ARCHI_YEAR['dedup']
+    parsing_alias                   = ARCHI_YEAR['parsing']
+    submit_alias                    = ARCHI_YEAR["submit file name"]
+    listing_alias                   = ARCHI_RH["root"]
+    effectifs_folder_name_alias     = ARCHI_RH["effectifs"]
+    effectifs_file_name_alias       = ARCHI_RH["effectifs file name"]
+    maj_effectifs_folder_name_alias = ARCHI_RH["maj"] 
+    backup_folder_name_alias    = ARCHI_SECOURS["root"]
     
-    win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
+    # Setting useful paths independent from corpus year
+    backup_root_path    = bibliometer_path / Path(backup_folder_name_alias)
+    effectifs_root_path = bibliometer_path / Path(listing_alias)
+    effectifs_folder_path     = effectifs_root_path / Path(effectifs_folder_name_alias)
+    maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
+    all_effectifs_path        = effectifs_folder_path / Path(effectifs_file_name_alias)
+    all_effectifs_backup_path = backup_root_path      / Path(effectifs_file_name_alias) 
     
-    # Useful alias
-    bdd_mensuelle_alias = ARCHI_YEAR["bdd mensuelle"]
-    bdd_annuelle_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
-    OTP_path_alias = ARCHI_YEAR["OTP"]
-    Homonyme_path_alias = ARCHI_YEAR["consolidation"]
-    R_path_alias = ARCHI_YEAR["resultats"]
-    corpus_alias = ARCHI_YEAR['corpus']
-    dedup_alias = ARCHI_YEAR['dedup']
-    parsing_alias = ARCHI_YEAR['parsing']
-    submit_alias = ARCHI_YEAR["submit file name"]
-    listing_alias = ARCHI_RH["root"]
-    effectif_folder_name_alias = ARCHI_RH["effectifs"]
-    effectif_file_name_alias = ARCHI_RH["effectifs file name"]
-    secours_alias = ARCHI_SECOURS["root"]
+    dpt_label_list = list(DPT_LABEL_DICT.keys()) 
     
-    ### DECORATION DE LA PAGE
+    ### Décoration de la page
     # - Canvas
-    fond = tk.Canvas(self, width = win_width, height = win_height)
+    fond = tk.Canvas(self, 
+                     width = win_width_px, 
+                     height = win_height_px)
     fond.place(x = 0, y = 0)
     
-    # - Labels
-    font_etape = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
-    etape_1 = tk.Label(self, 
-                       text = TEXT_ETAPE_1, 
-                       justify = FORMAT_TEXT_ETAPE_1, 
-                       font = font_etape, 
-                       underline = UNDERLINE_ETAPE_1)
-    etape_1.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(40, PPI)*SFH)
+    # - Etapes labels
+    etape_label_font   = tkFont.Font(family = FONT_NAME, 
+                                     size = eff_etape_font_size,
+                                     weight = 'bold')
+    etapes_number      = len(ETAPE_LABEL_TEXT_LIST)
+    etape_label_format = 'left'
+    etape_underline    = -1
+    etapes             = [_etape_frame(self, etape_num) for etape_num in range(etapes_number)]    
     
-    etape_2 = tk.Label(self, 
-                       text = TEXT_ETAPE_2, 
-                       justify = FORMAT_TEXT_ETAPE_2, 
-                       font = font_etape, 
-                       underline = UNDERLINE_ETAPE_2)
-    etape_2.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(74, PPI)*SFH)
-    
-    etape_3 = tk.Label(self, 
-                       text = TEXT_ETAPE_3, 
-                       justify = FORMAT_TEXT_ETAPE_3, 
-                       font = font_etape, 
-                       underline = UNDERLINE_ETAPE_3)
-    etape_3.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(101, PPI)*SFH)
-    
-    etape_4 = tk.Label(self, 
-                       text = TEXT_ETAPE_4, 
-                       justify = FORMAT_TEXT_ETAPE_4, 
-                       font = font_etape, 
-                       underline = UNDERLINE_ETAPE_4)
-    etape_4.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(129, PPI)*SFH)
-    
-    ### Choose which year you want to be working with #############################################################################################################
+    ### Choix de l'année 
     years_list = five_last_available_years(bibliometer_path)
+    default_year = years_list[-1]  
     variable_years = tk.StringVar(self)
-    variable_years.set(years_list[-1])
+    variable_years.set(default_year)
     
-        # Création de l'option button des années
-    self.font_OptionButton_years = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
-    self.OptionButton_years = tk.OptionMenu(self, variable_years, *years_list)
+    # Création de l'option button des années    
+    self.font_OptionButton_years = tkFont.Font(family = FONT_NAME, 
+                                               size = eff_buttons_font_size)
+    self.OptionButton_years = tk.OptionMenu(self, 
+                                            variable_years, 
+                                            *years_list)
     self.OptionButton_years.config(font = self.font_OptionButton_years)
     
         # Création du label
-    self.font_Label_years = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
+    self.font_Label_years = tkFont.Font(family = FONT_NAME, 
+                                        size = eff_select_font_size)
     self.Label_years = tk.Label(self, 
-                           text = TEXT_YEAR_PI, 
-                           font = self.font_Label_years)
-    self.Label_years.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(26, PPI)*SFH)
+                                text = TEXT_YEAR_PI, 
+                                font = self.font_Label_years)
+    self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
     
-    place_after(self.Label_years, self.OptionButton_years, dy = -6)
-    encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = 5)
-    ###############################################################################################################################################################
-    
-    ### Choix du nombre d'année du recursive_year_search
-    font_croisement = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Label_croisement = tk.Label(self, 
-                     text = TEXT_CROISEMENT_L, 
-                     font = font_croisement, 
-                     justify = FORMAT_CROISEMENT_L)
-    
-    place_bellow(etape_1, Label_croisement, dy = mm_to_px(5, PPI)*SFH)
+    place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
+    encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = ds_year)
 
-    
+    ################## Etape 1 : Croisement auteurs-effectifs 
+    ### Fonction executée par le bouton 'button_croisement' 
+    def _launch_recursive_year_search():
+        '''       
+        '''
+                                         
+        # Standard library imports
+        import os
+        import shutil
+
+        # 3rd party imports    
+        import pandas as pd
+        from pathlib import Path
+                                         
+        def _annee_croisement(corpus_year):
+            all_effectifs_df = pd.read_excel(all_effectifs_path, sheet_name = None)
+            annees_dispo = [int(x) for x in list(all_effectifs_df.keys())]
+            annees_a_verifier = [int(corpus_year) - int(search_depth) + (i+1) for i in range(int(search_depth))]
+            annees_verifiees = list()
+            for i in annees_a_verifier:
+                if i in annees_dispo: annees_verifiees.append(i)
+            if len(annees_verifiees) > 0:
+                return annees_verifiees
+            else:
+                warning_title = "!!! Attention !!!"
+                warning_text  = f"Le nombre d'années disponibles est insuffisant "
+                warning_text += f"dans le fichier des effectifs du LITEN."
+                warning_text += f"\nLe croisement auteurs-effectifs ne peut être effectué !"
+                warning_text += f"\n1- Complétez le fichier des effectifs du LITEN ;"
+                warning_text += f"\n2- Puis relancer le croisement auteurs-effectifs."                    
+                messagebox.showwarning(warning_title, warning_text)                         
+                return None 
+                                         
+        def _recursive_year_search_try():
+            try:             
+                recursive_year_search(parsing_path,
+                                      bdd_mensuelle_path, 
+                                      all_effectifs_path,
+                                      bibliometer_path,
+                                      year_select, 
+                                      search_depth) 
+                info_title      = '- Information -'
+                info_text       = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
+                info_text      += f"\nLa résolution des homonymes peut être lancée."                 
+                messagebox.showinfo(info_title, info_text)
+                return 'ok'
+
+            except FileNotFoundError:
+                warning_title = "!!! ATTENTION : fichier manquant !!!"
+                warning_text  = f"La synthèse de l'année {year_select} n'est pas disponible."
+                warning_text += f"\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
+                warning_text += f"\n2- Effectuez la synthèse pour cette année ;"
+                warning_text += f"\n3- Puis relancez le croisement pour cette année."                         
+                messagebox.showwarning(warning_title, warning_text)
+                return None
+        
+        # Getting year selection, search depth selection and check_effectif_status
+        year_select =  variable_years.get()
+        search_depth = go_back_years.get()
+        check_effectif_status = check_effectif_var.get()
+        
+        # Setting paths dependent on year_select
+        corpus_year_path = bibliometer_path / Path(year_select)                 
+        parsing_path = corpus_year_path / Path(corpus_alias) / Path(dedup_alias) / Path(parsing_alias)
+        bdd_mensuelle_path =  corpus_year_path / Path(bdd_mensuelle_alias)
+        submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias)        
+        
+        # Linking Liten authors with Liten workers
+        if check_effectif_status:
+            # Lancement de la fonction MAJ Effectif
+            ask_title = "- Confirmation de la mise à jour des effectifs -"
+            ask_text  = f"Le fichier des effectifs LITEN va être mis à jour "
+            ask_text += f"avec les nouvelles données disponibles dans le dossier :"
+            ask_text += f"\n\n '{maj_effectifs_folder_path}'."
+            ask_text += f"\n\nCette opération peut prendre quelques minutes."
+            ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
+            ask_text += f"\nAvant de poursuivre le croisement auteurs-effectifs, "
+            ask_text += f"confirmez la mise à jour ?"            
+            answer_1  = messagebox.askokcancel(ask_title, ask_text)
+            if answer_1:                                                                                  
+                maj_rh(bibliometer_path)
+                info_title = "- Information -"
+                info_text  = f"La mise à jour des effectifs a été effectuée."
+                info_text += f"\nLe croisement de l'année {year_select} va être poursuivi."
+                messagebox.showinfo(info_title, info_text)
+            else:
+            # Arrêt de la procédure
+                ask_title = "- Confirmation du croisement auteurs-effectifs -"
+                ask_text  = f"La mise à jour des effectifs est abandonnée."
+                ask_text += f"\nConfirmez le croisement de l'année {year_select} "
+                ask_text += f"sans cette mise à jour ?"            
+                answer_2  = messagebox.askokcancel(ask_title, ask_text)
+                if not answer_2:
+                    info_title = "- Information -"
+                    info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} est annulé."
+                    messagebox.showinfo(info_title, info_text)            
+                    return
+ 
+        # Vérification de la disponibilité du fichier All_effectifs.xlsx    
+        all_effectifs_status = os.path.exists(all_effectifs_path) 
+        all_effectifs_backup_status = os.path.exists(all_effectifs_backup_path)
+        if not all_effectifs_status:
+            if all_effectifs_backup_status:
+                ask_title = "- Régénération du fichier des effectifs LITEN -"
+                ask_text  = f"Le fichier des effectifs LITEN n'est pas disponible à l'emplacement attendu. "
+                ask_text += f"\nL'utilisation de la dernière sauvegarde de secours est possible "
+                ask_text += f"pour effectuer le croisement auteurs-effectifs."
+                ask_text += f"\nConfirmer cette utilisation ?"
+                answer_3  = messagebox.askokcancel(ask_title, ask_text)
+                if answer_3:
+                    # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit 
+                    _ = shutil.copy(all_effectifs_backup_path, all_effectifs_path)
+                else:
+                     # Arrêt de la procédure
+                    info_title = "- Information -"
+                    info_text  = f"Le fichier des effectifs est indisponible "
+                    info_text += f"et sa sauvegarde n'est pas utilisée."
+                    info_text += f"\nLe croisement auteurs-effectifs est annulé."
+                    messagebox.showinfo(info_title, info_text)
+                    return        
+            else:
+                # Arrêt de la procédure
+                info_title = "- Information -"
+                info_text  = f"Le fichier des effectifs et sa sauvegarde sont indisponibles."
+                info_text += f"\nLe croisement auteurs-effectifs est abandonné."
+                messagebox.showinfo(info_title, info_text)
+                return
+                                
+        # Vérifier les années disponibles                                         
+        annees_disponibles = _annee_croisement(year_select)
+        if annees_disponibles == None:
+            return        
+                                                 
+        ask_title = "- Confirmation du croisement auteurs-effectifs -"
+        ask_text  = f"Le croisement  avec les effectifs des années "
+        ask_text += f"{', '.join([str(i) for i in annees_disponibles])} "
+        ask_text += f"a été lancé pour l'année {year_select}."
+        ask_text += f"\nCette opération peut prendre quelques minutes."
+        ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
+        ask_text += f"\nContinuer ?"
+        answer    = messagebox.askokcancel(ask_title, ask_text)
+        if answer:
+            submit_status = os.path.exists(submit_path)                             
+            if not submit_status:
+                _recursive_year_search_try()
+            else: 
+                ask_title = "- Reconstruction du croisement auteurs-effectifs -"
+                ask_text  = f"Le croisement de l'année {year_select} est déjà disponible."
+                ask_text += f"\nReconstruire le croisement ?"
+                answer_4  = messagebox.askokcancel(ask_title, ask_text)                         
+                if answer_4:
+                    _recursive_year_search_try()
+                else:
+                    info_title = "- Information -"
+                    info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
+                    info_text += f"dejà disponible est conservé."                   
+                    messagebox.showinfo(info_title, info_text)                     
+        else:
+            info_title = "- Information -"
+            info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
+            info_text += f"est annulé."            
+            messagebox.showinfo(info_title, info_text)
+        return
+
+    ### Définition ou choix de la profondeur de recherche
+    # Fixe la profondeur de recherche à 5 ans dans l'historique des effectifs
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
     go_back_years = tk.StringVar(self)
     go_back_years.set(go_back_years_list_rh[4])
     
-        # Création de l'option button des années
-    OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
-    OptionButton_goback.configure(font = font_croisement)
+    # Création de l'option de choix de la profondeur de recherche
+    #font_croisement_l = tkFont.Font(family = FONT_NAME, 
+    #                                size   = eff_launch_font_size)
+    #label_format_l = 'left'
+    #Label_croisement_l = tk.Label(self, 
+    #                              text = TEXT_CROISEMENT_L, 
+    #                              font = font_croisement_l, 
+    #                              justify = label_format_l)
+    #etape_1 = etapes[0]
+    #place_bellow(etape_1, Label_croisement_l, dy = mm_to_px(5 * height_sf_mm , PPI))
+    #OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
+    #OptionButton_goback.configure(font = font_croisement_l)   
     
-    ### Bouton qui va permettre d'utiliser recursive_year_search sur un corpus concatené ##################################################################
-    Button_croisement = tk.Button(self, 
-                       text = TEXT_CROISEMENT,
-                       font = font_croisement, 
-                       command = lambda: _launch_recursive_year_search())
+    ### Définition du  bouton 'button_croisement' 
+    font_croisement = tkFont.Font(family = FONT_NAME, 
+                                  size   = eff_launch_font_size)
+    button_croisement = tk.Button(self, 
+                                  text = TEXT_CROISEMENT,
+                                  font = font_croisement, 
+                                  command = lambda: _launch_recursive_year_search())
     
     check_effectif_var = tk.IntVar()
-    check_effectif_box = tk.Checkbutton(self, text = "Oui (coché) / Non (non coché)", variable = check_effectif_var, onvalue = 1, offvalue = 0)
+    check_effectif_box = tk.Checkbutton(self, 
+                                        text = TEXT_MAJ_EFFECTIFS, 
+                                        variable = check_effectif_var, 
+                                        onvalue = 1, 
+                                        offvalue = 0)
     
-    font_check = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Label_check = tk.Label(self, text = "Mettre à jour le fichier RH avant le croisement ?", font = font_check, justify = 'left')
+    font_check = tkFont.Font(family = FONT_NAME, 
+                             size = eff_answer_font_size)
+    #Label_check = tk.Label(self, 
+    #                       text = TEXT_MAJ_EFFECTIFS, 
+    #                       font = font_check, 
+    #                       justify = 'left')
 
-    place_bellow(Label_croisement, Label_check, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(-8, PPI)*SFH)
-    place_bellow(Label_check, Button_croisement, dy = mm_to_px(5, PPI)*SFH)
-    place_after(Label_check, check_effectif_box)
+    etape_1 = etapes[0]
+    place_bellow(etape_1, 
+                 check_effectif_box, 
+                 dx = etape_button_dx, 
+                 dy = etape_button_dy / 2)
+    place_bellow(check_effectif_box, 
+                 button_croisement, 
+                 dy = etape_button_dy / 2)
     
-    Label_croisement.destroy() # car on ne l'autorise plus pour le moment
-    
-    def _launch_recursive_year_search():
+    # Dextruction de croisement car on ne l'autorise plus pour le moment
+    #Label_croisement.destroy()    
+                                             
+    ################## Etape 2 : Résolution des homonymies
+    ### Fonction executée par le bouton 'button_homonymes'     
+    def _launch_resolution_homonymies():
+        '''
         
-        # Import et alias important
-        import os
-        import shutil
-        import pandas
-        
-        if check_effectif_var.get():
-            # Lancement de la fonction MAJ Effectif
-            answer = messagebox.askokcancel('Information', f"Le fichier des effectifs LITEN va être mis à jour. Après cette mise à jour, la procédure normale reprendra et il vous faudra répondre aux messages pop-up comme quand vous ne faites pas la mise à jour des effectifs LITEN.")
-            if answer:
-                maj_rh(bibliometer_path)
-                messagebox.showinfo('Information', f"La mise à jour a été effectuée. La procédure normale de croisement va reprendre.")
-            else:
-            # Arrêt de la procédure
-                messagebox.showinfo('Information', f"La mise à jour n'a pas été effectuée, et la procédure de croisement non plus.")
-                return
+        '''
     
-        path_all_effectifs = Path(bibliometer_path) / Path(listing_alias) / Path(effectif_folder_name_alias) / Path(effectif_file_name_alias)
-        
-        def _annee_croisement(corpus_year):
-    
-            in_path = path_all_effectifs
-            df = pandas.read_excel(in_path, sheet_name = None)
+        def _resolution_homonymies_try():
+            try: 
+                consolidation_homonyme(submit_path, homonymes_file_path)
+                info_title = "- Information -"
+                info_text  = f"Le fichier pour la résolution des homonymies de l'année {year_select} a été créé "
+                info_text += f"dans le dossier :\n\n '{homonymes_path}' "
+                info_text += f"\nsous le nom : '{homonymes_file_alias}'."
+                info_text += f"\n\n1- Ouvrez ce fichier, "
+                info_text += f"\n2- Supprimez manuellement les lignes des homonymes non-auteurs, "
+                info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
+                info_text += f"\n\nDès que le fichier est traité, "                
+                info_text += f"\nl'affectation des OTPs peut être lancée."                 
+                messagebox.showinfo(info_title, info_text)
+                return 'ok'
 
-            annees_dispo = [int(x) for x in list(df.keys())]
-
-            annees_a_verifier = [int(corpus_year) - int(go_back_years.get()) + i + 1 for i in range(int(go_back_years.get()))]
-            annees_verifiees = list()
-
-            for i in annees_a_verifier:
-                if i in annees_dispo:
-                    annees_verifiees.append(i)
-
-            if len(annees_verifiees) > 0:
-                return annees_verifiees
-            else:
+            except FileNotFoundError:
+                warning_title = "!!! ATTENTION : fichier manquant !!!"
+                warning_text  = f"Le fichier contenant le croisement auteur-effectifs "
+                warning_text += f"de l'année {year_select} n'est pas disponible."
+                warning_text += f"\n1- Effectuez d'abord le croisement pour cette année."
+                warning_text += f"\n2- Puis relancez la résolution des homonymies pour cette année."                         
+                messagebox.showwarning(warning_title, warning_text)
+                return None 
+            
+            except:
+                warning_title = "!!! ATTENTION : erreur inconnue !!!"
+                warning_text  = f"Contactez les auteurs de l'application."                        
+                messagebox.showwarning(warning_title, warning_text)                
                 return None
-                
-        # Dans l'ordre, je vérifie l'existence du fichier All_effectifs.xlsx
-        if os.path.exists(path_all_effectifs):
-            # Si disponible, il faut afficher les années disponibles
-            df_effectifs = pd.read_excel(path_all_effectifs, sheet_name = None)
-            # Vérifier les années disponibles
-            annees_disponibles = _annee_croisement(variable_years.get())
-            if annees_disponibles == None:
-                messagebox.showwarning('Information', f"Il n'y a pas suffisament d'années disponibles dans le fichier effectifs LITEN pour effectuer le croisement. Procédure annulée.")
-                return
-        else:
-            answer_2 = messagebox.askokcancel('Fichier manquant', f"""Le fichier {effectif_file_name_alias} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
-            if answer_2:
-                # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
-                filePath = shutil.copy(bibliometer_path / Path(secours_alias) / Path (effectif_file_name_alias), path_all_effectifs)
-                
-                df_effectifs = pd.read_excel(path_all_effectifs, sheet_name = None)
-                # Vérifier les années disponibles
-                annees_disponibles = _annee_croisement(variable_years.get())
-                if annees_disponibles == None: # Si pas assez d'année disponible, alors arrêter la procédure
-                    messagebox.showwarning('Information', f"Il n'y a pas suffisament d'années disponibles dans le fichier effectifs LITEN pour effectuer le croisement. Procédure annulée.")
-                    return
-            else:
-                # Arrêt de la procédure
-                messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
-                return
-        # On passe directement ici si le document est disponible
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de croisement des publications avec les effectifs LITEN des années : {', '.join([str(i) for i in annees_disponibles])} a été lancée, continuer ?\nAttention cette opération peut prendre plusieurs minutes, ne pas fermer BiblioMeter pendant ce temps.")
-        if answer_1:  
-            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(bdd_mensuelle_alias) / Path(submit_alias)):
-                if messagebox.askokcancel('Information', f"Le croisement pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
-                    try:
-                        recursive_year_search(Path(bibliometer_path) / 
-                                              Path(variable_years.get()) / 
-                                              Path(corpus_alias) / 
-                                              Path(dedup_alias) / 
-                                              Path(parsing_alias),
-                                              Path(bibliometer_path) / 
-                                              Path(variable_years.get()) / 
-                                              Path(bdd_mensuelle_alias), 
-                                              path_all_effectifs,
-                                              Path(bibliometer_path),
-                                              variable_years.get(), 
-                                              go_back_years.get())
-
-                        messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
-                    except FileNotFoundError:
-                        messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
-                    #except:
-                        #messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+            
+        # Renewing year selection
+        year_select = variable_years.get()
+        
+        # Setting paths and aliases dependent pn year_select  
+        homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
+        corpus_year_path = bibliometer_path / Path(year_select)                 
+        submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias) 
+        homonymes_path = corpus_year_path / Path(homonymes_path_alias)
+        homonymes_file_path = homonymes_path / Path(homonymes_file_alias)
+        
+        ask_title = "- Confirmation de l'étape de résolution des homonymies -"
+        ask_text  = f"La création du fichier pour cette résolution "
+        ask_text += f"a été lancée pour l'année {year_select}."
+        ask_text += f"\nContinuer ?"
+        answer    = messagebox.askokcancel(ask_title, ask_text)        
+        if answer:
+            homonymes_status = os.path.exists(homonymes_file_path)                           
+            if not homonymes_status:
+                _resolution_homonymies_try()
+            else: 
+                ask_title = "- Reconstruction de la résolution des homonymes -"
+                ask_text  = f"Le fichier pour la résolution des homonymies "
+                ask_text += f"de l'année {year_select} est déjà disponible."
+                ask_text += f"\nReconstruire ce fichier ?"
+                answer_1  = messagebox.askokcancel(ask_title, ask_text)                         
+                if answer_1:
+                    _resolution_homonymies_try()
                 else:
-                    messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
-            else:
-                try:
-                    recursive_year_search(Path(bibliometer_path) / 
-                                          Path(variable_years.get()) / 
-                                          Path(corpus_alias) / 
-                                          Path(dedup_alias) / 
-                                          Path(parsing_alias),
-                                          Path(bibliometer_path) / 
-                                          Path(variable_years.get()) / 
-                                          Path(bdd_mensuelle_alias), 
-                                          path_all_effectifs, 
-                                          Path(bibliometer_path),
-                                          variable_years.get(), 
-                                          go_back_years.get())
-
-                    messagebox.showinfo('Information', f"Le croisement est terminé, vous pouvez maintenant passer aux étapes suivantes en les effectuant dans l'ordre.")
-                except FileNotFoundError:
-                    messagebox.showwarning('Fichier manquant', f"Le croisement des publications n'a pas pu être effectué. La synthèse de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'onglet précédent pour le faire.")
-                #except:
-                    #messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                    info_title = "- Information -"
+                    info_text  = f"Le fichier pour la résolution des homonymies "
+                    info_text += f"de l'année {year_select} dejà disponible est conservé."                   
+                    messagebox.showinfo(info_title, info_text)                     
         else:
-            messagebox.showinfo('Information', f"Le croisement n'a pas été effectué.")
+            info_title = "- Information -"
+            info_text = f"La création du fichier pour la résolution "
+            info_text += f"des homonymies de l'année {year_select} est annulée."            
+            messagebox.showinfo(info_title, info_text)
+            return
     
-    ###########################################################################################################################################################
+    ### Définition du bouton "button_homonymes"
+    font_homonymes = tkFont.Font(family = FONT_NAME, 
+                                 size   = eff_launch_font_size)
+    button_homonymes = tk.Button(self, 
+                                     text = TEXT_HOMONYMES, 
+                                     font = font_homonymes, 
+                                     command = lambda: _launch_resolution_homonymies())
+    etape_2 = etapes[1]
+    place_bellow(etape_2, 
+                 button_homonymes, 
+                 dx = etape_button_dx, 
+                 dy = etape_button_dy)
     
-    # PREMIERE PARTIE : CONSOLIDATION  
-    font_consolidation = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_mise_en_forme = tk.Button(self, 
-                                     text = TEXT_CONSOLIDATION, 
-                                     font = font_consolidation, 
-                                     command = lambda: _launch_consolidation_homonyme())
+    ################## Etape 3 : Attribution des OTPs
+    ### Fonction executée par le bouton 'button_OTP' 
+    def _launch_add_OTP():
+        '''
+        
+        '''
     
-    place_bellow(etape_2, Button_mise_en_forme, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
+        def _add_OTP_try():
+            try:
+                ajout_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+                info_title = "- Information -"
+                info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
+                info_text += f"ont été créés dans le dossier : \n\n'{OTP_path}' "
+                info_text += f"\nsous le nom :  {OTP_path}."
+                info_text += f"\n\n1- Ouvrez le fichier du département ad-hoc, "
+                info_text += f"\n2- Attribuez manuellement à chacune des publications un OTP, "
+                info_text += f"\n3- Sauvegardez le fichier en ajoutant à son nom '_ok'."
+                info_text += f"\n\nDès que les fichiers de tous les départements sont traités, "
+                info_text += f"\nla liste consolidée des publications de l'année {year_select} peut être créée."                 
+                messagebox.showinfo(info_title, info_text)
+                return 'ok'
 
-    
-    def _launch_consolidation_homonyme():
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier résolution des homonymies a été lancée, continuer ?")
-        if answer_1:
-            if os.path.exists(Path(bibliometer_path) / Path(variable_years.get()) / Path(Homonyme_path_alias) / Path(f'Fichier Consolidation {variable_years.get()}.xlsx')):
-                if messagebox.askokcancel('Information', f"Le fichier de consolidation pour l'année {variable_years.get()} est déjà disponible, voulez-vous quand même l'effectuer ?"):
-                    try:
-                        consolidation_homonyme(Path(bibliometer_path) / 
-                                              Path(variable_years.get()) / 
-                                              Path(bdd_mensuelle_alias) / 
-                                              Path(submit_alias), 
-                                              Path(bibliometer_path) / 
-                                              Path(variable_years.get()) / 
-                                              Path(Homonyme_path_alias) / 
-                                              Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
-
-                        messagebox.showwarning('Information', f"""La procédure est terminée. Veuillez vous rendre dans\n"1 - Consolidations Homonymes", supprimer les homonymes et enregistrer le fichier sous le même nom.\n\nVeuillez retirer le mauvais homonyme du fichier Excel en supprimant entièrement la ligne dans le fichier Excel. Les lignes à potentiellement surpprimer sont surlignées en jaune.""")
-                    except FileNotFoundError:
-                        messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
-                    except:
-                        messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
-                else:
-                    messagebox.showinfo('Information', f"La procédure n'a pas été effectuée.")
+            except FileNotFoundError:
+                warning_title = "!!! ATTENTION : fichier manquant !!!"
+                warning_text  = f"Le fichier contenant la résolution des homonymies "
+                warning_text += f"de l'année {year_select} n'est pas disponible."
+                warning_text += f"\n1- Effectuez la résolution des homonymies pour cette année."
+                warning_text += f"\n2- Relancez l'attribution des OTPs pour cette année."                         
+                messagebox.showwarning(warning_title, warning_text)
+                return None 
+            
+            except:
+                warning_title = "!!! ATTENTION : erreur inconnue !!!"
+                warning_text  = f"Contactez les auteurs de l'application."                        
+                messagebox.showwarning(warning_title, warning_text)                
+                return None
+            
+        # Renewing year selection
+        year_select = variable_years.get()
+        
+        # Setting paths and aliases dependent on year_select  
+        homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
+        corpus_year_path = bibliometer_path / Path(year_select)                 
+        homonymes_path = corpus_year_path / Path(homonymes_path_alias)
+        homonymes_file_path = homonymes_path / Path(homonymes_file_alias) 
+        OTP_path = corpus_year_path / Path(OTP_path_alias)
+        
+        ask_title = "- Confirmation de l'étape d'attribution des OTPs -"
+        ask_text  = f"La création des fichiers pour cette attribution "
+        ask_text += f"a été lancée pour l'année {year_select}."
+        ask_text += f"\nContinuer ?"
+        answer    = messagebox.askokcancel(ask_title, ask_text)        
+        if answer:
+            OTP_path_status = os.path.exists(OTP_path)
+            if OTP_path_status:
+                OTP_files_status_list = []
+                for dpt_label in dpt_label_list:
+                    OTP_file_name_dpt = OTP_file_base_alias + '_' + dpt_label + '.xlsx'
+                    OTP_files_status_list.append(not(os.path.exists(OTP_file_name_dpt)))
+                if any(OTP_files_status_list):                           
+                    _add_OTP_try()
+                else: 
+                    ask_title = "- Reconstruction de l'attribution des OTPs -"
+                    ask_text  = f"Les fichiers pour l'attribution des OTPs "
+                    ask_text += f"de l'année {year_select} sont déjà disponibles."
+                    ask_text += f"\nReconstruire ces fichiers ?"
+                    answer_1  = messagebox.askokcancel(ask_title, ask_text)                         
+                    if answer_1:
+                        _add_OTP_try()
+                    else:
+                        info_title = "- Information -"
+                        info_text  = f"Les fichiers pour l'attribution des OTPs "
+                        info_text += f"de l'année {year_select} dejà disponibles sont conservés."                   
+                        messagebox.showinfo(info_title, info_text)
             else:
-                try:
-                    consolidation_homonyme(Path(bibliometer_path) / 
-                                          Path(variable_years.get()) / 
-                                          Path(bdd_mensuelle_alias) / 
-                                          Path(submit_alias), 
-                                          Path(bibliometer_path) / 
-                                          Path(variable_years.get()) / 
-                                          Path(Homonyme_path_alias) / 
-                                          Path(f'Fichier Consolidation {variable_years.get()}.xlsx'))
-
-                    messagebox.showinfo('Information', f"""La procédure est terminée. Vous pouvez vous rendre dans\n"1 - Consolidations Homonymes", supprimer les homonymes et enregistrer le fichier sous le même nom.""")
-                except FileNotFoundError:
-                    messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le croisement des publications de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
-                except:
-                    messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                os.mkdir(OTP_path)
+                _add_OTP_try()
         else:
-            messagebox.showinfo('Information', f"La procédure n'a pas été effectuée.")
-    
-    # DEUXIEME PARTIE : DEFINITION DE L'OTP
-    font_OTP = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_OTP = tk.Button(self, 
+            info_title = "- Information -"
+            info_text = f"La création des fichiers pour l'attribution des OTPs "
+            info_text += f"de l'année {year_select} est annulée."            
+            messagebox.showinfo(info_title, info_text)
+            return    
+
+    ### Définition du bouton "button_OTP"
+    font_OTP = tkFont.Font(family = FONT_NAME, 
+                           size   = eff_launch_font_size)
+    button_OTP = tk.Button(self, 
                            text = TEXT_OTP, 
                            font = font_OTP,  
-                           command = lambda: _launch_ajout_OTP())
+                           command = lambda: _launch_add_OTP())
+    etape_3 = etapes[2]
+    place_bellow(etape_3, 
+                 button_OTP, 
+                 dx = etape_button_dx, 
+                 dy = etape_button_dy)
     
-    place_bellow(etape_3, Button_OTP, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
-    
-    def _launch_ajout_OTP():
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de création des quatre fichiers permettant l'ajout des OTP a été lancée, continuer ?")
-        if answer_1:
-            try:
-                ajout_OTP(Path(bibliometer_path) / 
-                          Path(variable_years.get()) / 
-                          Path(Homonyme_path_alias) / 
-                          Path(f'Fichier Consolidation {variable_years.get()}.xlsx'), 
-                          Path(bibliometer_path) / 
-                          Path(variable_years.get()) / 
-                          Path(OTP_path_alias))
-
-                messagebox.showinfo('Information', f"""Les fichiers OTP ont été créés dans "2 - OTP". Vous pouvez vous y rendre pour les remplir en indiquant le bon OTP. Veuillez enregistrer le document sous le nom fichier_ajout_OTP_XXXX_ok une fois chose faite.""")
-            except FileNotFoundError:
-                messagebox.showwarning('Fichier manquant', f"La procédure n'a pas pu être effectué. Le fichier résolution des homonymies de l'année {variable_years.get()} n'est pas disponible. Veuillez revenir à l'étape précédente pour le faire.")
-            except:
-                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
-    
-    # TROISIEME PARTIE : CONSTRUCTION DU FICHIER FINAL  
-    # Buton pour creer fichier excel d'une filtre par département
-    font_finale = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_finale = tk.Button(self, 
-                              text = "Lancer la création du fichier de la liste consolidée des publications", 
-                              font = font_finale, 
-                              command = lambda: _launch_filtrer_par_departement())
-    
-    place_bellow(etape_4, Button_finale, dx = mm_to_px(10, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
-
-    def _launch_filtrer_par_departement():
-        answer_1 = messagebox.askokcancel('Information', f"Une procédure de création du fichier de la liste consolidée des publications a été lancée, continuer ?")
-        if answer_1:
-            try:
-                from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILE_NAMES
-
-                a = filtrer_par_departement(Path(bibliometer_path) / 
-                                            Path(variable_years.get()) / 
-                                            Path(OTP_path_alias), 
-                                            Path(bibliometer_path) / 
-                                            Path(variable_years.get()) / 
-                                            Path(R_path_alias) / 
-                                            Path(f"""{FILE_NAMES['liste conso']} {variable_years.get()}.xlsx"""))
+    ################## Etape 4 : Liste consolidée des publications
+    ### Fonction executée par le bouton 'button_OTP' 
+    def _launch_pub_list_conso():
+        '''
         
-                if a:
-                    messagebox.showinfo('Information', f"""La liste consolidée a été créé, vous pouvez la retrouver dans "3 - Résultats finaux".""")
-                    
-                    # Concaténer avec les années disponibles
-                    concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_annuelle_alias)
-                    
-                    messagebox.showinfo('Information', f"""De plus, une concatenation des listes consolidées des différentes années disponibles a été faite. Vous pouvez retrouver le document dans "BDD multi annuelle".""")
-                    
-                else:
-                    messagebox.showwarning('Fichier manquant', f"""La création de la liste consolidée n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement (2 - OTP) et sous le bon nom "fichier_ajout_OTP_XXXX_ok". Veuillez revenir à l'étape précédente pour les créer si besoin.""")
-                        
+        '''
+    
+        def _consolidate_pub_list():
+            try:
+                filtrer_par_departement(OTP_path, pub_list_file, OTP_file_base_alias)
+                concat_listes_consolidees(bibliometer_path, years_list)
+                info_title = "- Information -"
+                info_text  = f"La liste consolidée des publications de l'année {year_select} "
+                info_text += f"a été créée dans le dossier :\n\n '{pub_list_path}' "
+                info_text += f"\n\nsous le nom :   '{pub_list_file_alias}'."
+                info_text += f"\n\nDe plus, la concaténation des listes consolidées des publications "
+                info_text += f"disponibles, à été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
+                info_text += f"\n\nsous un nom vous identifiant ainsi que la liste des années prises en compte "
+                info_text += f"et caractérisé par la date et l'heure de la création."
+                info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués."                
+                messagebox.showinfo(info_title, info_text)
+                return 'ok'
+
             except FileNotFoundError:
-                messagebox.showwarning('Fichier manquant', f"""La création de la liste consolidée n'a pas pu être faite, il manque un fichier OTP. Vérifiez bien que les fichiers soient au bon emplacement (2 - OTP) et sous le bon nom "fichier_ajout_OTP_XXXX_ok". Veuillez revenir à l'étape précédente pour les créer si besoin.""")
+                warning_title = "!!! ATTENTION : fichiers manquants !!!"
+                warning_text  = f"Les fichiers d'attribution des OTPs "
+                warning_text += f"de l'année {year_select} ne sont pas tous disponibles."
+                warning_text += f"\n1- Effectuez l'attribution des OTPs pour cette année."
+                warning_text += f"\n2- Relancez la consolidation de la liste des publications pour cette année."                         
+                messagebox.showwarning(warning_title, warning_text)
+                return None 
+            
             except:
-                messagebox.showwarning('Erreur inconnue', f"Une erreur inconnue est survenue, veuillez consulter la console et/ou contacter une personne capable de résoudre le problème.")
+                warning_title = "!!! ATTENTION : erreur inconnue !!!"
+                warning_text  = f"Contactez les auteurs de l'application."                        
+                messagebox.showwarning(warning_title, warning_text)                
+                return None
+            
+        # Renewing year selection and years 
+        year_select = variable_years.get()
                 
-
-    def _launch_exit():
-        answer_1 = messagebox.askokcancel('Information', f"Vous allez fermer BiblioMeter, rien ne sera perdu et vous pourrez reprendre votre travail plus tard, souhaitez-vous fermer BiblioMeter ?")
-        if answer_1:
-            parent.destroy()
+        # Setting year_select dependent paths and aliases
+        pub_list_file_alias =  pub_list_file_base_alias + f' {year_select}.xlsx'
+        corpus_year_path = bibliometer_path / Path(year_select)                  
+        OTP_path = corpus_year_path / Path(OTP_path_alias)
+        pub_list_path = corpus_year_path / Path(pub_list_path_alias)
+        pub_list_file = pub_list_path / Path(pub_list_file_alias)
         
-    # Boutou pour sortir de la page
-    font_button_quit = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+        ask_title = "- Confirmation de l'étape de consolidation de la liste des publications -"
+        ask_text  = f"La création du fichier de la liste consolidée des publications "
+        ask_text += f"a été lancée pour l'année {year_select}."
+        ask_text += f"\nContinuer ?"
+        answer    = messagebox.askokcancel(ask_title, ask_text)        
+        if answer:
+            homonymes_status = os.path.exists(OTP_path)                           
+            if not homonymes_status:
+                _consolidate_pub_list()
+            else: 
+                ask_title = "- Reconstruction de la liste consolidée des publications -"
+                ask_text  = f"Le fichier de la liste consolidée des publications "
+                ask_text += f"de l'année {year_select} est déjà disponible."
+                ask_text += f"\nReconstruire ce fichier ?"
+                answer_1  = messagebox.askokcancel(ask_title, ask_text)                         
+                if answer_1:
+                    _consolidate_pub_list()
+                else:
+                    info_title = "- Information -"
+                    info_text  = f"Le fichier de la liste consolidée des publications "
+                    info_text += f"de l'année {year_select} dejà disponible est conservé."                   
+                    messagebox.showinfo(info_title, info_text)                     
+        else:
+            info_title = "- Information -"
+            info_text = f"La création du fichier de la liste consolidée des publications "
+            info_text += f"de l'année {year_select} est annulée."            
+            messagebox.showinfo(info_title, info_text)
+            return                                     
+
+    # Bouton pour créer fichier excel d'un filtre par département ???
+    font_finale = tkFont.Font(family = FONT_NAME, 
+                              size   = eff_launch_font_size)
+    Button_finale = tk.Button(self, 
+                              text = TEXT_PUB_CONSO, 
+                              font = font_finale, 
+                              command = lambda: _launch_pub_list_conso())
+    etape_4 = etapes[3]
+    place_bellow(etape_4, 
+                 Button_finale, 
+                 dx = etape_button_dx, 
+                 dy = etape_button_dy)
+              
+    
+    ################## Bouton pour sortir de la page
+    font_button_quit = tkFont.Font(family = FONT_NAME, 
+                                   size   = eff_buttons_font_size)
     button_quit = tk.Button(self, 
-                            text = "Mettre en pause", 
+                            text = TEXT_PAUSE, 
                             font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = mm_to_px(193, PPI)*SFW, y = mm_to_px(145, PPI)*SFH, anchor = 'n')
+                            command = lambda: _launch_exit()).place(x = exit_button_x_pos, 
+                                                                    y = exit_button_y_pos, 
+                                                                    anchor = 'n')

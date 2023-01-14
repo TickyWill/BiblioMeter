@@ -1,57 +1,118 @@
-__all__ = ['ROOT_PATH', 
+__all__ = ['ROOT_PATH',
+           'ARCHI_YEAR',
+           'BDD_LIST',
+           'DPT_LABEL_DICT',
            'STOCKAGE_ARBORESCENCE', 
            'COL_NAMES_BM', 
            'COL_NAMES_RH', 
-           'COL_NAMES_ORPHAN', 
+           'COL_NAMES_ORPHAN',
+           'PAGES_LABELS',
+           'PAGES_NAMES',
            'SUBMIT_FILE_NAME', 
            'ORPHAN_FILE_NAME', 
            'SET_1', 
-           'SET_OTP', 'PPI', 'GUI_DISP', 'DISPLAYS']
+           'SET_OTP', 
+           'PPI', 
+           'GUI_DISP', 
+           'DISPLAYS']
+
+# BiblioAnalysis_Utils imports
+from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
 # Local imports
-from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
 from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
 # Generals
-ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/110-Alternants/2021-22 Ludovic Desmeuzes/BiblioMeter_Files"
-#ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
+#ROOT_PATH = "S:/130-LITEN/130.1-Direction/130.1.2-Direction Scientifique/130.1.2.1-Dossiers en cours/110-Alternants/2021-22 Ludovic Desmeuzes/BiblioMeter_Files"
+ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
 #ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.2-Infos communes\BiblioMeter\BiblioMeter_Files"
 
+
+BDD_LIST = ['wos','scopus']
+
+
+PAGES_LABELS = {'first':  "Analyse élémentaire des corpus",
+                'second': "Consolidation annuelle des corpus",
+                'third':  "Mise à jour des IF",
+               }
+
+PAGES_NAMES = {'first':  'Page_ParsingConcat',
+               'second': 'Page_ParsingInstitution',
+               'third':  'Page_MultiAnnuelle',
+              }
+
+
+DPT_LABEL_DICT = {'DEHT': ['DEHT'],
+                  'DTCH': ['DTCH', 'DTBH'],
+                  'DTNM': ['DTNM'],
+                  'DTS' : ['DTS']
+                 }
+
+
 # Variables organisées en fonction de l'architecture de la base de donnée
-ARCHI_YEAR = {"bdd mensuelle" : "0 - BDD multi mensuelle", 
-              "submit file name" : "submit.xlsx", 
-              "orphan file name" : "orphan.xlsx", 
-              
-              "consolidation" : "1 - Consolidation Homonymes", 
-              "consolidation file name" : "Fichier Consolidation", 
-              
-              "OTP" : "2 - OTP", 
-              "OTP file name" : "fichier_ajout_OTP", 
-              
-              "resultats" : "3 - Résultats Finaux", 
-              "resultats file name" : "Liste consolidée", 
-              
-              "corpus" : "Corpus", 
-              "concat" : "concatenation", 
-              "dedup" : "deduplication", 
-              "scopus" : "scopus", 
-              "wos" : "wos", 
-              "parsing" : "parsing", 
-              "rawdata" : "rawdata"}
+#ARCHI_YEAR = {"bdd mensuelle"           : "0 - BDD multi mensuelle", 
+#              "submit file name"        : "submit.xlsx", 
+#              "orphan file name"        : "orphan.xlsx", 
+#              
+#              "consolidation"           : "1 - Consolidation Homonymes", 
+#              "consolidation file name" : "Fichier Consolidation", 
+#              
+#              "OTP"                     : "2 - OTP", 
+#              "OTP file name"           : "fichier_ajout_OTP", 
+#              
+#              "resultats"               : "3 - Résultats Finaux", 
+#              "resultats file name"     : "Liste consolidée", 
+#              
+#              "corpus"                  : "Corpus", 
+#              "concat"                  : "concatenation", 
+#              "dedup"                   : "deduplication", 
+#              "scopus"                  : "scopus", 
+#              "wos"                     : "wos", 
+#              "parsing"                 : "parsing", 
+#              "rawdata"                 : "rawdata",
+#             }
 
-ARCHI_BDD_MULTI_ANNUELLE = {"root" : "BDD multi annuelle"}
+ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle", 
+              "submit file name"               : "submit.xlsx", 
+              "orphan file name"               : "orphan.xlsx", 
+           
+              "homonymes folder"               : "1 - Consolidation Homonymes", 
+              "homonymes file name base"       : "Fichier Consolidation", 
+           
+              "OTP folder"                     : "2 - OTP", 
+              "OTP file name base"             : "fichier_ajout_OTP", 
+           
+              "pub list folder"                : "3 - Résultats Finaux", 
+              "pub list file name base"        : "Liste consolidée",
+              
+              "corpus"                         : "Corpus", 
+              "concat"                         : "concatenation", 
+              "dedup"                          : "deduplication", 
+              "scopus"                         : "scopus", 
+              "wos"                            : "wos", 
+              "parsing"                        : "parsing", 
+              "rawdata"                        : "rawdata",
+             }
 
-ARCHI_IF = {"root" : "Impact Factor",
-            "all IF" : "IF all years.xlsx",
+
+ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
+                            "concat file name base": "Concaténation par",}
+
+
+ARCHI_IF = {"root"    : "Impact Factor",
+            "all IF"  : "IF all years.xlsx",
             "missing" : "ISSN_manquants.xlsx"}
 
-ARCHI_RH = {"root" : "Listing RH", 
-            "effectifs" : "Effectifs consolidés", 
-            "effectifs file name" : "All_effectifs.xlsx",  
-            "maj" : "A rajouter"}
+
+ARCHI_RH = {"root"                : "Listing RH",
+            "effectifs"           : "Effectifs consolidés",
+            "effectifs file name" : "All_effectifs.xlsx",
+            "maj"                 : "A rajouter"}
+
 
 ARCHI_SECOURS = {"root" : "Sauvegarde de secours"}
+
 
 STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos', 
                                   'savedrecs.txt'], 
@@ -73,12 +134,12 @@ STOCKAGE_ARBORESCENCE = {'wos' : ['Corpus/wos',
                          'all IF' : 'IF all years.xlsx'
                         }
 
-COL_NAMES_BM = {'Dpts':'list of Dpt/DOB (lib court)', 
-                'Servs':'list of Service (lib court)',
+COL_NAMES_BM = {'Dpts'      :'list of Dpt/DOB (lib court)', 
+                'Servs'     :'list of Service (lib court)',
                 'First_name':'Initials_prenom',
-                'Last_name': 'Co_author_joined',  # 'Co_author_joined' DOE J --> DOE
-                'Full_name': 'Full_name', # DOE J
-                'Homonym': 'HOMONYM',
+                'Last_name' : 'Co_author_joined',  # 'Co_author_joined' DOE J --> DOE
+                'Full_name' : 'Full_name', # DOE J
+                'Homonym'   : 'HOMONYM',
                }
 
 

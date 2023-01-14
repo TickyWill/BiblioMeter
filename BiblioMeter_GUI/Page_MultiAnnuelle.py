@@ -1,5 +1,7 @@
 __all__ = ['create_MultiAnnuelle']
 
+# Nom de module et nom de fonctions à revoir !!!
+
 def create_MultiAnnuelle(self, bibliometer_path, parent):
     
     """
@@ -17,225 +19,316 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     
     Returns : nothing, it create the page in self
     """
-
+    
+    # Standard library imports
+    import os
+    import shutil
+    from pathlib import Path
+    
+    # 3rd party imports
+    import pandas as pd
+    import tkinter as tk
+    from tkinter import font as tkFont
+    from tkinter import filedialog
+    from tkinter import messagebox
+    
+    # Local imports
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import find_missing_if
+    
     from BiblioMeter_GUI.Coordinates import root_properties
     
-    from tkinter import font as tkFont
-    import tkinter as tk
+    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
     
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ISSN_manquant
-
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
-
-    from BiblioMeter_GUI.Globals_GUI import DISPLAYS
-    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
-    from BiblioMeter_GUI.Globals_GUI import PPI
-    
-    win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(self)
-    
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import encadre_UD
+    from BiblioMeter_GUI.Useful_Functions import five_last_available_years   
     
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import SOUS_TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import FONT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import FONT_SOUS_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import X_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import Y_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import FORMAT_TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import UNDERLINE_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Coordinates import HELP_ETAPE_5
-    
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    
-    from BiblioMeter_GUI.Coordinates import TEXT_FINALE
-    from BiblioMeter_GUI.Coordinates import FONT_CONCAT
-    
+    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_6
+    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_7
+    from BiblioMeter_GUI.Coordinates import REF_ENTRY_NB_CHAR
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_5
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_6
+    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_7
     from BiblioMeter_GUI.Coordinates import TEXT_MAJ_IF
-    from BiblioMeter_GUI.Coordinates import FONT_MAJ_IF
+    from BiblioMeter_GUI.Coordinates import TEXT_MISSING_IF
+    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
     
-    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
+    from BiblioMeter_GUI.Globals_GUI import DISPLAYS
+    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
+    from BiblioMeter_GUI.Globals_GUI import PPI
     
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    # Internal functions
 
-    from pathlib import Path
+    def _get_if_info():
+        if_df = pd.read_excel(all_if_path, sheet_name = None)
+        if_years_list = ', '.join(list(if_df.keys()))
+        return if_years_list
     
-    import pandas as pd
-    
-    from tkinter import filedialog
-    from tkinter import messagebox
-    
-    # Useful alias
-    bdd_mensuelle_alias = STOCKAGE_ARBORESCENCE['general'][0]
-    bdd_annuelle_alias = STOCKAGE_ARBORESCENCE['general'][1]
-    OTP_path_alias = STOCKAGE_ARBORESCENCE['general'][3]
-    Homonyme_path_alias = STOCKAGE_ARBORESCENCE['general'][4]
-    R_path_alias = STOCKAGE_ARBORESCENCE['general'][5]
-    submit_alias = SUBMIT_FILE_NAME
-    
-    years_list = five_last_available_years(bibliometer_path)
-    
-    font_etape = tkFont.Font(family = "Helvetica", size = font_size(14, min(SFW, SFWP)))
-    etape_5 = tk.Label(self, 
-                       text = TEXT_ETAPE_5, 
-                       justify = FORMAT_TEXT_ETAPE_5, 
-                       font = font_etape, 
-                       underline = UNDERLINE_ETAPE_5)
-    etape_5.place(x = mm_to_px(10, PPI)*SFW, y = mm_to_px(25, PPI)*SFH)
-    
-    
-
-    #sous_text_etape_5 = tk.Label(self, text = SOUS_TEXT_ETAPE_5, justify = FORMAT_TEXT_ETAPE_5, font = FONT_SOUS_ETAPE_5)
-    #place_after(etape_5, sous_text_etape_5, dx = 2, dy = 4)
-    
-    help_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    help_label = tk.Label(self, 
-                          text = HELP_ETAPE_5, 
-                          justify = "left", 
-                          font = help_font_label)
-    place_bellow(etape_5, help_label)
-    
-
-    # QUATRIEME PARTIE : CONCATENER LES 5 DERNIERS ANNEES
-    font_Button_concat = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_concat = tk.Button(self, 
-                              text = TEXT_FINALE, 
-                              font = font_Button_concat, 
-                              command = lambda: _concat_filtre_depar())
-    
-    #place_bellow(etape_5, Button_concat, dy = mm_to_px(5, PPI)*min(SFH, SFHP))
-    #encadre_UD(fond, etape_5, Button_concat, "black", dn = 2, de = 5000, ds = 5000, dw = 5000)
-    
-    #Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.75)
-    
-    def _concat_filtre_depar():
+    def _add_if_try(file_to_update_path):
+        try:
+            add_if(file_to_update_path, file_to_update_path, all_if_path, None)
+            info_title = '- Information -'
+            info_text  = "Les IFs ont été mis à jour."
+            messagebox.showinfo(info_title, info_text)
+        except KeyError:
+            message = f"Il y a un problème avec le fichier excel des IFs"
+            messagebox.showwarning('Warning', message)
+        except Exception as e:
+            #messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
+            print(e)
+            return
+        
+    def _launch_if_update():
         
         '''
         '''
         
-        from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILE_NAMES
+        # Getting the file path to update with IFs
+        file_to_update_path = file_select_entry.get()
         
-        df_concat = pd.DataFrame()
-    
-        for i in range(len(years_list)):
-            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f"""{FILE_NAMES['liste conso']} {years_list[i]}.xlsx""")
-            df_inter = pd.read_excel(path)
-            df_concat = df_concat.append(df_inter)
-            
-        date = str(datetime.now())[:16].replace(':', '')
-        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_dep_{os.getlogin()}.xlsx'))
-        
-        messagebox.showinfo('Information', f"La concatenation des documents finaux des dernières années disponibles a été faite, vous pouvez la retrouver dans BDD Multi-annuelle")
-        
+        # Cheking availability of IF all years file
+        all_if_status = os.path.exists(all_if_path)
+        if all_if_status:
+            if_years_list = _get_if_info()
+            info_title = '- Information -'
+            info_text  = f"Les IFs des publications du fichier : \n {file_to_update_path} "
+            info_text += f"\n\nvont être mis à jour avec les IFs des années : \n\n {if_years_list} "
+            info_text += f"\n\ndu fichier :   '{if_file_name_alias}'."
+            messagebox.showinfo(info_title, info_text)            
+            _add_if_try(file_to_update_path)
 
-    
-    #place_after(Button_concat, Button_MAJ_IF, dx = mm_to_px(65, PPI)*min(SFW, SFWP), dy = -mm_to_px(0.5, PPI)*SFH)
-
-    LE_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    LE_font_button = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    
-    LabelEntry_MAJ_IF = LabelEntry_toFile(self, 
-                                          text_label = f"", font_label = LE_font_label, font_button = LE_font_button, 
-                                          width = int(90*min(SFW, SFWP)))
-    #LabelEntry_MAJ_IF.set2("Selectionner un fichier ---->")
-    
-    place_bellow(help_label, LabelEntry_MAJ_IF, dx = mm_to_px(5, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
-    
-    font_MAJ_IF = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_MAJ_IF = tk.Button(self, 
-                              text = TEXT_MAJ_IF, 
-                              font = font_MAJ_IF, 
-                              command = lambda: _launch_maj_if())
-    
-    place_bellow(help_label, Button_MAJ_IF, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(20, PPI)*SFH)
-    
-    def _launch_maj_if():
-        
-        '''
-        '''
-        # Import et alias important
-        import os
-        import shutil
-        import pandas
-        
-        path_all_IF = Path(bibliometer_path) / Path(STOCKAGE_ARBORESCENCE['general'][7]) / Path(STOCKAGE_ARBORESCENCE['all IF'])
-        
-        # Vérifier que le fichier IF all years est là
-        if os.path.exists(path_all_IF):
-            df_IF = pd.read_excel(path_all_IF, sheet_name = None)
-            messagebox.showinfo('Information', f"Les IF des publications des années {', '.join(list(df_IF.keys()))} vont être mis à jour avec les informations disponibles dans le fichier {STOCKAGE_ARBORESCENCE['all IF']}.")
-            try:
-                ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), path_all_IF, None)
-                messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
-            except KeyError:
-                messagebox.showwarning('Information', f"Il y a un problème avec le fichier excel")
-            except Exception as e:
-                #messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
-                print(e)
-                return
         else:
-            answer_2 = messagebox.askokcancel('Fichier manquant', f"""Le fichier {STOCKAGE_ARBORESCENCE['all IF']} n'est pas présent à l'emplacement attribué. Voulez-vous effectuer une copie de la dernière sauvegarde en l'état du fichier, et continuer avec la procédure ?""")
+            ask_title = "- Régénération du fichier des IFs -"
+            ask_text  = f"Le fichier des IFs n'est pas disponible à l'emplacement attendu. "
+            ask_text += f"\nL'utilisation de la dernière sauvegarde de secours est possible "
+            ask_text += f"pour effectuer la mise à jour des IFs."
+            ask_text += f"\nConfirmer cette utilisation ?"
+            answer_2  = messagebox.askokcancel(ask_title, ask_text)
             if answer_2:
                 # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
-                filePath = shutil.copy(bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][8]) / Path (STOCKAGE_ARBORESCENCE['all IF']), path_all_IF)
-                
-                df_IF = pd.read_excel(path_all_IF, sheet_name = None)
-                messagebox.showinfo('Information', f"Les IF des publications des années {', '.join(list(df_IF.keys()))} vont être mis à jour avec les informations disponibles dans le fichier {STOCKAGE_ARBORESCENCE['all IF']}.")
-                try:
-                    ajout_IF(LabelEntry_MAJ_IF.get(), LabelEntry_MAJ_IF.get(), path_all_IF, None)
-                    messagebox.showinfo('Information', f"Les IF ont été mis à jour.")
-                except KeyError:
-                    messagebox.showwarning('Information', f"Il y a un problème avec le fichier excel")
-                except Exception as e:
-                    #messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
-                    print(e)
-                    return
+                filePath = shutil.copy(backup_if_file_path, all_if_path)
+                if_years_list = _get_if_info() 
+                info_title = '- Information -'
+                info_text  = f"Les IFs des publications du fichier : \n {file_to_update_path} "
+                info_text += f"vont être mis à jour avec les IFs des années : \n\n {if_years_list} "
+                info_text += f"\n\ndu fichier : '{if_file_name_alias}'."
+                messagebox.showinfo(info_title, info_text) 
+                _add_if_try(file_to_update_path)
+
             else:
                 # Arrêt de la procédure
-                messagebox.showinfo('Information', f"La mise à jour n'a pas été faite.")
+                info_title = '- Information -'
+                info_text  = "La mise à jour des IFs n'a pas été faite."
+                messagebox.showinfo(info_title, info_text)
                 return
             
+    def _launch_missing_if():
+        try:
+            # Getting the file path to update with IFs
+            file_to_update_path = file_select_entry.get()           
+            find_missing_if(bibliometer_path, file_to_update_path)
+            info_title = '- Information -'
+            info_text  = f"La liste des journaux dont l'IF est manquant a été construite."
+            info_text += f"\nElle est disponible dans le dossier : \n {if_root_folder_path}"
+            info_text += f"\n\nsous le nom de fichier : {if_manquants_file_alias}."
+            info_text += f"\n\nCette liste peut-être utilisée pour rechercher les IFs manquants sur la toile "
+            info_text += f"\n\net compléter manuellement le fichier : '{if_file_name_alias}'."
+            messagebox.showinfo(info_title, info_text)
+        except KeyError:
+            warning_title = "!!! ATTENTION : fichier incorrect !!!"
+            warning_text  = f"Le fichier à mettre à jour présente un problème."
+            warning_text += f"\n 1- Vérifiez le fichier sélectionné pour la mise à jour des IFs ;"
+            warning_text += f"\n 2- Puis relancez la recherche des IFs manquants."                         
+            messagebox.showwarning(warning_title, warning_text)            
+        except Exception as e:
+            warning_title = "!!! ATTENTION : pas d'identification de fichier !!!"
+            warning_text  = f"Le fichier à mettre à jour n'est pas défini."
+            warning_text += f"\n 1- Vérifiez le fichier sélectionné pour la mise à jour des IFs ;"
+            warning_text += f"\n 2- Puis relancez la recherche des IFs manquants."                         
+            messagebox.showwarning(warning_title, warning_text)            
+            print(e)    
+            
     def _launch_exit():
-        answer_1 = messagebox.askokcancel('Information', f"Vous allez fermer BiblioMeter, rien ne sera perdu et vous pourrez reprendre votre travail plus tard, souhaitez-vous fermer BiblioMeter ?")
+        message =  "Vous allez fermer BiblioMeter. "
+        message += "\nRien ne sera perdu et vous pourrez reprendre le traitement plus tard."
+        message += "\nSouhaitez-vous faire une pause dans le traitement ?"
+        answer_1 = messagebox.askokcancel('Information', message)
         if answer_1:
             parent.destroy()
-        
-    # Boutou pour sortir de la page
-    font_button_quit = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+            
+    # Getting useful window sizes and scale factors depending on displays properties
+    sizes_tuple   = root_properties(self)
+    win_width_px  = sizes_tuple[0]    # unused here
+    win_height_px = sizes_tuple[1]    # unused here
+    width_sf_px   = sizes_tuple[2] 
+    height_sf_px  = sizes_tuple[3]    # unused here
+    width_sf_mm   = sizes_tuple[4]
+    height_sf_mm  = sizes_tuple[5]
+    width_sf_min  = min(width_sf_mm, width_sf_px)
+    
+    # Setting effective font sizes and positions (numbers are reference values)
+    eff_etape_font_size      = font_size(14, width_sf_min)
+    eff_launch_font_size     = font_size(13, width_sf_min)
+    eff_entry_font_size      = font_size(12, width_sf_min)
+    eff_help_font_size       = font_size(12, width_sf_min)
+    eff_buttons_font_size    = font_size(11, width_sf_min)
+    file_select_label_x_pos_px = mm_to_px(10 * width_sf_mm, PPI)
+    file_select_label_y_pos_px = mm_to_px(25 * height_sf_mm, PPI)
+    entry_x_pos_px             = mm_to_px(25 * width_sf_mm, PPI)
+    entry_y_pos_px             = mm_to_px(35 * height_sf_mm, PPI)
+    if_update_label_dx_px      = mm_to_px( 0 * width_sf_mm, PPI)
+    if_update_label_dy_px      = mm_to_px(20 * height_sf_mm, PPI)
+    missing_if_label_dx_px     = mm_to_px( 0 * width_sf_mm, PPI)
+    missing_if_label_dy_px     = mm_to_px(30 * height_sf_mm, PPI)
+    
+    if_update_x_pos_px       = mm_to_px(10 * width_sf_mm, PPI)
+    if_update_y_pos_px       = mm_to_px(25 * height_sf_mm, PPI)
+    entry_dx_px              = mm_to_px( 5 * width_sf_mm, PPI)
+    entry_dy_px              = mm_to_px( 5 * height_sf_mm, PPI)
+    launch_dx_px             = mm_to_px( 0 * width_sf_mm, PPI)
+    launch_dy_px             = mm_to_px( 5 * height_sf_mm, PPI)
+    
+    exit_button_x_pos_px     = mm_to_px(193 * width_sf_mm, PPI) 
+    exit_button_y_pos_px     = mm_to_px(145 * height_sf_mm, PPI)
+    
+    # Setting common attributs
+    etape_label_format = 'left'
+    etape_underline    = -1 
+    
+    # Setting number-of-characters reference for width in LabelEntry call    
+    ref_entry_nb_char = REF_ENTRY_NB_CHAR                #90 -> 80                                     
+    
+    # Setting useful aliases
+    backup_folder_name_alias  = ARCHI_SECOURS["root"]    
+    if_root_folder_path_alias = ARCHI_IF["root"]
+    if_file_name_alias        = ARCHI_IF["all IF"]
+    if_manquants_file_alias   = ARCHI_IF["missing"]
+    
+    # Setting useful paths
+    if_root_folder_path = bibliometer_path / Path(if_root_folder_path_alias)
+    all_if_path = if_root_folder_path / Path(if_file_name_alias)
+    backup_if_file_path = bibliometer_path / Path(backup_folder_name_alias) / Path (if_file_name_alias)
+    
+    ################## Sélection de la liste consolidée de publications
+    
+    ### Titre
+    file_select_label_font = tkFont.Font(family = FONT_NAME, 
+                                         size = eff_etape_font_size,
+                                         weight = 'bold')
+    file_select_label = tk.Label(self,
+                               text = TEXT_ETAPE_5,
+                               justify = etape_label_format,
+                               font = file_select_label_font,
+                               underline = etape_underline)
+    file_select_label.place(x = file_select_label_x_pos_px, 
+                            y = file_select_label_y_pos_px)
+    
+    ### Entrée nom de fichier pour la mise à jour    
+    entry_label_font = tkFont.Font(family = FONT_NAME,
+                                   size = eff_entry_font_size)
+    entry_button_font = tkFont.Font(family = FONT_NAME,
+                                    size = eff_entry_font_size)
+        # le label du bouton est défini en dur dans la class LabelEntry_toFile à "Choix du fichier"
+    file_select_entry = LabelEntry_toFile(self, 
+                                          text_label = f"", 
+                                          font_label = entry_label_font, 
+                                          font_button = entry_button_font, 
+                                          width = int(ref_entry_nb_char * width_sf_min))
+    file_select_entry.place(x = entry_x_pos_px,
+                            y = entry_y_pos_px) 
+    
+    
+    ################## Mise à jour les IFs
+
+    ### Titre
+    if_update_font = tkFont.Font(family = FONT_NAME, 
+                                 size = eff_etape_font_size,
+                                 weight = 'bold')
+    if_update_label = tk.Label(self,
+                               text = TEXT_ETAPE_6,
+                               justify = etape_label_format,
+                               font = if_update_font,
+                               underline = etape_underline)
+    place_bellow(file_select_label, 
+                 if_update_label, 
+                 dx = if_update_label_dx_px, 
+                 dy = if_update_label_dy_px)    
+    
+    ### Explication
+    help_label_font = tkFont.Font(family = FONT_NAME, 
+                                  size = eff_help_font_size)
+    help_label = tk.Label(self, 
+                          text = HELP_ETAPE_6, 
+                          justify = "left", 
+                          font = help_label_font)
+    place_bellow(if_update_label, 
+                 help_label)     
+                                         
+    ### Bouton pour lancer l'étape 
+    if_update_launch_font = tkFont.Font(family = FONT_NAME, 
+                                        size = eff_launch_font_size)
+    if_update_launch_button = tk.Button(self,
+                                        text = TEXT_MAJ_IF,
+                                        font = if_update_launch_font,
+                                        command = lambda: _launch_if_update())    
+    place_bellow(help_label, 
+                 if_update_launch_button, 
+                 dx = launch_dx_px, 
+                 dy = launch_dy_px)
+    
+    ################## Identification des IFs manquants
+    
+    ### Titre 
+    missing_if_label_font = tkFont.Font(family = FONT_NAME, 
+                                        size = eff_etape_font_size,
+                                        weight = 'bold')
+    missing_if_label = tk.Label(self, 
+                                text = TEXT_ETAPE_7, 
+                                justify = "left", 
+                                font = missing_if_label_font)
+    place_bellow(if_update_label, 
+                 missing_if_label, 
+                 dx = missing_if_label_dx_px, 
+                 dy = missing_if_label_dy_px)
+    
+    ### Explication de l'étape
+    help_label_font = tkFont.Font(family = FONT_NAME,
+                               size = eff_help_font_size)
+    help_label = tk.Label(self, 
+                          text = HELP_ETAPE_7, 
+                          justify = "left", 
+                          font = help_label_font)
+    place_bellow(missing_if_label, 
+                 help_label) 
+    
+    ### Bouton pour lancer l'identification des IFs manquants
+    button_missing_if_font = tkFont.Font(family = FONT_NAME, 
+                                         size = eff_launch_font_size)
+    button_missing_if = tk.Button(self, 
+                                  text = TEXT_MISSING_IF, 
+                                  font = button_missing_if_font, 
+                                  command = lambda: _launch_missing_if())    
+    place_bellow(help_label, 
+                 button_missing_if, 
+                 dx = launch_dx_px, 
+                 dy = launch_dy_px)
+    
+    
+    ################## Bouton pour sortir de la page
+    font_button_quit = tkFont.Font(family = FONT_NAME, 
+                                   size   = eff_buttons_font_size)
     button_quit = tk.Button(self, 
-                            text = "Mettre en pause", 
+                            text = TEXT_PAUSE, 
                             font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = mm_to_px(193, PPI)*SFW, y = mm_to_px(145, PPI)*SFH, anchor = 'n')
-    
-    # RETROUVER LES ISSN MANQUANTS
-    missing_ISSN_font_label = tkFont.Font(family = "Helvetica", size = font_size(12, min(SFW, SFWP)))
-    missing_ISSN_label = tk.Label(self, 
-                                  text = """Dans cette partie, vous pouvez générer un fichier excel qui recherche les ISSN dont l'IF est inconnu.\nLe fichier sera nommé "ISSN_manquants", et sera disponible dans le dossier "Impact Factor".\nLa recherche se fera dans le document sélectionné au dessus.\nCe fichier peut-être utilisé pour remplir manuellement le fichier qui répertorie les IF année par année.""", 
-                                  justify = "left", 
-                                  font = missing_ISSN_font_label)
-    place_bellow(Button_MAJ_IF, missing_ISSN_label, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(20, PPI)*SFH)
-    
-    font_Button_missing_ISSN = tkFont.Font(family = "Helvetica", size = font_size(13, min(SFW, SFWP)))
-    Button_missing_ISSN = tk.Button(self, 
-                                    text = "Lancer la recherche des ISSN dont l'IF est manquant", 
-                                    font = font_Button_missing_ISSN, 
-                                    command = lambda: _launch_ISSN_manquant())
-    
-    place_bellow(missing_ISSN_label, Button_missing_ISSN, dx = mm_to_px(0, PPI)*SFW, dy = mm_to_px(5, PPI)*SFH)
-    
-    def _launch_ISSN_manquant():
-        try:
-            ISSN_manquant(bibliometer_path, LabelEntry_MAJ_IF.get())
-            messagebox.showinfo('Information', f"""Les ISSN manquants ont été trouvés et mis dans un fichier excel dans le dossier "Impact Factor".""")
-        except KeyError:
-            messagebox.showwarning('Information', f"Il y a un problème avec le fichier excel")
-        except Exception as e:
-            messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier.")
-            print(e)
+                            command = lambda: _launch_exit()).place(x = exit_button_x_pos_px, 
+                                                                    y = exit_button_y_pos_px, 
+                                                                    anchor = 'n')

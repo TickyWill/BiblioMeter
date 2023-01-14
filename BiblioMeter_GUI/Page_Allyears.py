@@ -28,10 +28,13 @@ def create_Allyears(self, bibliometer_path):
     from BiblioMeter_GUI.Useful_Functions import five_last_available_years
     from BiblioMeter_GUI.Useful_Functions import la_liste_des_filtres_disponibles
     from BiblioMeter_GUI.Useful_Classes import ColumnFilter
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
+    
+    # Globals imports
+    from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Globals_GUI import SET_1
+    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-
+    
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     
@@ -50,7 +53,7 @@ def create_Allyears(self, bibliometer_path):
 
     Button_concat = tk.Button(self, 
                                      text = 'Concat 5 dernières années des submits', 
-                                     font = ("Helvetica", 18), 
+                                     font = (FONT_NAME, 18), 
                                      command = lambda: _concat_submit())
     Button_concat.place(anchor = 'center', relx = 0.5, rely = 0.2)
 
@@ -64,7 +67,8 @@ def create_Allyears(self, bibliometer_path):
             df_concat = df_concat.append(df_inter)
 
         date = str(datetime.now())[:16].replace(':', '')
-        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_submit_{os.getlogin()}.xlsx'))
+        df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f'{date}_concat_submit_{os.getlogin()}.xlsx'),
+                           index = False)
     
     
     ### Bouton qui va permettre de lancer la création du filtre ###################################################################################################
@@ -119,7 +123,7 @@ def create_Allyears(self, bibliometer_path):
         
         df_to_save = df_1[df_filtre[0].tolist()]
         
-        df_to_save.to_excel(Path(bibliometer_path) / Path(R_bis_path_alias) / Path(nom + '.xlsx'))
+        df_to_save.to_excel(Path(bibliometer_path) / Path(R_bis_path_alias) / Path(nom + '.xlsx'), index = False)
         
     def _create_filter(OptionButton_filtre):
         
@@ -211,7 +215,7 @@ def create_Allyears(self, bibliometer_path):
             
             save_path = Path(bibliometer_path) / Path(filtre_path_alias) / Path(filter_name)
             
-            new_df.to_excel(save_path)
+            new_df.to_excel(save_path, index = False)
             
             #OptionButton_filtre.destroy()
             

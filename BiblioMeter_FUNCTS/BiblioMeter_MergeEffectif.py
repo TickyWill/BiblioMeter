@@ -74,8 +74,8 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
         print('  Employees lastnames list:',eff_lastnames_spec)
 
     def _save_spec_dfs():                       
-        df_temp.to_excel(PATH_OF_CHECKS / Path('df_temp_' + test_name + '.xlsx'))
-        df_eff_pub_match.to_excel(PATH_OF_CHECKS / Path('df_eff_pub_match_' + test_name + '.xlsx'))     
+        df_temp.to_excel(PATH_OF_CHECKS / Path('df_temp_' + test_name + '.xlsx'), index =False)
+        df_eff_pub_match.to_excel(PATH_OF_CHECKS / Path('df_eff_pub_match_' + test_name + '.xlsx'), index =False)     
 
     # Initializing a Data frame that will contains all matches 
     # between 'df_pub' author-name and 'df_eff' emmployee-name

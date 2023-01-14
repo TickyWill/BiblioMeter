@@ -1,26 +1,17 @@
-__all__ = ['get_unique_numbers',
-           
-           'consolidation_homonyme',
-           
+__all__ = ['get_unique_numbers',           
+           'consolidation_homonyme',          
            'concat_name_firstname',
            'add_authors_name_list',
-           'ajout_OTP',
-           
-           'filtrer_par_departement', 
-           
+           'ajout_OTP',           
+           'filtrer_par_departement',            
            'add_biblio_list',
-           'ajout_IF',
-           'clean_reorder_rename_submit',
-           
-           'concat_listes_consolidees',
-          
-           'maj_rh',
-           
-           'mise_en_page', 
-           
-           'rename_column_names', 
-          
-           'ISSN_manquant']
+           'add_if',
+           'clean_reorder_rename_submit',           
+           'concat_listes_consolidees',          
+           'maj_rh',           
+           'mise_en_page',            
+           'rename_column_names',          
+           'find_missing_if']
 
 def get_unique_numbers(numbers):
 
@@ -49,19 +40,10 @@ def consolidation_homonyme(in_path, out_path):
     from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
     from openpyxl.styles.colors import Color
 
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-        
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
+    # BiblioAnalysis_Utils package imports    
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME
     
+    # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_CONSOLIDATION
 
@@ -121,7 +103,6 @@ def _you_got_OTPed(df, i):
     from pathlib import Path
     
     # Local library imports   
-    import BiblioMeter_FUNCTS as bmf
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import OTP_STRING
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS 
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
@@ -154,9 +135,6 @@ def _liste_de_validation(df, i):
     Returns :
         Adds OTP to df'''
     
-    # Local imports
-    import BiblioMeter_FUNCTS as bmf
-    
     # Global variable imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import OTP_LIST
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
@@ -174,7 +152,8 @@ def concat_name_firstname(df):
     
     ''' The `concat_name_firstname` function checks if the given variable is a of type DataFrame.
     Then it verifies if the columns 'Nom', 'Prénom' are in the given dataframe.
-    If so, it combines the column 'Nom' and 'Prénom' adding a ', ' in between the two values of the columns, into a new column named 'Nom Prénom'.
+    If so, it combines the column 'Nom' and 'Prénom' adding a ', ' in between the two values 
+    of the columns, into a new column named 'Nom Prénom'.
     
     Args:
         df (dataframe): dataframe in which we want to combine the Nom and Prénom.
@@ -185,15 +164,14 @@ def concat_name_firstname(df):
     Notes:
         None.
     '''
-    
-    # Local library imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
-    
     # 3rd party imports
     import pandas as pd
     
+     # Global variable imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+       
     # Useful alias
     nom_alias = COL_NAMES_RH['nom']
     prenom_alias = COL_NAMES_RH['prénom']
@@ -217,21 +195,27 @@ def concat_name_firstname(df):
 
 def add_authors_name_list(in_path, out_path):
     
-    ''' The `add_authors_fullname_list` function fetches an EXCEL file and saves it in 'df_in'. It then uses `concat_name_firstname` to create the column 'Nom Prénom'.
-    Then it goes through a unique list of Pub_id and adds in every single row of a new dataframe, which is a slice of df_in by the Pub_id, called 'df_inter' a new column 
-    called 'Authors Fullname List', a list of all the authors who participated in writting the article. Happens this new dataframe to 'df_out' and when done going through
+    ''' The `add_authors_fullname_list` function fetches an EXCEL file and saves it in 'df_in'. 
+    It then uses `concat_name_firstname` to create the column 'Nom Prénom'.
+    Then it goes through a unique list of Pub_id and adds in every single row of a new dataframe, 
+    which is a slice of df_in by the Pub_id, called 'df_inter' a new column 
+    called 'Authors Fullname List', a list of all the authors who participated in writting the article. 
+    Happens this new dataframe to 'df_out' and when done going through
     all of the different Pub_id, it saves it into out_path as an EXCEL file.
     
     Args:
         in_path (path): path (including name of the file) leading to the working excel file. 
-        out_path (path): path (including name of the file) leading to where the file will be saved after going through its treatment.
+        out_path (path): path (including name of the file) leading to where the file will be 
+                         saved after going through its treatment.
     
     Returns:
         None.
     
     Notes:
-        The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module of 'BiblioAnalysis_Utils' package.
-        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' module of 'BiblioMeter_FUNCTS' package.    
+        The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module 
+        of 'BiblioAnalysis_Utils' package.
+        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' 
+        module of 'BiblioMeter_FUNCTS' package.    
     '''
     
     # Local imports
@@ -255,7 +239,11 @@ def add_authors_name_list(in_path, out_path):
     
     # Sort on Pub_id and then add the authors fullname list
     if pub_id_alias not in df_in:
-        raise KeyError(f"The column {pub_id_alias} is not in DataFrame. Cannot carry on. Please make sure the DataFrame has a column named 'Pub_id'.")
+        error_text  = f"The column {pub_id_alias} is missing in the file "
+        error_text += f"\n {in_path}."
+        error_text += f"\n\nPlease make sure that a column indexing the articles "
+        error_text += f"is named 'Pub_id' in this file."
+        raise KeyError(error_text)
     
     df_out = pd.DataFrame()
     unique_pub_id_list = df_in[pub_id_alias].unique().tolist()
@@ -271,7 +259,7 @@ def add_authors_name_list(in_path, out_path):
     # Save in an excel file where leads out_path
     df_out.to_excel(out_path, index = False)
     
-def ajout_OTP(in_path, out_path):
+def ajout_OTP(in_path, out_path, out_file_base):
 
     '''
     '''
@@ -279,39 +267,58 @@ def ajout_OTP(in_path, out_path):
     # Standard library imports
     from pathlib import Path
 
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_OTP
-    
     # 3rd party import
     import pandas as pd
     from openpyxl import Workbook, load_workbook
     from openpyxl.worksheet.datavalidation import DataValidation
     from openpyxl.utils.dataframe import dataframe_to_rows
     from openpyxl.utils.cell import get_column_letter
+    
+    # Local imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_OTP
+    from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
+    
+    # Internal functions
+    def _save_dpt_OTP_file(dpt_label):
+        '''
+        '''
+        filtre_dpt = df_submit[dpt_alias] == dpt_label
+        df_dpt= df_submit[filtre_dpt].copy()
+        _=[_you_got_OTPed(df_dpt, i) for i in range(len(df_dpt))]        
+        df_dpt = df_dpt.reindex(columns = COL_OTP)        
+        wb, ws = mise_en_page(df_dpt)
+        ws.title = 'OTP ' +  dpt_label             
+        for i in range(2, len(df_dpt)+2):
+                # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
+                validation_list = _liste_de_validation(df_dpt, i-2)     
+                data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
+                ws.add_data_validation(data_val)
+                # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
+                data_val.add(ws[get_column_letter(list(df_dpt.columns).index(OTP_alias)+1)+str(i)]) 
+        OTP_file_name_dpt = out_file_base + '_' + dpt_label + '.xlsx'
+        wb.save(out_path / Path(OTP_file_name_dpt))
+        
 
-    # Useful alias
-    pub_id_alias = COL_NAMES['pub_id'] # Pub_id
-    dpt_alias = COL_NAMES_RH['dpt'] # Dpt/DOB (lib court)
+    # Useful aliases
+    pub_id_alias = COL_NAMES['pub_id']      # Pub_id
+    dpt_alias = COL_NAMES_RH['dpt']         # Dpt/DOB (lib court)
     OTP_alias = COL_NAMES_BONUS['list OTP'] # Choix de l'OTP
-    idx_author = COL_NAMES['authors'][1] # Idx_author
+    idx_author = COL_NAMES['authors'][1]    # Idx_author
     
     add_authors_name_list(in_path, in_path) # Adds a column with a list of the authors
     
     df_submit = pd.read_excel(in_path)
     df_submit.fillna('', inplace=True)
     df_submit.set_index(pub_id_alias, inplace = True)
+    
+    dpt_label_list = list(DPT_LABEL_DICT.keys())
         
     data = [0] * len(df_submit)
-    df_submit['DTNM'] = data
-    df_submit['DTS'] = data
-    df_submit['DTCH'] = data
-    df_submit['DEHT'] = data
-    ###############################################################################################################################################################
-
+    for dpt_label in dpt_label_list: df_submit[dpt_label] = data
+    
     for i in df_submit.index.unique().to_list():
         
         if isinstance(df_submit.loc[i], pd.Series):
@@ -323,111 +330,20 @@ def ajout_OTP(in_path, out_path):
 
             filtre_inter_author = df_inter_pub_id[idx_author] == j
             df_inter_inter = df_inter_pub_id[filtre_inter_author]
+            
+            for dpt_label in dpt_label_list:
+                for dpt_name in DPT_LABEL_DICT[dpt_label]:
+                    if df_inter_inter[dpt_alias].to_list()[0] == dpt_name:
+                        df_submit.loc[i,dpt_label] = 1    
 
-            if df_inter_inter[dpt_alias].to_list()[0] == 'DTNM':
-                df_submit.loc[i,'DTNM'] = 1
-
-            elif df_inter_inter[dpt_alias].to_list()[0] == 'DTS':
-                df_submit.loc[i,'DTS'] = 1
-
-            elif df_inter_inter[dpt_alias].to_list()[0] == 'DEHT':
-                df_submit.loc[i,'DEHT'] = 1
-
-            elif df_inter_inter[dpt_alias].to_list()[0] == 'DTCH':
-                df_submit.loc[i,'DTCH'] = 1
-                
-            elif df_inter_inter[dpt_alias].to_list()[0] == 'DTBH':
-                df_submit.loc[i,'DTCH'] = 1
-                
     df_submit.sort_values([pub_id_alias, idx_author], inplace = True)
     df_submit.reset_index(inplace = True)
     df_submit.drop_duplicates(subset = [pub_id_alias], inplace = True)
     
-    ### DTNM
-    filtre_DTNM = df_submit[dpt_alias] == 'DTNM'
-    df_DTNM = df_submit[filtre_DTNM].copy()
-    _=[_you_got_OTPed(df_DTNM, i) for i in range(len(df_DTNM))]
+    for dpt_label in dpt_label_list: _save_dpt_OTP_file(dpt_label)
     
-    df_DTNM = df_DTNM.reindex(columns = COL_OTP)
-    
-    wb, ws = mise_en_page(df_DTNM)
-    ws.title = 'OTP DTNM'
-         
-    for i in range(2, len(df_DTNM)+2):
-            
-            validation_list = _liste_de_validation(df_DTNM, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
 
-            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
-            ws.add_data_validation(data_val)
-            
-            data_val.add(ws[get_column_letter(list(df_DTNM.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-    wb.save(out_path / Path(f'fichier_ajout_OTP_DTNM.xlsx'))
-    
-    ### DTS
-    filtre_DTS = df_submit[dpt_alias] == 'DTS'
-    df_DTS = df_submit[filtre_DTS].copy()
-    _=[_you_got_OTPed(df_DTS, i) for i in range(len(df_DTS))]
-    
-    df_DTS = df_DTS.reindex(columns = COL_OTP)
-    
-    wb, ws = mise_en_page(df_DTS)
-    ws.title = 'OTP DTS'
-        
-    for i in range(2, len(df_DTS)+2):
-            
-            validation_list = _liste_de_validation(df_DTS, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
-            ws.add_data_validation(data_val)
-            
-            data_val.add(ws[get_column_letter(list(df_DTS.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-    wb.save(out_path / Path(f'fichier_ajout_OTP_DTS.xlsx'))
-    
-    ### DEHT
-    filtre_DEHT = df_submit[dpt_alias] == 'DEHT'
-    df_DEHT = df_submit[filtre_DEHT].copy()
-    _=[_you_got_OTPed(df_DEHT, i) for i in range(len(df_DEHT))]
-    
-    df_DEHT = df_DEHT.reindex(columns = COL_OTP)
-    
-    wb, ws = mise_en_page(df_DEHT)
-    ws.title = 'OTP DEHT'
-    
-    for i in range(2, len(df_DEHT)+2):
-            
-            validation_list = _liste_de_validation(df_DEHT, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
-            ws.add_data_validation(data_val)
-            
-            data_val.add(ws[get_column_letter(list(df_DEHT.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-    wb.save(out_path / Path(f'fichier_ajout_OTP_DEHT.xlsx'))
-    
-    ### DTCH
-    filtre_DTCH = (df_submit[dpt_alias] == 'DTCH') | (df_submit[dpt_alias] == 'DTBH')
-    df_DTCH = df_submit[filtre_DTCH].copy()
-    _=[_you_got_OTPed(df_DTCH, i) for i in range(len(df_DTCH))]
-    
-    df_DTCH = df_DTCH.reindex(columns = COL_OTP)
-    
-    wb, ws = mise_en_page(df_DTCH)
-    ws.title = 'OTP DTCH'
-        
-    for i in range(2, len(df_DTCH)+2):
-            
-            validation_list = _liste_de_validation(df_DTCH, i-2) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-            data_val = DataValidation(type="list", formula1 = validation_list, showErrorMessage=False)
-            ws.add_data_validation(data_val)
-            
-            data_val.add(ws[get_column_letter(list(df_DTCH.columns).index(OTP_alias)+1)+str(i)]) # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-
-    wb.save(out_path / Path(f'fichier_ajout_OTP_DTCH.xlsx'))
-
-def filtrer_par_departement(in_path, out_path):
+def filtrer_par_departement(in_path, out_path, in_file_base):
     
     '''
     Faire attention à ce que path mène à un fichier submit
@@ -443,65 +359,61 @@ def filtrer_par_departement(in_path, out_path):
     # Standard imports
     from pathlib import Path
     import os
+    
+    # 3rd party imports
+    import pandas as pd    
 
-    # Local imports
+    # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    # 3rd party imports
-    import pandas as pd
+    # local imports
+    from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
+    
+    # internal functions
+    def _set_df_OTP_dpt(dpt_label):        
+        OTP_file_name_dpt_ok = in_file_base + '_' + dpt_label + '_ok.xlsx'
+        dpt_path = in_path / Path(OTP_file_name_dpt_ok)       
+        if not os.path.exists(dpt_path):
+            OTP_file_name_dpt = in_file_base + '_' + dpt_label + '.xlsx'
+            dpt_path = in_path / Path(OTP_file_name_dpt)
+        dpt_df = pd.read_excel(dpt_path)
+        return dpt_df
     
     # Useful alias
     pub_id_alias = COL_NAMES['pub_id']
-    chemin_DTNM = in_path / Path('fichier_ajout_OTP_DTNM_ok.xlsx')
-    chemin_DTS = in_path / Path('fichier_ajout_OTP_DTS_ok.xlsx')
-    chemin_DEHT = in_path / Path('fichier_ajout_OTP_DEHT_ok.xlsx')
-    chemin_DTCH = in_path / Path('fichier_ajout_OTP_DTCH_ok.xlsx')
-
-    ### Charger les df et ajouter les 4 colonnes ###################################################################################################################
-    if os.path.exists(chemin_DTNM):
-        df_DTNM = pd.read_excel(chemin_DTNM)
-    else:
-        chemin_DTNM = in_path / Path('fichier_ajout_OTP_DTNM.xlsx')
-        df_DTNM = pd.read_excel(chemin_DTNM)
-
-    if os.path.exists(chemin_DTS):
-        df_DTS = pd.read_excel(chemin_DTS)
-    else:
-        chemin_DTS = in_path / Path('fichier_ajout_OTP_DTS.xlsx')
-        df_DTS = pd.read_excel(chemin_DTS)
-    if os.path.exists(chemin_DEHT):
-        df_DEHT = pd.read_excel(chemin_DEHT)
-    else:
-        chemin_DEHT = in_path / Path('fichier_ajout_OTP_DEHT.xlsx')
-        df_DEHT = pd.read_excel(chemin_DEHT)
-    if os.path.exists(chemin_DTCH):
-        df_DTCH = pd.read_excel(chemin_DTCH)
-    else:
-        chemin_DTCH = in_path / Path('fichier_ajout_OTP_DTCH.xlsx')
-        df_DTCH = pd.read_excel(chemin_DTCH)
-
-    df_OTP = df_DTNM.copy()
-    df_OTP = df_OTP.append(df_DTS)
-    df_OTP = df_OTP.append(df_DEHT)
-    df_OTP = df_OTP.append(df_DTCH)
+    
+    ### Charger les df et ajouter les 4 colonnes 
+    dpt_label_list = list(DPT_LABEL_DICT.keys())
+    OTP_df_init = True
+    for dpt_label in dpt_label_list:
+        dpt_df =  _set_df_OTP_dpt(dpt_label)
+        if OTP_df_init:
+            OTP_df = dpt_df.copy()            
+        else:
+            OTP_df = OTP_df.append(dpt_df)
+        OTP_df_init = False
     
     # df_OTP.fillna('', inplace=True)
-    df_OTP.set_index(pub_id_alias, inplace = True)
+    OTP_df.set_index(pub_id_alias, inplace = True)
    
-    df_OTP.sort_values([pub_id_alias], inplace = True)
-    df_OTP.reset_index(inplace = True)
-    df_OTP.drop_duplicates(subset = [pub_id_alias], inplace = True)
-    df_OTP.set_index(pub_id_alias, inplace = True)
-    rename_column_names(df_OTP)
-    df_OTP.to_excel(out_path)
+    OTP_df.sort_values([pub_id_alias], inplace = True)
+    OTP_df.reset_index(inplace = True)
+    OTP_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
+    OTP_df.set_index(pub_id_alias, inplace = True)
+    rename_column_names(OTP_df)
+    OTP_df.to_excel(out_path, index = False)
     return 1
+    
 
 def add_biblio_list(in_path, out_path):
-    ''' 
+    ''' The function `add_biblio_list` adds a new column containing the full reference of each publication listed in an EXCEL file and saves it.
+    The full reference is built by concatenating the folowing items: title, first author, year, journal, DOI.
+    These items sould be available in the initial EXCEL file with columns names defined by the global 'COL_NAMES' with the keys 'pub_id' and 'articles'.
+    The name of the new column is defined by the global "COL_NAMES_BONUS['liste biblio']".
     
     Args:
-        in_path (path): path (including name of the file) leading to the working excel file. 
-        out_path (path): path (including name of the file) leading to where the file will be saved after going through its treatment.
+        in_path (path): path (including name of the file) leading to the working EXCEL file. 
+        out_path (path): path (including name of the file) leading to where the file with the new column will be saved.
     
     Returns:
         None.
@@ -510,67 +422,49 @@ def add_biblio_list(in_path, out_path):
         The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module of 'BiblioAnalysis_Utils' package.
         The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' module of 'BiblioMeter_FUNCTS' package.    
     '''
+    # 3rd party imports
+    import pandas as pd 
     
     # Local imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
-    # 3rd party imports
-    import pandas as pd
-
-    # Useful alias
-    pub_id_alias = COL_NAMES['pub_id']
+    # Setting useful aliases
+    pub_id_alias           = COL_NAMES['pub_id']
+    pub_first_author_alias = COL_NAMES['articles'][1]
+    pub_year_alias         = COL_NAMES['articles'][2]
+    pub_journal_alias      = COL_NAMES['articles'][3]
+    pub_doi_alias          = COL_NAMES['articles'][6]
+    pub_title_alias        = COL_NAMES['articles'][9]   
+    pub_full_ref_alias     = COL_NAMES_BONUS['liste biblio']
 
     # Read of the excel file
-    df_in = pd.read_excel(in_path)
+    articles_df = pd.read_excel(in_path)
 
-    # Sort on Pub_id and then add the authors fullname list
-    if pub_id_alias not in df_in:
-        raise KeyError(f"The column {pub_id_alias} is not in DataFrame. Cannot carry on. Please make sure the DataFrame has a column named 'Pub_id'.")
-
-    df_out = pd.DataFrame()
-    unique_pub_id_list = df_in['Pub_id'].unique().tolist()
-
-    for indice, i in enumerate(unique_pub_id_list):
-        filtre_inter_pub_id = (df_in[pub_id_alias] == i)
-        df_inter = df_in[filtre_inter_pub_id]
-
-        # Remettre sous le bon format
-        if len(df_inter) > 1:
-            df_inter_2 = df_inter.iloc[0].to_frame().T
-            
-        df_inter_2 = df_inter
-
-        list_biblio_inter = ''
-        title_inter = ''
-        auteur_inter = ''
-        year_inter = ''
-        journal_inter = ''
-        DOI_inter = ''
-
-        # Construction de la liste bibliographique :
-        title_inter = ''.join(df_inter_2['Title'].to_list()[0])
-        auteur_inter = ', '.join(''.join(df_inter_2['Full_name_eff'].to_list()[0]).split())
-        year_inter = str(df_inter_2['Year'].iloc[0])
-        journal_inter = ''.join(df_inter_2['Journal'].to_list()[0])
-        DOI_inter = ''.join(df_inter_2['DOI'].to_list()[0])
+    articles_plus_fullref_df = pd.DataFrame()
+    for pub_id, pub_id_df in articles_df.groupby(pub_id_alias): # Split the frame into subframes with same Pub_id
         
-        list_biblio_inter = title_inter + ', ' + auteur_inter + '. et al., ' + year_inter + ', ' + journal_inter + ', ' + DOI_inter
+        pub_id_first_row = pub_id_df.iloc[0]                                # Select the first row and build the full reference
+        full_ref  = f'{pub_id_first_row[pub_title_alias]}, '                # add the reference's title
+        full_ref += f'{pub_id_first_row[pub_first_author_alias]}. et al., ' # add the reference's first author
+        full_ref += f'{pub_id_first_row[pub_journal_alias]}, '              # add the reference's journal name
+        full_ref += f'{str(pub_id_first_row[pub_year_alias])}, '            # add the reference's publication year
+        full_ref += f'{pub_id_first_row[pub_doi_alias]}'                    # add the reference's DOI
+        
+        pub_id_df[pub_full_ref_alias] = full_ref
+        articles_plus_fullref_df = pd.concat([articles_plus_fullref_df, pub_id_df])
 
-        df_inter[COL_NAMES_BONUS['liste biblio']] = list_biblio_inter
-        df_out = df_out.append(df_inter)
-
-    # Save in an excel file where leads out_path
-    df_out.to_excel(out_path, index = False)
+    articles_plus_fullref_df.to_excel(out_path, index = False)  
     
-def ajout_IF(in_path, out_path, IF_path, year):
+    
+def add_if(in_file_path, out_file_path, if_path, year):
     
     ''' 
 
     Args:
-        in_path (path): path (including name of the file if year != None) leading to the working excel file. 
+        in_file_path (path): path (including name of the file if year != None) leading to the working excel file. 
         out_path (path): path (including name of the file) leading to where the file will be saved after going through its treatment.
-        IF_path (path): path (including name of the file) leading to the impact factor excel file.
+        if_path (path): path (including name of the file) leading to the impact factor excel file.
         year (int):
     
     Returns:
@@ -592,20 +486,17 @@ def ajout_IF(in_path, out_path, IF_path, year):
     # 3rd party imports
     import pandas as pd
 
-    # Useful alias
-    ISSN_alias = COL_NAMES['articles'][10]
-    EISSN_alias = COL_NAMES_BONUS['EISSN']
-    IF_alias = COL_NAMES_BONUS['IF clarivate']
-    IF_cours_alias = COL_NAMES_BONUS['IF en cours']
-    IF_publi_alias = COL_NAMES_BONUS['IF année publi']
+    # Setting useful aliases
+    issn_alias     = COL_NAMES['articles'][10]
+    eissn_alias    = COL_NAMES_BONUS['EISSN']
+    if_alias       = COL_NAMES_BONUS['IF clarivate']
+    if_cours_alias = COL_NAMES_BONUS['IF en cours']
+    if_publi_alias = COL_NAMES_BONUS['IF année publi']
     
-    df_submit = pd.read_excel(in_path) # Ma DataFrame
-    
-    #print(COL_MAJ_IF)
-    #print(df_submit.columns)
+    df_submit = pd.read_excel(in_file_path) # Ma DataFrame
     
     if year == None:
-        df_IF = pd.read_excel(IF_path, sheet_name = None)
+        df_if = pd.read_excel(if_path, sheet_name = None)
         
         # using dictionary to convert type of  Year column
         convert_dict = {'Year': str}
@@ -624,103 +515,104 @@ def ajout_IF(in_path, out_path, IF_path, year):
             df_inter = df_submit[df_submit['Year'] == annee]
             
             try:
-                dict1 = dict(zip(df_IF[annee][ISSN_alias], df_IF[annee][IF_alias]))
-                s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-                r = s.map(dict1) # Je map la Series avec mon dictionnaire
-                df_inter[IF_publi_alias] = r # Je rajoute la colonne à ma DataFrame
+                dict1 = dict(zip(df_if[annee][issn_alias], df_if[annee][if_alias]))
+                s = df_inter[issn_alias]     # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1)             # Je map la Series avec mon dictionnaire
+                df_inter[if_publi_alias] = r # Je rajoute la colonne à ma DataFrame
                 
                 # Appliquer nan --> unknow to df
-                df_inter[IF_publi_alias] = df_inter[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_inter[if_publi_alias] = df_inter[if_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
                 
-                #print(f"La colonne {IF_publi_alias} a été rajoutée avec succès pour l'année {annee}")
-
-                dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
-                s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-                r = s.map(dict1) # Je map la Series avec mon dictionnaire
-                df_inter[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
+                #print(f"La colonne {if_publi_alias} a été rajoutée avec succès pour l'année {annee}")
+                # Mon dictionnaire construit à partir de mon fichier excel
+                dict1 = dict(zip(df_if[list(df_if.keys())[-1]][issn_alias], df_if[list(df_if.keys())[-1]][if_alias])) 
+                s = df_inter[issn_alias]     # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1)             # Je map la Series avec mon dictionnaire
+                df_inter[if_cours_alias] = r # Je rajoute la colonne à ma DataFrame
                 
-                # Appliquer nan --> unknow to df
-                df_inter[IF_cours_alias] = df_inter[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                # Appliquer nan --> unknown to df
+                df_inter[if_cours_alias] = df_inter[if_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
                 
-                #print(f"La colonne {IF_cours_alias} a été rajoutée avec succès pour l'année {annee}, avec les IF de l'année {list(df_IF.keys())[-1]}")
+                #print(f"La colonne {if_cours_alias} a été rajoutée avec succès pour l'année {annee}, \
+                #avec les IF de l'année {list(df_if.keys())[-1]}")
 
                 df_submit_bis = df_submit_bis.append(df_inter)
                 
             except KeyError:
-                
-                dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
-                s = df_inter[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-                r = s.map(dict1) # Je map la Series avec mon dictionnaire
-
-                df_inter[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
-                df_inter[IF_publi_alias] = 'Not available' # Je rajoute la colonne à ma DataFrame
+                # Mon dictionnaire construit à partir de mon fichier excel
+                dict1 = dict(zip(df_if[list(df_if.keys())[-1]][issn_alias], df_if[list(df_if.keys())[-1]][if_alias])) 
+                s = df_inter[issn_alias]                   # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1)                           # Je map la Series avec mon dictionnaire
+                df_inter[if_cours_alias] = r               # Je rajoute la colonne à ma DataFrame
+                df_inter[if_publi_alias] = 'Not available' # Je rajoute la colonne à ma DataFrame
 
                 # Appliquer nan --> unknow to df
-                df_inter[IF_cours_alias] = df_inter[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
-                df_inter[IF_publi_alias] = df_inter[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_inter[if_cours_alias] = df_inter[if_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_inter[if_publi_alias] = df_inter[if_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
                 
-                #print(f"Les colonnes {IF_publi_alias} et {IF_cours_alias} ont été rajoutées avec succès pour l'année {annee}")
+                #print(f"Les colonnes {if_publi_alias} et {if_cours_alias} ont été rajoutées avec succès pour l'année {annee}")
 
                 df_submit_bis = df_submit_bis.append(df_inter)
             
         #print(df_submit_bis.columns)
             
-        df_submit_bis.to_excel(out_path, index = False, columns = COL_MAJ_IF)
+        df_submit_bis.to_excel(out_file_path, index = False, columns = COL_MAJ_IF)
                 
     
     else: # Mode de fonctionnement par année
         # Check if the year is available
         try:
-            df_IF = pd.read_excel(IF_path, sheet_name = str(year))
+            df_if = pd.read_excel(if_path, sheet_name = str(year))
             # Ca fonctionne, alors on ajoute la colonne IF de l'année de publication
-            print(f"Les IF sortis en {year} sont utilisés pour créer la colonne {IF_publi_alias}")
+            print(f"Les IF sortis en {year} sont utilisés pour créer la colonne {if_publi_alias}")
 
-            dict1 = dict(zip(df_IF[ISSN_alias], df_IF[IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
-            s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-            r = s.map(dict1) # Je map la Series avec mon dictionnaire
-            df_submit[IF_publi_alias] = r # Je rajoute la colonne à ma DataFrame
+            dict1 = dict(zip(df_if[issn_alias], df_if[if_alias])) # Mon dictionnaire construit à partir de mon fichier excel
+            s = df_submit[issn_alias]     # Je récup la colonne clef de ma DF en Series
+            r = s.map(dict1)              # Je map la Series avec mon dictionnaire
+            df_submit[if_publi_alias] = r # Je rajoute la colonne à ma DataFrame
 
             # Appliquer nan --> unknow to df
-            df_submit[IF_publi_alias] = df_submit[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+            df_submit[if_publi_alias] = df_submit[if_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
 
             # Et on fait pareil avec les IF de l'année en cours
-            df_IF = pd.read_excel(IF_path, sheet_name = None)
-            print(f"Les IF sortis en {int(list(df_IF.keys())[-1])} sont utilisés pour créer la colonne {IF_cours_alias}")
-
-            dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
-            s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-            r = s.map(dict1) # Je map la Series avec mon dictionnaire
-            df_submit[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
+            df_if = pd.read_excel(if_path, sheet_name = None)
+            print(f"Les IF sortis en {int(list(df_if.keys())[-1])} sont utilisés pour créer la colonne {if_cours_alias}")
+            
+            # Mon dictionnaire construit à partir de mon fichier excel
+            dict1 = dict(zip(df_if[list(df_if.keys())[-1]][issn_alias], df_if[list(df_if.keys())[-1]][if_alias])) 
+            s = df_submit[issn_alias]     # Je récup la colonne clef de ma DF en Series
+            r = s.map(dict1)              # Je map la Series avec mon dictionnaire
+            df_submit[if_cours_alias] = r # Je rajoute la colonne à ma DataFrame
 
             # Appliquer nan --> unknow to df
-            df_submit[IF_cours_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+            df_submit[if_cours_alias] = df_submit[if_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
 
-            df_submit.to_excel(out_path, index = False)
+            df_submit.to_excel(out_file_path, index = False)
 
         except ValueError:
             # Check if the year is available, if not, terminate function
             try:
                 # Et on fait pareil avec les IF de l'année en cours
-                df_IF = pd.read_excel(IF_path, sheet_name = None)
-                print(f"Les IF sortis en {int(list(df_IF.keys())[-1])} sont utilisés pour créer la colonne {IF_cours_alias}")
-
-                dict1 = dict(zip(df_IF[list(df_IF.keys())[-1]][ISSN_alias], df_IF[list(df_IF.keys())[-1]][IF_alias])) # Mon dictionnaire construit à partir de mon fichier excel
-                s = df_submit[ISSN_alias] # Je récup la colonne clef de ma DF en Series
-                r = s.map(dict1) # Je map la Series avec mon dictionnaire
-
-                df_submit[IF_cours_alias] = r # Je rajoute la colonne à ma DataFrame
-                df_submit[IF_publi_alias] = 'Not available' # Je rajoute la colonne à ma DataFrame
+                df_if = pd.read_excel(if_path, sheet_name = None)
+                print(f"Les IF sortis en {int(list(df_if.keys())[-1])} sont utilisés pour créer la colonne {if_cours_alias}")
+                # Mon dictionnaire construit à partir de mon fichier excel
+                dict1 = dict(zip(df_if[list(df_if.keys())[-1]][issn_alias], df_if[list(df_if.keys())[-1]][if_alias])) 
+                s = df_submit[issn_alias]                    # Je récup la colonne clef de ma DF en Series
+                r = s.map(dict1)                            # Je map la Series avec mon dictionnaire
+                df_submit[if_cours_alias] = r               # Je rajoute la colonne à ma DataFrame
+                df_submit[if_publi_alias] = 'Not available' # Je rajoute la colonne à ma DataFrame
 
                 # Appliquer nan --> unknow to df
-                df_submit[IF_cours_alias] = df_submit[IF_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
-                df_submit[IF_publi_alias] = df_submit[IF_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_submit[if_cours_alias] = df_submit[if_cours_alias].fillna(FILL_EMPTY_KEY_WORD)
+                df_submit[if_publi_alias] = df_submit[if_publi_alias].fillna(FILL_EMPTY_KEY_WORD)
 
-                df_submit.to_excel(out_path, index = False)
+                df_submit.to_excel(out_file_path, index = False)
 
             except ValueError:
                 print('Mettre à jour le fichier Impact Factor')
+                
 
-def clean_reorder_rename_submit(in_path, out_path):
+def clean_reorder_rename_submit(in_file_path, out_file_path):
     
     ''' The `clean_reorder_rename_submit` etc ...
     
@@ -745,27 +637,28 @@ def clean_reorder_rename_submit(in_path, out_path):
     import pandas as pd
     
     # Read of the excel file
-    df_in = pd.read_excel(in_path)
+    df_in = pd.read_excel(in_file_path)
     
     df_reordered = df_in[[SUBMIT_COL_NAMES['pub_id'], 
-                        SUBMIT_COL_NAMES['idx_authors'], 
-                        SUBMIT_COL_NAMES['co_authors'], 
-                        SUBMIT_COL_NAMES['address'], 
-                        SUBMIT_COL_NAMES['country'], 
-                        SUBMIT_COL_NAMES['year'], 
-                        SUBMIT_COL_NAMES['journal'], 
-                        SUBMIT_COL_NAMES['volume'], 
-                        SUBMIT_COL_NAMES['page'], 
-                        SUBMIT_COL_NAMES['DOI'], 
-                        SUBMIT_COL_NAMES['document_type'], 
-                        SUBMIT_COL_NAMES['language'], 
-                        SUBMIT_COL_NAMES['title'], 
-                        SUBMIT_COL_NAMES['ISSN'] ]]
+                          SUBMIT_COL_NAMES['idx_authors'], 
+                          SUBMIT_COL_NAMES['co_authors'], 
+                          SUBMIT_COL_NAMES['address'], 
+                          SUBMIT_COL_NAMES['country'], 
+                          SUBMIT_COL_NAMES['year'], 
+                          SUBMIT_COL_NAMES['journal'], 
+                          SUBMIT_COL_NAMES['volume'], 
+                          SUBMIT_COL_NAMES['page'], 
+                          SUBMIT_COL_NAMES['DOI'], 
+                          SUBMIT_COL_NAMES['document_type'], 
+                          SUBMIT_COL_NAMES['language'], 
+                          SUBMIT_COL_NAMES['title'], 
+                          SUBMIT_COL_NAMES['ISSN'] ]]
     
     # Save in an excel file where leads out_path
-    df_reordered.to_excel(out_path)
+    df_reordered.to_excel(out_file_path, index = False)
     
-def concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_annuelle_alias):
+    
+def concat_listes_consolidees(bibliometer_path, years_list):
     
     """
     """
@@ -774,58 +667,67 @@ def concat_listes_consolidees(bibliometer_path, years_list, R_path_alias, bdd_an
     import os
     from datetime import datetime
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILE_NAMES
-    
     # 3rd library imports
-    import pandas as pd
+    import pandas as pd    
     
-    df_concat = pd.DataFrame()
+    # Local library imports
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_BDD_MULTI_ANNUELLE
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     
-    available_liste_conso = ""
+    # Setting useful aliases
+    pub_list_path_alias      = ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = ARCHI_YEAR["pub list file name base"]
+    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
+    bdd_multi_annuelle_file_alias   = ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
     
+    # Building the concatenated dataframe of available publications lists
+    df_concat = pd.DataFrame()    
+    available_liste_conso = ""    
     for i in range(len(years_list)):
         try:
-            path = Path(bibliometer_path) / Path(years_list[i]) / Path(R_path_alias) / Path(f"""{FILE_NAMES['liste conso']} {years_list[i]}.xlsx""")
-            df_inter = pd.read_excel(path)
-            df_concat = df_concat.append(df_inter)
-        
-            available_liste_conso = available_liste_conso + f""" {years_list[i]}"""
+            year = years_list[i]
+            pub_list_file_name = f"{pub_list_file_base_alias} {year}.xlsx"
+            pub_list_path = bibliometer_path / Path(year) / Path(pub_list_path_alias) / Path(pub_list_file_name)
+            df_inter = pd.read_excel(pub_list_path)
+            df_concat = df_concat.append(df_inter)        
+            available_liste_conso += f" {year}"
         
         except FileNotFoundError:
             pass
-
-    date = str(datetime.now())[:16].replace(':', '')
-    df_concat.to_excel(Path(bibliometer_path) / Path(bdd_annuelle_alias) / Path(f"""{date} Concaténation par {os.getlogin()}{available_liste_conso}.xlsx"""))
+    
+    # Saving the concatenated dataframe in an EXCEL file
+    date = str(datetime.now())[:16].replace(':', 'h')
+    out_file = f"{date} {bdd_multi_annuelle_file_alias} {os.getlogin()}_{available_liste_conso}.xlsx"
+    out_path = bibliometer_path / Path(bdd_multi_annuelle_folder_alias)
+    df_concat.to_excel(out_path / Path(out_file), index = False)
+    
         
 def maj_rh(bibliometer_path):
-
-    # Imports
-    import pandas as pd
+    '''
+    '''
+    
+    # Standard library imports
     import os
     from pathlib import Path
+    from datetime import datetime
+    
+    # 3rd party imports
+    import pandas as pd    
     import shutil
+    
+    # Local library imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
     from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
-    
-    # Useful alias and path
-    listing_alias = ARCHI_RH["root"]
-    effectif_folder_name_alias = ARCHI_RH["effectifs"]
-    effectif_file_name_alias = ARCHI_RH["effectifs file name"]
-    secours_alias = ARCHI_SECOURS["root"]
-    
-    path_secours = Path(bibliometer_path) / Path(secours_alias)
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS    
 
-    # Fonctions outil
+    # Internal functions
     def _get_year(mmyyyy):
-        return(mmyyyy[2:6])
+        return (mmyyyy[2:6])
 
     def _check_year_format(mmyyyy):
-
-        '''
-        The `_check_year_format` function, checks if the string argument mmyyyy is in the right format.
+        '''The `_check_year_format` function, checks if the string argument mmyyyy
+        is in the right format.
 
         Args:
             mmyyyy (string) : string formatted as mmyyyy to be checked.
@@ -840,7 +742,9 @@ def maj_rh(bibliometer_path):
         try:
             today_year = datetime.date.today().year
             taille_fourchette = 5
-            years_to_check = [str(year) for year in range(today_year - taille_fourchette, today_year + 1 + taille_fourchette)]
+            range_min = today_year - taille_fourchette
+            range_max = today_year + taille_fourchette
+            years_to_check = [str(year) for year in range(range_min, range_max + 1)]
             months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
             all_possible_dates = [mm + year for mm in months for year in years_to_check]
 
@@ -852,10 +756,11 @@ def maj_rh(bibliometer_path):
             return 0
 
     def _different_years(list_of_dates):
-
         '''
         Args:
-            list_of_dates (list of strings): a list of string of dates in format mmyyyy, mm being the number of the month and yyyy being the number of the year.
+            list_of_dates (list of strings): a list of string of dates in format mmyyyy, 
+            mm being the number of the month and yyyy being the number of the year.
+            
         Returns:
             L (list of strings):
         '''
@@ -863,33 +768,61 @@ def maj_rh(bibliometer_path):
         L = []
         for i in list_of_dates:
             L.append(i[2:6])
+            
         return list(set(L))
+    
+    def _get_firstname_initiales(row):
+        row = row.replace('-',' ')
+        row_list = row.split(' ')
+        initiale_list = [x[0] for x in row_list]
+        initiales = ''.join(initiale_list) 
+        
+        return initiales
 
     # Alias
-    path_effectif_folder = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["effectifs"])
-    path_to_add_folder = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["maj"])
+    # Setting useful aliases and path
     matricule_alias = COL_NAMES_RH["ID"] # A importer depuis les globales
-
-    # Accéder aux chemins des deux fichiers
+    listing_alias                   = ARCHI_RH["root"]
+    effectifs_folder_name_alias     = ARCHI_RH["effectifs"]
+    effectifs_file_name_alias       = ARCHI_RH["effectifs file name"]
+    maj_effectifs_folder_name_alias = ARCHI_RH["maj"] 
+    backup_folder_name_alias        = ARCHI_SECOURS["root"]
+    
+    # Setting useful paths
+    effectifs_root_path       = bibliometer_path / Path(listing_alias)
+    effectifs_folder_path     = effectifs_root_path / Path(effectifs_folder_name_alias)
+    maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
+    backup_root_path          = bibliometer_path / Path(backup_folder_name_alias)    
+    
+    # Setting path of employees file 
     try:
-        path_effectif_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["effectifs"]) / os.listdir(path_effectif_folder)[0]
+        effectifs_file_name = os.listdir(effectifs_folder_path)[0]
+        effectifs_file_path = effectifs_folder_path / Path(effectifs_file_name)
+        #path_effectif_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["effectifs"]) / os.listdir(effectifs_folder_path)[0]
     except FileNotFoundError:
         print(f"""Il y a un problème dans le nom du répertoire {ARCHI_RH["effectifs"]}""")
     except IndexError:
-        print(f"Le fichier des effectifs consolidés est introuvable, vérifiez qu'il est bien présent à l'emplacement suivant : {path_effectif_folder}")
-
+        error_message  = f"Le fichier des effectifs consolidés est introuvable "
+        error_message += f"dans le dossier : \n\n {effectifs_folder_path}"
+        print(error_message)
+    
+    # Setting path of file for update of employees file 
     try:
-        path_to_add_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["maj"]) / os.listdir(path_to_add_folder)[0]
+        maj_effectifs_file_name = os.listdir(maj_effectifs_folder_path)[0]
+        maj_effectifs_file_path = maj_effectifs_folder_path / Path(maj_effectifs_file_name)
+        #path_to_add_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["maj"]) / os.listdir(maj_effectifs_folder_path)[0]
     except FileNotFoundError:
-        print(f"""Il y a un problème dans le nom du répertoire {ARCHI_RH["maj"]}""")
+        print(f"Le nom de répertoire {maj_effectifs_folder_name_alias} est incorrect.")
     except IndexError:
-        print(f"Le fichier à rajouter pour la mise à jour est introuvable, vérifiez qu'il est bien présent à l'emplacement suivant : {path_to_add_folder}")
+        error_message  = f"Aucun fichier de mise à jour des effectifs n'est disponible "
+        error_message += f"dans le dossier : \n\n {maj_effectifs_folder_path}"
+        print(error_message)
 
-    # Importer sous pandas
-    df_effectif = pd.read_excel(path_effectif_file, sheet_name = None)
-    df_to_add = pd.read_excel(path_to_add_file, sheet_name = None)
+    # Setting dataframes from the files
+    df_effectif = pd.read_excel(effectifs_file_path, sheet_name = None)
+    df_to_add = pd.read_excel(maj_effectifs_file_path, sheet_name = None)
 
-    # Récupérer le nom des pages de chaque fichier excel
+    # Getting sheets names
     effectif_sheets = list(df_effectif.keys())
     to_add_sheets = list(df_to_add.keys())
 
@@ -903,13 +836,6 @@ def maj_rh(bibliometer_path):
             df_effectif[year] = pd.DataFrame(df_to_add[page_to_add].copy())
             effectif_sheets.append(year)
 
-    def _get_firstname_initiales(row):
-        row = row.replace('-',' ')
-        row_list = row.split(' ')
-        initiale_list = [x[0] for x in row_list]
-        initiales = ''.join(initiale_list)        
-        return initiales
-
     # Et dédupliquer en ajoutant les colonnes Initials et Name + Initials
     years_to_dedup = _different_years(to_add_sheets)
     for page_to_dedup in years_to_dedup:
@@ -918,23 +844,31 @@ def maj_rh(bibliometer_path):
         # Creating a column with first name initials as a list
         # ex PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM 
         col_in, col_out = COL_NAMES_RH['prénom'], COL_NAMES_BM['First_name']
-        df_effectif[page_to_dedup][col_out] = df_effectif[page_to_dedup].apply(lambda row: _get_firstname_initiales(row[col_in]), axis = 1)
+        df_effectif[page_to_dedup][col_out] = df_effectif[page_to_dedup].apply(lambda row: 
+                                                                               _get_firstname_initiales(row[col_in]), 
+                                                                               axis = 1)
 
         # Creating the column ['Full_name'] by combining COL_NAMES_RH['Nom'] and COL_NAMES_BM['First_name']
         new_col = COL_NAMES_RH['Full_name']
-        df_effectif[page_to_dedup][new_col] = df_effectif[page_to_dedup][COL_NAMES_RH['nom']] + ' ' + df_effectif[page_to_dedup][COL_NAMES_BM['First_name']]
-
+        df_effectif[page_to_dedup][new_col]  = df_effectif[page_to_dedup][COL_NAMES_RH['nom']] 
+        df_effectif[page_to_dedup][new_col] += ' ' + df_effectif[page_to_dedup][COL_NAMES_BM['First_name']]
+        
     # Création de l'Excel Writer Object
-    with pd.ExcelWriter(path_effectif_file) as writer:
+    with pd.ExcelWriter(effectifs_file_path) as writer:
         for page_effectif in effectif_sheets:
-            df_effectif[page_effectif].to_excel(writer, sheet_name = page_effectif, index = False)
+            df_effectif[page_effectif].to_excel(writer, 
+                                                sheet_name = page_effectif, 
+                                                index = False)
     
     # Copie de la mise à jour dans la zone de sauvegarde
-    filePath = shutil.copy(path_effectif_file, path_secours)
+    filePath = shutil.copy(effectifs_file_path, backup_root_path)
+    
             
 def mise_en_page(df):
-
-    # 3rd party import
+    '''
+    '''
+    
+    # 3rd party imports
     import pandas as pd
     from openpyxl import Workbook
     from openpyxl.utils.dataframe import dataframe_to_rows
@@ -942,7 +876,7 @@ def mise_en_page(df):
     from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
     from openpyxl.styles.colors import Color
 
-    # Local library import
+    # Local library imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_SIZES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
@@ -997,10 +931,10 @@ def mise_en_page(df):
     ## Setting the format but not setting the column width.
     #ws.set_column('H:I', None, format)
 
-
     ws.row_dimensions[1].height = 30
 
     return wb, ws
+
 
 def rename_column_names(df, dictionnary = None):
     '''
@@ -1017,49 +951,62 @@ def rename_column_names(df, dictionnary = None):
         Uses COL_NAMES_FINALE from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables
     '''
     
-    # 3rd Library imports
+    # 3rd party imports
     import pandas as pd
     
-    if dictionnary == None:
-        # Local library imports
-        from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE
-        dictionnary = COL_NAMES_FINALE
-        
+    # Local imports
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE
+    
+    if dictionnary == None: dictionnary = COL_NAMES_FINALE        
     df.rename(columns = dictionnary, inplace = True)
     
     return df
 
-def ISSN_manquant(bibliometer_path, in_path):
+
+def find_missing_if(bibliometer_path, in_file_path):
     
     '''
-    Genère un fichier des ISSN dont l'impact factor n'est pas dans la base de donnée
+    Genère un fichier des ISSN dont l'impact factor n'est pas dans la base de donnée.
     '''
     
     # Standard library imports
     from pathlib import Path
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    
-    # 3rd party library imports
+    # 3rd party imports
     import pandas as pd 
     
-    # useful alias
-    alias_IF_annee_publi = COL_NAMES_BONUS['IF année publi']
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
-    ISSN_Liste = list()
-    out_path = bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7])
+    # Local imports
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
 
-    df = pd.read_excel(in_path)
+    # setting useful aliases
+    if_issn_alias    = COL_NAMES['articles'][10]
+    if_year_alias    = COL_NAMES['articles'][2]
+    if_journal_alias = COL_NAMES['articles'][3]    
+    if_annee_publi_alias = COL_NAMES_BONUS['IF année publi']
+    if_root_folder_alias    = ARCHI_IF["root"]
+    if_manquants_file_alias = ARCHI_IF["missing"] 
+       
+    out_folder_path = bibliometer_path / Path(if_root_folder_alias)
+    out_file_path = out_folder_path / Path(if_manquants_file_alias)
+
+    df = pd.read_excel(in_file_path)
     
+    issn_list = list()
     for i in range(len(df)):
-        if df[alias_IF_annee_publi][i] == 'unknow' or df[alias_IF_annee_publi][i] == 'Not available':
-            ISSN_Liste.append([df['ISSN'][i], df['Year'][i], df['Journal'][i]])
+        if_value = df[if_annee_publi_alias][i]
+        if if_value == 'unknown' or if_value == 'Not available':
+            issn_value    = df[if_issn_alias][i]
+            year_value    = df[if_year_alias][i]
+            journal_value = df[if_journal_alias][i]
+            issn_list.append([issn_value, year_value, journal_value])
     
-    df = pd.DataFrame(ISSN_Liste, columns = ['ISSN', 'Year', 'Journal'])
+    df = pd.DataFrame(issn_list, columns = [if_issn_alias, if_year_alias, if_journal_alias])
     df.drop_duplicates(inplace = True)
     
-    df.to_excel(out_path / Path('ISSN_manquants.xlsx'))
+    df.to_excel(out_file_path, index = False)
     
     return print('Done')

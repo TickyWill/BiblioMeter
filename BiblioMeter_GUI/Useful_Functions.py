@@ -4,7 +4,12 @@ __all__ = ['five_last_available_years',
            'existing_corpuses', 
            'place_after', 
            'place_bellow', 'place_bellow_LabelEntry', 
-           'encadre_RL', 'encadre_UD', 'get_displays', 'mm_to_px', 'str_size_mm', 'font_size']
+           'encadre_RL', 
+           'encadre_UD', 
+           'get_displays', 
+           'mm_to_px', 
+           'str_size_mm', 
+           'font_size']
 
 def la_liste_des_filtres_disponibles(bibliometer_path):
     
@@ -196,6 +201,19 @@ def place_bellow_LabelEntry(haut, label_entry, dx = 0, dy = 5):
     y = int(haut_info['y']) + haut.winfo_reqheight() + dy
     label_entry.place(x = x, y = y)
     
+
+def font_size(size, scale_factor):
+    '''Set the fontsize based on scale_factor.
+    If the fontsize is less than minimum_size, 
+    it is set to the minimum size.'''
+    
+    fontsize = int(size * scale_factor)    
+    if fontsize < 8:
+        fontsize = 8
+    return fontsize
+
+######################### Functions copyed from BiblioAnalysis_Utils #########################
+    
 def get_displays(in_to_mm = None): 
     
     ''' The function `get_displays` allows to identify the set of displays
@@ -298,14 +316,4 @@ def str_size_mm(text, font, ppi):
 
     return (w_mm, h_mm)
 
-# Set the fontsize based on scale_factor,
-# if the fontsize is less than minimum_size
-# it is set to the minimum size
-def font_size(size, scale_factor):
 
-    fontsize = int(size * scale_factor)
-    
-    if fontsize < 8:
-        fontsize = 8
-
-    return fontsize

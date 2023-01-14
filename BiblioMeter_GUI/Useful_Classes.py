@@ -1,4 +1,4 @@
-__all__=['LabelEntry',
+__all__= ['LabelEntry',
          'CheckBoxCorpuses',
          'LabelEntry_toFile']
 
@@ -23,12 +23,15 @@ class LabelEntry:
         # 3rd party imports
         import tkinter as tk
         
+        # Local variables
+        button_label = "Changer de dossier"
+        
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable = self.val)
         self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
-        self.but = tk.Button(parent, text = "Changer de dossier", font = font_button, command = self.get_file)
+        self.but = tk.Button(parent, text = button_label, font = font_button, command = self.get_file)
 
     def place(self, x, y, align = True):
         a,b = self.lab.winfo_reqwidth(),0
@@ -45,22 +48,31 @@ class LabelEntry:
         self.val.set(value)
         
     def set2(self, value):
+        # Standard library imports
         from pathlib import Path
+        
         p = Path(value)
         self.val2.set(p.parts[0] / Path("...") / ('/'.join(p.parts[-3:])))
         
     def get_file(self):
         
+        # Standard library imports
+        from pathlib import Path
+        
         # 3rd party imports
         import tkinter as tk
         from tkinter import filedialog
+
+        # Local variables
+        dialog_title = "Choisir un nouveau dossier de travail"
+        warning_title = "!!! Attention !!!"
+        warning_text = "Chemin non renseigné."
         
-        fic = tk.filedialog.askdirectory(title = "Choisir un nouveau dossier de travail")
+        fic = tk.filedialog.askdirectory(title = dialog_title)
         if fic == '':
-            return tk.messagebox.showwarning("Attention", "Chemin non renseigné")
+            return tk.messagebox.showwarning(warning_title, warning_ext)
         self.val.set(fic)
         
-        from pathlib import Path
         p = Path(fic)
         self.val2.set(p.parts[0] / Path("...") / ('/'.join(p.parts[-3:])))
         
@@ -83,19 +95,22 @@ class CheckBoxCorpuses:
         import tkinter as tk
         from tkinter import font as tkFont
         
+        # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
         
         from BiblioMeter_GUI.Useful_Functions import font_size
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
         
+        from BiblioMeter_GUI.Coordinates import REF_CHECK_BOXES_SEP_SPACE
+        from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Globals_GUI import GUI_DISP
         from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
         from BiblioMeter_GUI.Globals_GUI import PPI
         
-        win_width, win_height, SFW, SFH, SFWP, SFHP = root_properties(parent)
+        win_width, win_height, SFWP, SFHP, SFW, SFH = root_properties(parent)
         
-        self.ESPACE_ENTRE_BOX_CHECK = mm_to_px(25, PPI) * SFW
-        font = tkFont.Font(family = "Helvetica", size = font_size(11, min(SFW, SFWP)))
+        self.check_boxes_sep_space = mm_to_px(REF_CHECK_BOXES_SEP_SPACE, PPI) * SFW
+        font = tkFont.Font(family = FONT_NAME, size = font_size(11, min(SFW, SFWP)))
         self.lab = tk.Label(parent, 
                             text = 'Année ' + year, 
                             font = font)
@@ -119,15 +134,15 @@ class CheckBoxCorpuses:
     def place(self, x, y):
         a = self.lab.winfo_reqwidth()
         self.lab.place(x = x-a, y = y, anchor = 'center')
-        self.wos_r.place(x = x+self.ESPACE_ENTRE_BOX_CHECK, y = y, anchor = 'center')
+        self.wos_r.place(x = x+self.check_boxes_sep_space, y = y, anchor = 'center')
         self.wos_r.config(state = 'disabled')
-        self.wos_p.place(x = x+2*self.ESPACE_ENTRE_BOX_CHECK, y = y, anchor = 'center')
+        self.wos_p.place(x = x+2*self.check_boxes_sep_space, y = y, anchor = 'center')
         self.wos_p.config(state = 'disabled')
-        self.scopus_r.place(x = x+3*self.ESPACE_ENTRE_BOX_CHECK, y = y, anchor = 'center')
+        self.scopus_r.place(x = x+3*self.check_boxes_sep_space, y = y, anchor = 'center')
         self.scopus_r.config(state = 'disabled')
-        self.scopus_p.place(x = x+4*self.ESPACE_ENTRE_BOX_CHECK, y = y, anchor = 'center')
+        self.scopus_p.place(x = x+4*self.check_boxes_sep_space, y = y, anchor = 'center')
         self.scopus_p.config(state = 'disabled')
-        self.concat.place(x = x+5*self.ESPACE_ENTRE_BOX_CHECK, y = y, anchor = 'center')
+        self.concat.place(x = x+5*self.check_boxes_sep_space, y = y, anchor = 'center')
         self.concat.config(state = 'disabled')
         
     def efface(self):
@@ -145,6 +160,9 @@ class ColumnFilter:
         # 3rd party imports
         import tkinter as tk
         
+        # Local variables
+        button_label1 = 'Choix filtre inter colonne'
+        
         self.check_var_1 = tk.IntVar()
         self.check_column = tk.Checkbutton(parent, variable = self.check_var_1, command = lambda : self.ables_disables_1())
 
@@ -153,7 +171,7 @@ class ColumnFilter:
 
         self.column_name = tk.Label(parent, text = text_label + ' : ', state = 'disable')
         
-        self.drop_down = tk.Button(parent, text = 'Choix filtre inter colonne', command = lambda : self.open_list_box_create_filter(df, text_label, parent))
+        self.drop_down = tk.Button(parent, text = button_label1, command = lambda : self.open_list_box_create_filter(df, text_label, parent))
         self.drop_down.configure(state = 'disable')
         
         self.val = tk.StringVar(parent)
@@ -197,13 +215,17 @@ class ColumnFilter:
         import tkinter as tk
         from tkinter import Toplevel
         
+        # Local variables
+        newWindow_title_label = 'Selection des filtres inter colonnes'
+        button_label2 = "Valider la sélection"
+        
         def _access_values(df, column):
             values = df[column].unique().tolist()
             #values.sort()
             return values
         
         newWindow = tk.Toplevel(parent)
-        newWindow.title('Selection des filtres inter colonnes')
+        newWindow.title(newWindow_title_label)
 
         newWindow.geometry(f"600x600+{parent.winfo_rootx()}+{parent.winfo_rooty()}")
 
@@ -221,7 +243,7 @@ class ColumnFilter:
             my_listbox.itemconfig(idx,
                                   bg = "white" if idx % 2 == 0 else "white")
             
-        button = tk.Button(newWindow, text = "Valider la sélection")
+        button = tk.Button(newWindow, text = button_label2)
         button.place(anchor = 'n', relx = 0.5, rely = 0.9)
         
 class LabelEntry_toFile:
@@ -245,12 +267,15 @@ class LabelEntry_toFile:
         # 3rd party imports
         import tkinter as tk
         
+        # Local variables
+        button_label = "Choix du fichier"
+        
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable=self.val)
         self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
-        self.but = tk.Button(parent, text = "Choix du fichier", font = font_button, command = self.get_file)
+        self.but = tk.Button(parent, text = button_label, font = font_button, command = self.get_file)
 
     def place(self,x,y,align=True):
         a,b = self.lab.winfo_reqwidth(),0
@@ -272,17 +297,23 @@ class LabelEntry_toFile:
         self.val2.set(p.name)
         
     def get_file(self):
+        # Standard library imports
+        from pathlib import Path
         
         # 3rd party imports
         import tkinter as tk
         from tkinter import filedialog
         
-        fic = tk.filedialog.askopenfilename(title='Choisir un fichier petit pingouin des Alpes')
+        # Local variables
+        dialog_title = 'Choisir un fichier petit pingouin des Alpes'
+        warning_title = "Attention"
+        warning_text = "Chemin non renseigné"
+        
+        fic = tk.filedialog.askopenfilename(title = dialog_title)
         if fic == '':
-            return tk.messagebox.showwarning("Attention","Chemin non renseigné")
+            return tk.messagebox.showwarning(warning_title, warning_text)
         self.val.set(fic)
         
-        from pathlib import Path
         p = Path(fic)
         self.val2.set(p.name)
         
