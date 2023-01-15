@@ -2,7 +2,7 @@ __all__ = ['get_unique_numbers',
            'consolidation_homonyme',          
            'concat_name_firstname',
            'add_authors_name_list',
-           'ajout_OTP',           
+           'add_OTP',           
            'filtrer_par_departement',            
            'add_biblio_list',
            'add_if',
@@ -259,7 +259,7 @@ def add_authors_name_list(in_path, out_path):
     # Save in an excel file where leads out_path
     df_out.to_excel(out_path, index = False)
     
-def ajout_OTP(in_path, out_path, out_file_base):
+def add_OTP(in_path, out_path, out_file_base):
 
     '''
     '''

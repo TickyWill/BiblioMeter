@@ -80,8 +80,11 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
             info_text  = "Les IFs ont été mis à jour."
             messagebox.showinfo(info_title, info_text)
         except KeyError:
-            message = f"Il y a un problème avec le fichier excel des IFs"
-            messagebox.showwarning('Warning', message)
+            warning_title = "!!! ATTENTION : fichier incorrect !!!"
+            warning_text = f"Le fichier excel des IFs présente un problème."
+            warning_text += f"\n 1- Vérifiez le fichier  '{if_file_name_alias}' ;"
+            warning_text += f"\n 2- Puis relancez la mise à jour des IFs."
+            messagebox.showwarning(warning_title, warning_text)
         except Exception as e:
             #messagebox.showinfo('Information', f"Vous n'avez pas sélectionné de fichier à mettre à jour.")
             print(e)
@@ -100,8 +103,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         if all_if_status:
             if_years_list = _get_if_info()
             info_title = '- Information -'
-            info_text  = f"Les IFs des publications du fichier : \n {file_to_update_path} "
-            info_text += f"\n\nvont être mis à jour avec les IFs des années : \n\n {if_years_list} "
+            info_text  = f"Les IFs des publications du fichier : \n '{file_to_update_path}' "
+            info_text += f"\n\nvont être mis à jour avec les IFs des années : \n\n '{if_years_list}' "
             info_text += f"\n\ndu fichier :   '{if_file_name_alias}'."
             messagebox.showinfo(info_title, info_text)            
             _add_if_try(file_to_update_path)
@@ -118,8 +121,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                 filePath = shutil.copy(backup_if_file_path, all_if_path)
                 if_years_list = _get_if_info() 
                 info_title = '- Information -'
-                info_text  = f"Les IFs des publications du fichier : \n {file_to_update_path} "
-                info_text += f"vont être mis à jour avec les IFs des années : \n\n {if_years_list} "
+                info_text  = f"Les IFs des publications du fichier : \n '{file_to_update_path}' "
+                info_text += f"vont être mis à jour avec les IFs des années : \n\n '{if_years_list}' "
                 info_text += f"\n\ndu fichier : '{if_file_name_alias}'."
                 messagebox.showinfo(info_title, info_text) 
                 _add_if_try(file_to_update_path)
@@ -127,7 +130,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
             else:
                 # Arrêt de la procédure
                 info_title = '- Information -'
-                info_text  = "La mise à jour des IFs n'a pas été faite."
+                info_text  = "La mise à jour des IFs a été abandonnée."
                 messagebox.showinfo(info_title, info_text)
                 return
             
@@ -138,10 +141,10 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
             find_missing_if(bibliometer_path, file_to_update_path)
             info_title = '- Information -'
             info_text  = f"La liste des journaux dont l'IF est manquant a été construite."
-            info_text += f"\nElle est disponible dans le dossier : \n {if_root_folder_path}"
-            info_text += f"\n\nsous le nom de fichier : {if_manquants_file_alias}."
+            info_text += f"\nElle est disponible dans le dossier : \n '{if_root_folder_path}'"
+            info_text += f"\n\nsous le nom de fichier :   '{if_manquants_file_alias}'."
             info_text += f"\n\nCette liste peut-être utilisée pour rechercher les IFs manquants sur la toile "
-            info_text += f"\n\net compléter manuellement le fichier : '{if_file_name_alias}'."
+            info_text += f"\n\net compléter manuellement le fichier :  '{if_file_name_alias}'."
             messagebox.showinfo(info_title, info_text)
         except KeyError:
             warning_title = "!!! ATTENTION : fichier incorrect !!!"

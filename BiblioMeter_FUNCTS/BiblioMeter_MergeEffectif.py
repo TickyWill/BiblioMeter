@@ -1,4 +1,6 @@
 __all__ = ['recursive_year_search']
+
+## To do: Consolidate use of globals
             
 def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
 
@@ -14,9 +16,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
     import numpy as np
     import pandas as pd
 
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-
+    # Local imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
@@ -250,33 +250,29 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     # 3rd party import
     import pandas as pd
 
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
-
+    # Local imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_ORPHAN
 
     # Création des alias pour simplifier les accès
-    corpus_path_alias = FOLDER_NAMES['corpus']
-    wos_alias = FOLDER_NAMES['wos']
-    scopus_alias = FOLDER_NAMES['scopus']
+    corpus_path_alias  = FOLDER_NAMES['corpus']
+    wos_alias          = FOLDER_NAMES['wos']
+    scopus_alias       = FOLDER_NAMES['scopus']
 
-    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
-    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
+    scopus_path_alias  = Path(corpus_path_alias) / Path(scopus_alias)
+    wos_path_alias     = Path(corpus_path_alias) / Path(wos_alias)
 
     parsing_path_alias = FOLDER_NAMES['parsing']
     rawdata_path_alias = FOLDER_NAMES['rawdata']
 
-    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
+    concat_path_alias  = Path(corpus_path_alias) / FOLDER_NAMES['concat']
     dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
 
     article_path_alias = DIC_OUTDIR_PARSING['A']
-    index_alias = COL_NAMES['address'][0]
+    index_alias        = COL_NAMES['address'][0]
 
     # Building useful paths
     PATH_DAT_DEDUPLICATED = Path(bibliometer_path) / Path(year) / Path(dedupli_path_alias) / Path(parsing_path_alias)
@@ -312,8 +308,8 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
                 - false elsewhere.
         '''
 
-        filt_authors_inst = (df_authorsinst_authors['LITEN_France']==1) | (df_authorsinst_authors['INES_France']==1) # TO DO : faire en sorte qu'on construise en fonction de ce l'on souhaite chercher
-
+        filt_authors_inst = (df_authorsinst_authors['LITEN_France']==1) | (df_authorsinst_authors['INES_France']==1) 
+        # TO DO : faire en sorte qu'on construise en fonction de ce l'on souhaite chercher
         return filt_authors_inst
 
     # Getting ID of each author with institution by publication ID
@@ -369,7 +365,7 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
 
     return  merged_df_Liten
 
-def recursive_year_search(path_in, path_out, path_eff_1, bibliometer_path, corpus_year, go_back_years):
+def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, corpus_year, go_back_years):
 
     """
     Description à venir
@@ -382,21 +378,56 @@ def recursive_year_search(path_in, path_out, path_eff_1, bibliometer_path, corpu
     import pandas as pd
     from datetime import date
 
-    # Local library imports
-    import BiblioMeter_FUNCTS as bmf
+    # Local imports
 
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_ORPHAN
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_FILE_NAME
-    from BiblioMeter_GUI.Globals_GUI import ORPHAN_FILE_NAME
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    #from BiblioMeter_GUI.Globals_GUI import COL_NAMES_ORPHAN
     
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_biblio_list
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_IF
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
+    
+    # Internal functions
+    
+    def _unique_pub_id(df):
+
+        '''The `_unique_pub_id`transforms the column 'Pub_id' of the df 
+        by adding _yyyy to the value of the row.
+
+        Args: 
+            df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
+
+        Returns:
+            (pandas.DataFrame()): the df with its changed column.
+        '''
+
+        # Useful alias
+        year_alias   = COL_NAMES['articles'][2]
+        pub_id_alias = COL_NAMES['pub_id']
+
+        annee = df[year_alias].iloc[0]
+        
+        def _rename_pub_id(old, annee):
+            return f"{int(old)}_{annee}"
+
+        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, f"{annee}"))
+        
+        return df    
+    
+    # Setting useful aliases
+    submit_file_name_alias = ARCHI_YEAR["submit file name"]
+    orphan_file_name_alias = ARCHI_YEAR["orphan file name"]
+    if_root_folder_alias   = ARCHI_IF["root"]
+    if_file_name_alias     = ARCHI_IF["all IF"]
+    
+    # Setting useful paths
+    submit_path  = path_out / Path(submit_file_name_alias)
+    orphan_path  = path_out / Path(orphan_file_name_alias)
+    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
+    all_if_path = if_root_folder_path / Path(if_file_name_alias)
+    
 
     ###################################
     # Building the articles dataframe #
@@ -433,7 +464,7 @@ def recursive_year_search(path_in, path_out, path_eff_1, bibliometer_path, corpu
     test_case = 'Upper value similarity'
     
     # Read the sheet `year` of `EFFECTIFS_FILE` file
-    effectifs_path = path_eff_1 # Récupère ALL_Effectifs.xlsx
+    #effectifs_path = path_eff_1 # Récupère ALL_Effectifs.xlsx
     
     df_eff = pd.read_excel(effectifs_path, sheet_name = None)
 
@@ -448,64 +479,34 @@ def recursive_year_search(path_in, path_out, path_eff_1, bibliometer_path, corpu
         # Updating df_submit 
         df_submit = df_submit.append(df_submit_add)
         
-        year_submit_file_name = year + '_' + SUBMIT_FILE_NAME
-        year_orphan_file_name = year + '_' + ORPHAN_FILE_NAME
+        year_submit_file_name = year + '_' + submit_file_name_alias
+        year_orphan_file_name = year + '_' + orphan_file_name_alias
+        year_submit_path = path_out / Path(year_submit_file_name)
+        year_orphan_path = path_out / Path(year_orphan_file_name)
 
-        df_submit.to_excel(path_out / Path(year_submit_file_name), index = False)
-        df_orphan.to_excel(path_out / Path(year_orphan_file_name), index = False) 
+        df_submit.to_excel(year_submit_path, index = False)
+        df_orphan.to_excel(year_orphan_path, index = False) 
 
-    #####################################################################
-    # Saving results in `SUBMIT_FILE_NAME` and `ORPHAN_FILE_NAME` files #
-    #####################################################################
+    #################################################################################
+    # Saving results in submit_file_name_alias file and orphan_file_name_alias file #
+    #################################################################################
     
     ### Normalisation des titres de journaux
     #df_submit['Journal'] = df_submit['Journal'].apply(lambda x : x.title())
     
-    
-    def _unique_pub_id(df):
-
-        '''The `_unique_pub_id`transforms the column 'Pub_id' of the df by adding _yyyy to the value of the row.
-
-        Args: 
-            df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
-
-        Returns:
-            (pandas.DataFrame()): the df with its changed column.
-        '''
-
-        # Local libray imports
-        from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-        # 3rd party library imports
-        import pandas as pd
-
-        # Useful alias
-        year_alias = COL_NAMES['articles'][2]
-        pub_id_alias = COL_NAMES['pub_id']
-
-        annee = df[year_alias].iloc[0]
-        
-        def _rename_pub_id(old, annee):
-            return f"{int(old)}_{annee}"
-
-        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, f"{annee}"))
-        
-        return df
-    
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
 
-    df_submit.to_excel(path_out / Path(SUBMIT_FILE_NAME), index = False)
-
+    df_submit.to_excel(submit_path, index = False)
     
     ### Adding biblio
-    add_biblio_list(path_out / Path(SUBMIT_FILE_NAME), path_out / Path(SUBMIT_FILE_NAME))
+    add_biblio_list(submit_path, submit_path)
     
     ### Adding Impact Factor
-    ajout_IF(path_out / Path(SUBMIT_FILE_NAME), path_out / Path(SUBMIT_FILE_NAME), bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][7] / Path('IF all years.xlsx')), corpus_year)
+    add_if(submit_path, submit_path, all_if_path, corpus_year)
        
     # df_orphan = df_orphan.reindex(columns = COL_NAMES_ORPHAN)
     
-    df_orphan.to_excel(path_out / Path(ORPHAN_FILE_NAME), index = False)
+    df_orphan.to_excel(orphan_path, index = False)
     
     print('Results saved')

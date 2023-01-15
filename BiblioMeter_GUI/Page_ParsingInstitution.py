@@ -32,7 +32,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
     # Local imports    
     from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import recursive_year_search
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import ajout_OTP
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_OTP
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_listes_consolidees
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
@@ -235,9 +235,10 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                       bibliometer_path,
                                       year_select, 
                                       search_depth) 
-                info_title      = '- Information -'
-                info_text       = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
-                info_text      += f"\nLa résolution des homonymes peut être lancée."                 
+                info_title = '- Information -'
+                info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
+                info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués."  
+                info_text += f"\nLa résolution des homonymes peut être lancée."                 
                 messagebox.showinfo(info_title, info_text)
                 return 'ok'
 
@@ -277,13 +278,13 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 maj_rh(bibliometer_path)
                 info_title = "- Information -"
                 info_text  = f"La mise à jour des effectifs a été effectuée."
-                info_text += f"\nLe croisement de l'année {year_select} va être poursuivi."
+                info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
                 messagebox.showinfo(info_title, info_text)
             else:
             # Arrêt de la procédure
                 ask_title = "- Confirmation du croisement auteurs-effectifs -"
                 ask_text  = f"La mise à jour des effectifs est abandonnée."
-                ask_text += f"\nConfirmez le croisement de l'année {year_select} "
+                ask_text += f"\nConfirmez le croisement pour l'année {year_select} "
                 ask_text += f"sans cette mise à jour ?"            
                 answer_2  = messagebox.askokcancel(ask_title, ask_text)
                 if not answer_2:
@@ -341,7 +342,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 _recursive_year_search_try()
             else: 
                 ask_title = "- Reconstruction du croisement auteurs-effectifs -"
-                ask_text  = f"Le croisement de l'année {year_select} est déjà disponible."
+                ask_text  = f"Le croisement pour l'année {year_select} est déjà disponible."
                 ask_text += f"\nReconstruire le croisement ?"
                 answer_4  = messagebox.askokcancel(ask_title, ask_text)                         
                 if answer_4:
@@ -435,7 +436,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
 
             except FileNotFoundError:
                 warning_title = "!!! ATTENTION : fichier manquant !!!"
-                warning_text  = f"Le fichier contenant le croisement auteur-effectifs "
+                warning_text  = f"Le fichier contenant le croisement auteurs-effectifs "
                 warning_text += f"de l'année {year_select} n'est pas disponible."
                 warning_text += f"\n1- Effectuez d'abord le croisement pour cette année."
                 warning_text += f"\n2- Puis relancez la résolution des homonymies pour cette année."                         
@@ -509,7 +510,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
         def _add_OTP_try():
             try:
-                ajout_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+                add_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
                 info_title = "- Information -"
                 info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
                 info_text += f"ont été créés dans le dossier : \n\n'{OTP_path}' "
