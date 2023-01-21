@@ -594,7 +594,7 @@ def create_ParsingConcat(self, bibliometer_path, parent):
         ask_text += "les traitements effectués sont sauvegardés."
         ask_text += "\nLe traitement peut être repris ultérieurement."
         ask_text += "\nConfirmez la mise en pause ?"
-        exit_answer = messagebox.askokcancel(ask_title, message)
+        exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
             parent.destroy() 
     

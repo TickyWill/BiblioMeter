@@ -33,10 +33,10 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     # Local imports    
     from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import recursive_year_search
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_OTP
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_listes_consolidees
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidation_homonyme
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import filtrer_par_departement
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import maj_rh
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import concatenate_pub_lists
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import solving_homonyms
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidate_pub_list
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import update_employees
     
     from BiblioMeter_GUI.Coordinates import root_properties
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
@@ -103,7 +103,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting useful local variables for positions modification (globals to create ??)
-    # numbers  are reference values in mm for reference screen
+    # numbers are reference values in mm for reference screen
     eff_etape_font_size      = font_size(14, width_sf_min)
     eff_launch_font_size     = font_size(13, width_sf_min)
     eff_answer_font_size     = font_size(13, width_sf_min)
@@ -229,12 +229,12 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                          
         def _recursive_year_search_try():
             try:             
-                recursive_year_search(parsing_path,
-                                      bdd_mensuelle_path, 
-                                      all_effectifs_path,
-                                      bibliometer_path,
-                                      year_select, 
-                                      search_depth) 
+                end_message = recursive_year_search(bdd_mensuelle_path, 
+                                                    all_effectifs_path,
+                                                    bibliometer_path,
+                                                    year_select, 
+                                                    search_depth)
+                print('\n',end_message)
                 info_title = '- Information -'
                 info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
                 info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués."  
@@ -271,11 +271,11 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
             ask_text += f"\n\n '{maj_effectifs_folder_path}'."
             ask_text += f"\n\nCette opération peut prendre quelques minutes."
             ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
-            ask_text += f"\nAvant de poursuivre le croisement auteurs-effectifs, "
+            ask_text += f"\n\nAvant de poursuivre le croisement auteurs-effectifs, "
             ask_text += f"confirmez la mise à jour ?"            
             answer_1  = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:                                                                                  
-                maj_rh(bibliometer_path)
+                update_employees(bibliometer_path)
                 info_title = "- Information -"
                 info_text  = f"La mise à jour des effectifs a été effectuée."
                 info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
@@ -284,7 +284,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
             # Arrêt de la procédure
                 ask_title = "- Confirmation du croisement auteurs-effectifs -"
                 ask_text  = f"La mise à jour des effectifs est abandonnée."
-                ask_text += f"\nConfirmez le croisement pour l'année {year_select} "
+                ask_text += f"\n\nConfirmez le croisement pour l'année {year_select} "
                 ask_text += f"sans cette mise à jour ?"            
                 answer_2  = messagebox.askokcancel(ask_title, ask_text)
                 if not answer_2:
@@ -302,7 +302,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 ask_text  = f"Le fichier des effectifs LITEN n'est pas disponible à l'emplacement attendu. "
                 ask_text += f"\nL'utilisation de la dernière sauvegarde de secours est possible "
                 ask_text += f"pour effectuer le croisement auteurs-effectifs."
-                ask_text += f"\nConfirmer cette utilisation ?"
+                ask_text += f"\n\nConfirmer cette utilisation ?"
                 answer_3  = messagebox.askokcancel(ask_title, ask_text)
                 if answer_3:
                     # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit 
@@ -334,7 +334,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         ask_text += f"a été lancé pour l'année {year_select}."
         ask_text += f"\nCette opération peut prendre quelques minutes."
         ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
-        ask_text += f"\nContinuer ?"
+        ask_text += f"\n\nContinuer ?"
         answer    = messagebox.askokcancel(ask_title, ask_text)
         if answer:
             submit_status = os.path.exists(submit_path)                             
@@ -343,7 +343,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
             else: 
                 ask_title = "- Reconstruction du croisement auteurs-effectifs -"
                 ask_text  = f"Le croisement pour l'année {year_select} est déjà disponible."
-                ask_text += f"\nReconstruire le croisement ?"
+                ask_text += f"\n\nReconstruire le croisement ?"
                 answer_4  = messagebox.askokcancel(ask_title, ask_text)                         
                 if answer_4:
                     _recursive_year_search_try()
@@ -395,10 +395,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
     font_check = tkFont.Font(family = FONT_NAME, 
                              size = eff_answer_font_size)
-    #Label_check = tk.Label(self, 
-    #                       text = TEXT_MAJ_EFFECTIFS, 
-    #                       font = font_check, 
-    #                       justify = 'left')
 
     etape_1 = etapes[0]
     place_bellow(etape_1, 
@@ -421,11 +417,12 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
         def _resolution_homonymies_try():
             try: 
-                consolidation_homonyme(submit_path, homonymes_file_path)
+                end_message = solving_homonyms(submit_path, homonymes_file_path)
+                print('\n',end_message)
                 info_title = "- Information -"
                 info_text  = f"Le fichier pour la résolution des homonymies de l'année {year_select} a été créé "
-                info_text += f"dans le dossier :\n\n '{homonymes_path}' "
-                info_text += f"\nsous le nom : '{homonymes_file_alias}'."
+                info_text += f"dans le dossier :\n\n  '{homonymes_path}' "
+                info_text += f"\n\nsous le nom :  '{homonymes_file_alias}'."
                 info_text += f"\n\n1- Ouvrez ce fichier, "
                 info_text += f"\n2- Supprimez manuellement les lignes des homonymes non-auteurs, "
                 info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
@@ -462,7 +459,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         ask_title = "- Confirmation de l'étape de résolution des homonymies -"
         ask_text  = f"La création du fichier pour cette résolution "
         ask_text += f"a été lancée pour l'année {year_select}."
-        ask_text += f"\nContinuer ?"
+        ask_text += f"\n\nContinuer ?"
         answer    = messagebox.askokcancel(ask_title, ask_text)        
         if answer:
             homonymes_status = os.path.exists(homonymes_file_path)                           
@@ -472,7 +469,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                 ask_title = "- Reconstruction de la résolution des homonymes -"
                 ask_text  = f"Le fichier pour la résolution des homonymies "
                 ask_text += f"de l'année {year_select} est déjà disponible."
-                ask_text += f"\nReconstruire ce fichier ?"
+                ask_text += f"\n\nReconstruire ce fichier ?"
                 answer_1  = messagebox.askokcancel(ask_title, ask_text)                         
                 if answer_1:
                     _resolution_homonymies_try()
@@ -510,11 +507,11 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
         def _add_OTP_try():
             try:
-                add_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+                end_message = add_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+                print('\n',end_message)
                 info_title = "- Information -"
                 info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
                 info_text += f"ont été créés dans le dossier : \n\n'{OTP_path}' "
-                info_text += f"\nsous le nom :  {OTP_path}."
                 info_text += f"\n\n1- Ouvrez le fichier du département ad-hoc, "
                 info_text += f"\n2- Attribuez manuellement à chacune des publications un OTP, "
                 info_text += f"\n3- Sauvegardez le fichier en ajoutant à son nom '_ok'."
@@ -551,7 +548,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         ask_title = "- Confirmation de l'étape d'attribution des OTPs -"
         ask_text  = f"La création des fichiers pour cette attribution "
         ask_text += f"a été lancée pour l'année {year_select}."
-        ask_text += f"\nContinuer ?"
+        ask_text += f"\n\nContinuer ?"
         answer    = messagebox.askokcancel(ask_title, ask_text)        
         if answer:
             OTP_path_status = os.path.exists(OTP_path)
@@ -566,7 +563,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                     ask_title = "- Reconstruction de l'attribution des OTPs -"
                     ask_text  = f"Les fichiers pour l'attribution des OTPs "
                     ask_text += f"de l'année {year_select} sont déjà disponibles."
-                    ask_text += f"\nReconstruire ces fichiers ?"
+                    ask_text += f"\n\nReconstruire ces fichiers ?"
                     answer_1  = messagebox.askokcancel(ask_title, ask_text)                         
                     if answer_1:
                         _add_OTP_try()
@@ -607,8 +604,10 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
         def _consolidate_pub_list():
             try:
-                filtrer_par_departement(OTP_path, pub_list_file, OTP_file_base_alias)
-                concat_listes_consolidees(bibliometer_path, years_list)
+                end_message = consolidate_pub_list(OTP_path, pub_list_file_path, OTP_file_base_alias)
+                print('\n',end_message)
+                end_message = concatenate_pub_lists(bibliometer_path, years_list)
+                print('\n',end_message)
                 info_title = "- Information -"
                 info_text  = f"La liste consolidée des publications de l'année {year_select} "
                 info_text += f"a été créée dans le dossier :\n\n '{pub_list_path}' "
@@ -644,22 +643,22 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
         corpus_year_path = bibliometer_path / Path(year_select)                  
         OTP_path = corpus_year_path / Path(OTP_path_alias)
         pub_list_path = corpus_year_path / Path(pub_list_path_alias)
-        pub_list_file = pub_list_path / Path(pub_list_file_alias)
+        pub_list_file_path = pub_list_path / Path(pub_list_file_alias)
         
         ask_title = "- Confirmation de l'étape de consolidation de la liste des publications -"
         ask_text  = f"La création du fichier de la liste consolidée des publications "
         ask_text += f"a été lancée pour l'année {year_select}."
-        ask_text += f"\nContinuer ?"
+        ask_text += f"\n\nContinuer ?"
         answer    = messagebox.askokcancel(ask_title, ask_text)        
         if answer:
-            homonymes_status = os.path.exists(OTP_path)                           
-            if not homonymes_status:
+            pub_list_status = os.path.exists(pub_list_file_path)                           
+            if not pub_list_status:
                 _consolidate_pub_list()
             else: 
                 ask_title = "- Reconstruction de la liste consolidée des publications -"
                 ask_text  = f"Le fichier de la liste consolidée des publications "
                 ask_text += f"de l'année {year_select} est déjà disponible."
-                ask_text += f"\nReconstruire ce fichier ?"
+                ask_text += f"\n\nReconstruire ce fichier ?"
                 answer_1  = messagebox.askokcancel(ask_title, ask_text)                         
                 if answer_1:
                     _consolidate_pub_list()

@@ -2,7 +2,7 @@ __all__ = ['recursive_year_search']
 
 ## To do: Consolidate use of globals
             
-def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
+def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test'):
 
     """
     Description à venir
@@ -124,11 +124,6 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
         # where item at COL_NAMES_RH['Nom'] matches author lastname 'pub_lastname'
         df_eff_pub_match = df_eff[df_eff[COL_NAMES_RH['nom']] == pub_lastname].copy()
 
-        # Adding column COL_NAMES_BM['Full_name'] + '_eff' by combination of 
-        # df_eff_pub_match[COL_NAMES_RH['Nom']] and df_eff_pub_match[COL_NAMES_BM['First_name']]
-        #new_col = COL_NAMES_BM['Full_name']
-        #df_eff_pub_match[new_col] =  df_eff_pub_match[COL_NAMES_RH['Nom']] + ' ' + df_eff_pub_match[COL_NAMES_BM['First_name']] #------------------------------------------
-
         # Test of lastname full match
         if pub_lastname == test_name and test_states[0]: _test_full_match()          
 
@@ -145,7 +140,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
                     df_temp = df_eff[df_eff[COL_NAMES_RH['nom']] == lastname_match].copy()
                     # Replacing the employee last name by the publication last name
                     # for df_pub_rh_join building
-                    df_temp[COL_NAMES_RH['Full_name']] = pub_lastname + ' ' + df_temp[COL_NAMES_BM['First_name']] #------------------------------------------
+                    df_temp[COL_NAMES_RH['Full_name']] = pub_lastname + ' ' + df_temp[COL_NAMES_BM['First_name']] 
                     frames.append(df_temp )
 
                 df_eff_pub_match = pd.concat(frames, ignore_index=True)
@@ -172,16 +167,9 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
             eff_firstnames = df_eff_pub_match[COL_NAMES_BM['First_name']].to_list()
             eff_lastnames_spec = df_eff_pub_match[COL_NAMES_RH['nom']].to_list()
 
-            #if pub_lastname == 'MARTIN': 
-                #print(eff_firstnames)
-
             # Building the list of index of firsnames initiales 
             list_idx = []
             for idx,eff_firstname in enumerate(eff_firstnames):
-                #if pub_lastname == 'MARTIN': 
-                    #print()
-                    #print('pub_lastname',pub_lastname, 'pub_firstname',pub_firstname)
-                    #print('eff_firstnames',eff_firstnames,'eff_firstname',eff_firstname)
 
                 if (pub_firstname == eff_firstname):
                     list_idx.append(idx)
@@ -191,10 +179,6 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
                     # for df_pub_rh_join building
                     df_eff_pub_match[COL_NAMES_RH['Full_name']].iloc[idx] = pub_lastname + ' ' + pub_firstname
                     list_idx.append(idx)
-
-                #if pub_lastname == 'MARTIN': 
-                    #print(list_idx)
-                    #print()
 
             # Test of match of firstname initiales for lastname match or similarity
             if pub_lastname == test_name and test_states[3]: _test_match_of_firstname_initiales()
@@ -227,6 +211,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case='No test'):
                 df_orphan = df_orphan.append(df_pub_row)
 
     return df_submit, df_orphan
+
 
 def _build_pubs_authors_Liten(year, bibliometer_path):
 
@@ -365,7 +350,8 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
 
     return  merged_df_Liten
 
-def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, corpus_year, go_back_years):
+
+def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_year, go_back_years):
 
     """
     Description à venir
@@ -374,23 +360,19 @@ def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, c
     # Standard library imports
     from pathlib import Path
 
-    # 3rd party import
+    # 3rd party imports
     import pandas as pd
-    from datetime import date
-
-    # Local imports
-
+   
+    # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
-    #from BiblioMeter_GUI.Globals_GUI import COL_NAMES_ORPHAN
     
+    # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_biblio_list
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
+    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR    
     
     # Internal functions
-    
     def _unique_pub_id(df):
 
         '''The `_unique_pub_id`transforms the column 'Pub_id' of the df 
@@ -402,21 +384,19 @@ def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, c
         Returns:
             (pandas.DataFrame()): the df with its changed column.
         '''
-
-        # Useful alias
-        year_alias   = COL_NAMES['articles'][2]
-        pub_id_alias = COL_NAMES['pub_id']
-
-        annee = df[year_alias].iloc[0]
+        df_year = df[year_col_alias].iloc[0]
         
-        def _rename_pub_id(old, annee):
-            return f"{int(old)}_{annee}"
+        def _rename_pub_id(old_pub_id, year):
+            new_pub_id = old_pub_id + '_' + year
+            return new_pub_id
 
-        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, f"{annee}"))
-        
+        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(str(int(x)), str(df_year)))
         return df    
     
     # Setting useful aliases
+    year_col_alias = COL_NAMES['articles'][2]
+    pub_id_alias   = COL_NAMES['pub_id']
+    
     submit_file_name_alias = ARCHI_YEAR["submit file name"]
     orphan_file_name_alias = ARCHI_YEAR["orphan file name"]
     if_root_folder_alias   = ARCHI_IF["root"]
@@ -428,22 +408,20 @@ def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, c
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     all_if_path = if_root_folder_path / Path(if_file_name_alias)
     
-
-    ###################################
-    # Building the articles dataframe #
-    ###################################
-
+    # Getting the employees dataframe    
+    df_eff = pd.read_excel(effectifs_path, sheet_name = None)
+    eff_available_years = list(df_eff.keys())
+    corpus_year_status = corpus_year in eff_available_years 
+    
+    # Building the articles dataframe 
     df_pub = _build_pubs_authors_Liten(corpus_year, bibliometer_path)
 
-    ##########################################################
-    # Building the search time extension of Liten co-authors #
-    ##########################################################
-
-    today_year = int(date.today().year)
-    start_year = int(corpus_year)
+    # Building the search time depth of Liten co-authors among the employees dataframe
+    year_start = int(corpus_year)
+    if not corpus_year_status : year_start = int(corpus_year)-1    
     time_line_history = int(go_back_years)
-    years = [str(i) for i in range(start_year - time_line_history + 1, start_year + 1)]
-    years = years[::-1]
+    year_stop = year_start - (time_line_history - 1)
+    years = [str(i) for i in range(year_start, year_stop-1,-1)]
 
     #################################################################################################
     # Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years #
@@ -463,15 +441,10 @@ def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, c
 
     test_case = 'Upper value similarity'
     
-    # Read the sheet `year` of `EFFECTIFS_FILE` file
-    #effectifs_path = path_eff_1 # Récupère ALL_Effectifs.xlsx
-    
-    df_eff = pd.read_excel(effectifs_path, sheet_name = None)
-
     # Building the initial dataframes
     df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], df_pub, bibliometer_path, test_case = test_case)
     
-    for step, year in enumerate(years):
+    for step, year in enumerate(years[1:]):
     
         # Updating the dataframes 
         df_submit_add, df_orphan =  _build_df_submit(df_eff[year], df_orphan, bibliometer_path, test_case)
@@ -487,26 +460,24 @@ def recursive_year_search(path_in, path_out, effectifs_path, bibliometer_path, c
         df_submit.to_excel(year_submit_path, index = False)
         df_orphan.to_excel(year_orphan_path, index = False) 
 
-    #################################################################################
-    # Saving results in submit_file_name_alias file and orphan_file_name_alias file #
-    #################################################################################
-    
-    ### Normalisation des titres de journaux
-    #df_submit['Journal'] = df_submit['Journal'].apply(lambda x : x.title())
+    #####################################################################################
+    # Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file #
+    #####################################################################################
     
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
 
+    # Saving df_submit
     df_submit.to_excel(submit_path, index = False)
     
-    ### Adding biblio
+    # Adding biblio and saving new df_submit
     add_biblio_list(submit_path, submit_path)
     
-    ### Adding Impact Factor
+    # Adding Impact Factors and saving new df_submit
     add_if(submit_path, submit_path, all_if_path, corpus_year)
-       
-    # df_orphan = df_orphan.reindex(columns = COL_NAMES_ORPHAN)
     
+    # Saving df_orphan
     df_orphan.to_excel(orphan_path, index = False)
     
-    print('Results saved')
+    end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
+    return end_message

@@ -8,7 +8,10 @@ __all__ = ['OTP_LIST',
            'COL_SIZES', 
            'FILE_NAMES', 
            'COL_MAJ_IF',
-           'LITEN_INST_LIST',]
+           'LITEN_INST_LIST',
+           'FILL_EMPTY_KEY_WORD',
+           'NOT_AVAILABLE_IF',
+          ]
 
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 #from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
@@ -130,7 +133,7 @@ COL_NAMES_RH = {'ID'                       : 'Matricule',
                 'date naissance'           : 'Date de naissance',
                 'année'                    : 'Année', 
                 'Full_name'                : 'Full_name_eff',
-                }
+               }
 
 COL_NAMES_BONUS = {'nom prénom'       : 'Nom Prénom du premier auteur Liten', 
                    'nom prénom liste' : 'Liste des auteurs Liten participant à la publication', 
@@ -139,14 +142,20 @@ COL_NAMES_BONUS = {'nom prénom'       : 'Nom Prénom du premier auteur Liten',
                    'IF en cours'      : "IF de l'année en cours", 
                    'IF année publi'   : "IF de l'année de publication",
                    'IF clarivate'     : 'IF', 
-                   'EISSN'            : 'EISSN'
+                   'EISSN'            : 'EISSN',
                   }
 
+
 FILL_EMPTY_KEY_WORD = 'unknown'   # 'unknow'
+
+
+NOT_AVAILABLE_IF = 'Not available'
+
 
 FILE_NAMES = {'liste conso'  : 'Liste consolidée', 
               'liste consoS' : 'listes consolidées',
              }
+
 
 COL_NAMES_FINALE = {'Authors'                   : 'Premier auteur de la publication', 
                     'Document_type'             : 'Type du document', 
@@ -156,49 +165,48 @@ COL_NAMES_FINALE = {'Authors'                   : 'Premier auteur de la publicat
 COL_NAMES_DPT = {'DTNM' : 'DTNM',
                  'DTCH' : 'DTCH',
                  'DEHT' : 'DEHT',
-                 'DTS' : 'DTS'
+                 'DTS'  : 'DTS'
                 }
 
-COL_CONSOLIDATION = [COL_NAMES['pub_id'],  #'Pub_id', 
-                     COL_NAMES['authors'][1],  #'Idx_Author',
-                     COL_NAMES_RH['ID'],  # 'Matricule', 
-                     COL_NAMES_RH['nom'],  # 'Nom', 
-                     COL_NAMES_RH['prénom'],  # 'Prénom',                      
-                     COL_NAMES['articles'][9],  # 'Title', 
-                     COL_NAMES['articles'][1],  # 'Authors',
-                     COL_NAMES['articles'][3],  # 'Journal',
-                     COL_NAMES_BONUS['IF en cours'], # IF en cours, 
-                     COL_NAMES_BONUS['IF année publi'], # IF année de la publi
-                     COL_NAMES['articles'][6],  # 'DOI', 
-                     COL_NAMES['articles'][10],  # 'ISSN', 
-                     COL_NAMES['articles'][7],  # 'Document_type', 
-                     COL_NAMES['articles'][2],  # 'Year',                      
+COL_CONSOLIDATION = [COL_NAMES['pub_id'],                # 'Pub_id', 
+                     COL_NAMES['authors'][1],            # 'Idx_Author',
+                     COL_NAMES_RH['ID'],                 # 'Matricule', 
+                     COL_NAMES_RH['nom'],                # 'Nom', 
+                     COL_NAMES_RH['prénom'],             # 'Prénom',                      
+                     COL_NAMES['articles'][9],           # 'Title', 
+                     COL_NAMES['articles'][1],           # 'Authors',
+                     COL_NAMES['articles'][3],           # 'Journal',
+                     COL_NAMES_BONUS['IF en cours'],     # 'IF en cours', 
+                     COL_NAMES_BONUS['IF année publi'],  # 'IF année de la publi',
+                     COL_NAMES['articles'][6],           # 'DOI', 
+                     COL_NAMES['articles'][10],          # 'ISSN', 
+                     COL_NAMES['articles'][7],           # 'Document_type', 
+                     COL_NAMES['articles'][2],           # 'Year',                      
                      COL_NAMES_RH['dpt'], 
-                     COL_NAMES_RH['service'],  # 'Service (lib court)', 
-                     COL_NAMES_RH['labo'],  # 'Laboratoire (lib court)',
+                     COL_NAMES_RH['service'],            # 'Service (lib court)', 
+                     COL_NAMES_RH['labo'],               # 'Laboratoire (lib court)',
                      COL_NAMES_BONUS['liste biblio'],
                      'HOMONYM',
                      ]
 
-COL_OTP = [COL_NAMES['pub_id'],  #'Pub_id', 
-           COL_NAMES_RH['ID'],  # 'Matricule',            
-           COL_NAMES_BONUS['nom prénom'], #Nom prénom,
+COL_OTP = [COL_NAMES['pub_id'],                          # 'Pub_id', 
+           COL_NAMES_RH['ID'],                           # 'Matricule',            
+           COL_NAMES_BONUS['nom prénom'],                # 'Nom prénom',
            COL_NAMES_RH['dpt'], 
-           COL_NAMES_RH['service'],  # 'Service (lib court)', 
-           COL_NAMES_RH['labo'],  # 'Laboratoire (lib court)',           
-           COL_NAMES_BONUS['nom prénom liste'], #Liste des auteurs
-           COL_NAMES_BONUS['liste biblio'],               
-           COL_NAMES['articles'][9],  # 'Title', 
-           COL_NAMES['articles'][1],  # 'Authors',
-           # COL_NAMES_FINALE['Authors'],  # 'Authors',
-           COL_NAMES['articles'][3],  # 'Journal',
-           COL_NAMES_BONUS['IF en cours'], # IF en cours, 
-           COL_NAMES_BONUS['IF année publi'], # IF année de la publi
-           COL_NAMES['articles'][6],  # 'DOI', 
-           COL_NAMES['articles'][10],  # 'ISSN', 
-           COL_NAMES['articles'][7],
-           #COL_NAMES_FINALE['Document_type'],  # 'Document_type', 
-           COL_NAMES['articles'][2],  # 'Year',           
+           COL_NAMES_RH['service'],                      # 'Service (lib court)', 
+           COL_NAMES_RH['labo'],                         # 'Laboratoire (lib court)',           
+           COL_NAMES_BONUS['nom prénom liste'],          # 'Liste des auteurs'
+           COL_NAMES_BONUS['liste biblio'], 
+           COL_NAMES['articles'][9],                     # 'Title', 
+           COL_NAMES['articles'][1],                     # 'Authors',
+           COL_NAMES['articles'][3],                     # 'Journal',
+           COL_NAMES_BONUS['IF en cours'],               # 'IF en cours', 
+           COL_NAMES_BONUS['IF année publi'],            # 'IF année de la publi'
+           COL_NAMES['articles'][6],                     # 'DOI', 
+           COL_NAMES['articles'][10],                    # 'ISSN', 
+           COL_NAMES['articles'][7], 
+          #COL_NAMES_FINALE['Document_type'],            # 'Document_type', 
+           COL_NAMES['articles'][2],                     # 'Year',           
            COL_NAMES_DPT['DTNM'],
            COL_NAMES_DPT['DTCH'],
            COL_NAMES_DPT['DEHT'],
@@ -207,28 +215,28 @@ COL_OTP = [COL_NAMES['pub_id'],  #'Pub_id',
           ]
 
 
-COL_MAJ_IF = [COL_NAMES['pub_id'],  #'Pub_id', 
-              COL_NAMES_RH['ID'],  # 'Matricule',               
-              COL_NAMES_BONUS['nom prénom'], #Nom prénom,
+COL_MAJ_IF = [COL_NAMES['pub_id'],                       # 'Pub_id', 
+              COL_NAMES_RH['ID'],                        # 'Matricule',               
+              COL_NAMES_BONUS['nom prénom'],             # 'Nom prénom',
               COL_NAMES_RH['dpt'], 
-              COL_NAMES_RH['service'],  # 'Service (lib court)', 
-              COL_NAMES_RH['labo'],  # 'Laboratoire (lib court)',             
-              COL_NAMES_BONUS['nom prénom liste'], #Liste des auteurs
-              COL_NAMES_BONUS['liste biblio'],                  
-              COL_NAMES['articles'][9],  # 'Title', 
-              COL_NAMES_FINALE['Authors'],  # 'Authors',
-              COL_NAMES['articles'][3],  # 'Journal',
-              COL_NAMES_BONUS['IF en cours'], # IF en cours, 
-              COL_NAMES_BONUS['IF année publi'], # IF année de la publi
-              COL_NAMES['articles'][6],  # 'DOI', 
-              COL_NAMES['articles'][10],  # 'ISSN', 
-              COL_NAMES_FINALE['Document_type'],  # 'Document_type', 
-              COL_NAMES['articles'][2],  # 'Year',              
+              COL_NAMES_RH['service'],                   # 'Service (lib court)', 
+              COL_NAMES_RH['labo'],                      # 'Laboratoire (lib court)',             
+              COL_NAMES_BONUS['nom prénom liste'],       # 'Liste des auteurs',
+              COL_NAMES_BONUS['liste biblio'],                 
+              COL_NAMES['articles'][9],                  # 'Title', 
+              COL_NAMES_FINALE['Authors'],               # 'Authors',
+              COL_NAMES['articles'][3],                  # 'Journal',
+              COL_NAMES_BONUS['IF en cours'],            # 'IF en cours', 
+              COL_NAMES_BONUS['IF année publi'],         # 'IF année de la publi',
+              COL_NAMES['articles'][6],                  # 'DOI', 
+              COL_NAMES['articles'][10],                 # 'ISSN', 
+              COL_NAMES_FINALE['Document_type'],         # 'Document_type', 
+              COL_NAMES['articles'][2],                  # 'Year',              
               COL_NAMES_DPT['DTNM'],
               COL_NAMES_DPT['DTCH'],
               COL_NAMES_DPT['DEHT'],
-              COL_NAMES_DPT['DTS'],              
-              COL_NAMES_FINALE[COL_NAMES_BONUS['list OTP']],
+              COL_NAMES_DPT['DTS'],
+              COL_NAMES_FINALE[COL_NAMES_BONUS['list OTP']], 
              ]
 
 COL_SIZES = {
@@ -253,6 +261,6 @@ COL_SIZES = {
             }
  
 
-LITEN_INST_LIST = [('INES', 'France'), 
+LITEN_INST_LIST = [('INES',  'France'), 
                    ('LITEN', 'France'),
                   ]

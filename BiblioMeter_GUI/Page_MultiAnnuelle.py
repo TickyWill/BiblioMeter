@@ -75,7 +75,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     
     def _add_if_try(file_to_update_path):
         try:
-            add_if(file_to_update_path, file_to_update_path, all_if_path, None)
+            end_message = add_if(file_to_update_path, file_to_update_path, all_if_path, None)
+            print('\n',end_message)
             info_title = '- Information -'
             info_text  = "Les IFs ont été mis à jour."
             messagebox.showinfo(info_title, info_text)
@@ -138,7 +139,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         try:
             # Getting the file path to update with IFs
             file_to_update_path = file_select_entry.get()           
-            find_missing_if(bibliometer_path, file_to_update_path)
+            end_message = find_missing_if(bibliometer_path, file_to_update_path)
+            print('\n',end_message)
             info_title = '- Information -'
             info_text  = f"La liste des journaux dont l'IF est manquant a été construite."
             info_text += f"\nElle est disponible dans le dossier : \n '{if_root_folder_path}'"
@@ -163,7 +165,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     def _launch_exit():
         message =  "Vous allez fermer BiblioMeter. "
         message += "\nRien ne sera perdu et vous pourrez reprendre le traitement plus tard."
-        message += "\nSouhaitez-vous faire une pause dans le traitement ?"
+        message += "\n\nSouhaitez-vous faire une pause dans le traitement ?"
         answer_1 = messagebox.askokcancel('Information', message)
         if answer_1:
             parent.destroy()

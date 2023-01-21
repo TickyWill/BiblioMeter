@@ -50,29 +50,6 @@ DPT_LABEL_DICT = {'DEHT': ['DEHT'],
                  }
 
 
-# Variables organisées en fonction de l'architecture de la base de donnée
-#ARCHI_YEAR = {"bdd mensuelle"           : "0 - BDD multi mensuelle", 
-#              "submit file name"        : "submit.xlsx", 
-#              "orphan file name"        : "orphan.xlsx", 
-#              
-#              "consolidation"           : "1 - Consolidation Homonymes", 
-#              "consolidation file name" : "Fichier Consolidation", 
-#              
-#              "OTP"                     : "2 - OTP", 
-#              "OTP file name"           : "fichier_ajout_OTP", 
-#              
-#              "resultats"               : "3 - Résultats Finaux", 
-#              "resultats file name"     : "Liste consolidée", 
-#              
-#              "corpus"                  : "Corpus", 
-#              "concat"                  : "concatenation", 
-#              "dedup"                   : "deduplication", 
-#              "scopus"                  : "scopus", 
-#              "wos"                     : "wos", 
-#              "parsing"                 : "parsing", 
-#              "rawdata"                 : "rawdata",
-#             }
-
 ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle", 
               "submit file name"               : "submit.xlsx", 
               "orphan file name"               : "orphan.xlsx", 
