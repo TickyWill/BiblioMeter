@@ -1,22 +1,53 @@
-__all__ = ['OTP_LIST',
-           'OTP_STRING',
+__all__ = ['OTP_LIST',      # To be removed
+           'OTP_STRING',    # To be removed
            'COL_NAMES_RH', 
            'COL_NAMES_BONUS', 
            'COL_NAMES_DPT', 
            'COL_CONSOLIDATION', 
            'COL_NAMES_FINALE', 
-           'COL_SIZES', 
+           'COL_SIZES',
+           'COL_TYPES_RH',
            'FILE_NAMES', 
            'COL_MAJ_IF',
            'LITEN_INST_LIST',
+           'EFF_CONVERTERS_DIC',
            'FILL_EMPTY_KEY_WORD',
            'NOT_AVAILABLE_IF',
+           'DPT_ATTRIBUTS_DICT',
+           'ROW_COLORS',
           ]
 
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 #from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
 
-# Dictionary of the OTPs
+
+DPT_ATTRIBUTS_DICT = {'DEHT': {'dpt_label': ['DEHT'],
+                               'dpt_otp'  : ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 
+                                             'EMEPE', 'SYS2E','SYSIE', 'TEENV'],
+                              },
+                      'DTCH': {'dpt_label': ['DTCH', 'DTBH'],
+                               'dpt_otp'  : ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 
+                                             'INREL', 'MATEP', 'ESQVE', 'MATNA', 
+                                             'TECNA', 'IDNES', 'COTHE', 'SYS2E', 
+                                             'SYSIE', 'CHECC'],
+                              },
+                      'DTNM': {'dpt_label': ['DTNM'],
+                               'dpt_otp'  : ['PROH2', 'COTHE', 'ASMAT', 'FAB3D', 
+                                             'INDIB', 'STSH2', 'INNAN', 'TEENV', 
+                                             'CHECC', 'NRBCT', 'ELORG'],
+                              },
+                      'DTS' : {'dpt_label': ['DTS'],
+                               'dpt_otp'  : ['MACPV', 'HETPV', 'MSYPV', 'TEENV', 
+                                             'MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'],
+                              },
+                     }
+
+
+DPT_ATTRIBUTS_DICT['DIR'] = {'dpt_label': ['(LITEN)'],
+                             'dpt_otp'  : list(set(sum([DPT_ATTRIBUTS_DICT[dpt_label]['dpt_otp'] 
+                                                        for dpt_label in DPT_ATTRIBUTS_DICT.keys()],[]))),
+                            }
+
 OTP_LIST = {
             'STB'    : ['MSBAT', 'INDIB', 'TEENV'],
             'SAMA'   : ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 
@@ -34,26 +65,13 @@ OTP_LIST = {
             'SCPV'   : ['MACPV', 'HETPV'],
             'SMSP'   : ['MSYPV', 'TEENV'],
             'SIRE'   : ['MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'],
-        
-            
-        
-            'DEHT'   : ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 
-                       'EMEPE', 'SYS2E','SYSIE', 'TEENV'],   
-            'DTBH'   : ['PROH2', 'STSH2', 'ASMAT','SECSY', 
-                       'INREL', 'MATEP', 'ESQVE', 'MATNA',
-                       'TECNA', 'IDNES','COTHE', 'SYS2E', 
-                       'SYSIE', 'CHECC'],
-            'DTCH'   : ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 
-                       'INREL', 'MATEP', 'ESQVE', 'MATNA', 
-                       'TECNA', 'IDNES', 'COTHE', 'SYS2E', 
-                       'SYSIE', 'CHECC'],
-            'DTNM'   : ['PROH2', 'COTHE', 'ASMAT', 'FAB3D', 
-                       'INDIB', 'STSH2', 'INNAN', 'TEENV', 
-                       'CHECC', 'NRBCT', 'ELORG'],
-            'DTS'    : ['MACPV', 'HETPV', 'MSYPV', 'TEENV', 
-                       'MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'],
-        
-            '(LITEN)': ['A rajouter'],
+                
+            'DEHT'   : DPT_ATTRIBUTS_DICT['DEHT']['dpt_otp'],   
+            'DTBH'   : DPT_ATTRIBUTS_DICT['DTCH']['dpt_otp'],
+            'DTCH'   : DPT_ATTRIBUTS_DICT['DTCH']['dpt_otp'],
+            'DTNM'   : DPT_ATTRIBUTS_DICT['DTNM']['dpt_otp'],
+            'DTS'    : DPT_ATTRIBUTS_DICT['DTS']['dpt_otp'],        
+            '(LITEN)': DPT_ATTRIBUTS_DICT['DIR']['dpt_otp'],
     
             'STHB': ['Vieille appellation'],
             'S2CE': ['Vieille appellation'],
@@ -135,6 +153,34 @@ COL_NAMES_RH = {'ID'                       : 'Matricule',
                 'Full_name'                : 'Full_name_eff',
                }
 
+# Types dict used when reading 'All_Effectifs' file
+COL_TYPES_RH = {}
+for col_name in list(COL_NAMES_RH.keys()): COL_TYPES_RH[col_name] = str
+
+# Converters of datetime columns for 'All_Effectifs' file
+
+def _get_str_date(date_value):
+    text_to_remove = '[numpy.datetime64('
+    if text_to_remove in date_value:
+        start = len(text_to_remove) + 1
+    else:
+        start = 0
+    return date_value[start: start + 10]
+
+_col_convert_keys_rh = ['date effet classement',
+                        'date debut contrat',
+                        'date dernière entrée',
+                        'date de fin de contrat',
+                        'date naissance',
+                       ]
+
+_col_convert_rh_list = [COL_NAMES_RH[col_key] for col_key in _col_convert_keys_rh]
+
+EFF_CONVERTERS_DIC = {}
+for col_convert in _col_convert_rh_list: 
+    EFF_CONVERTERS_DIC[col_convert] = lambda x: _get_str_date(str(x))
+
+
 COL_NAMES_BONUS = {'nom prénom'       : 'Nom Prénom du premier auteur Liten', 
                    'nom prénom liste' : 'Liste des auteurs Liten participant à la publication', 
                    'liste biblio'     : 'Référence bibliographique complète', 
@@ -162,10 +208,11 @@ COL_NAMES_FINALE = {'Authors'                   : 'Premier auteur de la publicat
                     COL_NAMES_BONUS['list OTP'] : 'OTP',
                    }
 
-COL_NAMES_DPT = {'DTNM' : 'DTNM',
-                 'DTCH' : 'DTCH',
-                 'DEHT' : 'DEHT',
-                 'DTS'  : 'DTS'
+COL_NAMES_DPT = {'DTNM': 'DTNM',
+                 'DTCH': 'DTCH',
+                 'DEHT': 'DEHT',
+                 'DTS' : 'DTS',
+                 'DIR' : 'DIR',
                 }
 
 COL_CONSOLIDATION = [COL_NAMES['pub_id'],                # 'Pub_id', 
@@ -210,7 +257,8 @@ COL_OTP = [COL_NAMES['pub_id'],                          # 'Pub_id',
            COL_NAMES_DPT['DTNM'],
            COL_NAMES_DPT['DTCH'],
            COL_NAMES_DPT['DEHT'],
-           COL_NAMES_DPT['DTS'],           
+           COL_NAMES_DPT['DTS'],
+           COL_NAMES_DPT['DIR'],
            COL_NAMES_BONUS['list OTP'],
           ]
 
@@ -259,7 +307,14 @@ COL_SIZES = {
              'HOMONYM'                           : 20, 
              "Choix de l'OTP"                    : 75,
             }
- 
+
+
+# Colors for row background in EXCEL files
+ROW_COLORS = {'odd'      : '0000FFFF',
+              'even'     : '00CCFFCC',
+              'highlight': '00FFFF00',
+             }
+
 
 LITEN_INST_LIST = [('INES',  'France'), 
                    ('LITEN', 'France'),

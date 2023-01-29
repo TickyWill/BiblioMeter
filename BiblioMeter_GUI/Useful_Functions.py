@@ -1,31 +1,14 @@
-__all__ = ['five_last_available_years', 
+__all__ = ['last_available_years', 
            'get_corpus_filename_by_year',
-           'la_liste_des_filtres_disponibles',
            'existing_corpuses', 
            'place_after', 
-           'place_bellow', 'place_bellow_LabelEntry', 
+           'place_bellow', 
+           'place_bellow_LabelEntry', 
            'encadre_RL', 
            'encadre_UD', 
-           'get_displays', 
-           'mm_to_px', 
-           'str_size_mm', 
            'font_size']
-
-def la_liste_des_filtres_disponibles(bibliometer_path):
     
-    '''
-    Returns the list of the available created filters
-    '''
-    # Standard library imports
-    import os
-    from pathlib import Path
-    
-    # Local imports
-    from BiblioMeter_GUI.Globals_GUI import STOCKAGE_ARBORESCENCE
-    
-    return os.listdir(bibliometer_path / Path(STOCKAGE_ARBORESCENCE['general'][2]))
-    
-def five_last_available_years(bibliometer_path):
+def last_available_years(bibliometer_path, year_number):
     
     '''
     Returns a list of the available five last available years where corpuses are stored
@@ -40,7 +23,7 @@ def five_last_available_years(bibliometer_path):
     for annee in list_dir:
         if len(annee) == 4:
             list_annee.append(annee)
-    return list_annee[-5:]
+    return list_annee[-year_number:]
 
 def get_corpus_filename_by_year(full_path, database_type):
     
@@ -103,11 +86,12 @@ def existing_corpuses(bibliometer_path):
     # Local imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
-
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
+    
+    from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
+    from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import get_corpus_filename_by_year
     
-    list_dir = five_last_available_years(bibliometer_path)
+    list_dir = last_available_years(bibliometer_path, CORPUSES_NUMBER)
 
     # Création des alias pour simplifier les accès
     wos_alias = FOLDER_NAMES['wos']
@@ -212,108 +196,5 @@ def font_size(size, scale_factor):
         fontsize = 8
     return fontsize
 
-######################### Functions copyed from BiblioAnalysis_Utils #########################
-    
-def get_displays(in_to_mm = None): 
-    
-    ''' The function `get_displays` allows to identify the set of displays
-        available within the user hardware and to get their parameters.
-        If the width or the height of a display are not available in mm 
-        through the `get_monitors` method (as for Darwin platforms), 
-        the user is asked to specify the displays diagonal size to compute them.
-        
-    Returns:
-        `list`: list of dicts with one dict per detected display,
-                each dict is keyed by 8 display parameters.   
-    '''
-    # To Do: convert prints and inputs to gui displays and inputs
-    
-    # Standard library imports
-    import math
-    
-    # 3rd party imports
-    from screeninfo import get_monitors
-    
-    # Local imports
-    from BiblioAnalysis_Utils.BiblioGeneralGlobals import IN_TO_MM
-
-    if in_to_mm==None: in_to_mm = IN_TO_MM
-    
-    displays = [{'x':m.x,'y':m.y,'width':m.width,
-                 'height':m.height,'width_mm':m.width_mm,
-                 'height_mm':m.height_mm,'name':m.name,
-                 'is_primary':m.is_primary} for m in get_monitors()]
-    
-
-    print('Number of detected displays:',len(displays))
-    
-    for disp in range(len(displays)):
-        width_px = displays[disp]['width']
-        height_px = displays[disp]['height']
-        diag_px = math.sqrt(int(width_px)**2 + int(height_px)**2)    
-        width_mm = displays[disp]['width_mm']
-        height_mm = displays[disp]['height_mm']
-        if width_mm is None or height_mm is None: 
-            diag_in = float(input('Enter the diagonal size of the screen n°' + str(disp) + ' (inches)'))
-            width_mm = round(int(width_px) * (diag_in/diag_px) * in_to_mm,1)
-            height_mm = round(int(height_px) * (diag_in/diag_px) * in_to_mm,1)
-            displays[disp]['width_mm'] = str(width_mm)
-            displays[disp]['height_mm'] = str(height_mm)
-        else:
-            diag_in = math.sqrt(float(width_mm) ** 2 + float(height_mm) ** 2) / in_to_mm
-        displays[disp]['ppi'] = round(diag_px/diag_in,2)
-        
-    return displays
-
-
-def mm_to_px(size_mm, ppi ,fact = 1.0):
-    '''The `_mm_to_px' function converts a value in mm to a value in pixels
-    using the ppi of the used display and a factor fact.
-    
-    Args:
-        size_mm (float): value in mm to be converted.
-        ppi ( float): pixels per inch of the display.
-        fact (float): factor (default= 1).
-        
-    Returns:
-        `(int)`: upper integer value of the conversion to pixels
-        
-    '''
-    
-    # Standard library imports 
-    import math
-    
-    # Local imports
-    from BiblioAnalysis_Utils.BiblioGeneralGlobals import IN_TO_MM
-
-    size_px = math.ceil((size_mm * fact / IN_TO_MM) * ppi)
-    
-    return size_px
-
-def str_size_mm(text, font, ppi):
-    '''The function `_str_size_mm` computes the sizes in mm of a string.
-
-    Args:
-        text (str): the text of which we compute the size in mm.
-        font (tk.font): the font of the text.
-        ppi (int): pixels per inch of the display.
-
-    Returns:
-        `(tuple)`: width in mm `(float)`, height in mm `(float)`.
-
-    Note:
-        The use of this function requires a tkinter window availability 
-        since it is based on a tkinter font definition.
-
-    '''
-
-    # Local imports
-    from BiblioAnalysis_Utils.BiblioGeneralGlobals import IN_TO_MM
-       
-    (w_px, h_px) = (font.measure(text), font.metrics("linespace"))
-    w_mm = w_px * IN_TO_MM / ppi
-    h_mm = h_px * IN_TO_MM / ppi
-
-    return (w_mm, h_mm)
 
 

@@ -1,6 +1,7 @@
-__version__ = '0.0.0'
+__version__ = '1.0.0'
 __author__ = 'BiblioAnalysis team'
 __license__ = 'MIT'
 
-from .BiblioMeterGlobalsVariables import *
-from .BiblioMeterFonctions import *
+from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import *
+from BiblioMeter_FUNCTS.BiblioMeterFonctions import *
+from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import *

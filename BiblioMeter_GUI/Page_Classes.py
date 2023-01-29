@@ -19,14 +19,14 @@ class App_Test(tk.Tk):
         from tkinter import font as tkFont
         from tkinter import messagebox
         
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+        from BiblioAnalysis_Utils.BiblioGui import _str_size_mm
+        
         # Local imports
-        from BiblioMeter_GUI.Coordinates import general_properties
-        
-        from BiblioMeter_GUI.Useful_Classes import LabelEntry
-        
+        from BiblioMeter_GUI.Coordinates import general_properties        
+        from BiblioMeter_GUI.Useful_Classes import LabelEntry        
         from BiblioMeter_GUI.Useful_Functions import font_size
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        from BiblioMeter_GUI.Useful_Functions import str_size_mm
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_COPYRIGHT_FONT_SIZE
@@ -42,8 +42,7 @@ class App_Test(tk.Tk):
         from BiblioMeter_GUI.Coordinates import TEXT_BOUTON_LANCEMENT
         from BiblioMeter_GUI.Coordinates import TEXT_COPYRIGHT
         from BiblioMeter_GUI.Coordinates import TEXT_LE_BMF
-        from BiblioMeter_GUI.Coordinates import TEXT_TITLE
-        
+        from BiblioMeter_GUI.Coordinates import TEXT_TITLE        
         from BiblioMeter_GUI.Globals_GUI import PPI
         from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
                 
@@ -80,17 +79,17 @@ class App_Test(tk.Tk):
         
         # Setting Y position reference in mm for page label
         ref_page_title_pos_y_mm = REF_PAGE_TITLE_POS_Y_MM    #20 
-        eff_page_title_pos_y_px = mm_to_px(ref_page_title_pos_y_mm * height_sf_mm, PPI)
+        eff_page_title_pos_y_px = _mm_to_px(ref_page_title_pos_y_mm * height_sf_mm, PPI)
         
         # Setting Y position reference in mm for le_bmf 
         ref_le_bmf_pos_y_mm = REF_LE_BMF_POS_Y_MM            #45
-        eff_le_bmf_pos_y_px = mm_to_px(ref_le_bmf_pos_y_mm * height_sf_mm, PPI)
+        eff_le_bmf_pos_y_px = _mm_to_px(ref_le_bmf_pos_y_mm * height_sf_mm, PPI)
         
         # Setting X and Y positions reference in mm for copyright
         ref_copyright_x_mm = REF_COPYRIGHT_X_MM              #5
-        eff_copyright_x_px = mm_to_px(ref_copyright_x_mm * width_sf_mm, PPI)
+        eff_copyright_x_px = _mm_to_px(ref_copyright_x_mm * width_sf_mm, PPI)
         ref_copyright_y_mm = REF_COPYRIGHT_Y_MM              #170
-        eff_copyright_y_px = mm_to_px(ref_copyright_y_mm * height_sf_mm, PPI)
+        eff_copyright_y_px = _mm_to_px(ref_copyright_y_mm * height_sf_mm, PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
@@ -119,10 +118,10 @@ class App_Test(tk.Tk):
                             width = int(ref_entry_nb_char * width_sf_min)) 
         le_bmf.set(ROOT_PATH)
         le_bmf.set2(ROOT_PATH)
-        text_width_mm, _ = str_size_mm(TEXT_LE_BMF, 
-                                       le_label_font, 
-                                       PPI)
-        eff_le_bmf_pos_x_px = mm_to_px(text_width_mm + 5, PPI)
+        text_width_mm, _ = _str_size_mm(TEXT_LE_BMF, 
+                                        le_label_font, 
+                                        PPI)
+        eff_le_bmf_pos_x_px = _mm_to_px(text_width_mm + 5, PPI)
         #! check the value 5 added in the original code
         le_bmf.place(x = eff_le_bmf_pos_x_px,
                      y = eff_le_bmf_pos_y_px,  
@@ -158,6 +157,7 @@ class App_Test(tk.Tk):
         sinon redemande de renseigner un chemin.
         '''       
         
+        # Local imports
         from BiblioMeter_GUI.Coordinates import CONTAINER_BUTTON_HEIGHT_PX
         
         # Setting container button height in pixels
@@ -165,9 +165,9 @@ class App_Test(tk.Tk):
             
         if bibliometer_path == '':
             warning_title = "!!! Attention !!!"
-            warning_text =  """Chemin non renseigné.""" 
-            warning_text += """\nL'application ne peut pas être lancée."""
-            warning_text += """\nVeuillez le définir."""
+            warning_text =  "Chemin non renseigné." 
+            warning_text += "\nL'application ne peut pas être lancée."
+            warning_text += "\nVeuillez le définir."
             messagebox.showwarning(warning_title, warning_text)
 
         else:
@@ -225,12 +225,14 @@ class Page_ParsingConcat(tk.Frame):
         
         # 3rd party imports
         from tkinter import font as tkFont
+        
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
 
         # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
         from BiblioMeter_GUI.Page_ParsingConcat import create_ParsingConcat        
         from BiblioMeter_GUI.Useful_Functions import font_size
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
@@ -265,7 +267,7 @@ class Page_ParsingConcat(tk.Frame):
         
         # Setting y_position in px for page label
         ref_label_pos_y_mm   = REF_LABEL_POS_Y_MM    #15
-        eff_label_pos_y_px   = mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
+        eff_label_pos_y_px   = _mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
@@ -302,13 +304,15 @@ class Page_ParsingInstitution(tk.Frame):
         
         # 3rd party imports
         from tkinter import font as tkFont
-
+        
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+        
         # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
         from BiblioMeter_GUI.Page_ParsingInstitution import create_ParsingInstitution
         from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         from BiblioMeter_GUI.Useful_Functions import font_size
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
@@ -343,7 +347,7 @@ class Page_ParsingInstitution(tk.Frame):
         
         # Setting y_position in px for page label
         ref_label_pos_y_mm = REF_LABEL_POS_Y_MM      #15
-        eff_label_pos_y_px = mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
+        eff_label_pos_y_px = _mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
@@ -417,11 +421,13 @@ class Page_MultiAnnuelle(tk.Frame):
         # 3rd party imports
         from tkinter import font as tkFont
 
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+        
         # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
         from BiblioMeter_GUI.Page_MultiAnnuelle import create_MultiAnnuelle        
         from BiblioMeter_GUI.Useful_Functions import font_size
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
@@ -456,7 +462,7 @@ class Page_MultiAnnuelle(tk.Frame):
         
         # Setting y_position in px for page label
         ref_label_pos_y_mm = REF_LABEL_POS_Y_MM     #15
-        eff_label_pos_y_px = mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
+        eff_label_pos_y_px = _mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2

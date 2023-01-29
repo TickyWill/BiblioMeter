@@ -95,22 +95,32 @@ class CheckBoxCorpuses:
         import tkinter as tk
         from tkinter import font as tkFont
         
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+        
         # Local imports
-        from BiblioMeter_GUI.Coordinates import root_properties
-        
+        from BiblioMeter_GUI.Coordinates import root_properties        
         from BiblioMeter_GUI.Useful_Functions import font_size
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
         
-        from BiblioMeter_GUI.Coordinates import REF_CHECK_BOXES_SEP_SPACE
         from BiblioMeter_GUI.Coordinates import FONT_NAME
+        from BiblioMeter_GUI.Coordinates import REF_CHECK_BOXES_SEP_SPACE
+        
         from BiblioMeter_GUI.Globals_GUI import GUI_DISP
-        from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
         from BiblioMeter_GUI.Globals_GUI import PPI
+        from BiblioMeter_GUI.Globals_GUI import ROOT_PATH        
         
-        win_width, win_height, SFWP, SFHP, SFW, SFH = root_properties(parent)
+        # Getting useful window sizes and scale factors depending on displays properties
+        sizes_tuple   = root_properties(parent)
+        win_width_px  = sizes_tuple[0]    # unused here
+        win_height_px = sizes_tuple[1]    # unused here
+        width_sf_px   = sizes_tuple[2]    # unused here
+        height_sf_px  = sizes_tuple[3]    # unused here
+        width_sf_mm   = sizes_tuple[4]
+        height_sf_mm  = sizes_tuple[5]
+        width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        self.check_boxes_sep_space = mm_to_px(REF_CHECK_BOXES_SEP_SPACE, PPI) * SFW
-        font = tkFont.Font(family = FONT_NAME, size = font_size(11, min(SFW, SFWP)))
+        self.check_boxes_sep_space = _mm_to_px(REF_CHECK_BOXES_SEP_SPACE * width_sf_mm, PPI)
+        font = tkFont.Font(family = FONT_NAME, size = font_size(11, width_sf_min))
         self.lab = tk.Label(parent, 
                             text = 'Année ' + year, 
                             font = font)

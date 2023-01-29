@@ -30,15 +30,11 @@ def solving_homonyms(in_path, out_path):
     from pathlib import Path
     import math
 
-    # 3rd party import
+    # 3rd party imports
     import pandas as pd
     from openpyxl import Workbook, load_workbook
-    from openpyxl.worksheet.datavalidation import DataValidation
-    from openpyxl.utils.dataframe import dataframe_to_rows
-    from openpyxl.utils.cell import get_column_letter
-    from openpyxl.comments import Comment
-    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
-    from openpyxl.styles.colors import Color
+    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+    from openpyxl.styles import PatternFill as openpyxl_PatternFill
 
     # BiblioAnalysis_Utils package imports    
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
@@ -46,11 +42,12 @@ def solving_homonyms(in_path, out_path):
     # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_CONSOLIDATION
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import ROW_COLORS
 
     # Useful alias
     pub_id_alias = COL_NAMES['pub_id']
-    idx_author = COL_NAMES['authors'][1]
-    dpt_alias = COL_NAMES_RH['dpt']
+    idx_author   = COL_NAMES['authors'][1]
+    dpt_alias    = COL_NAMES_RH['dpt']
     homonym_alias = 'HOMONYM'
     col_conso_alias = COL_CONSOLIDATION
         
@@ -76,9 +73,9 @@ def solving_homonyms(in_path, out_path):
     
     ws.title = 'Consolidation Homonymes'
     
-    yellow_ft = PatternFill(fgColor = '00FFFF00', fill_type = "solid")
+    yellow_ft = openpyxl_PatternFill(fgColor = ROW_COLORS['highlight'], fill_type = "solid")
 
-    for indice, r in enumerate(dataframe_to_rows(df_submit, index=False, header=True)):
+    for indice, r in enumerate(openpyxl_dataframe_to_rows(df_submit, index=False, header=True)):
         ws.append(r)
         last_row = ws[ws.max_row]
         if r[col_conso_alias.index(homonym_alias)] == homonym_alias and indice > 0:
@@ -197,19 +194,14 @@ def concat_name_firstname(df):
 
     return df
 
-def add_authors_name_list(in_path, out_path):
-    
-    ''' The `add_authors_fullname_list` function fetches an EXCEL file and saves it in 'df_in'. 
-    It then uses `concat_name_firstname` to create the column 'Nom Prénom'.
-    Then it goes through a unique list of Pub_id and adds in every single row of a new dataframe, 
-    which is a slice of df_in by the Pub_id, called 'df_inter' a new column 
-    called 'Authors Fullname List', a list of all the authors who participated in writting the article. 
-    Happens this new dataframe to 'df_out' and when done going through
-    all of the different Pub_id, it saves it into out_path as an EXCEL file.
+def add_authors_name_list(in_path, out_path):    
+    ''' The function `add_authors_fullname_list` adds two columns to the dataframe 'df_in'.
+    These columns contain respectivelly the co-authors identity (name, abreviated surname) 
+    and the article co-authors list.
     
     Args:
-        in_path (path): path (including name of the file) leading to the working excel file. 
-        out_path (path): path (including name of the file) leading to where the file will be 
+        in_path (path): Fullpath of the working excel file. 
+        out_path (path): Fullpath of the processed dataframe as an Excel file 
                          saved after going through its treatment.
     
     Returns:
@@ -221,19 +213,21 @@ def add_authors_name_list(in_path, out_path):
         The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' 
         module of 'BiblioMeter_FUNCTS' package.    
     '''
-    
-    # Local imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    
     # 3rd party imports
     import pandas as pd
     
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    
+    # Local imports
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_name_firstname
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    
     # Useful alias
-    pub_id_alias = COL_NAMES['pub_id']
-    full_name_alias = COL_NAMES_BONUS['nom prénom']
-    full_name_list_alias = COL_NAMES_BONUS['nom prénom liste']
+    pub_id_alias      = COL_NAMES['pub_id']
     idx_authors_alias = COL_NAMES['authors'][1]
+    full_name_alias      = COL_NAMES_BONUS['nom prénom']
+    full_name_list_alias = COL_NAMES_BONUS['nom prénom liste']   
     
     # Read of the excel file
     df_in = pd.read_excel(in_path)
@@ -248,107 +242,161 @@ def add_authors_name_list(in_path, out_path):
         error_text += f"\n\nPlease make sure that a column indexing the articles "
         error_text += f"is named 'Pub_id' in this file."
         raise KeyError(error_text)
-    
-    df_out = pd.DataFrame()
-    unique_pub_id_list = df_in[pub_id_alias].unique().tolist()
-    
-    for i in unique_pub_id_list:
-        filtre_inter_pub_id = (df_in[pub_id_alias] == i)
-        df_inter = df_in[filtre_inter_pub_id]
-        df_inter.sort_values(by = idx_authors_alias, inplace = True)
-        authors_fullname_list = '; '.join(df_inter[full_name_alias].tolist())
-        df_inter[full_name_list_alias] = authors_fullname_list
-        df_out = df_out.append(df_inter)
         
-    # Save in an excel file where leads out_path
+    df_out = pd.DataFrame()
+    for pub_id, pub_id_df in df_in.groupby(pub_id_alias): 
+        list_authors =";".join(pub_id_df[full_name_alias].unique())
+        pub_id_df[full_name_list_alias] = list_authors
+        df_out = pd.concat([df_out, pub_id_df])
+
+    # Saving 'df_out' in an excel file 'out_path'
     df_out.to_excel(out_path, index = False)
     
+    end_message = f"Column with co-authors list is added to the file: \n  '{out_path}'"
+    return end_message
+
+
 def add_OTP(in_path, out_path, out_file_base):
 
-    '''
+    '''    
+    Args:
+        in_path (path): fullpath of the working excel file. 
+        out_path (path): fullpatho of the saves prosseced file
+    
+    Returns:
+        None.
+    
+    Notes:
+        The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module 
+        of 'BiblioAnalysis_Utils' package.
+        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' 
+        part of 'BiblioMeter_FUNCTS' package.    
     '''
     
     # Standard library imports
     from pathlib import Path
 
-    # 3rd party import
+    # 3rd party imports
     import pandas as pd
-    from openpyxl import Workbook, load_workbook
-    from openpyxl.worksheet.datavalidation import DataValidation
-    from openpyxl.utils.dataframe import dataframe_to_rows
-    from openpyxl.utils.cell import get_column_letter
+    from openpyxl.worksheet.datavalidation import DataValidation as openpyxl_DataValidation
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
     # Local imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_authors_name_list
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import mise_en_page
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_OTP
-    from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
-    
-    # Internal functions
-    def _save_dpt_OTP_file(dpt_label):
-        '''
-        '''
-        filtre_dpt = df_submit[dpt_alias] == dpt_label
-        df_dpt = df_submit[filtre_dpt].copy()
-        _=[_you_got_OTPed(df_dpt, i) for i in range(len(df_dpt))]        
-        df_dpt = df_dpt.reindex(columns = COL_OTP)        
-        wb, ws = mise_en_page(df_dpt)
-        ws.title = 'OTP ' +  dpt_label             
-        for i in range(2, len(df_dpt)+2):
-            # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-            validation_list = _liste_de_validation(df_dpt, i-2)     
-            data_val = DataValidation(type = "list", 
-                                      formula1 = validation_list, 
-                                      showErrorMessage = False)
-            ws.add_data_validation(data_val)
-            # Décalage obligatoire car Excel et Python ne réagisse pas de la même manière
-            data_val.add(ws[get_column_letter(list(df_dpt.columns).index(OTP_alias) + 1) + str(i)]) 
-        OTP_file_name_dpt = out_file_base + '_' + dpt_label + '.xlsx'
-        wb.save(out_path / Path(OTP_file_name_dpt))
-        
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import DPT_ATTRIBUTS_DICT       
 
-    # Useful aliases
+    # Internal functions    
+    def _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, excel_dpt_path):
+        
+        ''' Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
+        The OPTs of the choosen department are added in a new column named 'OTP_alias' definined after the
+        global `COL_NAMES_BONUS['list OTP']`. 
+        A list data validation rules is added to each celles of the column
+        'OTP_alias'. The data frame column are renamed after the  global 'COL_OTP'. The Excel frame is
+        configurated by the `mise_en_page` function.
+        
+        '''
+        
+        # Building validation list of OTP for 'dpt' department
+        validation_list = '"'+','.join(dpt_otp_list) + '"' 
+        data_val = openpyxl_DataValidation(type = "list", 
+                                           formula1 = validation_list, 
+                                           showErrorMessage = False)
+        
+        # Adding a column containing OTPs of 'dpt' department
+        df_dpt[OTP_alias] = validation_list
+        
+        # Renaming the columns 
+        df_dpt = df_dpt.reindex(columns = COL_OTP)
+        # to replace by :
+        # COL_OTP_DICT {col_old_name : col_new_name}
+        # df_dpt = df_dpt.rename(columns = COL_OTP_DICT) 
+        
+        # Formatting the EXCEL file
+        wb, ws = mise_en_page(df_dpt)
+        ws.title = 'OTP ' +  dpt    # To define via a global
+        
+        # Setting num of first col and first row in EXCEL files
+        excel_first_col_num = 1
+        excel_first_row_num = 2
+        
+        # Getting the column letter for the OTPs column 
+        OTP_alias_df_index = list(df_dpt.columns).index(OTP_alias)        
+        OTP_alias_excel_index = OTP_alias_df_index + excel_first_col_num 
+        OTP_alias_column_letter = openpyxl_get_column_letter(OTP_alias_excel_index)
+                
+        # Activating the validation data list in all cells of the OTPs column
+        if len(df_dpt):
+            # Adding a validation data list
+            ws.add_data_validation(data_val)
+            for df_index_row in range(len(df_dpt)):  
+                OTP_cell_alias = OTP_alias_column_letter + str(df_index_row + excel_first_row_num)
+                data_val.add(ws[OTP_cell_alias])
+
+        wb.save(excel_dpt_path)
+        
+    # Setting useful aliases
     pub_id_alias = COL_NAMES['pub_id']      # Pub_id
+    idx_author   = COL_NAMES['authors'][1]  # Idx_author
     dpt_alias = COL_NAMES_RH['dpt']         # Dpt/DOB (lib court)
     OTP_alias = COL_NAMES_BONUS['list OTP'] # Choix de l'OTP
-    idx_author = COL_NAMES['authors'][1]    # Idx_author
     
-    add_authors_name_list(in_path, in_path) # Adds a column with a list of the authors
+    # Adding a column with a list of the authors
+    end_message = add_authors_name_list(in_path, in_path)
+    print('\n ',end_message)
     
-    df_submit = pd.read_excel(in_path)
-    df_submit.fillna('', inplace=True)
-    df_submit.set_index(pub_id_alias, inplace = True)
+    solved_homonymies_df = pd.read_excel(in_path)
+    solved_homonymies_df.fillna('', inplace = True)
     
-    dpt_label_list = list(DPT_LABEL_DICT.keys())
+    dpt_list = list(DPT_ATTRIBUTS_DICT.keys())
+     
+    # For each department adding a column containing 1 or 0 
+    # depending if the author belongs or not to the department
+    for dpt in  dpt_list:
+        dpt_label_list = DPT_ATTRIBUTS_DICT[dpt]['dpt_label']
+        solved_homonymies_df[dpt] = solved_homonymies_df[dpt_alias].apply(lambda x: 1 
+                                                                          if x in dpt_label_list 
+                                                                          else 0)
+    
+    # Building 'df_out' out of 'solved_homonymies_df' with a row per pub_id 
+    # 1 or 0 is assigned to each department column depending 
+    # on if at least one co-author is a member of this department,
+    # the detailed information is related to the first author only
+    df_out = pd.DataFrame()
+    for pub_id, dg in solved_homonymies_df.groupby('Pub_id'):
+        dg = dg.sort_values(by=['Idx_author'])
+        x = dg[dpt_list].any().astype(int) #sum()
+        dg[dpt_list] = x
+        df_out = pd.concat([df_out,dg.iloc[:1]]) 
+    
+    # Configuring an Excel file per department with the list of OTPs
+    for dpt in sorted(dpt_list):
+        # Setting df_dpt with only pub_ids for which the first author
+        # is from the 'dpt' department
+        filtre_dpt = False
+        for dpt_value in DPT_ATTRIBUTS_DICT[dpt]['dpt_label']:
+            filtre_dpt = filtre_dpt | (df_out[dpt_alias] == dpt_value)
+        df_dpt = df_out[filtre_dpt].copy()
         
-    data = [0] * len(df_submit)
-    for dpt_label in dpt_label_list: df_submit[dpt_label] = data
-    
-    for i in df_submit.index.unique().to_list():
+        # Setting the list of OTPs for the 'dpt' department
+        dpt_otp_list = DPT_ATTRIBUTS_DICT[dpt]['dpt_otp']
         
-        if isinstance(df_submit.loc[i], pd.Series):
-            df_inter_pub_id = df_submit.loc[i].to_frame().T
-        else:
-            df_inter_pub_id = df_submit.loc[i]
+        # Setting the full path of the EXCEl file for the 'dpt' department
+        OTP_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'
+        excel_dpt_path = out_path / Path(OTP_file_name_dpt)
+        
+        # Adding a column with validation list for OTPs and saving the file
+        _save_dpt_OTP_file(dpt,df_dpt,dpt_otp_list,excel_dpt_path)
 
-        for j in df_inter_pub_id[idx_author]:
-
-            filtre_inter_author = df_inter_pub_id[idx_author] == j
-            df_inter_inter = df_inter_pub_id[filtre_inter_author]
-            
-            for dpt_label in dpt_label_list:
-                for dpt_name in DPT_LABEL_DICT[dpt_label]:
-                    if df_inter_inter[dpt_alias].to_list()[0] == dpt_name:
-                        df_submit.loc[i,dpt_label] = 1    
-
-    df_submit.sort_values([pub_id_alias, idx_author], inplace = True)
-    df_submit.reset_index(inplace = True)
-    df_submit.drop_duplicates(subset = [pub_id_alias], inplace = True)
-    
-    for dpt_label in dpt_label_list: _save_dpt_OTP_file(dpt_label)
-    
-    end_message = f"Files for setting publication OTPs per department saved in folder: \n  '{out_path}'"
+    end_message  = f"Files for setting publication OTPs per department "
+    end_message += f"saved in folder: \n  '{out_path}'"
     return end_message
     
 
@@ -434,6 +482,7 @@ def add_biblio_list(in_path, out_path):
     # Local imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import EFF_CONVERTERS_DIC
 
     # Setting useful aliases
     pub_id_alias           = COL_NAMES['pub_id']
@@ -445,22 +494,22 @@ def add_biblio_list(in_path, out_path):
     pub_full_ref_alias     = COL_NAMES_BONUS['liste biblio']
 
     # Read of the excel file
-    articles_df = pd.read_excel(in_path)
+    articles_df = pd.read_excel(in_path, converters = EFF_CONVERTERS_DIC)
 
-    articles_plus_fullref_df = pd.DataFrame()
+    articles_plus_full_ref_df = pd.DataFrame()
     for pub_id, pub_id_df in articles_df.groupby(pub_id_alias): # Split the frame into subframes with same Pub_id
         
         pub_id_first_row = pub_id_df.iloc[0]                                # Select the first row and build the full reference
         full_ref  = f'{pub_id_first_row[pub_title_alias]}, '                # add the reference's title
         full_ref += f'{pub_id_first_row[pub_first_author_alias]}. et al., ' # add the reference's first author
-        full_ref += f'{pub_id_first_row[pub_journal_alias]}, '              # add the reference's journal name
+        full_ref += f'{pub_id_first_row[pub_journal_alias].capitalize()}, '              # add the reference's journal name
         full_ref += f'{str(pub_id_first_row[pub_year_alias])}, '            # add the reference's publication year
         full_ref += f'{pub_id_first_row[pub_doi_alias]}'                    # add the reference's DOI
         
         pub_id_df[pub_full_ref_alias] = full_ref
-        articles_plus_fullref_df = pd.concat([articles_plus_fullref_df, pub_id_df])
+        articles_plus_full_ref_df = pd.concat([articles_plus_full_ref_df, pub_id_df])
 
-    articles_plus_fullref_df.to_excel(out_path, index = False)
+    articles_plus_full_ref_df.to_excel(out_path, index = False)
     
     end_message = f"Column with full reference of publication added in file: \n  '{out_path}'"
     return end_message
@@ -680,8 +729,8 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     """
     """
     # Standard library imports
-    from pathlib import Path
     import os
+    from pathlib import Path
     from datetime import datetime
     
     # 3rd library imports
@@ -717,10 +766,12 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     out_file = f"{date} {bdd_multi_annuelle_file_alias} {os.getlogin()}_{available_liste_conso}.xlsx"
     out_path = bibliometer_path / Path(bdd_multi_annuelle_folder_alias)
     df_concat.to_excel(out_path / Path(out_file), index = False)
+    
     end_message  = f"Concatenation of consolidated pub lists saved in folder: \n  '{out_path}'"
     end_message += f"\n\n under filename: \n  '{out_file}'."
     return end_message
-        
+ 
+    
 def update_employees(bibliometer_path):
     '''
     '''
@@ -813,7 +864,6 @@ def update_employees(bibliometer_path):
     try:
         effectifs_file_name = os.listdir(effectifs_folder_path)[0]
         effectifs_file_path = effectifs_folder_path / Path(effectifs_file_name)
-        #path_effectif_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["effectifs"]) / os.listdir(effectifs_folder_path)[0]
     except FileNotFoundError:
         print(f"""Il y a un problème dans le nom du répertoire {ARCHI_RH["effectifs"]}""")
     except IndexError:
@@ -825,7 +875,6 @@ def update_employees(bibliometer_path):
     try:
         maj_effectifs_file_name = os.listdir(maj_effectifs_folder_path)[0]
         maj_effectifs_file_path = maj_effectifs_folder_path / Path(maj_effectifs_file_name)
-        #path_to_add_file = Path(bibliometer_path) / Path(ARCHI_RH["root"]) / Path(ARCHI_RH["maj"]) / os.listdir(maj_effectifs_folder_path)[0]
     except FileNotFoundError:
         print(f"Le nom de répertoire {maj_effectifs_folder_name_alias} est incorrect.")
     except IndexError:
@@ -880,73 +929,56 @@ def update_employees(bibliometer_path):
     
             
 def mise_en_page(df):
-    '''
+    
+    ''' 
+        
     '''
     
     # 3rd party imports
-    import pandas as pd
     from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows
-    from openpyxl.utils import get_column_letter
-    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
-    from openpyxl.styles.colors import Color
-
-    # Local library imports
+    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    from openpyxl.styles import Font as openpyxl_Font  
+    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
+    from openpyxl.styles import Alignment as openpyxl_Alignment
+    
+    # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_SIZES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import ROW_COLORS
 
+    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
+                  openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]
+
+    columns_list = list(df.columns)
+    
+    # Initialize wb as a workbook and ws its active worksheet
     wb = Workbook()
     ws = wb.active
-
-    red_ft = PatternFill(fgColor = '00FF0000', fill_type = "solid")
-    blue_ft = PatternFill(fgColor = '0000FFFF', fill_type = "solid")
-    bd = Side(style='medium', color="000000")
-    active_color = 'red'
-
-    pub_id_unique_list = list(df[COL_NAMES['pub_id']].unique())
-    columns_list = list(df.columns)
-
-    def _le_reste(num, la_list):
-        return la_list.index(num)%2 == 0
-
-    for indice, r in enumerate(dataframe_to_rows(df, index=False, header=True)):
-        ws.append(r)        
-        last_row = ws[ws.max_row]
-        if indice >= 1:
-            if _le_reste(df[COL_NAMES['pub_id']].iloc[indice-1], pub_id_unique_list):
-                cell = last_row[0]
-                cell.fill = red_ft
-                if active_color != 'red':
-                    for cell_bis in last_row:
-                        cell_bis.border = Border(top = bd)
-                        active_color = 'red'
-            else:
-                cell = last_row[0]
-                cell.fill = blue_ft
-                if active_color != 'blue':
-                    for cell_bis in last_row:
-                        cell_bis.border = Border(top = bd)
-                        active_color = 'blue'
+    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
+    
+    #  Coloring alternatly rows in ws
+    for idx, row in enumerate(ws_rows):
+        ws.append(row)        
+        last_row = ws[ws.max_row]            
+        if idx >= 1:
+            cell_color = cell_colors[idx%2]
+            for cell in last_row:
+                cell.fill = cell_color
 
     for cell in ws['A'] + ws[1]:
-        cell.font = Font(bold=True)
-        cell.border = Border(left = bd, top = bd, right = bd, bottom = bd)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.font = openpyxl_Font(bold=True)
+        cell.alignment = openpyxl_Alignment(horizontal="center", vertical="center")
 
-    for i, col in enumerate(columns_list):
-        if i >= 1:
+    for idx, col in enumerate(columns_list):
+        if idx >= 1:
+            column_letter = openpyxl_get_column_letter(idx + 1)
             try:
-                ws.column_dimensions[get_column_letter(i+1)].width = COL_SIZES[col]
-                # ws.column_dimensions[get_column_letter(i+1)].set_text_wrap()
+                ws.column_dimensions[column_letter].width = COL_SIZES[col]
             except:
-                ws.column_dimensions[get_column_letter(i+1)].width = 15
-                
-    #format = wb.add_format({'text_wrap': True})
-
-    ## Setting the format but not setting the column width.
-    #ws.set_column('H:I', None, format)
-
-    ws.row_dimensions[1].height = 30
+                ws.column_dimensions[column_letter].width = 20
+    
+    first_row_num = 1
+    ws.row_dimensions[first_row_num].height = 30
 
     return wb, ws
 

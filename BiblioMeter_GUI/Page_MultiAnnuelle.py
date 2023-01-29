@@ -32,6 +32,9 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     from tkinter import filedialog
     from tkinter import messagebox
     
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+    
     # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import find_missing_if
@@ -41,12 +44,10 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
     
     from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import encadre_UD
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years   
+    from BiblioMeter_GUI.Useful_Functions import encadre_UD 
     
     from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Coordinates import HELP_ETAPE_5
@@ -62,9 +63,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     
     from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
     from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
-    from BiblioMeter_GUI.Globals_GUI import DISPLAYS
-    from BiblioMeter_GUI.Globals_GUI import GUI_DISP
     from BiblioMeter_GUI.Globals_GUI import PPI
+
     
     # Internal functions
 
@@ -186,24 +186,22 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     eff_entry_font_size      = font_size(12, width_sf_min)
     eff_help_font_size       = font_size(12, width_sf_min)
     eff_buttons_font_size    = font_size(11, width_sf_min)
-    file_select_label_x_pos_px = mm_to_px(10 * width_sf_mm, PPI)
-    file_select_label_y_pos_px = mm_to_px(25 * height_sf_mm, PPI)
-    entry_x_pos_px             = mm_to_px(25 * width_sf_mm, PPI)
-    entry_y_pos_px             = mm_to_px(35 * height_sf_mm, PPI)
-    if_update_label_dx_px      = mm_to_px( 0 * width_sf_mm, PPI)
-    if_update_label_dy_px      = mm_to_px(20 * height_sf_mm, PPI)
-    missing_if_label_dx_px     = mm_to_px( 0 * width_sf_mm, PPI)
-    missing_if_label_dy_px     = mm_to_px(30 * height_sf_mm, PPI)
-    
-    if_update_x_pos_px       = mm_to_px(10 * width_sf_mm, PPI)
-    if_update_y_pos_px       = mm_to_px(25 * height_sf_mm, PPI)
-    entry_dx_px              = mm_to_px( 5 * width_sf_mm, PPI)
-    entry_dy_px              = mm_to_px( 5 * height_sf_mm, PPI)
-    launch_dx_px             = mm_to_px( 0 * width_sf_mm, PPI)
-    launch_dy_px             = mm_to_px( 5 * height_sf_mm, PPI)
-    
-    exit_button_x_pos_px     = mm_to_px(193 * width_sf_mm, PPI) 
-    exit_button_y_pos_px     = mm_to_px(145 * height_sf_mm, PPI)
+    file_select_label_x_pos_px = _mm_to_px(10 * width_sf_mm, PPI)
+    file_select_label_y_pos_px = _mm_to_px(25 * height_sf_mm, PPI)
+    entry_x_pos_px             = _mm_to_px(25 * width_sf_mm, PPI)  
+    entry_y_pos_px             = _mm_to_px(35 * height_sf_mm, PPI) 
+    if_update_label_dx_px      = _mm_to_px( 0 * width_sf_mm, PPI)  
+    if_update_label_dy_px      = _mm_to_px(20 * height_sf_mm, PPI) 
+    missing_if_label_dx_px     = _mm_to_px( 0 * width_sf_mm, PPI)  
+    missing_if_label_dy_px     = _mm_to_px(30 * height_sf_mm, PPI) 
+    if_update_x_pos_px       = _mm_to_px(10 * width_sf_mm, PPI)    
+    if_update_y_pos_px       = _mm_to_px(25 * height_sf_mm, PPI)   
+    entry_dx_px              = _mm_to_px( 5 * width_sf_mm, PPI)    
+    entry_dy_px              = _mm_to_px( 5 * height_sf_mm, PPI)   
+    launch_dx_px             = _mm_to_px( 0 * width_sf_mm, PPI)    
+    launch_dy_px             = _mm_to_px( 5 * height_sf_mm, PPI)   
+    exit_button_x_pos_px     = _mm_to_px(193 * width_sf_mm, PPI)    
+    exit_button_y_pos_px     = _mm_to_px(145 * height_sf_mm, PPI)  
     
     # Setting common attributs
     etape_label_format = 'left'

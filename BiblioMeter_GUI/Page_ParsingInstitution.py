@@ -15,7 +15,11 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     bibliometer_path is a type Path, and is the path to where the folders
     organised in a very specific way are stored
     
-    Returns : nothing, it create the page in self
+    Returns : 
+    
+    Note:
+        The function '_mm_to_px' is imported from the module 'BiblioGui' 
+        of the package 'BiblioAnalysis_Utils'.
     """
 
     # Standard library imports
@@ -30,39 +34,43 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from tkinter import filedialog
     from tkinter import messagebox
     
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px        
+    
     # Local imports    
     from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import recursive_year_search
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_OTP
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import concatenate_pub_lists
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import solving_homonyms
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidate_pub_list
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import solving_homonyms
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import update_employees
-    
     from BiblioMeter_GUI.Coordinates import root_properties
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
-    from BiblioMeter_GUI.Coordinates import ETAPE_LABEL_TEXT_LIST    
+    from BiblioMeter_GUI.Useful_Functions import encadre_RL
+    from BiblioMeter_GUI.Useful_Functions import last_available_years
+    from BiblioMeter_GUI.Useful_Functions import font_size
+    from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import place_bellow
+    
+    from BiblioMeter_GUI.Coordinates import ETAPE_LABEL_TEXT_LIST
+    from BiblioMeter_GUI.Coordinates import FONT_NAME    
     from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT
-    from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT_L
     from BiblioMeter_GUI.Coordinates import TEXT_HOMONYMES
     from BiblioMeter_GUI.Coordinates import TEXT_MAJ_EFFECTIFS
+    from BiblioMeter_GUI.Coordinates import TEXT_OTP
     from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
     from BiblioMeter_GUI.Coordinates import TEXT_PUB_CONSO
-    from BiblioMeter_GUI.Coordinates import TEXT_OTP
-    from BiblioMeter_GUI.Coordinates import FONT_NAME
+    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
+    
 
     from BiblioMeter_GUI.Globals_GUI import ARCHI_BDD_MULTI_ANNUELLE
     from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
     from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
+    from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
     from BiblioMeter_GUI.Globals_GUI import PPI
     
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
+    
     
     # Defining internal functions
     def _etape_frame(self, num):
@@ -110,17 +118,17 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     eff_select_font_size     = font_size(12, width_sf_min)
     eff_buttons_font_size    = font_size(11, width_sf_min)                                         
     
-    etape_label_pos_x        = mm_to_px( 10 * width_sf_mm, PPI)
-    etape_label_pos_y_list   = [mm_to_px( y * height_sf_mm, PPI) for y in [40, 74, 101, 129]]
-    etape_button_dx          = mm_to_px( 10 * width_sf_mm, PPI)
-    etape_button_dy          = mm_to_px(  5 * height_sf_mm, PPI)
-    etape_check_dy           = mm_to_px( -8 * height_sf_mm, PPI)
+    etape_label_pos_x        = _mm_to_px( 10 * width_sf_mm, PPI)
+    etape_label_pos_y_list   = [_mm_to_px( y * height_sf_mm, PPI) for y in [40, 74, 101, 129]]
+    etape_button_dx          = _mm_to_px( 10 * width_sf_mm, PPI)
+    etape_button_dy          = _mm_to_px(  5 * height_sf_mm, PPI)
+    etape_check_dy           = _mm_to_px( -8 * height_sf_mm, PPI)
     
-    exit_button_x_pos        = mm_to_px(193 * width_sf_mm,  PPI) 
-    exit_button_y_pos        = mm_to_px(145 * height_sf_mm, PPI)
+    exit_button_x_pos        = _mm_to_px(193 * width_sf_mm,  PPI) 
+    exit_button_y_pos        = _mm_to_px(145 * height_sf_mm, PPI)
     
-    year_button_x_pos        = mm_to_px( 10 * width_sf_mm,  PPI) 
-    year_button_y_pos        = mm_to_px( 26 * height_sf_mm, PPI)    
+    year_button_x_pos        = _mm_to_px( 10 * width_sf_mm,  PPI) 
+    year_button_y_pos        = _mm_to_px( 26 * height_sf_mm, PPI)    
     dy_year                  = -6
     ds_year                  = 5
 
@@ -170,7 +178,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     etapes             = [_etape_frame(self, etape_num) for etape_num in range(etapes_number)]    
     
     ### Choix de l'année 
-    years_list = five_last_available_years(bibliometer_path)
+    years_list = last_available_years(bibliometer_path, CORPUSES_NUMBER)
     default_year = years_list[-1]  
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
@@ -364,19 +372,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
     go_back_years = tk.StringVar(self)
     go_back_years.set(go_back_years_list_rh[4])
-    
-    # Création de l'option de choix de la profondeur de recherche
-    #font_croisement_l = tkFont.Font(family = FONT_NAME, 
-    #                                size   = eff_launch_font_size)
-    #label_format_l = 'left'
-    #Label_croisement_l = tk.Label(self, 
-    #                              text = TEXT_CROISEMENT_L, 
-    #                              font = font_croisement_l, 
-    #                              justify = label_format_l)
-    #etape_1 = etapes[0]
-    #place_bellow(etape_1, Label_croisement_l, dy = mm_to_px(5 * height_sf_mm , PPI))
-    #OptionButton_goback = tk.OptionMenu(self, go_back_years, *go_back_years_list_rh)
-    #OptionButton_goback.configure(font = font_croisement_l)   
     
     ### Définition du  bouton 'button_croisement' 
     font_croisement = tkFont.Font(family = FONT_NAME, 

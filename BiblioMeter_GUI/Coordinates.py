@@ -59,6 +59,8 @@ __all__ = ['general_properties',
 ############################## Vérifier l'utilité ##############################################
 #'TEXT_CROISEMENT_L', 'FONT_CROISEMENT_L', 'FORMAT_CROISEMENT_L'                                                 #
 ################################################################################################
+# Setting version value
+VERSION ='1.0.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
@@ -100,12 +102,10 @@ def general_properties(self):
         (tuple): self, 2 window sizes in pixels, 2 scale factors for sizes in mm 
                  and 2 scale factors for sizes in pixels.
     '''
-    # Third party imports
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
     from BiblioAnalysis_Utils.BiblioSys import GUI_DISP
-    
-    # Local imports
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
     
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
     ppi = DISPLAYS[GUI_DISP]["ppi"]
@@ -137,8 +137,8 @@ def general_properties(self):
     scale_factor_height_mm = screen_height_mm / ref_height_mm
     
     # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px = mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
-    win_height_px = mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
+    win_width_px = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
+    win_height_px = _mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
     
     # Setting window size depending on scale factor
     self.geometry(f"{win_width_px}x{win_height_px}")
@@ -172,12 +172,10 @@ def root_properties(root):
         (tuple): 2 window sizes in pixels, 2 scale factors for sizes in mm 
                  and 2 scale factors for sizes in pixels.
     '''
-    # Third party imports
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
     from BiblioAnalysis_Utils.BiblioSys import GUI_DISP
-    
-    # Local imports
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
     
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
     ppi = DISPLAYS[GUI_DISP]["ppi"]
@@ -209,8 +207,8 @@ def root_properties(root):
     scale_factor_height_mm = screen_height_mm / ref_height_mm
     
     # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px = mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
-    win_height_px = mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
+    win_width_px = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
+    win_height_px = _mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
     
     sizes_tuple = (win_width_px, win_height_px, 
                    scale_factor_width_px, scale_factor_height_px, 
@@ -259,11 +257,11 @@ TEXT_LE_BMF = "Dossier de travail :"
 TEXT_BOUTON_LANCEMENT = "Lancer l'analyse"
 
 # Copyright and contacts
-TEXT_COPYRIGHT =  '''Contacts :'''
-TEXT_COPYRIGHT += '''\n- Amal Chabli : amal.chabli@orange.fr'''
-TEXT_COPYRIGHT += '''\n- François Bertin : francois.bertin7@wanadoo.fr'''
-TEXT_COPYRIGHT += '''\n- Ludovic Desmeuzes : ludovic.desmeuzes@yahoo.com'''
-TEXT_COPYRIGHT += '''\nVersion 0.0.0'''
+TEXT_COPYRIGHT  =   "Contacts :"
+TEXT_COPYRIGHT +=  "\n- Amal Chabli : amal.chabli@orange.fr"
+TEXT_COPYRIGHT +=  "\n- François Bertin : francois.bertin7@wanadoo.fr"
+TEXT_COPYRIGHT +=  "\n- Ludovic Desmeuzes : ludovic.desmeuzes@yahoo.com"
+TEXT_COPYRIGHT += f"\nVersion {VERSION}"
 
 
 ############################################## Globals for first, second and third pages ##########################################

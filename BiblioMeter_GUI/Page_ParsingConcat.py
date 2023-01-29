@@ -17,9 +17,11 @@ def _create_table(self, bibliometer_path, pos_x_init):
         None.
         
     Note:
+        The function '_mm_to_px' is imported from the module 'BiblioGui' 
+        of the package 'BiblioAnalysis_Utils'.
         The function 'root_propertier' is imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
-        The functions 'font_size' and 'mm_to_px' are imported from the module 'Useful_Functions' 
+        The functions 'font_size' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
         The global 'FONT_NAME' is imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
@@ -30,12 +32,14 @@ def _create_table(self, bibliometer_path, pos_x_init):
     
     # 3rd party imports
     import tkinter as tk
-    from tkinter import font as tkFont    
+    from tkinter import font as tkFont
+    
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     
     # Local imports    
     from BiblioMeter_GUI.Coordinates import root_properties
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px    
+    from BiblioMeter_GUI.Useful_Functions import font_size    
     
     from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Globals_GUI import PPI  
@@ -65,8 +69,8 @@ def _create_table(self, bibliometer_path, pos_x_init):
                               size = local_font_size)
     
     # Setting useful x position shift and y position reference in pixels    
-    pos_x_shift = mm_to_px(25 * width_sf_mm, PPI)                                 
-    pos_y_ref = mm_to_px(35 * height_sf_mm, PPI) 
+    pos_x_shift = _mm_to_px(25 * width_sf_mm, PPI)                                 
+    pos_y_ref   = _mm_to_px(35 * height_sf_mm, PPI) 
     
     # Initializing x position in pixels
     pos_x = pos_x_init
@@ -106,12 +110,13 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
         esp_ligne (int): space in between some widgets of Page_ParsingConcat class.
 
     Returns:
-        nothing
         
     Note:
+        The function '_mm_to_px' is imported from the module 'BiblioGui' 
+        of the package 'BiblioAnalysis_Utils'.
         The function 'root_properties' is imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
-        The functions 'existing_corpuses', 'font_size', 'mm_to_px' and 'place_after'
+        The functions 'existing_corpuses', 'font_size' and 'place_after'
         are imported from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
         The class 'CheckBoxCorpuses' is imported from the module 'Useful_Classes' 
         of the package 'BiblioMeter_GUI'. 
@@ -127,18 +132,17 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     import tkinter as tk
     from tkinter import font as tkFont
     
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px 
+    
     # Local imports        
-    from BiblioMeter_GUI.Coordinates import root_properties
-    
-    from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
-    
+    from BiblioMeter_GUI.Coordinates import root_properties    
+    from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses    
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
     
-    from BiblioMeter_GUI.Coordinates import FONT_NAME
-    
+    from BiblioMeter_GUI.Coordinates import FONT_NAME    
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Globals_GUI import PPI
     
@@ -155,8 +159,8 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen 
     eff_font_size = font_size(11, width_sf_min)
-    eff_dx        = mm_to_px(1 * width_sf_mm,  PPI)
-    eff_dy        = mm_to_px(1 * height_sf_mm, PPI)
+    eff_dx        = _mm_to_px(1 * width_sf_mm,  PPI)
+    eff_dy        = _mm_to_px(1 * height_sf_mm, PPI)
 
     # Getting files status for corpus concatenation and deduplication
     files_status = existing_corpuses(bibliometer_path)     
@@ -287,9 +291,9 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
             data_failed = failed_json.read()
         dic_failed      = json.loads(data_failed)
         articles_number = dic_failed["number of article"]
-        info_title      = 'Information'
-        info_text       = f"""'Parsing' effectué."""
-        info_text      += f"""\nNombre d'articles du corpus : {articles_number}"""
+        info_title      = "Information"
+        info_text       = f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
+        info_text      += f"\n\n  Nombre d'articles du corpus : {articles_number}"
         messagebox.showinfo(info_title, info_text)
         
     # Setting variables for functions imported from BiblioAnalysis_Utils package
@@ -317,28 +321,29 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
         list_rawdata = files_status[3]
         list_parsing = files_status[4]
     else:
-        warning_title = 'Attention : Erreur type de BDD'
-        warning_text  = f"""Le type de BDD {database_type}"""
-        warning_text += f""" n'est pas encore pris en compte."""
-        warning_text += f"""\nLe 'parsing' correspondant ne peut être construit !"""
-        warning_text += f"""\nModifiez le type de BDD sélectionné et relancez le 'parsing'."""
+        warning_title = "Attention : Erreur type de BDD"
+        warning_text  = f"Le type de BDD {database_type}"
+        warning_text += f" n'est pas encore pris en compte."
+        warning_text += f"\nLe 'parsing' correspondant ne peut être construit !"
+        warning_text += f"\n\nModifiez le type de BDD sélectionné et relancez le 'parsing'."
         messagebox.showwarning(warning_title, warning_text)
         return
     rawdata_status = list_rawdata[list_corpus_year.index(corpus_year)]
     parsing_status = list_parsing[list_corpus_year.index(corpus_year)]
        
     # Asking for confirmation of corpus year to parse
-    ask_title = """Confirmation de l'année de traitement"""
-    ask_text  = f"""Une procédure de 'parsing' pour l'année {corpus_year} a été lancée."""
-    ask_text += f"""\nConfirmer ce choix ?"""
+    ask_title = "Confirmation de l'année de traitement"
+    ask_text  = f"Une procédure de 'parsing' de '{database_type}' "
+    ask_text += f"pour l'année {corpus_year} a été lancée."
+    ask_text += f"\n\n Confirmer ce choix ?"
     answer_1  = messagebox.askokcancel(ask_title, ask_text)
     if answer_1:        
         if rawdata_status == False:
-            warning_title = 'Attention ! Fichier manquant'
-            warning_text  = f"""Le fichier brut d'extraction de {database_type}"""
-            warning_text += f""" de l'année {corpus_year} n'est pas disponible. """
-            warning_text += f"""\nLe 'parsing' correspondant ne peut être construit !"""
-            warning_text += f"""\nAjoutez le fichier à l'emplacement attendu et relancez le 'parsing'."""
+            warning_title = "Attention ! Fichier manquant"
+            warning_text  = f"Le fichier brut d'extraction de '{database_type}' "
+            warning_text += f"de l'année {corpus_year} n'est pas disponible."
+            warning_text += f"\nLe 'parsing' correspondant ne peut être construit !"
+            warning_text += f"\n\nAjoutez le fichier à l'emplacement attendu et relancez le 'parsing'."
             messagebox.showwarning(warning_title, warning_text)
             return
         else:
@@ -347,22 +352,23 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
 
             if parsing_status == 1:
                 # Ask to carry on with parsing if already done
-                ask_title = 'Confirmation de traitement'
-                ask_text  =  f"""Le 'parsing' pour le corpus {database_type} """
-                ask_text += f"""de l'année {corpus_year} est déjà disponible."""
-                ask_text += f"""\nReconstruire le 'parsing' ?"""
+                ask_title = "Confirmation de traitement"
+                ask_text  = f"Le 'parsing' du corpus '{database_type}' "
+                ask_text += f"de l'année {corpus_year} est déjà disponible."
+                ask_text += f"\n\nReconstruire le 'parsing' ?"
                 answer_2  = messagebox.askokcancel(ask_title, ask_text)
                 if not answer_2:                                        
-                    info_title = 'Information'
-                    info_text  = f"""Le 'parsing' existant a été conservé."""                   
+                    info_title = "Information"
+                    info_text  = f"Le 'parsing' existant du corpus '{database_type}' "
+                    info_text += f"de l'année {corpus_year} a été conservé."                   
                     messagebox.showinfo(info_title, info_text)
                     return
             
             # Parse when not parsed yet or ok for reconstructing parsing                      
             _corpus_parsing(rawdata_path, parsing_path, database_type, failed_json_path, expert)
     else:
-        info_title = 'Information'
-        info_text  = f"""Modifiez l'année sélectionnée et relancez le 'parsing'."""                   
+        info_title = "Information"
+        info_text  = f"Modifiez l'année sélectionnée et relancez le 'parsing'."                  
         messagebox.showinfo(info_title, info_text)
         return
     
@@ -478,48 +484,52 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     rational_parsing_status = list_rational[list_corpus_year.index(corpus_year)]
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
-    ask_title = """Confirmation de l'année de traitement"""
-    ask_text = f"""la synthèse pour l'année {corpus_year} a été lancée."""
-    ask_text += f"""\nConfirmer ce choix ?"""
+    ask_title = "Confirmation de l'année de traitement"
+    ask_text  = f"La synthèse pour l'année {corpus_year} a été lancée."
+    ask_text += f"\n\nConfirmer ce choix ?"
     answer_1 = messagebox.askokcancel(ask_title, ask_text)
     if answer_1: # Alors on lance la synthèse
         
         # Vérification de la présence des fichiers
         if not wos_parsing_status:
-            warning_title = 'Attention ! Fichiers manquants'
-            warning_text = f"""Le 'parsing' de 'wos' """
-            warning_text += f"""de l'année {corpus_year} n'est pas disponible. """
-            warning_text += f"""\nLa synthèse correspondante ne peut pas encore être construite !"""
+            warning_title = "Attention ! Fichiers manquants"
+            warning_text  = f"Le 'parsing' de 'wos' "
+            warning_text += f"de l'année {corpus_year} n'est pas disponible."
+            warning_text += f"\nLa synthèse correspondante ne peut pas encore être construite !"
+            warning_text += f"\n\n-1 Lancez le 'parsing' manquant;"
+            warning_text += f"\n-2 Relancez la synthèse."
             messagebox.showwarning(warning_title, warning_text)
             return
 
         if not scopus_parsing_status:
-            warning_title = 'Attention ! Fichiers manquants'
-            warning_text = f"""Le 'parsing' de 'scopus' """
-            warning_text += f"""de l'année {corpus_year} n'est pas disponible. """
-            warning_text += f"""\nLa synthèse correspondante ne peut pas encore être construite !"""
+            warning_title = "Attention ! Fichiers manquants"
+            warning_text  = f"Le 'parsing' de 'scopus' "
+            warning_text += f"de l'année {corpus_year} n'est pas disponible."
+            warning_text += f"\nLa synthèse correspondante ne peut pas encore être construite !"
+            warning_text += f"\n\n-1 Lancez le 'parsing' manquant;"
+            warning_text += f"\n-2 Relancez la synthèse."
             messagebox.showwarning(warning_title, warning_text)
             return
 
         if rational_parsing_status:
             # Ask to carry on with parsing if already done
-            ask_title = 'Reconstruction de la synthèse'
-            ask_text =  f"""La synthèse pour l'année {corpus_year} est déjà disponible."""
-            ask_text += f"""\nReconstruire la synthèse ?"""
+            ask_title = "Reconstruction de la synthèse"
+            ask_text  =  f"La synthèse pour l'année {corpus_year} est déjà disponible."
+            ask_text += f"\n\nReconstruire la synthèse ?"
             answer_2 = messagebox.askokcancel(ask_title, ask_text)            
             if answer_2: # Alors on effectue la synthèse
                 _rationalize_corpus_parsing()
-                info_title = 'Information'
-                info_text = f"""La synthèse pour l'année {corpus_year} a été reconstruite."""                   
+                info_title = "Information"
+                info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."                   
                 messagebox.showinfo(info_title, info_text)
             else:
-                info_title = 'Information'
-                info_text = f"""La synthèse dejà disponible est conservée."""                   
+                info_title = "Information"
+                info_text = f"La synthèse dejà disponible est conservée."                   
                 messagebox.showinfo(info_title, info_text)
         else:
             _rationalize_corpus_parsing()            
-            info_title = 'Information'
-            info_text = f"""La construction de la synthèse pour l'année {corpus_year} est terminée."""                   
+            info_title = "Information"
+            info_text = f"La construction de la synthèse pour l'année {corpus_year} est terminée."                   
             messagebox.showinfo(info_title, info_text)
                 
     # update files status
@@ -537,13 +547,14 @@ def create_ParsingConcat(self, bibliometer_path, parent):
         parent (): ????
     
     Returns:
-        None.
         
     Note:
+        The function '_mm_to_px' is imported from the module 'BiblioGui' 
+        of the package 'BiblioAnalysis_Utils'.
         The function 'root_properties' is imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
-        The functions 'existing_corpuses', 'five_last_available_years', 'font_size', 'mm_to_px', 
-        'place_after' and 'str_size_mm' are imported from the module 'Useful_Functions' 
+        The functions 'existing_corpuses', 'font_size' and 'place_after' 
+        are imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
         The globals ARCHI_YEAR, BDD_LIST and PPI are imported from the module 'Globals_GUI' 
         of the package 'BiblioMeter_GUI'.
@@ -562,15 +573,15 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     from tkinter import messagebox
     from tkinter import font as tkFont
     
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px    
+    
     # Local imports
     from BiblioMeter_GUI.Coordinates import root_properties
     
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    from BiblioMeter_GUI.Useful_Functions import five_last_available_years
     from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import str_size_mm
     
     from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Coordinates import TEXT_BDD_PC
@@ -610,24 +621,24 @@ def create_ParsingConcat(self, bibliometer_path, parent):
                 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers  are reference values in mm for reference screen
-    position_selon_x_check   = mm_to_px(70  * width_sf_mm,  PPI)
-    position_selon_y_check   = mm_to_px(45  * height_sf_mm, PPI)
-    espace_entre_ligne_check = mm_to_px(10  * height_sf_mm, PPI)    
-    labels_x_pos             = mm_to_px(10  * width_sf_mm,  PPI)
-    labels_y_space           = mm_to_px(10  * height_sf_mm, PPI)
-    status_label_y_pos       = mm_to_px(30  * height_sf_mm, PPI)  
-    parsing_label_y_pos      = mm_to_px(107 * height_sf_mm, PPI)  #102
-    synthese_label_y_pos     = mm_to_px(135 * height_sf_mm, PPI)  #130                           
-    status_button_x_pos      = mm_to_px(40  * width_sf_mm,  PPI)       
-    status_button_y_pos      = mm_to_px(92  * height_sf_mm, PPI)
-    exit_button_x_pos        = mm_to_px(193 * width_sf_mm,  PPI) 
-    exit_button_y_pos        = mm_to_px(145 * height_sf_mm, PPI)
-    dx_year_select           = mm_to_px(1   * width_sf_mm,  PPI)
-    dy_year_select           = mm_to_px(1   * height_sf_mm, PPI)
-    dx_bdd_select            = mm_to_px(12  * width_sf_mm,  PPI)    #15
-    dy_bdd_select            = mm_to_px(1   * height_sf_mm, PPI)
-    dx_launch                = mm_to_px(15  * width_sf_mm,  PPI)    #20
-    dy_launch                = mm_to_px(0.2 * height_sf_mm, PPI)
+    position_selon_x_check   = _mm_to_px(70  * width_sf_mm,  PPI)
+    position_selon_y_check   = _mm_to_px(45  * height_sf_mm, PPI)
+    espace_entre_ligne_check = _mm_to_px(10  * height_sf_mm, PPI)    
+    labels_x_pos             = _mm_to_px(10  * width_sf_mm,  PPI)
+    labels_y_space           = _mm_to_px(10  * height_sf_mm, PPI)
+    status_label_y_pos       = _mm_to_px(30  * height_sf_mm, PPI)  
+    parsing_label_y_pos      = _mm_to_px(107 * height_sf_mm, PPI)  #102
+    synthese_label_y_pos     = _mm_to_px(135 * height_sf_mm, PPI)  #130                           
+    status_button_x_pos      = _mm_to_px(40  * width_sf_mm,  PPI)       
+    status_button_y_pos      = _mm_to_px(92  * height_sf_mm, PPI)
+    exit_button_x_pos        = _mm_to_px(193 * width_sf_mm,  PPI) 
+    exit_button_y_pos        = _mm_to_px(145 * height_sf_mm, PPI)
+    dx_year_select           = _mm_to_px(1   * width_sf_mm,  PPI)
+    dy_year_select           = _mm_to_px(1   * height_sf_mm, PPI)
+    dx_bdd_select            = _mm_to_px(12  * width_sf_mm,  PPI)    #15
+    dy_bdd_select            = _mm_to_px(1   * height_sf_mm, PPI)
+    dx_launch                = _mm_to_px(15  * width_sf_mm,  PPI)    #20
+    dy_launch                = _mm_to_px(0.2 * height_sf_mm, PPI)
     eff_labels_font_size     = font_size(14, width_sf_min)
     eff_select_font_size     = font_size(12, width_sf_min) 
     eff_buttons_font_size    = font_size(11, width_sf_min)

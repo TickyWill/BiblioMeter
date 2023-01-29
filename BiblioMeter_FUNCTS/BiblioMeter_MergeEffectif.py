@@ -2,7 +2,7 @@ __all__ = ['recursive_year_search']
 
 ## To do: Consolidate use of globals
             
-def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test'):
+def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', verbose = False):
 
     """
     Description à venir
@@ -16,11 +16,14 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test'):
     import numpy as np
     import pandas as pd
 
-    # Local imports
+    # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    
+    # Local imports
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    
 
     # Création chemin vers résultats pour effectuer des checks étapes
     PATH_OF_CHECKS = Path(bibliometer_path) / Path('Results')
@@ -35,43 +38,47 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test'):
         return lastname_match_list
 
     def _test_full_match():
-        if len(df_eff_pub_match)!=0:
-            print('\nMatch found for author lastname:',pub_lastname)
-            print(' Nb of matches:',len(df_eff_pub_match))
-            print(' Employee matricule:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list()[0])
-            print(' Employee lastname:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list()[0])
-        else:
-            print('\nNo match for author lastname:',pub_lastname)
-            print('  Nb first matches:',len(df_eff_pub_match))
+        if verbose:
+            if len(df_eff_pub_match)!=0:
+                print('\nMatch found for author lastname:',pub_lastname)
+                print(' Nb of matches:',len(df_eff_pub_match))
+                print(' Employee matricule:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list()[0])
+                print(' Employee lastname:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list()[0])
+            else:
+                print('\nNo match for author lastname:',pub_lastname)
+                print('  Nb first matches:',len(df_eff_pub_match))
 
     def _test_similarity():
-        print('\nSimilarities by orphan reduction for author lastname:',pub_lastname)
-        print('  Lastname flag match:', flag_lastname_match)
-        print('  Nb similarities by orphan reduction:',len(lastname_match_list))
-        print('  List of lastnames with similarities:', lastname_match_list)
-        print('  Employee matricules:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list())
-        print('  Employee lastnames:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list())
-        print('  Employee firstnames:',df_eff_pub_match[COL_NAMES_RH['prénom']].to_list())
-        print('  Employee fullnames:',df_eff_pub_match[COL_NAMES_RH['Full_name']].to_list())    
+        if verbose:
+            print('\nSimilarities by orphan reduction for author lastname:',pub_lastname)
+            print('  Lastname flag match:', flag_lastname_match)
+            print('  Nb similarities by orphan reduction:',len(lastname_match_list))
+            print('  List of lastnames with similarities:', lastname_match_list)
+            print('  Employee matricules:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list())
+            print('  Employee lastnames:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list())
+            print('  Employee firstnames:',df_eff_pub_match[COL_NAMES_RH['prénom']].to_list())
+            print('  Employee fullnames:',df_eff_pub_match[COL_NAMES_RH['Full_name']].to_list())    
 
     def _test_no_similarity():
-        print('\nNo similarity by orphan reduction for author lastname:',pub_lastname)
-        print('  Lastname flag match:', flag_lastname_match)
-        print('  Nb similarities by orphan reduction:',len(lastname_match_list))
-        print('  Orphan full author name:',df_pub_row[COL_NAMES['authors'][2]])
-        print('  Orphan author lastname:',df_pub_row[COL_NAMES_BM['Last_name']])
-        print('  Orphan author firstname initiales:',df_pub_row[COL_NAMES_BM['First_name']])
+        if verbose:
+            print('\nNo similarity by orphan reduction for author lastname:',pub_lastname)
+            print('  Lastname flag match:', flag_lastname_match)
+            print('  Nb similarities by orphan reduction:',len(lastname_match_list))
+            print('  Orphan full author name:',df_pub_row[COL_NAMES['authors'][2]])
+            print('  Orphan author lastname:',df_pub_row[COL_NAMES_BM['Last_name']])
+            print('  Orphan author firstname initiales:',df_pub_row[COL_NAMES_BM['First_name']])
 
     def _test_match_of_firstname_initiales():
-        print('\nInitiales for author lastname:',pub_lastname)
-        print('  Author fullname:', df_pub_row[COL_NAMES['authors'][2]]) 
-        print('  Author firstname initiales:',pub_firstname)
-        print('\nInitiales of matching employees for author lastname:',pub_lastname)
-        print('  Employees firstname initiales list:',eff_firstnames)                              
-        print('\nChecking initiales matching for author lastname:',pub_lastname)
-        print('  Nb of matching initiales:', len(list_idx))
-        print('  Index list of matching initiales:',list_idx)
-        print('  Employees lastnames list:',eff_lastnames_spec)
+        if verbose:
+            print('\nInitiales for author lastname:',pub_lastname)
+            print('  Author fullname:', df_pub_row[COL_NAMES['authors'][2]]) 
+            print('  Author firstname initiales:',pub_firstname)
+            print('\nInitiales of matching employees for author lastname:',pub_lastname)
+            print('  Employees firstname initiales list:',eff_firstnames)                              
+            print('\nChecking initiales matching for author lastname:',pub_lastname)
+            print('  Nb of matching initiales:', len(list_idx))
+            print('  Index list of matching initiales:',list_idx)
+            print('  Employees lastnames list:',eff_lastnames_spec)
 
     def _save_spec_dfs():                       
         df_temp.to_excel(PATH_OF_CHECKS / Path('df_temp_' + test_name + '.xlsx'), index =False)
@@ -235,11 +242,12 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     # 3rd party import
     import pandas as pd
 
-    # Local imports
+    # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
+    
+    # Local imports
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
 
     # Création des alias pour simplifier les accès
@@ -365,10 +373,12 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
    
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
     
     # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_biblio_list
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_TYPES_RH
     from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR    
     
@@ -387,10 +397,10 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
         df_year = df[year_col_alias].iloc[0]
         
         def _rename_pub_id(old_pub_id, year):
-            new_pub_id = old_pub_id + '_' + year
+            new_pub_id = str(int(year)) + '_' + str(int(old_pub_id))
             return new_pub_id
 
-        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(str(int(x)), str(df_year)))
+        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, df_year))
         return df    
     
     # Setting useful aliases
@@ -409,8 +419,8 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     all_if_path = if_root_folder_path / Path(if_file_name_alias)
     
     # Getting the employees dataframe    
-    df_eff = pd.read_excel(effectifs_path, sheet_name = None)
-    eff_available_years = list(df_eff.keys())
+    df_eff = pd.read_excel(effectifs_path, sheet_name = None, dtype = COL_TYPES_RH)
+    eff_available_years = list(df_eff.keys())        
     corpus_year_status = corpus_year in eff_available_years 
     
     # Building the articles dataframe 
@@ -444,9 +454,8 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Building the initial dataframes
     df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], df_pub, bibliometer_path, test_case = test_case)
     
-    for step, year in enumerate(years[1:]):
-    
-        # Updating the dataframes 
+    for step, year in enumerate(years):   
+        # Updating the dataframes df_submit_add and df_orphan
         df_submit_add, df_orphan =  _build_df_submit(df_eff[year], df_orphan, bibliometer_path, test_case)
 
         # Updating df_submit 
@@ -464,6 +473,10 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file #
     #####################################################################################
     
+    # Replcae NaN values by UNKNOWN string
+    df_submit.fillna(UNKNOWN, inplace=True)
+    df_orphan.fillna(UNKNOWN, inplace=True)
+
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
 
