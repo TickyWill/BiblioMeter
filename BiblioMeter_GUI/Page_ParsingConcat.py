@@ -426,7 +426,7 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
 
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioParsingConcat import parsing_concatenate_deduplicate
-    from BiblioAnalysis_Utils.BiblioParsingUtils import extend_author_institutions
+    from BiblioAnalysis_Utils.BiblioParsingInstitutions import extend_author_institutions
     
     # BiblioMeter_FUNCTS package imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import LITEN_INST_LIST
