@@ -1,6 +1,8 @@
 __all__= ['LabelEntry',
-         'CheckBoxCorpuses',
-         'LabelEntry_toFile']
+          'CheckBoxCorpuses',
+          'LabelEntry_toFile',
+          'LabelEntry_toValue',
+         ]
 
 class LabelEntry:
     
@@ -105,7 +107,6 @@ class CheckBoxCorpuses:
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_CHECK_BOXES_SEP_SPACE
         
-        from BiblioMeter_GUI.Globals_GUI import GUI_DISP
         from BiblioMeter_GUI.Globals_GUI import PPI
         from BiblioMeter_GUI.Globals_GUI import ROOT_PATH        
         
@@ -330,4 +331,52 @@ class LabelEntry_toFile:
     def efface(self):
         for x in (self.lab, self.entree):
             x.place_forget()
+
+            
+class LabelEntry_toValue:
+    
+    """
+    Petit automat permettant d'afficher sur la même ligne :
+    - un texte d'info
+    - une entrée
+    - un boutton
+    
+    Fonctionnalités :
+        - l'opt "align" sur la méthode <place> permet d'alligner sur l'entrée plutot que sur le texte.
+        - surcharge des méthode get() et set() : pointeur vers le tk.StringVar()
+          (permet de garder la continuité des appels sur l'objet Entry créé)
+        - permet de masquer/afficher la ligne (<.efface()> / <.place()>) (inutile pour le moment)
+        - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
+    """
+
+    def __init__(self, parent, text_label, font_label):
         
+        # 3rd party imports
+        import tkinter as tk
+        self.lab = tk.Label(parent, text = text_label, font = font_label)
+        self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
+        self.entree = tk.Entry(parent, textvariable=self.val)
+        self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
+        self.entree2 = tk.Entry(parent, textvariable = self.val2)
+
+    def place(self,x,y,align=True):
+        a,b = self.lab.winfo_reqwidth(),0
+        if not align:
+            a,b = b,a
+        self.lab.place(x=x-a,y=y)
+        self.entree2.place(x = x + b, y = y)
+        
+    def get(self):
+        return self.val.get()
+    
+    def set(self, value):
+        self.val.set(value)
+        
+    def set2(self, value):
+        from pathlib import Path
+        p = Path(value)
+        self.val2.set(p.name)
+        
+    def efface(self):
+        for x in (self.lab, self.entree):
+            x.place_forget()            

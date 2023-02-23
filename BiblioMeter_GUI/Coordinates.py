@@ -1,5 +1,6 @@
 __all__ = ['general_properties',
            'root_properties',
+           'BM_GUI_DISP',
            
            'CONTAINER_BUTTON_HEIGHT_PX',
            'FONT_NAME',
@@ -70,6 +71,9 @@ FONT_NAME = "Helvetica"
 # Setting the title of the application launch window
 APPLICATION_WINDOW_TITLE = "BiblioMeter - Analyse de la production scientifique du LITEN"
 
+# Setting primery display
+BM_GUI_DISP = 0
+
 # Setting display reference sizes in pixels and mm
 REF_SCREEN_WIDTH_PX = 1920
 REF_SCREEN_HEIGHT_PX = 1080
@@ -105,18 +109,17 @@ def general_properties(self):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
-    from BiblioAnalysis_Utils.BiblioSys import GUI_DISP
     
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
-    ppi = DISPLAYS[GUI_DISP]["ppi"]
+    ppi = DISPLAYS[BM_GUI_DISP]["ppi"]
     
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
     screen_width_px = self.winfo_screenwidth()
     screen_height_px = self.winfo_screenheight()
     
     # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm = DISPLAYS[GUI_DISP]["width_mm"]
-    screen_height_mm = DISPLAYS[GUI_DISP]["height_mm"]
+    screen_width_mm = DISPLAYS[BM_GUI_DISP]["width_mm"]
+    screen_height_mm = DISPLAYS[BM_GUI_DISP]["height_mm"]
     
     # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
     ref_width_px = REF_SCREEN_WIDTH_PX
@@ -175,18 +178,17 @@ def root_properties(root):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
-    from BiblioAnalysis_Utils.BiblioSys import GUI_DISP
     
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
-    ppi = DISPLAYS[GUI_DISP]["ppi"]
+    ppi = DISPLAYS[BM_GUI_DISP]["ppi"]
     
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
     screen_width_px = root.winfo_screenwidth()
     screen_height_px = root.winfo_screenheight()
     
     # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm = DISPLAYS[GUI_DISP]["width_mm"]
-    screen_height_mm = DISPLAYS[GUI_DISP]["height_mm"]
+    screen_width_mm = DISPLAYS[BM_GUI_DISP]["width_mm"]
+    screen_height_mm = DISPLAYS[BM_GUI_DISP]["height_mm"]
     
     # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
     ref_width_px = REF_SCREEN_WIDTH_PX

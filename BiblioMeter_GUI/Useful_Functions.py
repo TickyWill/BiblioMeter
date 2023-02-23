@@ -1,5 +1,5 @@
 __all__ = ['last_available_years', 
-           'get_corpus_filename_by_year',
+           #'get_corpus_filename_by_year',
            'existing_corpuses', 
            'place_after', 
            'place_bellow', 
@@ -25,37 +25,8 @@ def last_available_years(bibliometer_path, year_number):
             list_annee.append(annee)
     return list_annee[-year_number:]
 
-def get_corpus_filename_by_year(full_path, database_type):
-    
-    '''
-    Returns the name of the rawdata file
-    '''
-        
-    # Standard library imports
-    import os
-    from pathlib import Path
-    
-    path_filename = []
-    
-    if database_type == 'wos':
-        for path, _, files in os.walk(full_path):
-                path_filename.extend(Path(path) / Path(file) for file in files
-                                                              if file.endswith(".txt"))
-        if path_filename == []:
-            return Path('Not Found')
-        else:
-            return Path(path_filename[0])
-                    
-    if database_type == 'scopus':
-        for path, _, files in os.walk(full_path):
-                path_filename.extend(Path(path) / Path(file) for file in files
-                                                              if file.endswith(".csv"))
-        if path_filename == []:
-            return Path('Not Found')
-        else:
-            return Path(path_filename[0])
 
-def existing_corpuses(bibliometer_path):
+def existing_corpuses(bibliometer_path, corpuses_number = None):
 
     """ 
     Description : Returns a list of list of zeros and ones displaying available or not
@@ -88,55 +59,89 @@ def existing_corpuses(bibliometer_path):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     
     from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
-    from BiblioMeter_GUI.Useful_Functions import get_corpus_filename_by_year
+    from BiblioMeter_GUI.Useful_Functions import last_available_years  
     
-    list_dir = last_available_years(bibliometer_path, CORPUSES_NUMBER)
+    # internal functions
+    def _get_rawdata_filename_path(corpus_full_path, database_type):
+        '''Returns the name of the rawdata file of a corpus pointed by the full path 'corpus_full_path'
+        for the database type 'database_type'.
+        '''
 
-    # Création des alias pour simplifier les accès
-    wos_alias = FOLDER_NAMES['wos']
-    scopus_alias = FOLDER_NAMES['scopus']
-    corpus_path_alias = FOLDER_NAMES['corpus']
+        # Standard library imports
+        import os
+        from pathlib import Path
 
-    scopus_path_alias = Path(corpus_path_alias) / Path(scopus_alias)
-    wos_path_alias = Path(corpus_path_alias) / Path(wos_alias)
+        filenames_list = []
 
-    parsing_path_alias = FOLDER_NAMES['parsing']
-    rawdata_path_alias = FOLDER_NAMES['rawdata']
+        if database_type == 'wos':
+            for _, _, files in os.walk(corpus_full_path): 
+                filenames_list.extend(file for file in files if file.endswith(".txt")) 
 
-    concat_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['concat']
-    dedupli_path_alias = Path(corpus_path_alias) / FOLDER_NAMES['dedup']
+        if database_type == 'scopus':
+            for _, _, files in os.walk(corpus_full_path):
+                filenames_list.extend(file for file in files if file.endswith(".csv"))
 
+        if filenames_list == []:
+            return Path(f'{database_type} rawdata file not Found')
+        else:
+            return corpus_full_path / Path(filenames_list[0])
+    
+    
+    def _get_database_paths(year_folder_path, rawdata_alias, parsing_alias, article_path_alias, database_type):
+        '''Returns useful full-paths for the database type 'database_type'.
+        '''
+        database_folder_alias = FOLDER_NAMES[database_type]
+        database_path_alias   = Path(corpus_alias) / Path(database_folder_alias)        
+        rawdata_full_path     = year_folder_path / database_path_alias / Path(rawdata_alias)
+        database_rawdata_path = _get_rawdata_filename_path(rawdata_full_path, database_type)
+        database_parsing_path = year_folder_path / database_path_alias / Path(parsing_alias) / Path(article_path_alias)
+        
+        return database_rawdata_path, database_parsing_path
+    
+    
+    if not corpuses_number: corpuses_number = CORPUSES_NUMBER
+    
+    years_folder_list = last_available_years(bibliometer_path, corpuses_number)
+
+    # Setting useful aliases from globals
+    corpus_alias  = FOLDER_NAMES['corpus']
+    rawdata_alias = FOLDER_NAMES['rawdata']
+    parsing_alias = FOLDER_NAMES['parsing']
+    concat_alias       = FOLDER_NAMES['concat']
+    dedup_alias        = FOLDER_NAMES['dedup']
+    concat_path_alias  = Path(corpus_alias) / FOLDER_NAMES['concat']
+    dedupli_path_alias = Path(corpus_alias) / FOLDER_NAMES['dedup']
     article_path_alias = DIC_OUTDIR_PARSING['A']
     
-    # Set of variables
-    list_annee = list()
-    list_wos_rawdata = list()
-    list_wos_parsing = list()
-    list_scopus_rawdata = list()
-    list_scopus_parsing = list()
-    list_deduplication = list()
+    # Initialization of lists    
+    years_list = list()
+    wos_rawdata_list = list()
+    wos_parsing_list = list()
+    scopus_rawdata_list = list()
+    scopus_parsing_list = list()
+    deduplication_list = list()
 
-    for i, annee in enumerate(list_dir):
-        list_annee.append(annee)
-
-        # Concatenation and deduplication (by year)
-        path_dedupli = Path(bibliometer_path) / Path(list_annee[i]) / Path(dedupli_path_alias) / Path(parsing_path_alias) / Path(article_path_alias)
-        list_deduplication.append(path_dedupli.is_file())
-
+    for year in years_folder_list:
+        
+        year_folder_path = bibliometer_path / Path(year) 
+        years_list.append(year)
+        
         # Wos
-        path_wos_parsing = Path(bibliometer_path) / Path(list_annee[i]) / Path(wos_path_alias) / Path(parsing_path_alias) / Path(article_path_alias)
-        list_wos_parsing.append(path_wos_parsing.is_file())
-        path_wos_rawdata = get_corpus_filename_by_year(Path(bibliometer_path) / Path(list_annee[i]), 'wos')
-        list_wos_rawdata.append(path_wos_rawdata.is_file())
-
+        wos_rawdata_path, wos_parsing_path = _get_database_paths(year_folder_path, rawdata_alias, parsing_alias, article_path_alias, "wos")
+        wos_rawdata_list.append(wos_rawdata_path.is_file())
+        wos_parsing_list.append(wos_parsing_path.is_file())
+        
         # Scopus
-        path_scopus_parsing = Path(bibliometer_path) / Path(list_annee[i]) / Path(scopus_path_alias) / Path(parsing_path_alias) / Path(article_path_alias)
-        list_scopus_parsing.append(path_scopus_parsing.is_file())
-        path_scopus_rawdata = get_corpus_filename_by_year(Path(bibliometer_path) / Path(list_annee[i]), 'scopus')
-        list_scopus_rawdata.append(path_scopus_rawdata.is_file())
+        scopus_rawdata_path, scopus_parsing_path = _get_database_paths(year_folder_path, rawdata_alias, parsing_alias, article_path_alias, "scopus")
+        scopus_rawdata_list.append(scopus_rawdata_path.is_file())        
+        scopus_parsing_list.append(scopus_parsing_path.is_file())
+        
+        # Concatenation and deduplication (by year)
+        deduplication_path = year_folder_path / Path(dedupli_path_alias) / Path(parsing_alias) / Path(article_path_alias)
+        deduplication_list.append(deduplication_path.is_file())
 
-    return list_annee, list_wos_rawdata, list_wos_parsing, list_scopus_rawdata, list_scopus_parsing, list_deduplication
+    return years_list, wos_rawdata_list, wos_parsing_list, scopus_rawdata_list, scopus_parsing_list, deduplication_list
+
 
 def place_after(gauche, droite, dx = 5, dy = 0):
     gauche_info = gauche.place_info()

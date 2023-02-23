@@ -25,7 +25,8 @@ class App_Test(tk.Tk):
         
         # Local imports
         from BiblioMeter_GUI.Coordinates import general_properties        
-        from BiblioMeter_GUI.Useful_Classes import LabelEntry        
+        from BiblioMeter_GUI.Useful_Classes import LabelEntry
+        from BiblioMeter_GUI.Useful_Classes import LabelEntry_toValue
         from BiblioMeter_GUI.Useful_Functions import font_size
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
@@ -122,11 +123,12 @@ class App_Test(tk.Tk):
                                         le_label_font, 
                                         PPI)
         eff_le_bmf_pos_x_px = _mm_to_px(text_width_mm + 5, PPI)
-        #! check the value 5 added in the original code
+                 #! check the value 5 added in the original code
         le_bmf.place(x = eff_le_bmf_pos_x_px,
                      y = eff_le_bmf_pos_y_px,  
                      align = True)
         
+        # Bouton lancement
         launch_font = tkFont.Font(family = FONT_NAME,
                                   size = eff_launch_font_size)
         launch_button = tk.Button(self,
@@ -136,7 +138,7 @@ class App_Test(tk.Tk):
 
         launch_button.place(x = mid_page_pos_x_px,
                             y = mid_page_pos_y_px,
-                            anchor = "s")        
+                            anchor = "s")  
         
         # Auteurs et versions
         Auteurs_font_label = tkFont.Font(family = FONT_NAME, 

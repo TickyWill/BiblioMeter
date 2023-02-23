@@ -34,22 +34,27 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from tkinter import filedialog
     from tkinter import messagebox
     
-    # BiblioAnalysis_Utils package imports
+    # BiblioAnalysis_Utils library imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px        
     
-    # Local imports    
-    from BiblioMeter_FUNCTS.BiblioMeter_MergeEffectif import recursive_year_search
+    # Local library imports     
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesUpdate import update_employees
+    from BiblioMeter_FUNCTS.BiblioMeterMergeEmployees import recursive_year_search
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_OTP
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import concatenate_pub_lists
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidate_pub_list
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import solving_homonyms
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import update_employees
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import solving_homonyms    
+    
     from BiblioMeter_GUI.Coordinates import root_properties
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import BACKUP_ARCHI
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ARCHI
     
     from BiblioMeter_GUI.Coordinates import ETAPE_LABEL_TEXT_LIST
     from BiblioMeter_GUI.Coordinates import FONT_NAME    
@@ -59,12 +64,8 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Coordinates import TEXT_OTP
     from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
     from BiblioMeter_GUI.Coordinates import TEXT_PUB_CONSO
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI
-    
-
+    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI    
     from BiblioMeter_GUI.Globals_GUI import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
     from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
     from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
@@ -145,15 +146,16 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     dedup_alias                     = ARCHI_YEAR['dedup']
     parsing_alias                   = ARCHI_YEAR['parsing']
     submit_alias                    = ARCHI_YEAR["submit file name"]
-    listing_alias                   = ARCHI_RH["root"]
-    effectifs_folder_name_alias     = ARCHI_RH["effectifs"]
-    effectifs_file_name_alias       = ARCHI_RH["effectifs file name"]
-    maj_effectifs_folder_name_alias = ARCHI_RH["maj"] 
-    backup_folder_name_alias    = ARCHI_SECOURS["root"]
-    
+    listing_alias                   = EMPLOYEES_ARCHI["root"]
+    effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
+    effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
+    maj_effectifs_folder_name_alias = EMPLOYEES_ARCHI["complementary_employees"] 
+    backup_folder_name_alias        = BACKUP_ARCHI["root"]
+
+   
     # Setting useful paths independent from corpus year
-    backup_root_path    = bibliometer_path / Path(backup_folder_name_alias)
-    effectifs_root_path = bibliometer_path / Path(listing_alias)
+    backup_root_path          = bibliometer_path / Path(backup_folder_name_alias)
+    effectifs_root_path       = bibliometer_path / Path(listing_alias)
     effectifs_folder_path     = effectifs_root_path / Path(effectifs_folder_name_alias)
     maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
     all_effectifs_path        = effectifs_folder_path / Path(effectifs_file_name_alias)
@@ -283,13 +285,70 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
             ask_text += f"confirmez la mise à jour ?"            
             answer_1  = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:                                                                                  
-                update_employees(bibliometer_path)
-                info_title = "- Information -"
-                info_text  = f"La mise à jour des effectifs a été effectuée."
-                info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
-                messagebox.showinfo(info_title, info_text)
+                (employees_year, 
+                 files_number_error,
+                 sheet_name_error, 
+                 column_error, 
+                 years2add_error,
+                 all_years_file_error) = update_employees(bibliometer_path)
+                if not any((files_number_error,sheet_name_error, column_error, years2add_error, all_years_file_error)):
+                    info_title = "- Information -"
+                    info_text  = f"La mise à jour des effectifs a été effectuée pour l'année {employees_year}."
+                    info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
+                    messagebox.showinfo(info_title, info_text)
+                elif all_years_file_error:
+                    info_title = "- Information -"
+                    info_text  = f"La mise à jour des effectifs a été effectuée pour l'année {employees_year}."
+                    info_text += f"\nMais le fichier des effectifs consolidés '{effectifs_file_name_alias}' " 
+                    info_text += f"non disponible a été créé dans le dossier :"
+                    info_text += f"\n '{effectifs_folder_path}'.\n"
+                    info_text += f"\nErreur précise retournée :"
+                    info_text += f"\n '{all_years_file_error}'.\n" 
+                    info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
+                    messagebox.showinfo(info_title, info_text)   
+                else:
+                    warning_title = "!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!"
+                    if files_number_error:
+                        warning_text  = f"Un seul fichier attendu dans le dossier :"
+                        warning_text += f"\n\n '{maj_effectifs_folder_path}'."
+                        warning_text += f"\n\nNe conservez que le fichier utile et relancer la mise à jour."
+                        messagebox.showwarning(warning_title, warning_text)
+                        return
+                    if sheet_name_error:
+                        warning_text  = f"Un nom de feuille du fichier des effectifs additionnels est de format incorrect "
+                        warning_text += f"dans le fichier des effectifs additionnels du dossier :"
+                        warning_text += f"\n\n '{maj_effectifs_folder_path}'.\n"
+                        warning_text += f"\nErreur précise retournée :\n"
+                        warning_text += f"\n '{sheet_name_error}'.\n"
+                        warning_text += f"\n 1- Ouvrez le fichier;"
+                        warning_text += f"\n 2- Vérifiez et corrigez les noms des feuilles dans ce fichier;" 
+                        warning_text += f"\n 3- Sauvegardez le ficher;"
+                        warning_text += f"\n 4- Relancez la mise à jour des effectifs (via le croisement auteurs-effectifs)."
+                        messagebox.showwarning(warning_title, warning_text)
+                        return
+                    if column_error:
+                        warning_text  = f"Une colonne est manquante ou mal nommée dans une feuille "
+                        warning_text += f"dans le fichier des effectifs additionnels du dossier :"
+                        warning_text += f"\n\n '{maj_effectifs_folder_path}'.\n"
+                        warning_text += f"\nErreur précise retournée :\n"
+                        warning_text += f"\n '{column_error}'.\n"
+                        warning_text += f"\n 1- Ouvrez le fichier;"
+                        warning_text += f"\n 2- Vérifiez et corrigez les noms des colonnes des feuilles dans ce fichier;" 
+                        warning_text += f"\n 3- Sauvegardez le ficher."
+                        warning_text += f"\n 4- Relancez la mise à jour des effectifs (via le croisement auteurs-effectifs)."
+                        messagebox.showwarning(warning_title, warning_text)
+                        return
+                    if years2add_error:
+                        warning_text  = f"Le fichier des effectifs additionnels couvre plusieurs années "
+                        warning_text += f"dans le fichier des effectifs additionnels du dossier :"
+                        warning_text += f"\n\n '{maj_effectifs_folder_path}'.\n"
+                        warning_text += f"\n 1- Séparez les feuilles d'années différentes en fichiers d'effectifs additionnels différents;"
+                        warning_text += f"\n 2- Relancer la mise à jour des effectifs (via le croisement auteurs-effectifs) " 
+                        warning_text += f"\n    pour chacun des fichiers créés en les positionant seul dans le dossier successivement."
+                        messagebox.showwarning(warning_title, warning_text)
+                        return
             else:
-            # Arrêt de la procédure
+                # Arrêt de la procédure
                 ask_title = "- Confirmation du croisement auteurs-effectifs -"
                 ask_text  = f"La mise à jour des effectifs est abandonnée."
                 ask_text += f"\n\nConfirmez le croisement pour l'année {year_select} "
@@ -300,36 +359,6 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                     info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} est annulé."
                     messagebox.showinfo(info_title, info_text)            
                     return
- 
-        # Vérification de la disponibilité du fichier All_effectifs.xlsx    
-        all_effectifs_status = os.path.exists(all_effectifs_path) 
-        all_effectifs_backup_status = os.path.exists(all_effectifs_backup_path)
-        if not all_effectifs_status:
-            if all_effectifs_backup_status:
-                ask_title = "- Régénération du fichier des effectifs LITEN -"
-                ask_text  = f"Le fichier des effectifs LITEN n'est pas disponible à l'emplacement attendu. "
-                ask_text += f"\nL'utilisation de la dernière sauvegarde de secours est possible "
-                ask_text += f"pour effectuer le croisement auteurs-effectifs."
-                ask_text += f"\n\nConfirmer cette utilisation ?"
-                answer_3  = messagebox.askokcancel(ask_title, ask_text)
-                if answer_3:
-                    # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit 
-                    _ = shutil.copy(all_effectifs_backup_path, all_effectifs_path)
-                else:
-                     # Arrêt de la procédure
-                    info_title = "- Information -"
-                    info_text  = f"Le fichier des effectifs est indisponible "
-                    info_text += f"et sa sauvegarde n'est pas utilisée."
-                    info_text += f"\nLe croisement auteurs-effectifs est annulé."
-                    messagebox.showinfo(info_title, info_text)
-                    return        
-            else:
-                # Arrêt de la procédure
-                info_title = "- Information -"
-                info_text  = f"Le fichier des effectifs et sa sauvegarde sont indisponibles."
-                info_text += f"\nLe croisement auteurs-effectifs est abandonné."
-                messagebox.showinfo(info_title, info_text)
-                return
                                 
         # Vérifier les années disponibles                                         
         annees_disponibles = _annee_croisement(year_select)
@@ -369,9 +398,9 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
 
     ### Définition ou choix de la profondeur de recherche
     # Fixe la profondeur de recherche à 5 ans dans l'historique des effectifs
-    go_back_years_list_rh = [i for i in range(1,date.today().year-2009)]
+    go_back_years_list = [i for i in range(1,date.today().year-2009)]
     go_back_years = tk.StringVar(self)
-    go_back_years.set(go_back_years_list_rh[4])
+    go_back_years.set(go_back_years_list[4])
     
     ### Définition du  bouton 'button_croisement' 
     font_croisement = tkFont.Font(family = FONT_NAME, 
@@ -398,10 +427,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                  dy = etape_button_dy / 2)
     place_bellow(check_effectif_box, 
                  button_croisement, 
-                 dy = etape_button_dy / 2)
-    
-    # Dextruction de croisement car on ne l'autorise plus pour le moment
-    #Label_croisement.destroy()    
+                 dy = etape_button_dy / 2)  
                                              
     ################## Etape 2 : Résolution des homonymies
     ### Fonction executée par le bouton 'button_homonymes'     

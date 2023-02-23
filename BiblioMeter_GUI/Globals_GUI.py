@@ -3,8 +3,7 @@ __all__ = ['ROOT_PATH',
            'BDD_LIST',
            'DPT_LABEL_DICT',
            'CORPUSES_NUMBER',
-           'COL_NAMES_BM', 
-           'COL_NAMES_RH', 
+           'COL_NAMES_BM',
            'COL_NAMES_ORPHAN',
            'PAGES_LABELS',
            'PAGES_NAMES',
@@ -16,17 +15,18 @@ __all__ = ['ROOT_PATH',
            ]
 
 
-# BiblioAnalysis_Utils package imports
+# BiblioAnalysis_Utils package globals imports
 from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
-from BiblioAnalysis_Utils.BiblioSys import GUI_DISP
 
-# Local imports
-from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
+# Local globals imports
+from BiblioMeter_GUI.Coordinates import BM_GUI_DISP
+from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
+from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
 from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
 
-# Getting GUI_DISP display resolution in pixels per inch 
-PPI = DISPLAYS[GUI_DISP]['ppi']
+# Getting display resolution in pixels per inch 
+PPI = DISPLAYS[BM_GUI_DISP]['ppi']
 
 # Generals
 ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.1-Dossiers en cours\03- Publications\BiblioMeter\BiblioMeter_Files"
@@ -81,7 +81,7 @@ ARCHI_IF = {"root"    : "Impact Factor",
             "all IF"  : "IF all years.xlsx",
             "missing" : "ISSN_manquants.xlsx"}
 
-
+# Start : To be moved to BiblioMeterEmployeesGlobal
 ARCHI_RH = {"root"                : "Listing RH",
             "effectifs"           : "Effectifs consolidés",
             "effectifs file name" : "All_effectifs.xlsx",
@@ -89,16 +89,16 @@ ARCHI_RH = {"root"                : "Listing RH",
 
 
 ARCHI_SECOURS = {"root" : "Sauvegarde de secours"}
+# End : To be moved to BiblioMeterEmployeesGlobal
 
 
-COL_NAMES_BM = {'Dpts'      : 'list of Dpt/DOB (lib court)', 
-                'Servs'     : 'list of Service (lib court)',
-                'First_name': 'Initials_prenom',
+COL_NAMES_BM = {'Dpts'      : EMPLOYEES_ADD_COLS['dpts_list'], 
+                'Servs'     : EMPLOYEES_ADD_COLS['servs_list'],
+                'First_name': EMPLOYEES_ADD_COLS['first_name_initials'],
                 'Last_name' : 'Co_author_joined',  # 'Co_author_joined' DOE J --> DOE
                 'Full_name' : 'Full_name', # DOE J
                 'Homonym'   : 'HOMONYM',
                }
-
 
 # Building of 'COL_NAMES_ORPHAN' for setting the columns order in orphan file
 # from 'COL_NAMES' imported from BiblioAnalysis_Utils and from 'COL_NAMES_BM' and 'COL_NAMES_BAU'
@@ -153,22 +153,21 @@ SUBMIT_COL_NAMES = {'pub_id'                  : COL_NAMES['pub_id'],
                     'language'                : COL_NAMES['articles'][8], 
                     'title'                   : COL_NAMES['articles'][9], 
                     'ISSN'                    : COL_NAMES['articles'][10],
-                    'nom prénom'              : COL_NAMES_BONUS['nom prénom'], 
-                    'nom prénom liste'        : COL_NAMES_BONUS['nom prénom liste'], 
-                    'ID'                      : COL_NAMES_RH['ID'], 
-                    'nom'                     : COL_NAMES_RH['nom'],
-                    'prénom'                  : COL_NAMES_RH['prénom'], 
-                    'sexe'                    : COL_NAMES_RH['sexe'], 
-                    'nation'                  : COL_NAMES_RH['nation'], 
-                    'catégorie'               : COL_NAMES_RH['catégorie'],
-                    'statut'                  : COL_NAMES_RH['statut'],
-                    'qualification classement': COL_NAMES_RH['qualification classement'],
-                    'dpt'                     : COL_NAMES_RH['dpt'],
-                    'service'                 : COL_NAMES_RH['service'],
-                    'labo'                    : COL_NAMES_RH['labo'],
-                    'affiliation complete'    : COL_NAMES_RH['affiliation complete'],
-                    'date naissance'          : COL_NAMES_RH['date naissance'], 
+                    'ID'                      : EMPLOYEES_USEFUL_COLS['matricule'], 
+                    'nom'                     : EMPLOYEES_USEFUL_COLS['name'],
+                    'prénom'                  : EMPLOYEES_USEFUL_COLS['first_name'], 
+                    'sexe'                    : EMPLOYEES_USEFUL_COLS['gender'], 
+                    'nation'                  : EMPLOYEES_USEFUL_COLS['nationality'], 
+                    'catégorie'               : EMPLOYEES_USEFUL_COLS['category'],
+                    'statut'                  : EMPLOYEES_USEFUL_COLS['status'],
+                    'qualification classement': EMPLOYEES_USEFUL_COLS['qualification'],
+                    'dpt'                     : EMPLOYEES_USEFUL_COLS['dpt'],
+                    'service'                 : EMPLOYEES_USEFUL_COLS['serv'],
+                    'labo'                    : EMPLOYEES_USEFUL_COLS['lab'],
+                    'affiliation complete'    : EMPLOYEES_USEFUL_COLS['full_affiliation'],
+                    'date naissance'          : EMPLOYEES_USEFUL_COLS['birth_date'], 
                     'nom prénom'              : COL_NAMES_BONUS['nom prénom'], 
                     'nom prénom liste'        : COL_NAMES_BONUS['nom prénom liste'], 
                     'liste biblio'            : COL_NAMES_BONUS['liste biblio'],
                    }
+

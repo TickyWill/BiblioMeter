@@ -1,6 +1,4 @@
 __all__ = ['recursive_year_search']
-
-## To do: Consolidate use of globals
             
 def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', verbose = False):
 
@@ -16,12 +14,13 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
     import numpy as np
     import pandas as pd
 
-    # BiblioAnalysis_Utils package imports
+    # BiblioAnalysis_Utils package globals imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
-    # Local imports
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
     
 
@@ -42,8 +41,8 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
             if len(df_eff_pub_match)!=0:
                 print('\nMatch found for author lastname:',pub_lastname)
                 print(' Nb of matches:',len(df_eff_pub_match))
-                print(' Employee matricule:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list()[0])
-                print(' Employee lastname:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list()[0])
+                print(' Employee matricule:',df_eff_pub_match[EMPLOYEES_USEFUL_COLS['matricule']].to_list()[0])
+                print(' Employee lastname:',df_eff_pub_match[EMPLOYEES_USEFUL_COLS['name']].to_list()[0])
             else:
                 print('\nNo match for author lastname:',pub_lastname)
                 print('  Nb first matches:',len(df_eff_pub_match))
@@ -54,18 +53,18 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
             print('  Lastname flag match:', flag_lastname_match)
             print('  Nb similarities by orphan reduction:',len(lastname_match_list))
             print('  List of lastnames with similarities:', lastname_match_list)
-            print('  Employee matricules:',df_eff_pub_match[COL_NAMES_RH['ID']].to_list())
-            print('  Employee lastnames:',df_eff_pub_match[COL_NAMES_RH['nom']].to_list())
-            print('  Employee firstnames:',df_eff_pub_match[COL_NAMES_RH['prénom']].to_list())
-            print('  Employee fullnames:',df_eff_pub_match[COL_NAMES_RH['Full_name']].to_list())    
+            print('  Employee matricules:', df_eff_pub_match[EMPLOYEES_USEFUL_COLS['matricule']].to_list())
+            print('  Employee lastnames:',  df_eff_pub_match[EMPLOYEES_USEFUL_COLS['name']].to_list())
+            print('  Employee firstnames:', df_eff_pub_match[EMPLOYEES_USEFUL_COLS['first_name']].to_list())
+            print('  Employee fullnames:',  df_eff_pub_match[EMPLOYEES_ADD_COLS['employee_full_name']].to_list())    
 
     def _test_no_similarity():
         if verbose:
             print('\nNo similarity by orphan reduction for author lastname:',pub_lastname)
             print('  Lastname flag match:', flag_lastname_match)
             print('  Nb similarities by orphan reduction:',len(lastname_match_list))
-            print('  Orphan full author name:',df_pub_row[COL_NAMES['authors'][2]])
-            print('  Orphan author lastname:',df_pub_row[COL_NAMES_BM['Last_name']])
+            print('  Orphan full author name:', df_pub_row[COL_NAMES['authors'][2]])
+            print('  Orphan author lastname:',  df_pub_row[COL_NAMES_BM['Last_name']])
             print('  Orphan author firstname initiales:',df_pub_row[COL_NAMES_BM['First_name']])
 
     def _test_match_of_firstname_initiales():
@@ -93,7 +92,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
     df_orphan = pd.DataFrame()
 
     # Building the set of lastnames (without duplicates) of the dataframe 'df_eff' 
-    eff_lastnames = set(df_eff[COL_NAMES_RH['nom']].to_list())
+    eff_lastnames = set(df_eff[EMPLOYEES_USEFUL_COLS['name']].to_list())
     eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
 
     # Setting the useful info for testing the function if verbose = True
@@ -116,7 +115,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
 
         # Building a dataframe 'df_match_eff_publi' with rows of 'df_eff'
         # where name in column COL_NAMES_BM['Last_name'] of the dataframe 'df_pub' 
-        # matches with name in column COL_NAMES_RH['Nom'] of the dataframe 'df_eff'
+        # matches with name in column EMPLOYEES_USEFUL_COLS['name'] of the dataframe 'df_eff'
 
         # Initializing 'df_eff_pub_match' as dataframe
         df_eff_pub_match = pd.DataFrame()
@@ -128,8 +127,8 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
         pub_lastname = df_pub_row[COL_NAMES_BM['Last_name']]
 
         # Building the dataframe 'df_eff_pub_match' with rows of dataframe df_eff 
-        # where item at COL_NAMES_RH['Nom'] matches author lastname 'pub_lastname'
-        df_eff_pub_match = df_eff[df_eff[COL_NAMES_RH['nom']] == pub_lastname].copy()
+        # where item at EMPLOYEES_USEFUL_COLS['name'] matches author lastname 'pub_lastname'
+        df_eff_pub_match = df_eff[df_eff[EMPLOYEES_USEFUL_COLS['name']] == pub_lastname].copy()
 
         # Test of lastname full match
         if pub_lastname == test_name and test_states[0]: _test_full_match()          
@@ -141,13 +140,13 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
             if lastname_match_list: 
                 # Concatenating in the dataframe 'df_eff_pub_match', the rows of the dataframe 'df_eff'
                 # corresponding to each of the found similarities by orphan reduction
-                col = COL_NAMES_RH['nom']
+                col = EMPLOYEES_USEFUL_COLS['name']
                 frames = []
                 for lastname_match in lastname_match_list:
-                    df_temp = df_eff[df_eff[COL_NAMES_RH['nom']] == lastname_match].copy()
+                    df_temp = df_eff[df_eff[EMPLOYEES_USEFUL_COLS['name']] == lastname_match].copy()
                     # Replacing the employee last name by the publication last name
-                    # for df_pub_rh_join building
-                    df_temp[COL_NAMES_RH['Full_name']] = pub_lastname + ' ' + df_temp[COL_NAMES_BM['First_name']] 
+                    # for df_pub_emp_join building
+                    df_temp[EMPLOYEES_ADD_COLS['employee_full_name']] = pub_lastname + ' ' + df_temp[COL_NAMES_BM['First_name']] 
                     frames.append(df_temp )
 
                 df_eff_pub_match = pd.concat(frames, ignore_index=True)
@@ -170,9 +169,9 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
             # Finding the author name initiales for the current publication
             pub_firstname = df_pub_row[COL_NAMES_BM['First_name']]
 
-            # List of firstnames initiales of a given name in the rh effectif
+            # List of firstnames initiales of a given name in the employees data
             eff_firstnames = df_eff_pub_match[COL_NAMES_BM['First_name']].to_list()
-            eff_lastnames_spec = df_eff_pub_match[COL_NAMES_RH['nom']].to_list()
+            eff_lastnames_spec = df_eff_pub_match[EMPLOYEES_USEFUL_COLS['name']].to_list()
 
             # Building the list of index of firsnames initiales 
             list_idx = []
@@ -183,8 +182,8 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
 
                 elif (pub_firstname == eff_firstname):
                     # Replacing the employee first name initials by the publication first name initials
-                    # for df_pub_rh_join building
-                    df_eff_pub_match[COL_NAMES_RH['Full_name']].iloc[idx] = pub_lastname + ' ' + pub_firstname
+                    # for df_pub_emp_join building
+                    df_eff_pub_match[EMPLOYEES_ADD_COLS['employee_full_name']].iloc[idx] = pub_lastname + ' ' + pub_firstname
                     list_idx.append(idx)
 
             # Test of match of firstname initiales for lastname match or similarity
@@ -202,16 +201,16 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
 
                 # Merging the dataframe 'df_eff_pub_match' to the dataframe 'df_temp' 
                 # by matching column '[COL_NAMES_BM['Last_name']]' of the dataframe 'df_temp'
-                # to the column '[COL_NAMES_RH['Nom']]' of the dataframe 'df_eff_pub_match'
-                df_pub_rh_join = pd.merge(df_temp,
+                # to the column 'EMPLOYEES_ADD_COLS['employee_full_name']' of the dataframe 'df_eff_pub_match'
+                df_pub_emp_join = pd.merge(df_temp,
                                           df_eff_pub_match, 
                                           how = 'left',
-                                          left_on = [COL_NAMES_BM['Full_name']],
-                                          right_on = [COL_NAMES_RH['Full_name']])
+                                          left_on  = [COL_NAMES_BM['Full_name']],
+                                          right_on = [EMPLOYEES_ADD_COLS['employee_full_name']])
 
-                # Appending to the dataframe 'df_submit' the dataframe 'df_pub_rh_join'
+                # Appending to the dataframe 'df_submit' the dataframe 'df_pub_emp_join'
                 # which is specific to a given publication
-                df_submit = df_submit.append(df_pub_rh_join, ignore_index = True)
+                df_submit = df_submit.append(df_pub_emp_join, ignore_index = True)
             else:
                 # Appending to the dataframe df_orphan the row 'df_pub_row' as effective orphan 
                 # after complementary checking of match via firsname initiales
@@ -242,12 +241,12 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     # 3rd party import
     import pandas as pd
 
-    # BiblioAnalysis_Utils package imports
+    # BiblioAnalysis_Utils package globals imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
-    # Local imports
+    # Local globals imports
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
 
     # Création des alias pour simplifier les accès
@@ -371,14 +370,18 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # 3rd party imports
     import pandas as pd
    
-    # BiblioAnalysis_Utils package imports
+    # BiblioAnalysis_Utils package globals imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
     
-    # Local imports
+    # Local library imports
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_biblio_list
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_TYPES_RH
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_COL_TYPES
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
     from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR    
     
@@ -418,8 +421,9 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     all_if_path = if_root_folder_path / Path(if_file_name_alias)
     
-    # Getting the employees dataframe    
-    df_eff = pd.read_excel(effectifs_path, sheet_name = None, dtype = COL_TYPES_RH)
+    # Getting the employees dataframe with the useful columns only
+    useful_col_list = list(EMPLOYEES_USEFUL_COLS.values()) + list(EMPLOYEES_ADD_COLS.values())
+    df_eff = pd.read_excel(effectifs_path, sheet_name = None, dtype = EMPLOYEES_COL_TYPES, usecols = useful_col_list)
     eff_available_years = list(df_eff.keys())        
     corpus_year_status = corpus_year in eff_available_years 
     
@@ -438,8 +442,8 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     #################################################################################################
 
     # Initializing the dataframes to be built
-    df_submit = pd.DataFrame() # Data frame containing all match between publi author name name and rh name name
-    df_orphan = pd.DataFrame() # No match found between article LITEN author and rh names
+    df_submit = pd.DataFrame() # Data frame containing all match between article LTEN authors and employee names
+    df_orphan = pd.DataFrame() # No match found between article LITEN authors and employee names
 
     # Setting the test case
     test_list = ['Full match',            
@@ -450,6 +454,8 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
                 ]
 
     test_case = 'Upper value similarity'
+    
+    
     
     # Building the initial dataframes
     df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], df_pub, bibliometer_path, test_case = test_case)

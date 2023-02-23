@@ -7,8 +7,7 @@ __all__ = ['get_unique_numbers',
            'add_biblio_list',
            'add_if',
            'clean_reorder_rename_submit',           
-           'concatenate_pub_lists',          
-           'update_employees',           
+           'concatenate_pub_lists',           
            'mise_en_page',            
            'rename_column_names',          
            'find_missing_if']
@@ -36,20 +35,22 @@ def solving_homonyms(in_path, out_path):
     from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
     from openpyxl.styles import PatternFill as openpyxl_PatternFill
 
-    # BiblioAnalysis_Utils package imports    
+    # BiblioAnalysis_Utils package globals imports    
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
-    # Local imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_CONSOLIDATION
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import ROW_COLORS
 
     # Useful alias
     pub_id_alias = COL_NAMES['pub_id']
     idx_author   = COL_NAMES['authors'][1]
-    dpt_alias    = COL_NAMES_RH['dpt']
+    dpt_alias    = EMPLOYEES_USEFUL_COLS['dpt']
     homonym_alias = 'HOMONYM'
     col_conso_alias = COL_CONSOLIDATION
+    
+    
         
     ###########################
     # Getting the submit file #
@@ -88,66 +89,7 @@ def solving_homonyms(in_path, out_path):
     
     end_message = f"File for solving homonymies saved in folder: \n  '{out_path}'"
     return end_message
-    
-    
-def _you_got_OTPed(df, i):
-    
-    '''_____
-    
-    Args : 
-       _____
-        
-    Returns :
-        Adds OTP to df'''
-    
-    # Standard library imports
-    from pathlib import Path
-    
-    # Local library imports   
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import OTP_STRING
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS 
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # 3rd party library imports
-    import pandas as pd
-    from openpyxl.utils.cell import get_column_letter
-    
-    # Useful alias   
-    OTP_alias = COL_NAMES_BONUS['list OTP']
-    dpt_alias = COL_NAMES_RH['dpt']
-    pub_id_alias = COL_NAMES['pub_id']
-    
-    if OTP_alias in df.columns:
-            df[OTP_alias].iloc[i] = OTP_STRING[df.iloc[i][dpt_alias]]
-    else:
-        df[OTP_alias] = pd.Series()
-        df[OTP_alias].iloc[i] = OTP_STRING[df.iloc[i][dpt_alias]]
-    
-    return df
 
-def _liste_de_validation(df, i):
-    
-    '''_____
-    
-    Args : 
-       _____
-        
-    Returns :
-        Adds OTP to df'''
-    
-    # Global variable imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import OTP_LIST
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH 
-    
-    # Useful alias
-    dpt_alias = COL_NAMES_RH['dpt']
-    
-    validation_list = OTP_LIST[df.iloc[i][dpt_alias]]
-    
-    truc = '"'+','.join(validation_list)+'"'
-    
-    return truc
 
 def concat_name_firstname(df):
     
@@ -168,14 +110,14 @@ def concat_name_firstname(df):
     # 3rd party imports
     import pandas as pd
     
-     # Global variable imports
+    # Local globals imports 
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
        
     # Useful alias
-    nom_alias = COL_NAMES_RH['nom']
-    prenom_alias = COL_NAMES_RH['prénom']
+    nom_alias = EMPLOYEES_USEFUL_COLS['name']
+    prenom_alias = EMPLOYEES_USEFUL_COLS['first_name']
     full_name_alias = COL_NAMES_BONUS['nom prénom']
     
     # Check is df is a DataFrame and if it contains the colomns needed which are 'Nom' and 'Prénom' and 'Pub_id'
@@ -284,11 +226,13 @@ def add_OTP(in_path, out_path, out_file_base):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
-    # Local imports
+    # Local library imports
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_authors_name_list
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import mise_en_page
+    
+    # Local globals imports 
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS 
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_OTP
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import DPT_ATTRIBUTS_DICT       
 
@@ -343,10 +287,10 @@ def add_OTP(in_path, out_path, out_file_base):
         wb.save(excel_dpt_path)
         
     # Setting useful aliases
-    pub_id_alias = COL_NAMES['pub_id']      # Pub_id
-    idx_author   = COL_NAMES['authors'][1]  # Idx_author
-    dpt_alias = COL_NAMES_RH['dpt']         # Dpt/DOB (lib court)
-    OTP_alias = COL_NAMES_BONUS['list OTP'] # Choix de l'OTP
+    pub_id_alias = COL_NAMES['pub_id']           # Pub_id
+    idx_author   = COL_NAMES['authors'][1]       # Idx_author
+    dpt_alias    = EMPLOYEES_USEFUL_COLS['dpt']  # Dpt/DOB (lib court)
+    OTP_alias    = COL_NAMES_BONUS['list OTP']   # Choix de l'OTP
     
     # Adding a column with a list of the authors
     end_message = add_authors_name_list(in_path, in_path)
@@ -481,8 +425,10 @@ def add_biblio_list(in_path, out_path):
     
     # Local imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_CONVERTERS_DIC
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import EFF_CONVERTERS_DIC
 
     # Setting useful aliases
     pub_id_alias           = COL_NAMES['pub_id']
@@ -493,11 +439,11 @@ def add_biblio_list(in_path, out_path):
     pub_title_alias        = COL_NAMES['articles'][9]   
     pub_full_ref_alias     = COL_NAMES_BONUS['liste biblio']
 
-    # Read of the excel file
-    articles_df = pd.read_excel(in_path, converters = EFF_CONVERTERS_DIC)
+    # Read of the excel file with dates convertion through EMPLOYEES_CONVERTERS_DIC
+    submit_df = pd.read_excel(in_path, converters = EMPLOYEES_CONVERTERS_DIC)
 
     articles_plus_full_ref_df = pd.DataFrame()
-    for pub_id, pub_id_df in articles_df.groupby(pub_id_alias): # Split the frame into subframes with same Pub_id
+    for pub_id, pub_id_df in submit_df.groupby(pub_id_alias): # Split the frame into subframes with same Pub_id
         
         pub_id_first_row = pub_id_df.iloc[0]                                # Select the first row and build the full reference
         full_ref  = f'{pub_id_first_row[pub_title_alias]}, '                # add the reference's title
@@ -770,162 +716,6 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     end_message  = f"Concatenation of consolidated pub lists saved in folder: \n  '{out_path}'"
     end_message += f"\n\n under filename: \n  '{out_file}'."
     return end_message
- 
-    
-def update_employees(bibliometer_path):
-    '''
-    '''
-    
-    # Standard library imports
-    import os
-    from pathlib import Path
-    from datetime import date
-    
-    # 3rd party imports
-    import pandas as pd    
-    import shutil
-    
-    # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_RH
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_RH
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS    
-
-    # Internal functions
-    def _get_year(mmyyyy):
-        return (mmyyyy[2:6])
-
-    def _check_year_format(mmyyyy):
-        '''The `_check_year_format` function, checks if the string argument mmyyyy
-        is in the right format.
-
-        Args:
-            mmyyyy (string) : string formatted as mmyyyy to be checked.
-
-        Returns:
-            O or 1 (boolean) : 0 if not in the right format, 1 if in the right format.
-        '''
-
-        try:
-            today_year = date.today().year
-            taille_fourchette = 5
-            range_min = today_year - taille_fourchette
-            range_max = today_year + taille_fourchette
-            years_to_check = [str(year) for year in range(range_min, range_max + 1)]
-            months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-            all_possible_dates = [mm + year for mm in months for year in years_to_check]
-
-            if mmyyyy in all_possible_dates:
-                return 1
-            else:
-                return 0
-        except:
-            return 0
-
-    def _different_years(list_of_dates):
-        '''
-        Args:
-            list_of_dates (list of strings): a list of string of dates in format mmyyyy, 
-            mm being the number of the month and yyyy being the number of the year.
-            
-        Returns:
-            L (list of strings):
-        '''
-
-        L = []
-        for i in list_of_dates:
-            L.append(i[2:6])
-            
-        return list(set(L))
-    
-    def _get_firstname_initiales(row):
-        row = row.replace('-',' ')
-        row_list = row.split(' ')
-        initiale_list = [x[0] for x in row_list]
-        initiales = ''.join(initiale_list) 
-        
-        return initiales
-
-    # Setting useful aliases and path
-    matricule_alias = COL_NAMES_RH["ID"] # A importer depuis les globales
-    listing_alias                   = ARCHI_RH["root"]
-    effectifs_folder_name_alias     = ARCHI_RH["effectifs"]
-    effectifs_file_name_alias       = ARCHI_RH["effectifs file name"]
-    maj_effectifs_folder_name_alias = ARCHI_RH["maj"] 
-    backup_folder_name_alias        = ARCHI_SECOURS["root"]
-    
-    # Setting useful paths
-    effectifs_root_path       = bibliometer_path / Path(listing_alias)
-    effectifs_folder_path     = effectifs_root_path / Path(effectifs_folder_name_alias)
-    maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
-    backup_root_path          = bibliometer_path / Path(backup_folder_name_alias)    
-    
-    # Setting path of employees file 
-    try:
-        effectifs_file_name = os.listdir(effectifs_folder_path)[0]
-        effectifs_file_path = effectifs_folder_path / Path(effectifs_file_name)
-    except FileNotFoundError:
-        print(f"""Il y a un problème dans le nom du répertoire {ARCHI_RH["effectifs"]}""")
-    except IndexError:
-        error_message  = f"Le fichier des effectifs consolidés est introuvable "
-        error_message += f"dans le dossier : \n\n {effectifs_folder_path}"
-        print(error_message)
-    
-    # Setting path of file for update of employees file 
-    try:
-        maj_effectifs_file_name = os.listdir(maj_effectifs_folder_path)[0]
-        maj_effectifs_file_path = maj_effectifs_folder_path / Path(maj_effectifs_file_name)
-    except FileNotFoundError:
-        print(f"Le nom de répertoire {maj_effectifs_folder_name_alias} est incorrect.")
-    except IndexError:
-        error_message  = f"Aucun fichier de mise à jour des effectifs n'est disponible "
-        error_message += f"dans le dossier : \n\n {maj_effectifs_folder_path}"
-        print(error_message)
-
-    # Setting dataframes from the files
-    df_effectif = pd.read_excel(effectifs_file_path, sheet_name = None)
-    df_to_add = pd.read_excel(maj_effectifs_file_path, sheet_name = None)
-
-    # Getting sheets names
-    effectif_sheets = list(df_effectif.keys())
-    to_add_sheets = list(df_to_add.keys())
-
-    # Ajouter
-    step = 0
-    for page_to_add in to_add_sheets:
-        year = _get_year(page_to_add)
-        if year in effectif_sheets:
-            df_effectif[year] = pd.concat([df_effectif[year], df_to_add[page_to_add]], ignore_index = False)
-        else:
-            df_effectif[year] = pd.DataFrame(df_to_add[page_to_add].copy())
-            effectif_sheets.append(year)
-
-    # Et dédupliquer en ajoutant les colonnes Initials et Name + Initials
-    years_to_dedup = _different_years(to_add_sheets)
-    for page_to_dedup in years_to_dedup:
-        df_effectif[page_to_dedup].drop_duplicates(subset = [matricule_alias], inplace = True)
-    
-        # Creating a column with first name initials as a list
-        # ex PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM 
-        col_in, col_out = COL_NAMES_RH['prénom'], COL_NAMES_BM['First_name']
-        df_effectif[page_to_dedup][col_out] = df_effectif[page_to_dedup].apply(lambda row: 
-                                                                               _get_firstname_initiales(row[col_in]), 
-                                                                               axis = 1)
-
-        # Creating the column ['Full_name'] by combining COL_NAMES_RH['Nom'] and COL_NAMES_BM['First_name']
-        new_col = COL_NAMES_RH['Full_name']
-        df_effectif[page_to_dedup][new_col]  = df_effectif[page_to_dedup][COL_NAMES_RH['nom']] 
-        df_effectif[page_to_dedup][new_col] += ' ' + df_effectif[page_to_dedup][COL_NAMES_BM['First_name']]
-        
-    # Création de l'Excel Writer Object
-    with pd.ExcelWriter(effectifs_file_path) as writer:
-        for page_effectif in effectif_sheets:
-            df_effectif[page_effectif].to_excel(writer, 
-                                                sheet_name = page_effectif, 
-                                                index = False)
-    
-    # Copie de la mise à jour dans la zone de sauvegarde
-    filePath = shutil.copy(effectifs_file_path, backup_root_path)
     
             
 def mise_en_page(df):
