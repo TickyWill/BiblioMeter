@@ -22,6 +22,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
     from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import HOMONYM_FLAG
     
 
     # Création chemin vers résultats pour effectuer des checks étapes
@@ -190,11 +191,11 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
             if pub_lastname == test_name and test_states[3]: _test_match_of_firstname_initiales()
 
             if list_idx: 
-                # Building a dataframe df_temp with the row 'df_pub_row'related to a given publication 
-                # and adding the item value 'HOMONYM' at column COL_NAMES_BM['Homonym'] 
+                # Building a dataframe df_temp with the row 'df_pub_row' related to a given publication 
+                # and adding the item value HOMONYM_FLAG at column COL_NAMES_BM['Homonym'] 
                 # when several matches on firstname initiales are found
                 df_temp = df_pub_row.to_frame().T            
-                df_temp[COL_NAMES_BM['Homonym']] = 'HOMONYM' if len(list_idx)>1 else ''
+                df_temp[COL_NAMES_BM['Homonym']] = HOMONYM_FLAG if len(list_idx)>1 else ''
 
                 # Saving specific dataframes 'df_temp' and 'df_eff_pub_match' for function testing
                 if pub_lastname == test_name and test_states[4]: _save_spec_dfs()                       
@@ -203,10 +204,10 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
                 # by matching column '[COL_NAMES_BM['Last_name']]' of the dataframe 'df_temp'
                 # to the column 'EMPLOYEES_ADD_COLS['employee_full_name']' of the dataframe 'df_eff_pub_match'
                 df_pub_emp_join = pd.merge(df_temp,
-                                          df_eff_pub_match, 
-                                          how = 'left',
-                                          left_on  = [COL_NAMES_BM['Full_name']],
-                                          right_on = [EMPLOYEES_ADD_COLS['employee_full_name']])
+                                           df_eff_pub_match, 
+                                           how = 'left',
+                                           left_on  = [COL_NAMES_BM['Full_name']],
+                                           right_on = [EMPLOYEES_ADD_COLS['employee_full_name']])
 
                 # Appending to the dataframe 'df_submit' the dataframe 'df_pub_emp_join'
                 # which is specific to a given publication
@@ -215,6 +216,10 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
                 # Appending to the dataframe df_orphan the row 'df_pub_row' as effective orphan 
                 # after complementary checking of match via firsname initiales
                 df_orphan = df_orphan.append(df_pub_row)
+                
+    # Droping duplicate rows if both dataframes (mandatory)
+    df_submit = df_submit.drop_duplicates()
+    df_orphan =df_orphan.drop_duplicates()
 
     return df_submit, df_orphan
 
@@ -375,6 +380,7 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
     
     # Local library imports
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_author_job_type
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_biblio_list
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
     
@@ -404,8 +410,8 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
             return new_pub_id
 
         df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, df_year))
-        return df    
-    
+        return df  
+        
     # Setting useful aliases
     year_col_alias = COL_NAMES['articles'][2]
     pub_id_alias   = COL_NAMES['pub_id']
@@ -455,8 +461,6 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
 
     test_case = 'Upper value similarity'
     
-    
-    
     # Building the initial dataframes
     df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], df_pub, bibliometer_path, test_case = test_case)
     
@@ -466,7 +470,6 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
 
         # Updating df_submit 
         df_submit = df_submit.append(df_submit_add)
-        
         year_submit_file_name = year + '_' + submit_file_name_alias
         year_orphan_file_name = year + '_' + orphan_file_name_alias
         year_submit_path = path_out / Path(year_submit_file_name)
@@ -488,6 +491,9 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
 
     # Saving df_submit
     df_submit.to_excel(submit_path, index = False)
+    
+    # Adding author job type and saving new df_submit
+    add_author_job_type(submit_path, submit_path)
     
     # Adding biblio and saving new df_submit
     add_biblio_list(submit_path, submit_path)

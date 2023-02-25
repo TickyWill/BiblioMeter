@@ -69,8 +69,8 @@ def _create_table(self, bibliometer_path, pos_x_init):
                               size = local_font_size)
     
     # Setting useful x position shift and y position reference in pixels    
-    pos_x_shift = _mm_to_px(25 * width_sf_mm, PPI)                                 
-    pos_y_ref   = _mm_to_px(35 * height_sf_mm, PPI) 
+    pos_x_shift = _mm_to_px(25 * width_sf_mm,  PPI)                                 
+    pos_y_ref   = _mm_to_px(30 * height_sf_mm, PPI) # 35
     
     # Initializing x position in pixels
     pos_x = pos_x_init
@@ -622,22 +622,22 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers  are reference values in mm for reference screen
     position_selon_x_check   = _mm_to_px(70  * width_sf_mm,  PPI)
-    position_selon_y_check   = _mm_to_px(45  * height_sf_mm, PPI)
+    position_selon_y_check   = _mm_to_px(40  * height_sf_mm, PPI)  #45  ################################################ 
     espace_entre_ligne_check = _mm_to_px(10  * height_sf_mm, PPI)    
     labels_x_pos             = _mm_to_px(10  * width_sf_mm,  PPI)
     labels_y_space           = _mm_to_px(10  * height_sf_mm, PPI)
-    status_label_y_pos       = _mm_to_px(30  * height_sf_mm, PPI)  
-    parsing_label_y_pos      = _mm_to_px(107 * height_sf_mm, PPI)  #102
-    synthese_label_y_pos     = _mm_to_px(135 * height_sf_mm, PPI)  #130                           
-    status_button_x_pos      = _mm_to_px(40  * width_sf_mm,  PPI)       
-    status_button_y_pos      = _mm_to_px(92  * height_sf_mm, PPI)
+    status_label_y_pos       = _mm_to_px(25  * height_sf_mm, PPI)  #30  ################################################    
+    parsing_label_y_pos      = _mm_to_px(107 * height_sf_mm, PPI)  
+    synthese_label_y_pos     = _mm_to_px(135 * height_sf_mm, PPI)                             
+    status_button_x_pos      = _mm_to_px(50  * width_sf_mm, PPI)  #40  ################################################     
+    status_button_y_pos      = _mm_to_px(95  * height_sf_mm, PPI)                         
     exit_button_x_pos        = _mm_to_px(193 * width_sf_mm,  PPI) 
     exit_button_y_pos        = _mm_to_px(145 * height_sf_mm, PPI)
     dx_year_select           = _mm_to_px(1   * width_sf_mm,  PPI)
     dy_year_select           = _mm_to_px(1   * height_sf_mm, PPI)
-    dx_bdd_select            = _mm_to_px(12  * width_sf_mm,  PPI)    #15
+    dx_bdd_select            = _mm_to_px(12  * width_sf_mm,  PPI)  #15
     dy_bdd_select            = _mm_to_px(1   * height_sf_mm, PPI)
-    dx_launch                = _mm_to_px(15  * width_sf_mm,  PPI)    #20
+    dx_launch                = _mm_to_px(15  * width_sf_mm,  PPI)  #20
     dy_launch                = _mm_to_px(0.2 * height_sf_mm, PPI)
     eff_labels_font_size     = font_size(14, width_sf_min)
     eff_select_font_size     = font_size(12, width_sf_min) 

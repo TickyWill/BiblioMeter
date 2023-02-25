@@ -1,5 +1,4 @@
-__all__ = ['last_available_years', 
-           #'get_corpus_filename_by_year',
+__all__ = ['last_available_years',
            'existing_corpuses', 
            'place_after', 
            'place_bellow', 

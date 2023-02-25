@@ -97,7 +97,7 @@ COL_NAMES_BM = {'Dpts'      : EMPLOYEES_ADD_COLS['dpts_list'],
                 'First_name': EMPLOYEES_ADD_COLS['first_name_initials'],
                 'Last_name' : 'Co_author_joined',  # 'Co_author_joined' DOE J --> DOE
                 'Full_name' : 'Full_name', # DOE J
-                'Homonym'   : 'HOMONYM',
+                'Homonym'   : COL_NAMES_BONUS['homonym'],
                }
 
 # Building of 'COL_NAMES_ORPHAN' for setting the columns order in orphan file
@@ -107,7 +107,7 @@ COL_NAMES_ORPHAN.extend(COL_NAMES['authors'][2])
 COL_NAMES_ORPHAN.extend(COL_NAMES['articles'][1:])
 COL_NAMES_ORPHAN.extend([COL_NAMES_BM['Last_name']])
 
-CORPUSES_NUMBER = 5
+CORPUSES_NUMBER = 6
 
 # Setting the results file names
 SUBMIT_FILE_NAME = 'submit.xlsx'

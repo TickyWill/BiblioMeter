@@ -61,7 +61,7 @@ __all__ = ['general_properties',
 #'TEXT_CROISEMENT_L', 'FONT_CROISEMENT_L', 'FORMAT_CROISEMENT_L'                                                 #
 ################################################################################################
 # Setting version value
-VERSION ='1.0.0'
+VERSION ='2.0.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"

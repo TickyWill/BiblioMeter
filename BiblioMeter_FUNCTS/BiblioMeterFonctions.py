@@ -1,27 +1,13 @@
-__all__ = ['get_unique_numbers',           
-           'solving_homonyms',          
-           'concat_name_firstname',
-           'add_authors_name_list',
-           'add_OTP',           
-           'consolidate_pub_list',            
+__all__ = ['add_author_job_type',
            'add_biblio_list',
            'add_if',
-           'clean_reorder_rename_submit',           
-           'concatenate_pub_lists',           
-           'mise_en_page',            
-           'rename_column_names',          
-           'find_missing_if']
-
-def get_unique_numbers(numbers):
-
-    list_of_unique_numbers = []
-
-    unique_numbers = set(numbers)
-
-    for number in unique_numbers:
-        list_of_unique_numbers.append(number)
-
-    return list_of_unique_numbers
+           'add_OTP', 
+           'concatenate_pub_lists',
+           'consolidate_pub_list',            
+           'find_missing_if',          
+           'mise_en_page',
+           'solving_homonyms',
+          ]
 
 def solving_homonyms(in_path, out_path):
 
@@ -40,49 +26,40 @@ def solving_homonyms(in_path, out_path):
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_CONSOLIDATION
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_HOMONYMS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import HOMONYM_FLAG
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import ROW_COLORS
 
     # Useful alias
-    pub_id_alias = COL_NAMES['pub_id']
-    idx_author   = COL_NAMES['authors'][1]
-    dpt_alias    = EMPLOYEES_USEFUL_COLS['dpt']
-    homonym_alias = 'HOMONYM'
-    col_conso_alias = COL_CONSOLIDATION
+    pub_id_alias    = COL_NAMES['pub_id']
+    idx_author      = COL_NAMES['authors'][1]
+    dpt_alias       = EMPLOYEES_USEFUL_COLS['dpt']
+    name_alias      = EMPLOYEES_USEFUL_COLS['name'] 
+    firstname_alias = EMPLOYEES_USEFUL_COLS['first_name']
+    homonym_alias   = COL_NAMES_BONUS['homonym']
     
-    
-        
-    ###########################
-    # Getting the submit file #
-    ###########################
-
+    # Reading the submit file #
     df_submit = pd.read_excel(in_path)
     
-    ############################################
     # Getting rid of the columns we don't want #
-    ############################################
-    df_submit = df_submit[col_conso_alias].copy()
+    df_homonyms = df_submit[COL_HOMONYMS].copy()
     
-    ## Remettre les Pub_ID dans l'ordre
-    #df_submit.sort_values(by=[pub_id_alias, dpt_alias], ascending=False, inplace = True)
-    #df_submit.sort_values(by=[pub_id_alias, idx_author], ascending=True, inplace = True)
-    
-    #wb, ws = mise_en_page(df_submit)
+    # Sizing columns widths
+    #wb, ws = mise_en_page(df_homonyms)
     
     wb = Workbook()
-    ws = wb.active
-    
-    ws.title = 'Consolidation Homonymes'
-    
+    ws = wb.active    
+    ws.title = 'Consolidation Homonymes'    
     yellow_ft = openpyxl_PatternFill(fgColor = ROW_COLORS['highlight'], fill_type = "solid")
 
-    for indice, r in enumerate(openpyxl_dataframe_to_rows(df_submit, index=False, header=True)):
+    for indice, r in enumerate(openpyxl_dataframe_to_rows(df_homonyms, index=False, header=True)):
         ws.append(r)
         last_row = ws[ws.max_row]
-        if r[col_conso_alias.index(homonym_alias)] == homonym_alias and indice > 0:
-            cell = last_row[col_conso_alias.index('Nom')]
+        if r[COL_HOMONYMS.index(homonym_alias)] == HOMONYM_FLAG and indice > 0:
+            cell      = last_row[COL_HOMONYMS.index(name_alias)] 
             cell.fill = yellow_ft
-            cell = last_row[col_conso_alias.index('Prénom')]
+            cell      = last_row[COL_HOMONYMS.index(firstname_alias)] 
             cell.fill = yellow_ft
             
     wb.save(out_path)
@@ -91,55 +68,73 @@ def solving_homonyms(in_path, out_path):
     return end_message
 
 
-def concat_name_firstname(df):
-    
-    ''' The `concat_name_firstname` function checks if the given variable is a of type DataFrame.
-    Then it verifies if the columns 'Nom', 'Prénom' are in the given dataframe.
-    If so, it combines the column 'Nom' and 'Prénom' adding a ', ' in between the two values 
-    of the columns, into a new column named 'Nom Prénom'.
+def add_author_job_type(in_path, out_path):
+
+    ''' The function `add_author_job_type` adds a new column containing the job type for each author
+    of each publication listed in an EXCEL file and saves it.
+    The job type is get from the employee information available in 3 particular columns wich names 
+    are defined by the global 'EMPLOYEES_USEFUL_COLS' at keys 'category', 'status' and 'qualification'.
+    The name of the new column is defined by the global "COL_NAMES_BONUS" at key 'author_type'.
     
     Args:
-        df (dataframe): dataframe in which we want to combine the Nom and Prénom.
-        
+        in_path (path): path (including name of the file) leading to the working EXCEL file. 
+        out_path (path): path (including name of the file) leading to where the file with the new column will be saved.
+    
     Returns:
-        df (dataframe): the dataframe given as variable but with the new column.
+        None.
     
     Notes:
-        None.
+        The globals 'EMPLOYEES_CONVERTERS_DIC' and 'EMPLOYEES_USEFUL_COLS' are imported 
+        from the module 'BiblioMeterEmployeesGlobals' of the package 'BiblioMeter_FUNCTS'. 
+        The global 'COL_NAMES_BONUS'is imported from the module 'BiblioMeterGlobalsVariables' 
+        of the package 'BiblioMeter_FUNCTS'.             
     '''
     # 3rd party imports
-    import pandas as pd
+    import pandas as pd 
     
-    # Local globals imports 
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import CATEGORIES_DIC 
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import QUALIFICATION_DIC
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import STATUS_DIC
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_CONVERTERS_DIC
     from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
-       
-    # Useful alias
-    nom_alias = EMPLOYEES_USEFUL_COLS['name']
-    prenom_alias = EMPLOYEES_USEFUL_COLS['first_name']
-    full_name_alias = COL_NAMES_BONUS['nom prénom']
     
-    # Check is df is a DataFrame and if it contains the colomns needed which are 'Nom' and 'Prénom' and 'Pub_id'
-    if isinstance(df, pd.DataFrame):
-        to_check = [nom_alias, prenom_alias]
-        for i in to_check:
-            if nom_alias not in df:
-                raise KeyError(f"The column {i} is not in DataFrame")
-    else:
-        raise TypeError(f"The variable {df} is not of proper type, it has to be a DataFrame")
-        
-    # Add of the colomn 'Nom Prénom' meaning full name.
-    df[full_name_alias] = df[nom_alias] + ', ' + df[prenom_alias]
+    # internal functions:    
+    def _get_author_type(row):
+        for col_name, dic in author_types_dic.items(): 
+            for key,values_list in dic.items():
+                values_status = [True for value in values_list if value in row[col_name]]
+                if any(values_status): return key
+        return '-'
+
+    # Setting useful aliases
+    category_col_alias        = EMPLOYEES_USEFUL_COLS['category']
+    status_col_alias          = EMPLOYEES_USEFUL_COLS['status']
+    qualification_col_alias   = EMPLOYEES_USEFUL_COLS['qualification']     
+    author_type_col_alias     = COL_NAMES_BONUS['author_type']
     
-    # TO DO : df['Nom Prénom'] = df.apply()
+    author_types_dic = {category_col_alias      : CATEGORIES_DIC, 
+                        status_col_alias        : STATUS_DIC, 
+                        qualification_col_alias : QUALIFICATION_DIC}
 
-    return df
+    # Read of the excel file with dates convertion through EMPLOYEES_CONVERTERS_DIC
+    submit_df = pd.read_excel(in_path, converters = EMPLOYEES_CONVERTERS_DIC)
+    
+    submit_df[author_type_col_alias] = submit_df.apply(_get_author_type, axis=1)
+    
+    submit_df.to_excel(out_path, index = False)
+    
+    end_message = f"Column with author job type added in file: \n  '{out_path}'"
+    return end_message 
 
-def add_authors_name_list(in_path, out_path):    
-    ''' The function `add_authors_fullname_list` adds two columns to the dataframe 'df_in'.
-    These columns contain respectivelly the co-authors identity (name, abreviated surname) 
-    and the article co-authors list.
+
+def _add_authors_name_list(in_path, out_path):    
+    ''' The function ` _add_authors_name_list` adds two columns to the dataframe get 
+    from the Excel file pointed by 'in_path'.
+    The columns contain respectively the full name of each author as "NAME, Firstname" 
+    and the institute co-authors list with their job type as 
+    "NAME1, Firstame1 (job type); NAME2, Firstame2 (job type);...".
     
     Args:
         in_path (path): Fullpath of the working excel file. 
@@ -147,13 +142,15 @@ def add_authors_name_list(in_path, out_path):
                          saved after going through its treatment.
     
     Returns:
-        None.
+        (str): end message recalling out_path.
     
     Notes:
         The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module 
         of 'BiblioAnalysis_Utils' package.
-        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' 
-        module of 'BiblioMeter_FUNCTS' package.    
+        The global 'EMPLOYEES_USEFUL_COLS' is imported from 'BiblioMeterEmployeesGlobals' 
+        module of 'BiblioMeter_FUNCTS' package.  
+        The global 'COL_NAMES_BONUS' is imported from 'BiblioMeterGlobalsVariables' 
+        module of 'BiblioMeter_FUNCTS' package.
     '''
     # 3rd party imports
     import pandas as pd
@@ -162,33 +159,33 @@ def add_authors_name_list(in_path, out_path):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
     # Local imports
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import concat_name_firstname
+    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
     
     # Useful alias
-    pub_id_alias      = COL_NAMES['pub_id']
-    idx_authors_alias = COL_NAMES['authors'][1]
-    full_name_alias      = COL_NAMES_BONUS['nom prénom']
-    full_name_list_alias = COL_NAMES_BONUS['nom prénom liste']   
-    
+    pub_id_alias          = COL_NAMES['pub_id']
+    idx_authors_alias     = COL_NAMES['authors'][1]
+    nom_alias             = EMPLOYEES_USEFUL_COLS['name']
+    prenom_alias          = EMPLOYEES_USEFUL_COLS['first_name']
+    full_name_alias       = COL_NAMES_BONUS['nom prénom']
+    author_type_col_alias = COL_NAMES_BONUS['author_type']
+    full_name_list_alias  = COL_NAMES_BONUS['nom prénom liste']
+
     # Read of the excel file
     df_in = pd.read_excel(in_path)
     
     # Add of the column 'Nom Prénom' that will be used to create the authors fullname list
-    df_in = concat_name_firstname(df_in)
-    
-    # Sort on Pub_id and then add the authors fullname list
-    if pub_id_alias not in df_in:
-        error_text  = f"The column {pub_id_alias} is missing in the file "
-        error_text += f"\n {in_path}."
-        error_text += f"\n\nPlease make sure that a column indexing the articles "
-        error_text += f"is named 'Pub_id' in this file."
-        raise KeyError(error_text)
+    df_in[prenom_alias] = df_in[prenom_alias].apply(lambda x: x.capitalize())
+    df_in[full_name_alias] = df_in[nom_alias] + ', ' + df_in[prenom_alias]
         
     df_out = pd.DataFrame()
-    for pub_id, pub_id_df in df_in.groupby(pub_id_alias): 
-        list_authors =";".join(pub_id_df[full_name_alias].unique())
-        pub_id_df[full_name_list_alias] = list_authors
+    for pub_id, pub_id_df in df_in.groupby(pub_id_alias):
+        authors_tup_list = sorted(list(set(zip(pub_id_df[idx_authors_alias], 
+                                               pub_id_df[full_name_alias], 
+                                               pub_id_df[author_type_col_alias]))))
+        authors_str_list = [f'{x[1]} ({x[2]})' for x in  authors_tup_list]
+        authors_full_str ="; ".join(authors_str_list)
+        pub_id_df[full_name_list_alias] = authors_full_str
         df_out = pd.concat([df_out, pub_id_df])
 
     # Saving 'df_out' in an excel file 'out_path'
@@ -199,20 +196,23 @@ def add_authors_name_list(in_path, out_path):
 
 
 def add_OTP(in_path, out_path, out_file_base):
-
     '''    
     Args:
         in_path (path): fullpath of the working excel file. 
-        out_path (path): fullpatho of the saves prosseced file
+        out_path (path): fullpath of the saved prosseced file
     
     Returns:
         None.
     
     Notes:
-        The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module 
-        of 'BiblioAnalysis_Utils' package.
-        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' 
-        part of 'BiblioMeter_FUNCTS' package.    
+        The global 'COL_NAMES' is imported from the module 'BiblioSpecificGlobals'  
+        of the package 'BiblioAnalysis_Utils'.
+        The functions `_add_authors_name_list` and `mise_en_page` are imported 
+        from the module 'BiblioMeterFonctions' of the package 'BiblioMeter_FUNCTS'.
+        The global 'EMPLOYEES_USEFUL_COLS' is imported from the module 'BiblioMeterEmployeesGlobals' 
+        of the package 'BiblioMeter_FUNCTS'. 
+        The globals 'COL_NAMES_BONUS', 'COL_OTP' and 'DPT_ATTRIBUTS_DICT' are imported 
+        from the module 'BiblioMeterGlobalsVariables' of the package 'BiblioMeter_FUNCTS'. 
     '''
     
     # Standard library imports
@@ -227,7 +227,7 @@ def add_OTP(in_path, out_path, out_file_base):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_authors_name_list
+    from BiblioMeter_FUNCTS.BiblioMeterFonctions import _add_authors_name_list
     from BiblioMeter_FUNCTS.BiblioMeterFonctions import mise_en_page
     
     # Local globals imports 
@@ -261,7 +261,7 @@ def add_OTP(in_path, out_path, out_file_base):
         df_dpt = df_dpt.reindex(columns = COL_OTP)
         # to replace by :
         # COL_OTP_DICT {col_old_name : col_new_name}
-        # df_dpt = df_dpt.rename(columns = COL_OTP_DICT) 
+        # df_dpt = df_dpt.rename(columns = COL_OTP_DICT)
         
         # Formatting the EXCEL file
         wb, ws = mise_en_page(df_dpt)
@@ -292,8 +292,9 @@ def add_OTP(in_path, out_path, out_file_base):
     dpt_alias    = EMPLOYEES_USEFUL_COLS['dpt']  # Dpt/DOB (lib court)
     OTP_alias    = COL_NAMES_BONUS['list OTP']   # Choix de l'OTP
     
-    # Adding a column with a list of the authors
-    end_message = add_authors_name_list(in_path, in_path)
+    # Adding a column with a list of the authors in the file where homonymies 
+    # have been solved and pointed by in_path
+    end_message = _add_authors_name_list(in_path, in_path)
     print('\n ',end_message)
     
     solved_homonymies_df = pd.read_excel(in_path)
@@ -331,7 +332,7 @@ def add_OTP(in_path, out_path, out_file_base):
         
         # Setting the list of OTPs for the 'dpt' department
         dpt_otp_list = DPT_ATTRIBUTS_DICT[dpt]['dpt_otp']
-        
+               
         # Setting the full path of the EXCEl file for the 'dpt' department
         OTP_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'
         excel_dpt_path = out_path / Path(OTP_file_name_dpt)
@@ -346,15 +347,14 @@ def add_OTP(in_path, out_path, out_file_base):
 
 def consolidate_pub_list(in_path, out_path, in_file_base):
     
-    '''
-    Faire attention à ce que path mène à un fichier submit
-    
+    '''    
     Args : 
-    path : chemin vers fichier submit
-    dep_to_keep : liste de 0 et 1 disant quel département inclure
+        in_path
+        out_path
+        in_file_base
         
     Returns :
-    un fichier excel
+        un fichier excel
     '''
     
     # Standard imports
@@ -367,7 +367,9 @@ def consolidate_pub_list(in_path, out_path, in_file_base):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    # local imports
+    # local globals imports
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_FINAL_LIST    
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE   
     from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
     
     # internal functions
@@ -394,9 +396,18 @@ def consolidate_pub_list(in_path, out_path, in_file_base):
             OTP_df = OTP_df.append(dpt_df)
         OTP_df_init_status = False
 
-    OTP_df.drop_duplicates(subset = [pub_id_alias], inplace = True)    
-    rename_column_names(OTP_df)
-    OTP_df.to_excel(out_path, index = False)
+    # Deduplicating rows on Pub_id
+    OTP_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
+    
+    # Selecting useful columns using COL_FINAL_LIST
+    consolidate_pub_list_df = OTP_df[COL_FINAL_LIST].copy()          
+    
+    # Renaming column names using COL_NAMES_FINAL
+    consolidate_pub_list_df.rename(columns = COL_NAMES_FINALE, inplace = True)
+    
+    # Saving df to EXCEL file
+    consolidate_pub_list_df.to_excel(out_path, index = False)
+    
     end_message = f"OTPs identification integrated in file : \n  '{out_path}'"
     return end_message
     
@@ -417,8 +428,12 @@ def add_biblio_list(in_path, out_path):
         None.
     
     Notes:
-        The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module of 'BiblioAnalysis_Utils' package.
-        The function `concat_name_firstname` is imported from 'BiblioMeterFonctions' module of 'BiblioMeter_FUNCTS' package.    
+        The global 'COL_NAMES' is imported from the module 'BiblioSpecificGlobals'  
+        of the package 'BiblioAnalysis_Utils'.
+        The global 'EMPLOYEES_CONVERTERS_DIC' is imported from the module 'BiblioMeterEmployeesGlobals' 
+        of the package 'BiblioMeter_FUNCTS'. 
+        The global 'COL_NAMES_BONUS'is imported from the module 'BiblioMeterGlobalsVariables' 
+        of the package 'BiblioMeter_FUNCTS'.             
     '''
     # 3rd party imports
     import pandas as pd 
@@ -448,7 +463,7 @@ def add_biblio_list(in_path, out_path):
         pub_id_first_row = pub_id_df.iloc[0]                                # Select the first row and build the full reference
         full_ref  = f'{pub_id_first_row[pub_title_alias]}, '                # add the reference's title
         full_ref += f'{pub_id_first_row[pub_first_author_alias]}. et al., ' # add the reference's first author
-        full_ref += f'{pub_id_first_row[pub_journal_alias].capitalize()}, '              # add the reference's journal name
+        full_ref += f'{pub_id_first_row[pub_journal_alias].capitalize()}, ' # add the reference's journal name
         full_ref += f'{str(pub_id_first_row[pub_year_alias])}, '            # add the reference's publication year
         full_ref += f'{pub_id_first_row[pub_doi_alias]}'                    # add the reference's DOI
         
@@ -504,6 +519,7 @@ def add_if(in_file_path, out_file_path, if_path, year = None):
     # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_MAJ_IF
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import FILL_EMPTY_KEY_WORD
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import NOT_AVAILABLE_IF
     
@@ -529,16 +545,16 @@ def add_if(in_file_path, out_file_path, if_path, year = None):
         return if_column
 
     # Setting useful aliases
-    year_col_alias = COL_NAMES['articles'][2]
-    issn_col_alias = COL_NAMES['articles'][10]
+    year_col_alias            = COL_NAMES_FINALE[COL_NAMES['articles'][2]]
+    issn_col_alias            = COL_NAMES['articles'][10]
     eissn_col_alias           = COL_NAMES_BONUS['EISSN']
     database_if_col_alias     = COL_NAMES_BONUS['IF clarivate']
     current_year_if_col_alias = COL_NAMES_BONUS['IF en cours']
     corpus_year_if_col_alias  = COL_NAMES_BONUS['IF année publi']
     if_update_col_list_alias  = COL_MAJ_IF
-    not_available_if_alias = NOT_AVAILABLE_IF
-    unknown_if_fill_alias  = FILL_EMPTY_KEY_WORD
-    unknown_alias          = FILL_EMPTY_KEY_WORD
+    not_available_if_alias    = NOT_AVAILABLE_IF
+    unknown_if_fill_alias     = FILL_EMPTY_KEY_WORD
+    unknown_alias             = FILL_EMPTY_KEY_WORD
     
     # Getting the df of the IFs database
     if_df = pd.read_excel(if_path, sheet_name = None)
@@ -623,52 +639,6 @@ def add_if(in_file_path, out_file_path, if_path, year = None):
     
     return end_message
                 
-
-def clean_reorder_rename_submit(in_file_path, out_file_path):
-    
-    ''' The `clean_reorder_rename_submit` etc ...
-    
-    Args:
-        in_path (path): path (including name of the file) leading to the working excel file. 
-        out_path (path): path (including name of the file) leading to where the file will be saved after going through its treatment.
-    
-    Returns:
-        None.
-    
-    Notes:
-   
-    '''
-    
-    # Standard library imports
-    from pathlib import Path
-    
-    # Local library imports
-    from BiblioMeter_GUI.Globals_GUI import SUBMIT_COL_NAMES
-    
-    # 3rd party imports
-    import pandas as pd
-    
-    # Read of the excel file
-    df_in = pd.read_excel(in_file_path)
-    
-    df_reordered = df_in[[SUBMIT_COL_NAMES['pub_id'], 
-                          SUBMIT_COL_NAMES['idx_authors'], 
-                          SUBMIT_COL_NAMES['co_authors'], 
-                          SUBMIT_COL_NAMES['address'], 
-                          SUBMIT_COL_NAMES['country'], 
-                          SUBMIT_COL_NAMES['year'], 
-                          SUBMIT_COL_NAMES['journal'], 
-                          SUBMIT_COL_NAMES['volume'], 
-                          SUBMIT_COL_NAMES['page'], 
-                          SUBMIT_COL_NAMES['DOI'], 
-                          SUBMIT_COL_NAMES['document_type'], 
-                          SUBMIT_COL_NAMES['language'], 
-                          SUBMIT_COL_NAMES['title'], 
-                          SUBMIT_COL_NAMES['ISSN'] ]]
-    
-    # Save in an excel file where leads out_path
-    df_reordered.to_excel(out_file_path, index = False)
-    
     
 def concatenate_pub_lists(bibliometer_path, years_list):
     
@@ -773,33 +743,6 @@ def mise_en_page(df):
     return wb, ws
 
 
-def rename_column_names(df, dictionnary = None):
-    '''
-    The function `rename_column_names` changes names of columns of the DataFrame.
-    
-    Args:
-        df (pandas.DataFrame()):
-        dictionnary (dict):
-    
-    Returns:
-        df (pandas.DataFrame()):
-    
-    Notes:
-        Uses COL_NAMES_FINALE from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables
-    '''
-    
-    # 3rd party imports
-    import pandas as pd
-    
-    # Local imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE
-    
-    if dictionnary == None: dictionnary = COL_NAMES_FINALE        
-    df.rename(columns = dictionnary, inplace = True)
-    
-    return df
-
-
 def find_missing_if(bibliometer_path, in_file_path):
     
     '''
@@ -817,18 +760,20 @@ def find_missing_if(bibliometer_path, in_file_path):
     
     # Local imports
     from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import COL_NAMES_FINALE
     from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
 
     # setting useful aliases
-    if_issn_alias    = COL_NAMES['articles'][10]
-    if_year_alias    = COL_NAMES['articles'][2]
-    if_journal_alias = COL_NAMES['articles'][3]    
-    if_annee_publi_alias = COL_NAMES_BONUS['IF année publi']
+    if_issn_alias           = COL_NAMES['articles'][10]
+    if_year_alias           = COL_NAMES_FINALE[COL_NAMES['articles'][2]]
+    if_journal_alias        = COL_NAMES['articles'][3]    
+    if_annee_publi_alias    = COL_NAMES_BONUS['IF année publi']
     if_root_folder_alias    = ARCHI_IF["root"]
     if_manquants_file_alias = ARCHI_IF["missing"] 
        
     out_folder_path = bibliometer_path / Path(if_root_folder_alias)
     out_file_path = out_folder_path / Path(if_manquants_file_alias)
+    
 
     df = pd.read_excel(in_file_path)
     

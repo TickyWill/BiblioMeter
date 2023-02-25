@@ -70,9 +70,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
     from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
     from BiblioMeter_GUI.Globals_GUI import PPI
-    
-    
-    
+
     # Defining internal functions
     def _etape_frame(self, num):
         '''The local function `_etape_frame` sets the 'etape' and place in the page

@@ -1,10 +1,13 @@
 __all__ = ['BACKUP_ARCHI',                 # <= ARCHI_SECOURS
+           'CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
            'EMPLOYEES_ARCHI',              # <= ARCHI_RH
            'EMPLOYEES_COL_TYPES',          # <= COL_TYPES_RH
            'EMPLOYEES_CONVERTERS_DIC',     # <= EFF_CONVERTERS_DIC
            'EMPLOYEES_FULL_COLS',          # <= COL_NAMES_RH
-           'EMPLOYEES_USEFUL_COLS',]
+           'EMPLOYEES_USEFUL_COLS',
+           'QUALIFICATION_DIC',
+           'STATUS_DIC',]
 
 # To Be moved from Globals_GUI.py because specific to employees files and dict keys changed  <= ARCHI_RH
 EMPLOYEES_ARCHI = {"root"                        : "Listing RH",
@@ -111,3 +114,21 @@ EMPLOYEES_ADD_COLS = {'dpts_list'          : 'Dpts',
                       'first_name_initials': 'Firstname_initials',
                       'employee_full_name' : 'Employee_full_name',
                      }
+
+CATEGORIES_DIC   = {'CDI'      : ['CDI'],
+                    'CDD'      : ['CDD'],
+                    'CSc'      : ['Conseiller Scient.'],
+                    'Stg'      : ['Stagiaire'],
+                   }    
+
+STATUS_DIC       = {'Doc'      : ['Thésard'],
+                    'Postdoc'  : ['Post doc'],
+                    'CSc'      : ['Conseiller Scient.NR'],
+                    'Stg'      : ['Stagiaire'],
+                   }
+
+QUALIFICATION_DIC = {'Doc'     : ['THESARD', 'THESE'],
+                     'Postdoc' : ['POST-DOC'],
+                     'CSc'     : ['CONSEILLER SCIENTIFIQUE'],
+                     'Stg'     : ['STAGIAIRE'],
+                    }
