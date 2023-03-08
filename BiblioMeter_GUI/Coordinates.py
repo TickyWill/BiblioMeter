@@ -61,7 +61,7 @@ __all__ = ['general_properties',
 #'TEXT_CROISEMENT_L', 'FONT_CROISEMENT_L', 'FORMAT_CROISEMENT_L'                                                 #
 ################################################################################################
 # Setting version value
-VERSION ='2.0.0'
+VERSION ='2.0.1'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
@@ -259,10 +259,10 @@ TEXT_LE_BMF = "Dossier de travail :"
 TEXT_BOUTON_LANCEMENT = "Lancer l'analyse"
 
 # Copyright and contacts
-TEXT_COPYRIGHT  =   "Contacts :"
+TEXT_COPYRIGHT  =   "Contributeurs et contacts :"
 TEXT_COPYRIGHT +=  "\n- Amal Chabli : amal.chabli@orange.fr"
 TEXT_COPYRIGHT +=  "\n- François Bertin : francois.bertin7@wanadoo.fr"
-TEXT_COPYRIGHT +=  "\n- Ludovic Desmeuzes : ludovic.desmeuzes@yahoo.com"
+TEXT_COPYRIGHT +=  "\n- Ludovic Desmeuzes"
 TEXT_COPYRIGHT += f"\nVersion {VERSION}"
 
 
