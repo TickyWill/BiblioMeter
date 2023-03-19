@@ -1,8 +1,8 @@
-__all__ = ['create_MultiAnnuelle']
+__all__ = ['create_update_ifs']
 
 # Nom de module et nom de fonctions à revoir !!!
 
-def create_MultiAnnuelle(self, bibliometer_path, parent):
+def create_update_ifs(self, bibliometer_path, parent):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -35,20 +35,20 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     
-    # Local imports
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_if
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import find_missing_if
-    
+    # Local functions imports
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import update_if_multi
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import find_missing_if
     from BiblioMeter_GUI.Coordinates import root_properties
-    
-    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
-    
+    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile    
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import encadre_UD 
+    from BiblioMeter_GUI.Useful_Functions import encadre_UD
     
+    # Globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Coordinates import HELP_ETAPE_5
     from BiblioMeter_GUI.Coordinates import HELP_ETAPE_6
@@ -59,12 +59,8 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_7
     from BiblioMeter_GUI.Coordinates import TEXT_MAJ_IF
     from BiblioMeter_GUI.Coordinates import TEXT_MISSING_IF
-    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
-    
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_IF
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_SECOURS
-    from BiblioMeter_GUI.Globals_GUI import PPI
-
+    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE    
+    from BiblioMeter_GUI.GUI_Globals import PPI
     
     # Internal functions
 
@@ -73,9 +69,9 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
         if_years_list = ', '.join(list(if_df.keys()))
         return if_years_list
     
-    def _add_if_try(file_to_update_path):
+    def _update_if_try(file_to_update_path):
         try:
-            end_message = add_if(file_to_update_path, file_to_update_path, all_if_path, None)
+            end_message = update_if_multi(file_to_update_path, file_to_update_path, all_if_path)
             print('\n',end_message)
             info_title = '- Information -'
             info_text  = "Les IFs ont été mis à jour."
@@ -108,7 +104,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
             info_text += f"\n\nvont être mis à jour avec les IFs des années : \n\n '{if_years_list}' "
             info_text += f"\n\ndu fichier :   '{if_file_name_alias}'."
             messagebox.showinfo(info_title, info_text)            
-            _add_if_try(file_to_update_path)
+            _update_if_try(file_to_update_path)
 
         else:
             ask_title = "- Régénération du fichier des IFs -"
@@ -126,7 +122,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
                 info_text += f"vont être mis à jour avec les IFs des années : \n\n '{if_years_list}' "
                 info_text += f"\n\ndu fichier : '{if_file_name_alias}'."
                 messagebox.showinfo(info_title, info_text) 
-                _add_if_try(file_to_update_path)
+                _update_if_try(file_to_update_path)
 
             else:
                 # Arrêt de la procédure
@@ -211,7 +207,7 @@ def create_MultiAnnuelle(self, bibliometer_path, parent):
     ref_entry_nb_char = REF_ENTRY_NB_CHAR                #90 -> 80                                     
     
     # Setting useful aliases
-    backup_folder_name_alias  = ARCHI_SECOURS["root"]    
+    backup_folder_name_alias  = ARCHI_BACKUP["root"]    
     if_root_folder_path_alias = ARCHI_IF["root"]
     if_file_name_alias        = ARCHI_IF["all IF"]
     if_manquants_file_alias   = ARCHI_IF["missing"]

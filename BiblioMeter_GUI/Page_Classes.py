@@ -1,8 +1,6 @@
 __all__ = ['App_Test']
 
 # To Do: Check the classes arg based on tkinter
-# Pourquoi la fonction 'Page_ParsingInstitution' est structurée comme elle est avec répétition des même instructions. 
-# Je n'ai pas osé modifier du fait de la programmation orientée objet que je ne maîtrise pas. 
 
 import tkinter as tk
 
@@ -44,8 +42,8 @@ class App_Test(tk.Tk):
         from BiblioMeter_GUI.Coordinates import TEXT_COPYRIGHT
         from BiblioMeter_GUI.Coordinates import TEXT_LE_BMF
         from BiblioMeter_GUI.Coordinates import TEXT_TITLE        
-        from BiblioMeter_GUI.Globals_GUI import PPI
-        from BiblioMeter_GUI.Globals_GUI import ROOT_PATH
+        from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import ROOT_PATH
                 
         _ = get_monitors() # OBLIGATOIRE
         
@@ -174,9 +172,9 @@ class App_Test(tk.Tk):
 
         else:
             # Creating buttons pointing on classes listed in pages
-            pages = (Page_MultiAnnuelle,
-                     Page_ParsingInstitution,
-                     Page_ParsingConcat)
+            pages = (Page_UpdateIFs,
+                     Page_ConsolidateCorpus,
+                     Page_ParseCorpus)
 
             # Création de mes deux containers
             container_button = tk.Frame(self, 
@@ -219,7 +217,7 @@ class App_Test(tk.Tk):
         
 ############################ PAGE 1 'Analyse élémentaire des corpus' ############################
 
-class Page_ParsingConcat(tk.Frame): 
+class Page_ParseCorpus(tk.Frame): 
     
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
@@ -233,16 +231,16 @@ class Page_ParsingConcat(tk.Frame):
 
         # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
-        from BiblioMeter_GUI.Page_ParsingConcat import create_ParsingConcat        
+        from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat        
         from BiblioMeter_GUI.Useful_Functions import font_size
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
         from BiblioMeter_GUI.Coordinates import REF_BUTTON_FONT_SIZE
         from BiblioMeter_GUI.Coordinates import REF_LABEL_POS_Y_MM
-        from BiblioMeter_GUI.Globals_GUI import PAGES_LABELS
-        from BiblioMeter_GUI.Globals_GUI import PAGES_NAMES
-        from BiblioMeter_GUI.Globals_GUI import PPI
+        from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
+        from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
+        from BiblioMeter_GUI.GUI_Globals import PPI
         
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(controller)
@@ -275,7 +273,7 @@ class Page_ParsingConcat(tk.Frame):
         mid_page_pos_x_px = win_width_px / 2
         
         # Creation of the class object PageOne
-        create_ParsingConcat(self, bibliometer_path, controller)
+        create_parsing_concat(self, bibliometer_path, controller)
         
         label_font = tkFont.Font(family = FONT_NAME, 
                                  size = eff_label_font_size)
@@ -298,7 +296,7 @@ class Page_ParsingConcat(tk.Frame):
         
 ############################ PAGE 2 'Consolidation annuelle des corpus' ############################
 
-class Page_ParsingInstitution(tk.Frame):
+class Page_ConsolidateCorpus(tk.Frame):
     
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
@@ -312,7 +310,7 @@ class Page_ParsingInstitution(tk.Frame):
         
         # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
-        from BiblioMeter_GUI.Page_ParsingInstitution import create_ParsingInstitution
+        from BiblioMeter_GUI.Page_ConsolidateCorpus import create_consolidate_corpus
         from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         from BiblioMeter_GUI.Useful_Functions import font_size
         
@@ -320,9 +318,37 @@ class Page_ParsingInstitution(tk.Frame):
         from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
         from BiblioMeter_GUI.Coordinates import REF_BUTTON_FONT_SIZE
         from BiblioMeter_GUI.Coordinates import REF_LABEL_POS_Y_MM
-        from BiblioMeter_GUI.Globals_GUI import PAGES_LABELS
-        from BiblioMeter_GUI.Globals_GUI import PAGES_NAMES
-        from BiblioMeter_GUI.Globals_GUI import PPI
+        from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
+        from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
+        from BiblioMeter_GUI.GUI_Globals import PPI
+        
+        # Internal functions
+        def _launch_consolidate_corpus():
+       
+            # Getting years of available corpuses from files status       
+            files_status = existing_corpuses(bibliometer_path)    
+            corpus_years_list = files_status[0]
+            Liste_2 = corpus_years_list
+            
+            if self.Liste_1 != Liste_2:                
+                self.Liste_1 = Liste_2                
+                create_consolidate_corpus(self, bibliometer_path, controller)                
+                label_font = tkFont.Font(family = FONT_NAME, 
+                                         size = eff_label_font_size)
+                label = tk.Label(self, 
+                                 text = label_text, 
+                                 font = label_font)
+                label.place(x = mid_page_pos_x_px, 
+                            y = eff_label_pos_y_px, 
+                            anchor = "center")                
+                button_font = tkFont.Font(family = FONT_NAME, 
+                                          size = eff_button_font_size)
+                button = tk.Button(container_button, 
+                                   text = label_text, 
+                                   font = button_font, 
+                                   command = lambda: _launch_consolidate_corpus())
+                button.grid(row = 0, column = 1)        
+            controller._show_frame(page_name)
         
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(controller)
@@ -360,8 +386,7 @@ class Page_ParsingInstitution(tk.Frame):
         self.Liste_1 = corpus_years_list        
         
         # Creating the class object PageTwo
-        create_ParsingInstitution(self, bibliometer_path, controller)
-        
+        create_consolidate_corpus(self, bibliometer_path, controller)        
         label_font = tkFont.Font(family = FONT_NAME, 
                                  size = eff_label_font_size)
         label = tk.Label(self, 
@@ -369,52 +394,19 @@ class Page_ParsingInstitution(tk.Frame):
                          font = label_font)
         label.place(x = mid_page_pos_x_px, 
                     y = eff_label_pos_y_px, 
-                    anchor = "center")
-        
+                    anchor = "center")        
         button_font = tkFont.Font(family = FONT_NAME, 
                                   size = eff_button_font_size)
         button = tk.Button(container_button, 
                            text = label_text, 
                            font = button_font, 
-                           command = lambda: _launch_ParsingInstitution())
+                           command = lambda: _launch_consolidate_corpus())
         button.grid(row = 0, column = 1)
-        
-        def _launch_ParsingInstitution():
-       
-            # Getting years of available corpuses from files status       
-            files_status = existing_corpuses(bibliometer_path)    
-            corpus_years_list = files_status[0]
-            Liste_2 = corpus_years_list
-            
-            if self.Liste_1 != Liste_2:
-                
-                self.Liste_1 = Liste_2
-                
-                create_ParsingInstitution(self, bibliometer_path, controller)
-                
-                label_font = tkFont.Font(family = FONT_NAME, 
-                                         size = eff_label_font_size)
-                label = tk.Label(self, 
-                                 text = label_text, 
-                                 font = label_font)
-                label.place(x = mid_page_pos_x_px, 
-                            y = eff_label_pos_y_px, 
-                            anchor = "center")
-                
-                button_font = tkFont.Font(family = FONT_NAME, 
-                                          size = eff_button_font_size)
-                button = tk.Button(container_button, 
-                                   text = label_text, 
-                                   font = button_font, 
-                                   command = lambda: _launch_ParsingInstitution())
-                button.grid(row = 0, column = 1)
-            
-            controller._show_frame(page_name)
 
             
 ############################ PAGE 3 'Mise à jour des IF' ############################
 
-class Page_MultiAnnuelle(tk.Frame):
+class Page_UpdateIFs(tk.Frame):
     
     def __init__(self, parent, controller, container_button, bibliometer_path):
         super().__init__(parent)
@@ -428,16 +420,16 @@ class Page_MultiAnnuelle(tk.Frame):
         
         # Local imports
         from BiblioMeter_GUI.Coordinates import root_properties
-        from BiblioMeter_GUI.Page_MultiAnnuelle import create_MultiAnnuelle        
+        from BiblioMeter_GUI.Page_UpdateIFs import create_update_ifs        
         from BiblioMeter_GUI.Useful_Functions import font_size
         
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
         from BiblioMeter_GUI.Coordinates import REF_BUTTON_FONT_SIZE
         from BiblioMeter_GUI.Coordinates import REF_LABEL_POS_Y_MM
-        from BiblioMeter_GUI.Globals_GUI import PAGES_LABELS
-        from BiblioMeter_GUI.Globals_GUI import PAGES_NAMES
-        from BiblioMeter_GUI.Globals_GUI import PPI
+        from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
+        from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
+        from BiblioMeter_GUI.GUI_Globals import PPI
 
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(controller)
@@ -470,8 +462,7 @@ class Page_MultiAnnuelle(tk.Frame):
         mid_page_pos_x_px = win_width_px / 2
         
         # Creation of the class object PageFour
-        create_MultiAnnuelle(self, bibliometer_path, controller)
-
+        create_update_ifs(self, bibliometer_path, controller)
         label_font = tkFont.Font(family = FONT_NAME, 
                                  size = eff_label_font_size)
         label = tk.Label(self, 
@@ -479,8 +470,7 @@ class Page_MultiAnnuelle(tk.Frame):
                          font = label_font)
         label.place(x = mid_page_pos_x_px, 
                     y = eff_label_pos_y_px, 
-                    anchor = "center")
-        
+                    anchor = "center")        
         button_font = tkFont.Font(family = FONT_NAME, 
                                   size = eff_button_font_size)
         button = tk.Button(container_button, 

@@ -1,4 +1,4 @@
-__all__ = ['create_ParsingConcat']
+__all__ = ['create_parsing_concat']
 
     
 def _create_table(self, bibliometer_path, pos_x_init):    
@@ -25,7 +25,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
         of the package 'BiblioMeter_GUI'.
         The global 'FONT_NAME' is imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
-        The global 'PPI' is imported from the module 'Globals_GUI' of the package 
+        The global 'PPI' is imported from the module 'GUI_Globals' of the package 
         'BiblioMeter_GUI'.
 
     """
@@ -42,7 +42,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
     from BiblioMeter_GUI.Useful_Functions import font_size    
     
     from BiblioMeter_GUI.Coordinates import FONT_NAME
-    from BiblioMeter_GUI.Globals_GUI import PPI  
+    from BiblioMeter_GUI.GUI_Globals import PPI  
     
     # Internal function
     def _set_table_item(item_text, item_pos_x):
@@ -119,13 +119,12 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
         The functions 'existing_corpuses', 'font_size' and 'place_after'
         are imported from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
         The class 'CheckBoxCorpuses' is imported from the module 'Useful_Classes' 
-        of the package 'BiblioMeter_GUI'. 
-        The globals ARCHI_YEAR and PPI are imported from the module 'Globals_GUI' 
         of the package 'BiblioMeter_GUI'.
         The global FONT_NAME is imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
-    
-    
+        The global PPI is imported from the module 'GUI_Globals' 
+        of the package 'BiblioMeter_GUI'.
+            
     '''
     
     # 3rd party imports
@@ -142,9 +141,9 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     
-    from BiblioMeter_GUI.Coordinates import FONT_NAME    
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
-    from BiblioMeter_GUI.Globals_GUI import PPI
+    # Globals imports
+    from BiblioMeter_GUI.Coordinates import FONT_NAME        
+    from BiblioMeter_GUI.GUI_Globals import PPI
     
     # Getting useful window sizes and scale factors depending on displays properties
     sizes_tuple   = root_properties(self)
@@ -262,8 +261,8 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
         of the package 'BiblioMeter_GUI'.
         The global 'PARSING_PERF' is imported from the module 'BiblioSpecificGlobals' 
         of the package 'BiblioAnalysis_Utils'.
-        The global 'ARCHI_YEAR' is imported from the module 'Globals_GUI' of the package 
-        'BiblioMeter_GUI'.
+        The global 'ARCHI_YEAR' is imported from the module 'BM_PubGlobals' of the package 
+        'BiblioMeter_FUNCTS'.
 
     """
     
@@ -281,8 +280,10 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import PARSING_PERF
     
     # Local imports
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses   
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses 
+    
+    # Globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     
     # Internal functions    
     def _corpus_parsing(rawdata_path, parsing_path, database_type, failed_json_path, expert):        
@@ -384,8 +385,6 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     It checks if all useful files are available in the 'BiblioMeter_Files' folder 
     using the function 'existing_corpuses'.
     It saves the parsing files using paths set from the global 'ARCHI_YEAR'.
-    It displays the number of articles parsed using the file path set using 
-    the global 'PARSING_PERF'.
     It updates the files status using the function `_update` internal 
     to the module 'Page_ParsingConcat' of the package 'BiblioMeter_GUI'.
     
@@ -409,12 +408,8 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
         the module 'BiblioParsingUtils' of the package 'BiblioAnalysis_Utils'.
         The function 'existing_corpuses' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The global 'PARSING_PERF' is imported from the module 'BiblioSpecificGlobals' 
-        of the package 'BiblioAnalysis_Utils'.
-        The global 'LITEN_INST_LIST' is imported from the module 'BiblioMeterGlobalsVariables' 
-        of the package 'BiblioMeter_FUNCTS'.
-        The global 'ARCHI_YEAR' is imported from the module 'Globals_GUI' of the package 
-        'BiblioMeter_GUI'.
+        The globals 'ARCHI_YEAR' and 'LITEN_INST_LIST' are imported from the module 
+        'BM_PubGlobals' of the package 'BiblioMeter_FUNCTS'.
 
     """
     # Standard library imports
@@ -428,12 +423,12 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     from BiblioAnalysis_Utils.BiblioParsingConcat import parsing_concatenate_deduplicate
     from BiblioAnalysis_Utils.BiblioParsingInstitutions import extend_author_institutions
     
-    # BiblioMeter_FUNCTS package imports
-    from BiblioMeter_FUNCTS.BiblioMeterGlobalsVariables import LITEN_INST_LIST
-    
     # Local imports
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
+    
+    # Globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import LITEN_INST_LIST
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     
     # Internal functions
     def _rationalize_corpus_parsing():
@@ -536,8 +531,8 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     _update(self, bibliometer_path, pos_x, pos_y, esp_ligne)
     
 
-def create_ParsingConcat(self, bibliometer_path, parent):
-    """ The function `create_ParsingConcat` creates the first page of the application GUI 
+def create_parsing_concat(self, bibliometer_path, parent):
+    """ The function `create_parsing_concat` creates the first page of the application GUI 
     using internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
     It calls also the functions `_launch_parsing``and `_launch_synthese` internal 
     to the module 'Page_ParsingConcat' of the package 'BiblioMeter_GUI' through GUI buttons.
@@ -556,7 +551,7 @@ def create_ParsingConcat(self, bibliometer_path, parent):
         The functions 'existing_corpuses', 'font_size' and 'place_after' 
         are imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The globals ARCHI_YEAR, BDD_LIST and PPI are imported from the module 'Globals_GUI' 
+        The globals BDD_LIST and PPI are imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
         The global FONT_NAME and TEXT_* are imported from the module 'Coordinates' 
         of the package 'BiblioMeter_GUI'.
@@ -583,6 +578,7 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     
+    # Globals imports    
     from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Coordinates import TEXT_BDD_PC
     from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_PARSING
@@ -593,10 +589,8 @@ def create_ParsingConcat(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Coordinates import TEXT_SYNTHESE    
     from BiblioMeter_GUI.Coordinates import TEXT_UPDATE_STATUS        
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
-        
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
-    from BiblioMeter_GUI.Globals_GUI import BDD_LIST
-    from BiblioMeter_GUI.Globals_GUI import PPI
+    from BiblioMeter_GUI.GUI_Globals import BDD_LIST
+    from BiblioMeter_GUI.GUI_Globals import PPI
     
     # Defining internal functions
     def _launch_exit():

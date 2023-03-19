@@ -1,6 +1,6 @@
-__all__ = ['create_ParsingInstitution']
+__all__ = ['create_consolidate_corpus']
 
-def create_ParsingInstitution(self, bibliometer_path, parent):
+def create_consolidate_corpus(self, bibliometer_path, parent):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -38,12 +38,12 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px        
     
     # Local library imports     
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesUpdate import update_employees
-    from BiblioMeter_FUNCTS.BiblioMeterMergeEmployees import recursive_year_search
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import add_OTP
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import concatenate_pub_lists
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import consolidate_pub_list
-    from BiblioMeter_FUNCTS.BiblioMeterFonctions import solving_homonyms    
+    from BiblioMeter_FUNCTS.BM_UpdateEmployees import update_employees
+    from BiblioMeter_FUNCTS.BM_MergePubEmployees import recursive_year_search
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_OTP
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import consolidate_pub_list
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import solving_homonyms    
     
     from BiblioMeter_GUI.Coordinates import root_properties
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
@@ -53,8 +53,11 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Useful_Functions import place_bellow
     
     # Local globals imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import BACKUP_ARCHI
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ARCHI
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
     
     from BiblioMeter_GUI.Coordinates import ETAPE_LABEL_TEXT_LIST
     from BiblioMeter_GUI.Coordinates import FONT_NAME    
@@ -65,11 +68,8 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
     from BiblioMeter_GUI.Coordinates import TEXT_PUB_CONSO
     from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI    
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_GUI.Globals_GUI import ARCHI_YEAR
-    from BiblioMeter_GUI.Globals_GUI import DPT_LABEL_DICT
-    from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
-    from BiblioMeter_GUI.Globals_GUI import PPI
+    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
+    from BiblioMeter_GUI.GUI_Globals import PPI
 
     # Defining internal functions
     def _etape_frame(self, num):
@@ -148,7 +148,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
     effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
     maj_effectifs_folder_name_alias = EMPLOYEES_ARCHI["complementary_employees"] 
-    backup_folder_name_alias        = BACKUP_ARCHI["root"]
+    backup_folder_name_alias        = ARCHI_BACKUP["root"]
 
    
     # Setting useful paths independent from corpus year
@@ -244,9 +244,8 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
                                                     search_depth)
                 print('\n',end_message)
                 info_title = '- Information -'
-                info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
-                info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués."  
-                info_text += f"\nLa résolution des homonymes peut être lancée."                 
+                info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué." 
+                info_text += f"\n\nLa résolution des homonymes peut être lancée."                 
                 messagebox.showinfo(info_title, info_text)
                 return 'ok'
 
@@ -623,7 +622,7 @@ def create_ParsingInstitution(self, bibliometer_path, parent):
     
         def _consolidate_pub_list():
             try:
-                end_message = consolidate_pub_list(OTP_path, pub_list_file_path, OTP_file_base_alias)
+                end_message = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_file_path, OTP_file_base_alias, year_select)
                 print('\n',end_message)
                 end_message = concatenate_pub_lists(bibliometer_path, years_list)
                 print('\n',end_message)

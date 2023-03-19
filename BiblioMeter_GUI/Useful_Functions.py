@@ -57,7 +57,7 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     
-    from BiblioMeter_GUI.Globals_GUI import CORPUSES_NUMBER
+    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.Useful_Functions import last_available_years  
     
     # internal functions

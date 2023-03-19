@@ -1,4 +1,4 @@
-__all__ = ['BACKUP_ARCHI',                 # <= ARCHI_SECOURS
+__all__ = [
            'CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
            'EMPLOYEES_ARCHI',              # <= ARCHI_RH
@@ -7,9 +7,10 @@ __all__ = ['BACKUP_ARCHI',                 # <= ARCHI_SECOURS
            'EMPLOYEES_FULL_COLS',          # <= COL_NAMES_RH
            'EMPLOYEES_USEFUL_COLS',
            'QUALIFICATION_DIC',
-           'STATUS_DIC',]
+           'STATUS_DIC',
+          ]
 
-# To Be moved from Globals_GUI.py because specific to employees files and dict keys changed  <= ARCHI_RH
+
 EMPLOYEES_ARCHI = {"root"                        : "Listing RH",
                    "all_years_employees"         : "Effectifs consolidés",
                    "one_year_employees"          : "Effectifs annuels",
@@ -17,10 +18,7 @@ EMPLOYEES_ARCHI = {"root"                        : "Listing RH",
                    "one_year_employees_filebase" : "_Effectifs.xlsx",
                    "complementary_employees"     : "Effectifs additionnels",}
 
-BACKUP_ARCHI = {"root" : "Sauvegarde de secours"}  
 
-
-# Moved from BiblioMeterGlobalsVariables.py because specific to employees files      <= COL_NAMES_RH 
 # This is only the full list of employees file columns available to be add to EMPLOYEES_USEFUL_COLS global
 EMPLOYEES_FULL_COLS = {'matricule'           : 'Matricule',                       #
                        'name'                : 'Nom',                             #

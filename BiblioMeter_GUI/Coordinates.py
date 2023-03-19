@@ -61,7 +61,7 @@ __all__ = ['general_properties',
 #'TEXT_CROISEMENT_L', 'FONT_CROISEMENT_L', 'FORMAT_CROISEMENT_L'                                                 #
 ################################################################################################
 # Setting version value
-VERSION ='2.0.1'
+VERSION ='2.1.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
@@ -329,7 +329,7 @@ TEXT_HOMONYMES = "Créer le fichier pour la résolution des homonymies"
 
 
 ### - Etape 3
-TEXT_ETAPE_3 = "Etape 3 : Attribution des OTP"
+TEXT_ETAPE_3 = "Etape 3 : Attribution des OTPs"
 TEXT_OTP = "Créer les fichiers pour l'attribution des OTPs"
 
 

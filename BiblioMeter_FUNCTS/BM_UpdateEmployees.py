@@ -18,14 +18,14 @@ def _set_employees_paths(bibliometer_path):
     from pathlib import Path
 
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import BACKUP_ARCHI 
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ARCHI                                                                         
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI                                                                         
                                                                              
     root_employees_folder_alias       = EMPLOYEES_ARCHI["root"]
     all_years_employees_folder_alias  = EMPLOYEES_ARCHI["all_years_employees"] 
     one_year_employees_folder_alias   = EMPLOYEES_ARCHI["one_year_employees"]
     months2add_employees_folder_alias = EMPLOYEES_ARCHI["complementary_employees"]
-    backup_folder_alias = BACKUP_ARCHI["root"]
+    backup_folder_alias = ARCHI_BACKUP["root"]
 
     # Setting useful paths
     root_employees_folder_path       = bibliometer_path / Path(root_employees_folder_alias)
@@ -56,7 +56,7 @@ def _check_sheet_month(df, sheet_name):
     import re
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
 
     # Setting lists of columns
     useful_col_list = list(EMPLOYEES_USEFUL_COLS.values())
@@ -200,8 +200,8 @@ def _add_column_keep_history(df):
     import pandas as pd
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
         
     # Setting useful aliases
     col_eff_dpt_alias     = EMPLOYEES_USEFUL_COLS['dpt']
@@ -244,8 +244,8 @@ def _add_column_firstname_initial(df):
     '''
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
     
     # Internal functions
     def _get_firstname_initiales(row):
@@ -279,8 +279,8 @@ def _add_column_full_name(df):
     '''
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS  
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS  
     
     col_last_name_alias          = EMPLOYEES_USEFUL_COLS['name']
     col_first_name_initial_alias = EMPLOYEES_ADD_COLS['first_name_initials']
@@ -313,7 +313,7 @@ def _select_employee_dpt_and_serv(df):
     '''
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS     
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS     
     
     col_dpt_alias  = EMPLOYEES_USEFUL_COLS['dpt']
     col_serv_alias = EMPLOYEES_USEFUL_COLS['serv']
@@ -350,7 +350,7 @@ def _build_year_month_dpt(year_months_file_path):
     
     Notes:
         The globals EFFECTIF_ADD_COLS, EMPLOYEES_ARCHI and EMPLOYEES_USEFUL_COLS are imported 
-        from the module 'BiblioMeterEmployeesGlobals' of the package 'BiblioMeter_FUNCTS'.
+        from the module 'BM_EmployeesGlobals' of the package 'BiblioMeter_FUNCTS'.
     
     '''
     
@@ -358,9 +358,9 @@ def _build_year_month_dpt(year_months_file_path):
     import pandas as pd
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ARCHI
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
 
     # Setting lists of columns
     useful_col_list = list(EMPLOYEES_USEFUL_COLS.values())
@@ -451,7 +451,7 @@ def update_employees(bibliometer_path, replace = True):
     import shutil
     
     # Local library imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ARCHI
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
     
     # Setting useful file name alias
     one_year_employees_basename_alias = EMPLOYEES_ARCHI["one_year_employees_filebase"]
@@ -517,160 +517,3 @@ def update_employees(bibliometer_path, replace = True):
     return (employees_year, None, None, None, None, all_years_file_error)
 
 
-## OLD versions by Ludovic
-def update_employees_old(bibliometer_path):
-    '''
-    '''
-    
-    # Standard library imports
-    import os
-    from pathlib import Path
-    from datetime import date
-    
-    # 3rd party imports
-    import pandas as pd    
-    import shutil
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import BACKUP_ARCHI
-    from BiblioMeter_FUNCTS.BiblioMeterEmployeesGlobals import EMPLOYEES_ARCHI
-    
-    from BiblioMeter_GUI.Globals_GUI import COL_NAMES_BM 
-
-    # Internal functions
-    def _get_year(mmyyyy):
-        return (mmyyyy[2:6])
-
-    def _check_year_format(mmyyyy):
-        '''The `_check_year_format` function, checks if the string argument mmyyyy
-        is in the right format.
-
-        Args:
-            mmyyyy (string) : string formatted as mmyyyy to be checked.
-
-        Returns:
-            O or 1 (boolean) : 0 if not in the right format, 1 if in the right format.
-        '''
-
-        try:
-            today_year = date.today().year
-            taille_fourchette = 5
-            range_min = today_year - taille_fourchette
-            range_max = today_year + taille_fourchette
-            years_to_check = [str(year) for year in range(range_min, range_max + 1)]
-            months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-            all_possible_dates = [mm + year for mm in months for year in years_to_check]
-
-            if mmyyyy in all_possible_dates:
-                return 1
-            else:
-                return 0
-        except:
-            return 0
-
-    def _different_years(list_of_dates):
-        '''
-        Args:
-            list_of_dates (list of strings): a list of string of dates in format mmyyyy, 
-            mm being the number of the month and yyyy being the number of the year.
-            
-        Returns:
-            L (list of strings):
-        '''
-
-        L = []
-        for i in list_of_dates:
-            L.append(i[2:6])
-            
-        return list(set(L))
-    
-    def _get_firstname_initiales(row):
-        row = row.replace('-',' ')
-        row_list = row.split(' ')
-        initiale_list = [x[0] for x in row_list]
-        initiales = ''.join(initiale_list) 
-        
-        return initiales
-
-    # Setting useful aliases and path
-    matricule_alias                 = EMPLOYEES_USEFUL_COLS['matricule'] 
-    listing_alias                   = EMPLOYEES_ARCHI["root"]
-    effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
-    effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
-    maj_effectifs_folder_name_alias = EMPLOYEES_ARCHI["complementary_employees"] 
-    backup_folder_name_alias        = BACKUP_ARCHI["root"]
-    
-    # Setting useful paths
-    effectifs_root_path       = bibliometer_path / Path(listing_alias)
-    effectifs_folder_path     = effectifs_root_path / Path(effectifs_folder_name_alias)
-    maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
-    backup_root_path          = bibliometer_path / Path(backup_folder_name_alias)    
-    
-    # Setting path of employees file 
-    try:
-        effectifs_file_name = os.listdir(effectifs_folder_path)[0]
-        effectifs_file_path = effectifs_folder_path / Path(effectifs_file_name)
-    except FileNotFoundError:
-        print(f"""Il y a un problème dans le nom du dossier {effectifs_folder_name_alias}""")
-    except IndexError:
-        error_message  = f"Le fichier des effectifs consolidés est introuvable "
-        error_message += f"dans le dossier : \n\n {effectifs_folder_path}"
-        print(error_message)
-    
-    # Setting path of file for update of employees file 
-    try:
-        maj_effectifs_file_name = os.listdir(maj_effectifs_folder_path)[0]
-        maj_effectifs_file_path = maj_effectifs_folder_path / Path(maj_effectifs_file_name)
-    except FileNotFoundError:
-        print(f"Le nom de répertoire {maj_effectifs_folder_name_alias} est incorrect.")
-    except IndexError:
-        error_message  = f"Aucun fichier de mise à jour des effectifs n'est disponible "
-        error_message += f"dans le dossier : \n\n {maj_effectifs_folder_path}"
-        print(error_message)
-
-    # Setting dataframes from the files
-    df_effectif = pd.read_excel(effectifs_file_path, sheet_name = None)
-    df_to_add = pd.read_excel(maj_effectifs_file_path, sheet_name = None)
-
-    # Getting sheets names
-    effectif_sheets = list(df_effectif.keys())
-    to_add_sheets = list(df_to_add.keys())
-
-    # Ajouter
-    step = 0
-    for page_to_add in to_add_sheets:
-        year = _get_year(page_to_add)
-        if year in effectif_sheets:
-            df_effectif[year] = pd.concat([df_effectif[year], df_to_add[page_to_add]], ignore_index = False)
-        else:
-            df_effectif[year] = pd.DataFrame(df_to_add[page_to_add].copy())
-            effectif_sheets.append(year)
-
-    # Et dédupliquer en ajoutant les colonnes Initials et Name + Initials
-    years_to_dedup = _different_years(to_add_sheets)
-    for page_to_dedup in years_to_dedup:
-        df_effectif[page_to_dedup].drop_duplicates(subset = [matricule_alias], inplace = True)
-    
-        # Creating a column with first name initials as a list
-        # ex PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM 
-        col_in, col_out = EMPLOYEES_USEFUL_COLS['first_name'], COL_NAMES_BM['First_name']
-        df_effectif[page_to_dedup][col_out] = df_effectif[page_to_dedup].apply(lambda row: 
-                                                                               _get_firstname_initiales(row[col_in]), 
-                                                                               axis = 1)
-
-        # Creating the column ['Full_name'] by combining EMPLOYEES_USEFUL_COLS['name'] and COL_NAMES_BM['First_name']
-        new_col = EMPLOYEES_ADD_COLS['employee_full_name']
-        df_effectif[page_to_dedup][new_col]  = df_effectif[page_to_dedup][EMPLOYEES_USEFUL_COLS['name']] 
-        df_effectif[page_to_dedup][new_col] += ' ' + df_effectif[page_to_dedup][COL_NAMES_BM['First_name']]
-
-    # Création de l'Excel Writer Object
-    with pd.ExcelWriter(effectifs_file_path) as writer:
-        for page_effectif in effectif_sheets:
-            df_effectif[page_effectif].to_excel(writer, 
-                                                sheet_name = page_effectif, 
-                                                index = False)
-    
-    # Copie de la mise à jour dans la zone de sauvegarde
-    filePath = shutil.copy(effectifs_file_path, backup_root_path)

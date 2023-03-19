@@ -107,8 +107,8 @@ class CheckBoxCorpuses:
         from BiblioMeter_GUI.Coordinates import FONT_NAME
         from BiblioMeter_GUI.Coordinates import REF_CHECK_BOXES_SEP_SPACE
         
-        from BiblioMeter_GUI.Globals_GUI import PPI
-        from BiblioMeter_GUI.Globals_GUI import ROOT_PATH        
+        from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import ROOT_PATH        
         
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(parent)
