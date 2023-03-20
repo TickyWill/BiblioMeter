@@ -3,6 +3,7 @@ __all__ = ['ARCHI_BACKUP',
            'ARCHI_IF',
            'ARCHI_YEAR',
            'BM_COL_RENAME_DIC',
+           'COL_HASH',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS', 
            'COL_NAMES_DPT',
@@ -12,6 +13,7 @@ __all__ = ['ARCHI_BACKUP',
            'HOMONYM_FLAG',
            'LITEN_INST_LIST',
            'NOT_AVAILABLE_IF',
+           'ORPHAN_COL_RENAME_DIC',
            'ROW_COLORS',
            'SUBMIT_COL_RENAME_DIC',
           ]
@@ -31,7 +33,8 @@ ARCHI_IF = {"root"    : "Impact Factor",
 
 ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle", 
               "submit file name"               : "submit.xlsx", 
-              "orphan file name"               : "orphan.xlsx",            
+              "orphan file name"               : "orphan.xlsx",
+              "hash_id file name"              : "hash_id.xlsx",
               "homonymes folder"               : "1 - Consolidation Homonymes", 
               "homonymes file name base"       : "Fichier Consolidation",            
               "OTP folder"                     : "2 - OTP", 
@@ -107,6 +110,10 @@ NOT_AVAILABLE_IF    = 'Not available'
 HOMONYM_FLAG = "HOMONYM"
 
 
+COL_HASH = {'hash_id' : 'Hash_id',
+           }
+
+
 COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur Liten", 
                    'nom prénom liste' : 'Liste ordonnée des auteurs Liten', 
                    'liste biblio'     : 'Référence bibliographique complète', 
@@ -154,20 +161,25 @@ def _build_col_conversion_dic():
     from BiblioMeter_FUNCTS.BM_PubGlobals import LITEN_INST_LIST
 
     liten_col_list  = [tup[0] + '_' + tup[1] for tup in LITEN_INST_LIST]
+    
+    init_orphan_col_list = sum([COL_NAMES['auth_inst'][:5],
+                                liten_col_list,
+                                [COL_NAMES['authors'][2]], 
+                                COL_NAMES['articles'][1:11],
+                                [COL_NAMES_BONUS['corpus_year']],
+                                [COL_NAMES_BM['Full_name'], COL_NAMES_BM['Last_name'], COL_NAMES_BM['First_name']],
+                               ],
+                               [],
+                              )
 
-    init_submit_col_list = sum([COL_NAMES['auth_inst'][:5],
-                           liten_col_list,
-                           [COL_NAMES['authors'][2] ], 
-                           COL_NAMES['articles'][1:11],
-                           [COL_NAMES_BONUS['corpus_year'], ],
-                           [COL_NAMES_BM['Full_name'], COL_NAMES_BM['Last_name'], COL_NAMES_BM['First_name'], ],
-                           [COL_NAMES_BONUS['homonym']],
-                           list(EMPLOYEES_USEFUL_COLS.values()),
-                           list(EMPLOYEES_ADD_COLS.values()),
-                           [COL_NAMES_BONUS['author_type'], COL_NAMES_BONUS['liste biblio'], ],
-                          ],
-                          [],
-                         )
+    init_submit_col_list = sum([init_orphan_col_list,
+                                [COL_NAMES_BONUS['homonym']],
+                                list(EMPLOYEES_USEFUL_COLS.values()),
+                                list(EMPLOYEES_ADD_COLS.values()),
+                                [COL_NAMES_BONUS['author_type'], COL_NAMES_BONUS['liste biblio']],
+                               ],
+                               [],
+                              )
 
     init_bm_col_list = sum([init_submit_col_list,
                            [COL_NAMES_BONUS['nom prénom liste'],
@@ -248,11 +260,14 @@ def _build_col_conversion_dic():
     
     all_col_rename_dic     = dict(zip(init_bm_col_list,final_bm_col_list))
     
-    final__submit_col_list = [all_col_rename_dic[col] for col in init_submit_col_list]
-    submit_col_rename_dic  = dict(zip(init_submit_col_list,final__submit_col_list))
+    final_submit_col_list  = [all_col_rename_dic[col] for col in init_submit_col_list]
+    submit_col_rename_dic  = dict(zip(init_submit_col_list,final_submit_col_list))
     
-    return (submit_col_rename_dic, all_col_rename_dic)
+    final_orphan_col_list  = [all_col_rename_dic[col] for col in init_orphan_col_list]
+    orphan_col_rename_dic  = dict(zip(init_orphan_col_list,final_orphan_col_list))
+    
+    return (orphan_col_rename_dic, submit_col_rename_dic, all_col_rename_dic)
 
-SUBMIT_COL_RENAME_DIC, BM_COL_RENAME_DIC = _build_col_conversion_dic()
+ORPHAN_COL_RENAME_DIC, SUBMIT_COL_RENAME_DIC, BM_COL_RENAME_DIC = _build_col_conversion_dic()
 
 

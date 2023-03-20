@@ -528,6 +528,108 @@ def _change_submit_col_names(in_path, out_path):
     return end_message
 
 
+def _change_col_names(submit_path, orphan_path):
+    """
+    
+    """
+
+    # Standard library imports
+    from pathlib import Path
+
+    # 3rd party imports
+    import pandas as pd
+    
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_CONVERTERS_DIC
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SUBMIT_COL_RENAME_DIC
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ORPHAN_COL_RENAME_DIC
+    
+    # Read of the 'submit' file with dates convertion through EMPLOYEES_CONVERTERS_DIC
+    submit_df = pd.read_excel(submit_path, converters = EMPLOYEES_CONVERTERS_DIC)    
+    submit_df.rename(columns = SUBMIT_COL_RENAME_DIC, inplace=True)
+
+    # Resaving df_submit
+    submit_df.to_excel(submit_path, index = False)
+    
+    # Read of the 'orphan' file 
+    orphan_df = pd.read_excel(orphan_path)    
+    orphan_df.rename(columns = ORPHAN_COL_RENAME_DIC, inplace=True)
+
+    # Resaving df_submit
+    orphan_df.to_excel(orphan_path, index = False)
+    
+    end_message = f"Column renamed in files: \n  '{submit_path}' \n  '{orphan_path}' "
+    return end_message
+
+
+def creating_hash_id(bibliometer_path, corpus_year):
+    """
+    """
+    # Standard library imports
+    import ctypes
+    from pathlib import Path
+    
+    # 3rd library imports
+    import pandas as pd    
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_HASH
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SUBMIT_COL_RENAME_DIC
+  
+    # Setting useful aliases
+    bdd_mensuelle_alias  = ARCHI_YEAR["bdd mensuelle"]
+    submit_file_alias    = ARCHI_YEAR["submit file name"]
+    orphan_file_alias    = ARCHI_YEAR["orphan file name"]
+    hash_id_file_alias   = ARCHI_YEAR["hash_id file name"]
+    hash_id_col_alias    = COL_HASH['hash_id']
+    pub_id_alias         = SUBMIT_COL_RENAME_DIC['Pub_id']
+    year_alias           = SUBMIT_COL_RENAME_DIC['Year']
+    first_auth           = SUBMIT_COL_RENAME_DIC['Authors']
+    title_alias          = SUBMIT_COL_RENAME_DIC['Title']
+    ISSN_alias           = SUBMIT_COL_RENAME_DIC['ISSN']
+    doi_alias            = SUBMIT_COL_RENAME_DIC['DOI']     
+    
+    
+    # Setting useful paths
+    corpus_year_path   = bibliometer_path / Path(corpus_year)
+    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
+    submit_file_path   = bdd_mensuelle_path / Path(submit_file_alias)
+    orphan_file_path   = bdd_mensuelle_path / Path(orphan_file_alias)
+    hash_id_file_path  = bdd_mensuelle_path / Path(hash_id_file_alias)
+    
+    # Setting useful columns list
+    useful_cols = [pub_id_alias, year_alias, first_auth, title_alias, ISSN_alias, doi_alias ]
+        
+    # Getting dataframes to hash
+    submit_to_hash = pd.read_excel(submit_file_path, usecols = useful_cols)
+    orphan_to_hash = pd.read_excel(orphan_file_path, usecols = useful_cols)
+    
+    # Concatenate de dataframes to hash
+    dg_to_hash = pd.concat([submit_to_hash, orphan_to_hash])
+    
+    # Droping rows of same pub_id_alias and reindexing the rows using ignore_index
+    dg_to_hash.drop_duplicates(subset = [pub_id_alias], inplace = True, ignore_index = True)
+    
+    hash_id_df = pd.DataFrame()    
+    for idx in range(len(dg_to_hash)):
+        pub_id = dg_to_hash.loc[idx, pub_id_alias]                
+        text   = str(dg_to_hash.loc[idx, year_alias])
+        text  += str(dg_to_hash.loc[idx, first_auth])
+        text  += str(dg_to_hash.loc[idx, title_alias])
+        text  += str(dg_to_hash.loc[idx, ISSN_alias])
+        text  += str(dg_to_hash.loc[idx, doi_alias])
+        hash_id = ctypes.c_size_t(hash(text)).value
+        hash_id_df.loc[idx, hash_id_col_alias] = str(hash_id)
+        hash_id_df.loc[idx, pub_id_alias] = pub_id
+
+    hash_id_df.to_excel(hash_id_file_path, index = False)    
+    
+    message = f"Hash id of publications created"
+    return message
+
+
 def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_year, go_back_years):
 
     """
@@ -566,7 +668,9 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
         df_year = df[year_col_alias].iloc[0]
         
         def _rename_pub_id(old_pub_id, year):
-            new_pub_id = str(int(year)) + '_' + str(int(old_pub_id))
+            pub_id_str = str(int(old_pub_id))
+            while len(pub_id_str)<3: pub_id_str = "0" + pub_id_str
+            new_pub_id = str(int(year)) + '_' + pub_id_str
             return new_pub_id
 
         df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, df_year))
@@ -644,6 +748,7 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
+    df_orphan = _unique_pub_id(df_orphan)
 
     # Saving df_submit
     df_submit.to_excel(submit_path, index = False)
@@ -654,11 +759,13 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Adding biblio and saving new df_submit
     _add_biblio_list(submit_path, submit_path)
     
-    # Renaming column names using SUBMIT_COL_RENAME_DIC global
-    _change_submit_col_names(submit_path, submit_path)
-    
     # Saving df_orphan
     df_orphan.to_excel(orphan_path, index = False)
+    
+    # Renaming column names using SUBMIT_COL_RENAME_DIC and ORPHAN_COL_RENAME_DIC globals
+    _change_col_names(submit_path, orphan_path)
+    
+    creating_hash_id(bibliometer_path, corpus_year)
     
     end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
     return end_message  
