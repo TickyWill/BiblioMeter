@@ -1,5 +1,5 @@
-__version__ = '2.1.1'
-__author__ = 'BiblioAnalysis team'
+__version__ = '2.2.0'
+__author__ = 'BiblioMeter team'
 __license__ = 'MIT'
 
 from BiblioMeter_GUI.Coordinates import *

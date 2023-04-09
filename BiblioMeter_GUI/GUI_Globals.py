@@ -14,7 +14,6 @@ from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
 from BiblioMeter_GUI.Coordinates import BM_GUI_DISP
 
 
-
 # Getting display resolution in pixels per inch 
 PPI = DISPLAYS[BM_GUI_DISP]['ppi']
 

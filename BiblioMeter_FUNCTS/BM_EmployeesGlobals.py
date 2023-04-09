@@ -29,7 +29,7 @@ EMPLOYEES_FULL_COLS = {'matricule'           : 'Matricule',                     
                        'status'              : 'Statut de salarié (lib)',         #
                        'ranking_channel'     : 'Filière classement (lib)',
                        'qualification'       : 'Qualification classement (lib)',  #
-                       'speciality'           : 'Spécialité poste (lib)',
+                       'speciality'          : 'Spécialité poste (lib)',
                        'contract_nature'     : 'Nature de contrat (lib)',
                        'link_annex'          : 'Annexe classement',
                        'ranking_date'        : "Date d'effet classement",

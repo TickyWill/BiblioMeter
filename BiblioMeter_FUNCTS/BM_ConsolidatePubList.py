@@ -4,202 +4,94 @@ __all__ = ['add_if',
            'consolidate_pub_list',            
            'find_missing_if',          
            'mise_en_page',
+           'save_shaped_homonyms_file',
            'solving_homonyms',
            'update_if_multi',
            'update_if_single',
           ]
 
-
-def _set_homonym_col_names():
-    """
+def mise_en_page(df, wb = None):
     
-    """
-    # BiblioAnalysis_Utils package globals imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS   
-
-    col_homonyms_dic = {0 : COL_NAMES['pub_id'],
-                        1 : COL_NAMES_BONUS['corpus_year'],
-                        2 : COL_NAMES['articles'][2],
-                        3 : COL_NAMES['articles'][1],
-                        4 : COL_NAMES['articles'][9],
-                        5 : COL_NAMES['articles'][3],
-                        6 : COL_NAMES['articles'][7],
-                        7 : COL_NAMES['articles'][6],
-                        8 : COL_NAMES_BONUS['liste biblio'],
-                        9 : COL_NAMES['articles'][10],
-                        10: COL_NAMES['auth_inst'][1],	
-                        11: EMPLOYEES_USEFUL_COLS['matricule'],	
-                        12: EMPLOYEES_USEFUL_COLS['name'],
-                        13: EMPLOYEES_USEFUL_COLS['first_name'],	
-                        14: COL_NAMES_BONUS['author_type'],	
-                        15: EMPLOYEES_USEFUL_COLS['dpt'],
-                        16: EMPLOYEES_USEFUL_COLS['serv'],
-                        17: EMPLOYEES_USEFUL_COLS['lab'],	
-                        18: COL_NAMES_BONUS['homonym'],    	
-                        }
-
-    col_homonyms = [BM_COL_RENAME_DIC[col_homonyms_dic[idx]] for idx in col_homonyms_dic.keys()]
-    return col_homonyms
-
-
-def _set_otp_col_names():
+    ''' 
+    When the workbook wb is not None, this is applied 
+    to the active worksheet of the passed workbook. 
+    If the workbook wb is None, then the worbook is created.    
     '''
-    '''
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    # local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_DPT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
     
-    # Setting useful column names
-    col_otp_dic = {0  : COL_NAMES['pub_id'],
-                   1  : COL_NAMES_BONUS['corpus_year'],
-                   2  : COL_NAMES['articles'][2],
-                   3  : COL_NAMES['articles'][1],
-                   4  : COL_NAMES_BONUS['nom prénom liste'],
-                   5  : COL_NAMES['articles'][9],
-                   6  : COL_NAMES['articles'][3],
-                   7  : COL_NAMES['articles'][7],
-                   8  : COL_NAMES['articles'][6],
-                   9  : COL_NAMES_BONUS['liste biblio'],
-                   10 : COL_NAMES['articles'][10],
-                   11 : EMPLOYEES_USEFUL_COLS['matricule'],
-                   12 : COL_NAMES_BONUS['nom prénom'],
-                   13 : EMPLOYEES_USEFUL_COLS['dpt'],
-                   14 : EMPLOYEES_USEFUL_COLS['serv'],
-                   15 : EMPLOYEES_USEFUL_COLS['lab'],
-                   16 : COL_NAMES_DPT['DTNM'],
-                   17 : COL_NAMES_DPT['DTCH'],
-                   18 : COL_NAMES_DPT['DEHT'],
-                   19 : COL_NAMES_DPT['DTS'],
-                   20 : COL_NAMES_DPT['DIR'],
-                   21 : COL_NAMES_BONUS['list OTP'],
-                  }
-
-    col_otp = [BM_COL_RENAME_DIC[col_otp_dic[idx]] for idx in col_otp_dic.keys()]
-    return col_otp
-
-
-def _set_final_col_names():
-    '''
-    '''
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    # local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_DPT    
-    
-    col_final_dic = {0  : COL_NAMES['pub_id'],
-                     1  : COL_NAMES_BONUS['corpus_year'],
-                     2  : COL_NAMES['articles'][2],
-                     3  : COL_NAMES['articles'][1],
-                     4  : COL_NAMES_BONUS['nom prénom liste'],
-                     5  : COL_NAMES['articles'][9],
-                     6  : COL_NAMES['articles'][3],
-                     7  : COL_NAMES['articles'][7],
-                     8  : COL_NAMES['articles'][6],
-                     9  : COL_NAMES_BONUS['liste biblio'],
-                     10 : COL_NAMES['articles'][10],
-                     11 : COL_NAMES_DPT['DTNM'],
-                     12 : COL_NAMES_DPT['DTCH'],
-                     13 : COL_NAMES_DPT['DEHT'],
-                     14 : COL_NAMES_DPT['DTS'],
-                     15 : COL_NAMES_DPT['DIR'],
-                     16 : COL_NAMES_BONUS['list OTP'],
-                     }
-    
-    col_final = [BM_COL_RENAME_DIC[col_final_dic[idx]] for idx in col_final_dic.keys()]
-    
-    return col_final
-
-def _set_if_col_names():
-    '''
-    '''
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    # local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_DPT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    
-    col_base_if = _set_final_col_names()
-    
-    col_spec_if = [COL_NAMES_BONUS['IF en cours'],                 
-                   COL_NAMES_BONUS['IF année publi'], 
-                  ]
-    
-    col_maj_if = col_base_if + col_spec_if
-    
-    return (col_base_if, col_maj_if)
-
-
-def _set_col_attr():
-    '''
-    '''
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-
-    # local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_DPT
-    
-    init_col_attr   = {COL_NAMES['pub_id']                 : [15, "center"],
-                       COL_NAMES_BONUS['nom prénom liste'] : [40, "left"],
-                       COL_NAMES['authors'][1]             : [15, "center"],
-                       EMPLOYEES_USEFUL_COLS['matricule']  : [15, "center"],
-                       EMPLOYEES_USEFUL_COLS['name']       : [20, "center"],
-                       EMPLOYEES_USEFUL_COLS['first_name'] : [20, "center"],
-                       COL_NAMES['articles'][9]            : [40, "left"],
-                       COL_NAMES['articles'][1]            : [20, "center"],
-                       COL_NAMES_BONUS['IF en cours']      : [15, "center"],
-                       COL_NAMES_BONUS['IF année publi']   : [15, "center"],
-                       COL_NAMES['articles'][6]            : [20, "left"],
-                       COL_NAMES['articles'][10]           : [15, "center"],
-                       COL_NAMES['articles'][2]            : [15, "center"],
-                       COL_NAMES['articles'][3]            : [40, "left"],
-                       COL_NAMES['articles'][7]            : [20, "center"],
-                       COL_NAMES_BONUS['corpus_year']      : [15, "center"],
-                       EMPLOYEES_USEFUL_COLS['dpt']        : [15, "center"],
-                       EMPLOYEES_USEFUL_COLS['serv']       : [15, "center"],
-                       EMPLOYEES_USEFUL_COLS['lab']        : [15, "center"],
-                       COL_NAMES_BONUS['liste biblio']     : [55, 'left'],
-                       COL_NAMES_BONUS['homonym']          : [20, "center"], 
-                       COL_NAMES_BONUS['list OTP']         : [75, "center"],
-                       COL_NAMES_DPT['DTNM']               : [10, "center"],
-                       COL_NAMES_DPT['DTCH']               : [10, "center"],
-                       COL_NAMES_DPT['DEHT']               : [10, "center"],
-                       COL_NAMES_DPT['DTS']                : [10, "center"],
-                       COL_NAMES_DPT['DIR']                : [10, "center"],
-                      }
-    
-    final_col_list = [BM_COL_RENAME_DIC[key] for key in list(init_col_attr.keys())]
-    col_attr_list = list(init_col_attr.values())
-    
-    final_col_attr = dict(zip(final_col_list,col_attr_list))
-    final_col_attr['else'] = [15, "center"]
-    return (final_col_attr, final_col_list)
-
-
-def solving_homonyms(in_path, out_path):
-    """
-    
-    """
-
     # 3rd party imports
-    import pandas as pd
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    from openpyxl.styles import Font as openpyxl_Font  
+    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
+    from openpyxl.styles import Alignment as openpyxl_Alignment
+    from openpyxl.styles import Border as openpyxl_Border
+    from openpyxl.styles import Side as openpyxl_Side
+        
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
+       
+    # Setting useful column sizes
+    col_attr, col_set_list = set_col_attr()
+    columns_list = list(df.columns)
+    for col in columns_list:
+        if col not in col_set_list: col_attr[col] = col_attr['else']
+        
+     # Setting list of cell colors   
+    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
+                  openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]
+    
+    # Initialize wb as a workbook and ws its active worksheet
+    if not wb : wb = Workbook()
+    ws = wb.active
+    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
+    
+    # Coloring alternatly rows in ws using list of cell colors cell_colors
+    for idx_row, row in enumerate(ws_rows):       
+        ws.append(row)        
+        last_row = ws[ws.max_row]            
+        if idx_row >= 1:
+            cell_color = cell_colors[idx_row%2]
+            for cell in last_row:
+                cell.fill = cell_color 
+    
+    # Setting cell alignement and border using dict of column attributes col_attr
+    for idx_col, col in enumerate(columns_list):
+        column_letter = openpyxl_get_column_letter(idx_col + 1)
+        for cell in ws[column_letter]:
+            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
+            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))                    
+    
+    # Setting the format of the columns heading
+    for cell in ws['A'] + ws[1]:
+        cell.font = openpyxl_Font(bold=True)
+        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")
+    
+    # Setting de columns width using dict of column attributes col_attr
+    for idx_col, col in enumerate(columns_list):
+        if idx_col >= 1:
+            column_letter = openpyxl_get_column_letter(idx_col + 1)
+            try:
+                ws.column_dimensions[column_letter].width = col_attr[col][0]
+            except:
+                ws.column_dimensions[column_letter].width = 20
+    
+    # Setting height of first row
+    first_row_num = 1
+    ws.row_dimensions[first_row_num].height = 30
+
+    return wb, ws
+
+
+def save_shaped_homonyms_file(df_homonyms, out_path):
+    """
+    
+    """
+    # 3rd party imports
     from openpyxl import Workbook as openpyxl_Workbook
     from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
     from openpyxl.styles import PatternFill as openpyxl_PatternFill
@@ -209,21 +101,12 @@ def solving_homonyms(in_path, out_path):
     from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
     
     # Setting useful column names 
-    col_homonyms = _set_homonym_col_names()
-
-    # Useful alias
-    name_alias      = col_homonyms[12] #EMPLOYEES_USEFUL_COLS['name'] 
-    firstname_alias = col_homonyms[13] #EMPLOYEES_USEFUL_COLS['first_name']
-    homonym_alias   = col_homonyms[18] #COL_NAMES_BONUS['homonym']
+    col_homonyms = list(df_homonyms.columns)
     
-    # Reading the submit file #
-    df_submit = pd.read_excel(in_path)
-    
-    # Getting rid of the columns we don't want #
-    df_homonyms = df_submit[col_homonyms].copy()
-    
-    # Sizing columns widths
-    #wb, ws = mise_en_page(df_homonyms)
+    # Useful aliases of renamed columns names 
+    name_alias      = col_homonyms[12] #renamed EMPLOYEES_USEFUL_COLS['name'] 
+    firstname_alias = col_homonyms[13] #renamed EMPLOYEES_USEFUL_COLS['first_name']
+    homonym_alias   = col_homonyms[18] #renamed COL_NAMES_BONUS['homonym']
     
     wb = openpyxl_Workbook()
     ws = wb.active    
@@ -240,6 +123,30 @@ def solving_homonyms(in_path, out_path):
             cell.fill = yellow_ft
             
     wb.save(out_path)
+
+    
+def solving_homonyms(in_path, out_path):
+    """
+    Uses the local function 'save_shaped_homonyms_file' 
+    to shape then save the homonyms df.
+    """
+    # 3rd party imports
+    import pandas as pd
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_homonym_col_names
+    
+    # Setting useful column names 
+    col_homonyms = set_homonym_col_names()
+    
+    # Reading the submit file #
+    df_submit = pd.read_excel(in_path)
+    
+    # Getting rid of the columns we don't want #
+    df_homonyms = df_submit[col_homonyms].copy()
+    
+    # Saving shaped df_homonyms
+    save_shaped_homonyms_file(df_homonyms, out_path)
     
     end_message = f"File for solving homonymies saved in folder: \n  '{out_path}'"
     return end_message
@@ -347,6 +254,7 @@ def add_OTP(in_path, out_path, out_file_base):
     # Local library imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import _add_authors_name_list
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_otp_col_names
     
     # Local globals imports 
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
@@ -405,7 +313,7 @@ def add_OTP(in_path, out_path, out_file_base):
         wb.save(excel_dpt_path)
     
     # Setting useful column names 
-    col_otp = _set_otp_col_names()    
+    col_otp = set_otp_col_names()    
     
     # Setting useful aliases
     pub_id_alias     = BM_COL_RENAME_DIC[COL_NAMES['pub_id']]           # Pub_id
@@ -520,13 +428,16 @@ def add_if(in_file_path, out_file_path, if_path, year):
     # 3rd party imports
     import pandas as pd    
     
-    # Local imports
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
+    
+    # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
     from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
         
     # Setting useful column names
-    col_base_if, col_maj_if = _set_if_col_names()
+    col_base_if, col_maj_if = set_if_col_names()
 
     # Setting useful aliases
     year_col_alias            = col_maj_if[1]           #COL_NAMES_BONUS['corpus_year']
@@ -548,7 +459,7 @@ def add_if(in_file_path, out_file_path, if_path, year):
                                         if_df[if_most_recent_year][database_if_col_alias]))
     
     # Setting column names
-    otp_col_new = 'OTP'
+    otp_col_new = COL_NAMES_BONUS['final OTP']
     most_recent_year_if_col_name = col_maj_if[17] + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours'] 
     corpus_year_if_col_name      = col_maj_if[18]                                #COL_NAMES_BONUS['IF année publi']  
     
@@ -609,6 +520,9 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, in_file_base, corp
 
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
 
     # local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
@@ -626,7 +540,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, in_file_base, corp
         return dpt_df
     
     # Setting useful column names
-    col_final_list = _set_final_col_names()
+    col_final_list = set_final_col_names()
     
     # Setting useful aliases
     pub_id_alias           = col_final_list[0]   #COL_NAMES['pub_id']
@@ -747,14 +661,17 @@ def update_if_single(in_file_path, out_file_path, if_path, year):        # Not u
     
     # 3rd party imports
     import pandas as pd    
+        
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
     
-    # Local imports
+    # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
     from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
     
     # Setting useful column names
-    col_base_if, col_maj_if = _set_if_col_names()
+    col_base_if, col_maj_if = set_if_col_names()
     col_base_if[16] ='OTP'
     
     # Setting useful aliases
@@ -845,13 +762,16 @@ def update_if_multi(in_file_path, out_file_path, if_path):
     # 3rd party imports
     import pandas as pd    
     
-    # Local imports
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
+    
+    # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
     from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
     
     # Setting useful column names
-    col_base_if, col_maj_if = _set_if_col_names()
+    col_base_if, col_maj_if = set_if_col_names()
     col_base_if[16] ='OTP'
     
     # Setting useful aliases
@@ -936,12 +856,15 @@ def find_missing_if(bibliometer_path, in_file_path, if_most_recent_year = None):
     
     # BiblioAnalysis_Utils package globals imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
+        
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
     
-    # Local imports
+    # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     
     # Setting useful column names
-    _, col_maj_if = _set_if_col_names()
+    _, col_maj_if = set_if_col_names()
   
     # setting useful aliases
     issn_alias           = col_maj_if[10]                        #COL_NAMES['articles'][10]
@@ -982,71 +905,3 @@ def find_missing_if(bibliometer_path, in_file_path, if_most_recent_year = None):
     return end_message
 
 
-def mise_en_page(df, wb = None):
-    
-    ''' 
-    When the workbook wb is not None, this is applied to the active worksheet of the workbook. 
-        
-    '''
-    
-    # 3rd party imports
-    from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-    from openpyxl.styles import Font as openpyxl_Font  
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
-    from openpyxl.styles import Alignment as openpyxl_Alignment
-    from openpyxl.styles import Border as openpyxl_Border
-    from openpyxl.styles import Side as openpyxl_Side
-    
-    # Local imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
-       
-    # Setting useful column sizes
-    col_attr, col_set_list = _set_col_attr()
-
-    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
-                  openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]
-
-    columns_list = list(df.columns)
-    for col in columns_list:
-        if col not in col_set_list: col_attr[col] = col_attr['else']
-    
-    # Initialize wb as a workbook and ws its active worksheet
-    #wb = Workbook()
-    if not wb : wb = Workbook()
-    ws = wb.active
-    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
-    
-    #  Coloring alternatly rows in ws
-    for idx_row, row in enumerate(ws_rows):       
-        ws.append(row)        
-        last_row = ws[ws.max_row]            
-        if idx_row >= 1:
-            cell_color = cell_colors[idx_row%2]
-            for cell in last_row:
-                cell.fill = cell_color 
-    
-    for idx_col, col in enumerate(columns_list):
-        column_letter = openpyxl_get_column_letter(idx_col + 1)
-        for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))                    
-    
-    for cell in ws['A'] + ws[1]:
-        cell.font = openpyxl_Font(bold=True)
-        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")
-        
-    for idx_col, col in enumerate(columns_list):
-        if idx_col >= 1:
-            column_letter = openpyxl_get_column_letter(idx_col + 1)
-            try:
-                ws.column_dimensions[column_letter].width = col_attr[col][0]
-            except:
-                ws.column_dimensions[column_letter].width = 20
-    
-    first_row_num = 1
-    ws.row_dimensions[first_row_num].height = 30
-
-    return wb, ws

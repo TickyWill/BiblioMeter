@@ -1,10 +1,8 @@
 __all__ = ['general_properties',
            'root_properties',
            'BM_GUI_DISP',
-           
            'CONTAINER_BUTTON_HEIGHT_PX',
            'FONT_NAME',
-           
            'REF_BUTTON_FONT_SIZE',
            'REF_CHECK_BOXES_SEP_SPACE',
            'REF_COPYRIGHT_FONT_SIZE',
@@ -19,13 +17,11 @@ __all__ = ['general_properties',
            'REF_LE_LABEL_FONT_SIZE',
            'REF_PAGE_TITLE_POS_Y_MM',
            'REF_PAGE_TITLE_FONT_SIZE',
-           
            'TEXT_PAUSE',
            'TEXT_TITLE', 
            'TEXT_LE_BMF', 
            'TEXT_BOUTON_LANCEMENT', 
            'TEXT_COPYRIGHT',
-           
            'TEXT_STATUT', 
            'TEXT_PARSING', 
            'TEXT_SYNTHESE',
@@ -34,7 +30,6 @@ __all__ = ['general_properties',
            'TEXT_UPDATE_STATUS', 
            'TEXT_LAUNCH_PARSING', 
            'TEXT_LAUNCH_SYNTHESE',
-           
            'TEXT_YEAR_PI',
            'ETAPE_LABEL_TEXT_LIST',
            'TEXT_ETAPE_1',
@@ -46,7 +41,6 @@ __all__ = ['general_properties',
            'TEXT_OTP',
            'TEXT_ETAPE_4',
            'TEXT_PUB_CONSO',
-           
            'TEXT_ETAPE_5',  
            'HELP_ETAPE_5',
            'TEXT_ETAPE_6',  
@@ -57,11 +51,9 @@ __all__ = ['general_properties',
            'TEXT_MISSING_IF',
           ]
 
-############################## Vérifier l'utilité ##############################################
-#'TEXT_CROISEMENT_L', 'FONT_CROISEMENT_L', 'FORMAT_CROISEMENT_L'                                                 #
-################################################################################################
+
 # Setting version value
-VERSION ='2.1.1'
+VERSION ='2.2.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
@@ -75,14 +67,14 @@ APPLICATION_WINDOW_TITLE = "BiblioMeter - Analyse de la production scientifique 
 BM_GUI_DISP = 0
 
 # Setting display reference sizes in pixels and mm
-REF_SCREEN_WIDTH_PX = 1920
-REF_SCREEN_HEIGHT_PX = 1080
-REF_SCREEN_WIDTH_MM = 467
-REF_SCREEN_HEIGHT_MM = 267
+REF_SCREEN_WIDTH_PX       = 1920
+REF_SCREEN_HEIGHT_PX      = 1080
+REF_SCREEN_WIDTH_MM       = 467
+REF_SCREEN_HEIGHT_MM      = 267
 
 # Application window reference sizes in mm for the display reference sizes
-REF_WINDOW_WIDTH_MM = 219
-REF_WINDOW_HEIGHT_MM = 173
+REF_WINDOW_WIDTH_MM       = 219
+REF_WINDOW_HEIGHT_MM      = 173
 REF_CHECK_BOXES_SEP_SPACE = 25
 
 
@@ -114,33 +106,33 @@ def general_properties(self):
     ppi = DISPLAYS[BM_GUI_DISP]["ppi"]
     
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
-    screen_width_px = self.winfo_screenwidth()
+    screen_width_px  = self.winfo_screenwidth()
     screen_height_px = self.winfo_screenheight()
     
     # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm = DISPLAYS[BM_GUI_DISP]["width_mm"]
+    screen_width_mm  = DISPLAYS[BM_GUI_DISP]["width_mm"]
     screen_height_mm = DISPLAYS[BM_GUI_DISP]["height_mm"]
     
     # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
-    ref_width_px = REF_SCREEN_WIDTH_PX
+    ref_width_px  = REF_SCREEN_WIDTH_PX
     ref_height_px = REF_SCREEN_HEIGHT_PX
-    ref_width_mm = REF_SCREEN_WIDTH_MM
+    ref_width_mm  = REF_SCREEN_WIDTH_MM
     ref_height_mm = REF_SCREEN_HEIGHT_MM
     
     # Setting secondary window reference sizes in mm from globals internal to module "Coordinates.py"
-    ref_window_width_mm = REF_WINDOW_WIDTH_MM
+    ref_window_width_mm  = REF_WINDOW_WIDTH_MM
     ref_window_height_mm = REF_WINDOW_HEIGHT_MM
     
     # Computing ratii of effective screen sizes to screen reference sizes in pixels
-    scale_factor_width_px = screen_width_px / ref_width_px
+    scale_factor_width_px  = screen_width_px / ref_width_px
     scale_factor_height_px = screen_height_px / ref_height_px
         
     # Computing ratii of effective screen sizes to screen reference sizes in mm   
-    scale_factor_width_mm = screen_width_mm / ref_width_mm
+    scale_factor_width_mm  = screen_width_mm / ref_width_mm
     scale_factor_height_mm = screen_height_mm / ref_height_mm
     
     # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
+    win_width_px  = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
     win_height_px = _mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
     
     # Setting window size depending on scale factor
@@ -183,33 +175,33 @@ def root_properties(root):
     ppi = DISPLAYS[BM_GUI_DISP]["ppi"]
     
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
-    screen_width_px = root.winfo_screenwidth()
+    screen_width_px  = root.winfo_screenwidth()
     screen_height_px = root.winfo_screenheight()
     
     # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm = DISPLAYS[BM_GUI_DISP]["width_mm"]
+    screen_width_mm  = DISPLAYS[BM_GUI_DISP]["width_mm"]
     screen_height_mm = DISPLAYS[BM_GUI_DISP]["height_mm"]
     
     # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
-    ref_width_px = REF_SCREEN_WIDTH_PX
+    ref_width_px  = REF_SCREEN_WIDTH_PX
     ref_height_px = REF_SCREEN_HEIGHT_PX
-    ref_width_mm = REF_SCREEN_WIDTH_MM
+    ref_width_mm  = REF_SCREEN_WIDTH_MM
     ref_height_mm = REF_SCREEN_HEIGHT_MM
     
     # Setting secondary window reference sizes in mm from globals internal to module "Coordinates.py"
-    ref_window_width_mm = REF_WINDOW_WIDTH_MM
+    ref_window_width_mm  = REF_WINDOW_WIDTH_MM
     ref_window_height_mm = REF_WINDOW_HEIGHT_MM
     
     # Computing ratii of effective screen sizes to screen reference sizes in pixels
-    scale_factor_width_px = screen_width_px / ref_width_px
+    scale_factor_width_px  = screen_width_px / ref_width_px
     scale_factor_height_px = screen_height_px / ref_height_px
         
     # Computing ratii of effective screen sizes to screen reference sizes in mm   
-    scale_factor_width_mm = screen_width_mm / ref_width_mm
+    scale_factor_width_mm  = screen_width_mm / ref_width_mm
     scale_factor_height_mm = screen_height_mm / ref_height_mm
     
     # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
+    win_width_px  = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
     win_height_px = _mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
     
     sizes_tuple = (win_width_px, win_height_px, 
@@ -218,9 +210,10 @@ def root_properties(root):
     return sizes_tuple
 
 
-#################################################### Globals for main page ###################################################
+########################## Main page ##########################
+
 # Number of characters reference for editing the entered files-folder path 
-REF_ENTRY_NB_CHAR = 80           #80
+REF_ENTRY_NB_CHAR          = 80      #80
 
 # Font size references for page label and button
 REF_PAGE_TITLE_FONT_SIZE   = 30      #30
@@ -243,116 +236,103 @@ REF_COPYRIGHT_Y_MM         = 170     #170
 CONTAINER_BUTTON_HEIGHT_PX = 50      #50
 
 ## Font size references for page label and button
-REF_LABEL_FONT_SIZE        = 25     #25
-REF_BUTTON_FONT_SIZE       = 10     #10
+REF_LABEL_FONT_SIZE        = 25      #25
+REF_BUTTON_FONT_SIZE       = 10      #10
 
 ## Y_position reference in mm for page label
-REF_LABEL_POS_Y_MM         = 15     #15
+REF_LABEL_POS_Y_MM         = 15      #15
 
 # Titre de la page
-TEXT_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
+TEXT_TITLE            = "- BiblioMeter -\nInitialisation de l'analyse"
 
-# Titre LabelEntry BMF
-TEXT_LE_BMF = "Dossier de travail :"
+# Titre LabelEntry of BiblioMeter_Files folder
+TEXT_LE_BMF           = "Dossier de travail :"
 
 # Titre bouton de lancement
 TEXT_BOUTON_LANCEMENT = "Lancer l'analyse"
 
 # Copyright and contacts
-TEXT_COPYRIGHT  =   "Contributeurs et contacts :"
-TEXT_COPYRIGHT +=  "\n- Amal Chabli : amal.chabli@orange.fr"
-TEXT_COPYRIGHT +=  "\n- François Bertin : francois.bertin7@wanadoo.fr"
-TEXT_COPYRIGHT +=  "\n- Ludovic Desmeuzes"
-TEXT_COPYRIGHT += f"\nVersion {VERSION}"
+TEXT_COPYRIGHT        =   "Contributeurs et contacts :"
+TEXT_COPYRIGHT       +=  "\n- Amal Chabli : amal.chabli@orange.fr"
+TEXT_COPYRIGHT       +=  "\n- François Bertin : francois.bertin7@wanadoo.fr"
+TEXT_COPYRIGHT       +=  "\n- Ludovic Desmeuzes"
+TEXT_COPYRIGHT       += f"\nVersion {VERSION}"
 
-
-############################################## Globals for first, second and third pages ##########################################
 
 
 # Common to following pages
-TEXT_PAUSE = "Mettre en pause"
+TEXT_PAUSE           = "Mettre en pause"
 
-######################################################## Page_ParsingConcat ######################################################
+##########################  Page_ParseCorpus ########################## 
 
 # - Label STATUT
-TEXT_STATUT = "Statut des fichiers de Parsing"
+TEXT_STATUT          = "Statut des fichiers de Parsing"
 
-# - Label CONSTRU_PAR
-TEXT_PARSING = "Construction des fichiers de Parsing par BDD"
+# - Label Parsing
+TEXT_PARSING         = "Construction des fichiers de Parsing par BDD"
 
 # - Label SYNTHESE
-TEXT_SYNTHESE = "Synthèse des fichiers de Parsing de toutes les BDD"
-
-
-##########'TEXT_YEAR_PC', 'TEXT_BDD_PC','TEXT_LAUNCH_PARSING','TEXT_LAUNCH_SYNTHESE',
+TEXT_SYNTHESE        = "Synthèse des fichiers de Parsing de toutes les BDD"
 
 # - Label ANNEE
-TEXT_YEAR_PC = "Sélection de l'année :"
+TEXT_YEAR_PC         = "Sélection de l'année :"
 
 # -Label choix de BDD
-TEXT_BDD_PC = "Sélection de la BDD :"
+TEXT_BDD_PC          = "Sélection de la BDD :"
 
 # - Bouton mise à jour du statut des fichiers
-TEXT_UPDATE_STATUS = "Mettre à jour le statut des fichiers"
+TEXT_UPDATE_STATUS   = "Mettre à jour le statut des fichiers"
 
 # - Bouton lancement parsing
-TEXT_LAUNCH_PARSING = "Lancer le Parsing"
+TEXT_LAUNCH_PARSING  = "Lancer le Parsing"
 
 # - Bouton lancement concatenation et deduplication des parsings
 TEXT_LAUNCH_SYNTHESE = "Lancer la synthèse"
 
 
-######################################################## Page_ParsingInstitutions ################################################
+########################## Page_ConsolidateCorpus ##########################
 
 # Variables communes à toutes les étapes mais pas globales
-etape_taille_font = 14
+etape_taille_font    = 14
 ss_etape_taille_font = etape_taille_font-3
-else_taille_font = etape_taille_font-1
-x_etapes = 15
-
-
-##########'TEXT_YEAR_PI'
+else_taille_font     = etape_taille_font-1
+x_etapes             = 15
 
 # Choix de l'année de travail
-TEXT_YEAR_PI = "Sélection de l'année :"
-
+TEXT_YEAR_PI       = "Sélection de l'année :"
 
 ### - Etape 1
-TEXT_ETAPE_1 = f"Etape 1 : Croisement auteurs-efffectifs du LITEN"
+TEXT_ETAPE_1       = f"Etape 1 : Croisement auteurs-efffectifs du LITEN"
 TEXT_MAJ_EFFECTIFS = "Mettre à jour les effectifs du LITEN avant le croisement (coché = OUI) ?"
-TEXT_CROISEMENT = f"Effectuer le croisement auteurs-efffectifs"
-
+TEXT_CROISEMENT    = f"Effectuer le croisement auteurs-efffectifs"
 
 ### - Etape 2
-TEXT_ETAPE_2 = "Etape 2 : Résolution des homonymies"
-TEXT_HOMONYMES = "Créer le fichier pour la résolution des homonymies"
-
+TEXT_ETAPE_2       = "Etape 2 : Résolution des homonymies"
+TEXT_HOMONYMES     = "Créer le fichier pour la résolution des homonymies"
 
 ### - Etape 3
-TEXT_ETAPE_3 = "Etape 3 : Attribution des OTPs"
-TEXT_OTP = "Créer les fichiers pour l'attribution des OTPs"
-
+TEXT_ETAPE_3       = "Etape 3 : Attribution des OTPs"
+TEXT_OTP           = "Créer les fichiers pour l'attribution des OTPs"
 
 ### - Etape 4
-TEXT_ETAPE_4 = "Etape 4 : Consolidation de la liste des publications"    
-TEXT_PUB_CONSO = "Créer la liste consolidée des publications"
-
+TEXT_ETAPE_4       = "Etape 4 : Consolidation de la liste des publications"    
+TEXT_PUB_CONSO     = "Créer la liste consolidée des publications"
 
 ETAPE_LABEL_TEXT_LIST = [TEXT_ETAPE_1, TEXT_ETAPE_2, TEXT_ETAPE_3, TEXT_ETAPE_4]
 
-######################################################## Page_IF #####################################################################
+########################## Page_UpdateIFs ##########################
 
 ### - Etape 5
-TEXT_ETAPE_5  = "Sélection de la liste consolidée de publications à mettre à jour"
-HELP_ETAPE_5  = "Veuillez sélectionner, dans le dossier 'BDD multi annuelle, "
-HELP_ETAPE_5 += "la liste multiannuelle consolidée de publications "
-HELP_ETAPE_5 += "à mettre à jour avec de nouveaux IFs."
+TEXT_ETAPE_5    = "Sélection de la liste consolidée de publications à mettre à jour"
+HELP_ETAPE_5    = "Veuillez sélectionner, dans le dossier 'BDD multi annuelle, "
+HELP_ETAPE_5   += "la liste multiannuelle consolidée de publications "
+HELP_ETAPE_5   += "à mettre à jour avec de nouveaux IFs."
 
 ### - Etape 6
-TEXT_ETAPE_6  = "Mise à jour des IFs"
-HELP_ETAPE_6  = "Les IFs peuvent être mis à jour annuellement "
-HELP_ETAPE_6 += "dès qu'ils sont diponibles sur le site de 'Clarivate Analytics'."
-TEXT_MAJ_IF   = "Lancer la mise à jour des IFs"
+TEXT_ETAPE_6    = "Mise à jour des IFs"
+HELP_ETAPE_6    = "Les IFs peuvent être mis à jour annuellement "
+HELP_ETAPE_6   += "dès qu'ils sont diponibles sur le site de 'Clarivate Analytics'."
+TEXT_MAJ_IF     = "Lancer la mise à jour des IFs"
 
 
 ### - Etape 7
@@ -363,13 +343,12 @@ HELP_ETAPE_7   += "\nLa recherche se fera dans la liste consolidée de publicati
 TEXT_MISSING_IF = "Lancer la recherche des journaux dont l'IF est manquant"
 
 
-######################################################## Vérifier l'utilité ##############################################
-
+########################## Inutiles pour l'instant ##########################
 
 # Choix des affiliations autres que celles du Liten
 TEXT_AFFI = "Choix d’affiliations supplémentaires\nautres que LITEN et INES"
-X_AFFI = 400
-Y_AFFI = 90
+X_AFFI    = 400
+Y_AFFI    = 90
 
 # - Label croisement des publications
 TEXT_CROISEMENT_L = f"Nombre années de profondeur de recherche des auteurs dans les effectifs du LITEN.  N ="

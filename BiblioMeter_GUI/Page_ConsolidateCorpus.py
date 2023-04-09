@@ -43,7 +43,12 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_OTP
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import consolidate_pub_list
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import solving_homonyms    
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import solving_homonyms
+    
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_homonyms
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import set_saved_otps
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import set_saved_homonyms
     
     from BiblioMeter_GUI.Coordinates import root_properties
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
@@ -427,16 +432,18 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                  dy = etape_button_dy / 2)  
                                              
     ################## Etape 2 : Résolution des homonymies
-    ### Fonction executée par le bouton 'button_homonymes'     
+    ### Fonction executée par le bouton 'button_homonymes' 
     def _launch_resolution_homonymies():
         '''
         
         '''
     
         def _resolution_homonymies_try():
-            try: 
+            try:
                 end_message = solving_homonyms(submit_path, homonymes_file_path)
-                print('\n',end_message)
+                print(end_message)
+                end_message = set_saved_homonyms(bibliometer_path, year_select)
+                print('\n',end_message)                
                 info_title = "- Information -"
                 info_text  = f"Le fichier pour la résolution des homonymies de l'année {year_select} a été créé "
                 info_text += f"dans le dossier :\n\n  '{homonymes_path}' "
@@ -525,8 +532,12 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     
         def _add_OTP_try():
             try:
-                end_message = add_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+                end_message = save_homonyms(bibliometer_path, year_select)
                 print('\n',end_message)
+                end_message = add_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+                print(end_message)
+                end_message = set_saved_otps(bibliometer_path, year_select)
+                print(end_message)                
                 info_title = "- Information -"
                 info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
                 info_text += f"ont été créés dans le dossier : \n\n'{OTP_path}' "
@@ -534,7 +545,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                 info_text += f"\n2- Attribuez manuellement à chacune des publications un OTP, "
                 info_text += f"\n3- Sauvegardez le fichier en ajoutant à son nom '_ok'."
                 info_text += f"\n\nDès que les fichiers de tous les départements sont traités, "
-                info_text += f"\nla liste consolidée des publications de l'année {year_select} peut être créée."                 
+                info_text += f"\nla liste consolidée des publications de l'année {year_select} peut être créée."          
                 messagebox.showinfo(info_title, info_text)
                 return 'ok'
 
@@ -573,9 +584,10 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
             if OTP_path_status:
                 OTP_files_status_list = []
                 for dpt_label in dpt_label_list:
-                    OTP_file_name_dpt = OTP_file_base_alias + '_' + dpt_label + '.xlsx'
-                    OTP_files_status_list.append(not(os.path.exists(OTP_file_name_dpt)))
-                if any(OTP_files_status_list):                           
+                    dpt_OTP_file_name = OTP_file_base_alias + '_' + dpt_label + '.xlsx'
+                    dpt_OTP_file_path = OTP_path / Path(dpt_OTP_file_name)
+                    OTP_files_status_list.append(not(dpt_OTP_file_path.is_file()))
+                if any(OTP_files_status_list):
                     _add_OTP_try()
                 else: 
                     ask_title = "- Reconstruction de l'attribution des OTPs -"
@@ -623,6 +635,8 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         def _consolidate_pub_list():
             try:
                 end_message = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_file_path, OTP_file_base_alias, year_select)
+                print(end_message)
+                end_message = save_otps(bibliometer_path, year_select)
                 print('\n',end_message)
                 end_message = concatenate_pub_lists(bibliometer_path, years_list)
                 print('\n',end_message)

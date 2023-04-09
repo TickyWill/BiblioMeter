@@ -40,7 +40,10 @@ ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle",
               "OTP folder"                     : "2 - OTP", 
               "OTP file name base"             : "fichier_ajout_OTP",            
               "pub list folder"                : "3 - Résultats Finaux", 
-              "pub list file name base"        : "Liste consolidée",              
+              "pub list file name base"        : "Liste consolidée",
+              "history folder"                 : "4 - Informations",
+              "kept homonyms file name"        : "Homonymes conservés.xlsx",
+              "kept otps file name"            : "OTPs conservés.xlsx",
               "corpus"                         : "Corpus", 
               "concat"                         : "concatenation", 
               "dedup"                          : "deduplication", 
@@ -110,7 +113,9 @@ NOT_AVAILABLE_IF    = 'Not available'
 HOMONYM_FLAG = "HOMONYM"
 
 
-COL_HASH = {'hash_id' : 'Hash_id',
+COL_HASH = {'hash_id'    : "Hash_id",
+            'homonym_id' : "Homonyme auteur",
+            'otp'        : "OTP",
            }
 
 
@@ -120,6 +125,7 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur Liten",
                    'author_type'      : "Type de l'auteur Liten",
                    'homonym'          : 'Homonymes',
                    'list OTP'         : "Choix de l'OTP",
+                   'final OTP'        : "OTP",
                    'corpus_year'      : 'Année de première publication',
                    'IF en cours'      : "IF en cours", 
                    'IF année publi'   : "IF de l'année de première publication",
@@ -167,7 +173,9 @@ def _build_col_conversion_dic():
                                 [COL_NAMES['authors'][2]], 
                                 COL_NAMES['articles'][1:11],
                                 [COL_NAMES_BONUS['corpus_year']],
-                                [COL_NAMES_BM['Full_name'], COL_NAMES_BM['Last_name'], COL_NAMES_BM['First_name']],
+                                [COL_NAMES_BM['Full_name'], 
+                                 COL_NAMES_BM['Last_name'], 
+                                 COL_NAMES_BM['First_name']],
                                ],
                                [],
                               )
@@ -176,7 +184,8 @@ def _build_col_conversion_dic():
                                 [COL_NAMES_BONUS['homonym']],
                                 list(EMPLOYEES_USEFUL_COLS.values()),
                                 list(EMPLOYEES_ADD_COLS.values()),
-                                [COL_NAMES_BONUS['author_type'], COL_NAMES_BONUS['liste biblio']],
+                                [COL_NAMES_BONUS['author_type'], 
+                                 COL_NAMES_BONUS['liste biblio']],
                                ],
                                [],
                               )

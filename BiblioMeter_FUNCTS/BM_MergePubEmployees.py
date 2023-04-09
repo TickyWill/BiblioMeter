@@ -1,5 +1,6 @@
 __all__ = ['recursive_year_search']
-            
+
+
 def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', verbose = False):
 
     """
@@ -219,7 +220,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
                 
     # Droping duplicate rows if both dataframes (mandatory)
     df_submit = df_submit.drop_duplicates()
-    df_orphan =df_orphan.drop_duplicates()
+    df_orphan = df_orphan.drop_duplicates()
 
     return df_submit, df_orphan
 
@@ -563,11 +564,20 @@ def _change_col_names(submit_path, orphan_path):
     return end_message
 
 
-def creating_hash_id(bibliometer_path, corpus_year):
+def _myHash(text:str):
+    my_hash = 0
+    facts = (257,961) # prime numbers to mix up the bits
+    minus_one = 0xFFFFFFFF # "-1" hex code
+    for ch in text:
+        my_hash = (my_hash*facts[0] ^ ord(ch)*facts[1]) & minus_one
+    #my_hash_hex = hex(my_hash)[2:].upper().zfill(8)  # to return hex value of hash
+    return my_hash
+
+
+def _creating_hash_id(bibliometer_path, corpus_year):
     """
     """
     # Standard library imports
-    import ctypes
     from pathlib import Path
     
     # 3rd library imports
@@ -590,8 +600,7 @@ def creating_hash_id(bibliometer_path, corpus_year):
     title_alias          = SUBMIT_COL_RENAME_DIC['Title']
     ISSN_alias           = SUBMIT_COL_RENAME_DIC['ISSN']
     doi_alias            = SUBMIT_COL_RENAME_DIC['DOI']     
-    
-    
+       
     # Setting useful paths
     corpus_year_path   = bibliometer_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
@@ -620,7 +629,7 @@ def creating_hash_id(bibliometer_path, corpus_year):
         text  += str(dg_to_hash.loc[idx, title_alias])
         text  += str(dg_to_hash.loc[idx, ISSN_alias])
         text  += str(dg_to_hash.loc[idx, doi_alias])
-        hash_id = ctypes.c_size_t(hash(text)).value
+        hash_id = _myHash(text)
         hash_id_df.loc[idx, hash_id_col_alias] = str(hash_id)
         hash_id_df.loc[idx, pub_id_alias] = pub_id
 
@@ -765,7 +774,7 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Renaming column names using SUBMIT_COL_RENAME_DIC and ORPHAN_COL_RENAME_DIC globals
     _change_col_names(submit_path, orphan_path)
     
-    creating_hash_id(bibliometer_path, corpus_year)
+    _creating_hash_id(bibliometer_path, corpus_year)
     
     end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
     return end_message  
