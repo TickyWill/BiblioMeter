@@ -59,6 +59,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import SEARCH_DEPTH
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
@@ -402,7 +403,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     # Fixe la profondeur de recherche à 5 ans dans l'historique des effectifs
     go_back_years_list = [i for i in range(1,date.today().year-2009)]
     go_back_years = tk.StringVar(self)
-    go_back_years.set(go_back_years_list[4])
+    go_back_years.set(go_back_years_list[SEARCH_DEPTH-1])
     
     ### Définition du  bouton 'button_croisement' 
     font_croisement = tkFont.Font(family = FONT_NAME, 

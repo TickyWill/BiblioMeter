@@ -8,8 +8,10 @@ __all__ = [
            'EMPLOYEES_USEFUL_COLS',
            'QUALIFICATION_DIC',
            'STATUS_DIC',
+           'SEARCH_DEPTH',
           ]
 
+SEARCH_DEPTH = 10
 
 EMPLOYEES_ARCHI = {"root"                        : "Listing RH",
                    "all_years_employees"         : "Effectifs consolidés",
