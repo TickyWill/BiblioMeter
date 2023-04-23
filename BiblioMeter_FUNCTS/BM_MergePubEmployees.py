@@ -225,15 +225,110 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
     return df_submit, df_orphan
 
 
+def _check_names_orthograph(bibliometer_path, init_df, col0, col1, col2):
+    '''
+    '''
+    # Standard Library imports
+    from pathlib import Path
+    
+    # 3rd party import
+    import pandas as pd
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_ORPHAN
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_ORTHO
+    
+    orphan_treat_alias = ARCHI_ORPHAN["root"]
+    orthograph_file_alias = ARCHI_ORPHAN["orthograph file"]
+    
+    ortho_path = bibliometer_path / Path(orphan_treat_alias) / Path(orthograph_file_alias)
+     
+    
+    ortho_lastname_init = COL_NAMES_ORTHO['first name init']
+    ortho_initials_init = COL_NAMES_ORTHO['initials init']
+    ortho_lastname_new = COL_NAMES_ORTHO['first name new']
+    ortho_initials_new = COL_NAMES_ORTHO['initials new']
+    
+    ortho_col_list = list(COL_NAMES_ORTHO.values())
+    ortho_df = pd.read_excel(ortho_path, usecols = ortho_col_list)
+    
+    new_df = init_df.copy()
+    for pub_row_num in range(len(init_df)):
+        lastname_init = init_df[col1][pub_row_num]
+        initiales_init = init_df[col2][pub_row_num]
+        for ortho_row_num in range(len(ortho_df)):
+            lastname_pub_ortho = ortho_df[ortho_lastname_init ][ortho_row_num]
+            initials_pub_ortho = ortho_df[ortho_initials_init][ortho_row_num]
+
+            if lastname_init == lastname_pub_ortho and initiales_init == initials_pub_ortho:
+                lastname_eff_ortho = ortho_df[ortho_lastname_new][ortho_row_num]
+                initials_eff_ortho = ortho_df[ortho_initials_new][ortho_row_num]
+                new_df .loc[pub_row_num,col1] = lastname_eff_ortho
+                new_df .loc[pub_row_num,col2] = initials_eff_ortho 
+                new_df .loc[pub_row_num,col0] = lastname_eff_ortho + ' ' + initials_eff_ortho
+   
+    return new_df
+
+
+def _check_names_to_replace(bibliometer_path, year, init_df, col0, col1, col2):
+    '''
+    '''
+    # Standard Library imports
+    from pathlib import Path
+    
+    # 3rd party import
+    import pandas as pd
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_ORPHAN
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_COMPL
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SHEET_NAMES_COMPL
+       
+    orphan_treat_alias = ARCHI_ORPHAN["root"]
+    complements_file_alias = ARCHI_ORPHAN["complementary file"]
+    
+    complements_path = bibliometer_path / Path(orphan_treat_alias) / Path(complements_file_alias)
+        
+    compl_to_replace_sheet = SHEET_NAMES_COMPL['to replace sheet']
+    compl_lastname_init    = COL_NAMES_COMPL['first name init']
+    compl_initials_init    = COL_NAMES_COMPL['initials init']
+    compl_matricule        = COL_NAMES_COMPL['matricule']
+    compl_lastname_new     = COL_NAMES_COMPL['first name new']
+    compl_initials_new     = COL_NAMES_COMPL['initials new']
+    #compl_dept             = COL_NAMES_COMPL['dept'] 
+    compl_year_pub         = COL_NAMES_COMPL['publication year']
+    compl_hash_id          = COL_NAMES_COMPL['hash id']
+    
+    # Getting the information of the year in the complementary file 
+    compl_col_list = list(COL_NAMES_COMPL.values())
+    compl_df = pd.read_excel(complements_path, sheet_name = compl_to_replace_sheet, usecols = compl_col_list)
+    year_compl_df = compl_df[compl_df[compl_year_pub]==int(year)]
+    year_compl_df.reset_index(inplace = True)
+
+    new_df = init_df.copy()
+    for pub_row_num in range(len(init_df)):
+        lastname_init = init_df[col1][pub_row_num]
+        initiales_init = init_df[col2][pub_row_num]
+        for compl_row_num in range(len(year_compl_df)):
+            lastname_pub_compl = year_compl_df[compl_lastname_init][compl_row_num]
+            initials_pub_compl = year_compl_df[compl_initials_init][compl_row_num]
+            if lastname_init == lastname_pub_compl and initiales_init == initials_pub_compl:
+                
+                lastname_eff_compl = year_compl_df[compl_lastname_new][compl_row_num]
+                initials_eff_compl = year_compl_df[compl_initials_new][compl_row_num]
+                new_df .loc[pub_row_num,col1] = lastname_eff_compl
+                new_df .loc[pub_row_num,col2] = initials_eff_compl 
+                new_df .loc[pub_row_num,col0] = lastname_eff_compl + ' ' + initials_eff_compl
+   
+    return new_df
+
+
 def _build_pubs_authors_Liten(year, bibliometer_path):
 
     """ 
     Description : 
-
-    Uses the following globals :
-    - PATH_DAT_DEDUPLICATED
-    - LIST_INSTITUTIONS
-
+    uses the local functions `_check_names_orthograph` and `_check_names_to_replace`.
+    
     Args : 
 
     Returns : 
@@ -276,7 +371,7 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     corpus_year_col_alias = COL_NAMES_BONUS['corpus_year']
 
     # Building useful paths
-    PATH_DAT_DEDUPLICATED = Path(bibliometer_path) / Path(year) / Path(dedupli_path_alias) / Path(parsing_path_alias)
+    dat_deduplicated_path = bibliometer_path / Path(year) / Path(dedupli_path_alias) / Path(parsing_path_alias)
 
     def _retain_firstname_initiales(row):
         row = row.replace('-',' ')
@@ -319,15 +414,15 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
         return filt_authors_inst
 
     # Getting ID of each author with institution by publication ID
-    df_authorsinst = pd.read_csv(PATH_DAT_DEDUPLICATED / Path(DIC_OUTDIR_PARSING['I2']), 
+    df_authorsinst = pd.read_csv(dat_deduplicated_path / Path(DIC_OUTDIR_PARSING['I2']), 
                                  sep="\t")
 
     # Getting ID of each author with author name  
-    df_authors = pd.read_csv(PATH_DAT_DEDUPLICATED / Path(DIC_OUTDIR_PARSING['AU']), 
+    df_authors = pd.read_csv(dat_deduplicated_path/ Path(DIC_OUTDIR_PARSING['AU']), 
                              sep="\t")
 
     # Getting ID of each publication with complementary info 
-    df_articles = pd.read_csv(PATH_DAT_DEDUPLICATED / Path(DIC_OUTDIR_PARSING['A']), 
+    df_articles = pd.read_csv(dat_deduplicated_path / Path(DIC_OUTDIR_PARSING['A']), 
                               sep="\t")
     
     # Adding new column with year of initial publication which is the corpus year
@@ -350,11 +445,12 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
                                df_articles, 
                                how = 'left', 
                                left_on = [COL_NAMES['authors'][0]], 
-                               right_on = [COL_NAMES['authors'][0]])
+                               right_on = [COL_NAMES['authors'][0]])    
 
     # Transforming to uppercase the LITEN author name which is in column COL_NAMES['co_author']
     col = COL_NAMES['authors'][2]
     merged_df_Liten[col] = merged_df_Liten[col].str.upper()
+    
 
     # Spliting the LITEN author name to firstname initiales and lastname
     # and putting them as a tupple in column COL_NAMES_BM['Full_name']
@@ -368,10 +464,15 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     col_in = COL_NAMES_BM['Full_name'] #Last_name + firstname initials
     col1_out, col2_out = COL_NAMES_BM['Last_name'], COL_NAMES_BM['First_name']
     merged_df_Liten[[col1_out, col2_out]] = pd.DataFrame(merged_df_Liten[col_in].tolist())
-
+    
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = COL_NAMES_BM['Full_name'] #Last_name + firstname initials
     merged_df_Liten[col_in] = merged_df_Liten[col_in].apply(lambda x : ' '.join(x))
+    
+    # Checking author name spelling and correct it then replacing author names resulting from publication metadata errors
+    col_full, col_last, col_initials= COL_NAMES_BM['Full_name'], COL_NAMES_BM['Last_name'], COL_NAMES_BM['First_name']
+    merged_df_Liten = _check_names_orthograph(bibliometer_path, merged_df_Liten, col_full, col_last, col_initials) 
+    merged_df_Liten = _check_names_to_replace(bibliometer_path, year, merged_df_Liten, col_full, col_last, col_initials)
 
     return  merged_df_Liten
 
@@ -660,7 +761,6 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_COL_TYPES
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-
     
     # Internal functions
     def _unique_pub_id(df):
@@ -684,7 +784,7 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
 
         df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, df_year))
         return df  
-        
+    
     # Setting useful aliases
     year_col_alias = COL_NAMES['articles'][2]
     pub_id_alias   = COL_NAMES['pub_id']
@@ -774,7 +874,7 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Renaming column names using SUBMIT_COL_RENAME_DIC and ORPHAN_COL_RENAME_DIC globals
     _change_col_names(submit_path, orphan_path)
     
-    _creating_hash_id(bibliometer_path, corpus_year)
+    _creating_hash_id(bibliometer_path, corpus_year)    
     
     end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
     return end_message  

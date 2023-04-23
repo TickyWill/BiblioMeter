@@ -1,12 +1,15 @@
 __all__ = ['ARCHI_BACKUP',
            'ARCHI_BDD_MULTI_ANNUELLE',
            'ARCHI_IF',
+           'ARCHI_ORPHAN',
            'ARCHI_YEAR',
            'BM_COL_RENAME_DIC',
            'COL_HASH',
            'COL_NAMES_BM',
-           'COL_NAMES_BONUS', 
+           'COL_NAMES_BONUS',
+           'COL_NAMES_COMPL',
            'COL_NAMES_DPT',
+           'COL_NAMES_ORTHO',
            'DPT_ATTRIBUTS_DICT',
            'DPT_LABEL_DICT', 
            'FILL_EMPTY_KEY_WORD',
@@ -15,6 +18,7 @@ __all__ = ['ARCHI_BACKUP',
            'NOT_AVAILABLE_IF',
            'ORPHAN_COL_RENAME_DIC',
            'ROW_COLORS',
+           'SHEET_NAMES_COMPL',
            'SUBMIT_COL_RENAME_DIC',
           ]
 
@@ -29,6 +33,13 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
 ARCHI_IF = {"root"    : "Impact Factor",
             "all IF"  : "IF all years.xlsx",
             "missing" : "ISSN_manquants.xlsx"}
+
+ARCHI_ORPHAN = {"root"              : "Traitement Orphan",
+                "orthograph file"   : "Orthographe.xlsx",
+                "docs file"         : "Doctorants externes.xlsx",
+                "outliers file"     : "Externes LITEN.xlsx",
+                "complementary file": "Autres corrections.xlsx",
+               }
 
 
 ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle", 
@@ -150,6 +161,28 @@ COL_NAMES_BM = {'Dpts'      : EMPLOYEES_ADD_COLS['dpts_list'],
                 'Homonym'   : COL_NAMES_BONUS['homonym'],
                }
 
+
+COL_NAMES_ORTHO = {'first name init': 'Nom pub',
+                   'initials init'  : 'Initiales pub',
+                   'first name new' : 'Nom eff',
+                   'initials new'   : 'Initiales eff',
+                  }
+
+
+COL_NAMES_COMPL = {'first name init'  : 'Nom pub',
+                   'initials init'    : 'Initiales pub',
+                   'matricule'        : 'Matricule',
+                   'first name new'   : 'Nom eff',
+                   'initials new'     : 'Initiales eff',
+                   'dept'             : 'Dept',
+                   'publication year' : 'Année pub',
+                   'hash id'          : 'Hash_id',
+                  }
+
+
+SHEET_NAMES_COMPL = {'to replace sheet' : 'To replace',
+                     'to remove sheet'  : 'To remove',
+                    }
 
 def _build_col_conversion_dic():
     """

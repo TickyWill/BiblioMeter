@@ -474,6 +474,9 @@ def update_employees(bibliometer_path, replace = True):
     if len(months2add_files)>1: 
         files_number_error = f"Too many files present in  '{months2add_employees_folder_path}' while expecting only one"
         return  (None, files_number_error, None, None, None, None)
+    if not months2add_files:
+        files_number_error = f"No file present in '{months2add_employees_folder_path}', no update possible"
+        return  (None, files_number_error, None, None, None, None)
     
     months2add_file_path = months2add_employees_folder_path / Path(months2add_files[0])
     
