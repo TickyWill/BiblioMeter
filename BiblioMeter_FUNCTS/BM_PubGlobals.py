@@ -10,8 +10,10 @@ __all__ = ['ARCHI_BACKUP',
            'COL_NAMES_COMPL',
            'COL_NAMES_DPT',
            'COL_NAMES_ORTHO',
+           'COL_NAMES_PUB_NAMES',
            'DPT_ATTRIBUTS_DICT',
-           'DPT_LABEL_DICT', 
+           'DPT_LABEL_DICT',
+           'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
            'LITEN_INST_LIST',
@@ -161,19 +163,23 @@ COL_NAMES_BM = {'Dpts'      : EMPLOYEES_ADD_COLS['dpts_list'],
                 'Homonym'   : COL_NAMES_BONUS['homonym'],
                }
 
+pub_last_name      = 'Nom pub'
+pub_initials       = 'Initiales pub'
+employee_last_name = 'Nom eff'
+employee_initials  = 'Initiales eff'
 
-COL_NAMES_ORTHO = {'first name init': 'Nom pub',
-                   'initials init'  : 'Initiales pub',
-                   'first name new' : 'Nom eff',
-                   'initials new'   : 'Initiales eff',
+COL_NAMES_ORTHO = {'last name init' : pub_last_name,
+                   'initials init'  : pub_initials,
+                   'last name new'  : employee_last_name,
+                   'initials new'   : employee_initials,
                   }
 
 
-COL_NAMES_COMPL = {'first name init'  : 'Nom pub',
-                   'initials init'    : 'Initiales pub',
+COL_NAMES_COMPL = {'last name init'   : pub_last_name,
+                   'initials init'    : pub_initials,
                    'matricule'        : 'Matricule',
-                   'first name new'   : 'Nom eff',
-                   'initials new'     : 'Initiales eff',
+                   'last name new'    : employee_last_name,
+                   'initials new'     : employee_initials,
                    'dept'             : 'Dept',
                    'publication year' : 'Année pub',
                    'hash id'          : 'Hash_id',
@@ -183,6 +189,13 @@ COL_NAMES_COMPL = {'first name init'  : 'Nom pub',
 SHEET_NAMES_COMPL = {'to replace sheet' : 'To replace',
                      'to remove sheet'  : 'To remove',
                     }
+
+COL_NAMES_PUB_NAMES = {'last name' : pub_last_name,
+                       'initials'  : pub_initials,
+                      }
+
+EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_BONUS['homonym'],          
+                          COL_NAMES_BONUS['author_type'],] 
 
 def _build_col_conversion_dic():
     """

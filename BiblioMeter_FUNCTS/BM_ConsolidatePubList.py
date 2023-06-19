@@ -82,7 +82,7 @@ def mise_en_page(df, wb = None):
     
     # Setting height of first row
     first_row_num = 1
-    ws.row_dimensions[first_row_num].height = 30
+    ws.row_dimensions[first_row_num].height = 50
 
     return wb, ws
 

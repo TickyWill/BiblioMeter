@@ -6,6 +6,7 @@ __all__ = [
            'EMPLOYEES_CONVERTERS_DIC',     # <= EFF_CONVERTERS_DIC
            'EMPLOYEES_FULL_COLS',          # <= COL_NAMES_RH
            'EMPLOYEES_USEFUL_COLS',
+           'EXT_DOCS_USEFUL_COL_LIST',
            'QUALIFICATION_DIC',
            'STATUS_DIC',
            'SEARCH_DEPTH',
@@ -84,6 +85,42 @@ for key in employees_useful_cols_keys_list: EMPLOYEES_USEFUL_COLS[key] = EMPLOYE
 EMPLOYEES_COL_TYPES = {} 
 for col_name in list(EMPLOYEES_USEFUL_COLS.keys()): EMPLOYEES_COL_TYPES[col_name] = str
 
+
+# The name of the 6 columns added by the function  _build_year_month_dpt
+EMPLOYEES_ADD_COLS = {'dpts_list'          : 'Dpts',
+                      'servs_list'         : 'Servs',
+                      'months_list'        : 'Months',
+                      'years_list'         : 'Years',
+                      'first_name_initials': 'Firstname_initials',
+                      'employee_full_name' : 'Employee_full_name',
+                     }
+
+
+# Column names when reading external phd students list
+EXT_DOCS_USEFUL_COL_LIST = [EMPLOYEES_USEFUL_COLS['matricule'],
+                            EMPLOYEES_USEFUL_COLS['name'],
+                            EMPLOYEES_USEFUL_COLS['first_name'],
+                            EMPLOYEES_USEFUL_COLS['gender'],
+                            EMPLOYEES_USEFUL_COLS['nationality'],
+                            EMPLOYEES_USEFUL_COLS['category'],
+                            EMPLOYEES_USEFUL_COLS['status'],
+                            EMPLOYEES_USEFUL_COLS['qualification'],
+                            EMPLOYEES_USEFUL_COLS['hiring_date'],
+                            EMPLOYEES_USEFUL_COLS['last_entry_date'],
+                            EMPLOYEES_USEFUL_COLS['departure_date'],
+                            EMPLOYEES_USEFUL_COLS['dpt'],
+                            EMPLOYEES_USEFUL_COLS['serv'],
+                            EMPLOYEES_USEFUL_COLS['lab'],
+                            EMPLOYEES_USEFUL_COLS['full_affiliation'],
+                            EMPLOYEES_USEFUL_COLS['birth_date'],
+                            EMPLOYEES_USEFUL_COLS['age_range'],
+                            EMPLOYEES_ADD_COLS['dpts_list'],
+                            EMPLOYEES_ADD_COLS['servs_list'],
+                            EMPLOYEES_ADD_COLS['months_list'],
+                            EMPLOYEES_ADD_COLS['years_list'],
+                            EMPLOYEES_ADD_COLS['first_name_initials'] + "_y",
+                            EMPLOYEES_ADD_COLS['employee_full_name'],]
+
 # Converters of datetime columns for all-years employees file
 def _get_str_date(date_value):
     text_to_remove = '[numpy.datetime64('
@@ -105,15 +142,6 @@ EMPLOYEES_CONVERTERS_DIC = {}    # <= EFF_CONVERTERS_DIC
 for col_convert in employees_col_convert_list: 
     EMPLOYEES_CONVERTERS_DIC[col_convert] = lambda x: _get_str_date(str(x))
 
-
-# The name of the 6 columns added by the function  _build_year_month_dpt
-EMPLOYEES_ADD_COLS = {'dpts_list'          : 'Dpts',
-                      'servs_list'         : 'Servs',
-                      'months_list'        : 'Months',
-                      'years_list'         : 'Years',
-                      'first_name_initials': 'Firstname_initials',
-                      'employee_full_name' : 'Employee_full_name',
-                     }
 
 CATEGORIES_DIC   = {'CDI'      : ['CDI'],
                     'CDD'      : ['CDD'],
