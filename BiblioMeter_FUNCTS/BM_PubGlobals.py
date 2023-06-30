@@ -21,7 +21,6 @@ __all__ = ['ARCHI_BACKUP',
            'NOT_AVAILABLE_IF',
            'ORPHAN_COL_RENAME_DIC',
            'ROW_COLORS',
-           'SHEET_NAMES_COMPL',
            'SHEET_NAMES_ORPHAN',
            'SUBMIT_COL_RENAME_DIC',
           ]
@@ -190,13 +189,6 @@ COL_NAMES_COMPL = {'last name init'   : pub_last_name,
 COL_NAMES_EXT = {'last name'   : pub_last_name,
                  'initials'    : pub_initials,
                 }
-
-
-SHEET_NAMES_COMPL = {'to replace sheet'    : 'Spécifique par publi',
-                     'to remove sheet'     : 'Externes LITEN',
-                     'docs to add sheet'   : 'Doctorants externes',
-                     'others to add sheet' : 'Autres externes',
-                    }
 
 
 SHEET_NAMES_ORPHAN = {"to replace"    : "Spécifique par publi",
