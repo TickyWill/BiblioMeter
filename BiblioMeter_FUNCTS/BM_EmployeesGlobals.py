@@ -153,6 +153,7 @@ STATUS_DIC       = {'Doc'      : ['Thésard'],
                     'Postdoc'  : ['Post doc'],
                     'CSc'      : ['Conseiller Scient.NR'],
                     'Stg'      : ['Stagiaire'],
+                    'Intrm'    : ['Intérimaire']
                    }
 
 QUALIFICATION_DIC = {'Doc'     : ['THESARD', 'THESE'],

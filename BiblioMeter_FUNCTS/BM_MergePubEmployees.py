@@ -25,8 +25,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import HOMONYM_FLAG
     
-
-    # Création chemin vers résultats pour effectuer des checks étapes
+    # Creating path for saving test files
     PATH_OF_CHECKS = Path(bibliometer_path) / Path('Results')
 
     def _orphan_reduction(orphan_lastname,eff_lastname):
@@ -91,7 +90,8 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
 
     # Initializing a Data frame that will contains all 'df_pub' author-names 
     # which do not match with any of the 'df_eff' emmployee-names
-    df_orphan = pd.DataFrame()
+    # setting columns name is required for the case of emty dataframe returned
+    df_orphan = pd.DataFrame(columns = list(df_pub.columns))
 
     # Building the set of lastnames (without duplicates) of the dataframe 'df_eff' 
     eff_lastnames = set(df_eff[EMPLOYEES_USEFUL_COLS['name']].to_list())
@@ -196,7 +196,7 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
                 # and adding the item value HOMONYM_FLAG at column COL_NAMES_BM['Homonym'] 
                 # when several matches on firstname initiales are found
                 df_temp = df_pub_row.to_frame().T            
-                df_temp[COL_NAMES_BM['Homonym']] = HOMONYM_FLAG if len(list_idx)>1 else ''
+                df_temp[COL_NAMES_BM['Homonym']] = HOMONYM_FLAG if len(list_idx)>1 else '_'
 
                 # Saving specific dataframes 'df_temp' and 'df_eff_pub_match' for function testing
                 if pub_lastname == test_name and test_states[4]: _save_spec_dfs()                       
@@ -233,6 +233,7 @@ def _check_names_orthograph(bibliometer_path, init_df, col0, col1, col2):
     
     # 3rd party import
     import pandas as pd
+    import warnings
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_ORPHAN
@@ -250,6 +251,7 @@ def _check_names_orthograph(bibliometer_path, init_df, col0, col1, col2):
     ortho_initials_new  = COL_NAMES_ORTHO['initials new']
     
     ortho_col_list = list(COL_NAMES_ORTHO.values())
+    warnings.simplefilter(action='ignore', category=UserWarning)
     ortho_df = pd.read_excel(ortho_path, usecols = ortho_col_list)
     
     new_df = init_df.copy()
@@ -278,18 +280,19 @@ def _check_names_to_replace(bibliometer_path, year, init_df, col0, col1, col2):
     
     # 3rd party import
     import pandas as pd
+    import warnings
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_ORPHAN
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_COMPL
-    from BiblioMeter_FUNCTS.BM_PubGlobals import SHEET_NAMES_COMPL
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SHEET_NAMES_ORPHAN
        
     orphan_treat_alias     = ARCHI_ORPHAN["root"]
     complements_file_alias = ARCHI_ORPHAN["complementary file"]
     
     complements_path = bibliometer_path / Path(orphan_treat_alias) / Path(complements_file_alias)
         
-    compl_to_replace_sheet = SHEET_NAMES_COMPL['to replace sheet']
+    compl_to_replace_sheet = SHEET_NAMES_ORPHAN['to replace']
     compl_lastname_init    = COL_NAMES_COMPL['last name init']
     compl_initials_init    = COL_NAMES_COMPL['initials init']
     compl_matricule        = COL_NAMES_COMPL['matricule']
@@ -301,6 +304,7 @@ def _check_names_to_replace(bibliometer_path, year, init_df, col0, col1, col2):
     
     # Getting the information of the year in the complementary file 
     compl_col_list = list(COL_NAMES_COMPL.values())
+    warnings.simplefilter(action='ignore', category=UserWarning)
     compl_df = pd.read_excel(complements_path, sheet_name = compl_to_replace_sheet, usecols = compl_col_list)
     year_compl_df = compl_df[compl_df[compl_year_pub]==int(year)]
     year_compl_df.reset_index(inplace = True)
@@ -321,6 +325,60 @@ def _check_names_to_replace(bibliometer_path, year, init_df, col0, col1, col2):
                 new_df .loc[pub_row_num,col0] = lastname_eff_compl + ' ' + initials_eff_compl
    
     return new_df
+
+
+def _check_authors_to_remove(bibliometer_path, pub_df, pub_last_col, pub_initials_col):
+    '''
+    '''
+    # Standard Library imports
+    from pathlib import Path
+    
+    # 3rd party import
+    import pandas as pd
+    import warnings
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_ORPHAN
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_EXT
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SHEET_NAMES_ORPHAN
+    
+    # Setting useful aliases
+    orphan_treat_alias          = ARCHI_ORPHAN["root"]
+    outliers_file_alias         = ARCHI_ORPHAN["complementary file"]
+    outliers_sheet_alias        = SHEET_NAMES_ORPHAN["to remove"]
+    outliers_lastname_col_alias = COL_NAMES_EXT['last name']
+    outliers_initials_col_alias = COL_NAMES_EXT['initials']
+    
+    # Setting useful path
+    outliers_path = bibliometer_path / Path(orphan_treat_alias) / Path(outliers_file_alias)
+
+    # Reading the file giving the outliers
+    warnings.simplefilter(action='ignore', category=UserWarning)
+    outliers_df = pd.read_excel(outliers_path, 
+                                sheet_name = outliers_sheet_alias,
+                                usecols = [outliers_lastname_col_alias, 
+                                           outliers_initials_col_alias])
+    # Initializing the dataframe that will contain the rows to drop
+    # with the same columns names as the dataframe to update
+    drop_df = pd.DataFrame(columns = list(pub_df.columns))
+    
+    # Searching for the outliers in the dataframe to update by lastname and initiales
+    for pub_row_num in range(len(pub_df)):
+        pub_lastname  = pub_df[pub_last_col][pub_row_num]
+        pub_initiales = pub_df[pub_initials_col][pub_row_num]
+        for outliers_row_num in range(len(outliers_df)):
+            outliers_lastname = outliers_df[outliers_lastname_col_alias][outliers_row_num]
+            outliers_initials = outliers_df[outliers_initials_col_alias][outliers_row_num]
+            if pub_lastname == outliers_lastname and pub_initiales == outliers_initials:
+                # Setting the row to drop as a dataframe
+                row_to_drop_df = pub_df.loc[pub_row_num].to_frame().T
+                # Appending the row to drop to the dataframe that will contain all the rows to drop 
+                drop_df = drop_df.append(row_to_drop_df, ignore_index = True, sort = False)                
+    
+    # Removing the rows to drop from the dataframe to update             
+    new_pub_df = pd.concat([pub_df, drop_df]).drop_duplicates(keep=False)
+   
+    return new_pub_df
 
 
 def _build_pubs_authors_Liten(year, bibliometer_path):
@@ -475,9 +533,11 @@ def _build_pubs_authors_Liten(year, bibliometer_path):
     merged_df_Liten[col_in] = merged_df_Liten[col_in].apply(lambda x : ' '.join(x))
     
     # Checking author name spelling and correct it then replacing author names resulting from publication metadata errors
+    # finally Searching for authors external to Liten but tagged as affiliated to it and droping their row in the returned dataframe 
     col_full, col_last, col_initials= COL_NAMES_BM['Full_name'], COL_NAMES_BM['Last_name'], COL_NAMES_BM['First_name']
     merged_df_Liten = _check_names_orthograph(bibliometer_path, merged_df_Liten, col_full, col_last, col_initials) 
     merged_df_Liten = _check_names_to_replace(bibliometer_path, year, merged_df_Liten, col_full, col_last, col_initials)
+    merged_df_Liten = _check_authors_to_remove(bibliometer_path, merged_df_Liten, col_last, col_initials)
 
     return  merged_df_Liten
 
@@ -650,11 +710,9 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
         (str): Message of completed run.
     
     Notes:
-        The local function `_set_full_ref` of the module 'BM_MergePubEmployees' 
-        of the package 'BiblioMeter_FUNCTS'is used.
         The global 'COL_NAMES' is imported from the module 'BiblioSpecificGlobals'  
         of the package 'BiblioAnalysis_Utils'.
-        The globals 'COL_NAMES_BM', 'COL_NAMES_BONUS', 'COL_NAMES_PUB_NAMES' and 'EXT_DOCS_COL_ADDS_LIST' 
+        The globals 'COL_NAMES_BM', 'COL_NAMES_BONUS' and 'EXT_DOCS_COL_ADDS_LIST' 
         are imported from the module 'BM_PubGlobals' of the package 'BiblioMeter_FUNCTS'. 
         The globals 'EMPLOYEES_ADD_COLS', 'EMPLOYEES_CONVERTERS_DIC', 'EMPLOYEES_USEFUL_COLS' 
         and 'EXT_DOCS_USEFUL_COL_LIST',  are imported from the module 'BM_EmployeesGlobals' 
@@ -663,6 +721,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     """
     # 3rd party import
     import pandas as pd
+    import warnings
 
     # BiblioAnalysis package globals imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
@@ -672,6 +731,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_PUB_NAMES
     from BiblioMeter_FUNCTS.BM_PubGlobals import EXT_DOCS_COL_ADDS_LIST
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SHEET_NAMES_ORPHAN
     
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_CONVERTERS_DIC
@@ -683,16 +743,11 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     ext_docs_last_name_alias          = EMPLOYEES_USEFUL_COLS['name']
     ext_docs_pub_last_name_alias      = COL_NAMES_PUB_NAMES['last name']
     ext_docs_pub_initials_alias       = COL_NAMES_PUB_NAMES['initials']
+    ext_docs_sheet_name_alias         = SHEET_NAMES_ORPHAN["docs to add"]
     orphan_full_name_alias            = COL_NAMES_BM['Full_name']
     orphan_last_name_alias            = COL_NAMES_BM['Last_name']
     pub_id_alias                      = COL_NAMES['authors'][0]
     author_id_alias                   = COL_NAMES['authors'][1]
-    pub_first_author_alias            = COL_NAMES['articles'][1]
-    pub_year_alias                    = COL_NAMES['articles'][2]
-    pub_journal_alias                 = COL_NAMES['articles'][3]
-    pub_doi_alias                     = COL_NAMES['articles'][6]
-    pub_title_alias                   = COL_NAMES['articles'][9]
-    pub_full_ref_alias                = COL_NAMES_BONUS['liste biblio']
     firstname_initials_col_base_alias = EMPLOYEES_ADD_COLS['first_name_initials']
     
     # Reading of the existing submit excel file of the corpus year 
@@ -729,7 +784,10 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                             EXT_DOCS_COL_ADDS_LIST,
                             EXT_DOCS_USEFUL_COL_LIST,],
                            [])
-    ext_docs_df = pd.read_excel(ext_docs_path, usecols = ext_docs_usecols,
+    warnings.simplefilter(action='ignore', category=UserWarning)
+    ext_docs_df = pd.read_excel(ext_docs_path, 
+                                sheet_name = ext_docs_sheet_name_alias,
+                                usecols    = ext_docs_usecols,
                                 converters = EMPLOYEES_CONVERTERS_DIC)
     ext_docs_df.dropna(how='all', inplace=True)
 
@@ -737,7 +795,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     # to update submit and orphan files using new_submit_adds_df and new_orphan_drop_df
     for orphan_row_num in range(len(init_orphan_df)):
         author_last_name = init_orphan_df[orphan_last_name_alias][orphan_row_num]
-        author_initials  = init_orphan_df[orphan_initials_alias][orphan_row_num]
+        author_initials  = init_orphan_df[orphan_initials_alias][orphan_row_num] 
         for ext_docs_row_num in range(len(ext_docs_df)):
             ext_docs_pub_last_name = ext_docs_df[ext_docs_pub_last_name_alias][ext_docs_row_num]
             ext_docs_pub_initials  = ext_docs_df[ext_docs_pub_initials_alias][ext_docs_row_num]
@@ -758,20 +816,11 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                                          right_on = [ext_docs_full_name_alias], 
                                          how = 'left')
 
-                # Filling full reference of article
-                title        = str(row_to_add_df[pub_title_alias].to_list()[0])
-                first_author = str(row_to_add_df[pub_first_author_alias].to_list()[0])
-                journal_name = str(row_to_add_df[pub_journal_alias].to_list()[0])
-                pub_year     = str(row_to_add_df[pub_year_alias].to_list()[0])
-                doi          = str(row_to_add_df[pub_doi_alias].to_list()[0])            
-                row_to_add_df[pub_full_ref_alias] = _set_full_ref(title, first_author, journal_name, pub_year, doi)
-
                 # Appending the merged df to new_submit_adds_df
                 new_submit_adds_df = new_submit_adds_df.append(row_to_add_df, ignore_index = True, sort = False) 
 
                 # Appending row_to_move_df to  orphan_drop_df
                 orphan_drop_df = orphan_drop_df.append(row_to_move_df, ignore_index = True, sort = False)
- 
 
     # Concatenating init_submit_df and new_submit_adds_df            
     new_submit_df = pd.concat([init_submit_df, new_submit_adds_df])
@@ -788,10 +837,156 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     new_submit_df.to_excel(submit_path, index = False)
     new_orphan_df.to_excel(orphan_path, index = False)
     
-    end_message  = f"Results of search of authors"
-    end_message += f" in list of external-phd students saved in files:"
-    end_message += f" \n  {submit_path} \n  {orphan_path}" 
-    return end_message
+    return (new_submit_df, new_orphan_df)
+
+
+def _add_other_ext(submit_path, orphan_path, others_path):
+    """The function `_add_other_ext` adds to the file pointed by the path 'submit_path' 
+    new rows containing the informations of authors of the file pointed by the path 'orphan_path' 
+    that are under external hiring contract in the institution.
+    The list of these employees with the required information must be available in an EXCEL file
+    which full path is 'others_path'.
+    
+    Args:
+        submit_path (path): Full path of the EXCEL file to be completed 
+        and initially created by the main function `recursive_year_search`. 
+        orphan_path (path): Full path of the EXCEL file containing the list of authors affiliated 
+        to the institution but not found in the employees database with articles information 
+        and initially created by the main function `recursive_year_search`.
+        others_path (path): Full path of the EXCEL file of the author to add while external to the institution.
+    
+    Returns:
+        (str): Message of completed run.
+    
+    Notes:
+        The global 'COL_NAMES' is imported from the module 'BiblioSpecificGlobals'  
+        of the package 'BiblioAnalysis_Utils'.
+        The globals 'COL_NAMES_BM', 'COL_NAMES_BONUS' and 'EXT_DOCS_COL_ADDS_LIST' 
+        are imported from the module 'BM_PubGlobals' of the package 'BiblioMeter_FUNCTS'. 
+        The globals 'EMPLOYEES_ADD_COLS', 'EMPLOYEES_CONVERTERS_DIC', 'EMPLOYEES_USEFUL_COLS' 
+        and 'EXT_DOCS_USEFUL_COL_LIST',  are imported from the module 'BM_EmployeesGlobals' 
+        of the package 'BiblioMeter_FUNCTS'. 
+    
+    """
+    # 3rd party import
+    import pandas as pd
+    import warnings
+
+    # BiblioAnalysis package globals imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BM
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_PUB_NAMES
+    from BiblioMeter_FUNCTS.BM_PubGlobals import EXT_DOCS_COL_ADDS_LIST
+    from BiblioMeter_FUNCTS.BM_PubGlobals import SHEET_NAMES_ORPHAN
+    
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_CONVERTERS_DIC
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EXT_DOCS_USEFUL_COL_LIST
+
+    # Setting aliases for useful column names 
+    others_full_name_alias          = EMPLOYEES_ADD_COLS['employee_full_name']
+    others_last_name_alias          = EMPLOYEES_USEFUL_COLS['name']
+    others_pub_last_name_alias      = COL_NAMES_PUB_NAMES['last name']
+    others_pub_initials_alias       = COL_NAMES_PUB_NAMES['initials']
+    others_sheet_name_alias         = SHEET_NAMES_ORPHAN["others to add"]
+    orphan_full_name_alias            = COL_NAMES_BM['Full_name']
+    orphan_last_name_alias            = COL_NAMES_BM['Last_name']
+    pub_id_alias                      = COL_NAMES['authors'][0]
+    author_id_alias                   = COL_NAMES['authors'][1]
+    firstname_initials_col_base_alias = EMPLOYEES_ADD_COLS['first_name_initials']
+    
+    # Reading of the existing submit excel file of the corpus year 
+    # with dates conversion through EMPLOYEES_CONVERTERS_DIC 
+    init_submit_df = pd.read_excel(submit_path, converters = EMPLOYEES_CONVERTERS_DIC)
+    init_orphan_df = pd.read_excel(orphan_path, converters = EMPLOYEES_CONVERTERS_DIC)
+
+    # Initializing new_submit_df with same column names as init_submit_df 
+    new_submit_df = pd.DataFrame(columns = list(init_submit_df.columns))
+
+    # Initializing the dataframe to be concatenated to init_submit_df in new_submit_df
+    # with same column names as init_submit_df 
+    new_submit_adds_df = pd.DataFrame(columns = list(init_submit_df.columns))
+    
+    # Aligning column names between init_submit_df and init_orphan_df 
+    # to feed new_submit_adds_df with same column names as init_submit_df
+    col_rename_dic = {firstname_initials_col_base_alias : firstname_initials_col_base_alias + "_x"}
+    init_orphan_df.rename(columns = col_rename_dic, inplace = True)
+    orphan_initials_alias = col_rename_dic[firstname_initials_col_base_alias]
+    
+    # Initializing new_orphan_df as copy of init_orphan_df
+    #new_orphan_df = init_orphan_df.copy()
+    new_orphan_df = pd.DataFrame(columns = list(init_orphan_df.columns))
+    
+    # Initializing the dataframe to be droped from init_orphan_df 
+    # with same column names as init_orphan_df 
+    orphan_drop_df = pd.DataFrame(columns = list(init_orphan_df.columns))
+
+    # Reading of the external phd students excel file 
+    # using the same useful columns as init_submit_df defined by EXT_DOCS_USEFUL_COL_LIST
+    # with dates conversion through EMPLOYEES_CONVERTERS_DIC
+    # and drop of empty rows
+    others_usecols   = sum([[others_pub_last_name_alias, others_pub_initials_alias],
+                            EXT_DOCS_COL_ADDS_LIST,
+                            EXT_DOCS_USEFUL_COL_LIST,],
+                           [])
+    warnings.simplefilter(action='ignore', category=UserWarning)
+    others_df   = pd.read_excel(others_path, 
+                                sheet_name = others_sheet_name_alias,
+                                usecols   = others_usecols,
+                                converters = EMPLOYEES_CONVERTERS_DIC)
+    others_df.dropna(how='all', inplace=True)
+
+    # Searching for last names of init_orphan_df in others_df 
+    # to update submit and orphan files using new_submit_adds_df and new_orphan_drop_df
+    for orphan_row_num in range(len(init_orphan_df)):
+        author_last_name = init_orphan_df[orphan_last_name_alias][orphan_row_num]
+        author_initials  = init_orphan_df[orphan_initials_alias][orphan_row_num] 
+        for others_row_num in range(len(others_df)):
+            others_pub_last_name = others_df[others_pub_last_name_alias][others_row_num]
+            others_pub_initials  = others_df[others_pub_initials_alias][others_row_num]
+            if others_pub_last_name == author_last_name and others_pub_initials == author_initials:
+                # Setting the row to move from init_orphan_df as a dataframe
+                row_to_move_df = init_orphan_df.loc[orphan_row_num].to_frame().T
+
+                # Setting the row to copy from others_df as a dataframe
+                row_to_copy_df = others_df.loc[others_row_num].to_frame().T
+                
+                # Droping the columns of row_to_copy_df that should not be present in row_to_add_df  
+                row_to_copy_df.drop([others_pub_last_name_alias, others_pub_initials_alias], axis=1, inplace = True)
+
+                # Merging the two dataframes on respective full name column  
+                row_to_add_df = pd.merge(row_to_move_df, 
+                                         row_to_copy_df, 
+                                         left_on  = [orphan_full_name_alias],
+                                         right_on = [others_full_name_alias], 
+                                         how = 'left')
+
+                # Appending the merged df to new_submit_adds_df
+                new_submit_adds_df = new_submit_adds_df.append(row_to_add_df, ignore_index = True, sort = False) 
+
+                # Appending row_to_move_df to  orphan_drop_df
+                orphan_drop_df = orphan_drop_df.append(row_to_move_df, ignore_index = True, sort = False)
+                
+    # Concatenating init_submit_df and new_submit_adds_df            
+    new_submit_df = pd.concat([init_submit_df, new_submit_adds_df])
+    new_submit_df.sort_values([pub_id_alias, author_id_alias], inplace = True)
+    
+    # Droping orphan_drop_df rows from init_orphan_df
+    new_orphan_df = pd.concat([init_orphan_df, orphan_drop_df]).drop_duplicates(keep=False)
+    
+    # Recovering the initial column names of init_orphan_df
+    col_invert_rename_dic = {firstname_initials_col_base_alias + "_x" : firstname_initials_col_base_alias}
+    new_orphan_df.rename(columns = col_invert_rename_dic, inplace = True)
+    
+    # Saving new_submit_df and new_orphan_df replacing init_submit_df and init_submit_df
+    new_submit_df.to_excel(submit_path, index = False)
+    new_orphan_df.to_excel(orphan_path, index = False)
+    
+    return (new_submit_df, new_orphan_df)
 
 
 def _change_col_names(submit_path, orphan_path):
@@ -909,9 +1104,10 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     Uses following local functions of the module "BM_MergePubEmployees.py":
     - `_build_pubs_authors_Liten`
     - `_build_df_submit`
+    - `_add_ext_docs`
+    - `_add_other_ext`
     - `_add_author_job_type`
     - `_add_biblio_list`
-    - `_add_ext_docs`
     - `_change_col_names`   
     - `_creating_hash_id`
     """
@@ -936,8 +1132,8 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Internal functions
     def _unique_pub_id(df):
 
-        '''The `_unique_pub_id`transforms the column 'Pub_id' of the df 
-        by adding _yyyy to the value of the row.
+        '''The local function `_unique_pub_id` transforms the column 'Pub_id' of the df 
+        by adding "yyyy_" to the value of the row.
 
         Args: 
             df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
@@ -962,16 +1158,20 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     submit_file_name_alias   = ARCHI_YEAR["submit file name"]
     orphan_file_name_alias   = ARCHI_YEAR["orphan file name"]
     orphan_treat_alias       = ARCHI_ORPHAN["root"]
-    ext_docs_file_name_alias = ARCHI_ORPHAN["docs file"]
+    adds_file_name_alias     = ARCHI_ORPHAN["employees adds file"]
     
     # Setting useful paths
     submit_path   = path_out / Path(submit_file_name_alias)
     orphan_path   = path_out / Path(orphan_file_name_alias)
-    ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(ext_docs_file_name_alias)
+    ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
+    others_path   = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
         
     # Getting the employees dataframe with the useful columns only
     useful_col_list = list(EMPLOYEES_USEFUL_COLS.values()) + list(EMPLOYEES_ADD_COLS.values())
-    df_eff = pd.read_excel(effectifs_path, sheet_name = None, dtype = EMPLOYEES_COL_TYPES, usecols = useful_col_list)
+    df_eff = pd.read_excel(effectifs_path, 
+                           sheet_name = None, 
+                           dtype = EMPLOYEES_COL_TYPES, 
+                           usecols = useful_col_list)
     eff_available_years = list(df_eff.keys())        
     corpus_year_status = corpus_year in eff_available_years 
     
@@ -990,8 +1190,10 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     #################################################################################################
 
     # Initializing the dataframes to be built
-    df_submit = pd.DataFrame() # Data frame containing all match between article LTEN authors and employee names
-    df_orphan = pd.DataFrame() # No match found between article LITEN authors and employee names
+    # a Data frame containing all matches between article LITEN authors and employee names
+    df_submit = pd.DataFrame()
+    # a Data frame containing containing article LITEN authors not matching with any employee name
+    df_orphan = pd.DataFrame()
 
     # Setting the test case
     test_list = ['Full match',            
@@ -1004,22 +1206,29 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     test_case = 'Upper value similarity'
     
     # Building the initial dataframes
-    df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], df_pub, bibliometer_path, test_case = test_case)
+    df_submit, df_orphan =  _build_df_submit(df_eff[years[0]], 
+                                             df_pub, bibliometer_path, 
+                                             test_case = test_case)
+    
+    # Saving initial files of df_submit and df_orphan
+    df_submit.to_excel(submit_path, index = False)
+    df_orphan.to_excel(orphan_path, index = False)
+
+    # Adding authors from list of external_phd students and saving new df_submit and df_orphan
+    df_submit, df_orphan = _add_ext_docs(submit_path, orphan_path, ext_docs_path)
+    
+    # Adding authors from list of external employees under other hiring contract and saving new df_submit and df_orphan
+    df_submit, df_orphan = _add_other_ext(submit_path, orphan_path, others_path)
     
     for step, year in enumerate(years):   
         # Updating the dataframes df_submit_add and df_orphan
-        df_submit_add, df_orphan =  _build_df_submit(df_eff[year], df_orphan, bibliometer_path, test_case)
+        df_submit_add, df_orphan =  _build_df_submit(df_eff[year], 
+                                                     df_orphan, 
+                                                     bibliometer_path, 
+                                                     test_case) 
 
-        # Updating df_submit 
+        # Updating df_submit and df_orphan
         df_submit = df_submit.append(df_submit_add)
-        
-        # Saving intermediaite status in specific files (only for test)
-        #year_submit_file_name = year + '_' + submit_file_name_alias
-        #year_orphan_file_name = year + '_' + orphan_file_name_alias
-        #year_submit_path = path_out / Path(year_submit_file_name)
-        #year_orphan_path = path_out / Path(year_orphan_file_name)
-        #df_submit.to_excel(year_submit_path, index = False)
-        #df_orphan.to_excel(year_orphan_path, index = False) 
 
     #####################################################################################
     # Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file #
@@ -1031,12 +1240,12 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
-    df_orphan = _unique_pub_id(df_orphan)
+    if not df_orphan.empty : df_orphan = _unique_pub_id(df_orphan)
     
-    # Saving df_orphan 
+    # Saving df_orphan
     df_orphan.to_excel(orphan_path, index = False)
     
-    # Saving df_submit 
+    # Saving df_submit
     df_submit.to_excel(submit_path, index = False)
     
     # Adding author job type and saving new df_submit
@@ -1044,9 +1253,6 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     
     # Adding full article reference and saving new df_submit
     _add_biblio_list(submit_path, submit_path)
-
-    # Adding authors from list of external_phd students and saving new df_submit and df_orphan
-    _add_ext_docs(submit_path, orphan_path, ext_docs_path)   
 
     # Renaming column names using SUBMIT_COL_RENAME_DIC and ORPHAN_COL_RENAME_DIC globals
     _change_col_names(submit_path, orphan_path)

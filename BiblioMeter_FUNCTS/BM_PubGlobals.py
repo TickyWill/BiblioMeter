@@ -9,6 +9,7 @@ __all__ = ['ARCHI_BACKUP',
            'COL_NAMES_BONUS',
            'COL_NAMES_COMPL',
            'COL_NAMES_DPT',
+           'COL_NAMES_EXT',
            'COL_NAMES_ORTHO',
            'COL_NAMES_PUB_NAMES',
            'DPT_ATTRIBUTS_DICT',
@@ -21,6 +22,7 @@ __all__ = ['ARCHI_BACKUP',
            'ORPHAN_COL_RENAME_DIC',
            'ROW_COLORS',
            'SHEET_NAMES_COMPL',
+           'SHEET_NAMES_ORPHAN',
            'SUBMIT_COL_RENAME_DIC',
           ]
 
@@ -36,11 +38,11 @@ ARCHI_IF = {"root"    : "Impact Factor",
             "all IF"  : "IF all years.xlsx",
             "missing" : "ISSN_manquants.xlsx"}
 
-ARCHI_ORPHAN = {"root"              : "Traitement Orphan",
-                "orthograph file"   : "Orthographe.xlsx",
-                "docs file"         : "Doctorants externes.xlsx",
-                "outliers file"     : "Externes LITEN.xlsx",
-                "complementary file": "Autres corrections.xlsx",
+
+ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
+                "orthograph file"     : "Orthographe.xlsx",
+                "employees adds file" : "Effectifs additionnels.xlsx",
+                "complementary file"  : "Autres corrections.xlsx",
                }
 
 
@@ -185,10 +187,24 @@ COL_NAMES_COMPL = {'last name init'   : pub_last_name,
                    'hash id'          : 'Hash_id',
                   }
 
+COL_NAMES_EXT = {'last name'   : pub_last_name,
+                 'initials'    : pub_initials,
+                }
 
-SHEET_NAMES_COMPL = {'to replace sheet' : 'To replace',
-                     'to remove sheet'  : 'To remove',
+
+SHEET_NAMES_COMPL = {'to replace sheet'    : 'Spécifique par publi',
+                     'to remove sheet'     : 'Externes LITEN',
+                     'docs to add sheet'   : 'Doctorants externes',
+                     'others to add sheet' : 'Autres externes',
                     }
+
+
+SHEET_NAMES_ORPHAN = {"to replace"    : "Spécifique par publi",
+                      "to remove"     : "Externes LITEN",
+                      "docs to add"   : "Doctorants externes",
+                      "others to add" : "Autres externes",
+                     }
+
 
 COL_NAMES_PUB_NAMES = {'last name' : pub_last_name,
                        'initials'  : pub_initials,
