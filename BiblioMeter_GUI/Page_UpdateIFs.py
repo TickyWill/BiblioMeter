@@ -67,7 +67,8 @@ def create_update_ifs(self, bibliometer_path, parent):
     def _get_if_info():
         if_df = pd.read_excel(all_if_path, sheet_name = None)
         if_years_list = ', '.join(list(if_df.keys()))
-        return if_years_list
+        if_most_recent_year = list(if_df.keys())[-1]
+        return if_years_list, if_most_recent_year
     
     def _update_if_try(file_to_update_path):
         try:
@@ -98,7 +99,7 @@ def create_update_ifs(self, bibliometer_path, parent):
         # Cheking availability of IF all years file
         all_if_status = os.path.exists(all_if_path)
         if all_if_status:
-            if_years_list = _get_if_info()
+            if_years_list, _ = _get_if_info()
             info_title = '- Information -'
             info_text  = f"Les IFs des publications du fichier : \n '{file_to_update_path}' "
             info_text += f"\n\nvont être mis à jour avec les IFs des années : \n\n '{if_years_list}' "
@@ -116,7 +117,7 @@ def create_update_ifs(self, bibliometer_path, parent):
             if answer_2:
                 # Alors comme c'est oui, il faut aller chercher le fichier et le copier au bon endroit
                 filePath = shutil.copy(backup_if_file_path, all_if_path)
-                if_years_list = _get_if_info() 
+                if_years_list, _ = _get_if_info() 
                 info_title = '- Information -'
                 info_text  = f"Les IFs des publications du fichier : \n '{file_to_update_path}' "
                 info_text += f"vont être mis à jour avec les IFs des années : \n\n '{if_years_list}' "
@@ -134,8 +135,10 @@ def create_update_ifs(self, bibliometer_path, parent):
     def _launch_missing_if():
         try:
             # Getting the file path to update with IFs
-            file_to_update_path = file_select_entry.get()           
-            end_message = find_missing_if(bibliometer_path, file_to_update_path)
+            file_to_update_path = file_select_entry.get()
+            
+            _, if_most_recent_year = _get_if_info()
+            end_message = find_missing_if(bibliometer_path, file_to_update_path, if_most_recent_year)
             print('\n',end_message)
             info_title = '- Information -'
             info_text  = f"La liste des journaux dont l'IF est manquant a été construite."

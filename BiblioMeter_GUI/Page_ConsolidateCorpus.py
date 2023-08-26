@@ -401,12 +401,61 @@ def _launch_add_OTP_try(bibliometer_path,
         messagebox.showinfo(info_title, info_text)
     return   
 
+
+def _launch_update_if_db(bibliometer_path,
+                         corpi_year_list,
+                         year_select,
+                         pub_list_path,
+                         check_if_status,
+                        ):
+    """
+    """
+    
+    # 3rd party imports    
+    from tkinter import messagebox
+    
+    # Local library imports     
+    from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import update_inst_if_database
+    
+    if check_if_status:
+        # Lancement de la fonction MAJ Effectif
+        ask_title = "- Confirmation de la mise à jour des IFs -"
+        ask_text  = f"La base de données des IFs va être mise à jour "
+        ask_text += f"avec les nouvelles données disponibles dans les dossiers :"
+        ask_text += f"\n\n '{pub_list_path}' "
+        ask_text += f"\n des corpus des années {corpi_year_list} ."
+        ask_text += f"\n\nCette opération peut prendre quelques secondes."
+        ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
+        ask_text += f"\n\nAvant de poursuivre la consolidation, "
+        ask_text += f"confirmez la mise à jour ?"            
+        answer_1  = messagebox.askokcancel(ask_title, ask_text)
+        if answer_1:
+            _, if_years_list = update_inst_if_database(bibliometer_path, corpi_year_list)
+            info_title = "- Information -"
+            info_text  = f"La mise à jour de la base de données des IFs a été effectuée "
+            info_text += f"pour les années  {if_years_list}."
+            info_text += f"\nLa consolidation pour l'année {year_select} va être poursuivie."
+            messagebox.showinfo(info_title, info_text)
+            update_status = True
+            return update_status
+        else:
+            # Arrêt de la procédure
+            info_title    = "- Information -"
+            warning_text  = f"La mise à jour des effectifs est abandonnée."
+            warning_text += f"\n\nSi la consolidation pour l'année {year_select} "
+            warning_text += f"est confirmée, elle se fera sans cette mise à jour."            
+            messagebox.showwarning(warning_title, warning_text)          
+            update_status = False
+            return update_status 
+
+
 def _launch_pub_list_conso_try(bibliometer_path, 
                                OTP_path,
                                pub_list_path,
                                pub_list_file_path, 
                                OTP_file_base_alias,
                                pub_list_file_alias,
+                               year_inst_if_alias,
                                bdd_multi_annuelle_folder_alias,
                                years_list,
                                year_select):
@@ -426,7 +475,9 @@ def _launch_pub_list_conso_try(bibliometer_path,
     
     def _consolidate_pub_list():
         try:
-            end_message = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_file_path, OTP_file_base_alias, year_select)
+            end_message = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_path, 
+                                               pub_list_file_path, OTP_file_base_alias, 
+                                               year_select)
             print(end_message)
             end_message = save_otps(bibliometer_path, year_select)
             print('\n',end_message)
@@ -436,11 +487,21 @@ def _launch_pub_list_conso_try(bibliometer_path,
             info_text  = f"La liste consolidée des publications de l'année {year_select} "
             info_text += f"a été créée dans le dossier :\n\n '{pub_list_path}' "
             info_text += f"\n\nsous le nom :   '{pub_list_file_alias}'."
+            info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués." 
+            info_text += f"\n\nDe plus, la liste des journaux avec ISSNs et IFs connus ou inconnus "
+            info_text += f"a été créée dans le même dossier sous le nom : \n\n '{year_inst_if_alias}' "
+            info_text += f"\n\n Ce fichier peut être modifié pour compléter la base de donnée des IFs :"
+            info_text += f"\n\n1- Ouvrez ce fichier, "
+            info_text += f"\n2- Complétez manuellement les IFs inconnus, "
+            info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
+            info_text += f"\n\nChaqque fois que ces compléments sont apportés, "
+            info_text += f"la base de données des IFs doit être mise à jour, "
+            info_text += f"ainsi que les listes consolidées des publications existantes."
             info_text += f"\n\nDe plus, la concaténation des listes consolidées des publications "
             info_text += f"disponibles, à été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
             info_text += f"\n\nsous un nom vous identifiant ainsi que la liste des années prises en compte "
             info_text += f"et caractérisé par la date et l'heure de la création."
-            info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués."                
+                           
             messagebox.showinfo(info_title, info_text)
             return 'ok'
 
@@ -539,6 +600,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import SEARCH_DEPTH
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
     
@@ -547,6 +609,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT
     from BiblioMeter_GUI.Coordinates import TEXT_HOMONYMES
     from BiblioMeter_GUI.Coordinates import TEXT_MAJ_EFFECTIFS
+    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_DB_IF
     from BiblioMeter_GUI.Coordinates import TEXT_OTP
     from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
     from BiblioMeter_GUI.Coordinates import TEXT_PUB_CONSO
@@ -634,6 +697,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
     effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
     maj_effectifs_folder_name_alias = EMPLOYEES_ARCHI["complementary_employees"] 
+    year_inst_if_base_alias         = ARCHI_IF["institute_if_base"]
 
     # Setting useful paths independent from corpus year
     effectifs_root_path       = bibliometer_path / Path(listing_alias)
@@ -850,13 +914,28 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
             
         # Renewing year selection and years 
         year_select = variable_years.get()
-                
+        
         # Setting year_select dependent paths and aliases
-        pub_list_file_alias =  pub_list_file_base_alias + f' {year_select}.xlsx'
+        year_inst_if_alias  = year_inst_if_base_alias  + f' {year_select}.xlsx'
+        pub_list_file_alias = pub_list_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path = bibliometer_path / Path(year_select)                  
         OTP_path = corpus_year_path / Path(OTP_path_alias)
         pub_list_path = corpus_year_path / Path(pub_list_path_alias)
-        pub_list_file_path = pub_list_path / Path(pub_list_file_alias)        
+        pub_list_file_path = pub_list_path / Path(pub_list_file_alias)             
+        
+        # Getting check_if_status
+        check_if_status = check_if_var.get()
+        
+        # Updating IF database
+        if_db_update_status = _launch_update_if_db(bibliometer_path,
+                                                   years_list,
+                                                   year_select,
+                                                   pub_list_path,
+                                                   check_if_status,
+                                                   )       
+        if not if_db_update_status : 
+            check_if_var.set(0)
+            check_if_status = check_if_var.get()
         
         # Trying launch creation of consolidated publications lists
         _launch_pub_list_conso_try(bibliometer_path, 
@@ -865,6 +944,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                                    pub_list_file_path, 
                                    OTP_file_base_alias,
                                    pub_list_file_alias,
+                                   year_inst_if_alias,
                                    bdd_multi_annuelle_folder_alias,
                                    years_list,
                                    year_select)
@@ -876,11 +956,32 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                               text = TEXT_PUB_CONSO, 
                               font = font_finale, 
                               command = lambda: _launch_pub_list_conso())
+    
+    check_if_var = tk.IntVar()
+    check_if_box = tk.Checkbutton(self, 
+                                  text = TEXT_MAJ_DB_IF, 
+                                  variable = check_if_var, 
+                                  onvalue = 1, 
+                                  offvalue = 0)
+    
+    font_check = tkFont.Font(family = FONT_NAME, 
+                             size = eff_answer_font_size)
+
     etape_4 = etapes[3]
     place_bellow(etape_4, 
-                 button_finale, 
+                 check_if_box, 
                  dx = etape_button_dx, 
-                 dy = etape_button_dy)
+                 dy = etape_button_dy / 2)
+    place_bellow(check_if_box, 
+                 button_finale, 
+                 dy = etape_button_dy / 2)  
+    
+    #etape_4 = etapes[3]
+    #
+    #place_bellow(etape_4, 
+    #             button_finale, 
+    #             dx = etape_button_dx, 
+    #             dy = etape_button_dy)
                   
     ################## Bouton pour sortir de la page
     font_button_quit = tkFont.Font(family = FONT_NAME, 

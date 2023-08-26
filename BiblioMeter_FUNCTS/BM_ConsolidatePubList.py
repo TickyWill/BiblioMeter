@@ -10,7 +10,7 @@ __all__ = ['add_if',
            'update_if_single',
           ]
 
-def mise_en_page(df, wb = None):
+def mise_en_page(df, wb = None, if_database = None):
     
     ''' 
     When the workbook wb is not None, this is applied 
@@ -59,30 +59,51 @@ def mise_en_page(df, wb = None):
                 cell.fill = cell_color 
     
     # Setting cell alignement and border using dict of column attributes col_attr
-    for idx_col, col in enumerate(columns_list):
-        column_letter = openpyxl_get_column_letter(idx_col + 1)
-        for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))                    
+    if if_database:
+        align_list = ["left", "center","center","center"]
+        for idx_col, col in enumerate(columns_list):
+            column_letter = openpyxl_get_column_letter(idx_col + 1)
+            for cell in ws[column_letter]:
+                cell.alignment = openpyxl_Alignment(horizontal=align_list[idx_col], vertical="center")
+                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))  
+    else: 
+        for idx_col, col in enumerate(columns_list):
+            column_letter = openpyxl_get_column_letter(idx_col + 1)
+            for cell in ws[column_letter]:
+                cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
+                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))                    
     
     # Setting the format of the columns heading
-    for cell in ws['A'] + ws[1]:
+    cells_list = ws['A'] + ws[1]
+    if if_database: cells_list = ws[1]
+    for cell in cells_list:
         cell.font = openpyxl_Font(bold=True)
         cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")
     
-    # Setting de columns width using dict of column attributes col_attr
-    for idx_col, col in enumerate(columns_list):
-        if idx_col >= 1:
+    # Setting de columns width using dict of column attributes col_attr if if_database = None
+    if if_database:
+        col_width_list = [60,15,15,15]
+        for idx_col, col in enumerate(columns_list):
             column_letter = openpyxl_get_column_letter(idx_col + 1)
-            try:
-                ws.column_dimensions[column_letter].width = col_attr[col][0]
-            except:
-                ws.column_dimensions[column_letter].width = 20
+            ws.column_dimensions[column_letter].width = col_width_list[idx_col]
+    else:
+        for idx_col, col in enumerate(columns_list):
+            if idx_col >= 1:
+                column_letter = openpyxl_get_column_letter(idx_col + 1)
+                try:
+                    ws.column_dimensions[column_letter].width = col_attr[col][0]
+                except:
+                    ws.column_dimensions[column_letter].width = 20
+    
     
     # Setting height of first row
     first_row_num = 1
-    ws.row_dimensions[first_row_num].height = 50
+    if if_database:
+        ws.row_dimensions[first_row_num].height = 20 
+    else:
+        ws.row_dimensions[first_row_num].height = 50
 
     return wb, ws
 
@@ -396,15 +417,15 @@ def _create_if_column(issn_column, if_dict, if_empty_word):
     return if_column
 
 
-def add_if(in_file_path, out_file_path, if_path, year):
-    
+def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, corpus_year): 
+
     '''The function `add_if` adds two new columns containing impact factors
     to the corpus dataframe 'corpus_df' got from a file which full path is 'in_file_path'. 
     The two columns are named through 'corpus_year_if_col_name' and 'most_recent_year_if_col_name'.
     The impact factors are got from an Excel workbook with a worksheet per year 
     which full path is 'if_path' and put in the IFs dataframe 'if_df'.
     The column 'corpus_year_if_col_name' is filled with the IFs values 
-    of the corpus year 'year' if available in the dataframe 'if_df', 
+    of the corpus year 'corpus_year' if available in the dataframe 'if_df', 
     else the values are set to 'not_available_if_alias'.
     The column 'most_recent_year_if_col_name' is filled with the IFs values 
     of the most recent year available in the dataframe 'if_df'.
@@ -414,7 +435,7 @@ def add_if(in_file_path, out_file_path, if_path, year):
         in_file_path (path): The full path to get the corpus dataframe 'corpus_df'. 
         out_file_path (path): The full path to save the new corpus dataframe with the two columns.
         if_path (path): The full path to get the dataframe 'if_df'.
-        year (int): The year of the corpus to be appended with the two new IF columns.
+        corpus_year (int): The year of the corpus to be appended with the two new IF columns.
         
     Returns:
         (str): Message indicating which file has been affected and how. 
@@ -429,34 +450,96 @@ def add_if(in_file_path, out_file_path, if_path, year):
     import pandas as pd    
     
     # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
+    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import NO_IF_DOCTYPE
     from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
+    
+    # Internal functions
+    
+    def _fullfill_issn(corpus_df_bis):
+        for corpus_idx, corpus_row in corpus_df_bis.iterrows():
+            if corpus_row[issn_col_alias] == unknown_alias:
+                corpus_journal = corpus_row[journal_col_alias].upper()
+                for inst_idx, inst_row in inst_journals_df.iterrows():
+                    inst_journal = inst_row[journal_col_alias].upper()
+                    if corpus_journal == inst_journal:
+                        if inst_row[issn_col_alias] != unknown_alias:
+                            corpus_df_bis.loc[corpus_idx,issn_col_alias] = inst_row[issn_col_alias]
+                        elif inst_row[eissn_col_alias] != unknown_alias:
+                            corpus_df_bis.loc[corpus_idx,issn_col_alias] = inst_row[eissn_col_alias]
+                        else:
+                            pass 
+        return corpus_df_bis
+    
+    def _build_if_dict(if_year, issn_col, eissn_col, if_col):
+        issn_if_dict  = dict(zip(if_df[if_year][issn_col], 
+                                 if_df[if_year][if_col]))
+        if unknown_alias in issn_if_dict.keys(): del issn_if_dict[unknown_alias]
         
+        eissn_if_dict = {}
+        if eissn_col_alias in list(if_df[if_year].columns):
+            eissn_if_dict = dict(zip(if_df[if_year][eissn_col], 
+                                     if_df[if_year][if_col]))
+            if unknown_alias in eissn_if_dict.keys(): del eissn_if_dict[unknown_alias]
+
+        if_dict = {**issn_if_dict, **eissn_if_dict}
+        return if_dict
+    
     # Setting useful column names
+    col_final_list = set_final_col_names()
     col_base_if, col_maj_if = set_if_col_names()
 
-    # Setting useful aliases
-    year_col_alias            = col_maj_if[1]           #COL_NAMES_BONUS['corpus_year']
-    issn_col_alias            = col_maj_if[10]          #COL_NAMES['articles'][10]
-    otp_col_alias             = col_base_if[16]         #COL_NAMES_BONUS['list OTP']
-    
-    database_if_col_alias     = COL_NAMES_BONUS['IF clarivate'] 
+    # Setting useful column aliases
+    pub_id_col_alias        = col_final_list[0]   
+    year_col_alias          = col_final_list[1] 
+    journal_col_alias       = col_final_list[6]
+    doctype_col_alias       = col_final_list[7]
+    issn_col_alias          = col_final_list[10]
+    otp_col_alias           = col_final_list[16]
+    corpus_year_if_col_name = col_maj_if[18]
+    eissn_col_alias         = COL_NAMES_BONUS['e-ISSN']
+    database_if_col_alias   = COL_NAMES_BONUS['IF clarivate']
+    pub_id_nb_col_alias     = COL_NAMES_BONUS['pub number']    
+  
+    # Setting globals aliases
+    doctype_to_drop_list      = NO_IF_DOCTYPE
     not_available_if_alias    = NOT_AVAILABLE_IF
     unknown_if_fill_alias     = FILL_EMPTY_KEY_WORD
     unknown_alias             = FILL_EMPTY_KEY_WORD
        
+    # Getting the df of ISSN and eISSN database of the institut
+    use_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias]
+    inst_journals_df = pd.read_excel(inst_issn_path, usecols = use_col_list)
+    
     # Getting the df of the IFs database
     if_df = pd.read_excel(if_path, sheet_name = None)
     
-    # Setting useful internal variables
+    # Setting list of years for which IF are available
     if_available_years_list  = list(if_df.keys())
+    
+    # Taking care all IF column names in if_df are database_if_col_alias
+    if INST_IF_STATUS: 
+        for year in if_available_years_list: 
+            if_df[year].rename(columns = {database_if_col_alias + " " + year : database_if_col_alias},
+                               inplace = True) 
+            
+    # Replacing NAN in if_df
+    values_dict = {issn_col_alias       : unknown_alias,
+                   eissn_col_alias      : unknown_alias,
+                   database_if_col_alias: not_available_if_alias,
+                  }
+    for year in if_available_years_list: if_df[year].fillna(value = values_dict, inplace = True)
+    
+    
+    # Building the IF dict keyed by issn or e-issn of journals for the most recent year
     if_most_recent_year      = if_available_years_list[-1]
-    most_recent_year_if_dict = dict(zip(if_df[if_most_recent_year][issn_col_alias], 
-                                        if_df[if_most_recent_year][database_if_col_alias]))
+    most_recent_year_if_dict = _build_if_dict(if_most_recent_year, issn_col_alias, eissn_col_alias, database_if_col_alias)
     
     # Setting column names
     otp_col_new = COL_NAMES_BONUS['final OTP']
@@ -469,9 +552,13 @@ def add_if(in_file_path, out_file_path, if_path, year):
     # Setting type of values in 'year_col_alias' as string                
     corpus_df = corpus_df.astype({year_col_alias : str})
         
-    # Initialize 'corpus_df_bis' as copy of 'corpus_df'
+    # Initializing 'corpus_df_bis' as copy of 'corpus_df'
     corpus_df_bis = corpus_df.copy()
-    corpus_df_bis.rename(columns = {otp_col_alias : otp_col_new}, inplace = True ) 
+    corpus_df_bis.rename(columns = {otp_col_alias : otp_col_new}, inplace = True)
+    
+    # Filling unknown ISSN in 'corpus_df_bis' using 'inst_journals_df' 
+    # through internal function _fullfill_issn
+    corpus_df_bis = _fullfill_issn(corpus_df_bis)
     
     # Adding 'most_recent_year_if_col_name' column to 'corpus_df_bis' 
     # with values defined by internal function '_create_if_column'
@@ -480,10 +567,10 @@ def add_if(in_file_path, out_file_path, if_path, year):
                                                                     unknown_if_fill_alias)
     
     # Adding 'corpus_year_if_col_name' column to 'corpus_df_bis' 
-    if year in if_available_years_list:
+    if corpus_year in if_available_years_list:
         # with values defined by internal function '_create_if_column'
-        current_year_if_dict = dict(zip(if_df[year][issn_col_alias], 
-                                        if_df[year][database_if_col_alias]))
+        # Building the IF dict keyed by issn or e-issn of journals for the corpus year
+        current_year_if_dict = _build_if_dict(corpus_year, issn_col_alias, eissn_col_alias, database_if_col_alias)
         corpus_df_bis[corpus_year_if_col_name] = _create_if_column(corpus_df_bis[issn_col_alias],
                                                                    current_year_if_dict,
                                                                    unknown_if_fill_alias)
@@ -495,16 +582,52 @@ def add_if(in_file_path, out_file_path, if_path, year):
     wb, _ = mise_en_page(corpus_df_bis)
     wb.save(out_file_path)
     
+    # Building 'year_pub_if_df' with subset of 'corpus_df_bis' columns
+    subsetcols = [pub_id_col_alias,
+                  year_col_alias,
+                  journal_col_alias,
+                  doctype_col_alias,
+                  issn_col_alias,
+                  most_recent_year_if_col_name,
+                  corpus_year_if_col_name,]
+    year_pub_if_df = corpus_df_bis[subsetcols].copy()   
+    
+    # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
+    # then droping the doc type column
+    year_article_if_df = pd.DataFrame(columns = year_pub_if_df.columns)
+    for doc_type, doc_type_df in year_pub_if_df.groupby(doctype_col_alias):
+        if doc_type.upper() not in doctype_to_drop_list:
+            year_article_if_df = year_article_if_df.append(doc_type_df)    
+    year_article_if_df.drop(doctype_col_alias, axis = 1, inplace = True)
+    
+    # Building 'year_if_df' by keeping one row for each issn adding a column with number of related articles
+    # then droping "Pub_id" column
+    year_if_df = pd.DataFrame(columns = year_article_if_df.columns.to_list() [1:] + [pub_id_nb_col_alias])    
+    for issn, issn_df in year_article_if_df.groupby(issn_col_alias):
+        pub_id_nb = len(issn_df)
+        issn_df[pub_id_nb_col_alias] = pub_id_nb   
+        issn_df.drop(pub_id_col_alias, axis = 1, inplace = True)    
+        issn_df.drop_duplicates(inplace = True)    
+        year_if_df = year_if_df.append(issn_df)
+    
+    # Simplifying column names
+    year_if_df.rename(columns = {year_col_alias          : year_col_alias[0:5],
+                                 corpus_year_if_col_name : database_if_col_alias + ' ' + corpus_year}, 
+                      inplace = True)
+    
+    # Formatting and saving 'year_if_df' as EXCEL file at full path 'inst_if_path'
+    wb, _ = mise_en_page(year_if_df)
+    wb.save(inst_if_path)
+
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"
     return end_message
 
 
-def consolidate_pub_list(bibliometer_path, in_path, out_path, in_file_base, corpus_year):
-    
+def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_file_base, corpus_year):  
     '''    
     Args : 
         in_path
-        out_path
+        out_file_path
         in_file_base
         
     Returns :
@@ -526,7 +649,8 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, in_file_base, corp
 
     # local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT       
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
+    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
     
     # internal functions
     def _set_df_OTP_dpt(dpt_label):        
@@ -543,13 +667,19 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, in_file_base, corp
     col_final_list = set_final_col_names()
     
     # Setting useful aliases
-    pub_id_alias           = col_final_list[0]   #COL_NAMES['pub_id']
-    if_root_folder_alias   = ARCHI_IF["root"]
-    if_file_name_alias     = ARCHI_IF["all IF"]
+    pub_id_alias                = col_final_list[0]   #COL_NAMES['pub_id']
+    if_root_folder_alias        = ARCHI_IF["root"]
+    if_filename_alias           = ARCHI_IF["all IF"]
+    inst_issn_filename_alias    = ARCHI_IF["institute_issn"]
+    inst_if_filename_base_alias = ARCHI_IF["institute_if_base"]
+    inst_if_filename_alias      = ARCHI_IF["institute_if_all_years"]
+    if INST_IF_STATUS: if_filename_alias = inst_if_filename_alias
     
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
-    all_if_path = if_root_folder_path / Path(if_file_name_alias)
+    all_if_path         = if_root_folder_path / Path(if_filename_alias)
+    inst_issn_path      = if_root_folder_path / Path(inst_issn_filename_alias)
+    inst_if_path        = out_path / Path(corpus_year + inst_if_filename_base_alias)
     
     ### Charger les df et ajouter les 4 colonnes 
     dpt_label_list = list(DPT_LABEL_DICT.keys())
@@ -569,12 +699,17 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, in_file_base, corp
     consolidate_pub_list_df = OTP_df[col_final_list].copy()    
     
     # Saving df to EXCEL file
-    consolidate_pub_list_df.to_excel(out_path, index = False)
-    
-    # Adding Impact Factors and saving new consolidate_pub_list_df
-    add_if(out_path, out_path, all_if_path, corpus_year)   
+    consolidate_pub_list_df.to_excel(out_file_path, index = False)
 
-    end_message = f"OTPs identification integrated in file : \n  '{out_path}'"
+    # Adding Impact Factors and saving new consolidate_pub_list_df (this also save a useful file at inst_if_path)
+    add_if(out_file_path, 
+           out_file_path, 
+           all_if_path, 
+           inst_issn_path, 
+           inst_if_path, 
+           corpus_year)
+
+    end_message = f"OTPs identification integrated in file : \n  '{out_file_path}'"
     return end_message
                     
     

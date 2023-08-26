@@ -181,7 +181,7 @@ def set_col_attr():
                        COL_NAMES_DPT['DTCH']               : [10, "center"],
                        COL_NAMES_DPT['DEHT']               : [10, "center"],
                        COL_NAMES_DPT['DTS']                : [10, "center"],
-                       COL_NAMES_DPT['DIR']                : [10, "center"],
+                       COL_NAMES_DPT['DIR']                : [10, "center"],                       
                       }
     
     final_col_list = [BM_COL_RENAME_DIC[key] for key in list(init_col_attr.keys())]

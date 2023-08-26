@@ -18,6 +18,7 @@ __all__ = ['ARCHI_BACKUP',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
            'LITEN_INST_LIST',
+           'NO_IF_DOCTYPE',
            'NOT_AVAILABLE_IF',
            'ORPHAN_COL_RENAME_DIC',
            'ROW_COLORS',
@@ -33,9 +34,12 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
                             "concat file name base": "Concaténation par",}
 
 
-ARCHI_IF = {"root"    : "Impact Factor",
-            "all IF"  : "IF all years.xlsx",
-            "missing" : "ISSN_manquants.xlsx"}
+ARCHI_IF = {"root"                   : "Impact Factor",
+            "all IF"                 : "IF all years.xlsx",
+            "missing"                : "ISSN_manquants.xlsx",
+            "institute_issn"         : "Inst_ISSN.xlsx",
+            "institute_if_base"      : "_Inst_IF.xlsx",
+            "institute_if_all_years" : "Inst_IF all years.xlsx"}
 
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
@@ -118,6 +122,13 @@ LITEN_INST_LIST = [('INES',  'France'),
                   ]
 
 
+NO_IF_DOCTYPE = ["Conference Paper", "Book", "Book Chapter", "Article; Book Chapter", "Meeting Abstract"]
+NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
+
+
+INST_IF_STATUS = True
+
+
 FILL_EMPTY_KEY_WORD = 'unknown' 
 
 
@@ -144,7 +155,8 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur Liten",
                    'IF en cours'      : "IF en cours", 
                    'IF année publi'   : "IF de l'année de première publication",
                    'IF clarivate'     : 'IF',
-                   'EISSN'            : 'EISSN',
+                   'e-ISSN'           : 'e-ISSN',
+                   'pub number'       : "Nombre de publications",
                   }
 
 

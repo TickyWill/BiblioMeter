@@ -46,6 +46,7 @@ __all__ = ['general_properties',
            'TEXT_ETAPE_6',  
            'HELP_ETAPE_6',
            'TEXT_MAJ_IF',
+           'TEXT_MAJ_DB_IF',
            'TEXT_ETAPE_7',  
            'HELP_ETAPE_7',
            'TEXT_MISSING_IF',
@@ -53,7 +54,7 @@ __all__ = ['general_properties',
 
 
 # Setting version value
-VERSION ='2.3.0'
+VERSION ='3.0.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
@@ -315,8 +316,10 @@ TEXT_ETAPE_3       = "Etape 3 : Attribution des OTPs"
 TEXT_OTP           = "Créer les fichiers pour l'attribution des OTPs"
 
 ### - Etape 4
-TEXT_ETAPE_4       = "Etape 4 : Consolidation de la liste des publications"    
+TEXT_ETAPE_4       = "Etape 4 : Consolidation de la liste des publications" 
+TEXT_MAJ_DB_IF     = " Mettre à jour la base de données IF avant la consolidation (coché = OUI) ?"
 TEXT_PUB_CONSO     = "Créer la liste consolidée des publications"
+
 
 ETAPE_LABEL_TEXT_LIST = [TEXT_ETAPE_1, TEXT_ETAPE_2, TEXT_ETAPE_3, TEXT_ETAPE_4]
 
