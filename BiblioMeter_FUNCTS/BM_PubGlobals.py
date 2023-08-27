@@ -12,6 +12,7 @@ __all__ = ['ARCHI_BACKUP',
            'COL_NAMES_EXT',
            'COL_NAMES_ORTHO',
            'COL_NAMES_PUB_NAMES',
+           'DOC_TYPE_DICT',
            'DPT_ATTRIBUTS_DICT',
            'DPT_LABEL_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
@@ -125,6 +126,11 @@ LITEN_INST_LIST = [('INES',  'France'),
 NO_IF_DOCTYPE = ["Conference Paper", "Book", "Book Chapter", "Article; Book Chapter", "Meeting Abstract"]
 NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
 
+
+DOC_TYPE_DICT = {'ARTICLES'   : ['Article', 'Article; Early Access', 'Article; Proceedings Paper',  
+                                 'Correction', 'Data Paper', 'Erratum', 'Note', 'Review', 'Short Survey'],
+                 'BOOKS'      : ['Book', 'Book chapter', 'Article; Book Chapter'],
+                 'PROCEEDINGS': ['Conference Paper', 'Meeting Abstract']}
 
 INST_IF_STATUS = True
 

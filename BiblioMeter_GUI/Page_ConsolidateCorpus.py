@@ -475,9 +475,9 @@ def _launch_pub_list_conso_try(bibliometer_path,
     
     def _consolidate_pub_list():
         try:
-            end_message = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_path, 
-                                               pub_list_file_path, OTP_file_base_alias, 
-                                               year_select)
+            end_message, split_ratio = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_path, 
+                                                            pub_list_file_path, OTP_file_base_alias, 
+                                                            year_select)
             print(end_message)
             end_message = save_otps(bibliometer_path, year_select)
             print('\n',end_message)
@@ -497,7 +497,10 @@ def _launch_pub_list_conso_try(bibliometer_path,
             info_text += f"\n\nChaqque fois que ces compléments sont apportés, "
             info_text += f"la base de données des IFs doit être mise à jour, "
             info_text += f"ainsi que les listes consolidées des publications existantes."
-            info_text += f"\n\nDe plus, la concaténation des listes consolidées des publications "
+            info_text += f"\n\nDe plus, la liste consolidée des publications a été décomposée à {split_ratio} % "
+            info_text += f"en trois fichiers disponibles dans le même dossier correspondant aux différentes "
+            info_text += f"classes de documents (les classes n'étant pas exhaustives, la décomposition peut être partielle)."            
+            info_text += f"\n\nEnfin, la concaténation des listes consolidées des publications "
             info_text += f"disponibles, à été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
             info_text += f"\n\nsous un nom vous identifiant ainsi que la liste des années prises en compte "
             info_text += f"et caractérisé par la date et l'heure de la création."

@@ -417,6 +417,50 @@ def _create_if_column(issn_column, if_dict, if_empty_word):
     return if_column
 
 
+def _build_inst_issn_df(if_db_df, use_col_list):
+    """
+    
+    """
+
+    # 3rd party import
+    import pandas as pd
+
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN 
+
+    # Setting useful column names
+    journal_col_alias = use_col_list[0]
+    issn_col_alias    = use_col_list[1]
+    eissn_col_alias   = use_col_list[2]
+    
+    years_list = list(if_db_df.keys())
+
+    init_inst_issn_df = pd.DataFrame(columns = use_col_list)
+
+    for year in years_list:
+        year_sub_df = if_db_df[year][use_col_list].copy()
+        init_inst_issn_df = init_inst_issn_df.append(year_sub_df)
+    init_inst_issn_df[journal_col_alias] = init_inst_issn_df.apply(lambda row: row[journal_col_alias].upper(), axis=1)
+
+    inst_issn_df = pd.DataFrame() 
+    for _ , dg in init_inst_issn_df.groupby(journal_col_alias):
+
+        issn_list = list(set(dg[issn_col_alias].to_list()) - {UNKNOWN})
+        if not issn_list: issn_list = [UNKNOWN]
+        dg[issn_col_alias] = issn_list[0]
+
+        eissn_list = list(set(dg[eissn_col_alias].to_list()) - {UNKNOWN})
+        if not eissn_list: eissn_list = [UNKNOWN]
+        dg[eissn_col_alias] = eissn_list[0]
+
+        inst_issn_df = pd.concat([inst_issn_df,dg.iloc[:1]])
+
+    inst_issn_df.sort_values(by=[journal_col_alias], inplace = True)    
+    inst_issn_df.drop_duplicates(inplace = True)    
+    
+    return inst_issn_df
+
+
 def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, corpus_year): 
 
     '''The function `add_if` adds two new columns containing impact factors
@@ -466,7 +510,7 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
         for corpus_idx, corpus_row in corpus_df_bis.iterrows():
             if corpus_row[issn_col_alias] == unknown_alias:
                 corpus_journal = corpus_row[journal_col_alias].upper()
-                for inst_idx, inst_row in inst_journals_df.iterrows():
+                for inst_idx, inst_row in inst_issn_df.iterrows():
                     inst_journal = inst_row[journal_col_alias].upper()
                     if corpus_journal == inst_journal:
                         if inst_row[issn_col_alias] != unknown_alias:
@@ -512,10 +556,6 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     not_available_if_alias    = NOT_AVAILABLE_IF
     unknown_if_fill_alias     = FILL_EMPTY_KEY_WORD
     unknown_alias             = FILL_EMPTY_KEY_WORD
-       
-    # Getting the df of ISSN and eISSN database of the institut
-    use_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias]
-    inst_journals_df = pd.read_excel(inst_issn_path, usecols = use_col_list)
     
     # Getting the df of the IFs database
     if_df = pd.read_excel(if_path, sheet_name = None)
@@ -544,7 +584,7 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     # Setting column names
     otp_col_new = COL_NAMES_BONUS['final OTP']
     most_recent_year_if_col_name = col_maj_if[17] + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours'] 
-    corpus_year_if_col_name      = col_maj_if[18]                                #COL_NAMES_BONUS['IF année publi']  
+    corpus_year_if_col_name      = col_maj_if[18]                                #COL_NAMES_BONUS['IF année publi']   
     
     # Getting the df where to add IFs
     corpus_df = pd.read_excel(in_file_path, usecols = col_base_if)
@@ -556,7 +596,11 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     corpus_df_bis = corpus_df.copy()
     corpus_df_bis.rename(columns = {otp_col_alias : otp_col_new}, inplace = True)
     
-    # Filling unknown ISSN in 'corpus_df_bis' using 'inst_journals_df' 
+    # Getting the df of ISSN and eISSN database of the institut
+    use_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias]
+    inst_issn_df = _build_inst_issn_df(if_df, use_col_list)
+    
+    # Filling unknown ISSN in 'corpus_df_bis' using 'inst_issn_df' 
     # through internal function _fullfill_issn
     corpus_df_bis = _fullfill_issn(corpus_df_bis)
     
@@ -622,6 +666,58 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"
     return end_message
 
+
+def _split_pub_list(bibliometer_path, corpus_year ):
+    """
+    
+    """
+    # Standard library imports
+    from pathlib import Path
+
+    # 3rd party import
+    import pandas as pd
+
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DOC_TYPE_DICT
+
+    pub_list_path_alias      = ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = ARCHI_YEAR["pub list file name base"]
+
+    year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
+    pub_list_file_alias      =  year_pub_list_file_alias + ".xlsx"
+    corpus_year_path         = bibliometer_path / Path(corpus_year)                  
+    pub_list_path            = corpus_year_path / Path(pub_list_path_alias)
+    pub_list_file_path       = pub_list_path / Path(pub_list_file_alias)
+
+    # Setting useful column names
+    col_final_list = set_final_col_names()
+    doc_type_alias = col_final_list[7]
+    
+    full_pub_list_df = pd.read_excel(pub_list_file_path)
+    pub_nb = len(full_pub_list_df)
+    key_pub_nb = 0
+    for key, doctype_list in DOC_TYPE_DICT.items():
+        doctype_list = [x.upper() for x in  doctype_list]
+        key_dg = pd.DataFrame()
+        
+        for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
+            if doc_type.upper() in doctype_list: key_dg = key_dg.append(dg)
+
+        key_pub_nb += len(key_dg)
+        
+        key_dg_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
+        key_dg_path = pub_list_path / Path(key_dg_file_alias)
+
+        wb, _ = mise_en_page(key_dg)
+        wb.save(key_dg_path)
+        
+    split_ratio = key_pub_nb/pub_nb*100
+    return split_ratio
 
 def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_file_base, corpus_year):  
     '''    
@@ -708,9 +804,15 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
            inst_issn_path, 
            inst_if_path, 
            corpus_year)
-
+    
+    # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
+    split_ratio = _split_pub_list(bibliometer_path, corpus_year)
+    
     end_message = f"OTPs identification integrated in file : \n  '{out_file_path}'"
-    return end_message
+    end_message += f"\n\nPublications list for year {corpus_year} has been {split_ratio} % splitted "
+    end_message += f"in 3 files by document type"
+    
+    return end_message, split_ratio
                     
     
 def concatenate_pub_lists(bibliometer_path, years_list):
