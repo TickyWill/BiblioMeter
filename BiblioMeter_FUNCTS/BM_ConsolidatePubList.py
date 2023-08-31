@@ -623,6 +623,7 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
         corpus_df_bis[corpus_year_if_col_name] = not_available_if_alias
     
     # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
+    corpus_df_bis.sort_values(by=[pub_id_col_alias], inplace = True)  
     wb, _ = mise_en_page(corpus_df_bis)
     wb.save(out_file_path)
     
@@ -650,9 +651,11 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     for issn, issn_df in year_article_if_df.groupby(issn_col_alias):
         pub_id_nb = len(issn_df)
         issn_df[pub_id_nb_col_alias] = pub_id_nb   
-        issn_df.drop(pub_id_col_alias, axis = 1, inplace = True)    
-        issn_df.drop_duplicates(inplace = True)    
-        year_if_df = year_if_df.append(issn_df)
+        issn_df.drop(pub_id_col_alias, axis = 1, inplace = True)
+        issn_df[journal_col_alias + '_Upper'] = issn_df[journal_col_alias].astype(str).str.upper()
+        issn_df.drop_duplicates(subset=[journal_col_alias + '_Upper'], keep='first', inplace = True)
+        issn_df.drop([journal_col_alias + '_Upper'], axis=1, inplace=True)   
+        year_if_df = year_if_df.append(issn_df)    
     
     # Simplifying column names
     year_if_df.rename(columns = {year_col_alias          : year_col_alias[0:5],
@@ -660,6 +663,7 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
                       inplace = True)
     
     # Formatting and saving 'year_if_df' as EXCEL file at full path 'inst_if_path'
+    year_if_df.sort_values(by=[journal_col_alias], inplace = True)
     wb, _ = mise_en_page(year_if_df)
     wb.save(inst_if_path)
 
@@ -696,14 +700,15 @@ def _split_pub_list(bibliometer_path, corpus_year ):
 
     # Setting useful column names
     col_final_list = set_final_col_names()
-    doc_type_alias = col_final_list[7]
-    
+    pub_id_col_alias = col_final_list[0]
+    doc_type_alias   = col_final_list[7]
+        
     full_pub_list_df = pd.read_excel(pub_list_file_path)
     pub_nb = len(full_pub_list_df)
     key_pub_nb = 0
     for key, doctype_list in DOC_TYPE_DICT.items():
         doctype_list = [x.upper() for x in  doctype_list]
-        key_dg = pd.DataFrame()
+        key_dg = pd.DataFrame(columns = full_pub_list_df.columns)
         
         for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
             if doc_type.upper() in doctype_list: key_dg = key_dg.append(dg)
@@ -712,12 +717,14 @@ def _split_pub_list(bibliometer_path, corpus_year ):
         
         key_dg_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
         key_dg_path = pub_list_path / Path(key_dg_file_alias)
-
+        
+        key_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
         wb, _ = mise_en_page(key_dg)
         wb.save(key_dg_path)
         
     split_ratio = key_pub_nb/pub_nb*100
     return split_ratio
+
 
 def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_file_base, corpus_year):  
     '''    

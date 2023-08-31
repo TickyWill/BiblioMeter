@@ -494,7 +494,7 @@ def _launch_pub_list_conso_try(bibliometer_path,
             info_text += f"\n\n1- Ouvrez ce fichier, "
             info_text += f"\n2- Complétez manuellement les IFs inconnus, "
             info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
-            info_text += f"\n\nChaqque fois que ces compléments sont apportés, "
+            info_text += f"\n\nChaque fois que ces compléments sont apportés, "
             info_text += f"la base de données des IFs doit être mise à jour, "
             info_text += f"ainsi que les listes consolidées des publications existantes."
             info_text += f"\n\nDe plus, la liste consolidée des publications a été décomposée à {split_ratio} % "
@@ -919,7 +919,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         year_select = variable_years.get()
         
         # Setting year_select dependent paths and aliases
-        year_inst_if_alias  = year_inst_if_base_alias  + f' {year_select}.xlsx'
+        year_inst_if_alias = year_select + year_inst_if_base_alias
         pub_list_file_alias = pub_list_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path = bibliometer_path / Path(year_select)                  
         OTP_path = corpus_year_path / Path(OTP_path_alias)
