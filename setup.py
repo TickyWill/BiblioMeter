@@ -10,12 +10,11 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     
 with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
     install_requires = f.read().strip().split('\n')
-# install_requires = open(path.join(this_directory, 'requirements.txt'), encoding='utf-8').read().strip().split('\n') 
 
 # This setup is suitable for "python setup.py develop".
 
 setup(name='BiblioMeter',
-      version='3.1.0',
+      version='3.2.0',
       description='An application for bibliometry',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -33,6 +32,6 @@ setup(name='BiblioMeter',
       install_requires = install_requires,
       author= 'BiblioMeter team',
       author_email= 'francois.bertin7@wanadoo.fr, amal.chabli@orange.fr','ludovic.desmeuzes@yahoo.com'
-      url= ' https://github.com/LuDesmeuzes/BiblioMeter',
+      url= 'https://github.com/TickyWill/BiblioMeter'
       packages=find_packages(), # revoir le fonctionnement avec plusieurs packages
       )

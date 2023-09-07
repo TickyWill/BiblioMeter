@@ -1237,10 +1237,11 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Replace NaN values by UNKNOWN string
     df_submit.fillna(UNKNOWN, inplace=True)
     df_orphan.fillna(UNKNOWN, inplace=True)
+    orphan_status = df_orphan.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
     df_submit = _unique_pub_id(df_submit)
-    if not df_orphan.empty : df_orphan = _unique_pub_id(df_orphan)
+    if not orphan_status : df_orphan = _unique_pub_id(df_orphan)
     
     # Saving df_orphan
     df_orphan.to_excel(orphan_path, index = False)
@@ -1261,4 +1262,4 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     _creating_hash_id(bibliometer_path, corpus_year)    
     
     end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
-    return end_message  
+    return (end_message, orphan_status) 

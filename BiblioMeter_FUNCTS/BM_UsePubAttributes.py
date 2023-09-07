@@ -88,7 +88,7 @@ def save_homonyms(bibliometer_path, corpus_year):
     return message
 
 
-def set_saved_homonyms(bibliometer_path, corpus_year):
+def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
     """
     """
     # Standard library imports
@@ -167,13 +167,17 @@ def set_saved_homonyms(bibliometer_path, corpus_year):
                         homonyms_df_new.loc[idx,homonyms_col_alias] = None
                     else:
                         homonyms_df_new = homonyms_df_new.drop(idx)
-
+        
+        # Setting actual homonyms status
+        actual_homonym_status = False
+        if HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list(): actual_homonym_status = True
+        
         # Saving updated homonyms_df
         save_shaped_homonyms_file(homonyms_df_new, homonyms_file_path)     
         message = f"Already resolved homonyms used"
     else:
         message = f"No already resolved homonyms available"
-    return message  
+    return message, actual_homonym_status 
 
 
 def save_otps(bibliometer_path, corpus_year):

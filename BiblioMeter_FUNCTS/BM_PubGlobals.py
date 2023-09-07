@@ -127,10 +127,11 @@ NO_IF_DOCTYPE = ["Conference Paper", "Book", "Book Chapter", "Article; Book Chap
 NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
 
 
-DOC_TYPE_DICT = {'ARTICLES'   : ['Article', 'Article; Early Access', 'Article; Proceedings Paper',  
-                                 'Correction', 'Data Paper', 'Erratum', 'Note', 'Review', 'Short Survey'],
-                 'BOOKS'      : ['Book', 'Book chapter', 'Article; Book Chapter'],
-                 'PROCEEDINGS': ['Conference Paper', 'Meeting Abstract']}
+DOC_TYPE_DICT = {'ARTICLES'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
+                                 'Erratum', 'Note', 'Review', 'Short Survey'],
+                 'BOOKS'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial Material'],
+                 'PROCEEDINGS': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper']}
+
 
 INST_IF_STATUS = True
 

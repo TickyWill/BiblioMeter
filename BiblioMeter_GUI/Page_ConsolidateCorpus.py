@@ -118,6 +118,7 @@ def _launch_recursive_year_search_try(year_select,
                                       submit_path,
                                       all_effectifs_path,
                                       employees_update_status,
+                                      orphan_alias,
                                      ):
     '''       
     '''
@@ -133,15 +134,24 @@ def _launch_recursive_year_search_try(year_select,
 
     def _recursive_year_search_try():
         try:            
-            end_message = recursive_year_search(bdd_mensuelle_path, 
-                                                all_effectifs_path,
-                                                bibliometer_path,
-                                                year_select, 
-                                                search_depth)
+            end_message, orphan_status = recursive_year_search(bdd_mensuelle_path, 
+                                                               all_effectifs_path,
+                                                               bibliometer_path,
+                                                               year_select, 
+                                                               search_depth)
             print('\n',end_message)
             info_title = '- Information -'
             info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué." 
-            info_text += f"\n\nLa résolution des homonymes peut être lancée."                 
+            if orphan_status: 
+                info_text += f"\n\nTous les auteurs LITEN ont été identifiés dans les effectifs." 
+                info_text += f"\n\nLa résolution des homonymes peut être lancée." 
+            else:
+                info_text += f"\n\nMais, des auteurs LITEN n'ont pas été identifiés dans les effectifs." 
+                info_text += f"\n1- Ouvrez le fichier {orphan_alias} du dossier :\n  {bdd_mensuelle_path} ;"
+                info_text += f"\n\n2- Suivez le mode opératoire disponible pour son utilisation ;"
+                info_text += f"\n3- Puis relancez le croisement pour cette année."
+                info_text += f"\n\nNéanmoins, la résolution des homonymes peut être lancée sans cette opération, "
+                info_text += f"mais la liste consolidée des publications sera incomplète."
             messagebox.showinfo(info_title, info_text)
             return 'ok'
 
@@ -246,19 +256,27 @@ def _launch_resolution_homonymies_try(bibliometer_path,
     
     def _resolution_homonymies_try():
         try:
-            end_message = solving_homonyms(submit_path, homonymes_file_path)
+            end_message, actual_homonym_status = solving_homonyms(submit_path, homonymes_file_path)
             print(end_message)
-            end_message = set_saved_homonyms(bibliometer_path, year_select)
-            print('\n',end_message)                
-            info_title = "- Information -"
+            print('\n Actual homonyms status before setting saved homonyms:', actual_homonym_status)
+            if actual_homonym_status: 
+                end_message, actual_homonym_status = set_saved_homonyms(bibliometer_path, year_select, actual_homonym_status)
+            print('\n',end_message)
+            print('\n Actual homonyms status after setting saved homonyms:', actual_homonym_status)
+            info_title = "- Information -"            
             info_text  = f"Le fichier pour la résolution des homonymies de l'année {year_select} a été créé "
             info_text += f"dans le dossier :\n\n  '{homonymes_path}' "
             info_text += f"\n\nsous le nom :  '{homonymes_file_alias}'."
-            info_text += f"\n\n1- Ouvrez ce fichier, "
-            info_text += f"\n2- Supprimez manuellement les lignes des homonymes non-auteurs, "
-            info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
-            info_text += f"\n\nDès que le fichier est traité, "                
-            info_text += f"\nl'affectation des OTPs peut être lancée."                 
+            if actual_homonym_status:
+                info_text += f"\n\nDes homonymes existent parmi les auteurs dans les effectifs."
+                info_text += f"\n\n1- Ouvrez ce fichier, "
+                info_text += f"\n2- Supprimez manuellement les lignes des homonymes non-auteurs, "
+                info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
+                info_text += f"\n\nDès que le fichier est traité, "                
+                info_text += f"\nl'affectation des OTPs peut être lancée."   
+            else:
+                info_text += f"\n\nAucun homonyme n'est trouvé parmi les auteurs dans les effectifs." 
+                info_text += f"\n\nL'affectation des OTPs peut être lancée."   
             messagebox.showinfo(info_title, info_text)
             return 'ok'
 
@@ -696,6 +714,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     dedup_alias                     = ARCHI_YEAR['dedup']
     parsing_alias                   = ARCHI_YEAR['parsing']
     submit_alias                    = ARCHI_YEAR["submit file name"]
+    orphan_alias                    = ARCHI_YEAR["orphan file name"]
     listing_alias                   = EMPLOYEES_ARCHI["root"]
     effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
     effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
@@ -765,7 +784,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         
         # Setting paths dependent on year_select
         corpus_year_path = bibliometer_path / Path(year_select)                 
-        parsing_path = corpus_year_path / Path(corpus_alias) / Path(dedup_alias) / Path(parsing_alias)
+        parsing_path = corpus_year_path / Path(corpus_alias) / Path(dedup_alias) / Path(parsing_alias)   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         bdd_mensuelle_path =  corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias) 
         
@@ -796,6 +815,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                                           submit_path,
                                           all_effectifs_path,
                                           employees_update_status,
+                                          orphan_alias,
                                          )
 
     ### Définition ou choix de la profondeur de recherche

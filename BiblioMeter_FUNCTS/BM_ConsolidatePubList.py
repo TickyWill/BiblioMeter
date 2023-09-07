@@ -156,9 +156,13 @@ def solving_homonyms(in_path, out_path):
     
     # Local library imports
     from BiblioMeter_FUNCTS.BM_RenameCols import set_homonym_col_names
+
+    # Local globals import
+    from BiblioMeter_FUNCTS.BM_PubGlobals import HOMONYM_FLAG
     
     # Setting useful column names 
     col_homonyms = set_homonym_col_names()
+    homonym_col_alias = col_homonyms[18]
     
     # Reading the submit file #
     df_submit = pd.read_excel(in_path)
@@ -166,11 +170,15 @@ def solving_homonyms(in_path, out_path):
     # Getting rid of the columns we don't want #
     df_homonyms = df_submit[col_homonyms].copy()
     
+    # Setting homonyms status
+    homonyms_status = False
+    if HOMONYM_FLAG in df_homonyms[homonym_col_alias].to_list(): homonyms_status = True
+    
     # Saving shaped df_homonyms
     save_shaped_homonyms_file(df_homonyms, out_path)
     
     end_message = f"File for solving homonymies saved in folder: \n  '{out_path}'"
-    return end_message
+    return (end_message, homonyms_status)
 
 
 def _add_authors_name_list(in_path, out_path):    
