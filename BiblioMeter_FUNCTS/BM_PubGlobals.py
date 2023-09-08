@@ -38,7 +38,7 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
 ARCHI_IF = {"root"                   : "Impact Factor",
             "all IF"                 : "IF all years.xlsx",
             "missing"                : "ISSN_manquants.xlsx",
-            "institute_issn"         : "Inst_ISSN.xlsx",
+            "missing_issn_base"      : "_Missing_ISSN.xlsx",
             "institute_if_base"      : "_Inst_IF.xlsx",
             "institute_if_all_years" : "Inst_IF all years.xlsx"}
 
@@ -122,15 +122,13 @@ LITEN_INST_LIST = [('INES',  'France'),
                    ('LITEN', 'France'),
                   ]
 
-
-NO_IF_DOCTYPE = ["Conference Paper", "Book", "Book Chapter", "Article; Book Chapter", "Meeting Abstract"]
-NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
-
-
 DOC_TYPE_DICT = {'ARTICLES'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
                                  'Erratum', 'Note', 'Review', 'Short Survey'],
                  'BOOKS'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial Material'],
                  'PROCEEDINGS': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper']}
+
+NO_IF_DOCTYPE = DOC_TYPE_DICT['BOOKS'] + DOC_TYPE_DICT['PROCEEDINGS']
+NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
 
 
 INST_IF_STATUS = True

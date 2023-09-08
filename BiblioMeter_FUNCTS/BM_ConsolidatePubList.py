@@ -469,7 +469,7 @@ def _build_inst_issn_df(if_db_df, use_col_list):
     return inst_issn_df
 
 
-def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, corpus_year): 
+def add_if(in_file_path, out_file_path, if_path, inst_if_path, missing_issn_path, corpus_year): 
 
     '''The function `add_if` adds two new columns containing impact factors
     to the corpus dataframe 'corpus_df' got from a file which full path is 'in_file_path'. 
@@ -507,6 +507,7 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DOC_TYPE_DICT
     from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
     from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
     from BiblioMeter_FUNCTS.BM_PubGlobals import NO_IF_DOCTYPE
@@ -557,13 +558,13 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     corpus_year_if_col_name = col_maj_if[18]
     eissn_col_alias         = COL_NAMES_BONUS['e-ISSN']
     database_if_col_alias   = COL_NAMES_BONUS['IF clarivate']
-    pub_id_nb_col_alias     = COL_NAMES_BONUS['pub number']    
+    pub_id_nb_col_alias     = COL_NAMES_BONUS['pub number']      
   
     # Setting globals aliases
-    doctype_to_drop_list      = NO_IF_DOCTYPE
-    not_available_if_alias    = NOT_AVAILABLE_IF
-    unknown_if_fill_alias     = FILL_EMPTY_KEY_WORD
-    unknown_alias             = FILL_EMPTY_KEY_WORD
+    doctype_to_drop_list        = NO_IF_DOCTYPE
+    not_available_if_alias      = NOT_AVAILABLE_IF
+    unknown_if_fill_alias       = FILL_EMPTY_KEY_WORD
+    unknown_alias               = FILL_EMPTY_KEY_WORD
     
     # Getting the df of the IFs database
     if_df = pd.read_excel(if_path, sheet_name = None)
@@ -590,9 +591,10 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     most_recent_year_if_dict = _build_if_dict(if_most_recent_year, issn_col_alias, eissn_col_alias, database_if_col_alias)
     
     # Setting column names
-    otp_col_new = COL_NAMES_BONUS['final OTP']
-    most_recent_year_if_col_name = col_maj_if[17] + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours'] 
-    corpus_year_if_col_name      = col_maj_if[18]                                #COL_NAMES_BONUS['IF année publi']   
+    otp_col_new                  = COL_NAMES_BONUS['final OTP']
+    most_recent_year_if_col_name = col_maj_if[17] + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours']   
+    year_db_if_col_name          = database_if_col_alias + ' ' + corpus_year
+    final_year_col_alias         = year_col_alias[0:5]
     
     # Getting the df where to add IFs
     corpus_df = pd.read_excel(in_file_path, usecols = col_base_if)
@@ -650,11 +652,11 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
     year_article_if_df = pd.DataFrame(columns = year_pub_if_df.columns)
     for doc_type, doc_type_df in year_pub_if_df.groupby(doctype_col_alias):
         if doc_type.upper() not in doctype_to_drop_list:
-            year_article_if_df = year_article_if_df.append(doc_type_df)    
+            year_article_if_df = year_article_if_df.append(doc_type_df)
     year_article_if_df.drop(doctype_col_alias, axis = 1, inplace = True)
-    
+        
     # Building 'year_if_df' by keeping one row for each issn adding a column with number of related articles
-    # then droping "Pub_id" column
+    # then droping "Pub_id" column   
     year_if_df = pd.DataFrame(columns = year_article_if_df.columns.to_list() [1:] + [pub_id_nb_col_alias])    
     for issn, issn_df in year_article_if_df.groupby(issn_col_alias):
         pub_id_nb = len(issn_df)
@@ -666,14 +668,37 @@ def add_if(in_file_path, out_file_path, if_path, inst_issn_path, inst_if_path, c
         year_if_df = year_if_df.append(issn_df)    
     
     # Simplifying column names
-    year_if_df.rename(columns = {year_col_alias          : year_col_alias[0:5],
-                                 corpus_year_if_col_name : database_if_col_alias + ' ' + corpus_year}, 
+    year_if_df.rename(columns = {year_col_alias          : final_year_col_alias,
+                                 corpus_year_if_col_name : year_db_if_col_name}, 
                       inplace = True)
     
+    # Removing from 'year_if_df' the rows which ISSN value is not in IF database and keeping then in 'year_missing_issn_df'
+    year_missing_issn_df = pd.DataFrame(columns = year_if_df.columns)
+    final_year_if_df     = pd.DataFrame(columns = year_if_df.columns)
+    for _, row in year_if_df.iterrows():     
+        row_issn = row[issn_col_alias]
+        if row_issn not in inst_issn_df[issn_col_alias].to_list() and row_issn not in inst_issn_df[eissn_col_alias].to_list():
+            year_missing_issn_df = year_missing_issn_df.append(row)
+        else:
+            final_year_if_df     = final_year_if_df.append(row)
+                
     # Formatting and saving 'year_if_df' as EXCEL file at full path 'inst_if_path'
-    year_if_df.sort_values(by=[journal_col_alias], inplace = True)
-    wb, _ = mise_en_page(year_if_df)
+    final_year_if_df.sort_values(by=[journal_col_alias], inplace = True)
+    wb, _ = mise_en_page(final_year_if_df)
     wb.save(inst_if_path)
+    
+    # Formatting and saving 'year_missing_issn_df' as EXCEL file at full path 'missing_issn_path'
+    year_missing_issn_df[eissn_col_alias] = unknown_alias
+    new_order_col_list = [final_year_col_alias, journal_col_alias, 
+                          issn_col_alias, eissn_col_alias,
+                          most_recent_year_if_col_name,
+                          year_db_if_col_name,
+                          pub_id_nb_col_alias
+                         ]
+    year_missing_issn_df = year_missing_issn_df[new_order_col_list]
+    year_missing_issn_df.sort_values(by=[journal_col_alias], inplace = True)
+    wb, _ = mise_en_page(year_missing_issn_df)
+    wb.save(missing_issn_path) 
 
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"
     return end_message
@@ -778,19 +803,19 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     col_final_list = set_final_col_names()
     
     # Setting useful aliases
-    pub_id_alias                = col_final_list[0]   #COL_NAMES['pub_id']
-    if_root_folder_alias        = ARCHI_IF["root"]
-    if_filename_alias           = ARCHI_IF["all IF"]
-    inst_issn_filename_alias    = ARCHI_IF["institute_issn"]
-    inst_if_filename_base_alias = ARCHI_IF["institute_if_base"]
-    inst_if_filename_alias      = ARCHI_IF["institute_if_all_years"]
+    pub_id_alias                     = col_final_list[0]   #COL_NAMES['pub_id']
+    if_root_folder_alias             = ARCHI_IF["root"]
+    if_filename_alias                = ARCHI_IF["all IF"]
+    inst_if_filename_base_alias      = ARCHI_IF["institute_if_base"]
+    missing_issn_filename_base_alias = ARCHI_IF["missing_issn_base"]
+    inst_if_filename_alias           = ARCHI_IF["institute_if_all_years"]
     if INST_IF_STATUS: if_filename_alias = inst_if_filename_alias
     
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     all_if_path         = if_root_folder_path / Path(if_filename_alias)
-    inst_issn_path      = if_root_folder_path / Path(inst_issn_filename_alias)
     inst_if_path        = out_path / Path(corpus_year + inst_if_filename_base_alias)
+    missing_issn_path   = out_path / Path(corpus_year + missing_issn_filename_base_alias)
     
     ### Charger les df et ajouter les 4 colonnes 
     dpt_label_list = list(DPT_LABEL_DICT.keys())
@@ -815,9 +840,9 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     # Adding Impact Factors and saving new consolidate_pub_list_df (this also save a useful file at inst_if_path)
     add_if(out_file_path, 
            out_file_path, 
-           all_if_path, 
-           inst_issn_path, 
-           inst_if_path, 
+           all_if_path,
+           inst_if_path,
+           missing_issn_path, 
            corpus_year)
     
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
