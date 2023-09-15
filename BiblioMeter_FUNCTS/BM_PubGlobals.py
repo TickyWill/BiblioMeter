@@ -4,6 +4,7 @@ __all__ = ['ARCHI_BACKUP',
            'ARCHI_ORPHAN',
            'ARCHI_YEAR',
            'BM_COL_RENAME_DIC',
+           'BM_LOW_WORDS_LIST',
            'COL_HASH',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
@@ -35,12 +36,15 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
                             "concat file name base": "Concaténation par",}
 
 
+INSTITUTE = "Liten"
+
+
 ARCHI_IF = {"root"                   : "Impact Factor",
             "all IF"                 : "IF all years.xlsx",
             "missing"                : "ISSN_manquants.xlsx",
-            "missing_issn_base"      : "_Missing_ISSN.xlsx",
-            "institute_if_base"      : "_Inst_IF.xlsx",
-            "institute_if_all_years" : "Inst_IF all years.xlsx"}
+            "missing_issn_base"      : "_ISSN manquants.xlsx",
+            "missing_if_base"        : "_IF manquants.xlsx",
+            "institute_if_all_years" : INSTITUTE + "_IF all years.xlsx"}
 
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
@@ -71,6 +75,9 @@ ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle",
               "parsing"                        : "parsing", 
               "rawdata"                        : "rawdata",
              }
+
+
+BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
 
 DPT_LABEL_DICT = {'DEHT': ['DEHT'],
@@ -122,14 +129,17 @@ LITEN_INST_LIST = [('INES',  'France'),
                    ('LITEN', 'France'),
                   ]
 
-DOC_TYPE_DICT = {'ARTICLES'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
+DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
                                  'Erratum', 'Note', 'Review', 'Short Survey'],
-                 'BOOKS'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial Material'],
-                 'PROCEEDINGS': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper']}
+                 'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial Material'],
+                 'Proceedings': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper']}
 
-NO_IF_DOCTYPE = DOC_TYPE_DICT['BOOKS'] + DOC_TYPE_DICT['PROCEEDINGS']
+NO_IF_DOCTYPE = DOC_TYPE_DICT['Books'] + DOC_TYPE_DICT['Proceedings']
 NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
 
+DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + DOC_TYPE_DICT['Proceedings'],
+                        'Books & Editorials'     : DOC_TYPE_DICT['Books'],
+                       } 
 
 INST_IF_STATUS = True
 
@@ -161,6 +171,7 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur Liten",
                    'IF année publi'   : "IF de l'année de première publication",
                    'IF clarivate'     : 'IF',
                    'e-ISSN'           : 'e-ISSN',
+                   'database ISSN'    : "ISSN via source",
                    'pub number'       : "Nombre de publications",
                   }
 

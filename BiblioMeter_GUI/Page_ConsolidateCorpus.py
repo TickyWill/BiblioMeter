@@ -473,7 +473,7 @@ def _launch_pub_list_conso_try(bibliometer_path,
                                pub_list_file_path, 
                                OTP_file_base_alias,
                                pub_list_file_alias,
-                               year_inst_if_alias,
+                               year_missing_aliases,
                                bdd_multi_annuelle_folder_alias,
                                years_list,
                                year_select):
@@ -493,9 +493,10 @@ def _launch_pub_list_conso_try(bibliometer_path,
     
     def _consolidate_pub_list():
         try:
-            end_message, split_ratio = consolidate_pub_list(bibliometer_path, OTP_path, pub_list_path, 
-                                                            pub_list_file_path, OTP_file_base_alias, 
-                                                            year_select)
+            end_message, split_ratio, if_database_complete = consolidate_pub_list(bibliometer_path, 
+                                                                                  OTP_path, pub_list_path, 
+                                                                                  pub_list_file_path, OTP_file_base_alias, 
+                                                                                  year_select)
             print(end_message)
             end_message = save_otps(bibliometer_path, year_select)
             print('\n',end_message)
@@ -506,15 +507,21 @@ def _launch_pub_list_conso_try(bibliometer_path,
             info_text += f"a été créée dans le dossier :\n\n '{pub_list_path}' "
             info_text += f"\n\nsous le nom :   '{pub_list_file_alias}'."
             info_text += f"\n\nLes IFs disponibles ont été automatiquement attribués." 
-            info_text += f"\n\nDe plus, la liste des journaux avec ISSNs et IFs connus ou inconnus "
-            info_text += f"a été créée dans le même dossier sous le nom : \n\n '{year_inst_if_alias}' "
-            info_text += f"\n\n Ce fichier peut être modifié pour compléter la base de donnée des IFs :"
-            info_text += f"\n\n1- Ouvrez ce fichier, "
-            info_text += f"\n2- Complétez manuellement les IFs inconnus, "
-            info_text += f"\n3- Puis sauvegardez le fichier sous le même nom."
-            info_text += f"\n\nChaque fois que ces compléments sont apportés, "
-            info_text += f"la base de données des IFs doit être mise à jour, "
-            info_text += f"ainsi que les listes consolidées des publications existantes."
+            if if_database_complete:
+                info_text += f"\n\nLa base de données des facteurs d'impact étant complète, "
+                info_text += f"les listes des journaux avec IFs ou ISSNs inconnus sont vides."    
+            else:
+                info_text += f"\n\nAttention, les listes des journaux avec IFs ou ISSNs inconnus "
+                info_text += f"ont été créées dans le même dossier sous les noms :"
+                info_text += f"\n\n '{year_missing_aliases[0]}' "
+                info_text += f"\n\n '{year_missing_aliases[1]}' "
+                info_text += f"\n\n Ces fichiers peuvent être modifiés pour compléter la base de donnée des IFs :"
+                info_text += f"\n\n1- Ouvrez chacun de ces fichiers, "
+                info_text += f"\n2- Complétez manuellement les IFs inconnus ou les ISSNs et IFs inconnus, selon le fichier,"
+                info_text += f"\n3- Puis sauvegardez les fichiers sous le même nom."
+                info_text += f"\n\nChaque fois que ces compléments sont apportés, "
+                info_text += f"la base de données des IFs doit être mise à jour, "
+                info_text += f"ainsi que toutes les listes consolidées des publications existantes."
             info_text += f"\n\nDe plus, la liste consolidée des publications a été décomposée à {split_ratio} % "
             info_text += f"en trois fichiers disponibles dans le même dossier correspondant aux différentes "
             info_text += f"classes de documents (les classes n'étant pas exhaustives, la décomposition peut être partielle)."            
@@ -719,7 +726,8 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
     effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
     maj_effectifs_folder_name_alias = EMPLOYEES_ARCHI["complementary_employees"] 
-    year_inst_if_base_alias         = ARCHI_IF["institute_if_base"]
+    year_missing_if_base_alias      = ARCHI_IF["missing_if_base"]
+    year_missing_issn_base_alias    = ARCHI_IF["missing_issn_base"]
 
     # Setting useful paths independent from corpus year
     effectifs_root_path       = bibliometer_path / Path(listing_alias)
@@ -783,8 +791,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         year_select =  variable_years.get()
         
         # Setting paths dependent on year_select
-        corpus_year_path = bibliometer_path / Path(year_select)                 
-        parsing_path = corpus_year_path / Path(corpus_alias) / Path(dedup_alias) / Path(parsing_alias)   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        corpus_year_path = bibliometer_path / Path(year_select)
         bdd_mensuelle_path =  corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias) 
         
@@ -939,12 +946,14 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         year_select = variable_years.get()
         
         # Setting year_select dependent paths and aliases
-        year_inst_if_alias = year_select + year_inst_if_base_alias
-        pub_list_file_alias = pub_list_file_base_alias + f' {year_select}.xlsx'
-        corpus_year_path = bibliometer_path / Path(year_select)                  
-        OTP_path = corpus_year_path / Path(OTP_path_alias)
-        pub_list_path = corpus_year_path / Path(pub_list_path_alias)
-        pub_list_file_path = pub_list_path / Path(pub_list_file_alias)             
+        year_missing_if_alias   = year_select + year_missing_if_base_alias
+        year_missing_issn_alias = year_select + year_missing_issn_base_alias
+        year_missing_aliases    = (year_missing_if_alias, year_missing_issn_alias)
+        pub_list_file_alias     = pub_list_file_base_alias + f' {year_select}.xlsx'
+        corpus_year_path        = bibliometer_path / Path(year_select)                  
+        OTP_path                = corpus_year_path / Path(OTP_path_alias)
+        pub_list_path           = corpus_year_path / Path(pub_list_path_alias)
+        pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)             
         
         # Getting check_if_status
         check_if_status = check_if_var.get()
@@ -967,7 +976,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                                    pub_list_file_path, 
                                    OTP_file_base_alias,
                                    pub_list_file_alias,
-                                   year_inst_if_alias,
+                                   year_missing_aliases,
                                    bdd_multi_annuelle_folder_alias,
                                    years_list,
                                    year_select)
