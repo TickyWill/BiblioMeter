@@ -43,18 +43,15 @@ __all__ = ['general_properties',
            'TEXT_PUB_CONSO',
            'TEXT_ETAPE_5',  
            'HELP_ETAPE_5',
+           'TEXT_MAJ_BDD_IF',
            'TEXT_ETAPE_6',  
            'HELP_ETAPE_6',
-           'TEXT_MAJ_IF',
-           'TEXT_MAJ_DB_IF',
-           'TEXT_ETAPE_7',  
-           'HELP_ETAPE_7',
-           'TEXT_MISSING_IF',
+           'TEXT_MAJ_PUB_IF',
           ]
 
 
 # Setting version value
-VERSION ='3.3.0'
+VERSION ='3.4.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
@@ -326,36 +323,15 @@ ETAPE_LABEL_TEXT_LIST = [TEXT_ETAPE_1, TEXT_ETAPE_2, TEXT_ETAPE_3, TEXT_ETAPE_4]
 ########################## Page_UpdateIFs ##########################
 
 ### - Etape 5
-TEXT_ETAPE_5    = "Sélection de la liste consolidée de publications à mettre à jour"
-HELP_ETAPE_5    = "Veuillez sélectionner, dans le dossier 'BDD multi annuelle, "
-HELP_ETAPE_5   += "la liste multiannuelle consolidée de publications "
-HELP_ETAPE_5   += "à mettre à jour avec de nouveaux IFs."
-
-### - Etape 6
-TEXT_ETAPE_6    = "Mise à jour des IFs"
-HELP_ETAPE_6    = "Les IFs peuvent être mis à jour annuellement "
-HELP_ETAPE_6   += "dès qu'ils sont diponibles sur le site de 'Clarivate Analytics'."
-TEXT_MAJ_IF     = "Lancer la mise à jour des IFs"
+TEXT_ETAPE_5    = "Mise à jour de la base de données des IFs"
+HELP_ETAPE_5    = " La base de données sera mise à jour à partir des fichiers : "
+HELP_ETAPE_5   += "\n'  IF manquants.xlsx' et 'ISSN manquants.xlsx' annuels"
+HELP_ETAPE_5   += "\ncomplétés manuellement."
+TEXT_MAJ_BDD_IF = "Lancer la mise à jour de la base de données des IFs"
 
 
 ### - Etape 7
-TEXT_ETAPE_7    = "Identification des IFs manquants"
-HELP_ETAPE_7    = "Dans cette partie, vous pouvez générer la liste des journaux dont l'IF est inconnu."
-HELP_ETAPE_7   += "\nCette liste peut-être utilisée pour compléter manuellement le fichier des IFs année par année."
-HELP_ETAPE_7   += "\nLa recherche se fera dans la liste consolidée de publications sélectionnée ci-dessus."
-TEXT_MISSING_IF = "Lancer la recherche des journaux dont l'IF est manquant"
-
-
-########################## Inutiles pour l'instant ##########################
-
-# Choix des affiliations autres que celles du Liten
-TEXT_AFFI = "Choix d’affiliations supplémentaires\nautres que LITEN et INES"
-X_AFFI    = 400
-Y_AFFI    = 90
-
-# - Label croisement des publications
-TEXT_CROISEMENT_L = f"Nombre années de profondeur de recherche des auteurs dans les effectifs du LITEN.  N ="
-
-# - Finale
-TEXT_FINALE = "Concatener les fichiers listes finales\ndes différentes années"
-FONT_FINALE = (FONT_NAME, else_taille_font)
+TEXT_ETAPE_6    = " Mise à jour des IFs dans les listes consolidées"
+HELP_ETAPE_6    = "Dans cette partie, vous pouvez mettre à jour les IFs "
+HELP_ETAPE_6   += "dans les listes consolidées de publications existantes."
+TEXT_MAJ_PUB_IF = "Lancer la mise à jour des IFs dans les listes consolidées existantes"

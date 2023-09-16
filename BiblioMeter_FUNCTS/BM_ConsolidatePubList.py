@@ -1,13 +1,11 @@
 __all__ = ['add_if',
            'add_OTP', 
            'concatenate_pub_lists',
-           'consolidate_pub_list',            
-           'find_missing_if',          
+           'consolidate_pub_list',   
            'mise_en_page',
            'save_shaped_homonyms_file',
            'solving_homonyms',
-           'update_if_multi',
-           'update_if_single',
+           'split_pub_list',
           ]
 
 def mise_en_page(df, wb = None, if_database = None):
@@ -642,14 +640,18 @@ def add_if(in_file_path, out_file_path, if_path, missing_if_path, missing_issn_p
                            ]
     
     # Getting the df where to add IFs
-    corpus_df = pd.read_excel(in_file_path, usecols = col_base_if)
+    corpus_df = pd.read_excel(in_file_path)
     
+    # Recasting column names
+    new_col_base_if = list(map(lambda x: x.replace(otp_col_alias, otp_col_new_alias), col_base_if))
+    if otp_col_alias in corpus_df.columns: 
+        corpus_df.rename(columns = {otp_col_alias : otp_col_new_alias}, inplace = True)
+        
     # Setting type of values in 'year_col_alias' as string                
     corpus_df = corpus_df.astype({year_col_alias : str})
         
     # Initializing 'corpus_df_bis' as copy of 'corpus_df'
-    corpus_df_bis = corpus_df.copy()
-    corpus_df_bis.rename(columns = {otp_col_alias : otp_col_new_alias}, inplace = True)
+    corpus_df_bis = corpus_df[new_col_base_if].copy()
     
     # Getting the df of ISSN and eISSN database of the institut
     use_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias]
@@ -740,7 +742,7 @@ def add_if(in_file_path, out_file_path, if_path, missing_if_path, missing_issn_p
     return end_message, if_database_complete
 
 
-def _split_pub_list(bibliometer_path, corpus_year ):
+def split_pub_list(bibliometer_path, corpus_year ):
     """
     
     """
@@ -770,8 +772,7 @@ def _split_pub_list(bibliometer_path, corpus_year ):
     # Setting useful column names
     col_final_list = set_final_col_names()
     pub_id_col_alias = col_final_list[0]
-    doc_type_alias   = col_final_list[7]
-    
+    doc_type_alias   = col_final_list[7]   
 
     full_pub_list_df = pd.read_excel(pub_list_file_path)
     pub_nb = len(full_pub_list_df)
@@ -884,7 +885,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
                                      corpus_year)
     
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio = _split_pub_list(bibliometer_path, corpus_year)
+    split_ratio = split_pub_list(bibliometer_path, corpus_year)
     
     end_message = f"OTPs identification integrated in file : \n  '{out_file_path}'"
     end_message += f"\n\nPublications list for year {corpus_year} has been {split_ratio} % splitted "
@@ -944,279 +945,5 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     return end_message
 
 
-def update_if_single(in_file_path, out_file_path, if_path, year):        # Not used by app
-    
-    '''The function `update_if` update in the corpus dataframe 'corpus_df'  
-    got from a file which full path is 'in_file_path' two columns containing impact factors. 
-    The two columns are named through 'corpus_year_if_col_name' and 'most_recent_year_if_col_name'.
-    The impact factors are got from an Excel workbook with a worksheet per year 
-    which full path is 'if_path' and put in the IFs dataframe 'if_df'.
-    The column 'corpus_year_if_col_name' is filled with the IFs values 
-    of the corpus year 'year' if available in the dataframe 'if_df', 
-    else the values are set to 'not_available_if_alias'.
-    The column 'most_recent_year_if_col_name' is filled with the IFs values 
-    of the most recent year available in the dataframe 'if_df'.
-    In these columns, the nan values of IFs are replaced by 'unknown_if_fill_alias'.
-    This is performed for the corpus dataframe of the year 'year' 
-    and results in the creation of the two columns in this dataframe.
-    
-    Args:
-        in_file_path (path): The full path to get the corpus dataframe 'corpus_df'. 
-        out_file_path (path): The full path to save the new corpus dataframe with the two columns.
-        if_path (path): The full path to get the dataframe 'if_df'.
-        
-    Returns:
-        (str): Message indicating which file has been affected and how. 
-    
-    Notes:
-        The globals ''COL_NAMES_BONUS', 'FILL_EMPTY_KEY_WORD' and 'NOT_AVAILABLE_IF' 
-        are imported from the module 'BM_PubGlobals' 
-        of the package 'BiblioMeter_FUNCTS'.    
-    '''
-    
-    # 3rd party imports
-    import pandas as pd    
-        
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
-    from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
-    
-    # Setting useful column names
-    col_base_if, col_maj_if = set_if_col_names()
-    col_base_if[16] ='OTP'
-    
-    # Setting useful aliases
-    year_col_alias            = col_maj_if[1]                        #COL_NAMES_BONUS['corpus_year']
-    issn_col_alias            = col_maj_if[10]                       #COL_NAMES['articles'][10]
-    database_if_col_alias     = COL_NAMES_BONUS['IF clarivate']    
-    not_available_if_alias    = NOT_AVAILABLE_IF
-    unknown_if_fill_alias     = FILL_EMPTY_KEY_WORD    
-    
-    # Getting the df of the IFs database
-    if_df = pd.read_excel(if_path, sheet_name = None)
-       
-    # Setting useful internal variables
-    if_available_years_list = list(if_df.keys())
-    if_most_recent_year = if_available_years_list[-1]
-    most_recent_year_if_dict = dict(zip(if_df[if_most_recent_year][issn_col_alias], 
-                                        if_df[if_most_recent_year][database_if_col_alias]))
-    
-    # Setting column names for IF 
-    most_recent_year_if_col_name = col_maj_if[17] + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours']
-    corpus_year_if_col_name      = col_maj_if[18]                                #COL_NAMES_BONUS['IF année publi']    
-        
-    # Getting the df where to add IFs
-    corpus_df = pd.read_excel(in_file_path, usecols = col_base_if)
-
-    # Setting type of values in 'year_col_alias' as string in 'corpus_df'
-    corpus_df = corpus_df.astype({year_col_alias : str})
-    
-    # Adding 'most_recent_year_if_col_name' column to 'corpus_df' 
-    # with values defined by internal function '_create_if_column' 
-    corpus_df[most_recent_year_if_col_name] = _create_if_column(corpus_df[issn_col_alias],
-                                                                most_recent_year_if_dict,
-                                                                unknown_if_fill_alias) 
-               
-    # Initialize 'inter_df' as copy of 'corpus_df' for column 'year_col_alias' value = 'year'
-    corpus_df_bis = corpus_df.copy()           
-
-    # Adding 'corpus_year_if_col_name' column to 'inter_df' 
-    if year in if_available_years_list:
-        # with values defined by internal function '_create_if_column'
-        year_if_dict = dict(zip(if_df[year][issn_col_alias], 
-                                if_df[year][database_if_col_alias]))
-        corpus_df_bis[corpus_year_if_col_name] = _create_if_column(corpus_df_bis[issn_col_alias],
-                                                                   year_if_dict,
-                                                                   unknown_if_fill_alias)
-    else:
-        # with 'not_available_if_alias' value 
-        corpus_df_bis[corpus_year_if_col_name] = not_available_if_alias
-    
-    # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
-    wb, _ = mise_en_page(corpus_df_bis)
-    wb.save(out_file_path)
-    
-    end_message = f"IFs updated in file : \n  '{out_file_path}'"    
-    return end_message
-
-
-def update_if_multi(in_file_path, out_file_path, if_path):
-    
-    '''The function `update_if` update in the corpus dataframe 'corpus_df'  
-    got from a file which full path is 'in_file_path' two columns containing impact factors. 
-    The two columns are named through 'corpus_year_if_col_name' and 'most_recent_year_if_col_name'.
-    The impact factors are got from an Excel workbook with a worksheet per year 
-    which full path is 'if_path' and put in the IFs dataframe 'if_df'.
-    The column 'corpus_year_if_col_name' is filled with the IFs values 
-    of the corpus year 'year' if available in the dataframe 'if_df', 
-    else the values are set to 'not_available_if_alias'.
-    The column 'most_recent_year_if_col_name' is filled with the IFs values 
-    of the most recent year available in the dataframe 'if_df'.
-    In these columns, the nan values of IFs are replaced by 'unknown_if_fill_alias'.
-    This is performed for the part of the corpus dataframe of the year 'year' 
-    and results in the creation of the two columns for each of the years.
-    
-    Args:
-        in_file_path (path): The full path to get the corpus dataframe 'corpus_df'. 
-        out_file_path (path): The full path to save the new corpus dataframe with the two columns.
-        if_path (path): The full path to get the dataframe 'if_df'.
-        
-    Returns:
-        (str): Message indicating which file has been affected and how. 
-    
-    Notes:
-        The globals ''COL_NAMES_BONUS', 'FILL_EMPTY_KEY_WORD' and 'NOT_AVAILABLE_IF' 
-        are imported from the module 'BM_PubGlobals' 
-        of the package 'BiblioMeter_FUNCTS'.    
-    '''
-    
-    # 3rd party imports
-    import pandas as pd    
-    
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
-    from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
-    
-    # Setting useful column names
-    col_base_if, col_maj_if = set_if_col_names()
-    col_base_if[16] ='OTP'
-    
-    # Setting useful aliases
-    year_col_alias            = col_maj_if[1]                        #COL_NAMES_BONUS['corpus_year']
-    issn_col_alias            = col_maj_if[10]                       #COL_NAMES['articles'][10]
-    database_if_col_alias     = COL_NAMES_BONUS['IF clarivate']    
-    not_available_if_alias    = NOT_AVAILABLE_IF
-    unknown_if_fill_alias     = FILL_EMPTY_KEY_WORD    
-    
-    # Getting the df of the IFs database
-    if_df = pd.read_excel(if_path, sheet_name = None)
-       
-    # Setting useful internal variables
-    if_available_years_list = list(if_df.keys())
-    if_most_recent_year = if_available_years_list[-1]
-    most_recent_year_if_dict = dict(zip(if_df[if_most_recent_year][issn_col_alias], 
-                                        if_df[if_most_recent_year][database_if_col_alias]))
-    
-    # Setting column names for IF 
-    most_recent_year_if_col_name = col_maj_if[17] + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours']
-    corpus_year_if_col_name      = col_maj_if[18]                                #COL_NAMES_BONUS['IF année publi']    
-        
-    # Getting the df where to add IFs
-    corpus_df = pd.read_excel(in_file_path, usecols = col_base_if)
-
-    # Setting type of values in 'year_col_alias' as string in 'corpus_df'
-    corpus_df = corpus_df.astype({year_col_alias : str})
-    
-    # Adding 'most_recent_year_if_col_name' column to 'corpus_df' 
-    # with values defined by internal function '_create_if_column' 
-    corpus_df[most_recent_year_if_col_name] = _create_if_column(corpus_df[issn_col_alias],
-                                                                most_recent_year_if_dict,
-                                                                unknown_if_fill_alias) 
-
-    # Building the 'years' list of years in 'corpus_df' removing 'unkown_alias' years
-    years = list(corpus_df[year_col_alias].unique())
-
-    # Initializing 'corpus_df_bis' that will concatenate, on all years, 
-    # the 'corpus_df' with updated IF values
-    corpus_df_bis = pd.DataFrame()
-
-    # Appending, year by year in 'years', the 'corpus_df' info completed with IF values, to 'corpus_df_bis' 
-    for year in years:
-               
-        # Initialize 'inter_df' as copy of 'corpus_df' for column 'year_col_alias' value = 'year'
-        inter_df = corpus_df[corpus_df[year_col_alias] == year].copy()           
-
-        # Adding 'corpus_year_if_col_name' column to 'inter_df' 
-        if year in if_available_years_list:
-            # with values defined by internal function '_create_if_column'
-            year_if_dict = dict(zip(if_df[year][issn_col_alias], 
-                                    if_df[year][database_if_col_alias]))
-            inter_df[corpus_year_if_col_name] = _create_if_column(inter_df[issn_col_alias],
-                                                                  year_if_dict,
-                                                                  unknown_if_fill_alias)
-        else:
-            # with 'not_available_if_alias' value 
-            inter_df[corpus_year_if_col_name] = not_available_if_alias
-
-        # Appending 'inter_df' to 'corpus_df_bis' 
-        corpus_df_bis = corpus_df_bis.append(inter_df)
-        
-    # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
-    wb, _ = mise_en_page(corpus_df_bis)
-    wb.save(out_file_path)
-    
-    end_message = f"IFs updated in file : \n  '{out_file_path}'"    
-    return end_message
-
-
-def find_missing_if(bibliometer_path, in_file_path, if_most_recent_year = None):
-    
-    '''
-    Genère un fichier des ISSN dont l'impact factor n'est pas dans la base de données.
-    '''
-    
-    # Standard library imports
-    from pathlib import Path
-    
-    # 3rd party imports
-    import pandas as pd
-    
-    # BiblioAnalysis_Utils package globals imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
-        
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
-    
-    # Setting useful column names
-    _, col_maj_if = set_if_col_names()
-  
-    # setting useful aliases
-    issn_alias           = col_maj_if[10]                        #COL_NAMES['articles'][10]
-    year_alias           = col_maj_if[1]                         #COL_NAMES_BONUS['corpus_year']
-    journal_alias        = col_maj_if[6]                         #COL_NAMES['articles'][3] 
-    if_alias = col_maj_if[18]                                    #COL_NAMES_BONUS['IF année publi'] 
-    if_root_folder_alias    = ARCHI_IF["root"]
-    if_manquants_file_alias = ARCHI_IF["missing"]    
-    
-    if if_most_recent_year:
-        if_alias  = col_maj_if[17] + ', ' + if_most_recent_year  #COL_NAMES_BONUS['IF en cours']
-        if_manquants_file_alias = ARCHI_IF["missing"][:-5] + '_' + if_most_recent_year + '.xlsx'
-       
-    out_folder_path = bibliometer_path / Path(if_root_folder_alias)
-    out_file_path   = out_folder_path / Path(if_manquants_file_alias)
-    
-    # Getting the df where to add IFs
-    df = pd.read_excel(in_file_path)
-    
-    issn_list = list()
-    for i in range(len(df)):
-        if_value = df[if_alias][i]
-        if if_value == 'unknown' or if_value == 'Not available':
-            issn_value    = df[issn_alias][i]
-            if issn_value == UNKNOWN : issn_value += "_" + str(i)
-            year_value    = df[year_alias][i]
-            journal_value = df[journal_alias][i].lower().title()
-            issn_list.append([issn_value, year_value, journal_value])
-    
-    df = pd.DataFrame(issn_list, columns = [issn_alias, year_alias, journal_alias])
-    df.drop_duplicates(subset = [issn_alias, year_alias], inplace = True)
-    df.drop_duplicates(subset = [year_alias, journal_alias], inplace = True)
-    
-    df.to_excel(out_file_path, index = False)
-    
-    end_message  = f"List of ISSNs without IF saved in folder: \n '{out_folder_path}'"
-    end_message += f"\n\n under file '{if_manquants_file_alias}'"
-    return end_message
 
 

@@ -459,7 +459,7 @@ def _launch_update_if_db(bibliometer_path,
         else:
             # Arrêt de la procédure
             info_title    = "- Information -"
-            warning_text  = f"La mise à jour des effectifs est abandonnée."
+            warning_text  = f"La mise à jour de la base de données des IFs est abandonnée."
             warning_text += f"\n\nSi la consolidation pour l'année {year_select} "
             warning_text += f"est confirmée, elle se fera sans cette mise à jour."            
             messagebox.showwarning(warning_title, warning_text)          
@@ -516,20 +516,17 @@ def _launch_pub_list_conso_try(bibliometer_path,
                 info_text += f"\n\n '{year_missing_aliases[0]}' "
                 info_text += f"\n\n '{year_missing_aliases[1]}' "
                 info_text += f"\n\n Ces fichiers peuvent être modifiés pour compléter la base de donnée des IFs :"
-                info_text += f"\n\n1- Ouvrez chacun de ces fichiers, "
-                info_text += f"\n2- Complétez manuellement les IFs inconnus ou les ISSNs et IFs inconnus, selon le fichier,"
-                info_text += f"\n3- Puis sauvegardez les fichiers sous le même nom."
-                info_text += f"\n\nChaque fois que ces compléments sont apportés, "
-                info_text += f"la base de données des IFs doit être mise à jour, "
-                info_text += f"ainsi que toutes les listes consolidées des publications existantes."
-            info_text += f"\n\nDe plus, la liste consolidée des publications a été décomposée à {split_ratio} % "
+                info_text += f"\n\n1- Ouvrez chacun de ces fichiers ;"
+                info_text += f"\n2- Complétez manuellement les IFs inconnus ou les ISSNs et IFs inconnus, selon le fichier ;"
+                info_text += f"\n3- Puis sauvegardez les fichiers sous le même nom ;"
+                info_text += f"\n4- Pour prendre en compte ces compléments, allez à la page de mise à jour des IFs."
+            info_text += f"\n\nPar ailleurs, la liste consolidée des publications a été décomposée à {split_ratio} % "
             info_text += f"en trois fichiers disponibles dans le même dossier correspondant aux différentes "
             info_text += f"classes de documents (les classes n'étant pas exhaustives, la décomposition peut être partielle)."            
             info_text += f"\n\nEnfin, la concaténation des listes consolidées des publications "
-            info_text += f"disponibles, à été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
+            info_text += f"disponibles, a été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
             info_text += f"\n\nsous un nom vous identifiant ainsi que la liste des années prises en compte "
-            info_text += f"et caractérisé par la date et l'heure de la création."
-                           
+            info_text += f"et caractérisé par la date et l'heure de la création."                           
             messagebox.showinfo(info_title, info_text)
             return 'ok'
 
@@ -955,19 +952,19 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         pub_list_path           = corpus_year_path / Path(pub_list_path_alias)
         pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)             
         
-        # Getting check_if_status
-        check_if_status = check_if_var.get()
-        
-        # Updating IF database
-        if_db_update_status = _launch_update_if_db(bibliometer_path,
-                                                   years_list,
-                                                   year_select,
-                                                   pub_list_path,
-                                                   check_if_status,
-                                                   )       
-        if not if_db_update_status : 
-            check_if_var.set(0)
-            check_if_status = check_if_var.get()
+       # # Getting check_if_status
+       # check_if_status = check_if_var.get()
+       # 
+       # # Updating IF database
+       # if_db_update_status = _launch_update_if_db(bibliometer_path,
+       #                                            years_list,
+       #                                            year_select,
+       #                                            pub_list_path,
+       #                                            check_if_status,
+       #                                            )       
+       # if not if_db_update_status : 
+       #     check_if_var.set(0)
+       #     check_if_status = check_if_var.get()
         
         # Trying launch creation of consolidated publications lists
         _launch_pub_list_conso_try(bibliometer_path, 
@@ -989,31 +986,25 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                               font = font_finale, 
                               command = lambda: _launch_pub_list_conso())
     
-    check_if_var = tk.IntVar()
-    check_if_box = tk.Checkbutton(self, 
-                                  text = TEXT_MAJ_DB_IF, 
-                                  variable = check_if_var, 
-                                  onvalue = 1, 
-                                  offvalue = 0)
-    
-    font_check = tkFont.Font(family = FONT_NAME, 
-                             size = eff_answer_font_size)
+    #check_if_var = tk.IntVar()
+    #check_if_box = tk.Checkbutton(self, 
+    #                              text = TEXT_MAJ_DB_IF, 
+    #                              variable = check_if_var, 
+    #                              onvalue = 1, 
+    #                              offvalue = 0)
+    #
+    #font_check = tkFont.Font(family = FONT_NAME, 
+    #                         size = eff_answer_font_size)
 
     etape_4 = etapes[3]
-    place_bellow(etape_4, 
-                 check_if_box, 
-                 dx = etape_button_dx, 
-                 dy = etape_button_dy / 2)
-    place_bellow(check_if_box, 
-                 button_finale, 
-                 dy = etape_button_dy / 2)  
-    
-    #etape_4 = etapes[3]
-    #
     #place_bellow(etape_4, 
-    #             button_finale, 
+    #             button_OTP, 
     #             dx = etape_button_dx, 
-    #             dy = etape_button_dy)
+    #             dy = etape_button_dy / 2)
+    place_bellow(etape_4, 
+                 button_finale,
+                 dx = etape_button_dx,
+                 dy = etape_button_dy / 2)  
                   
     ################## Bouton pour sortir de la page
     font_button_quit = tkFont.Font(family = FONT_NAME, 
