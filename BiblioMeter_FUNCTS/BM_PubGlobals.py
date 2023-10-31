@@ -1,16 +1,31 @@
-__all__ = ['ARCHI_BACKUP',
+__all__ = ['ANALYSIS_IF',
+           'ARCHI_BACKUP',
            'ARCHI_BDD_MULTI_ANNUELLE',
            'ARCHI_IF',
            'ARCHI_ORPHAN',
            'ARCHI_YEAR',
+           'BAR_COLOR_RANGE',
+           'BAR_COLOR_SCALE',
+           'BAR_HEIGHT',
+           'BAR_HEIGHT_RATIO',
+           'BAR_X_RANGE',
+           'BAR_Y_LABEL_MAX',
+           'BAR_Y_MAX',
+           'BAR_WIDTH',
            'BM_COL_RENAME_DIC',
            'BM_LOW_WORDS_LIST',
+           'CLOUD_BCKG', 
+           'CLOUD_HEIGHT',
+           'CLOUD_MAX_WORDS',
+           'CLOUD_MAX_WORDS_LENGTH',
+           'CLOUD_WIDTH',
            'COL_HASH',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
            'COL_NAMES_COMPL',
            'COL_NAMES_DPT',
            'COL_NAMES_EXT',
+           'COL_NAMES_IF_ANALYSIS',
            'COL_NAMES_ORTHO',
            'COL_NAMES_PUB_NAMES',
            'DOC_TYPE_DICT',
@@ -20,6 +35,7 @@ __all__ = ['ARCHI_BACKUP',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
            'INST_IF_STATUS',
+           'KPI_KEYS_ORDER_DICT',
            'LITEN_INST_LIST',
            'NO_IF_DOCTYPE',
            'NOT_AVAILABLE_IF',
@@ -33,9 +49,10 @@ __all__ = ['ARCHI_BACKUP',
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 
 
-ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
-                            "concat file name base": "Concaténation par",}
-
+ARCHI_BDD_MULTI_ANNUELLE = {"root"                      : "BDD multi annuelle",
+                            "concat file name base"     : "Concaténation par",
+                            "IF analysis file name base": "Synthèse des KPIs",
+                           }
 
 INSTITUTE = "Liten"
 
@@ -55,7 +72,14 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
                }
 
 
-ARCHI_YEAR = {"bdd mensuelle"                  : "0 - BDD multi mensuelle", 
+ARCHI_YEAR = {
+              "analyses"                       : "5 - Analyses",
+              "if analysis"                    : "IFs",
+              "keywords analysis"              : "Mots clefs",
+              "subjects"                       : "Thématique",
+              "countries"                      : "Géographique",
+              "institutions"                   : "Collaborations",
+              "bdd mensuelle"                  : "0 - BDD multi mensuelle", 
               "submit file name"               : "submit.xlsx", 
               "orphan file name"               : "orphan.xlsx",
               "hash_id file name"              : "hash_id.xlsx",
@@ -174,6 +198,7 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur Liten",
                    'e-ISSN'           : 'e-ISSN',
                    'database ISSN'    : "ISSN via source",
                    'pub number'       : "Nombre de publications",
+                   'weight'           : "Weight",
                   }
 
 
@@ -233,6 +258,37 @@ COL_NAMES_PUB_NAMES = {'last name' : pub_last_name,
 
 EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_BONUS['homonym'],          
                           COL_NAMES_BONUS['author_type'],] 
+
+ANALYSIS_IF = COL_NAMES_BONUS['IF année publi']
+
+COL_NAMES_IF_ANALYSIS = {'corpus_year'   : "Corpus year",
+                         'journal_short' : "Journal_court",
+                         'articles_nb'   : "Number",
+                         'analysis_if'   : "Analysis IF",
+                        } 
+
+KPI_KEYS_ORDER_DICT = {0  : "Année de publication",
+                       1  : "Nombre de publications",
+                       2  : "Ouvrages",
+                       3  : "Chapitres",
+                       4  : "Chapitres par ouvrages",
+                       5  : "Maximum de chapitres par ouvrage",
+                       6  : "Journaux & actes de conférence",
+                       7  : "Journaux",
+                       8  : "Articles & communications", 
+                       9  : "Communications",
+                       10 : "Communications (%)",
+                       11 : "Articles",
+                       12 : "Articles par journal",
+                       13 : "Maximum d'articles par journal",
+                       14 : "Facteur d'impact d'analyse",
+                       15 : "Facteur d'impact maximum",
+                       16 : "Facteur d'impact minimum",
+                       17 : "Facteur d'impact moyen",
+                       18 : "Articles sans facteur d'impact",
+                       19 : "Articles sans facteur d'impact (%)",          
+                      }
+
 
 def _build_col_conversion_dic():
     """
@@ -363,3 +419,22 @@ def _build_col_conversion_dic():
 ORPHAN_COL_RENAME_DIC, SUBMIT_COL_RENAME_DIC, BM_COL_RENAME_DIC = _build_col_conversion_dic()
 
 
+# Parameters of cloud representation 
+CLOUD_BCKG             = 'ivory'
+CLOUD_HEIGHT           = 600
+CLOUD_WIDTH            = 400
+CLOUD_MAX_WORDS        = 100
+CLOUD_MAX_WORDS_LENGTH = 60
+
+# Parameters of bar chart representation 
+import plotly
+import plotly.express as px
+
+BAR_Y_LABEL_MAX  = 35          # Nb of characters
+BAR_X_RANGE      = [0,10]      # Nb of articles
+BAR_Y_MAX        = 60          # Nb journals (max per barchart plot)
+BAR_WIDTH        = 800
+BAR_HEIGHT       = 1600
+BAR_HEIGHT_RATIO = 1.7
+BAR_COLOR_RANGE  = [0,30]     # IFs
+BAR_COLOR_SCALE  = px.colors.sequential.Rainbow

@@ -1,9 +1,10 @@
-__all__ = ['update_inst_if_database',          
+__all__ = ['update_inst_if_database', 
+           'journal_capwords',
           ]
 
 # to move from BM_ConsolidatePubList : 'find_missing_if', 'update_if_multi', 'update_if_single' 
 
-def _journal_capwords(text):
+def journal_capwords(text):
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import BM_LOW_WORDS_LIST
     
@@ -26,7 +27,7 @@ def _update_year_if_database(bibliometer_path, corpus_year, year_if_db_df,
        year_if_db_df (dataframe): IFs database of the year.
        
     Note:
-        Call local fonction `_journal_capwords`
+        Uses internal fonction `journal_capwords`
     """
     # Standard library imports
     from pathlib import Path
@@ -45,7 +46,7 @@ def _update_year_if_database(bibliometer_path, corpus_year, year_if_db_df,
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
     
     # Internal functions    
-    _capwords_journal_col = lambda row: _journal_capwords(row[journal_col_alias])
+    _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])
     
     def _get_if(missing_file_path, useful_col_list):
         missing_df = pd.read_excel(missing_file_path, usecols = useful_col_list)
@@ -112,7 +113,7 @@ def _update_year_if_database(bibliometer_path, corpus_year, year_if_db_df,
 def update_inst_if_database(bibliometer_path, corpi_years_list):
     """
     Note:
-        Call local fonction `_journal_capwords`
+        Uses internal fonction `journal_capwords`
     """
 
     # Standard library imports
@@ -135,7 +136,7 @@ def update_inst_if_database(bibliometer_path, corpi_years_list):
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
 
     # Internal functions   
-    _capwords_journal_col = lambda row: _journal_capwords(row[journal_col_alias])
+    _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])
     
     def _formatting_wb_sheet(year, df, wb, first, if_database):    
         if first:

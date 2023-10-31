@@ -10,3 +10,4 @@ from BiblioMeter_FUNCTS.BM_MergePubEmployees import *
 from BiblioMeter_FUNCTS.BM_ConsolidatePubList import *
 from BiblioMeter_FUNCTS.BM_UsePubAttributes import *
 from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import *
+from BiblioMeter_FUNCTS.BM_PubAnalysis import *
