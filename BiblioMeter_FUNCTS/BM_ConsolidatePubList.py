@@ -1,7 +1,8 @@
 __all__ = ['add_if',
            'add_OTP', 
            'concatenate_pub_lists',
-           'consolidate_pub_list',   
+           'consolidate_pub_list',
+           'get_if_db',
            'mise_en_page',
            'save_shaped_homonyms_file',
            'solving_homonyms',
@@ -467,24 +468,57 @@ def _build_inst_issn_df(if_db_df, use_col_list):
     return inst_issn_df
 
 
-def add_if(in_file_path, out_file_path, if_path, missing_if_path, missing_issn_path, corpus_year): 
+def get_if_db(bibliometer_path):
+    
+    # Standard imports
+    from pathlib import Path
+    
+    # 3rd party imports
+    import pandas as pd    
+    
+    # local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF    
+    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS    
+    
+    # Setting useful aliases
+    if_root_folder_alias             = ARCHI_IF["root"]
+    if_filename_alias                = ARCHI_IF["all IF"]    
+    inst_if_filename_alias           = ARCHI_IF["institute_if_all_years"]
+    if INST_IF_STATUS: if_filename_alias = inst_if_filename_alias
+    
+    # Setting useful paths
+    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
+    if_path             = if_root_folder_path / Path(if_filename_alias)
+    
+    # Getting the df of the IFs database
+    if_df = pd.read_excel(if_path, sheet_name = None)
+    
+    # Setting list of years for which IF are available
+    if_available_years_list  = list(if_df.keys())
+    
+    if_most_recent_year = if_available_years_list[-1]
+    
+    return if_df, if_available_years_list, if_most_recent_year
+
+
+def add_if(in_file_path, out_file_path, missing_if_path, missing_issn_path, corpus_year): 
 
     '''The function `add_if` adds two new columns containing impact factors
     to the corpus dataframe 'corpus_df' got from a file which full path is 'in_file_path'. 
     The two columns are named through 'corpus_year_if_col_name' and 'most_recent_year_if_col_name'.
-    The impact factors are got from an Excel workbook with a worksheet per year 
-    which full path is 'if_path' and put in the IFs dataframe 'if_df'.
+    The impact factors are got using `get_if_db` function that returns in particular the dataframe 'if_df'.
     The column 'corpus_year_if_col_name' is filled with the IFs values 
     of the corpus year 'corpus_year' if available in the dataframe 'if_df', 
     else the values are set to 'not_available_if_alias'.
     The column 'most_recent_year_if_col_name' is filled with the IFs values 
     of the most recent year available in the dataframe 'if_df'.
-    In these columns, the nan values of IFs are replaced by 'unknown_if_fill_alias'.
+    In these columns, the NaN values of IFs are replaced by 'unknown_if_fill_alias'.
     
     Args:
         in_file_path (path): The full path to get the corpus dataframe 'corpus_df'. 
         out_file_path (path): The full path to save the new corpus dataframe with the two columns.
-        if_path (path): The full path to get the dataframe 'if_df'.
+        missing_if_path (path): The full path to save the missing IFs information
+        missing_issn_path (path): The full path to save the missing ISSNs information.
         corpus_year (int): The year of the corpus to be appended with the two new IF columns.
         
     Returns:
@@ -601,10 +635,7 @@ def add_if(in_file_path, out_file_path, if_path, missing_if_path, missing_issn_p
     unknown_alias              = FILL_EMPTY_KEY_WORD
     
     # Getting the df of the IFs database
-    if_df = pd.read_excel(if_path, sheet_name = None)
-    
-    # Setting list of years for which IF are available
-    if_available_years_list  = list(if_df.keys())
+    if_df, if_available_years_list, if_most_recent_year = get_if_db(bibliometer_path)
     
     # Taking care all IF column names in if_df are database_if_col_alias
     if INST_IF_STATUS: 
@@ -621,7 +652,6 @@ def add_if(in_file_path, out_file_path, if_path, missing_if_path, missing_issn_p
     
     
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year
-    if_most_recent_year      = if_available_years_list[-1]
     most_recent_year_if_dict = _build_if_dict(if_most_recent_year, issn_col_alias, eissn_col_alias, database_if_col_alias)
     
     # Setting local column names    
@@ -842,16 +872,10 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     
     # Setting useful aliases
     pub_id_alias                     = col_final_list[0]   #COL_NAMES['pub_id']
-    if_root_folder_alias             = ARCHI_IF["root"]
-    if_filename_alias                = ARCHI_IF["all IF"]
     missing_if_filename_base_alias   = ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = ARCHI_IF["missing_issn_base"]
-    inst_if_filename_alias           = ARCHI_IF["institute_if_all_years"]
-    if INST_IF_STATUS: if_filename_alias = inst_if_filename_alias
     
     # Setting useful paths
-    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
-    all_if_path         = if_root_folder_path / Path(if_filename_alias)
     missing_if_path     = out_path / Path(corpus_year + missing_if_filename_base_alias)
     missing_issn_path   = out_path / Path(corpus_year + missing_issn_filename_base_alias)    
     
@@ -879,7 +903,6 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     # this also for saving results files to complete IFs database
     _, if_database_complete = add_if(out_file_path, 
                                      out_file_path, 
-                                     all_if_path,
                                      missing_if_path,
                                      missing_issn_path, 
                                      corpus_year)

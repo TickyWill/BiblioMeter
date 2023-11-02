@@ -31,11 +31,13 @@ BDD_LIST = ['wos','scopus']
 PAGES_LABELS = {'first' : "Analyse élémentaire des corpus",
                 'second': "Consolidation annuelle des corpus",
                 'third' : "Mise à jour des facteurs d'impact",
+                'fourth': "KPIs et graphs"
                }
 
 
 PAGES_NAMES = {'first' : 'Page_ParseCorpus',
                'second': 'Page_ConsolidateCorpus',
                'third' : 'Page_UpdateIFs',
+               'fourth': 'Page_Analysis'
               }
 

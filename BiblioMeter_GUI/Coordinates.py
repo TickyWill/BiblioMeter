@@ -47,6 +47,12 @@ __all__ = ['general_properties',
            'TEXT_ETAPE_6',  
            'HELP_ETAPE_6',
            'TEXT_MAJ_PUB_IF',
+           'TEXT_ETAPE_7',  
+           'HELP_ETAPE_7',
+           'TEXT_IF_ANALYSIS',
+           'TEXT_ETAPE_8',  
+           'HELP_ETAPE_8',
+           'TEXT_KW_ANALYSIS',
           ]
 
 
@@ -325,13 +331,29 @@ ETAPE_LABEL_TEXT_LIST = [TEXT_ETAPE_1, TEXT_ETAPE_2, TEXT_ETAPE_3, TEXT_ETAPE_4]
 ### - Etape 5
 TEXT_ETAPE_5    = "Mise à jour de la base de données des IFs"
 HELP_ETAPE_5    = " La base de données sera mise à jour à partir des fichiers : "
-HELP_ETAPE_5   += "\n'  IF manquants.xlsx' et 'ISSN manquants.xlsx' annuels"
+HELP_ETAPE_5   += "\n  'IF manquants.xlsx' et 'ISSN manquants.xlsx' annuels"
 HELP_ETAPE_5   += "\ncomplétés manuellement."
 TEXT_MAJ_BDD_IF = "Lancer la mise à jour de la base de données des IFs"
 
 
-### - Etape 7
-TEXT_ETAPE_6    = " Mise à jour des IFs dans les listes consolidées"
-HELP_ETAPE_6    = "Dans cette partie, vous pouvez mettre à jour les IFs "
-HELP_ETAPE_6   += "dans les listes consolidées de publications existantes."
+### - Etape 6
+TEXT_ETAPE_6    = "Mise à jour des IFs dans les listes consolidées"
+HELP_ETAPE_6    = " Dans cette partie, vous pouvez mettre à jour les IFs"
+HELP_ETAPE_6   += " dans les listes consolidées de publications existantes."
 TEXT_MAJ_PUB_IF = "Lancer la mise à jour des IFs dans les listes consolidées existantes"
+
+
+########################## Page_Analysis ##########################
+
+### - Etape 7
+TEXT_ETAPE_7     = "Analyse des IFs et mise à jour des KPIs"
+HELP_ETAPE_7     = " L'analyse des IFS est effectuée à partir des fichiers"
+HELP_ETAPE_7    += " des listes consolidées des publications."
+TEXT_IF_ANALYSIS = "Lancer l'analyse des IFs"
+
+
+### - Etape 8
+TEXT_ETAPE_8     = "Analyse des mots clefs"
+HELP_ETAPE_8     = " L'analyse des mots clefs est effectuée à partir des fichiers"
+HELP_ETAPE_8    += " issus de l'étape de parsing des corpus."
+TEXT_KW_ANALYSIS = "Lancer l'analyse des mots clefs"

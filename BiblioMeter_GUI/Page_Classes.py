@@ -172,9 +172,11 @@ class App_Test(tk.Tk):
 
         else:
             # Creating buttons pointing on classes listed in pages
-            pages = (Page_UpdateIFs,
+            pages = (Page_Analysis,
+                     Page_UpdateIFs,
                      Page_ConsolidateCorpus,
-                     Page_ParseCorpus)
+                     Page_ParseCorpus,                     
+                    )
 
             # Création de mes deux containers
             container_button = tk.Frame(self, 
@@ -272,7 +274,7 @@ class Page_ParseCorpus(tk.Frame):
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
         
-        # Creation of the class object PageOne
+        # Creation of the class object Page 1
         create_parsing_concat(self, bibliometer_path, controller)
         
         label_font = tkFont.Font(family = FONT_NAME, 
@@ -385,7 +387,7 @@ class Page_ConsolidateCorpus(tk.Frame):
         corpus_years_list = files_status[0]
         self.Liste_1 = corpus_years_list        
         
-        # Creating the class object PageTwo
+        # Creating the class object Page 2
         create_consolidate_corpus(self, bibliometer_path, controller)        
         label_font = tkFont.Font(family = FONT_NAME, 
                                  size = eff_label_font_size)
@@ -461,7 +463,7 @@ class Page_UpdateIFs(tk.Frame):
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
         
-        # Creation of the class object PageFour
+        # Creation of the class object Page 3
         create_update_ifs(self, bibliometer_path, controller)
         label_font = tkFont.Font(family = FONT_NAME, 
                                  size = eff_label_font_size)
@@ -477,4 +479,80 @@ class Page_UpdateIFs(tk.Frame):
                            text = label_text, 
                            font = button_font, 
                            command = lambda: controller._show_frame(page_name))
-        button.grid(row = 0, column = 3)
+        button.grid(row = 0, column = 2)
+        
+        
+############################ PAGE 4 'Analyse des corpus' ############################
+
+class Page_Analysis(tk.Frame):
+    
+    def __init__(self, parent, controller, container_button, bibliometer_path):
+        super().__init__(parent)
+        self.controller = controller
+        
+        # 3rd party imports
+        from tkinter import font as tkFont
+
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+        
+        # Local imports
+        from BiblioMeter_GUI.Coordinates import root_properties
+        from BiblioMeter_GUI.Page_Analysis import create_analysis        
+        from BiblioMeter_GUI.Useful_Functions import font_size
+        
+        from BiblioMeter_GUI.Coordinates import FONT_NAME
+        from BiblioMeter_GUI.Coordinates import REF_LABEL_FONT_SIZE
+        from BiblioMeter_GUI.Coordinates import REF_BUTTON_FONT_SIZE
+        from BiblioMeter_GUI.Coordinates import REF_LABEL_POS_Y_MM
+        from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
+        from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
+        from BiblioMeter_GUI.GUI_Globals import PPI
+
+        # Getting useful window sizes and scale factors depending on displays properties
+        sizes_tuple   = root_properties(controller)
+        win_width_px  = sizes_tuple[0]
+        win_height_px = sizes_tuple[1]    # unused here
+        width_sf_px   = sizes_tuple[2] 
+        height_sf_px  = sizes_tuple[3]    # unused here
+        width_sf_mm   = sizes_tuple[4]
+        height_sf_mm  = sizes_tuple[5]
+        width_sf_min  = min(width_sf_mm, width_sf_px)
+        
+        # Setting page identifier
+        page = 'fourth'
+        
+        # Setting specific texts 
+        label_text = PAGES_LABELS[page]
+        page_name  = PAGES_NAMES[page]  
+        
+        # Setting font size for page label and button
+        ref_label_font_size  = REF_LABEL_FONT_SIZE   #25
+        eff_label_font_size  = font_size(ref_label_font_size, width_sf_min)
+        ref_button_font_size = REF_BUTTON_FONT_SIZE  #10
+        eff_button_font_size = font_size(ref_button_font_size, width_sf_min)
+        
+        # Setting y_position in px for page label
+        ref_label_pos_y_mm = REF_LABEL_POS_Y_MM     #15
+        eff_label_pos_y_px = _mm_to_px(ref_label_pos_y_mm * height_sf_mm, PPI)
+        
+        # Setting x position in pixels for page label 
+        mid_page_pos_x_px = win_width_px / 2
+        
+        # Creation of the class object Page 4
+        create_analysis(self, bibliometer_path, controller)
+        label_font = tkFont.Font(family = FONT_NAME, 
+                                 size = eff_label_font_size)
+        label = tk.Label(self, 
+                         text = label_text, 
+                         font = label_font)
+        label.place(x = mid_page_pos_x_px, 
+                    y = eff_label_pos_y_px, 
+                    anchor = "center")        
+        button_font = tkFont.Font(family = FONT_NAME, 
+                                  size = eff_button_font_size)
+        button = tk.Button(container_button, 
+                           text = label_text, 
+                           font = button_font, 
+                           command = lambda: controller._show_frame(page_name))
+        button.grid(row = 0, column = 3)        

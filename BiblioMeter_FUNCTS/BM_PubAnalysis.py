@@ -2,7 +2,7 @@ __all__ = ['if_analysis',
            'keywords_analysis',          
           ]
 
-# Fully tested on 31/10/2023
+# TO DO : Keywords analysis to be performed for whole institute
 
 def keywords_cloud(txt, out, bckg, h, w, mxw):
     """
@@ -32,7 +32,7 @@ def keywords_cloud(txt, out, bckg, h, w, mxw):
     return message
 
 
-def keywords_analysis(year, bibliometer_path):
+def keywords_analysis(bibliometer_path, year, verbose=True):
     
     # Standard Library imports
     import os
@@ -120,7 +120,7 @@ def keywords_analysis(year, bibliometer_path):
         kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x[0:kw_length].lower())        
         
         # Analyzing the keywords for each of the department in 'depts_col_list'         
-        for dept in depts_col_list:         
+        for dept in depts_col_list:                                                 
             # Collecting and normalizing all the Pub_ids of the department 'dept'
             dept_pub_id_list = [int(x[5:8]) for x in analysis_df[analysis_df[dept]==1][final_pub_id_col_alias].tolist()] 
             
@@ -158,8 +158,10 @@ def keywords_analysis(year, bibliometer_path):
                                CLOUD_WIDTH, 
                                CLOUD_MAX_WORDS)
         
-    end_message = f"Wordcloud images for all keywords types and all departments saved in : \n {kw_analysis_folder_path}"
-    return end_message
+    message = f"Wordcloud images for all keywords types and all departments saved in : \n {kw_analysis_folder_path}"
+    if verbose: print(message, "\n")
+    
+    return kw_analysis_folder_path
     
 
 def _build_analysis_books_data(books_df):
@@ -701,7 +703,7 @@ def _plot_if_analysis(corpus_year, kpi_dict, if_col, if_analysis_folder_path, ve
     return end_message    
     
 
-def if_analysis(corpus_year, if_most_recent_year, bibliometer_path, verbose = True):
+def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = True):
     """
     
     Module internal functions: _build_analysis_if_data, _plot_if_analysis
@@ -768,7 +770,7 @@ def if_analysis(corpus_year, if_most_recent_year, bibliometer_path, verbose = Tr
     if not os.path.exists(analysis_folder_path):
         os.makedirs(analysis_folder_path) 
     if not os.path.exists(if_analysis_folder_path):
-        os.makedirs(if_analysis_folder_path)                                       
+        os.makedirs(if_analysis_folder_path) 
     
     # Setting useful column names aliases
     col_final_list                     = set_final_col_names()
@@ -824,5 +826,5 @@ def if_analysis(corpus_year, if_most_recent_year, bibliometer_path, verbose = Tr
     message = _plot_if_analysis(corpus_year, kpi_dict, if_analysis_col_new, if_analysis_folder_path, verbose = verbose)
     if verbose: print(message, "\n")
     
-    return institute_kpi_df, kpi_dict
+    return if_analysis_folder_path, institute_kpi_df, kpi_dict
     

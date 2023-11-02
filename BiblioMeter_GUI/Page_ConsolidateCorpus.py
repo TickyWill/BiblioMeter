@@ -952,20 +952,6 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         pub_list_path           = corpus_year_path / Path(pub_list_path_alias)
         pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)             
         
-       # # Getting check_if_status
-       # check_if_status = check_if_var.get()
-       # 
-       # # Updating IF database
-       # if_db_update_status = _launch_update_if_db(bibliometer_path,
-       #                                            years_list,
-       #                                            year_select,
-       #                                            pub_list_path,
-       #                                            check_if_status,
-       #                                            )       
-       # if not if_db_update_status : 
-       #     check_if_var.set(0)
-       #     check_if_status = check_if_var.get()
-        
         # Trying launch creation of consolidated publications lists
         _launch_pub_list_conso_try(bibliometer_path, 
                                    OTP_path,
@@ -985,22 +971,9 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                               text = TEXT_PUB_CONSO, 
                               font = font_finale, 
                               command = lambda: _launch_pub_list_conso())
-    
-    #check_if_var = tk.IntVar()
-    #check_if_box = tk.Checkbutton(self, 
-    #                              text = TEXT_MAJ_DB_IF, 
-    #                              variable = check_if_var, 
-    #                              onvalue = 1, 
-    #                              offvalue = 0)
-    #
-    #font_check = tkFont.Font(family = FONT_NAME, 
-    #                         size = eff_answer_font_size)
 
     etape_4 = etapes[3]
-    #place_bellow(etape_4, 
-    #             button_OTP, 
-    #             dx = etape_button_dx, 
-    #             dy = etape_button_dy / 2)
+
     place_bellow(etape_4, 
                  button_finale,
                  dx = etape_button_dx,
