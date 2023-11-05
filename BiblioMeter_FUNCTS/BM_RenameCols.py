@@ -96,15 +96,15 @@ def set_final_col_names():
     
     col_final_dic = {0  : COL_NAMES['pub_id'],
                      1  : COL_NAMES_BONUS['corpus_year'],
-                     2  : COL_NAMES['articles'][2],
-                     3  : COL_NAMES['articles'][1],
+                     2  : COL_NAMES['articles'][2],              # 'Year'
+                     3  : COL_NAMES['articles'][1],              # 'Authors'
                      4  : COL_NAMES_BONUS['nom prénom liste'],
-                     5  : COL_NAMES['articles'][9],
-                     6  : COL_NAMES['articles'][3],
-                     7  : COL_NAMES['articles'][7],
-                     8  : COL_NAMES['articles'][6],
+                     5  : COL_NAMES['articles'][9],              # 'Title'
+                     6  : COL_NAMES['articles'][3],              # 'Journal'
+                     7  : COL_NAMES['articles'][7],              # 'Document_type'
+                     8  : COL_NAMES['articles'][6],              # 'DOI'
                      9  : COL_NAMES_BONUS['liste biblio'],
-                     10 : COL_NAMES['articles'][10],
+                     10 : COL_NAMES['articles'][10],             # 'ISSN'
                      11 : COL_NAMES_DPT['DTNM'],
                      12 : COL_NAMES_DPT['DTCH'],
                      13 : COL_NAMES_DPT['DEHT'],

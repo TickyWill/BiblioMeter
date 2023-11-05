@@ -2,167 +2,80 @@ __all__ = ['if_analysis',
            'keywords_analysis',          
           ]
 
-# TO DO : Keywords analysis to be performed for whole institute
 
-def keywords_cloud(txt, out, bckg, h, w, mxw):
+def formatting_df(df, first_col_width):
     """
-    Args:
-        txt (str): Text which words will be plot as cloud.
-        out (path): Full path of the png file that will contain the plot image.
-        bckg (str): Color of the plot background.
-        h (int): Height of the plot in pixels.
-        w (int): Width of the plot in pixels.
-        mxw (int): Maximum number of words to be plot.
-        
-    Returns:
-        (str): Message about the completion of the image building.
-        
     """
-    # 3rd parties import
-    from wordcloud import WordCloud
-    
-    wc = WordCloud(background_color = bckg,
-                   height           = h,
-                   width            = w,
-                   max_words        = mxw)
-    cloud = wc.generate(txt)
-    cloud.to_file(out)
-    
-    message = f"Wordcloud image saved in file: \n {out}"
-    return message
-
-
-def keywords_analysis(bibliometer_path, year, verbose=True):
-    
-    # Standard Library imports
-    import os
-    from pathlib import Path
-    
-    # 3rd parties import
-    import pandas as pd
-    
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
+    # 3rd party imports
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    from openpyxl.styles import Font as openpyxl_Font  
+    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
+    from openpyxl.styles import Alignment as openpyxl_Alignment
+    from openpyxl.styles import Border as openpyxl_Border
+    from openpyxl.styles import Side as openpyxl_Side
     
     # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_BCKG
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_HEIGHT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_WIDTH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_MAX_WORDS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_MAX_WORDS_LENGTH    
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_DPT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DOCTYPE_TO_SAVE_DICT
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    # Setting list of cell colors   
+    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]   
     
-    # Setting useful aliases
-    corpus_folder_alias      = ARCHI_YEAR["corpus"]
-    dedup_folder_alias       = ARCHI_YEAR["dedup"]
-    parsing_folder_alias     = ARCHI_YEAR["parsing"]
-    pub_list_folder_alias    = ARCHI_YEAR["pub list folder"]
-    analysis_folder_alias    = ARCHI_YEAR["analyses"] 
-    kw_analysis_folder_alias = ARCHI_YEAR["keywords analysis"]
-    
-    pub_list_filename_base = ARCHI_YEAR["pub list file name base"]
-    doctype_alias          = list(DOCTYPE_TO_SAVE_DICT.keys())[0]
-    
-    # Setting useful file names 
-    pub_list_filename = pub_list_filename_base + " " + str(year) + "_" + doctype_alias + ".xlsx"
+    # Setting useful column attributes
+    columns_list = list(df.columns)
+    col_attr = {}
+    col_attr[columns_list[0]] = [first_col_width, "left"]
+    for col in columns_list[1:]:
+        col_attr[col] = [15, "center"]
 
-    # Setting useful paths
-    year_folder_path        = bibliometer_path / Path(str(year))
-    corpus_folder_path      = year_folder_path / Path(corpus_folder_alias) 
-    dedup_folder_path       = corpus_folder_path / Path(dedup_folder_alias)
-    parsing_folder_path     = dedup_folder_path / Path(parsing_folder_alias)
-    pub_list_folder_path    = year_folder_path / Path(pub_list_folder_alias)
-    pub_list_file_path      = pub_list_folder_path / Path(pub_list_filename)
-    analysis_folder_path    = year_folder_path / Path(analysis_folder_alias)
-    kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
-    
-    # Creating required output folders
-    if not os.path.exists(analysis_folder_path):
-        os.makedirs(analysis_folder_path) 
-    if not os.path.exists(kw_analysis_folder_path):
-        os.makedirs(kw_analysis_folder_path)
-    
-    # Setting useful column names aliases
-    col_final_list           = set_final_col_names()
-    final_pub_id_col_alias   = col_final_list[0]
-    depts_col_list           = col_final_list[11:16]
-    parsing_pub_id_col_alias = COL_NAMES['pub_id']
-    keywords_col_alias       = COL_NAMES['keywords'][1]
-    weight_col_alias         = COL_NAMES_BONUS['weight']
-
-    # Setting useful filenames dict
-    kw_filename_dict = {'AK' : DIC_OUTDIR_PARSING['AK'],
-                        'IK' : DIC_OUTDIR_PARSING['IK'],
-                        'TK' : DIC_OUTDIR_PARSING['TK'],
-                       }
-    
-    # Building the dataframe to be analysed from the file which full path is 'pub_list_file_path'  
-    analysis_df = pd.read_excel(pub_list_file_path,
-                                usecols = [final_pub_id_col_alias] + depts_col_list)
-
-    # Plotting the words-cloud of the different kinds of keywords
-    for kw_type, kw_file in kw_filename_dict.items():
-        kw_length = CLOUD_MAX_WORDS_LENGTH
-
-        # Building the keywords dataframe for the keywords type 'kw_type' from the file 'kw_file'
-        kw_file_path = parsing_folder_path / Path(kw_file)
-        kw_df = pd.read_csv(kw_file_path, sep='\t')
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.replace(' ','_').replace('-','_'))
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.replace('_(','; ').replace(')',''))        
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x[0:kw_length].lower())        
+    # Initializing wb as a workbook and ws its active worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
         
-        # Analyzing the keywords for each of the department in 'depts_col_list'         
-        for dept in depts_col_list:                                                 
-            # Collecting and normalizing all the Pub_ids of the department 'dept'
-            dept_pub_id_list = [int(x[5:8]) for x in analysis_df[analysis_df[dept]==1][final_pub_id_col_alias].tolist()] 
+    # Coloring alternatly rows in ws using list of cell colors cell_colors
+    for idx_row, row in enumerate(ws_rows):       
+        ws.append(row)      
+        last_row = ws[ws.max_row]
+        if idx_row >= 1:
+            cell_color = cell_colors[idx_row%2]
+            for cell in last_row:
+                cell.fill = cell_color 
+
+    # Setting cell alignement and border using dict of column attributes col_attr
+    for idx_col, col in enumerate(columns_list):
+        column_letter = openpyxl_get_column_letter(idx_col + 1)
+        for cell in ws[column_letter]:
+            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
+            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))
             
-            # Building the list of keywords for the keywords type 'kw_type' and the department 'dept'
-            dept_kw_list = []
-            for _, row in kw_df.iterrows():
-                pub_id  = row[parsing_pub_id_col_alias]
-                keyword = row[keywords_col_alias]              
-                if pub_id in dept_pub_id_list: dept_kw_list= dept_kw_list + keyword.split(";")
-                                    
-            # Building a dataframe with the keywords and their weight for the keywords type 'kw_type'
-            # and the department 'dept'
-            dept_kw_df = pd.DataFrame(columns = [keywords_col_alias, weight_col_alias])
-            dept_kw_set_to_list = sorted(list(set(dept_kw_list)))
-            for idx, keyword in enumerate(dept_kw_set_to_list): 
-                dept_kw_df.loc[idx, keywords_col_alias] = keyword
-                dept_kw_df.loc[idx, weight_col_alias] = dept_kw_list.count(keyword)
-            
-            # Saving the keywords dataframe as EXCEL file
-            dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
-            dept_kw_df.to_excel(dept_xlsx_file_path, index=False) 
-            
-            # Building the text 'dept_kw_txt' that contains the keywords for the keywords type 'kw_type'
-            dept_kw_list = [word for word in dept_kw_list if word != UNKNOWN]
-            dept_kw_txt = ' '.join(dept_kw_list)
-            dept_kw_txt.encode(encoding = 'UTF-8', errors = 'strict')
-            
-            # Plotting the keywords cloud for the department 'dept' and the keywords type 'kw_type'
-            if dept_kw_txt!='':
-                dept_png_file_path = Path(kw_analysis_folder_path) / Path(f"{kw_type} {year}-{dept}.png")            
-                keywords_cloud(dept_kw_txt, 
-                               dept_png_file_path, 
-                               CLOUD_BCKG, 
-                               CLOUD_HEIGHT, 
-                               CLOUD_WIDTH, 
-                               CLOUD_MAX_WORDS)
+    # Setting the format of the columns heading
+    cells_list = ws[1]
+    for cell in cells_list:
+        cell.font = openpyxl_Font(bold=True)
+        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")  
         
-    message = f"Wordcloud images for all keywords types and all departments saved in : \n {kw_analysis_folder_path}"
-    if verbose: print(message, "\n")
+    # Setting de columns width using dict of column attributes col_attr
+    for idx_col, col in enumerate(columns_list):        
+        column_letter = openpyxl_get_column_letter(idx_col + 1)
+        ws.column_dimensions[column_letter].width = col_attr[col][0]
     
-    return kw_analysis_folder_path
-    
+    # Setting height of rows
+    height = 25
+    for idx_row in range(ws.max_row):
+        row_num = idx_row + 1
+        if row_num >= 1: height = 20
+        ws.row_dimensions[row_num].height = height
+
+    return wb, ws  
+
+
+###################################
+# IFs analysis specific functions #
+###################################
 
 def _build_analysis_books_data(books_df):
     """
@@ -197,7 +110,7 @@ def _build_analysis_books_data(books_df):
         
         # Building the books dataframe for "dept"
         if dept!= INSTITUTE:
-            dept_books_df = books_df[books_df[dept]==1]
+            dept_books_df = books_df[books_df[dept]==1].copy()
         else:
             dept_books_df = books_df.copy()
         
@@ -207,7 +120,7 @@ def _build_analysis_books_data(books_df):
         count_books_df.reset_index(inplace = True)
         count_books_df.rename_axis("idx", axis = 1,  inplace = True)        
         count_books_df.rename(columns = {"index": book_col_alias,}, inplace = True)        
-        dept_books_df = dept_books_df.drop_duplicates([book_col_alias, doctype_col_alias])
+        dept_books_df = dept_books_df.drop_duplicates([book_col_alias])
         dept_books_df = count_books_df.merge(dept_books_df, how = "outer", on = book_col_alias)
         
         # Computing KPI for department'dept'        
@@ -267,6 +180,7 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
     col_final_list         = set_final_col_names()
     journal_col_alias      = col_final_list[6]
     doctype_col_alias      = col_final_list[7]
+    issn_col_alias         = col_final_list[10]
     depts_col_list         = col_final_list[11:16]
     journal_norm_col_alias = COL_NAMES['temp_col'][1]
     articles_nb_col_alias  = COL_NAMES_IF_ANALYSIS['articles_nb']
@@ -280,19 +194,20 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
         
         # Building the IFs analysis dataframe for "dept"
         if dept!= INSTITUTE:
-            dept_analysis_df = analysis_df[analysis_df[dept]==1]
+            dept_analysis_df = analysis_df[analysis_df[dept]==1].copy()
         else:
-            dept_analysis_df = analysis_df.copy()
-        
+            dept_analysis_df = analysis_df.copy() 
+        dept_analysis_df.drop(columns = depts_col_list, inplace = True)
+            
         # Adding a column with number of articles per journal then droping duplicate rows
-        count_journal_df = dept_analysis_df[journal_norm_col_alias].value_counts().to_frame()
-        count_journal_df.rename(columns = {journal_norm_col_alias: articles_nb_col_alias}, inplace = True)
+        count_journal_df = dept_analysis_df[issn_col_alias].value_counts().to_frame()
+        count_journal_df.rename(columns = {issn_col_alias: articles_nb_col_alias}, inplace = True)
         count_journal_df.reset_index(inplace = True)
-        count_journal_df.rename_axis("idx", axis = 1,  inplace = True)        
-        count_journal_df.rename(columns = {"index":journal_norm_col_alias,}, inplace = True)        
-        dept_analysis_df = dept_analysis_df.drop_duplicates([journal_norm_col_alias] + if_col_list)
-        dept_analysis_df = count_journal_df.merge(dept_analysis_df, how = "outer", on = journal_norm_col_alias)
-        
+        count_journal_df.rename_axis("idx", axis = 1,  inplace = True)
+        count_journal_df.rename(columns = {"index":issn_col_alias}, inplace = True)
+        dept_analysis_df = dept_analysis_df.drop_duplicates([issn_col_alias])
+        dept_analysis_df = count_journal_df.merge(dept_analysis_df, how = "outer", on = issn_col_alias)              
+
         # Keeping only articles of journal (not proceedings) and droping 'doctype_col_alias' column
         dept_articles_df = dept_analysis_df[dept_analysis_df[doctype_col_alias].isin(doctype_article_alias)]
         dept_articles_df = dept_articles_df.drop(columns = [doctype_col_alias])
@@ -363,85 +278,20 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
         
         # Updating KPI dict with KPIs of department 'dept'
         kpi_dict[dept] = dept_kpi_dict
-                
-        # Saving the IFs dataframe of department 'dept' as EXCEL file
+        
+        # Saving after formatting the updated dataframe as EXCEL file
         file_name = f'{if_analysis_col_new}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
-        dept_if_df.to_excel(dept_xlsx_file_path, index=False)  
-        message = f"EXCEL file of {if_analysis_col_new} for {dept} department saved in : \n {if_analysis_folder_path}"
+        first_col_width = 50
+        wb, ws = formatting_df(dept_if_df, first_col_width)
+        ws.title = dept + ' IFs '
+        wb.save(dept_xlsx_file_path)
+        
+        message  = f"\n    EXCEL file of {if_analysis_col_new} for {dept} department "
+        message += f"saved in : \n {if_analysis_folder_path}"
         if verbose: print(message, "\n")
 
     return kpi_dict, if_analysis_col_new
-
-
-def formatting_kpi(df):
-    """
-    """
-    # 3rd party imports
-    from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-    from openpyxl.styles import Font as openpyxl_Font  
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
-    from openpyxl.styles import Alignment as openpyxl_Alignment
-    from openpyxl.styles import Border as openpyxl_Border
-    from openpyxl.styles import Side as openpyxl_Side
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
-    
-    # Setting list of cell colors   
-    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]   
-    
-    # Setting useful column attributes
-    columns_list = list(df.columns)
-    col_attr = {}
-    col_attr[columns_list[0]] = [40, "left"]
-    for col in columns_list[1:]:
-        col_attr[col] = [15, "center"]
-
-    # Initializing wb as a workbook and ws its active worksheet
-    wb = Workbook()
-    ws = wb.active
-    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
-        
-    # Coloring alternatly rows in ws using list of cell colors cell_colors
-    for idx_row, row in enumerate(ws_rows):       
-        ws.append(row)      
-        last_row = ws[ws.max_row]
-        if idx_row >= 1:
-            cell_color = cell_colors[idx_row%2]
-            for cell in last_row:
-                cell.fill = cell_color 
-
-    # Setting cell alignement and border using dict of column attributes col_attr
-    for idx_col, col in enumerate(columns_list):
-        column_letter = openpyxl_get_column_letter(idx_col + 1)
-        for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))
-            
-    # Setting the format of the columns heading
-    cells_list = ws[1]
-    for cell in cells_list:
-        cell.font = openpyxl_Font(bold=True)
-        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")  
-        
-    # Setting de columns width using dict of column attributes col_attr
-    for idx_col, col in enumerate(columns_list):        
-        column_letter = openpyxl_get_column_letter(idx_col + 1)
-        ws.column_dimensions[column_letter].width = col_attr[col][0]
-    
-    # Setting height of rows
-    height = 25
-    for idx_row in range(ws.max_row):
-        row_num = idx_row + 1
-        if row_num >= 1: height = 20
-        ws.row_dimensions[row_num].height = height
-
-    return wb, ws   
 
 
 def _update_kpi_database(bibliometer_path, corpus_year, kpi_dict, if_key, verbose = False):
@@ -522,13 +372,14 @@ def _update_kpi_database(bibliometer_path, corpus_year, kpi_dict, if_key, verbos
             db_dept_kpi_df = dept_kpi_df
             
         # Saving after formatting the updated dataframe
-        wb, ws = formatting_kpi(db_dept_kpi_df)
+        first_col_width = 35
+        wb, ws = formatting_df(db_dept_kpi_df, first_col_width)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
         
         if dept== INSTITUTE : institute_kpi_df = db_dept_kpi_df
         
-    message = f"Kpi database updated and saved in folder: \n {file_path}"   
+    message = f"\n    Kpi database updated and saved in folder: \n {file_path}"   
     if verbose: print(message)
     
     return institute_kpi_df
@@ -636,7 +487,7 @@ def _save_dept_barchart(barchart, dept, if_col, if_analysis_folder_path, part = 
     dept_png_file_path  = Path(if_analysis_folder_path) / Path(file_name + ".png")
     barchart.write_image(dept_png_file_path)
     
-    end_message  = f"Barchart of {if_col} ({part} values) for {dept} "
+    end_message  = f"\n    Barchart of {if_col} ({part} values) for {dept} "
     end_message += f"department saved in : \n {if_analysis_folder_path}"
     return end_message
 
@@ -699,8 +550,9 @@ def _plot_if_analysis(corpus_year, kpi_dict, if_col, if_analysis_folder_path, ve
             message = _create_save_barchart(dept, dept_if_df, "all")        
             if verbose: print(message, "\n")
     
-    end_message = f"IF analysis plots for corpus {corpus_year} saved in : \n {if_analysis_folder_path}"
-    return end_message    
+    end_message = f"\n    IF analysis plots for corpus {corpus_year} saved in : \n {if_analysis_folder_path}"
+    if verbose: print(end_message, "\n")
+    return    
     
 
 def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = True):
@@ -734,7 +586,31 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import journal_capwords
     
-    # internal functions        
+    # internal functions  
+    
+    def _unique_journal_name(init_analysis_df):
+        """Sets a unique journal name by ISSN value.
+        """
+        analysis_df = pd.DataFrame(columns = init_analysis_df.columns)
+        for _, df in init_analysis_df.groupby(by=[issn_col_alias]):
+            issn_df = df.copy()
+            issn = issn_df[issn_col_alias].to_list()[0]
+            journal_names_list = issn_df[journal_col_alias].to_list()
+            if len(journal_names_list)>1:
+                if issn!=UNKNOWN:
+                    journal_length_list = [len(journal) for journal in journal_names_list]
+                    journal_names_dict  = dict(zip(journal_length_list,journal_names_list))
+                    length_min          = min(journal_length_list)
+                    issn_df[journal_col_alias] = journal_names_dict[length_min]                
+                else:
+                    journal_names_list = list(set(issn_df[journal_col_alias].to_list()))
+                    journal_issn_list  = [issn + str(num) for num in range(len(journal_names_list))]
+                    journal_names_dict = dict(zip(journal_names_list,journal_issn_list))
+                    issn_df[issn_col_alias] = issn_df[journal_col_alias].copy()
+                    issn_df[issn_col_alias] = issn_df[issn_col_alias].map(journal_names_dict)                
+            analysis_df = pd.concat([analysis_df, issn_df], ignore_index=True)
+        return analysis_df
+    
     _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])    
     _replace_no_if = lambda x: x if x != UNKNOWN and x != NOT_AVAILABLE_IF else 0
     
@@ -775,7 +651,8 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
     # Setting useful column names aliases
     col_final_list                     = set_final_col_names()
     journal_col_alias                  = col_final_list[6]
-    doctype_col_alias                  = col_final_list[7]  
+    doctype_col_alias                  = col_final_list[7] 
+    issn_col_alias                     = col_final_list[10] 
     depts_col_list                     = col_final_list[11:16]
     journal_norm_col_alias             = COL_NAMES['temp_col'][1]
     most_recent_year_if_col_base_alias = COL_NAMES_BONUS["IF en cours"]
@@ -807,15 +684,17 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
     
     # Building the dataframe to be analysed from the file which full path is 'papers_list_file_path'
     if_col_list = list(if_col_dict.keys())
-    usecols = [journal_col_alias, doctype_col_alias] + depts_col_list + if_col_list
-    analysis_df = pd.read_excel(papers_list_file_path,
-                                usecols = usecols)
-    analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias].map(journal_norm_dict)
-    analysis_df[journal_col_alias]      = analysis_df.apply(_capwords_journal_col, axis=1)
+    usecols = [journal_col_alias, doctype_col_alias, issn_col_alias] + depts_col_list + if_col_list
+    init_analysis_df = pd.read_excel(papers_list_file_path,
+                                     usecols = usecols)    
+    analysis_df = _unique_journal_name(init_analysis_df)
+    analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias]
+    analysis_df[journal_norm_col_alias] = analysis_df[journal_norm_col_alias].map(journal_norm_dict)
+    analysis_df[journal_col_alias]      = analysis_df.apply(_capwords_journal_col, axis=1)    
     for if_col, year in if_col_dict.items():
-        analysis_df[if_col] = analysis_df[if_col].apply(_replace_no_if)
-    
-    # Building the data resulting from IFs analysis
+        analysis_df[if_col] = analysis_df[if_col].apply(_replace_no_if)  
+
+    # Building the data resulting from IFs analysis and saving them as xlsx files
     kpi_dict, if_analysis_col_new = _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dict,
                                                             if_analysis_col, if_analysis_year,
                                                             if_analysis_folder_path, verbose = verbose)
@@ -823,8 +702,268 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
     # Updating the KPIs database 
     institute_kpi_df = _update_kpi_database(bibliometer_path, corpus_year, kpi_dict, if_analysis_col_new, verbose = verbose)
     
-    message = _plot_if_analysis(corpus_year, kpi_dict, if_analysis_col_new, if_analysis_folder_path, verbose = verbose)
-    if verbose: print(message, "\n")
+    # Ploting IF analysis data as html files
+    _plot_if_analysis(corpus_year, kpi_dict, if_analysis_col_new, if_analysis_folder_path, verbose = verbose)
     
     return if_analysis_folder_path, institute_kpi_df, kpi_dict
+
+
+########################################
+# Keywords analysis specific functions #
+########################################
     
+def _create_kw_analysis_data(year, analysis_df, kw_type, kw_df, usecols,
+                             kw_analysis_folder_path, verbose = False):
+    """
+    """
+    # Standard Library imports
+    from pathlib import Path
+    
+    # 3rd parties import
+    import pandas as pd 
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE
+    
+    # Setting useful column names aliases
+    final_pub_id_col_alias   = usecols[0]    
+    depts_col_list           = usecols[1]
+    parsing_pub_id_col_alias = usecols[2]
+    keywords_col_alias       = usecols[3]
+    weight_col_alias         = usecols[4]
+    
+    # Analyzing the keywords for each of the department in 'depts_col_list'         
+    for dept in [INSTITUTE] + depts_col_list:                                                 
+        # Collecting and normalizing all the Pub_ids of the department 'dept'
+        # by removing the 4 first characters corresponding to the corpus year
+        # in order to make them comparable to 'parsing_pub_id_col_alias' values
+        if dept!= INSTITUTE:
+            dept_pub_id_list = [int(x[5:8]) for x in analysis_df[analysis_df[dept]==1][final_pub_id_col_alias].tolist()]
+        else:
+            dept_pub_id_list = [int(x[5:8]) for x in analysis_df[final_pub_id_col_alias].tolist()] 
+
+        # Building the list of keywords for the keywords type 'kw_type' and the department 'dept'
+        dept_kw_list = []
+        for _, row in kw_df.iterrows():
+            pub_id  = row[parsing_pub_id_col_alias]
+            keyword = row[keywords_col_alias]              
+            if pub_id in dept_pub_id_list: 
+                pub_kw_list = [word.strip() for word in keyword.split(";")]
+                dept_kw_list= dept_kw_list + pub_kw_list
+
+        # Building a dataframe with the keywords and their weight for the keywords type 'kw_type'
+        # and the department 'dept'
+        dept_kw_df = pd.DataFrame(columns = [keywords_col_alias, weight_col_alias])
+        dept_kw_set_to_list = sorted(list(set(dept_kw_list)))
+        kw_drop = 0
+        for idx, keyword in enumerate(dept_kw_set_to_list):
+            if len(keyword)>1:
+                dept_kw_df.loc[idx, keywords_col_alias] = keyword
+                dept_kw_df.loc[idx, weight_col_alias]   = dept_kw_list.count(keyword)
+            else:
+                kw_drop +=1
+        if kw_drop and dept==INSTITUTE:
+            print(f"    WARNING: {kw_drop} dropped keywords of 1 character among {len(dept_kw_set_to_list)} {kw_type} ones of {INSTITUTE}")
+        
+        # Saving the keywords dataframe as EXCEL file
+        dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
+        first_col_width = 50
+        wb, ws = formatting_df(dept_kw_df, first_col_width)
+        ws.title = dept + ' ' + kw_type
+        wb.save(dept_xlsx_file_path)
+
+    message = f"\n    Keywords of all types and all departments saved in : \n {kw_analysis_folder_path}"
+    if verbose: print(message, "\n")    
+    return
+
+
+def keywords_cloud(txt, out, bckg, h, w, mxw, verbose = False):
+    """
+    Args:
+        txt (str): Text which words will be plot as cloud.
+        out (path): Full path of the png file that will contain the plot image.
+        bckg (str): Color of the plot background.
+        h (int): Height of the plot in pixels.
+        w (int): Width of the plot in pixels.
+        mxw (int): Maximum number of words to be plot.
+        
+    Returns:
+        (str): Message about the completion of the image building.
+        
+    """
+    # 3rd parties import
+    from wordcloud import WordCloud
+    
+    wc = WordCloud(background_color = bckg,
+                   height           = h,
+                   width            = w,
+                   max_words        = mxw)
+    cloud = wc.generate(txt)
+    cloud.to_file(out)
+    
+    message = f"\n    Wordcloud image saved in file: \n {out}"
+    if verbose: print(message)
+    return
+
+
+def _create_kw_cloud(year, kw_type, kw_analysis_folder_path, usecols,
+                     verbose = False):
+    """
+    """
+    
+    # Standard Library imports
+    from pathlib import Path
+    
+    # 3rd parties import
+    import pandas as pd 
+    
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_BCKG
+    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_HEIGHT
+    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_WIDTH
+    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_MAX_WORDS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_MAX_WORDS_LENGTH
+    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE
+    
+    # Setting the maximum length of the words for the cloud
+    kw_length = CLOUD_MAX_WORDS_LENGTH
+    
+    # Setting useful column names aliases   
+    depts_col_list           = usecols[1]
+    keywords_col_alias       = usecols[3]
+    weight_col_alias         = usecols[4]
+    
+    # creating the keywords text for each of the department in 'depts_col_list'         
+    for dept in [INSTITUTE] + depts_col_list:
+        
+        # Getting the dataframe of keywords with their weight
+        dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
+        dept_kw_df = pd.read_excel(dept_xlsx_file_path)
+        dept_kw_df[keywords_col_alias] = dept_kw_df[keywords_col_alias].apply(lambda x: x[0:kw_length])
+    
+        # Building the keywords list with each keyword repeated up to its weight
+        dept_kw_list = []
+        for _, row in dept_kw_df.iterrows():
+            keyword = row[keywords_col_alias]
+            weight  = row[weight_col_alias]
+            if keyword != UNKNOWN:
+                keyword_list = [keyword] * weight
+                dept_kw_list = dept_kw_list + keyword_list
+                
+        # Building the text 'dept_kw_txt' that contains the keywords       
+        dept_kw_txt = ' '.join(dept_kw_list)
+        dept_kw_txt.encode(encoding = 'UTF-8', errors = 'strict')
+        
+        # create and save the cloud image for department 'dept'
+        if dept_kw_txt!='':
+            dept_png_file_path = Path(kw_analysis_folder_path) / Path(f"{kw_type} {year}-{dept}.png")  
+            keywords_cloud(dept_kw_txt, 
+                           dept_png_file_path, 
+                           CLOUD_BCKG, 
+                           CLOUD_HEIGHT, 
+                           CLOUD_WIDTH, 
+                           CLOUD_MAX_WORDS)
+            
+    message = f"\n    Wordcloud images for all keywords types and all departments saved in : \n {kw_analysis_folder_path}"
+    if verbose: print(message, "\n")    
+    return
+
+def keywords_analysis(bibliometer_path, year, verbose=False):
+    """
+    """
+    
+    # Standard Library imports
+    import os
+    from pathlib import Path
+    
+    # 3rd parties import
+    import pandas as pd
+    
+    # BiblioAnalysis_Utils package imports
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
+    
+    # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DOCTYPE_TO_SAVE_DICT
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    
+    # Setting useful aliases
+    corpus_folder_alias      = ARCHI_YEAR["corpus"]
+    dedup_folder_alias       = ARCHI_YEAR["dedup"]
+    parsing_folder_alias     = ARCHI_YEAR["parsing"]
+    pub_list_folder_alias    = ARCHI_YEAR["pub list folder"]
+    analysis_folder_alias    = ARCHI_YEAR["analyses"] 
+    kw_analysis_folder_alias = ARCHI_YEAR["keywords analysis"]    
+    pub_list_filename_base   = ARCHI_YEAR["pub list file name base"]
+    doctype_alias            = list(DOCTYPE_TO_SAVE_DICT.keys())[0]
+    
+    # Setting useful file names 
+    pub_list_filename = pub_list_filename_base + " " + str(year) + "_" + doctype_alias + ".xlsx"
+
+    # Setting useful paths
+    year_folder_path        = bibliometer_path / Path(str(year))
+    corpus_folder_path      = year_folder_path / Path(corpus_folder_alias) 
+    dedup_folder_path       = corpus_folder_path / Path(dedup_folder_alias)
+    parsing_folder_path     = dedup_folder_path / Path(parsing_folder_alias)
+    pub_list_folder_path    = year_folder_path / Path(pub_list_folder_alias)
+    pub_list_file_path      = pub_list_folder_path / Path(pub_list_filename)
+    analysis_folder_path    = year_folder_path / Path(analysis_folder_alias)
+    kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
+    
+    # Creating required output folders
+    if not os.path.exists(analysis_folder_path):
+        os.makedirs(analysis_folder_path) 
+    if not os.path.exists(kw_analysis_folder_path):
+        os.makedirs(kw_analysis_folder_path)
+    
+    # Setting useful column names aliases
+    col_final_list           = set_final_col_names()
+    final_pub_id_col_alias   = col_final_list[0]
+    depts_col_list           = col_final_list[11:16]
+    parsing_pub_id_col_alias = COL_NAMES['pub_id'] 
+    keywords_col_alias       = COL_NAMES['keywords'][1]
+    weight_col_alias         = COL_NAMES_BONUS['weight']
+
+    # Setting useful filenames dict
+    kw_filename_dict = {'AK' : DIC_OUTDIR_PARSING['AK'],
+                        'IK' : DIC_OUTDIR_PARSING['IK'],
+                        'TK' : DIC_OUTDIR_PARSING['TK'],
+                       }
+    
+    # Building the dataframe to be analysed from the file which full path is 'pub_list_file_path'  
+    analysis_df = pd.read_excel(pub_list_file_path,
+                                usecols = [final_pub_id_col_alias] + depts_col_list)
+
+    # Plotting the words-cloud of the different kinds of keywords
+    for kw_type, kw_file in kw_filename_dict.items():
+
+        # Building the keywords dataframe for the keywords type 'kw_type' from the file 'kw_file'
+        kw_file_path = parsing_folder_path / Path(kw_file)
+        kw_df = pd.read_csv(kw_file_path, sep='\t') 
+        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.replace(' ','_').replace('-','_'))
+        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.replace('_(',';').replace(')','')) 
+        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.lower())
+        
+        # Creating keywords-analysis data and saving them as xlsx files
+        usecols = [final_pub_id_col_alias,      
+                   depts_col_list,          
+                   parsing_pub_id_col_alias,
+                   keywords_col_alias,      
+                   weight_col_alias,
+                  ]
+        _create_kw_analysis_data(year, analysis_df, kw_type, kw_df, usecols, 
+                                 kw_analysis_folder_path, verbose = verbose)
+        
+        # Creating keywords clouds and saving them as png images
+        _create_kw_cloud(year, kw_type, kw_analysis_folder_path, usecols, verbose = verbose)
+    
+    return kw_analysis_folder_path
+
+

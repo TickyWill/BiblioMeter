@@ -436,7 +436,7 @@ def _launch_update_if_db(bibliometer_path,
     from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import update_inst_if_database
     
     if check_if_status:
-        # Lancement de la fonction MAJ Effectif
+        # Lancement de la fonction MAJ IF
         ask_title = "- Confirmation de la mise à jour des IFs -"
         ask_text  = f"La base de données des IFs va être mise à jour "
         ask_text += f"avec les nouvelles données disponibles dans les dossiers :"

@@ -501,7 +501,7 @@ def get_if_db(bibliometer_path):
     return if_df, if_available_years_list, if_most_recent_year
 
 
-def add_if(in_file_path, out_file_path, missing_if_path, missing_issn_path, corpus_year): 
+def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missing_issn_path, corpus_year): 
 
     '''The function `add_if` adds two new columns containing impact factors
     to the corpus dataframe 'corpus_df' got from a file which full path is 'in_file_path'. 
@@ -901,7 +901,8 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
 
     # Adding Impact Factors and saving new consolidate_pub_list_df 
     # this also for saving results files to complete IFs database
-    _, if_database_complete = add_if(out_file_path, 
+    _, if_database_complete = add_if(bibliometer_path, 
+                                     out_file_path, 
                                      out_file_path, 
                                      missing_if_path,
                                      missing_issn_path, 

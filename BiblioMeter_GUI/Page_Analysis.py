@@ -23,7 +23,7 @@ def _launch_kw_analysis(bibliometer_path, year_select):
     
 
 
-def _launch_if_analysis(bibliometer_path, year_select):
+def _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder_alias):
     """
     """
     
@@ -49,11 +49,13 @@ def _launch_if_analysis(bibliometer_path, year_select):
     
     info_title = "- Information -"
     info_text  = f"L'analyse des IFs a été effectuée pour l'année {year_select} "
-    info_text += f"avec les valeurs {analysis_if} "
-    info_text += f"\nLes fichiers obtenus ont été créés dans le dossier :"
-    info_text += f"\n\n'{if_analysis_folder_path}'"
-    info_text += f"\n\nLa base de données des indicateurs a été mise à jour "
-    info_text += f"avec les résultats de cette analyse."          
+    info_text += f"avec les valeurs {analysis_if}. "
+    info_text += f"\n\nLes fichiers obtenus ont été créés dans le dossier :"
+    info_text += f"\n\n'{if_analysis_folder_path}'."
+    info_text += f"\n\nLa base de donnée des indicateurs respective de l'Institut "
+    info_text += f"et de chaque département a été mise à jour "
+    info_text += f"avec les résultats de cette analyse et se trouve dans le dossier :" 
+    info_text += f"\n\n'{bdd_multi_annuelle_folder_alias}'."
     messagebox.showinfo(info_title, info_text)    
     
     
@@ -100,6 +102,7 @@ def create_analysis(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     
     # Local globals imports
+    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
     from BiblioMeter_GUI.Coordinates import FONT_NAME
     from BiblioMeter_GUI.Coordinates import HELP_ETAPE_7
     from BiblioMeter_GUI.Coordinates import HELP_ETAPE_8
@@ -114,20 +117,19 @@ def create_analysis(self, bibliometer_path, parent):
     
     # Internal functions
     
-    def _launch_if_analysis_try():
-        
+    def _launch_if_analysis_try():        
         # Getting year selection
         year_select =  variable_years.get()
         
-        print("IFs analysis launched")
-        _launch_if_analysis(bibliometer_path, year_select)
+        print(f"\nIFs analysis launched for year {year_select}")
+        _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder_alias)
         return
     
     def _launch_kw_analysis_try():
         # Getting year selection
         year_select =  variable_years.get()
         
-        print("Keywords analysis launched")
+        print(f"Keywords analysis launched for year {year_select}")
         _launch_kw_analysis(bibliometer_path, year_select)
         return   
             
@@ -138,6 +140,8 @@ def create_analysis(self, bibliometer_path, parent):
         answer_1 = messagebox.askokcancel('Information', message)
         if answer_1:
             parent.destroy()
+
+    ########################## Function start    
             
     # Getting useful window sizes and scale factors depending on displays properties
     sizes_tuple   = root_properties(self)
@@ -171,7 +175,10 @@ def create_analysis(self, bibliometer_path, parent):
     # Setting common attributs
     etape_label_format = 'left'
     etape_underline    = -1                              
-      
+
+    # Setting useful paths independent from corpus year
+    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
+    
     # Décoration de la page
     # - Canvas
     fond = tk.Canvas(self, 
@@ -231,7 +238,7 @@ def create_analysis(self, bibliometer_path, parent):
     place_bellow(if_analysis_label, 
                  help_label)     
                                          
-    ### Bouton pour lancer l'étape
+    ### Bouton pour lancer l'analyse des IFs
     if_analysis_launch_font = tkFont.Font(family = FONT_NAME, 
                                           size = eff_launch_font_size)
     if_analysis_launch_button = tk.Button(self,
@@ -243,7 +250,7 @@ def create_analysis(self, bibliometer_path, parent):
                  dx = launch_dx_px, 
                  dy = launch_dy_px)
     
-    ################## Mise à jour des Ifs dans les listes consolidées
+    ################## Analyse des mots clefs
     
     ### Titre 
     kw_analysis_label_font = tkFont.Font(family = FONT_NAME, 
@@ -268,7 +275,7 @@ def create_analysis(self, bibliometer_path, parent):
     place_bellow(kw_analysis_label, 
                  help_label) 
     
-    ### Bouton pour lancer la mise à jour des IFs dans les listes consolidées existantes 
+    ### Bouton pour lancer l'analyse des mots clefs
     kw_analysis_launch_font = tkFont.Font(family = FONT_NAME, 
                                          size = eff_launch_font_size)
     kw_analysis_button = tk.Button(self, 

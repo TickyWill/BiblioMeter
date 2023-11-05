@@ -14,7 +14,7 @@ with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
 # This setup is suitable for "python setup.py develop".
 
 setup(name='BiblioMeter',
-      version='3.5.0',
+      version='3.6.0',
       description='An application for bibliometry',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -28,7 +28,7 @@ setup(name='BiblioMeter',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research'
         ],
-      keywords = 'Bibliography, Corpus parsing, Corpuses merging, WOS, SCOPUS',
+      keywords = 'Bibliography, Corpus parsing, Corpuses merging, WOS, SCOPUS, KPIs extraction',
       install_requires = install_requires,
       author= 'BiblioMeter team',
       author_email= 'francois.bertin7@wanadoo.fr, amal.chabli@orange.fr','ludovic.desmeuzes@yahoo.com'

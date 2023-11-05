@@ -57,7 +57,7 @@ __all__ = ['general_properties',
 
 
 # Setting version value
-VERSION ='3.5.0'
+VERSION ='3.6.0'
 
 # Setting general globals for text edition
 FONT_NAME = "Helvetica"
