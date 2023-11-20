@@ -19,14 +19,12 @@ def _create_table(self, bibliometer_path, pos_x_init):
     Note:
         The function '_mm_to_px' is imported from the module 'BiblioGui' 
         of the package 'BiblioAnalysis_Utils'.
-        The function 'root_propertier' is imported from the module 'Coordinates' 
+        The function 'root_propertier' is imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
         The functions 'font_size' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The global 'FONT_NAME' is imported from the module 'Coordinates' 
+        The globals 'FONT_NAME' and 'PPI' are imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
-        The global 'PPI' is imported from the module 'GUI_Globals' of the package 
-        'BiblioMeter_GUI'.
 
     """
     
@@ -37,11 +35,12 @@ def _create_table(self, bibliometer_path, pos_x_init):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     
-    # Local imports    
-    from BiblioMeter_GUI.Coordinates import root_properties
+    # Local library imports    
+    from BiblioMeter_GUI.GUI_Globals import root_properties
     from BiblioMeter_GUI.Useful_Functions import font_size    
     
-    from BiblioMeter_GUI.Coordinates import FONT_NAME
+    # Loal globals import
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
     from BiblioMeter_GUI.GUI_Globals import PPI  
     
     # Internal function
@@ -114,15 +113,13 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     Note:
         The function '_mm_to_px' is imported from the module 'BiblioGui' 
         of the package 'BiblioAnalysis_Utils'.
-        The function 'root_properties' is imported from the module 'Coordinates' 
+        The function 'root_properties' is imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
         The functions 'existing_corpuses', 'font_size' and 'place_after'
         are imported from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
         The class 'CheckBoxCorpuses' is imported from the module 'Useful_Classes' 
         of the package 'BiblioMeter_GUI'.
-        The global FONT_NAME is imported from the module 'Coordinates' 
-        of the package 'BiblioMeter_GUI'.
-        The global PPI is imported from the module 'GUI_Globals' 
+        The globals FONT_NAME and PPI are imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
             
     '''
@@ -135,14 +132,14 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px 
     
     # Local imports        
-    from BiblioMeter_GUI.Coordinates import root_properties    
+    from BiblioMeter_GUI.GUI_Globals import root_properties    
     from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses    
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     
     # Globals imports
-    from BiblioMeter_GUI.Coordinates import FONT_NAME        
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME        
     from BiblioMeter_GUI.GUI_Globals import PPI
     
     # Getting useful window sizes and scale factors depending on displays properties
@@ -279,10 +276,10 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     from BiblioAnalysis_Utils.BiblioParsingUtils import biblio_parser
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import PARSING_PERF
     
-    # Local imports
+    # Local library imports
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses 
     
-    # Globals imports
+    # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     
     # Internal functions    
@@ -546,14 +543,12 @@ def create_parsing_concat(self, bibliometer_path, parent):
     Note:
         The function '_mm_to_px' is imported from the module 'BiblioGui' 
         of the package 'BiblioAnalysis_Utils'.
-        The function 'root_properties' is imported from the module 'Coordinates' 
+        The function 'root_properties' is imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
         The functions 'existing_corpuses', 'font_size' and 'place_after' 
         are imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The globals BDD_LIST and PPI are imported from the module 'GUI_Globals' 
-        of the package 'BiblioMeter_GUI'.
-        The global FONT_NAME and TEXT_* are imported from the module 'Coordinates' 
+        The globals BDD_LIST, FONT_NAME, PPI and TEXT_* are imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
     
     """
@@ -571,24 +566,23 @@ def create_parsing_concat(self, bibliometer_path, parent):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px    
     
-    # Local imports
-    from BiblioMeter_GUI.Coordinates import root_properties
-    
+    # Local library imports
+    from BiblioMeter_GUI.GUI_Globals import root_properties    
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     
-    # Globals imports    
-    from BiblioMeter_GUI.Coordinates import FONT_NAME
-    from BiblioMeter_GUI.Coordinates import TEXT_BDD_PC
-    from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_PARSING
-    from BiblioMeter_GUI.Coordinates import TEXT_LAUNCH_SYNTHESE
-    from BiblioMeter_GUI.Coordinates import TEXT_PARSING
-    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
-    from BiblioMeter_GUI.Coordinates import TEXT_STATUT
-    from BiblioMeter_GUI.Coordinates import TEXT_SYNTHESE    
-    from BiblioMeter_GUI.Coordinates import TEXT_UPDATE_STATUS        
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PC
+    # Local globals imports    
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
+    from BiblioMeter_GUI.GUI_Globals import TEXT_BDD_PC
+    from BiblioMeter_GUI.GUI_Globals import TEXT_LAUNCH_PARSING
+    from BiblioMeter_GUI.GUI_Globals import TEXT_LAUNCH_SYNTHESE
+    from BiblioMeter_GUI.GUI_Globals import TEXT_PARSING
+    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
+    from BiblioMeter_GUI.GUI_Globals import TEXT_STATUT
+    from BiblioMeter_GUI.GUI_Globals import TEXT_SYNTHESE    
+    from BiblioMeter_GUI.GUI_Globals import TEXT_UPDATE_STATUS        
+    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PC
     from BiblioMeter_GUI.GUI_Globals import BDD_LIST
     from BiblioMeter_GUI.GUI_Globals import PPI
     
@@ -616,14 +610,14 @@ def create_parsing_concat(self, bibliometer_path, parent):
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers  are reference values in mm for reference screen
     position_selon_x_check   = _mm_to_px(70  * width_sf_mm,  PPI)
-    position_selon_y_check   = _mm_to_px(40  * height_sf_mm, PPI)  #45  ################################################ 
+    position_selon_y_check   = _mm_to_px(40  * height_sf_mm, PPI)  #45   
     espace_entre_ligne_check = _mm_to_px(10  * height_sf_mm, PPI)    
     labels_x_pos             = _mm_to_px(10  * width_sf_mm,  PPI)
     labels_y_space           = _mm_to_px(10  * height_sf_mm, PPI)
-    status_label_y_pos       = _mm_to_px(25  * height_sf_mm, PPI)  #30  ################################################    
+    status_label_y_pos       = _mm_to_px(25  * height_sf_mm, PPI)  #30      
     parsing_label_y_pos      = _mm_to_px(107 * height_sf_mm, PPI)  
     synthese_label_y_pos     = _mm_to_px(135 * height_sf_mm, PPI)                             
-    status_button_x_pos      = _mm_to_px(50  * width_sf_mm, PPI)  #40  ################################################     
+    status_button_x_pos      = _mm_to_px(50  * width_sf_mm, PPI)   #40       
     status_button_y_pos      = _mm_to_px(95  * height_sf_mm, PPI)                         
     exit_button_x_pos        = _mm_to_px(193 * width_sf_mm,  PPI) 
     exit_button_y_pos        = _mm_to_px(145 * height_sf_mm, PPI)

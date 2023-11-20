@@ -20,28 +20,25 @@ class LabelEntry:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):
+    def __init__(self, parent, text_label, font_label, text_button, font_button, *args, **kargs):
         
         # 3rd party imports
         import tkinter as tk
-        
-        # Local variables
-        button_label = "Changer de dossier"
         
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable = self.val)
         self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
-        self.but = tk.Button(parent, text = button_label, font = font_button, command = self.get_file)
+        self.but = tk.Button(parent, text = text_button, font = font_button, command = self.get_file)
 
-    def place(self, x, y, align = True):
+    def place(self, x, y, but_pos_dx, but_pos_dy, align = True):
         a,b = self.lab.winfo_reqwidth(),0
         if not align:
             a,b = b,a
         self.lab.place(x = x - a, y = y, anchor = "w")
         self.entree2.place(x = x + b, y = y, anchor = "w")
-        self.but.place(x = x + b + self.entree2.winfo_reqwidth() + 15, y = y - 2, anchor = "w")
+        self.but.place(x = x + b + self.entree2.winfo_reqwidth() + but_pos_dx, y = y + but_pos_dy, anchor = "w")
         
     def get(self):
         return self.val.get()
@@ -54,7 +51,7 @@ class LabelEntry:
         from pathlib import Path
         
         p = Path(value)
-        self.val2.set(p.parts[0] / Path("...") / ('/'.join(p.parts[-3:])))
+        self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
         
     def get_file(self):
         
@@ -76,11 +73,12 @@ class LabelEntry:
         self.val.set(fic)
         
         p = Path(fic)
-        self.val2.set(p.parts[0] / Path("...") / ('/'.join(p.parts[-3:])))
+        self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
         
     def efface(self):
         for x in (self.lab, self.entree):
             x.place_forget()
+
 
 class CheckBoxCorpuses:
     
@@ -100,14 +98,14 @@ class CheckBoxCorpuses:
         # BiblioAnalysis_Utils package imports
         from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
         
-        # Local imports
-        from BiblioMeter_GUI.Coordinates import root_properties        
+        # Local library imports
+        from BiblioMeter_GUI.GUI_Globals import root_properties        
         from BiblioMeter_GUI.Useful_Functions import font_size
         
-        from BiblioMeter_GUI.Coordinates import FONT_NAME
-        from BiblioMeter_GUI.Coordinates import REF_CHECK_BOXES_SEP_SPACE
-        
+        # Local globals imports
+        from BiblioMeter_GUI.GUI_Globals import FONT_NAME
         from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import REF_CHECK_BOXES_SEP_SPACE        
         from BiblioMeter_GUI.GUI_Globals import ROOT_PATH        
         
         # Getting useful window sizes and scale factors depending on displays properties

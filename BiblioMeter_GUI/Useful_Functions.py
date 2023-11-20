@@ -53,10 +53,11 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     import os
     from pathlib import Path
 
-    # Local imports
+    # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     
+    # Local globals imports
     from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.Useful_Functions import last_available_years  
     
@@ -103,9 +104,9 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     years_folder_list = last_available_years(bibliometer_path, corpuses_number)
 
     # Setting useful aliases from globals
-    corpus_alias  = FOLDER_NAMES['corpus']
-    rawdata_alias = FOLDER_NAMES['rawdata']
-    parsing_alias = FOLDER_NAMES['parsing']
+    corpus_alias       = FOLDER_NAMES['corpus']
+    rawdata_alias      = FOLDER_NAMES['rawdata']
+    parsing_alias      = FOLDER_NAMES['parsing']
     concat_alias       = FOLDER_NAMES['concat']
     dedup_alias        = FOLDER_NAMES['dedup']
     concat_path_alias  = Path(corpus_alias) / FOLDER_NAMES['concat']

@@ -20,7 +20,7 @@ def _launch_update_employees(bibliometer_path,
     if check_effectif_status:
         # Lancement de la fonction MAJ Effectif
         ask_title = "- Confirmation de la mise à jour des effectifs -"
-        ask_text  = f"Le fichier des effectifs LITEN va être mis à jour "
+        ask_text  = f"Le fichier des effectifs de l'Institut va être mis à jour "
         ask_text += f"avec les nouvelles données disponibles dans le dossier :"
         ask_text += f"\n\n '{maj_effectifs_folder_path}'."
         ask_text += f"\n\nCette opération peut prendre quelques minutes."
@@ -143,10 +143,10 @@ def _launch_recursive_year_search_try(year_select,
             info_title = '- Information -'
             info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué." 
             if orphan_status: 
-                info_text += f"\n\nTous les auteurs LITEN ont été identifiés dans les effectifs." 
+                info_text += f"\n\nTous les auteurs de l'Institut ont été identifiés dans les effectifs." 
                 info_text += f"\n\nLa résolution des homonymes peut être lancée." 
             else:
-                info_text += f"\n\nMais, des auteurs LITEN n'ont pas été identifiés dans les effectifs." 
+                info_text += f"\n\nMais, des auteurs affiiés à l'Institut n'ont pas été identifiés dans les effectifs." 
                 info_text += f"\n1- Ouvrez le fichier {orphan_alias} du dossier :\n  {bdd_mensuelle_path} ;"
                 info_text += f"\n\n2- Suivez le mode opératoire disponible pour son utilisation ;"
                 info_text += f"\n3- Puis relancez le croisement pour cette année."
@@ -227,9 +227,9 @@ def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
     else:
         warning_title = "!!! Attention !!!"
         warning_text  = f"Le nombre d'années disponibles est insuffisant "
-        warning_text += f"dans le fichier des effectifs du LITEN."
+        warning_text += f"dans le fichier des effectifs de l'Institut."
         warning_text += f"\nLe croisement auteurs-effectifs ne peut être effectué !"
-        warning_text += f"\n1- Complétez le fichier des effectifs du LITEN ;"
+        warning_text += f"\n1- Complétez le fichier des effectifs de l'Institut ;"
         warning_text += f"\n2- Puis relancer le croisement auteurs-effectifs."                    
         messagebox.showwarning(warning_title, warning_text)                         
         return None
@@ -613,7 +613,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px        
     
     # Local library imports         
-    from BiblioMeter_GUI.Coordinates import root_properties
+    from BiblioMeter_GUI.GUI_Globals import root_properties
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import font_size
@@ -629,16 +629,16 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
     
-    from BiblioMeter_GUI.Coordinates import ETAPE_LABEL_TEXT_LIST
-    from BiblioMeter_GUI.Coordinates import FONT_NAME    
-    from BiblioMeter_GUI.Coordinates import TEXT_CROISEMENT
-    from BiblioMeter_GUI.Coordinates import TEXT_HOMONYMES
-    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_EFFECTIFS
-    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_DB_IF
-    from BiblioMeter_GUI.Coordinates import TEXT_OTP
-    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
-    from BiblioMeter_GUI.Coordinates import TEXT_PUB_CONSO
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI    
+    from BiblioMeter_GUI.GUI_Globals import ETAPE_LABEL_TEXT_LIST
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME    
+    from BiblioMeter_GUI.GUI_Globals import TEXT_CROISEMENT
+    from BiblioMeter_GUI.GUI_Globals import TEXT_HOMONYMES
+    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_EFFECTIFS
+    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_DB_IF
+    from BiblioMeter_GUI.GUI_Globals import TEXT_OTP
+    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
+    from BiblioMeter_GUI.GUI_Globals import TEXT_PUB_CONSO
+    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI    
     from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.GUI_Globals import PPI
 
@@ -904,7 +904,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         year_select = variable_years.get()
         
         # Setting paths and aliases dependent on year_select  
-        homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
+        homonymes_file_alias = homonymes_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path     = bibliometer_path / Path(year_select)
         homonymes_path       = corpus_year_path / Path(homonymes_path_alias)
         homonymes_file_path  = homonymes_path / Path(homonymes_file_alias) 

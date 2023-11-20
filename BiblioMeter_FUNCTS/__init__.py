@@ -1,7 +1,9 @@
-__version__ = '3.6.0'
+__version__ = '3.7.0'
 __author__ = 'BiblioMeter team'
 __license__ = 'MIT'
 
+
+from BiblioMeter_FUNCTS.BM_UsefulFuncts import *
 from BiblioMeter_FUNCTS.BM_EmployeesGlobals import *
 from BiblioMeter_FUNCTS.BM_PubGlobals import *
 from BiblioMeter_FUNCTS.BM_RenameCols import *

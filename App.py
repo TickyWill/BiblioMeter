@@ -4,9 +4,9 @@
 # In[ ]:
 
 
-from BiblioMeter_GUI.Page_Classes import App_Test
+from BiblioMeter_GUI.Page_Classes import app_main
 
-app = App_Test()
+app = app_main()
 app.mainloop()
 
 

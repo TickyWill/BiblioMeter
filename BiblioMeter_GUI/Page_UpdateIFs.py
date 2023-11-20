@@ -82,9 +82,9 @@ def _launch_update_pub_if(bibliometer_path,
         if out_file_status:
             # Updating Impact Factors and saving new consolidated list of publications 
             # this also for saving results files to complete IFs database
-            _, if_database_complete = add_if(out_file_path, 
+            _, if_database_complete = add_if(bibliometer_path,
                                              out_file_path, 
-                                             all_if_path,
+                                             out_file_path, 
                                              missing_if_path,
                                              missing_issn_path, 
                                              corpus_year)
@@ -154,8 +154,7 @@ def create_update_ifs(self, bibliometer_path, parent):
     
     # Local functions imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists
-    from BiblioMeter_GUI.Coordinates import root_properties
-    from BiblioMeter_GUI.Useful_Classes import LabelEntry_toFile
+    from BiblioMeter_GUI.GUI_Globals import root_properties
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
@@ -169,14 +168,14 @@ def create_update_ifs(self, bibliometer_path, parent):
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
-    from BiblioMeter_GUI.Coordinates import FONT_NAME
-    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_6
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_5
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_6
-    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_BDD_IF
-    from BiblioMeter_GUI.Coordinates import TEXT_MAJ_PUB_IF
-    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
+    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_5
+    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_6
+    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_5
+    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_6
+    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_BDD_IF
+    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_PUB_IF
+    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
     from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.GUI_Globals import PPI
     
@@ -204,7 +203,7 @@ def create_update_ifs(self, bibliometer_path, parent):
             if_db_update_status = False
         return
 
-    def _missing_pub_file_year_check():        
+    def _missing_pub_file_year_check():
         missing_pub_file_year, if_database_complete = _launch_update_pub_if(bibliometer_path, 
                                                                             corpus_years_list,
                                                                             pub_list_folder_alias,
@@ -283,7 +282,7 @@ def create_update_ifs(self, bibliometer_path, parent):
     height_sf_mm  = sizes_tuple[5]
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
-    # Setting effective font sizes and positions (numbers are reference values)
+    # Setting effective font sizes and positions (numbers are reference values in mm)
     eff_etape_font_size      = font_size(14, width_sf_min)
     eff_launch_font_size     = font_size(13, width_sf_min)
     eff_help_font_size       = font_size(12, width_sf_min)

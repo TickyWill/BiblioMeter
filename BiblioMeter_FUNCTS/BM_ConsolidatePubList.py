@@ -212,8 +212,14 @@ def _add_authors_name_list(in_path, out_path):
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS 
+    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
     from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
+    
+    # Internal functions
+    def _get_dpt_key(dpt_raw):
+        for key, values in DPT_LABEL_DICT.items():
+            if dpt_raw in values: return key        
     
     # Setting useful aliases
     pub_id_alias          = BM_COL_RENAME_DIC[COL_NAMES['pub_id']]
@@ -223,6 +229,7 @@ def _add_authors_name_list(in_path, out_path):
     full_name_alias       = BM_COL_RENAME_DIC[COL_NAMES_BONUS['nom prénom']]
     author_type_col_alias = BM_COL_RENAME_DIC[COL_NAMES_BONUS['author_type']]
     full_name_list_alias  = BM_COL_RENAME_DIC[COL_NAMES_BONUS['nom prénom liste']]
+    dept_col_alias        = BM_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['dpt']]
 
     # Reading the excel file
     df_in = pd.read_excel(in_path)
@@ -233,10 +240,13 @@ def _add_authors_name_list(in_path, out_path):
         
     df_out = pd.DataFrame()
     for pub_id, pub_id_df in df_in.groupby(pub_id_alias):
+
         authors_tup_list = sorted(list(set(zip(pub_id_df[idx_authors_alias], 
                                                pub_id_df[full_name_alias], 
-                                               pub_id_df[author_type_col_alias]))))
-        authors_str_list = [f'{x[1]} ({x[2]})' for x in  authors_tup_list]
+                                               pub_id_df[author_type_col_alias],
+                                               pub_id_df[dept_col_alias]))))
+
+        authors_str_list = [f'{x[1]} ({x[2]},{_get_dpt_key(x[3])})' for x in  authors_tup_list]
         authors_full_str ="; ".join(authors_str_list)
         pub_id_df[full_name_list_alias] = authors_full_str
         df_out = pd.concat([df_out, pub_id_df])
@@ -246,6 +256,64 @@ def _add_authors_name_list(in_path, out_path):
     
     end_message = f"Column with co-authors list is added to the file: \n  '{out_path}'"
     return end_message
+
+
+def _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dpt_path, col_otp):
+
+    ''' Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
+    The OPTs of the choosen department are added in a new column named 'OTP_alias'. 
+    A list data validation rules is added to each celles of the column
+    'OTP_alias'. The data frame column are renamed using 'col_otp'. The Excel frame is
+    configurated by the `mise_en_page` function.
+
+    '''
+    # 3rd party imports
+    from openpyxl.worksheet.datavalidation import DataValidation as openpyxl_DataValidation
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    
+    # Local globals imports  
+    from BiblioMeter_FUNCTS.BM_PubGlobals import OTP_SHEET_NAME_BASE
+    
+    # Building validation list of OTP for 'dpt' department
+    validation_list = '"'+','.join(dpt_otp_list) + '"' 
+    data_val = openpyxl_DataValidation(type = "list", 
+                                       formula1 = validation_list, 
+                                       showErrorMessage = False)
+
+    # Adding a column containing OTPs of 'dpt' department
+    df_dpt[OTP_alias] = validation_list
+
+    # Renaming the columns 
+    df_dpt = df_dpt.reindex(columns = col_otp)
+    # to replace by :
+    # COL_OTP_DICT {col_old_name : col_new_name}
+    # df_dpt = df_dpt.rename(columns = COL_OTP_DICT)
+
+    # Formatting the EXCEL file
+    wb, ws = mise_en_page(df_dpt)
+    ws.title = OTP_SHEET_NAME_BASE + " " +  dpt 
+
+    # Setting num of first col and first row in EXCEL files
+    excel_first_col_num = 1
+    excel_first_row_num = 2
+
+    # Getting the column letter for the OTPs column 
+    OTP_alias_df_index = list(df_dpt.columns).index(OTP_alias)        
+    OTP_alias_excel_index = OTP_alias_df_index + excel_first_col_num 
+    OTP_alias_column_letter = openpyxl_get_column_letter(OTP_alias_excel_index)
+
+    # Activating the validation data list in all cells of the OTPs column
+    if len(df_dpt):
+        # Adding a validation data list
+        ws.add_data_validation(data_val)
+        for df_index_row in range(len(df_dpt)):  
+            OTP_cell_alias = OTP_alias_column_letter + str(df_index_row + excel_first_row_num)
+            data_val.add(ws[OTP_cell_alias])
+
+    wb.save(excel_dpt_path)
 
 
 def add_OTP(in_path, out_path, out_file_base):
@@ -273,72 +341,21 @@ def add_OTP(in_path, out_path, out_file_base):
 
     # 3rd party imports
     import pandas as pd
-    from openpyxl.worksheet.datavalidation import DataValidation as openpyxl_DataValidation
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
     
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
     
     # Local library imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import _add_authors_name_list
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_otp_col_names
     
     # Local globals imports 
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
     from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
     from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_ATTRIBUTS_DICT       
-
-    # Internal functions    
-    def _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, excel_dpt_path, col_otp):
-        
-        ''' Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
-        The OPTs of the choosen department are added in a new column named 'OTP_alias' definined after the
-        global "COL_NAMES_BONUS['list OTP']". 
-        A list data validation rules is added to each celles of the column
-        'OTP_alias'. The data frame column are renamed using 'col_otp'. The Excel frame is
-        configurated by the `mise_en_page` function.
-        
-        '''
-        
-        # Building validation list of OTP for 'dpt' department
-        validation_list = '"'+','.join(dpt_otp_list) + '"' 
-        data_val = openpyxl_DataValidation(type = "list", 
-                                           formula1 = validation_list, 
-                                           showErrorMessage = False)
-        
-        # Adding a column containing OTPs of 'dpt' department
-        df_dpt[OTP_alias] = validation_list
-        
-        # Renaming the columns 
-        df_dpt = df_dpt.reindex(columns = col_otp)
-        # to replace by :
-        # COL_OTP_DICT {col_old_name : col_new_name}
-        # df_dpt = df_dpt.rename(columns = COL_OTP_DICT)
-        
-        # Formatting the EXCEL file
-        wb, ws = mise_en_page(df_dpt)
-        ws.title = 'OTP ' +  dpt    # To define via a global
-        
-        # Setting num of first col and first row in EXCEL files
-        excel_first_col_num = 1
-        excel_first_row_num = 2
-        
-        # Getting the column letter for the OTPs column 
-        OTP_alias_df_index = list(df_dpt.columns).index(OTP_alias)        
-        OTP_alias_excel_index = OTP_alias_df_index + excel_first_col_num 
-        OTP_alias_column_letter = openpyxl_get_column_letter(OTP_alias_excel_index)
-                
-        # Activating the validation data list in all cells of the OTPs column
-        if len(df_dpt):
-            # Adding a validation data list
-            ws.add_data_validation(data_val)
-            for df_index_row in range(len(df_dpt)):  
-                OTP_cell_alias = OTP_alias_column_letter + str(df_index_row + excel_first_row_num)
-                data_val.add(ws[OTP_cell_alias])
-
-        wb.save(excel_dpt_path)
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_ATTRIBUTS_DICT
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_KEY
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_OTP_KEY
     
     # Setting useful column names 
     col_otp = set_otp_col_names()    
@@ -348,8 +365,8 @@ def add_OTP(in_path, out_path, out_file_base):
     idx_author_alias = BM_COL_RENAME_DIC[COL_NAMES['authors'][1]]       # Idx_author
     dpt_alias        = BM_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['dpt']]  # Dpt/DOB (lib court)
     OTP_alias        = BM_COL_RENAME_DIC[COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
-    dpt_label_alias  = 'dpt_label'
-    dpt_otp_alias    = 'dpt_otp'
+    dpt_label_alias  = DPT_LABEL_KEY
+    dpt_otp_alias    = DPT_OTP_KEY
     
     # Adding a column with a list of the authors in the file where homonymies 
     # have been solved and pointed by in_path
@@ -363,11 +380,11 @@ def add_OTP(in_path, out_path, out_file_base):
      
     # For each department adding a column containing 1 or 0 
     # depending if the author belongs or not to the department
-    for dpt in  dpt_list:
+    for dpt in dpt_list:
         dpt_label_list = DPT_ATTRIBUTS_DICT[dpt][dpt_label_alias]
         solved_homonymies_df[dpt] = solved_homonymies_df[dpt_alias].apply(lambda x: 1 
                                                                           if x in dpt_label_list 
-                                                                          else 0)
+                                                                          else 0)    
     
     # Building 'df_out' out of 'solved_homonymies_df' with a row per pub_id 
     # 1 or 0 is assigned to each department column depending 
@@ -397,7 +414,7 @@ def add_OTP(in_path, out_path, out_file_base):
         excel_dpt_path    = out_path / Path(OTP_file_name_dpt)
         
         # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, excel_dpt_path, col_otp)
+        _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dpt_path, col_otp)
 
     end_message  = f"Files for setting publication OTPs per department "
     end_message += f"saved in folder: \n  '{out_path}'"
@@ -489,7 +506,7 @@ def get_if_db(bibliometer_path):
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     if_path             = if_root_folder_path / Path(if_filename_alias)
-    
+
     # Getting the df of the IFs database
     if_df = pd.read_excel(if_path, sheet_name = None)
     

@@ -94,7 +94,7 @@ def create_analysis(self, bibliometer_path, parent):
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
     
     # Local functions imports
-    from BiblioMeter_GUI.Coordinates import root_properties
+    from BiblioMeter_GUI.GUI_Globals import root_properties
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
@@ -103,15 +103,15 @@ def create_analysis(self, bibliometer_path, parent):
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_GUI.Coordinates import FONT_NAME
-    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_7
-    from BiblioMeter_GUI.Coordinates import HELP_ETAPE_8
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_7
-    from BiblioMeter_GUI.Coordinates import TEXT_ETAPE_8
-    from BiblioMeter_GUI.Coordinates import TEXT_IF_ANALYSIS
-    from BiblioMeter_GUI.Coordinates import TEXT_KW_ANALYSIS
-    from BiblioMeter_GUI.Coordinates import TEXT_PAUSE
-    from BiblioMeter_GUI.Coordinates import TEXT_YEAR_PI 
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
+    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_7
+    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_8
+    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_7
+    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_8
+    from BiblioMeter_GUI.GUI_Globals import TEXT_IF_ANALYSIS
+    from BiblioMeter_GUI.GUI_Globals import TEXT_KW_ANALYSIS
+    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
+    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI 
     from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.GUI_Globals import PPI
     

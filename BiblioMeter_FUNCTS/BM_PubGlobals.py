@@ -31,6 +31,8 @@ __all__ = ['ANALYSIS_IF',
            'DOC_TYPE_DICT',
            'DPT_ATTRIBUTS_DICT',
            'DPT_LABEL_DICT',
+           'DPT_LABEL_KEY',
+           'DPT_OTP_KEY',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
@@ -40,6 +42,7 @@ __all__ = ['ANALYSIS_IF',
            'NO_IF_DOCTYPE',
            'NOT_AVAILABLE_IF',
            'ORPHAN_COL_RENAME_DIC',
+           'OTP_SHEET_NAME_BASE',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
            'SUBMIT_COL_RENAME_DIC',
@@ -76,9 +79,9 @@ ARCHI_YEAR = {
               "analyses"                       : "5 - Analyses",
               "if analysis"                    : "IFs",
               "keywords analysis"              : "Mots clefs",
-              "subjects"                       : "Thématique",
-              "countries"                      : "Géographique",
-              "institutions"                   : "Collaborations",
+              "subjects analysis"              : "Thématique",
+              "countries analysis"             : "Géographique",
+              "institutions analysis"          : "Collaborations",
               "bdd mensuelle"                  : "0 - BDD multi mensuelle", 
               "submit file name"               : "submit.xlsx", 
               "orphan file name"               : "orphan.xlsx",
@@ -108,37 +111,41 @@ BM_LOW_WORDS_LIST = ["of", "and", "on"]
 DPT_LABEL_DICT = {'DEHT': ['DEHT'],
                   'DTCH': ['DTCH', 'DTBH'],
                   'DTNM': ['DTNM'],
-                  'DTS' : ['DTS']
+                  'DTS' : ['DTS'],
+                  'DIR' : ['(' + INSTITUTE.upper() + ')']
                  }
 
 
-DPT_ATTRIBUTS_DICT = {'DEHT': {'dpt_label': ['DEHT'],
-                               'dpt_otp'  : ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 
-                                             'EMEPE', 'SYS2E','SYSIE', 'TEENV'],
+DPT_LABEL_KEY = 'dpt_label'
+DPT_OTP_KEY   = 'dpt_otp'
+
+DPT_ATTRIBUTS_DICT = {'DEHT': {DPT_LABEL_KEY: ['DEHT'],
+                               DPT_OTP_KEY  : ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 
+                                               'EMEPE', 'SYS2E','SYSIE', 'TEENV'],
                               },
-                      'DTCH': {'dpt_label': ['DTCH', 'DTBH'],
-                               'dpt_otp'  : ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 
-                                             'INREL', 'MATEP', 'ESQVE', 'MATNA', 
-                                             'TECNA', 'IDNES', 'COTHE', 'SYS2E', 
-                                             'SYSIE', 'CHECC'],
+                      'DTCH': {DPT_LABEL_KEY: ['DTCH', 'DTBH'],
+                               DPT_OTP_KEY  : ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 
+                                               'INREL', 'MATEP', 'ESQVE', 'MATNA', 
+                                               'TECNA', 'IDNES', 'COTHE', 'SYS2E', 
+                                               'SYSIE', 'CHECC'],
                               },
-                      'DTNM': {'dpt_label': ['DTNM'],
-                               'dpt_otp'  : ['PROH2', 'COTHE', 'ASMAT', 'FAB3D', 
-                                             'INDIB', 'STSH2', 'INNAN', 'TEENV', 
-                                             'CHECC', 'NRBCT', 'ELORG'],
+                      'DTNM': {DPT_LABEL_KEY: ['DTNM'],
+                               DPT_OTP_KEY  : ['PROH2', 'COTHE', 'ASMAT', 'FAB3D', 
+                                               'INDIB', 'STSH2', 'INNAN', 'TEENV', 
+                                               'CHECC', 'NRBCT', 'ELORG'],
                               },
-                      'DTS' : {'dpt_label': ['DTS'],
-                               'dpt_otp'  : ['MACPV', 'HETPV', 'MSYPV', 'TEENV', 
-                                             'MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'],
+                      'DTS' : {DPT_LABEL_KEY: ['DTS'],
+                               DPT_OTP_KEY  : ['MACPV', 'HETPV', 'MSYPV', 'TEENV', 
+                                               'MSBAT', 'EMEPE', 'SYS2E', 'SYSIE'],
                               },
                      }
 
-
-DPT_ATTRIBUTS_DICT['DIR'] = {'dpt_label': ['(LITEN)'],
-                             'dpt_otp'  : list(set(sum([DPT_ATTRIBUTS_DICT[dpt_label]['dpt_otp'] 
-                                                        for dpt_label in DPT_ATTRIBUTS_DICT.keys()],[]))),
+DPT_ATTRIBUTS_DICT['DIR'] = {DPT_LABEL_KEY: ['(' + INSTITUTE.upper() + ')'],
+                             DPT_OTP_KEY  : list(set(sum([DPT_ATTRIBUTS_DICT[dpt_label][DPT_OTP_KEY] 
+                                                          for dpt_label in DPT_ATTRIBUTS_DICT.keys()],[]))),
                             }
 
+OTP_SHEET_NAME_BASE = "OTP"
 
 # Colors for row background in EXCEL files
 ROW_COLORS = {'odd'      : '0000FFFF',
@@ -151,7 +158,7 @@ ROW_COLORS = {'odd'      : '0000FFFF',
 from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS 
 
 LITEN_INST_LIST = [('INES',  'France'), 
-                   ('LITEN', 'France'),
+                   (INSTITUTE.upper(), 'France'),
                   ]
 
 DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
@@ -184,14 +191,14 @@ COL_HASH = {'hash_id'    : "Hash_id",
            }
 
 
-COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur Liten", 
-                   'nom prénom liste' : 'Liste ordonnée des auteurs Liten', 
-                   'liste biblio'     : 'Référence bibliographique complète', 
-                   'author_type'      : "Type de l'auteur Liten",
+COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur " + INSTITUTE, 
+                   'nom prénom liste' : "Liste ordonnée des auteurs " + INSTITUTE, 
+                   'liste biblio'     : "Référence bibliographique complète", 
+                   'author_type'      : "Type de l'auteur " + INSTITUTE,
                    'homonym'          : 'Homonymes',
                    'list OTP'         : "Choix de l'OTP",
                    'final OTP'        : "OTP",
-                   'corpus_year'      : 'Année de première publication',
+                   'corpus_year'      : "Année de première publication",
                    'IF en cours'      : "IF en cours", 
                    'IF année publi'   : "IF de l'année de première publication",
                    'IF clarivate'     : 'IF',
@@ -246,7 +253,7 @@ COL_NAMES_EXT = {'last name'   : pub_last_name,
 
 
 SHEET_NAMES_ORPHAN = {"to replace"    : "Spécifique par publi",
-                      "to remove"     : "Externes LITEN",
+                      "to remove"     : "Externes " + INSTITUTE,
                       "docs to add"   : "Doctorants externes",
                       "others to add" : "Autres externes",
                      }
@@ -352,7 +359,7 @@ def _build_col_conversion_dic():
                               "Institutions",
                              ],
                              liten_col_list,
-                             ["Co_auteur Liten",
+                             ["Co_auteur " + INSTITUTE,
                              "Premier auteur",
                              "Année de publication finale",
                              "Journal",
