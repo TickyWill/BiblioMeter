@@ -1,5 +1,5 @@
 __version__ = '3.7.0'
-__author__ = 'BiblioMeter team'
+__author__  = 'BiblioMeter team'
 __license__ = 'MIT'
 
 from BiblioMeter_GUI.GUI_Globals import *

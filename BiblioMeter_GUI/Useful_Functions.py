@@ -57,9 +57,11 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
     from BiblioAnalysis_Utils.BiblioSpecificGlobals import FOLDER_NAMES
     
+    # Local library imports
+    from BiblioMeter_GUI.Useful_Functions import last_available_years
+    
     # Local globals imports
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.Useful_Functions import last_available_years  
+    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER      
     
     # internal functions
     def _get_rawdata_filename_path(corpus_full_path, database_type):

@@ -155,12 +155,13 @@ def create_update_ifs(self, bibliometer_path, parent):
     # Local functions imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists
     from BiblioMeter_GUI.GUI_Globals import root_properties
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
+    from BiblioMeter_GUI.Useful_Functions import encadre_RL
+    from BiblioMeter_GUI.Useful_Functions import encadre_UD    
     from BiblioMeter_GUI.Useful_Functions import font_size
+    from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import encadre_UD
+
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP
@@ -168,16 +169,21 @@ def create_update_ifs(self, bibliometer_path, parent):
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
+    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.GUI_Globals import FONT_NAME
     from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_5
     from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_6
+    from BiblioMeter_GUI.GUI_Globals import PPI
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_FONT_SIZE
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
     from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_5
     from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_6
     from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_BDD_IF
     from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_PUB_IF
     from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.GUI_Globals import PPI
+
+    
     
     # Internal functions
     
@@ -283,18 +289,19 @@ def create_update_ifs(self, bibliometer_path, parent):
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting effective font sizes and positions (numbers are reference values in mm)
-    eff_etape_font_size      = font_size(14, width_sf_min)
-    eff_launch_font_size     = font_size(13, width_sf_min)
-    eff_help_font_size       = font_size(12, width_sf_min)
-    eff_buttons_font_size    = font_size(11, width_sf_min)
+    eff_etape_font_size      = font_size(REF_ETAPE_FONT_SIZE, width_sf_min)           #14
+    eff_launch_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_help_font_size       = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_buttons_font_size    = font_size(REF_ETAPE_FONT_SIZE-3, width_sf_min)      
+    
     if_db_update_x_pos_px    = _mm_to_px(10 * width_sf_mm, PPI)
     if_db_update_y_pos_px    = _mm_to_px(35 * height_sf_mm, PPI)     
     update_if_label_dx_px    = _mm_to_px( 0 * width_sf_mm, PPI)  
     update_if_label_dy_px    = _mm_to_px(15 * height_sf_mm, PPI)   
     launch_dx_px             = _mm_to_px( 0 * width_sf_mm, PPI)    
     launch_dy_px             = _mm_to_px( 5 * height_sf_mm, PPI)   
-    exit_button_x_pos_px     = _mm_to_px(193 * width_sf_mm, PPI)    
-    exit_button_y_pos_px     = _mm_to_px(145 * height_sf_mm, PPI)  
+    exit_button_x_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)    #193 
+    exit_button_y_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)    #145    
     
     # Setting common attributs
     etape_label_format = 'left'

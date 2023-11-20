@@ -95,26 +95,31 @@ def create_analysis(self, bibliometer_path, parent):
     
     # Local functions imports
     from BiblioMeter_GUI.GUI_Globals import root_properties
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
+    from BiblioMeter_GUI.Useful_Functions import font_size
+    from BiblioMeter_GUI.Useful_Functions import last_available_years
+    from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import place_bellow    
     
     # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
+    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.GUI_Globals import FONT_NAME
     from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_7
     from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_8
+    from BiblioMeter_GUI.GUI_Globals import PPI    
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_FONT_SIZE
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_Y_MM
     from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_7
     from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_8
     from BiblioMeter_GUI.GUI_Globals import TEXT_IF_ANALYSIS
     from BiblioMeter_GUI.GUI_Globals import TEXT_KW_ANALYSIS
     from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
     from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI 
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.GUI_Globals import PPI
-    
+   
     # Internal functions
     
     def _launch_if_analysis_try():        
@@ -154,23 +159,26 @@ def create_analysis(self, bibliometer_path, parent):
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting effective font sizes and positions (numbers are reference values)
-    eff_etape_font_size      = font_size(14, width_sf_min)
-    eff_launch_font_size     = font_size(13, width_sf_min)
-    eff_help_font_size       = font_size(12, width_sf_min)
-    eff_buttons_font_size    = font_size(11, width_sf_min)
-    eff_select_font_size     = font_size(12, width_sf_min)
+    eff_etape_font_size      = font_size(REF_ETAPE_FONT_SIZE, width_sf_min)           #14
+    eff_launch_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_help_font_size       = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_select_font_size     = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_buttons_font_size    = font_size(REF_ETAPE_FONT_SIZE-3, width_sf_min)  
+    
     if_analysis_x_pos_px     = _mm_to_px(10 * width_sf_mm, PPI)
     if_analysis_y_pos_px     = _mm_to_px(40 * height_sf_mm, PPI)     
     kw_analysis_label_dx_px  = _mm_to_px( 0 * width_sf_mm, PPI)  
     kw_analysis_label_dy_px  = _mm_to_px(15 * height_sf_mm, PPI)   
     launch_dx_px             = _mm_to_px( 0 * width_sf_mm, PPI)    
     launch_dy_px             = _mm_to_px( 5 * height_sf_mm, PPI)   
-    exit_button_x_pos_px     = _mm_to_px(193 * width_sf_mm, PPI)    
-    exit_button_y_pos_px     = _mm_to_px(145 * height_sf_mm, PPI)
-    year_button_x_pos        = _mm_to_px( 10 * width_sf_mm,  PPI) 
-    year_button_y_pos        = _mm_to_px( 26 * height_sf_mm, PPI)    
+
+    year_button_x_pos        = _mm_to_px(REF_YEAR_BUT_POS_X_MM * width_sf_mm,  PPI)    #10  
+    year_button_y_pos        = _mm_to_px(REF_YEAR_BUT_POS_Y_MM * height_sf_mm, PPI)    #26     
     dy_year                  = -6
     ds_year                  = 5
+    
+    exit_button_x_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)    #193 
+    exit_button_y_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)    #145 
     
     # Setting common attributs
     etape_label_format = 'left'

@@ -119,18 +119,18 @@ def _launch_recursive_year_search_try(year_select,
                                       all_effectifs_path,
                                       employees_update_status,
                                       orphan_alias,
-                                     ):
-    '''       
-    '''
-
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_MergePubEmployees import recursive_year_search    
+                                  ):
+    """
+    """
     
     # Standard library imports
     import os
     
     # 3rd party imports
     from tkinter import messagebox
+    
+    # Local library imports
+    from BiblioMeter_FUNCTS.BM_MergePubEmployees import recursive_year_search    
 
     def _recursive_year_search_try():
         try:            
@@ -420,53 +420,6 @@ def _launch_add_OTP_try(bibliometer_path,
     return   
 
 
-def _launch_update_if_db(bibliometer_path,
-                         corpi_year_list,
-                         year_select,
-                         pub_list_path,
-                         check_if_status,
-                        ):
-    """
-    """
-    
-    # 3rd party imports    
-    from tkinter import messagebox
-    
-    # Local library imports     
-    from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import update_inst_if_database
-    
-    if check_if_status:
-        # Lancement de la fonction MAJ IF
-        ask_title = "- Confirmation de la mise à jour des IFs -"
-        ask_text  = f"La base de données des IFs va être mise à jour "
-        ask_text += f"avec les nouvelles données disponibles dans les dossiers :"
-        ask_text += f"\n\n '{pub_list_path}' "
-        ask_text += f"\n des corpus des années {corpi_year_list} ."
-        ask_text += f"\n\nCette opération peut prendre quelques secondes."
-        ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
-        ask_text += f"\n\nAvant de poursuivre la consolidation, "
-        ask_text += f"confirmez la mise à jour ?"            
-        answer_1  = messagebox.askokcancel(ask_title, ask_text)
-        if answer_1:
-            _, if_years_list = update_inst_if_database(bibliometer_path, corpi_year_list)
-            info_title = "- Information -"
-            info_text  = f"La mise à jour de la base de données des IFs a été effectuée "
-            info_text += f"pour les années  {if_years_list}."
-            info_text += f"\nLa consolidation pour l'année {year_select} va être poursuivie."
-            messagebox.showinfo(info_title, info_text)
-            update_status = True
-            return update_status
-        else:
-            # Arrêt de la procédure
-            info_title    = "- Information -"
-            warning_text  = f"La mise à jour de la base de données des IFs est abandonnée."
-            warning_text += f"\n\nSi la consolidation pour l'année {year_select} "
-            warning_text += f"est confirmée, elle se fera sans cette mise à jour."            
-            messagebox.showwarning(warning_title, warning_text)          
-            update_status = False
-            return update_status 
-
-
 def _launch_pub_list_conso_try(bibliometer_path, 
                                OTP_path,
                                pub_list_path,
@@ -627,22 +580,31 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
-    
+    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT 
+    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
     from BiblioMeter_GUI.GUI_Globals import ETAPE_LABEL_TEXT_LIST
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME    
+    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
+    from BiblioMeter_GUI.GUI_Globals import PPI
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_BUT_DX_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_BUT_DY_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_CHECK_DY_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_FONT_SIZE
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_POS_Y_MM_LIST
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_Y_MM
     from BiblioMeter_GUI.GUI_Globals import TEXT_CROISEMENT
     from BiblioMeter_GUI.GUI_Globals import TEXT_HOMONYMES
-    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_EFFECTIFS
     from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_DB_IF
+    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_EFFECTIFS    
     from BiblioMeter_GUI.GUI_Globals import TEXT_OTP
     from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
     from BiblioMeter_GUI.GUI_Globals import TEXT_PUB_CONSO
-    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI    
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.GUI_Globals import PPI
+    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI      
 
-    # Defining internal functions
+    # Internal functions
 
     def _etape_frame(self, num):
         '''The local function `_etape_frame` sets the 'etape' and place in the page
@@ -683,25 +645,25 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     height_sf_mm  = sizes_tuple[5]
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
-    # Setting useful local variables for positions modification (globals to create ??)
+    # Setting useful local variables for positions modification
     # numbers are reference values in mm for reference screen
-    eff_etape_font_size      = font_size(14, width_sf_min)
-    eff_launch_font_size     = font_size(13, width_sf_min)
-    eff_answer_font_size     = font_size(13, width_sf_min)
-    eff_select_font_size     = font_size(12, width_sf_min)
-    eff_buttons_font_size    = font_size(11, width_sf_min)                                         
+    eff_etape_font_size      = font_size(REF_ETAPE_FONT_SIZE, width_sf_min)           #14
+    eff_launch_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_answer_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_select_font_size     = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_buttons_font_size    = font_size(REF_ETAPE_FONT_SIZE-3, width_sf_min)                                         
 
-    etape_label_pos_x        = _mm_to_px( 10 * width_sf_mm, PPI)
-    etape_label_pos_y_list   = [_mm_to_px( y * height_sf_mm, PPI) for y in [40, 74, 101, 129]]
-    etape_button_dx          = _mm_to_px( 10 * width_sf_mm, PPI)
-    etape_button_dy          = _mm_to_px(  5 * height_sf_mm, PPI)
-    etape_check_dy           = _mm_to_px( -8 * height_sf_mm, PPI)
+    etape_label_pos_x        = _mm_to_px(REF_ETAPE_POS_X_MM * width_sf_mm, PPI)        #10
+    etape_label_pos_y_list   = [_mm_to_px( y * height_sf_mm, PPI) for y in REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
+    etape_button_dx          = _mm_to_px(REF_ETAPE_BUT_DX_MM * width_sf_mm, PPI)       #10
+    etape_button_dy          = _mm_to_px(REF_ETAPE_BUT_DY_MM * height_sf_mm, PPI)      #5
+    etape_check_dy           = _mm_to_px(REF_ETAPE_CHECK_DY_MM * height_sf_mm, PPI)    #-8
 
-    exit_button_x_pos        = _mm_to_px(193 * width_sf_mm,  PPI) 
-    exit_button_y_pos        = _mm_to_px(145 * height_sf_mm, PPI)
+    exit_button_x_pos        = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)    #193 
+    exit_button_y_pos        = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)    #145
 
-    year_button_x_pos        = _mm_to_px( 10 * width_sf_mm,  PPI) 
-    year_button_y_pos        = _mm_to_px( 26 * height_sf_mm, PPI)    
+    year_button_x_pos        = _mm_to_px(REF_YEAR_BUT_POS_X_MM * width_sf_mm,  PPI)    #10  
+    year_button_y_pos        = _mm_to_px(REF_YEAR_BUT_POS_Y_MM * height_sf_mm, PPI)    #26     
     dy_year                  = -6
     ds_year                  = 5
 

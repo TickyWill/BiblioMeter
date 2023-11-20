@@ -43,7 +43,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
     from BiblioMeter_GUI.GUI_Globals import FONT_NAME
     from BiblioMeter_GUI.GUI_Globals import PPI  
     
-    # Internal function
+    # Internal functions
     def _set_table_item(item_text, item_pos_x):
         item_case = tk.Label(self, 
                        text = item_text, 
@@ -65,7 +65,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
     ref_font_size = 11
     local_font_size = font_size(ref_font_size, width_sf_min)    
     header_font = tkFont.Font(family = FONT_NAME, 
-                              size = local_font_size)
+                              size   = local_font_size)
     
     # Setting useful x position shift and y position reference in pixels    
     pos_x_shift = _mm_to_px(25 * width_sf_mm,  PPI)                                 
@@ -131,14 +131,14 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     # BiblioAnalysis_Utils package imports
     from BiblioAnalysis_Utils.BiblioGui import _mm_to_px 
     
-    # Local imports        
+    # Local library imports        
     from BiblioMeter_GUI.GUI_Globals import root_properties    
     from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses    
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     
-    # Globals imports
+    # Local globals imports
     from BiblioMeter_GUI.GUI_Globals import FONT_NAME        
     from BiblioMeter_GUI.GUI_Globals import PPI
     
@@ -420,10 +420,10 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     from BiblioAnalysis_Utils.BiblioParsingConcat import parsing_concatenate_deduplicate
     from BiblioAnalysis_Utils.BiblioParsingInstitutions import extend_author_institutions
     
-    # Local imports
+    # Local library imports
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     
-    # Globals imports
+    # Local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import LITEN_INST_LIST
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
     
@@ -572,8 +572,12 @@ def create_parsing_concat(self, bibliometer_path, parent):
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import place_after
     
-    # Local globals imports    
+    # Local globals imports
+    from BiblioMeter_GUI.GUI_Globals import BDD_LIST    
     from BiblioMeter_GUI.GUI_Globals import FONT_NAME
+    from BiblioMeter_GUI.GUI_Globals import PPI
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
+    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
     from BiblioMeter_GUI.GUI_Globals import TEXT_BDD_PC
     from BiblioMeter_GUI.GUI_Globals import TEXT_LAUNCH_PARSING
     from BiblioMeter_GUI.GUI_Globals import TEXT_LAUNCH_SYNTHESE
@@ -582,11 +586,9 @@ def create_parsing_concat(self, bibliometer_path, parent):
     from BiblioMeter_GUI.GUI_Globals import TEXT_STATUT
     from BiblioMeter_GUI.GUI_Globals import TEXT_SYNTHESE    
     from BiblioMeter_GUI.GUI_Globals import TEXT_UPDATE_STATUS        
-    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PC
-    from BiblioMeter_GUI.GUI_Globals import BDD_LIST
-    from BiblioMeter_GUI.GUI_Globals import PPI
+    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PC    
     
-    # Defining internal functions
+    # Internal functions
     def _launch_exit():
         ask_title = 'Arrêt de BiblioMeter'
         ask_text =  "Après la fermeture des fenêtres, "
@@ -610,27 +612,26 @@ def create_parsing_concat(self, bibliometer_path, parent):
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers  are reference values in mm for reference screen
     position_selon_x_check   = _mm_to_px(70  * width_sf_mm,  PPI)
-    position_selon_y_check   = _mm_to_px(40  * height_sf_mm, PPI)  #45   
+    position_selon_y_check   = _mm_to_px(40  * height_sf_mm, PPI)  #40   
     espace_entre_ligne_check = _mm_to_px(10  * height_sf_mm, PPI)    
     labels_x_pos             = _mm_to_px(10  * width_sf_mm,  PPI)
     labels_y_space           = _mm_to_px(10  * height_sf_mm, PPI)
-    status_label_y_pos       = _mm_to_px(25  * height_sf_mm, PPI)  #30      
+    status_label_y_pos       = _mm_to_px(25  * height_sf_mm, PPI)  #25      
     parsing_label_y_pos      = _mm_to_px(107 * height_sf_mm, PPI)  
     synthese_label_y_pos     = _mm_to_px(135 * height_sf_mm, PPI)                             
-    status_button_x_pos      = _mm_to_px(50  * width_sf_mm, PPI)   #40       
-    status_button_y_pos      = _mm_to_px(95  * height_sf_mm, PPI)                         
-    exit_button_x_pos        = _mm_to_px(193 * width_sf_mm,  PPI) 
-    exit_button_y_pos        = _mm_to_px(145 * height_sf_mm, PPI)
+    status_button_x_pos      = _mm_to_px(148  * width_sf_mm, PPI)  #148       
+    status_button_y_pos      = _mm_to_px(98  * height_sf_mm, PPI)  #98                         
+    exit_button_x_pos        = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)  #193 
+    exit_button_y_pos        = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)  #145
     dx_year_select           = _mm_to_px(1   * width_sf_mm,  PPI)
     dy_year_select           = _mm_to_px(1   * height_sf_mm, PPI)
-    dx_bdd_select            = _mm_to_px(12  * width_sf_mm,  PPI)  #15
+    dx_bdd_select            = _mm_to_px(12  * width_sf_mm,  PPI)  #12
     dy_bdd_select            = _mm_to_px(1   * height_sf_mm, PPI)
-    dx_launch                = _mm_to_px(15  * width_sf_mm,  PPI)  #20
+    dx_launch                = _mm_to_px(15  * width_sf_mm,  PPI)  #15
     dy_launch                = _mm_to_px(0.2 * height_sf_mm, PPI)
     eff_labels_font_size     = font_size(14, width_sf_min)
     eff_select_font_size     = font_size(12, width_sf_min) 
     eff_buttons_font_size    = font_size(11, width_sf_min)
-
                 
     year_x_pos = labels_x_pos           
     parsing_year_y_pos =  parsing_label_y_pos + labels_y_space

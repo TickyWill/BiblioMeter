@@ -76,23 +76,24 @@ class app_main(tk.Tk):
         self.REP = list()
         
         ######################################## Gestion du dossier de travail - start
-                
+        # BiblioAnalysis_Utils package imports
+        from BiblioAnalysis_Utils.BiblioGui import _str_size_mm
+        
         # Local library imports
-        #from BiblioMeter_GUI.Useful_Classes import LabelEntry
         from BiblioMeter_GUI.Useful_Functions import last_available_years
         
         # Local globals imports
         from BiblioMeter_GUI.GUI_Globals import ADD_SPACE_MM
         from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-        from BiblioMeter_GUI.GUI_Globals import REF_ENTRY_NB_CHAR 
+        from BiblioMeter_GUI.GUI_Globals import REF_BMF_FONT_SIZE
         from BiblioMeter_GUI.GUI_Globals import REF_BMF_POS_X_MM
         from BiblioMeter_GUI.GUI_Globals import REF_BMF_POS_Y_MM    
         from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_DX_MM
         from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_DY_MM
-        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_BMF_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE        
         from BiblioMeter_GUI.GUI_Globals import REF_CORPI_POS_X_MM
         from BiblioMeter_GUI.GUI_Globals import REF_CORPI_POS_Y_MM
+        from BiblioMeter_GUI.GUI_Globals import REF_ENTRY_NB_CHAR
         from BiblioMeter_GUI.GUI_Globals import ROOT_PATH 
         from BiblioMeter_GUI.GUI_Globals import TEXT_BMF
         from BiblioMeter_GUI.GUI_Globals import TEXT_BMF_CHANGE
@@ -335,20 +336,24 @@ class app_main(tk.Tk):
         from BiblioMeter_GUI.GUI_Globals import REF_COPYRIGHT_FONT_SIZE
         from BiblioMeter_GUI.GUI_Globals import REF_COPYRIGHT_X_MM
         from BiblioMeter_GUI.GUI_Globals import REF_COPYRIGHT_Y_MM
-        from BiblioMeter_GUI.GUI_Globals import TEXT_COPYRIGHT       
+        from BiblioMeter_GUI.GUI_Globals import REF_VERSION_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_VERSION_X_MM
+        from BiblioMeter_GUI.GUI_Globals import TEXT_COPYRIGHT
+        from BiblioMeter_GUI.GUI_Globals import TEXT_VERSION
 
         # Setting font size for copyright
-        ref_copyright_font_size  = REF_COPYRIGHT_FONT_SIZE       #10
-        eff_copyright_font_size  = font_size(ref_copyright_font_size, width_sf_min)
+        ref_copyright_font_size = 12 # REF_COPYRIGHT_FONT_SIZE       #10
+        eff_copyright_font_size = font_size(ref_copyright_font_size, width_sf_min)
         
         # Setting X and Y positions reference in mm for copyright
         ref_copyright_x_mm = REF_COPYRIGHT_X_MM              #5
         eff_copyright_x_px = _mm_to_px(ref_copyright_x_mm * width_sf_mm, PPI)
         ref_copyright_y_mm = REF_COPYRIGHT_Y_MM              #170
-        eff_copyright_y_px = _mm_to_px(ref_copyright_y_mm * height_sf_mm, PPI)      
+        eff_copyright_y_px = _mm_to_px(ref_copyright_y_mm * height_sf_mm, PPI)
+        
         
         Auteurs_font_label = tkFont.Font(family = FONT_NAME, 
-                                         size = eff_copyright_font_size)
+                                         size = eff_copyright_font_size,)
         Auteurs_label = tk.Label(self, 
                                  text = TEXT_COPYRIGHT, 
                                  font = Auteurs_font_label,
@@ -356,6 +361,29 @@ class app_main(tk.Tk):
         Auteurs_label.place(x = eff_copyright_x_px, 
                             y = eff_copyright_y_px, 
                             anchor = "sw")
+        
+        # Setting font size for copyright
+        ref_version_font_size = REF_VERSION_FONT_SIZE         #12
+        eff_version_font_size = font_size(ref_version_font_size, width_sf_min)
+        
+        # Setting X and Y positions reference in mm for version
+        ref_version_x_mm = REF_VERSION_X_MM                   #185
+        eff_version_x_px = _mm_to_px(ref_version_x_mm * width_sf_mm, PPI)
+        ref_version_y_mm = REF_COPYRIGHT_Y_MM                 #170
+        eff_version_y_px = _mm_to_px(ref_version_y_mm * height_sf_mm, PPI)
+        
+        
+        version_font_label = tkFont.Font(family = FONT_NAME, 
+                                         size = eff_version_font_size,
+                                         weight = 'bold')
+
+        version_label = tk.Label(self, 
+                                 text = TEXT_VERSION, 
+                                 font = version_font_label,
+                                 justify = "right")
+        version_label.place(x = eff_version_x_px, 
+                            y = eff_version_y_px, 
+                            anchor = "sw")       
     
     ################################ Class init - end ################################
     
@@ -449,12 +477,12 @@ class Page_ParseCorpus(tk.Frame):
         
         # Local globals imports
         from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
         from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
         from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
         from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
         
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(controller)
@@ -530,12 +558,12 @@ class Page_ConsolidateCorpus(tk.Frame):
         
         # Local globals imports
         from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
         from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
         from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
-        from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import PPI 
+        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE        
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
         
         # Internal functions
         def _launch_consolidate_corpus():
@@ -640,12 +668,12 @@ class Page_UpdateIFs(tk.Frame):
         
         # Local globals imports
         from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
         from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
         from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
-        from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import PPI 
+        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE        
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
 
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(controller)
@@ -717,12 +745,12 @@ class Page_Analysis(tk.Frame):
         
         # Local globals imports
         from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE
-        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
         from BiblioMeter_GUI.GUI_Globals import PAGES_LABELS
         from BiblioMeter_GUI.GUI_Globals import PAGES_NAMES
-        from BiblioMeter_GUI.GUI_Globals import PPI
+        from BiblioMeter_GUI.GUI_Globals import PPI 
+        from BiblioMeter_GUI.GUI_Globals import REF_BUTTON_FONT_SIZE        
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_FONT_SIZE
+        from BiblioMeter_GUI.GUI_Globals import REF_LABEL_POS_Y_MM
 
         # Getting useful window sizes and scale factors depending on displays properties
         sizes_tuple   = root_properties(controller)
