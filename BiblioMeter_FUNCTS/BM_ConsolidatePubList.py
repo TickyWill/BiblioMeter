@@ -872,6 +872,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
     from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
     from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
+    from BiblioMeter_FUNCTS.BM_PubGlobals import INVALIDE
     
     # internal functions
     def _set_df_OTP_dpt(dpt_label):        
@@ -882,21 +883,23 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
             OTP_file_name_dpt = in_file_base + '_' + dpt_label + '.xlsx'
             dpt_path = in_path / Path(OTP_file_name_dpt)
         dpt_df = pd.read_excel(dpt_path)
+        dpt_df.drop(dpt_df[dpt_df[OTP_alias] == INVALIDE].index, inplace = True)
         return dpt_df
     
     # Setting useful column names
     col_final_list = set_final_col_names()
     
     # Setting useful aliases
-    pub_id_alias                     = col_final_list[0]   #COL_NAMES['pub_id']
     missing_if_filename_base_alias   = ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = ARCHI_IF["missing_issn_base"]
-    
+    pub_id_alias                     = col_final_list[0]   #COL_NAMES['pub_id']
+    OTP_alias                        = col_final_list[16]   # Choix de l'OTP
+       
     # Setting useful paths
-    missing_if_path     = out_path / Path(corpus_year + missing_if_filename_base_alias)
-    missing_issn_path   = out_path / Path(corpus_year + missing_issn_filename_base_alias)    
+    missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
+    missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)    
     
-    ### Charger les df et ajouter les 4 colonnes 
+    ### Charger les df et les concatener 
     dpt_label_list = list(DPT_LABEL_DICT.keys())
     OTP_df_init_status = True
     for dpt_label in dpt_label_list:
@@ -911,7 +914,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     OTP_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
     
     # Selecting useful columns using col_final_list
-    consolidate_pub_list_df = OTP_df[col_final_list].copy()    
+    consolidate_pub_list_df = OTP_df[col_final_list].copy() 
     
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)

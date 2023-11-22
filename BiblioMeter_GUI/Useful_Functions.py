@@ -16,13 +16,24 @@ def last_available_years(bibliometer_path, year_number):
     # Standard library imports
     import os
     
+    # 3rd party imports
+    from tkinter import messagebox
+    
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
-    list_dir = os.listdir(bibliometer_path)
-    list_annee = list()
-    for annee in list_dir:
-        if len(annee) == 4:
-            list_annee.append(annee)
-    return list_annee[-year_number:]
+    try:
+        list_dir = os.listdir(bibliometer_path)
+        years_full_list = list()
+        for year in list_dir:
+            if len(year) == 4:
+                years_full_list.append(year)
+        years_list = years_full_list[-year_number:]
+    except FileNotFoundError:
+        warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
+        warning_text  = f"L'accès au dossier {bibliometer_path} est impossible."
+        warning_text += f"\nChoisissez un autre dossier de travail."                       
+        messagebox.showwarning(warning_title, warning_text)
+        years_list = []
+    return years_list
 
 
 def existing_corpuses(bibliometer_path, corpuses_number = None):
