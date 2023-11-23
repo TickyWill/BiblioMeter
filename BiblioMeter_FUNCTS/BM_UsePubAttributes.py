@@ -210,7 +210,8 @@ def save_otps(bibliometer_path, corpus_year):
     # Setting useful column names       
     hash_id_col_alias        = COL_HASH['hash_id']
     pub_id_alias             = SUBMIT_COL_RENAME_DIC[COL_NAMES['pub_id']]    
-    otp_col_alias            = COL_NAMES_BONUS['final OTP']                 
+    otp_col_alias            = COL_NAMES_BONUS['final OTP']
+    otp_list_col_alias       = COL_NAMES_BONUS['list OTP']
     
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)    
@@ -228,22 +229,27 @@ def save_otps(bibliometer_path, corpus_year):
     pub_df = pd.read_excel(pub_list_file_path)
     
     # Building pub_id and otp df
-    kept_otps_df_init = pub_df[[pub_id_alias, otp_col_alias]]
+    if otp_col_alias in pub_df.columns: 
+        otp_col = otp_col_alias
+    else:
+        otp_col = otp_list_col_alias    
+    kept_otps_df_init = pub_df[[pub_id_alias, otp_col]]
     kept_otps_df_init = kept_otps_df_init.fillna(0)
     kept_otps_df_init = kept_otps_df_init.astype(str)
-    kept_otps_df = kept_otps_df_init.copy()
+    kept_otps_df      = kept_otps_df_init.copy()
     sep = ","
     for idx,row in kept_otps_df_init.iterrows():
-        if sep in row[otp_col_alias] or row[otp_col_alias] == "0": 
+        if sep in row[otp_col] or row[otp_col] == "0": 
             kept_otps_df = kept_otps_df.drop(idx)
     
-    # Building hash_id and kept matricules df
+    # Building hash_id and kept otp df
     otps_history_df = pd.merge(hash_id_df, 
                                kept_otps_df, 
                                how = 'inner',
                                on = pub_id_alias)
     otps_history_df.drop(columns = [pub_id_alias], inplace = True)
     otps_history_df = otps_history_df.astype(str)
+    otps_history_df.rename(columns={otp_col:otp_col_alias}, inplace = True)
     
     otps_history_df.to_excel(kept_otps_file_path, index = False) 
 

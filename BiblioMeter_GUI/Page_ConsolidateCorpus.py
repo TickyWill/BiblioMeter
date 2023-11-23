@@ -451,8 +451,8 @@ def _launch_pub_list_conso_try(bibliometer_path,
                                                                                   pub_list_file_path, OTP_file_base_alias, 
                                                                                   year_select)
             print(end_message)
-            end_message = save_otps(bibliometer_path, year_select)
-            print('\n',end_message)
+            #end_message = save_otps(bibliometer_path, year_select)
+            #print('\n',end_message)
             end_message = concatenate_pub_lists(bibliometer_path, years_list)
             print('\n',end_message)
             info_title = "- Information -"

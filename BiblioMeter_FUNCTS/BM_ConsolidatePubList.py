@@ -867,6 +867,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     
     # Local library imports
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps
 
     # local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
@@ -883,7 +884,6 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
             OTP_file_name_dpt = in_file_base + '_' + dpt_label + '.xlsx'
             dpt_path = in_path / Path(OTP_file_name_dpt)
         dpt_df = pd.read_excel(dpt_path)
-        dpt_df.drop(dpt_df[dpt_df[OTP_alias] == INVALIDE].index, inplace = True)
         return dpt_df
     
     # Setting useful column names
@@ -918,6 +918,16 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
+    
+    # Saving set OTPs
+    otp_message = save_otps(bibliometer_path, corpus_year)
+    
+    # Droping invalide publications
+    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[OTP_alias] == INVALIDE].index, 
+                                 inplace = True)
+    
+    # Re_saving df to EXCEL file
+    consolidate_pub_list_df.to_excel(out_file_path, index = False)
 
     # Adding Impact Factors and saving new consolidate_pub_list_df 
     # this also for saving results files to complete IFs database
@@ -931,7 +941,8 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
     split_ratio = split_pub_list(bibliometer_path, corpus_year)
     
-    end_message = f"OTPs identification integrated in file : \n  '{out_file_path}'"
+    end_message  = f"\n" + otp_message
+    end_message += f"\nOTPs identification integrated in file : \n  '{out_file_path}'"
     end_message += f"\n\nPublications list for year {corpus_year} has been {split_ratio} % splitted "
     end_message += f"in 2 files by group of document types"
     
