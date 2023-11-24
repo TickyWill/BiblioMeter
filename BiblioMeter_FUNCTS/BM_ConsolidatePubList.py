@@ -867,7 +867,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     
     # Local library imports
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
-    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps  
 
     # local globals imports
     from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
@@ -914,7 +914,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     OTP_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
     
     # Selecting useful columns using col_final_list
-    consolidate_pub_list_df = OTP_df[col_final_list].copy() 
+    consolidate_pub_list_df = OTP_df[col_final_list].copy()
     
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
@@ -922,9 +922,15 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     # Saving set OTPs
     otp_message = save_otps(bibliometer_path, corpus_year)
     
-    # Droping invalide publications
+    # Setting pub ID as index for unique identification of rows
+    consolidate_pub_list_df.set_index(pub_id_alias, inplace = True)
+    
+    # Droping invalide publications by pub Id as index
     consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[OTP_alias] == INVALIDE].index, 
                                  inplace = True)
+    
+    # Resetting pub ID as a standard column
+    consolidate_pub_list_df.reset_index(inplace = True)
     
     # Re_saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
