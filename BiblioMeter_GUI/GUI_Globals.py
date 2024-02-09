@@ -1,7 +1,4 @@
-__all__ = ['general_properties',
-           'root_properties',
-           'ADD_SPACE_MM',
-           'BDD_LIST',           
+__all__ = ['ADD_SPACE_MM',           
            'BM_GUI_DISP',
            'CONTAINER_BUTTON_HEIGHT_PX',
            'CORPUSES_NUMBER',
@@ -11,7 +8,7 @@ __all__ = ['general_properties',
            'HELP_ETAPE_6',
            'HELP_ETAPE_7',
            'HELP_ETAPE_8',
-           'INSTITUTE',
+           'IN_TO_MM',
            'PAGES_LABELS',
            'PAGES_NAMES',
            'PPI',
@@ -41,11 +38,16 @@ __all__ = ['general_properties',
            'REF_LAUNCH_FONT_SIZE',
            'REF_PAGE_TITLE_FONT_SIZE',
            'REF_PAGE_TITLE_POS_Y_MM',
+           'REF_SCREEN_WIDTH_PX',
+           'REF_SCREEN_HEIGHT_PX',
+           'REF_SCREEN_WIDTH_MM',
+           'REF_SCREEN_HEIGHT_MM',
+           'REF_WINDOW_WIDTH_MM',
+           'REF_WINDOW_HEIGHT_MM',
            'REF_VERSION_FONT_SIZE',
            'REF_VERSION_X_MM',
            'REF_YEAR_BUT_POS_X_MM',
            'REF_YEAR_BUT_POS_Y_MM',
-           'ROOT_PATH',
            'TEXT_BDD_PC',
            'TEXT_BMF',
            'TEXT_BMF_CHANGE',
@@ -84,31 +86,70 @@ __all__ = ['general_properties',
            ]
 
 
-# BiblioAnalysis_Utils package globals imports
-from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
-
-
 ################################## General globals ##################################
+# Local imports
+import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig 
 
 # Setting BiblioMeter version value (internal)
-VERSION ='3.7.0'
-
-# Setting the default value for the working directory
-ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.2-Infos communes\BiblioMeter\BiblioMeter_Files"
+VERSION ='4.0.0'
 
 # Setting the number of corpuses to analyse
 CORPUSES_NUMBER = 6
 
-# Setting the databases of corpuses extraction
-BDD_LIST = ['wos','scopus']
-
-# Setting institute name
-INSTITUTE = "Liten"
-
 # Setting the title of the application main window (internal)
-APPLICATION_WINDOW_TITLE = f"BiblioMeter - Analyse de la production scientifique de l'institut {INSTITUTE}"
+APPLICATION_WINDOW_TITLE = f"BiblioMeter - Analyse de la production scientifique de l'institut {ig.INSTITUTE}"
 
-# Setting primery display
+######################## Definition of display globals ###########################
+
+def _get_displays(in_to_mm): 
+    
+    ''' The function `get_displays` allows to identify the set of displays
+        available within the user hardware and to get their parameters.
+        If the width or the height of a display are not available in mm 
+        through the `get_monitors` method (as for Darwin platforms), 
+        the user is asked to specify the displays diagonal size to compute them.
+        
+    Returns:
+        `list`: list of dicts with one dict per detected display,
+                each dict is keyed by 8 display parameters.   
+    '''
+    # To Do: convert prints and inputs to gui displays and inputs
+    
+    # Standard library imports
+    import math
+    
+    # 3rd party imports
+    from screeninfo import get_monitors
+    
+    displays = [{'x':m.x,'y':m.y,'width':m.width,
+                 'height':m.height,'width_mm':m.width_mm,
+                 'height_mm':m.height_mm,'name':m.name,
+                 'is_primary':m.is_primary} for m in get_monitors()]
+    
+    for disp in range(len(displays)):
+        width_px = displays[disp]['width']
+        height_px = displays[disp]['height']
+        diag_px = math.sqrt(int(width_px)**2 + int(height_px)**2)    
+        width_mm = displays[disp]['width_mm']
+        height_mm = displays[disp]['height_mm']
+        if width_mm is None or height_mm is None: 
+            diag_in = float(input('Enter the diagonal size of the screen n°' + str(disp) + ' (inches)'))
+            width_mm = round(int(width_px) * (diag_in/diag_px) * in_to_mm,1)
+            height_mm = round(int(height_px) * (diag_in/diag_px) * in_to_mm,1)
+            displays[disp]['width_mm'] = str(width_mm)
+            displays[disp]['height_mm'] = str(height_mm)
+        else:
+            diag_in = math.sqrt(float(width_mm) ** 2 + float(height_mm) ** 2) / in_to_mm
+        displays[disp]['ppi'] = round(diag_px/diag_in,2)
+        
+    return displays
+
+# Conversion factor for inch to millimeter
+IN_TO_MM = 25.4 
+
+DISPLAYS = _get_displays(IN_TO_MM)
+
+# Setting primary display
 BM_GUI_DISP = 0
 
 # Getting display resolution in pixels per inch 
@@ -123,137 +164,6 @@ REF_SCREEN_HEIGHT_MM      = 267
 # Application window reference sizes in mm for the display reference sizes (internal)
 REF_WINDOW_WIDTH_MM       = 219
 REF_WINDOW_HEIGHT_MM      = 173
-
-def general_properties(self):
-    '''The function `general_properties` calculate the window sizes 
-    and useful scale factors for the application launch window.
-    For that, it uses reference values for the display sizes in pixels
-    and mm through the globals:
-    - "REF_SCREEN_WIDTH_PX" and "REF_SCREEN_HEIGHT_PX";
-    - "REF_SCREEN_WIDTH_MM" and "REF_SCREEN_HEIGHT_MM".
-    The secondary window sizes in mm are set through the globals: 
-    - "REF_WINDOW_WIDTH_MM" and "REF_WINDOW_HEIGHT_MM".
-    The window title is set through the global "APPLICATION_TITLE".
-    These globals are defined locally in the module "Coordinates.py" 
-    of the package "BiblioMeter_GUI".
-    
-    Args:
-        self (???): ????.
-        
-    Returns:
-        (tuple): self, 2 window sizes in pixels, 2 scale factors for sizes in mm 
-                 and 2 scale factors for sizes in pixels.
-    '''
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
-    from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
-    
-    # Getting number of pixels per inch screen resolution from imported global DISPLAYS
-    ppi = DISPLAYS[BM_GUI_DISP]["ppi"]
-    
-    # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
-    screen_width_px  = self.winfo_screenwidth()
-    screen_height_px = self.winfo_screenheight()
-    
-    # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm  = DISPLAYS[BM_GUI_DISP]["width_mm"]
-    screen_height_mm = DISPLAYS[BM_GUI_DISP]["height_mm"]
-    
-    # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
-    ref_width_px  = REF_SCREEN_WIDTH_PX
-    ref_height_px = REF_SCREEN_HEIGHT_PX
-    ref_width_mm  = REF_SCREEN_WIDTH_MM
-    ref_height_mm = REF_SCREEN_HEIGHT_MM
-    
-    # Setting secondary window reference sizes in mm from globals internal to module "Coordinates.py"
-    ref_window_width_mm  = REF_WINDOW_WIDTH_MM
-    ref_window_height_mm = REF_WINDOW_HEIGHT_MM
-    
-    # Computing ratii of effective screen sizes to screen reference sizes in pixels
-    scale_factor_width_px  = screen_width_px / ref_width_px
-    scale_factor_height_px = screen_height_px / ref_height_px
-        
-    # Computing ratii of effective screen sizes to screen reference sizes in mm   
-    scale_factor_width_mm  = screen_width_mm / ref_width_mm
-    scale_factor_height_mm = screen_height_mm / ref_height_mm
-    
-    # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px  = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
-    win_height_px = _mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
-    
-    # Setting window size depending on scale factor
-    self.geometry(f"{win_width_px}x{win_height_px}")
-    self.resizable(False, False)
-    
-    # Setting title window
-    self.title(APPLICATION_WINDOW_TITLE)
-    
-    sizes_tuple = (win_width_px, win_height_px, 
-                   scale_factor_width_px, scale_factor_height_px, 
-                   scale_factor_width_mm, scale_factor_height_mm)
-    return self, sizes_tuple
-
-
-def root_properties(root):
-    '''The function `root_properties` calculate the window sizes 
-    and useful scale factors for the application secondary windows.
-    For that, it uses reference values for the display sizes in pixels
-    and mm through the globals:
-    - "REF_SCREEN_WIDTH_PX" and "REF_SCREEN_HEIGHT_PX";
-    - "REF_SCREEN_WIDTH_MM" and "REF_SCREEN_HEIGHT_MM".
-    The secondary window sizes in mm are set by the globals: 
-    - "REF_WINDOW_WIDTH_MM" and "REF_WINDOW_HEIGHT_MM".
-    These globals are defined locally in the module "Coordinates.py" 
-    of the package "BiblioMeter_GUI".
-    
-    Args:
-        root (str): reference window for getting screen information
-        
-    Returns:
-        (tuple): 2 window sizes in pixels, 2 scale factors for sizes in mm 
-                 and 2 scale factors for sizes in pixels.
-    '''
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
-    from BiblioAnalysis_Utils.BiblioSys import DISPLAYS
-    
-    # Getting number of pixels per inch screen resolution from imported global DISPLAYS
-    ppi = DISPLAYS[BM_GUI_DISP]["ppi"]
-    
-    # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
-    screen_width_px  = root.winfo_screenwidth()
-    screen_height_px = root.winfo_screenheight()
-    
-    # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm  = DISPLAYS[BM_GUI_DISP]["width_mm"]
-    screen_height_mm = DISPLAYS[BM_GUI_DISP]["height_mm"]
-    
-    # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
-    ref_width_px  = REF_SCREEN_WIDTH_PX
-    ref_height_px = REF_SCREEN_HEIGHT_PX
-    ref_width_mm  = REF_SCREEN_WIDTH_MM
-    ref_height_mm = REF_SCREEN_HEIGHT_MM
-    
-    # Setting secondary window reference sizes in mm from globals internal to module "Coordinates.py"
-    ref_window_width_mm  = REF_WINDOW_WIDTH_MM
-    ref_window_height_mm = REF_WINDOW_HEIGHT_MM
-    
-    # Computing ratii of effective screen sizes to screen reference sizes in pixels
-    scale_factor_width_px  = screen_width_px / ref_width_px
-    scale_factor_height_px = screen_height_px / ref_height_px
-        
-    # Computing ratii of effective screen sizes to screen reference sizes in mm   
-    scale_factor_width_mm  = screen_width_mm / ref_width_mm
-    scale_factor_height_mm = screen_height_mm / ref_height_mm
-    
-    # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px  = _mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)    
-    win_height_px = _mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
-    
-    sizes_tuple = (win_width_px, win_height_px, 
-                   scale_factor_width_px, scale_factor_height_px, 
-                   scale_factor_width_mm, scale_factor_height_mm)
-    return sizes_tuple
 
 
 #################################################################### 
@@ -402,7 +312,7 @@ TEXT_LAUNCH_SYNTHESE = "Lancer la synthèse"
 TEXT_YEAR_PI       = "Sélection de l'année "
 
 ### - Etape 1
-TEXT_ETAPE_1       = f"Etape 1 : Croisement auteurs-efffectifs de l'institut {INSTITUTE}"
+TEXT_ETAPE_1       = f"Etape 1 : Croisement auteurs-efffectifs de l'institut {ig.INSTITUTE}"
 TEXT_MAJ_EFFECTIFS = "Mettre à jour les effectifs de l'institut avant le croisement (coché = OUI) ?"
 TEXT_CROISEMENT    = f"Effectuer le croisement auteurs-efffectifs"
 

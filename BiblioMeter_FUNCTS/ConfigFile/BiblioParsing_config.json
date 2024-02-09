@@ -1,0 +1,40 @@
+{
+    "Description": [
+        "The field 'PARSING_FOLDER_ARCHI' sets the default architecture of the working folder for BiblioParsing.",
+        "The field 'PARSING_FILE_NAMES' sets the default file names for each of the parsed items."
+    ],
+    "PARSING_FOLDER_ARCHI": {
+        "folder_root": "BiblioParsing_Files",
+        "corpus": {
+            "corpus_root": "Corpus",
+            "database": {
+                "rawdata": "rawdata",  
+                "parsing": "parsing"
+            },
+            "concat": {
+                "root": "concatenation",
+                "parsing": "parsing"
+            },
+            "dedup": {
+                "root": "deduplication",
+                "parsing": "parsing"
+            }
+        }
+    },
+    "PARSING_FILE_NAMES": {
+        "articles"              : "articles",
+        "authors"               : "authors",
+        "addresses"             : "addresses",
+        "addresses_institutions": "addressesinst",
+        "countries"             : "countries",
+        "institutions"          : "institutions",
+        "authors_institutions"  : "authorsinst",
+        "raw_institutions"      : "rawinstitutions",
+        "authors_keywords"      : "authorskeywords",
+        "indexed_keywords"      : "journalkeywords",
+        "title_keywords"        : "titlekeywords",
+        "subjects"              : "subjects",
+        "sub_subjects"          : "subjects2",
+        "references"            : "references"
+    }
+}

@@ -13,7 +13,7 @@ def _launch_update_if_db(bibliometer_path,
     # 3rd party imports    
     from tkinter import messagebox
     
-    # Local library imports     
+    # Local imports     
     from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import update_inst_if_database
     
     # Lancement de la fonction de MAJ base de données des IFs
@@ -44,7 +44,6 @@ def _launch_update_if_db(bibliometer_path,
         messagebox.showwarning(info_title, info_text)          
         update_status = False
     return update_status 
-
     
 def _launch_update_pub_if(bibliometer_path, 
                           corpus_years_list,
@@ -63,7 +62,7 @@ def _launch_update_pub_if(bibliometer_path,
     # 3rd party imports    
     from tkinter import messagebox
     
-    # Local library imports
+    # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_if
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import split_pub_list
     
@@ -139,54 +138,21 @@ def create_update_ifs(self, bibliometer_path, parent):
     
     # Standard library imports
     import os
-    import shutil
     from pathlib import Path
     
     # 3rd party imports
-    import pandas as pd
     import tkinter as tk
     from tkinter import font as tkFont
-    from tkinter import filedialog
     from tkinter import messagebox
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_GUI.Useful_Functions as guf
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists  
     
-    # Local functions imports
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists
-    from BiblioMeter_GUI.GUI_Globals import root_properties
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import encadre_UD    
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
-
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_5
-    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_6
-    from BiblioMeter_GUI.GUI_Globals import PPI
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_FONT_SIZE
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
-    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_5
-    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_6
-    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_BDD_IF
-    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_PUB_IF
-    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
-
-    
-    
-    # Internal functions
-    
+    # Internal functions    
     def _launch_update_if_db_try():
         # Cheking availability of IF-all-years file
         if_db_file_status = os.path.exists(if_db_path)    
@@ -279,7 +245,7 @@ def create_update_ifs(self, bibliometer_path, parent):
             parent.destroy()
             
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
+    sizes_tuple   = guf.root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -289,35 +255,35 @@ def create_update_ifs(self, bibliometer_path, parent):
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting effective font sizes and positions (numbers are reference values in mm)
-    eff_etape_font_size      = font_size(REF_ETAPE_FONT_SIZE, width_sf_min)           #14
-    eff_launch_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_help_font_size       = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
-    eff_buttons_font_size    = font_size(REF_ETAPE_FONT_SIZE-3, width_sf_min)      
+    eff_etape_font_size      = guf.font_size(gg.REF_ETAPE_FONT_SIZE, width_sf_min)           #14
+    eff_launch_font_size     = guf.font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_help_font_size       = guf.font_size(gg.REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_buttons_font_size    = guf.font_size(gg.REF_ETAPE_FONT_SIZE-3, width_sf_min)      
     
-    if_db_update_x_pos_px    = _mm_to_px(10 * width_sf_mm, PPI)
-    if_db_update_y_pos_px    = _mm_to_px(35 * height_sf_mm, PPI)     
-    update_if_label_dx_px    = _mm_to_px( 0 * width_sf_mm, PPI)  
-    update_if_label_dy_px    = _mm_to_px(15 * height_sf_mm, PPI)   
-    launch_dx_px             = _mm_to_px( 0 * width_sf_mm, PPI)    
-    launch_dy_px             = _mm_to_px( 5 * height_sf_mm, PPI)   
-    exit_button_x_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)    #193 
-    exit_button_y_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)    #145    
+    if_db_update_x_pos_px    = guf.mm_to_px(10 * width_sf_mm,  gg.PPI)
+    if_db_update_y_pos_px    = guf.mm_to_px(35 * height_sf_mm, gg.PPI)     
+    update_if_label_dx_px    = guf.mm_to_px( 0 * width_sf_mm,  gg.PPI)  
+    update_if_label_dy_px    = guf.mm_to_px(15 * height_sf_mm, gg.PPI)   
+    launch_dx_px             = guf.mm_to_px( 0 * width_sf_mm,  gg.PPI)    
+    launch_dy_px             = guf.mm_to_px( 5 * height_sf_mm, gg.PPI)   
+    exit_button_x_pos_px     = guf.mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #193 
+    exit_button_y_pos_px     = guf.mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #145    
     
     # Setting common attributs
     etape_label_format = 'left'
     etape_underline    = -1                              
     
     # Setting useful aliases
-    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
-    pub_list_folder_alias           = ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias        = ARCHI_YEAR["pub list file name base"]
-    backup_folder_name_alias        = ARCHI_BACKUP["root"]    
-    if_root_path_alias              = ARCHI_IF["root"]
-    if_file_name_alias              = ARCHI_IF["all IF"]
-    missing_if_base_alias           = ARCHI_IF["missing_if_base"]
-    missing_issn_base_alias         = ARCHI_IF["missing_issn_base"]
-    inst_if_file_name_alias         = ARCHI_IF["institute_if_all_years"]    
-    if INST_IF_STATUS: if_file_name_alias = inst_if_file_name_alias
+    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    pub_list_folder_alias           = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias        = pg.ARCHI_YEAR["pub list file name base"]
+    backup_folder_name_alias        = pg.ARCHI_BACKUP["root"]    
+    if_root_path_alias              = pg.ARCHI_IF["root"]
+    if_file_name_alias              = pg.ARCHI_IF["all IF"]
+    missing_if_base_alias           = pg.ARCHI_IF["missing_if_base"]
+    missing_issn_base_alias         = pg.ARCHI_IF["missing_issn_base"]
+    inst_if_file_name_alias         = pg.ARCHI_IF["institute_if_all_years"]    
+    if ig.INST_IF_STATUS: if_file_name_alias = inst_if_file_name_alias
        
     # Setting useful paths
     if_root_path = bibliometer_path / Path(if_root_path_alias)
@@ -327,7 +293,7 @@ def create_update_ifs(self, bibliometer_path, parent):
     pub_list_folder_path  =  bibliometer_path / Path(pub_list_folder_alias)
     
     # Setting list of corpus years
-    corpus_years_list = last_available_years(bibliometer_path, CORPUSES_NUMBER)
+    corpus_years_list = guf.last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
     
     # Initializing status of IFs database update
     if_db_update_status = False
@@ -335,11 +301,11 @@ def create_update_ifs(self, bibliometer_path, parent):
     ################## Mise à jour de la base de données des IFs
 
     ### Titre
-    if_db_update_font = tkFont.Font(family = FONT_NAME, 
+    if_db_update_font = tkFont.Font(family = gg.FONT_NAME, 
                                  size = eff_etape_font_size,
                                  weight = 'bold')
     if_db_update_label = tk.Label(self,
-                               text = TEXT_ETAPE_5,
+                               text = gg.TEXT_ETAPE_5,
                                justify = etape_label_format,
                                font = if_db_update_font,
                                underline = etape_underline)
@@ -348,70 +314,70 @@ def create_update_ifs(self, bibliometer_path, parent):
                              y = if_db_update_y_pos_px)   
     
     ### Explication
-    help_label_font = tkFont.Font(family = FONT_NAME, 
+    help_label_font = tkFont.Font(family = gg.FONT_NAME, 
                                   size = eff_help_font_size)
     help_label = tk.Label(self, 
-                          text = HELP_ETAPE_5, 
+                          text = gg.HELP_ETAPE_5, 
                           justify = "left", 
                           font = help_label_font)
-    place_bellow(if_db_update_label, 
-                 help_label)     
+    guf.place_bellow(if_db_update_label, 
+                     help_label)     
                                          
     ### Bouton pour lancer l'étape
-    if_db_update_launch_font = tkFont.Font(family = FONT_NAME, 
+    if_db_update_launch_font = tkFont.Font(family = gg.FONT_NAME, 
                                         size = eff_launch_font_size)
     if_db_update_launch_button = tk.Button(self,
-                                        text = TEXT_MAJ_BDD_IF,
+                                        text = gg.TEXT_MAJ_BDD_IF,
                                         font = if_db_update_launch_font,
                                         command = lambda: _launch_update_if_db_try())
-    place_bellow(help_label, 
-                 if_db_update_launch_button, 
-                 dx = launch_dx_px, 
-                 dy = launch_dy_px)
+    guf.place_bellow(help_label, 
+                     if_db_update_launch_button, 
+                     dx = launch_dx_px, 
+                     dy = launch_dy_px)
     
     ################## Mise à jour des Ifs dans les listes consolidées
     
     ### Titre 
-    update_if_label_font = tkFont.Font(family = FONT_NAME, 
+    update_if_label_font = tkFont.Font(family = gg.FONT_NAME, 
                                         size = eff_etape_font_size,
                                         weight = 'bold')
     update_if_label = tk.Label(self, 
-                               text = TEXT_ETAPE_6, 
+                               text = gg.TEXT_ETAPE_6, 
                                justify = "left", 
                                font = update_if_label_font)
-    place_bellow(if_db_update_launch_button, 
-                 update_if_label, 
-                 dx = update_if_label_dx_px, 
-                 dy = update_if_label_dy_px)
+    guf.place_bellow(if_db_update_launch_button, 
+                     update_if_label, 
+                     dx = update_if_label_dx_px, 
+                     dy = update_if_label_dy_px)
     
     ### Explication de l'étape
-    help_label_font = tkFont.Font(family = FONT_NAME,
+    help_label_font = tkFont.Font(family = gg.FONT_NAME,
                                size = eff_help_font_size)
     help_label = tk.Label(self, 
-                          text = HELP_ETAPE_6, 
+                          text = gg.HELP_ETAPE_6, 
                           justify = "left", 
                           font = help_label_font)
-    place_bellow(update_if_label, 
-                 help_label) 
+    guf.place_bellow(update_if_label, 
+                     help_label) 
     
     ### Bouton pour lancer la mise à jour des IFs dans les listes consolidées existantes 
-    button_update_if_font = tkFont.Font(family = FONT_NAME, 
+    button_update_if_font = tkFont.Font(family = gg.FONT_NAME, 
                                          size = eff_launch_font_size)
     button_update_if = tk.Button(self, 
-                                  text = TEXT_MAJ_PUB_IF, 
+                                  text = gg.TEXT_MAJ_PUB_IF, 
                                   font = button_update_if_font, 
                                   command = lambda: _launch_update_pub_if_try())  
-    place_bellow(help_label, 
-                 button_update_if, 
-                 dx = launch_dx_px, 
-                 dy = launch_dy_px)
+    guf.place_bellow(help_label, 
+                     button_update_if, 
+                     dx = launch_dx_px, 
+                     dy = launch_dy_px)
     
     
     ################## Bouton pour sortir de la page
-    font_button_quit = tkFont.Font(family = FONT_NAME, 
+    font_button_quit = tkFont.Font(family =gg.FONT_NAME, 
                                    size   = eff_buttons_font_size)
     button_quit = tk.Button(self, 
-                            text = TEXT_PAUSE, 
+                            text = gg.TEXT_PAUSE, 
                             font = font_button_quit, 
                             command = lambda: _launch_exit()).place(x = exit_button_x_pos_px, 
                                                                     y = exit_button_y_pos_px, 

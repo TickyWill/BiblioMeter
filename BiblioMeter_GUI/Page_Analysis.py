@@ -10,7 +10,7 @@ def _launch_kw_analysis(bibliometer_path, year_select):
     # 3rd party imports
     from tkinter import messagebox
     
-    # Local functions imports
+    # Local imports
     from BiblioMeter_FUNCTS.BM_PubAnalysis import keywords_analysis
 
     kw_analysis_folder_path = keywords_analysis(bibliometer_path, year_select, verbose = False)
@@ -30,19 +30,16 @@ def _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder
     # 3rd party imports
     from tkinter import messagebox
     
-    # Local functions imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import get_if_db
     from BiblioMeter_FUNCTS.BM_PubAnalysis import if_analysis
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ANALYSIS_IF
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
 
     # Getting year of most recent IFs 
     _,_,if_most_recent_year = get_if_db(bibliometer_path)
 
     analysis_if  = "IF " + if_most_recent_year
-    if ANALYSIS_IF == COL_NAMES_BONUS['IF année publi'] and if_most_recent_year>=year_select:
+    if pg.ANALYSIS_IF == pg.COL_NAMES_BONUS['IF année publi'] and if_most_recent_year>=year_select:
         analysis_if  = "IF " + year_select            
 
     if_analysis_folder_path,_,_ = if_analysis(bibliometer_path, year_select, if_most_recent_year, verbose = False) 
@@ -90,38 +87,12 @@ def create_analysis(self, bibliometer_path, parent):
     from tkinter import filedialog
     from tkinter import messagebox
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
-    
-    # Local functions imports
-    from BiblioMeter_GUI.GUI_Globals import root_properties
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow    
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_7
-    from BiblioMeter_GUI.GUI_Globals import HELP_ETAPE_8
-    from BiblioMeter_GUI.GUI_Globals import PPI    
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_FONT_SIZE
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_Y_MM
-    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_7
-    from BiblioMeter_GUI.GUI_Globals import TEXT_ETAPE_8
-    from BiblioMeter_GUI.GUI_Globals import TEXT_IF_ANALYSIS
-    from BiblioMeter_GUI.GUI_Globals import TEXT_KW_ANALYSIS
-    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
-    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI 
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_GUI.Useful_Functions as guf
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg  
    
-    # Internal functions
-    
+    # Internal functions    
     def _launch_if_analysis_try():        
         # Getting year selection
         year_select =  variable_years.get()
@@ -149,7 +120,7 @@ def create_analysis(self, bibliometer_path, parent):
     ########################## Function start    
             
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
+    sizes_tuple   = guf.root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -159,33 +130,33 @@ def create_analysis(self, bibliometer_path, parent):
     width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting effective font sizes and positions (numbers are reference values)
-    eff_etape_font_size      = font_size(REF_ETAPE_FONT_SIZE, width_sf_min)           #14
-    eff_launch_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_help_font_size       = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
-    eff_select_font_size     = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
-    eff_buttons_font_size    = font_size(REF_ETAPE_FONT_SIZE-3, width_sf_min)  
+    eff_etape_font_size      = guf.font_size(gg.REF_ETAPE_FONT_SIZE,   width_sf_min)           #14
+    eff_launch_font_size     = guf.font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_help_font_size       = guf.font_size(gg.REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_select_font_size     = guf.font_size(gg.REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_buttons_font_size    = guf.font_size(gg.REF_ETAPE_FONT_SIZE-3, width_sf_min)  
     
-    if_analysis_x_pos_px     = _mm_to_px(10 * width_sf_mm, PPI)
-    if_analysis_y_pos_px     = _mm_to_px(40 * height_sf_mm, PPI)     
-    kw_analysis_label_dx_px  = _mm_to_px( 0 * width_sf_mm, PPI)  
-    kw_analysis_label_dy_px  = _mm_to_px(15 * height_sf_mm, PPI)   
-    launch_dx_px             = _mm_to_px( 0 * width_sf_mm, PPI)    
-    launch_dy_px             = _mm_to_px( 5 * height_sf_mm, PPI)   
+    if_analysis_x_pos_px     = guf.mm_to_px(10 * width_sf_mm,  gg.PPI)
+    if_analysis_y_pos_px     = guf.mm_to_px(40 * height_sf_mm, gg.PPI)     
+    kw_analysis_label_dx_px  = guf.mm_to_px( 0 * width_sf_mm,  gg.PPI)  
+    kw_analysis_label_dy_px  = guf.mm_to_px(15 * height_sf_mm, gg.PPI)   
+    launch_dx_px             = guf.mm_to_px( 0 * width_sf_mm,  gg.PPI)    
+    launch_dy_px             = guf.mm_to_px( 5 * height_sf_mm, gg.PPI)   
 
-    year_button_x_pos        = _mm_to_px(REF_YEAR_BUT_POS_X_MM * width_sf_mm,  PPI)    #10  
-    year_button_y_pos        = _mm_to_px(REF_YEAR_BUT_POS_Y_MM * height_sf_mm, PPI)    #26     
+    year_button_x_pos        = guf.mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #10  
+    year_button_y_pos        = guf.mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #26     
     dy_year                  = -6
     ds_year                  = 5
     
-    exit_button_x_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)    #193 
-    exit_button_y_pos_px     = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)    #145 
+    exit_button_x_pos_px     = guf.mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #193 
+    exit_button_y_pos_px     = guf.mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #145 
     
     # Setting common attributs
     etape_label_format = 'left'
     etape_underline    = -1                              
 
     # Setting useful paths independent from corpus year
-    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
+    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
     
     # Décoration de la page
     # - Canvas
@@ -196,13 +167,13 @@ def create_analysis(self, bibliometer_path, parent):
 
     
     ### Choix de l'année 
-    years_list = last_available_years(bibliometer_path, CORPUSES_NUMBER)
+    years_list = guf.last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
     default_year = years_list[-1]  
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
     
     # Création de l'option button des années    
-    self.font_OptionButton_years = tkFont.Font(family = FONT_NAME, 
+    self.font_OptionButton_years = tkFont.Font(family = gg.FONT_NAME, 
                                                size = eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self, 
                                             variable_years, 
@@ -210,25 +181,24 @@ def create_analysis(self, bibliometer_path, parent):
     self.OptionButton_years.config(font = self.font_OptionButton_years)
     
         # Création du label
-    self.font_Label_years = tkFont.Font(family = FONT_NAME, 
+    self.font_Label_years = tkFont.Font(family = gg.FONT_NAME, 
                                         size = eff_select_font_size)
     self.Label_years = tk.Label(self, 
-                                text = TEXT_YEAR_PI, 
+                                text = gg.TEXT_YEAR_PI, 
                                 font = self.font_Label_years)
     self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
     
-    place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
-    encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = ds_year)
-    
+    guf.place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
+    guf.encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = ds_year)    
     
     ################## Analyse des IFs
 
     ### Titre
-    if_analysis_font = tkFont.Font(family = FONT_NAME, 
+    if_analysis_font = tkFont.Font(family = gg.FONT_NAME, 
                                    size = eff_etape_font_size,
                                    weight = 'bold')
     if_analysis_label = tk.Label(self,
-                                 text = TEXT_ETAPE_7,
+                                 text = gg.TEXT_ETAPE_7,
                                  justify = etape_label_format,
                                  font = if_analysis_font,
                                  underline = etape_underline)
@@ -237,70 +207,70 @@ def create_analysis(self, bibliometer_path, parent):
                             y = if_analysis_y_pos_px)
     
     ### Explication
-    help_label_font = tkFont.Font(family = FONT_NAME, 
+    help_label_font = tkFont.Font(family = gg.FONT_NAME, 
                                   size = eff_help_font_size)
     help_label = tk.Label(self, 
-                          text = HELP_ETAPE_7, 
+                          text = gg.HELP_ETAPE_7, 
                           justify = "left", 
                           font = help_label_font)
-    place_bellow(if_analysis_label, 
-                 help_label)     
+    guf.place_bellow(if_analysis_label, 
+                     help_label)     
                                          
     ### Bouton pour lancer l'analyse des IFs
-    if_analysis_launch_font = tkFont.Font(family = FONT_NAME, 
+    if_analysis_launch_font = tkFont.Font(family = gg.FONT_NAME, 
                                           size = eff_launch_font_size)
     if_analysis_launch_button = tk.Button(self,
-                                          text = TEXT_IF_ANALYSIS,
+                                          text = gg.TEXT_IF_ANALYSIS,
                                           font = if_analysis_launch_font,
                                           command = lambda: _launch_if_analysis_try())
-    place_bellow(help_label, 
-                 if_analysis_launch_button, 
-                 dx = launch_dx_px, 
-                 dy = launch_dy_px)
+    guf.place_bellow(help_label, 
+                     if_analysis_launch_button, 
+                     dx = launch_dx_px, 
+                     dy = launch_dy_px)
     
     ################## Analyse des mots clefs
     
     ### Titre 
-    kw_analysis_label_font = tkFont.Font(family = FONT_NAME, 
+    kw_analysis_label_font = tkFont.Font(family = gg.FONT_NAME, 
                                         size = eff_etape_font_size,
                                         weight = 'bold')
     kw_analysis_label = tk.Label(self, 
-                               text = TEXT_ETAPE_8, 
+                               text = gg.TEXT_ETAPE_8, 
                                justify = "left", 
                                font = kw_analysis_label_font)
-    place_bellow(if_analysis_launch_button, 
-                 kw_analysis_label, 
-                 dx = kw_analysis_label_dx_px, 
-                 dy = kw_analysis_label_dy_px)
+    guf.place_bellow(if_analysis_launch_button, 
+                     kw_analysis_label, 
+                     dx = kw_analysis_label_dx_px, 
+                     dy = kw_analysis_label_dy_px)
     
     ### Explication de l'étape
-    help_label_font = tkFont.Font(family = FONT_NAME,
+    help_label_font = tkFont.Font(family = gg.FONT_NAME,
                                size = eff_help_font_size)
     help_label = tk.Label(self, 
-                          text = HELP_ETAPE_8, 
+                          text = gg.HELP_ETAPE_8, 
                           justify = "left", 
                           font = help_label_font)
-    place_bellow(kw_analysis_label, 
-                 help_label) 
+    guf.place_bellow(kw_analysis_label, 
+                     help_label) 
     
     ### Bouton pour lancer l'analyse des mots clefs
-    kw_analysis_launch_font = tkFont.Font(family = FONT_NAME, 
+    kw_analysis_launch_font = tkFont.Font(family = gg.FONT_NAME, 
                                          size = eff_launch_font_size)
     kw_analysis_button = tk.Button(self, 
-                                  text = TEXT_KW_ANALYSIS, 
+                                  text = gg.TEXT_KW_ANALYSIS, 
                                   font = kw_analysis_launch_font, 
                                   command = lambda: _launch_kw_analysis_try())  
-    place_bellow(help_label, 
-                 kw_analysis_button, 
-                 dx = launch_dx_px, 
-                 dy = launch_dy_px)
+    guf.place_bellow(help_label, 
+                     kw_analysis_button, 
+                     dx = launch_dx_px, 
+                     dy = launch_dy_px)
     
     
     ################## Bouton pour sortir de la page
-    quit_font = tkFont.Font(family = FONT_NAME, 
+    quit_font = tkFont.Font(family = gg.FONT_NAME, 
                             size   = eff_buttons_font_size)
     quit_button = tk.Button(self, 
-                            text = TEXT_PAUSE, 
+                            text = gg.TEXT_PAUSE, 
                             font = quit_font, 
                             command = lambda: _launch_exit()).place(x = exit_button_x_pos_px, 
                                                                     y = exit_button_y_pos_px, 

@@ -12,32 +12,27 @@ def save_homonyms(bibliometer_path, corpus_year):
     from pathlib import Path
     
     # 3rd library imports
+    import BiblioParsing as bp
     import pandas as pd 
-    
-    # BiblioAnalysis_Utils package globals imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_HASH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import HOMONYM_FLAG
-    from BiblioMeter_FUNCTS.BM_PubGlobals import SUBMIT_COL_RENAME_DIC
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg   
     
+    # Setting useful folder and file aliases
+    bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
+    homonyms_folder_alias    = pg.ARCHI_YEAR["homonymes folder"]
+    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
+    history_folder_alias     = pg.ARCHI_YEAR["history folder"]
+    kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
+    hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"] 
+    homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
     
-    # Setting useful aliases
-    bdd_mensuelle_alias      = ARCHI_YEAR["bdd mensuelle"]
-    homonyms_folder_alias    = ARCHI_YEAR["homonymes folder"]
-    homonyms_file_base_alias = ARCHI_YEAR["homonymes file name base"]
-    history_folder_alias     = ARCHI_YEAR["history folder"]
-    kept_homonyms_file_alias = ARCHI_YEAR["kept homonyms file name"]
-    hash_id_file_alias       = ARCHI_YEAR["hash_id file name"]    
-    homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"    
-    hash_id_col_alias        = COL_HASH['hash_id']
-    pub_id_alias             = SUBMIT_COL_RENAME_DIC[COL_NAMES['pub_id']]
-    homonyms_col_alias       = SUBMIT_COL_RENAME_DIC[COL_NAMES_BONUS['homonym']]
-    matricule_col_alias      = SUBMIT_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['matricule']]
+    # Setting useful column name aliases    
+    hash_id_col_alias   = pg.COL_HASH['hash_id']
+    pub_id_alias        = pg.SUBMIT_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]
+    homonyms_col_alias  = pg.SUBMIT_COL_RENAME_DIC[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = pg.SUBMIT_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['matricule']]       
     
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)    
@@ -55,7 +50,7 @@ def save_homonyms(bibliometer_path, corpus_year):
     pub_df = pd.read_excel(homonyms_file_path)
     
     # Building pub_id and kept matricules df for solved homonymes
-    temp_df = pub_df[pub_df[homonyms_col_alias]== HOMONYM_FLAG]
+    temp_df = pub_df[pub_df[homonyms_col_alias] == pg.HOMONYM_FLAG]
     not_solved_homonyms_pub_id = [pub_id for idx,pub_id in enumerate(temp_df[pub_id_alias]) 
                                   if int(temp_df[temp_df[pub_id_alias] == pub_id] 
                                          [pub_id_alias].value_counts()) > 1]
@@ -77,7 +72,7 @@ def save_homonyms(bibliometer_path, corpus_year):
     # Concatenating with the dataframe of already saved solved homonyms
     if kept_homonyms_file_path.is_file():
         existing_homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
-        homonyms_history_df= pd.concat([existing_homonyms_history_df,homonyms_history_df])
+        homonyms_history_df = pd.concat([existing_homonyms_history_df,homonyms_history_df])
     homonyms_history_df = homonyms_history_df.astype('str')
     homonyms_history_df.drop_duplicates(inplace = True)
     
@@ -95,35 +90,28 @@ def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
     from pathlib import Path
     
     # 3rd library imports
+    import BiblioParsing as bp
     import pandas as pd 
     
-    # BiblioAnalysis_Utils package globals imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import save_shaped_homonyms_file    
     
-    # Internal library imports
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import save_shaped_homonyms_file
-
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_HASH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import HOMONYM_FLAG
-    from BiblioMeter_FUNCTS.BM_PubGlobals import SUBMIT_COL_RENAME_DIC
+    # Setting useful folder and file aliases
+    bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
+    homonyms_folder_alias    = pg.ARCHI_YEAR["homonymes folder"]
+    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
+    history_folder_alias     = pg.ARCHI_YEAR["history folder"]
+    kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
+    hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"]
+    homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
     
-    
-    # Setting useful aliases
-    bdd_mensuelle_alias      = ARCHI_YEAR["bdd mensuelle"]
-    homonyms_folder_alias    = ARCHI_YEAR["homonymes folder"]
-    homonyms_file_base_alias = ARCHI_YEAR["homonymes file name base"]
-    history_folder_alias     = ARCHI_YEAR["history folder"]
-    kept_homonyms_file_alias = ARCHI_YEAR["kept homonyms file name"]
-    hash_id_file_alias       = ARCHI_YEAR["hash_id file name"]    
-    homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"    
-    hash_id_col_alias        = COL_HASH['hash_id']
-    pub_id_alias             = SUBMIT_COL_RENAME_DIC[COL_NAMES['pub_id']]
-    homonyms_col_alias       = SUBMIT_COL_RENAME_DIC[COL_NAMES_BONUS['homonym']]
-    matricule_col_alias      = SUBMIT_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['matricule']]
+    # Setting useful column name aliases
+    hash_id_col_alias   = pg.COL_HASH['hash_id']
+    pub_id_alias        = pg.SUBMIT_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]
+    homonyms_col_alias  = pg.SUBMIT_COL_RENAME_DIC[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = pg.SUBMIT_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['matricule']]        
     
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)    
@@ -162,7 +150,7 @@ def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
                 pub_id         = str(homonyms_df.loc[idx,pub_id_alias])
                 matricule      = str(homonyms_df.loc[idx,matricule_col_alias])
                 homonym_status = str(homonyms_df.loc[idx,homonyms_col_alias])  
-                if pub_id == pub_id_to_check and homonym_status == HOMONYM_FLAG:
+                if pub_id == pub_id_to_check and homonym_status == pg.HOMONYM_FLAG:
                     if matricule == matricule_to_keep: 
                         homonyms_df_new.loc[idx,homonyms_col_alias] = None
                     else:
@@ -170,7 +158,7 @@ def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
         
         # Setting actual homonyms status
         actual_homonym_status = False
-        if HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list(): actual_homonym_status = True
+        if pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list(): actual_homonym_status = True
         
         # Saving updated homonyms_df
         save_shaped_homonyms_file(homonyms_df_new, homonyms_file_path)     
@@ -187,40 +175,35 @@ def save_otps(bibliometer_path, corpus_year):
     from pathlib import Path
     
     # 3rd library imports
+    import BiblioParsing as bp
     import pandas as pd 
-    
-    # BiblioAnalysis_Utils package globals imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_HASH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import SUBMIT_COL_RENAME_DIC
+    # local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
         
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias      = ARCHI_YEAR["bdd mensuelle"]
-    pub_list_folder_alias    = ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = ARCHI_YEAR["pub list file name base"]    
-    history_folder_alias     = ARCHI_YEAR["history folder"]
-    kept_otps_file_alias     = ARCHI_YEAR["kept otps file name"]
-    hash_id_file_alias       = ARCHI_YEAR["hash_id file name"]
+    bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
+    pub_list_folder_alias    = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]    
+    history_folder_alias     = pg.ARCHI_YEAR["history folder"]
+    kept_otps_file_alias     = pg.ARCHI_YEAR["kept otps file name"]
+    hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"]
     pub_list_file_alias      = pub_list_file_base_alias + f' {corpus_year}.xlsx'
     
-    # Setting useful column names       
-    hash_id_col_alias        = COL_HASH['hash_id']
-    pub_id_alias             = SUBMIT_COL_RENAME_DIC[COL_NAMES['pub_id']]    
-    otp_col_alias            = COL_NAMES_BONUS['final OTP']
-    otp_list_col_alias       = COL_NAMES_BONUS['list OTP']
+    # Setting useful column name aliases       
+    hash_id_col_alias  = pg.COL_HASH['hash_id']
+    pub_id_alias       = pg.SUBMIT_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]    
+    otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']
+    otp_list_col_alias = pg.COL_NAMES_BONUS['list OTP']
     
     # Setting useful paths
-    corpus_year_path        = bibliometer_path / Path(corpus_year)    
-    bdd_mensuelle_path      = corpus_year_path / Path(bdd_mensuelle_alias)
-    hash_id_file_path       = bdd_mensuelle_path / Path(hash_id_file_alias)
-    pub_list_folder_path    = corpus_year_path / Path(pub_list_folder_alias)
-    pub_list_file_path      = pub_list_folder_path / Path(pub_list_file_alias)
-    history_folder_path     = corpus_year_path / Path(history_folder_alias)
-    kept_otps_file_path     = history_folder_path / Path(kept_otps_file_alias)
+    corpus_year_path     = bibliometer_path / Path(corpus_year)    
+    bdd_mensuelle_path   = corpus_year_path / Path(bdd_mensuelle_alias)
+    hash_id_file_path    = bdd_mensuelle_path / Path(hash_id_file_alias)
+    pub_list_folder_path = corpus_year_path / Path(pub_list_folder_alias)
+    pub_list_file_path   = pub_list_folder_path / Path(pub_list_file_alias)
+    history_folder_path  = corpus_year_path / Path(history_folder_alias)
+    kept_otps_file_path  = history_folder_path / Path(kept_otps_file_alias)
             
     # Getting the hash_id dataframe
     hash_id_df  = pd.read_excel(hash_id_file_path)
@@ -249,7 +232,7 @@ def save_otps(bibliometer_path, corpus_year):
                                on = pub_id_alias)
     otps_history_df.drop(columns = [pub_id_alias], inplace = True)
     otps_history_df = otps_history_df.astype(str)
-    otps_history_df.rename(columns={otp_col:otp_col_alias}, inplace = True)
+    otps_history_df.rename(columns = {otp_col:otp_col_alias}, inplace = True)
     
     otps_history_df.to_excel(kept_otps_file_path, index = False) 
 
@@ -275,18 +258,15 @@ def _re_save_dpt_OTP_file(dpt, otp_set_dpt_df, otp_to_set_dpt_df,
     from openpyxl.styles import Border as openpyxl_Border
     from openpyxl.styles import Side as openpyxl_Side
     
-    # Local Library imports
+    # local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
     
-    # Local globals imports  
-    from BiblioMeter_FUNCTS.BM_PubGlobals import OTP_SHEET_NAME_BASE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
-    
     # Setting useful column sizes and cell colors
     col_attr, col_set_list = set_col_attr()
-    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
     
     # Building validation list of OTP for 'dpt' department
     validation_list = '"'+','.join(dpt_otp_list) + '"' 
@@ -340,12 +320,12 @@ def _re_save_dpt_OTP_file(dpt, otp_set_dpt_df, otp_to_set_dpt_df,
         if col not in col_set_list: col_attr[col] = col_attr['else']
         column_letter = openpyxl_get_column_letter(idx_col + 1)
         for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))
+            cell.alignment = openpyxl_Alignment(horizontal = col_attr[col][1], vertical = "center")
+            cell.border = openpyxl_Border(left = openpyxl_Side(border_style = 'thick', color = 'FFFFFF'),
+                                          right = openpyxl_Side(border_style = 'thick', color = 'FFFFFF'))
 
     # Setting the worksheet label
-    ws.title = OTP_SHEET_NAME_BASE + " " +  dpt
+    ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
     # Saving the workbook
     wb.save(excel_dpt_path)
@@ -361,47 +341,42 @@ def set_saved_otps(bibliometer_path, corpus_year):
     from pathlib import Path
     
     # 3rd party imports
+    import BiblioParsing as bp
     import pandas as pd
-    
-    # BiblioAnalysis_Utils package globals imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
 
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_HASH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_ATTRIBUTS_DICT   
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
     
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias  = ARCHI_YEAR["bdd mensuelle"]
-    otp_folder_alias     = ARCHI_YEAR["OTP folder"]
-    otp_file_base_alias  = ARCHI_YEAR["OTP file name base"]    
-    history_folder_alias = ARCHI_YEAR["history folder"]
-    kept_otps_file_alias = ARCHI_YEAR["kept otps file name"]
-    hash_id_file_alias   = ARCHI_YEAR["hash_id file name"] 
+    bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
+    otp_folder_alias     = pg.ARCHI_YEAR["OTP folder"]
+    otp_file_base_alias  = pg.ARCHI_YEAR["OTP file name base"]    
+    history_folder_alias = pg.ARCHI_YEAR["history folder"]
+    kept_otps_file_alias = pg.ARCHI_YEAR["kept otps file name"]
+    hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"] 
     
     # Setting useful key and specific character aliases
-    dpt_label_alias  = 'dpt_label'
-    dpt_otp_alias    = 'dpt_otp'
+    dpt_label_alias = 'dpt_label'
+    dpt_otp_alias   = 'dpt_otp'
         
     # Setting useful column names alises       
-    hash_id_col_alias        = COL_HASH['hash_id']
-    pub_id_alias             = BM_COL_RENAME_DIC[COL_NAMES['pub_id']]    
-    otp_list_col_alias       = BM_COL_RENAME_DIC[COL_NAMES_BONUS['list OTP']] 
-    otp_col_alias            = COL_NAMES_BONUS['final OTP']                      
+    hash_id_col_alias  = pg.COL_HASH['hash_id']
+    pub_id_alias       = pg.BM_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]    
+    otp_list_col_alias = pg.BM_COL_RENAME_DIC[pg.COL_NAMES_BONUS['list OTP']] 
+    otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']                      
     
     # Setting useful paths
-    corpus_year_path        = bibliometer_path / Path(corpus_year)    
-    bdd_mensuelle_path      = corpus_year_path / Path(bdd_mensuelle_alias)    
-    hash_id_file_path       = bdd_mensuelle_path / Path(hash_id_file_alias)
-    history_folder_path     = corpus_year_path / Path(history_folder_alias)
-    kept_otps_file_path     = history_folder_path / Path(kept_otps_file_alias)
-    otp_folder_path         = corpus_year_path / Path(otp_folder_alias)     
+    corpus_year_path    = bibliometer_path / Path(corpus_year)    
+    bdd_mensuelle_path  = corpus_year_path / Path(bdd_mensuelle_alias)    
+    hash_id_file_path   = bdd_mensuelle_path / Path(hash_id_file_alias)
+    history_folder_path = corpus_year_path / Path(history_folder_alias)
+    kept_otps_file_path = history_folder_path / Path(kept_otps_file_alias)
+    otp_folder_path     = corpus_year_path / Path(otp_folder_alias)     
     
     if kept_otps_file_path.is_file():
         # Getting the hash_id dataframe
-        hash_id_df  = pd.read_excel(hash_id_file_path)  
+        hash_id_df = pd.read_excel(hash_id_file_path)  
 
         # Getting the kept otps dataframe
         otp_history_df = pd.read_excel(kept_otps_file_path)
@@ -418,16 +393,16 @@ def set_saved_otps(bibliometer_path, corpus_year):
         otp_to_set_list      = [str(row[otp_col_alias]) for _,row in pub_id_otp_to_set_df.iterrows()]
         
         # Setting departments list
-        dpt_list = list(DPT_ATTRIBUTS_DICT.keys())
+        dpt_list = list(ig.DPT_ATTRIBUTS_DICT.keys())
 
         # Setting the known OTPs  
         for dpt in sorted(dpt_list):
             # Setting the full path of the EXCEl file for the 'dpt' department
-            OTP_file_name_dpt = f'{otp_file_base_alias}_{dpt}.xlsx'
-            OTP_file_name_dpt_path = otp_folder_path / Path(OTP_file_name_dpt)
+            otp_file_name_dpt = f'{otp_file_base_alias}_{dpt}.xlsx'
+            otp_file_name_dpt_path = otp_folder_path / Path(otp_file_name_dpt)
 
             # Getting the pub list for departement dpt
-            dpt_pub_df = pd.read_excel(OTP_file_name_dpt_path)
+            dpt_pub_df = pd.read_excel(otp_file_name_dpt_path)
             
             # Setting the pub-id list for department dpt
             dept_pub_id_list = dpt_pub_df[pub_id_alias].to_list()
@@ -448,16 +423,16 @@ def set_saved_otps(bibliometer_path, corpus_year):
                 if pub_id_to_check in dept_pub_id_list:
                     pub_id_idx = [i for i,e in enumerate(dept_pub_id_list) if e == pub_id_to_check][0]
                     dpt_pub_df.loc[pub_id_idx,otp_list_col_alias] = otp_to_set
-                    otp_set_dpt_pub_df    = pd.concat([otp_set_dpt_pub_df,
-                                                       dpt_pub_df[dpt_pub_df[pub_id_alias] == pub_id_to_check]])
+                    otp_set_dpt_pub_df = pd.concat([otp_set_dpt_pub_df,
+                                                    dpt_pub_df[dpt_pub_df[pub_id_alias] == pub_id_to_check]])
                     otp_to_set_dpt_pub_df.drop(index = pub_id_idx, inplace = True)
             
             # Setting the list of OTPs for the 'dpt' department
-            dpt_otp_list = DPT_ATTRIBUTS_DICT[dpt][dpt_otp_alias]
+            dpt_otp_list = ig.DPT_ATTRIBUTS_DICT[dpt][dpt_otp_alias]
 
             # Resetting validation list for OTPs when not already set and saving the file
             _re_save_dpt_OTP_file(dpt, otp_set_dpt_pub_df, otp_to_set_dpt_pub_df, 
-                                  dpt_otp_list, OTP_file_name_dpt_path, otp_list_col_alias, col_list)
+                                  dpt_otp_list, otp_file_name_dpt_path, otp_list_col_alias, col_list)
         
         message = f"Already set OTPS used"
     else:

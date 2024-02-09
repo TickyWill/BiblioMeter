@@ -14,7 +14,7 @@ def _launch_update_employees(bibliometer_path,
     # 3rd party imports    
     from tkinter import messagebox
     
-    # Local library imports     
+    # Local imports     
     from BiblioMeter_FUNCTS.BM_UpdateEmployees import update_employees
     
     if check_effectif_status:
@@ -129,7 +129,7 @@ def _launch_recursive_year_search_try(year_select,
     # 3rd party imports
     from tkinter import messagebox
     
-    # Local library imports
+    # Local imports
     from BiblioMeter_FUNCTS.BM_MergePubEmployees import recursive_year_search    
 
     def _recursive_year_search_try():
@@ -250,7 +250,7 @@ def _launch_resolution_homonymies_try(bibliometer_path,
     # 3rd party imports    
     from tkinter import messagebox
     
-    # Local library imports
+    # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import solving_homonyms
     from BiblioMeter_FUNCTS.BM_UsePubAttributes import set_saved_homonyms
     
@@ -342,7 +342,7 @@ def _launch_add_OTP_try(bibliometer_path,
     # 3rd party imports    
     from tkinter import messagebox
     
-    # Local library imports
+    # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_OTP
     from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_homonyms
     from BiblioMeter_FUNCTS.BM_UsePubAttributes import set_saved_otps
@@ -538,71 +538,33 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     - DIC_OUT_PARSING
     - FOLDER_NAMES
     
-    Args : takes only self and bibliometer_path as arguments. 
+    Args: takes only self and bibliometer_path as arguments. 
     self is the intense in which PageThree will be created
     bibliometer_path is a type Path, and is the path to where the folders
     organised in a very specific way are stored
     
     Returns : 
     
-    Note:
-        The function '_mm_to_px' is imported from the module 'BiblioGui' 
-        of the package 'BiblioAnalysis_Utils'.
     """
 
     # Standard library imports
     import os
     from pathlib import Path
 
-    # 3rd party imports    
+    # 3rd party imports
     import pandas as pd
     import tkinter as tk
     from datetime import date
     from tkinter import font as tkFont
     from tkinter import filedialog
-    from tkinter import messagebox
+    from tkinter import messagebox       
     
-    # BiblioAnalysis_Utils library imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px        
-    
-    # Local library imports         
-    from BiblioMeter_GUI.GUI_Globals import root_properties
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import SEARCH_DEPTH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT 
-    from BiblioMeter_GUI.GUI_Globals import CORPUSES_NUMBER
-    from BiblioMeter_GUI.GUI_Globals import ETAPE_LABEL_TEXT_LIST
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-    from BiblioMeter_GUI.GUI_Globals import PPI
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_BUT_DX_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_BUT_DY_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_CHECK_DY_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_FONT_SIZE
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_ETAPE_POS_Y_MM_LIST
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_YEAR_BUT_POS_Y_MM
-    from BiblioMeter_GUI.GUI_Globals import TEXT_CROISEMENT
-    from BiblioMeter_GUI.GUI_Globals import TEXT_HOMONYMES
-    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_DB_IF
-    from BiblioMeter_GUI.GUI_Globals import TEXT_MAJ_EFFECTIFS    
-    from BiblioMeter_GUI.GUI_Globals import TEXT_OTP
-    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
-    from BiblioMeter_GUI.GUI_Globals import TEXT_PUB_CONSO
-    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PI      
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_GUI.Useful_Functions as guf  
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg      
 
     # Internal functions
 
@@ -615,7 +577,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
             num (int): The order of the 'etape' in 'ETAPE_LABEL_TEXT_LIST'.
         '''
         etape = tk.Label(self, 
-                         text      = ETAPE_LABEL_TEXT_LIST[num], 
+                         text      = gg.ETAPE_LABEL_TEXT_LIST[num], 
                          justify   = etape_label_format, 
                          font      = etape_label_font, 
                          underline = etape_underline)
@@ -636,7 +598,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     ########################## Function start
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
+    sizes_tuple   = guf.root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -647,46 +609,46 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     
     # Setting useful local variables for positions modification
     # numbers are reference values in mm for reference screen
-    eff_etape_font_size      = font_size(REF_ETAPE_FONT_SIZE, width_sf_min)           #14
-    eff_launch_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_answer_font_size     = font_size(REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_select_font_size     = font_size(REF_ETAPE_FONT_SIZE-2, width_sf_min)
-    eff_buttons_font_size    = font_size(REF_ETAPE_FONT_SIZE-3, width_sf_min)                                         
+    eff_etape_font_size      = guf.font_size(gg.REF_ETAPE_FONT_SIZE, width_sf_min)           #14
+    eff_launch_font_size     = guf.font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_answer_font_size     = guf.font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
+    eff_select_font_size     = guf.font_size(gg.REF_ETAPE_FONT_SIZE-2, width_sf_min)
+    eff_buttons_font_size    = guf.font_size(gg.REF_ETAPE_FONT_SIZE-3, width_sf_min)                                         
 
-    etape_label_pos_x        = _mm_to_px(REF_ETAPE_POS_X_MM * width_sf_mm, PPI)        #10
-    etape_label_pos_y_list   = [_mm_to_px( y * height_sf_mm, PPI) for y in REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
-    etape_button_dx          = _mm_to_px(REF_ETAPE_BUT_DX_MM * width_sf_mm, PPI)       #10
-    etape_button_dy          = _mm_to_px(REF_ETAPE_BUT_DY_MM * height_sf_mm, PPI)      #5
-    etape_check_dy           = _mm_to_px(REF_ETAPE_CHECK_DY_MM * height_sf_mm, PPI)    #-8
+    etape_label_pos_x        = guf.mm_to_px(gg.REF_ETAPE_POS_X_MM * width_sf_mm, gg.PPI)        #10
+    etape_label_pos_y_list   = [guf.mm_to_px( y * height_sf_mm, gg.PPI) for y in gg.REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
+    etape_button_dx          = guf.mm_to_px(gg.REF_ETAPE_BUT_DX_MM * width_sf_mm, gg.PPI)       #10
+    etape_button_dy          = guf.mm_to_px(gg.REF_ETAPE_BUT_DY_MM * height_sf_mm, gg.PPI)      #5
+    etape_check_dy           = guf.mm_to_px(gg.REF_ETAPE_CHECK_DY_MM * height_sf_mm, gg.PPI)    #-8
 
-    exit_button_x_pos        = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)    #193 
-    exit_button_y_pos        = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)    #145
+    exit_button_x_pos        = guf.mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #193 
+    exit_button_y_pos        = guf.mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #145
 
-    year_button_x_pos        = _mm_to_px(REF_YEAR_BUT_POS_X_MM * width_sf_mm,  PPI)    #10  
-    year_button_y_pos        = _mm_to_px(REF_YEAR_BUT_POS_Y_MM * height_sf_mm, PPI)    #26     
+    year_button_x_pos        = guf.mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #10  
+    year_button_y_pos        = guf.mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #26     
     dy_year                  = -6
     ds_year                  = 5
 
     # Setting useful aliases
-    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
-    bdd_mensuelle_alias             = ARCHI_YEAR["bdd mensuelle"] 
-    homonymes_path_alias            = ARCHI_YEAR["homonymes folder"]
-    homonymes_file_base_alias       = ARCHI_YEAR["homonymes file name base"]
-    OTP_path_alias                  = ARCHI_YEAR["OTP folder"]
-    OTP_file_base_alias             = ARCHI_YEAR["OTP file name base"]
-    pub_list_path_alias             = ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias        = ARCHI_YEAR["pub list file name base"]
-    corpus_alias                    = ARCHI_YEAR['corpus']
-    dedup_alias                     = ARCHI_YEAR['dedup']
-    parsing_alias                   = ARCHI_YEAR['parsing']
-    submit_alias                    = ARCHI_YEAR["submit file name"]
-    orphan_alias                    = ARCHI_YEAR["orphan file name"]
-    listing_alias                   = EMPLOYEES_ARCHI["root"]
-    effectifs_folder_name_alias     = EMPLOYEES_ARCHI["all_years_employees"]
-    effectifs_file_name_alias       = EMPLOYEES_ARCHI["employees_file_name"]
-    maj_effectifs_folder_name_alias = EMPLOYEES_ARCHI["complementary_employees"] 
-    year_missing_if_base_alias      = ARCHI_IF["missing_if_base"]
-    year_missing_issn_base_alias    = ARCHI_IF["missing_issn_base"]
+    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    bdd_mensuelle_alias             = pg.ARCHI_YEAR["bdd mensuelle"] 
+    homonymes_path_alias            = pg.ARCHI_YEAR["homonymes folder"]
+    homonymes_file_base_alias       = pg.ARCHI_YEAR["homonymes file name base"]
+    OTP_path_alias                  = pg.ARCHI_YEAR["OTP folder"]
+    OTP_file_base_alias             = pg.ARCHI_YEAR["OTP file name base"]
+    pub_list_path_alias             = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias        = pg.ARCHI_YEAR["pub list file name base"]
+    corpus_alias                    = pg.ARCHI_YEAR['corpus']
+    dedup_alias                     = pg.ARCHI_YEAR['dedup']
+    parsing_alias                   = pg.ARCHI_YEAR['parsing']
+    submit_alias                    = pg.ARCHI_YEAR["submit file name"]
+    orphan_alias                    = pg.ARCHI_YEAR["orphan file name"] 
+    year_missing_if_base_alias      = pg.ARCHI_IF["missing_if_base"]
+    year_missing_issn_base_alias    = pg.ARCHI_IF["missing_issn_base"]
+    listing_alias                   = eg.EMPLOYEES_ARCHI["root"]
+    effectifs_folder_name_alias     = eg.EMPLOYEES_ARCHI["all_years_employees"]
+    effectifs_file_name_alias       = eg.EMPLOYEES_ARCHI["employees_file_name"]
+    maj_effectifs_folder_name_alias = eg.EMPLOYEES_ARCHI["complementary_employees"]
 
     # Setting useful paths independent from corpus year
     effectifs_root_path       = bibliometer_path / Path(listing_alias)
@@ -695,7 +657,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     all_effectifs_path        = effectifs_folder_path / Path(effectifs_file_name_alias)
 
     # Getting departments label list
-    dpt_label_list = list(DPT_LABEL_DICT.keys()) 
+    dpt_label_list = list(ig.DPT_LABEL_DICT.keys()) 
     
     ### Décoration de la page
     # - Canvas
@@ -705,22 +667,22 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     fond.place(x = 0, y = 0)
     
     # - Etapes labels
-    etape_label_font   = tkFont.Font(family = FONT_NAME, 
+    etape_label_font   = tkFont.Font(family = gg.FONT_NAME, 
                                      size = eff_etape_font_size,
                                      weight = 'bold')
-    etapes_number      = len(ETAPE_LABEL_TEXT_LIST)
+    etapes_number      = len(gg.ETAPE_LABEL_TEXT_LIST)
     etape_label_format = 'left'
     etape_underline    = -1
     etapes             = [_etape_frame(self, etape_num) for etape_num in range(etapes_number)]    
     
     ### Choix de l'année 
-    years_list = last_available_years(bibliometer_path, CORPUSES_NUMBER)
+    years_list = guf.last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
     default_year = years_list[-1]  
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
     
     # Création de l'option button des années    
-    self.font_OptionButton_years = tkFont.Font(family = FONT_NAME, 
+    self.font_OptionButton_years = tkFont.Font(family = gg.FONT_NAME, 
                                                size = eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self, 
                                             variable_years, 
@@ -728,15 +690,15 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     self.OptionButton_years.config(font = self.font_OptionButton_years)
     
         # Création du label
-    self.font_Label_years = tkFont.Font(family = FONT_NAME, 
+    self.font_Label_years = tkFont.Font(family = gg.FONT_NAME, 
                                         size = eff_select_font_size)
     self.Label_years = tk.Label(self, 
-                                text = TEXT_YEAR_PI, 
+                                text = gg.TEXT_YEAR_PI, 
                                 font = self.font_Label_years)
     self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
     
-    place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
-    encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = ds_year)
+    guf.place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
+    guf.encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = ds_year)
 
     ################## Etape 1 : Croisement auteurs-effectifs 
     def _launch_recursive_year_search():
@@ -788,34 +750,34 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     # Fixe la profondeur de recherche à SEARCH_DEPTH dans l'historique des effectifs
     go_back_years_list = [i for i in range(1,date.today().year-2009)]
     go_back_years = tk.StringVar(self)
-    go_back_years.set(go_back_years_list[SEARCH_DEPTH-1])
+    go_back_years.set(go_back_years_list[eg.SEARCH_DEPTH-1])
     
     ### Définition du  bouton 'button_croisement' 
-    font_croisement = tkFont.Font(family = FONT_NAME, 
+    font_croisement = tkFont.Font(family = gg.FONT_NAME, 
                                   size   = eff_launch_font_size)
     button_croisement = tk.Button(self, 
-                                  text = TEXT_CROISEMENT,
+                                  text = gg.TEXT_CROISEMENT,
                                   font = font_croisement, 
                                   command = lambda: _launch_recursive_year_search())
     
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self, 
-                                        text = TEXT_MAJ_EFFECTIFS, 
+                                        text = gg.TEXT_MAJ_EFFECTIFS, 
                                         variable = check_effectif_var, 
                                         onvalue = 1, 
                                         offvalue = 0)
     
-    font_check = tkFont.Font(family = FONT_NAME, 
+    font_check = tkFont.Font(family = gg.FONT_NAME, 
                              size = eff_answer_font_size)
 
     etape_1 = etapes[0]
-    place_bellow(etape_1, 
-                 check_effectif_box, 
-                 dx = etape_button_dx, 
-                 dy = etape_button_dy / 2)
-    place_bellow(check_effectif_box, 
-                 button_croisement, 
-                 dy = etape_button_dy / 2)  
+    guf.place_bellow(etape_1, 
+                     check_effectif_box, 
+                     dx = etape_button_dx, 
+                     dy = etape_button_dy / 2)
+    guf.place_bellow(check_effectif_box, 
+                     button_croisement, 
+                     dy = etape_button_dy / 2)  
                                              
     ################## Etape 2 : Résolution des homonymies
     def _launch_resolution_homonymies():
@@ -843,17 +805,17 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                                           year_select)
     
     ### Définition du bouton "button_homonymes"
-    font_homonymes = tkFont.Font(family = FONT_NAME, 
+    font_homonymes = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_launch_font_size)
     button_homonymes = tk.Button(self, 
-                                     text = TEXT_HOMONYMES, 
+                                     text = gg.TEXT_HOMONYMES, 
                                      font = font_homonymes, 
                                      command = lambda: _launch_resolution_homonymies())
     etape_2 = etapes[1]
-    place_bellow(etape_2, 
-                 button_homonymes, 
-                 dx = etape_button_dx, 
-                 dy = etape_button_dy)
+    guf.place_bellow(etape_2, 
+                     button_homonymes, 
+                     dx = etape_button_dx, 
+                     dy = etape_button_dy)
     
     ################## Etape 3 : Attribution des OTPs
     def _launch_add_OTP():
@@ -882,17 +844,17 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                             year_select)
 
     ### Définition du bouton "button_OTP"
-    font_OTP = tkFont.Font(family = FONT_NAME, 
+    font_OTP = tkFont.Font(family = gg.FONT_NAME, 
                            size   = eff_launch_font_size)
     button_OTP = tk.Button(self, 
-                           text = TEXT_OTP, 
+                           text = gg.TEXT_OTP, 
                            font = font_OTP,  
                            command = lambda: _launch_add_OTP())
     etape_3 = etapes[2]
-    place_bellow(etape_3, 
-                 button_OTP, 
-                 dx = etape_button_dx, 
-                 dy = etape_button_dy)
+    guf.place_bellow(etape_3, 
+                     button_OTP, 
+                     dx = etape_button_dx, 
+                     dy = etape_button_dy)
     
     ################## Etape 4 : Liste consolidée des publications
     def _launch_pub_list_conso():
@@ -927,25 +889,25 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
                                    year_select)
 
     # Définition du bouton de création de la liste consolidée des publications
-    font_finale = tkFont.Font(family = FONT_NAME, 
+    font_finale = tkFont.Font(family = gg.FONT_NAME, 
                               size   = eff_launch_font_size)
     button_finale = tk.Button(self, 
-                              text = TEXT_PUB_CONSO, 
+                              text = gg.TEXT_PUB_CONSO, 
                               font = font_finale, 
                               command = lambda: _launch_pub_list_conso())
 
     etape_4 = etapes[3]
 
-    place_bellow(etape_4, 
-                 button_finale,
-                 dx = etape_button_dx,
-                 dy = etape_button_dy / 2)  
+    guf.place_bellow(etape_4, 
+                     button_finale,
+                     dx = etape_button_dx,
+                     dy = etape_button_dy / 2)  
                   
     ################## Bouton pour sortir de la page
-    font_button_quit = tkFont.Font(family = FONT_NAME, 
+    font_button_quit = tkFont.Font(family = gg.FONT_NAME, 
                                    size   = eff_buttons_font_size)
     button_quit = tk.Button(self, 
-                            text = TEXT_PAUSE, 
+                            text = gg.TEXT_PAUSE, 
                             font = font_button_quit, 
                             command = lambda: _launch_exit()).place(x = exit_button_x_pos, 
                                                                     y = exit_button_y_pos, 

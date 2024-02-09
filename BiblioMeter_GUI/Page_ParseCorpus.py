@@ -17,12 +17,8 @@ def _create_table(self, bibliometer_path, pos_x_init):
         None.
         
     Note:
-        The function '_mm_to_px' is imported from the module 'BiblioGui' 
-        of the package 'BiblioAnalysis_Utils'.
-        The function 'root_propertier' is imported from the module 'GUI_Globals' 
-        of the package 'BiblioMeter_GUI'.
-        The functions 'font_size' is imported from the module 'Useful_Functions' 
-        of the package 'BiblioMeter_GUI'.
+        The functions 'font_size', 'mm_to_px' and 'root_properties' are imported 
+        from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
         The globals 'FONT_NAME' and 'PPI' are imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
 
@@ -32,16 +28,9 @@ def _create_table(self, bibliometer_path, pos_x_init):
     import tkinter as tk
     from tkinter import font as tkFont
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
-    
-    # Local library imports    
-    from BiblioMeter_GUI.GUI_Globals import root_properties
-    from BiblioMeter_GUI.Useful_Functions import font_size    
-    
-    # Loal globals import
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-    from BiblioMeter_GUI.GUI_Globals import PPI  
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_GUI.Useful_Functions as guf
     
     # Internal functions
     def _set_table_item(item_text, item_pos_x):
@@ -52,7 +41,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
         self.TABLE.append(item_case)
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
+    sizes_tuple   = guf.root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -63,13 +52,13 @@ def _create_table(self, bibliometer_path, pos_x_init):
     
     # Setting specific font properties
     ref_font_size = 11
-    local_font_size = font_size(ref_font_size, width_sf_min)    
-    header_font = tkFont.Font(family = FONT_NAME, 
+    local_font_size = guf.font_size(ref_font_size, width_sf_min)    
+    header_font = tkFont.Font(family = gg.FONT_NAME, 
                               size   = local_font_size)
     
     # Setting useful x position shift and y position reference in pixels    
-    pos_x_shift = _mm_to_px(25 * width_sf_mm,  PPI)                                 
-    pos_y_ref   = _mm_to_px(30 * height_sf_mm, PPI) # 35
+    pos_x_shift = guf.mm_to_px(25 * width_sf_mm,  gg.PPI)                                 
+    pos_y_ref   = guf.mm_to_px(30 * height_sf_mm, gg.PPI) # 35
     
     # Initializing x position in pixels
     pos_x = pos_x_init
@@ -111,9 +100,9 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     Returns:
         
     Note:
-        The function '_mm_to_px' is imported from the module 'BiblioGui' 
-        of the package 'BiblioAnalysis_Utils'.
-        The function 'root_properties' is imported from the module 'GUI_Globals' 
+        The function 'mm_to_px' is imported from the module 'Useful_Functions' 
+        of the package 'BiblioMeter_GUI'.
+        The function 'root_properties' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
         The functions 'existing_corpuses', 'font_size' and 'place_after'
         are imported from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
@@ -128,22 +117,13 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     import tkinter as tk
     from tkinter import font as tkFont
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px 
-    
-    # Local library imports        
-    from BiblioMeter_GUI.GUI_Globals import root_properties    
-    from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses    
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    
-    # Local globals imports
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME        
-    from BiblioMeter_GUI.GUI_Globals import PPI
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_GUI.Useful_Functions as guf
+    from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
+    sizes_tuple   = guf.root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -154,12 +134,12 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen 
-    eff_font_size = font_size(11, width_sf_min)
-    eff_dx        = _mm_to_px(1 * width_sf_mm,  PPI)
-    eff_dy        = _mm_to_px(1 * height_sf_mm, PPI)
+    eff_font_size = guf.font_size(11, width_sf_min)
+    eff_dx        = guf.mm_to_px(1 * width_sf_mm,  gg.PPI)
+    eff_dy        = guf.mm_to_px(1 * height_sf_mm, gg.PPI)
 
     # Getting files status for corpus concatenation and deduplication
-    files_status = existing_corpuses(bibliometer_path)     
+    files_status = guf.existing_corpuses(bibliometer_path)     
     list_corpus_year    = files_status[0]
     list_wos_rawdata    = files_status[1]
     list_wos_parsing    = files_status[2]
@@ -201,13 +181,13 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     self.OM_year_pc_1 = tk.OptionMenu(self, 
                                       self.var_year_pc_1, 
                                       *list_corpus_year)
-    font_year_pc_1 = tkFont.Font(family = FONT_NAME, 
-                                 size = eff_font_size)
+    font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
+                                 size   = eff_font_size)
     self.OM_year_pc_1.config(font = font_year_pc_1)
-    place_after(self.label_year_pc_1, 
-                self.OM_year_pc_1, 
-                dx = eff_dx,
-                dy = - eff_dy)
+    guf.place_after(self.label_year_pc_1, 
+                    self.OM_year_pc_1, 
+                    dx = eff_dx,
+                    dy = - eff_dy)
     
     # Destruct files status display
     self.OM_year_pc_2.destroy() 
@@ -218,13 +198,13 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     self.OM_year_pc_2 = tk.OptionMenu(self, 
                                       self.var_year_pc_2, 
                                       *list_corpus_year)
-    font_year_pc_2 = tkFont.Font(family = FONT_NAME, 
-                                 size = eff_font_size)
+    font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
+                                 size   = eff_font_size)
     self.OM_year_pc_2.config(font = font_year_pc_2)
-    place_after(self.label_year_pc_2, 
-                self.OM_year_pc_2, 
-                dx = eff_dx, 
-                dy = - eff_dy)
+    guf.place_after(self.label_year_pc_2, 
+                    self.OM_year_pc_2, 
+                    dx = eff_dx, 
+                    dy = - eff_dy)
 
     
 def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, pos_y, esp_ligne):
@@ -253,11 +233,9 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
         
     Note:
         The function 'biblio_parser' is imported from the module 'BiblioParsingUtils' 
-        of the package 'BiblioAnalysis_Utils'.
+        of the package 'BiblioParsing'.
         The function 'existing_corpuses' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The global 'PARSING_PERF' is imported from the module 'BiblioSpecificGlobals' 
-        of the package 'BiblioAnalysis_Utils'.
         The global 'ARCHI_YEAR' is imported from the module 'BM_PubGlobals' of the package 
         'BiblioMeter_FUNCTS'.
 
@@ -265,52 +243,45 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     
     # Standard library imports
     import os
-    import json
-    from pathlib import Path
     
     # 3rd party imports
+    import BiblioParsing as bp
     import tkinter as tk
     from tkinter import messagebox
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioParsingUtils import biblio_parser
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import PARSING_PERF
-    
-    # Local library imports
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses 
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_UsefulFuncts as fuf
+    import BiblioMeter_GUI.Useful_Functions as guf
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     
     # Internal functions    
-    def _corpus_parsing(rawdata_path, parsing_path, database_type, failed_json_path, expert):        
-        biblio_parser(rawdata_path, parsing_path, database_type, expert) 
-        with open(failed_json_path, 'r') as failed_json:
-            data_failed = failed_json.read()
-        dic_failed      = json.loads(data_failed)
+    def _corpus_parsing(rawdata_path, parsing_path, database_type):
+        if not os.path.exists(parsing_path): os.mkdir(parsing_path)
+        parsing_dict, dic_failed = bp.biblio_parser(rawdata_path, database_type)
+        fuf.save_parsing_dict(parsing_dict, parsing_path, 
+                              item_filename_dict, parsing_save_extent)
+        fuf.save_fails_dict(dic_failed, parsing_path)
+
         articles_number = dic_failed["number of article"]
         info_title      = "Information"
         info_text       = f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
         info_text      += f"\n\n  Nombre d'articles du corpus : {articles_number}"
-        messagebox.showinfo(info_title, info_text)
-        
-    # Setting variables for functions imported from BiblioAnalysis_Utils package
-    expert = False   # for call of biblio_parser                        
+        messagebox.showinfo(info_title, info_text)                       
 
-    # Creating useful aliases from imported global ARCHI_YEAR 
-    corpus_folder_alias   = ARCHI_YEAR["corpus"]
-    database_folder_alias = ARCHI_YEAR[database_type]
-    rawdata_folder_alias  = ARCHI_YEAR['rawdata']
-    parsing_folder_alias  = ARCHI_YEAR['parsing'] 
-       
-    # Setting useful paths
-    root_folder_path = bibliometer_path / Path(corpus_year) / Path(corpus_folder_alias) / Path(database_folder_alias)
-    rawdata_path     = root_folder_path / Path(rawdata_folder_alias) 
-    parsing_path     = root_folder_path / Path(parsing_folder_alias)
-    failed_json_path = parsing_path / Path(PARSING_PERF)
+    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    rawdata_path_dict, parsing_path_dict, item_filename_dict = config_tup[0], config_tup[1], config_tup[2]
+    
+    # Setting useful paths for database 'database_type'
+    rawdata_path = rawdata_path_dict[database_type] 
+    parsing_path = parsing_path_dict[database_type]
+    
+    # Setting parsing files extension for saving
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
     
     # Getting files status for corpus parsing
-    files_status = existing_corpuses(bibliometer_path)    
+    files_status = guf.existing_corpuses(bibliometer_path)    
     list_corpus_year = files_status[0]
     if database_type == 'wos':
         list_rawdata = files_status[1]
@@ -363,7 +334,7 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
                     return
             
             # Parse when not parsed yet or ok for reconstructing parsing                      
-            _corpus_parsing(rawdata_path, parsing_path, database_type, failed_json_path, expert)
+            _corpus_parsing(rawdata_path, parsing_path, database_type)
     else:
         info_title = "Information"
         info_text  = f"Modifiez l'année sélectionnée et relancez le 'parsing'."                  
@@ -377,8 +348,8 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
 def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_ligne):
     """The internal function `_launch_synthese` concatenates the parsing 
     from wos or scopus databases using the function 'parsing_concatenate_deduplicate'.
-    It tags the LITEN authors using the function 'extend_author_institutions' 
-    and using the global 'LITEN_INST_LIST'.
+    It tags the Institute authors using the function 'extend_author_institutions' 
+    and using the global 'INSTITUTE_INST_LIST'.
     It checks if all useful files are available in the 'BiblioMeter_Files' folder 
     using the function 'existing_corpuses'.
     It saves the parsing files using paths set from the global 'ARCHI_YEAR'.
@@ -400,80 +371,70 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
         
     Note:
         The function 'parsing_concatenate_deduplicate' is imported from 
-        the module 'BiblioParsingConcat' of the package 'BiblioAnalysis_Utils'.
+        the module 'BiblioParsingConcat' of the package 'BiblioParsing'.
         The function 'extend_author_institutions' is imported from 
-        the module 'BiblioParsingUtils' of the package 'BiblioAnalysis_Utils'.
+        the module 'BiblioParsingUtils' of the package 'BiblioParsing'.
         The function 'existing_corpuses' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The globals 'ARCHI_YEAR' and 'LITEN_INST_LIST' are imported from the module 
+        The globals 'ARCHI_YEAR' and 'INSTITUTE_INST_LIST' are imported from the module 
         'BM_PubGlobals' of the package 'BiblioMeter_FUNCTS'.
 
     """
     # Standard library imports
     import os
-    from pathlib import Path
 
     # 3rd party imports
+    import BiblioParsing as bp
     from tkinter import messagebox
-
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioParsingConcat import parsing_concatenate_deduplicate
-    from BiblioAnalysis_Utils.BiblioParsingInstitutions import extend_author_institutions
     
-    # Local library imports
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import LITEN_INST_LIST
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_UsefulFuncts as fuf
+    import BiblioMeter_GUI.Useful_Functions as guf
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config      
     
     # Internal functions
-    def _rationalize_corpus_parsing():
-        if not os.path.exists(concat_parsing_path):
-            if not os.path.exists(concat_path): os.mkdir(concat_path)
-            os.mkdir(concat_parsing_path)
-
-        if not os.path.exists(rational_parsing_path):
-            if not os.path.exists(rational_path): os.mkdir(rational_path)
-            os.mkdir(rational_parsing_path)
+    def _deduplicate_corpus_parsing():
+        if not os.path.exists(concat_parsing_path): os.mkdir(concat_parsing_path)
+        if not os.path.exists(dedup_parsing_path): os.mkdir(dedup_parsing_path)           
   
-        parsing_concatenate_deduplicate(useful_path_list)
-        extend_author_institutions(rational_parsing_path, 
-                                   LITEN_INST_LIST)         
-        
-    # Creating useful aliases from imported global ARCHI_YEAR 
-    corpus_folder_alias  = ARCHI_YEAR["corpus"]
-    scopus_folder_alias  = ARCHI_YEAR["scopus"]
-    wos_folder_alias     = ARCHI_YEAR["wos"]
-    parsing_folder_alias = ARCHI_YEAR['parsing'] 
-    concat_folder_alias  = ARCHI_YEAR['concat']
-    dedup_folder_alias   = ARCHI_YEAR['dedup']
+        scopus_parsing_dict = fuf.read_parsing_dict(scopus_parsing_path, item_filename_dict, 
+                                                    parsing_save_extent)
+        wos_parsing_dict    = fuf.read_parsing_dict(wos_parsing_path, item_filename_dict, 
+                                                    parsing_save_extent)
+        concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict, 
+                                                     inst_filter_list = ig.INSTITUTE_INST_LIST)
+        fuf.save_parsing_dict(concat_parsing_dict, concat_parsing_path, 
+                              item_filename_dict, parsing_save_extent)
+        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict)
+        fuf.save_parsing_dict(dedup_parsing_dict, dedup_parsing_path, 
+                          item_filename_dict, parsing_save_extent)
+      
+
+    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    rawdata_path_dict, parsing_path_dict, item_filename_dict = config_tup[0], config_tup[1], config_tup[2]
     
-    # Setting useful paths
-    root_folder_path = bibliometer_path / Path(corpus_year) / Path(corpus_folder_alias)
+    # Setting useful paths for database 'database_type'
+    scopus_parsing_path = parsing_path_dict["scopus"] 
+    wos_parsing_path    = parsing_path_dict["wos"] 
+    concat_parsing_path = parsing_path_dict["concat"]
+    dedup_parsing_path  = parsing_path_dict["dedup"]
     
-    scopus_parsing_path   = root_folder_path / Path(scopus_folder_alias) / Path(parsing_folder_alias) 
-    wos_parsing_path      = root_folder_path / Path(wos_folder_alias) / Path(parsing_folder_alias)
-    concat_path           = root_folder_path / Path(concat_folder_alias)
-    concat_parsing_path   = concat_path / Path(parsing_folder_alias)
-    rational_path         = root_folder_path / Path(dedup_folder_alias)
-    rational_parsing_path = rational_path / Path(parsing_folder_alias)
-    
-    useful_path_list = [scopus_parsing_path, 
-                        wos_parsing_path, 
-                        concat_parsing_path, 
-                        rational_parsing_path]
+    # Setting parsing files extension for saving
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
     
     # Getting files status for corpus concatenation and deduplication
-    files_status = existing_corpuses(bibliometer_path)     
-    list_corpus_year = files_status[0]
-    list_wos_parsing = files_status[2]
+    files_status = guf.existing_corpuses(bibliometer_path)     
+    list_corpus_year    = files_status[0]
+    list_wos_parsing    = files_status[2]
     list_scopus_parsing = files_status[4]
-    list_rational = files_status[5]
+    list_dedup          = files_status[5]
     
-    wos_parsing_status = list_wos_parsing[list_corpus_year.index(corpus_year)]
+    wos_parsing_status    = list_wos_parsing[list_corpus_year.index(corpus_year)]
     scopus_parsing_status = list_scopus_parsing[list_corpus_year.index(corpus_year)]
-    rational_parsing_status = list_rational[list_corpus_year.index(corpus_year)]
+    dedup_parsing_status  = list_dedup[list_corpus_year.index(corpus_year)]
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
     ask_title = "Confirmation de l'année de traitement"
@@ -503,14 +464,14 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
             messagebox.showwarning(warning_title, warning_text)
             return
 
-        if rational_parsing_status:
+        if dedup_parsing_status:
             # Ask to carry on with parsing if already done
             ask_title = "Reconstruction de la synthèse"
             ask_text  =  f"La synthèse pour l'année {corpus_year} est déjà disponible."
             ask_text += f"\n\nReconstruire la synthèse ?"
             answer_2 = messagebox.askokcancel(ask_title, ask_text)            
             if answer_2: # Alors on effectue la synthèse
-                _rationalize_corpus_parsing()
+                _deduplicate_corpus_parsing()
                 info_title = "Information"
                 info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."                   
                 messagebox.showinfo(info_title, info_text)
@@ -519,7 +480,7 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
                 info_text = f"La synthèse dejà disponible est conservée."                   
                 messagebox.showinfo(info_title, info_text)
         else:
-            _rationalize_corpus_parsing()            
+            _deduplicate_corpus_parsing()            
             info_title = "Information"
             info_text = f"La construction de la synthèse pour l'année {corpus_year} est terminée."                   
             messagebox.showinfo(info_title, info_text)
@@ -541,9 +502,9 @@ def create_parsing_concat(self, bibliometer_path, parent):
     Returns:
         
     Note:
-        The function '_mm_to_px' is imported from the module 'BiblioGui' 
-        of the package 'BiblioAnalysis_Utils'.
-        The function 'root_properties' is imported from the module 'GUI_Globals' 
+        The function 'mm_to_px' is imported from the module 'Useful_Functions' 
+        of the package 'BiblioMeter_GUI'.
+        The function 'root_properties' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
         The functions 'existing_corpuses', 'font_size' and 'place_after' 
         are imported from the module 'Useful_Functions' 
@@ -555,38 +516,17 @@ def create_parsing_concat(self, bibliometer_path, parent):
 
     # Standard library imports
     import os
-    from pathlib import Path
 
     # 3rd party imports
     import tkinter as tk
     from tkinter import filedialog
     from tkinter import messagebox
-    from tkinter import font as tkFont
+    from tkinter import font as tkFont    
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioGui import _mm_to_px    
-    
-    # Local library imports
-    from BiblioMeter_GUI.GUI_Globals import root_properties    
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
-    from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import place_after
-    
-    # Local globals imports
-    from BiblioMeter_GUI.GUI_Globals import BDD_LIST    
-    from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-    from BiblioMeter_GUI.GUI_Globals import PPI
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_X_MM
-    from BiblioMeter_GUI.GUI_Globals import REF_EXIT_BUT_POS_Y_MM
-    from BiblioMeter_GUI.GUI_Globals import TEXT_BDD_PC
-    from BiblioMeter_GUI.GUI_Globals import TEXT_LAUNCH_PARSING
-    from BiblioMeter_GUI.GUI_Globals import TEXT_LAUNCH_SYNTHESE
-    from BiblioMeter_GUI.GUI_Globals import TEXT_PARSING
-    from BiblioMeter_GUI.GUI_Globals import TEXT_PAUSE
-    from BiblioMeter_GUI.GUI_Globals import TEXT_STATUT
-    from BiblioMeter_GUI.GUI_Globals import TEXT_SYNTHESE    
-    from BiblioMeter_GUI.GUI_Globals import TEXT_UPDATE_STATUS        
-    from BiblioMeter_GUI.GUI_Globals import TEXT_YEAR_PC    
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_GUI.Useful_Functions as guf
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg  
     
     # Internal functions
     def _launch_exit():
@@ -600,7 +540,7 @@ def create_parsing_concat(self, bibliometer_path, parent):
             parent.destroy() 
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
+    sizes_tuple   = guf.root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -610,66 +550,66 @@ def create_parsing_concat(self, bibliometer_path, parent):
     width_sf_min  = min(width_sf_mm, width_sf_px)                     
                 
     # Setting useful local variables for positions modification (globals to create ??)
-    # numbers  are reference values in mm for reference screen
-    position_selon_x_check   = _mm_to_px(70  * width_sf_mm,  PPI)
-    position_selon_y_check   = _mm_to_px(40  * height_sf_mm, PPI)  #40   
-    espace_entre_ligne_check = _mm_to_px(10  * height_sf_mm, PPI)    
-    labels_x_pos             = _mm_to_px(10  * width_sf_mm,  PPI)
-    labels_y_space           = _mm_to_px(10  * height_sf_mm, PPI)
-    status_label_y_pos       = _mm_to_px(25  * height_sf_mm, PPI)  #25      
-    parsing_label_y_pos      = _mm_to_px(107 * height_sf_mm, PPI)  
-    synthese_label_y_pos     = _mm_to_px(135 * height_sf_mm, PPI)                             
-    status_button_x_pos      = _mm_to_px(148  * width_sf_mm, PPI)  #148       
-    status_button_y_pos      = _mm_to_px(98  * height_sf_mm, PPI)  #98                         
-    exit_button_x_pos        = _mm_to_px(REF_EXIT_BUT_POS_X_MM * width_sf_mm,  PPI)  #193 
-    exit_button_y_pos        = _mm_to_px(REF_EXIT_BUT_POS_Y_MM * height_sf_mm, PPI)  #145
-    dx_year_select           = _mm_to_px(1   * width_sf_mm,  PPI)
-    dy_year_select           = _mm_to_px(1   * height_sf_mm, PPI)
-    dx_bdd_select            = _mm_to_px(12  * width_sf_mm,  PPI)  #12
-    dy_bdd_select            = _mm_to_px(1   * height_sf_mm, PPI)
-    dx_launch                = _mm_to_px(15  * width_sf_mm,  PPI)  #15
-    dy_launch                = _mm_to_px(0.2 * height_sf_mm, PPI)
-    eff_labels_font_size     = font_size(14, width_sf_min)
-    eff_select_font_size     = font_size(12, width_sf_min) 
-    eff_buttons_font_size    = font_size(11, width_sf_min)
+    # numbers are reference values in mm for reference screen
+    position_selon_x_check   = guf.mm_to_px(70  * width_sf_mm,  gg.PPI)
+    position_selon_y_check   = guf.mm_to_px(40  * height_sf_mm, gg.PPI)  #40   
+    espace_entre_ligne_check = guf.mm_to_px(10  * height_sf_mm, gg.PPI)    
+    labels_x_pos             = guf.mm_to_px(10  * width_sf_mm,  gg.PPI)
+    labels_y_space           = guf.mm_to_px(10  * height_sf_mm, gg.PPI)
+    status_label_y_pos       = guf.mm_to_px(25  * height_sf_mm, gg.PPI)  #25      
+    parsing_label_y_pos      = guf.mm_to_px(107 * height_sf_mm, gg.PPI)  
+    synthese_label_y_pos     = guf.mm_to_px(135 * height_sf_mm, gg.PPI)                             
+    status_button_x_pos      = guf.mm_to_px(148  * width_sf_mm, gg.PPI)  #148       
+    status_button_y_pos      = guf.mm_to_px(98  * height_sf_mm, gg.PPI)  #98                         
+    exit_button_x_pos        = guf.mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)  #193 
+    exit_button_y_pos        = guf.mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)  #145
+    dx_year_select           = guf.mm_to_px(1   * width_sf_mm,  gg.PPI)
+    dy_year_select           = guf.mm_to_px(1   * height_sf_mm, gg.PPI)
+    dx_bdd_select            = guf.mm_to_px(12  * width_sf_mm,  gg.PPI)  #12
+    dy_bdd_select            = guf.mm_to_px(1   * height_sf_mm, gg.PPI)
+    dx_launch                = guf.mm_to_px(15  * width_sf_mm,  gg.PPI)  #15
+    dy_launch                = guf.mm_to_px(0.2 * height_sf_mm, gg.PPI)
+    eff_labels_font_size     = guf.font_size(14, width_sf_min)
+    eff_select_font_size     = guf.font_size(12, width_sf_min) 
+    eff_buttons_font_size    = guf.font_size(11, width_sf_min)
                 
     year_x_pos = labels_x_pos           
-    parsing_year_y_pos =  parsing_label_y_pos + labels_y_space
+    parsing_year_y_pos   =  parsing_label_y_pos + labels_y_space
     synthese_year_y_pos  =  synthese_label_y_pos + labels_y_space
     
     # Getting files status for corpus concatenation and deduplication
-    files_status = existing_corpuses(bibliometer_path)     
+    files_status = guf.existing_corpuses(bibliometer_path)     
     list_corpus_year    = files_status[0]
     list_wos_rawdata    = files_status[1]     # unused here
     list_wos_parsing    = files_status[2]     # unused here
     list_scopus_rawdata = files_status[3]     # unused here
     list_scopus_parsing = files_status[4]     # unused here
-    list_rational       = files_status[5]     # unused here
+    list_dedup          = files_status[5]     # unused here
     
     # Setting useful local variables for default selection items in selection lists 
     default_year = list_corpus_year[-1]    
-    default_bdd  = BDD_LIST[0]
+    default_bdd  = pg.BDD_LIST[0]
     
     ################### Zone Statut des fichiers de "parsing"
     # Liste des checkbox des corpuses
     self.CHECK = []
     self.TABLE = []
 
-    font_statut = tkFont.Font(family = FONT_NAME, 
+    font_statut = tkFont.Font(family = gg.FONT_NAME, 
                               size   = eff_labels_font_size,
                               weight = 'bold')
     label_statut = tk.Label(self, 
-                            text = TEXT_STATUT, 
+                            text = gg.TEXT_STATUT, 
                             font = font_statut)
     label_statut.place(x = labels_x_pos, 
                        y = status_label_y_pos, 
                        anchor = "nw")
     
     ################## Bouton pour actualiser la zone de stockage
-    font_exist_button = tkFont.Font(family = FONT_NAME, 
-                                    size = eff_buttons_font_size)
+    font_exist_button = tkFont.Font(family = gg.FONT_NAME, 
+                                    size   = eff_buttons_font_size)
     exist_button = tk.Button(self, 
-                             text = TEXT_UPDATE_STATUS, 
+                             text = gg.TEXT_UPDATE_STATUS, 
                              font = font_exist_button, 
                              command = lambda: _update(self, 
                                                        bibliometer_path, 
@@ -681,20 +621,20 @@ def create_parsing_concat(self, bibliometer_path, parent):
                        anchor = 'n')
     
     ################## Zone Construction des fichiers de "parsing" par BDD
-    font_parsing = tkFont.Font(family = FONT_NAME, 
+    font_parsing = tkFont.Font(family = gg.FONT_NAME, 
                                size   = eff_labels_font_size,
                                weight = 'bold')
     label_parsing = tk.Label(self, 
-                             text = TEXT_PARSING, 
+                             text = gg.TEXT_PARSING, 
                              font = font_parsing)
     label_parsing.place(x = labels_x_pos, 
                         y = parsing_label_y_pos, anchor = "nw")
 
     # Choix de l'année
-    font_year_pc_1 = tkFont.Font(family = FONT_NAME, 
-                                 size = eff_select_font_size)
+    font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
+                                 size   = eff_select_font_size)
     self.label_year_pc_1 = tk.Label(self, 
-                                    text = TEXT_YEAR_PC, 
+                                    text = gg.TEXT_YEAR_PC, 
                                     font = font_year_pc_1)
     self.label_year_pc_1.place(x = year_x_pos, 
                                y = parsing_year_y_pos, 
@@ -705,43 +645,43 @@ def create_parsing_concat(self, bibliometer_path, parent):
     self.OM_year_pc_1 = tk.OptionMenu(self, 
                                       self.var_year_pc_1, 
                                       *list_corpus_year)
-    font_year_pc_1 = tkFont.Font(family = FONT_NAME, 
-                                 size = eff_buttons_font_size)
+    font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
+                                 size   = eff_buttons_font_size)
     self.OM_year_pc_1.config(font = font_year_pc_1)
-    place_after(self.label_year_pc_1, 
-                self.OM_year_pc_1, 
-                dx = + dx_year_select,
-                dy = - dy_year_select)
+    guf.place_after(self.label_year_pc_1, 
+                    self.OM_year_pc_1, 
+                    dx = + dx_year_select,
+                    dy = - dy_year_select)
     
     # Choix de la BDD
-    font_bdd_pc_1 = tkFont.Font(family = FONT_NAME, 
-                                size = eff_select_font_size)
+    font_bdd_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
+                                size   = eff_select_font_size)
     label_bdd_pc_1 = tk.Label(self, 
-                              text = TEXT_BDD_PC, 
+                              text = gg.TEXT_BDD_PC, 
                               font = font_bdd_pc_1)
-    place_after(self.OM_year_pc_1, 
-                label_bdd_pc_1, 
-                dx = dx_bdd_select, 
-                dy = dy_bdd_select)
+    guf.place_after(self.OM_year_pc_1, 
+                    label_bdd_pc_1, 
+                    dx = dx_bdd_select, 
+                    dy = dy_bdd_select)
     
     var_bdd_pc_1 = tk.StringVar(self)
     var_bdd_pc_1.set(default_bdd)
     OM_bdd_pc_1 = tk.OptionMenu(self, 
                                 var_bdd_pc_1, 
-                                *BDD_LIST)
-    font_bdd_pc_1 = tkFont.Font(family = FONT_NAME, 
-                                size = eff_buttons_font_size)
+                                *pg.BDD_LIST)
+    font_bdd_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
+                                size   = eff_buttons_font_size)
     OM_bdd_pc_1.config(font = font_bdd_pc_1)
-    place_after(label_bdd_pc_1, 
-                OM_bdd_pc_1, 
-                dx = + dx_year_select,
-                dy = - dy_year_select)
+    guf.place_after(label_bdd_pc_1, 
+                    OM_bdd_pc_1, 
+                    dx = + dx_year_select,
+                    dy = - dy_year_select)
     
     # Lancement du parsing
-    font_launch_parsing = tkFont.Font(family = FONT_NAME, 
-                                      size = eff_buttons_font_size)
+    font_launch_parsing = tkFont.Font(family = gg.FONT_NAME, 
+                                      size   = eff_buttons_font_size)
     button_launch_parsing = tk.Button(self, 
-                                      text = TEXT_LAUNCH_PARSING, 
+                                      text = gg.TEXT_LAUNCH_PARSING, 
                                       font = font_launch_parsing, 
                                       command = lambda: _launch_parsing(self, 
                                                                         self.var_year_pc_1.get(), 
@@ -750,27 +690,27 @@ def create_parsing_concat(self, bibliometer_path, parent):
                                                                         position_selon_x_check, 
                                                                         position_selon_y_check, 
                                                                         espace_entre_ligne_check))
-    place_after(OM_bdd_pc_1, 
-                button_launch_parsing, 
-                dx = dx_launch,
-                dy = dy_launch)
+    guf.place_after(OM_bdd_pc_1, 
+                    button_launch_parsing, 
+                    dx = dx_launch,
+                    dy = dy_launch)
     
     ################## Zone Synthèse des fichiers de parsing de toutes les BDD
-    font_synthese = tkFont.Font(family = FONT_NAME, 
+    font_synthese = tkFont.Font(family = gg.FONT_NAME, 
                                 size   = eff_labels_font_size,
                                 weight = 'bold')
     label_synthese = tk.Label(self, 
-                              text = TEXT_SYNTHESE, 
+                              text = gg.TEXT_SYNTHESE, 
                               font = font_synthese)
     label_synthese.place(x = labels_x_pos, 
                          y = synthese_label_y_pos,
                          anchor = "nw")
     
     # Choix de l'année
-    font_year_pc_2 = tkFont.Font(family = FONT_NAME, 
-                                 size = eff_select_font_size)
+    font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
+                                 size   = eff_select_font_size)
     self.label_year_pc_2 = tk.Label(self, 
-                                    text = TEXT_YEAR_PC, 
+                                    text = gg.TEXT_YEAR_PC, 
                                     font = font_year_pc_2)
     self.label_year_pc_2.place(x = year_x_pos, 
                                y = synthese_year_y_pos,
@@ -781,19 +721,19 @@ def create_parsing_concat(self, bibliometer_path, parent):
     self.OM_year_pc_2 = tk.OptionMenu(self, 
                                       self.var_year_pc_2, 
                                       *list_corpus_year)
-    font_year_pc_2 = tkFont.Font(family = FONT_NAME, 
-                                 size = eff_buttons_font_size)
+    font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
+                                 size   = eff_buttons_font_size)
     self.OM_year_pc_2.config(font = font_year_pc_2)
-    place_after(self.label_year_pc_2, 
-                self.OM_year_pc_2, 
-                dx = + dx_year_select, 
-                dy = - dy_year_select)
+    guf.place_after(self.label_year_pc_2, 
+                    self.OM_year_pc_2, 
+                    dx = + dx_year_select, 
+                    dy = - dy_year_select)
         
     # Lancement de la synthèse
-    font_launch_synthese = tkFont.Font(family = FONT_NAME, 
-                                     size = eff_buttons_font_size)
+    font_launch_synthese = tkFont.Font(family = gg.FONT_NAME, 
+                                       size   = eff_buttons_font_size)
     button_launch_synthese = tk.Button(self, 
-                                     text = TEXT_LAUNCH_SYNTHESE, 
+                                     text = gg.TEXT_LAUNCH_SYNTHESE, 
                                      font = font_launch_synthese, 
                                      command = lambda: _launch_synthese(self, 
                                                                         self.var_year_pc_2.get(),
@@ -801,19 +741,19 @@ def create_parsing_concat(self, bibliometer_path, parent):
                                                                         position_selon_x_check, 
                                                                         position_selon_y_check, 
                                                                         espace_entre_ligne_check))
-    place_after(self.OM_year_pc_2, 
-                button_launch_synthese, 
-                dx = dx_launch,
-                dy = dy_launch)
+    guf.place_after(self.OM_year_pc_2, 
+                    button_launch_synthese, 
+                    dx = dx_launch,
+                    dy = dy_launch)
 
     ################## Placement de CHECKBOXCORPUSES :
     _update(self, bibliometer_path, position_selon_x_check, position_selon_y_check, espace_entre_ligne_check)
     
     ################## Bouton pour sortir de la page
-    font_button_quit = tkFont.Font(family = FONT_NAME, 
-                                   size = eff_buttons_font_size)
+    font_button_quit = tkFont.Font(family = gg.FONT_NAME, 
+                                   size   = eff_buttons_font_size)
     button_quit = tk.Button(self, 
-                            text = TEXT_PAUSE, 
+                            text = gg.TEXT_PAUSE, 
                             font = font_button_quit, 
                             command = lambda: _launch_exit()).place(x = exit_button_x_pos, 
                                                                     y = exit_button_y_pos, 

@@ -17,15 +17,16 @@ def _set_employees_paths(bibliometer_path):
     # Standard library imports
     from pathlib import Path
 
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BACKUP 
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI                                                                         
-                                                                             
-    root_employees_folder_alias       = EMPLOYEES_ARCHI["root"]
-    all_years_employees_folder_alias  = EMPLOYEES_ARCHI["all_years_employees"] 
-    one_year_employees_folder_alias   = EMPLOYEES_ARCHI["one_year_employees"]
-    months2add_employees_folder_alias = EMPLOYEES_ARCHI["complementary_employees"]
-    backup_folder_alias = ARCHI_BACKUP["root"]
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg                                                                       
+    
+    # Setting useful aliases
+    root_employees_folder_alias       = eg.EMPLOYEES_ARCHI["root"]
+    all_years_employees_folder_alias  = eg.EMPLOYEES_ARCHI["all_years_employees"] 
+    one_year_employees_folder_alias   = eg.EMPLOYEES_ARCHI["one_year_employees"]
+    months2add_employees_folder_alias = eg.EMPLOYEES_ARCHI["complementary_employees"]
+    backup_folder_alias = pg.ARCHI_BACKUP["root"]
 
     # Setting useful paths
     root_employees_folder_path       = bibliometer_path / Path(root_employees_folder_alias)
@@ -55,11 +56,11 @@ def _check_sheet_month(df, sheet_name):
     # Standard library imports
     import re
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
 
     # Setting lists of columns
-    useful_col_list = list(EMPLOYEES_USEFUL_COLS.values())
+    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values())
     
     # Initializing error messages
     col_error = None
@@ -199,29 +200,28 @@ def _add_column_keep_history(df):
     # 3rd party imports
     import pandas as pd
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
         
     # Setting useful aliases
-    col_eff_dpt_alias     = EMPLOYEES_USEFUL_COLS['dpt']
-    col_eff_service_alias = EMPLOYEES_USEFUL_COLS['serv']
-    col_add_dpts_alias    = EMPLOYEES_ADD_COLS['dpts_list']
-    col_add_servs_alias   = EMPLOYEES_ADD_COLS['servs_list']
-    col_add_month_alias   = EMPLOYEES_ADD_COLS['months_list']
-    col_add_year_alias    = EMPLOYEES_ADD_COLS['years_list']
+    col_eff_dpt_alias     = eg.EMPLOYEES_USEFUL_COLS['dpt']
+    col_eff_service_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
+    col_add_dpts_alias    = eg.EMPLOYEES_ADD_COLS['dpts_list']
+    col_add_servs_alias   = eg.EMPLOYEES_ADD_COLS['servs_list']
+    col_add_month_alias   = eg.EMPLOYEES_ADD_COLS['months_list']
+    col_add_year_alias    = eg.EMPLOYEES_ADD_COLS['years_list']
 
     # Convert list of tuples[(mm_1,yyyy_1,item_1),,...(mm_n,yyyy_n,item_n)] a lists of 3 lists
     # [[mm_1,...,mm_n], [yyyy_1,....yyyy_n],[item_1,....,item_n]] where item stand for dpts and service.
     # The 2 lists of 3 lists are put into the two new columns named col_add_dpts_alias and col_add_servs_alias.
-    cols_tup_list = [(col_eff_dpt_alias,col_add_dpts_alias), 
+    cols_tup_list = [(col_eff_dpt_alias, col_add_dpts_alias), 
                      (col_eff_service_alias, col_add_servs_alias)]
     for cols_tup in cols_tup_list:
         col_in, col_out =  cols_tup[0], cols_tup[1]
         df[col_out] = df[col_in].apply(lambda x: [list(x) for x in list(zip(*x))])
         
     # Explode the 2 lists of 3 lists into the columns named 'months', 'years', 'Dpts' and 'Servs' 
-    for col in [col_add_dpts_alias,  col_add_servs_alias]:
+    for col in [col_add_dpts_alias, col_add_servs_alias]:
         new_col = [col_add_month_alias,col_add_year_alias,col]
         df[new_col] = pd.DataFrame(df[col].tolist(), index = df.index)
     
@@ -243,9 +243,8 @@ def _add_column_firstname_initial(df):
         (dataframe): The updated dataframe.
     '''
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     
     # Internal functions
     def _get_firstname_initiales(row):
@@ -256,8 +255,8 @@ def _add_column_firstname_initial(df):
         initiales = ''.join(initiale_list)
         return initiales
    
-    col_in  = EMPLOYEES_USEFUL_COLS['first_name'] 
-    col_out = EMPLOYEES_ADD_COLS['first_name_initials']
+    col_in  = eg.EMPLOYEES_USEFUL_COLS['first_name'] 
+    col_out = eg.EMPLOYEES_ADD_COLS['first_name_initials']
     df[col_out] = df[col_in].apply(_get_firstname_initiales)
     return df
 
@@ -278,13 +277,14 @@ def _add_column_full_name(df):
         (dataframe): The updated dataframe.
     '''
     
-    # Local library imports
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
     from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS  
     
-    col_last_name_alias          = EMPLOYEES_USEFUL_COLS['name']
-    col_first_name_initial_alias = EMPLOYEES_ADD_COLS['first_name_initials']
-    col_full_name_alias          = EMPLOYEES_ADD_COLS['employee_full_name']
+    col_last_name_alias          = eg.EMPLOYEES_USEFUL_COLS['name']
+    col_first_name_initial_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    col_full_name_alias          = eg.EMPLOYEES_ADD_COLS['employee_full_name']
     
     df[col_full_name_alias] = df[col_last_name_alias] + ' ' + df[col_first_name_initial_alias]
     
@@ -312,13 +312,13 @@ def _select_employee_dpt_and_serv(df):
     
     '''
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS     
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg     
     
-    col_dpt_alias  = EMPLOYEES_USEFUL_COLS['dpt']
-    col_serv_alias = EMPLOYEES_USEFUL_COLS['serv']
+    col_dpt_alias  = eg.EMPLOYEES_USEFUL_COLS['dpt']
+    col_serv_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
     
-    cols_list = [col_dpt_alias,col_serv_alias]
+    cols_list = [col_dpt_alias, col_serv_alias]
     for col in cols_list:
         df[col] = df[col].apply(lambda x: x[0][-1]) 
         
@@ -349,7 +349,7 @@ def _build_year_month_dpt(year_months_file_path):
        (dataframe): The built employees dataframe. 
     
     Notes:
-        The globals EFFECTIF_ADD_COLS, EMPLOYEES_ARCHI and EMPLOYEES_USEFUL_COLS are imported 
+        The globals EFFECTIF_ADD_COLS and EMPLOYEES_USEFUL_COLS are imported 
         from the module 'BM_EmployeesGlobals' of the package 'BiblioMeter_FUNCTS'.
     
     '''
@@ -357,21 +357,19 @@ def _build_year_month_dpt(year_months_file_path):
     # 3rd party imports
     import pandas as pd
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
 
     # Setting lists of columns
-    useful_col_list = list(EMPLOYEES_USEFUL_COLS.values())
-    add_col_list    = list(EMPLOYEES_ADD_COLS.values())
+    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values())
+    add_col_list    = list(eg.EMPLOYEES_ADD_COLS.values())
     
     # Setting useful aliases from globals
-    dpt_col_alias       = EMPLOYEES_USEFUL_COLS['dpt']
-    firstname_col_alias = EMPLOYEES_USEFUL_COLS['first_name']
-    name_col_alias      = EMPLOYEES_USEFUL_COLS['name']
-    matricule_col_alias = EMPLOYEES_USEFUL_COLS['matricule']
-    serv_col_alias      = EMPLOYEES_USEFUL_COLS['serv']    
+    dpt_col_alias       = eg.EMPLOYEES_USEFUL_COLS['dpt']
+    firstname_col_alias = eg.EMPLOYEES_USEFUL_COLS['first_name']
+    name_col_alias      = eg.EMPLOYEES_USEFUL_COLS['name']
+    matricule_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
+    serv_col_alias      = eg.EMPLOYEES_USEFUL_COLS['serv']    
 
 
     # Reading the sheets from the excel file as a dict {sheet-name: sheet-content dataframe}
@@ -388,7 +386,7 @@ def _build_year_month_dpt(year_months_file_path):
         # For the sheet 'sheet_name' of the dataframe 'df_eff_month' 
         # replacing each cell of column 'dpt_col_alias'/'serv_col_alias' that specifies 
         # the employee departement dpt/service by a tuple (month,year,dpt)/(month,year,serv)
-        for col_keep_history in [dpt_col_alias,serv_col_alias]:
+        for col_keep_history in [dpt_col_alias, serv_col_alias]:
             df_eff_month[col_keep_history] = df_eff_month[col_keep_history].apply(lambda x:(month,year,x))
 
         list_df_eff_month.append(df_eff_month)
@@ -450,12 +448,12 @@ def update_employees(bibliometer_path, replace = True):
     # Third party imports
     import shutil
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ARCHI
+    # local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     
-    # Setting useful file name alias
-    one_year_employees_basename_alias = EMPLOYEES_ARCHI["one_year_employees_filebase"]
-    all_years_employees_file_alias    = EMPLOYEES_ARCHI["employees_file_name"]
+    # Setting useful file name aliases
+    one_year_employees_basename_alias = eg.EMPLOYEES_ARCHI["one_year_employees_filebase"]
+    all_years_employees_file_alias    = eg.EMPLOYEES_ARCHI["employees_file_name"]
     
     # Getting useful employees paths
     (months2add_employees_folder_path,

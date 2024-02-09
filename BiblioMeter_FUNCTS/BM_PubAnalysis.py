@@ -3,7 +3,7 @@ __all__ = ['if_analysis',
           ]
 
 
-def formatting_df(df, first_col_width):
+def _formatting_df(df, first_col_width):
     """
     """
     # 3rd party imports
@@ -16,12 +16,12 @@ def formatting_df(df, first_col_width):
     from openpyxl.styles import Border as openpyxl_Border
     from openpyxl.styles import Side as openpyxl_Side
     
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # Setting list of cell colors   
-    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]   
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]   
     
     # Setting useful column attributes
     columns_list = list(df.columns)
@@ -84,15 +84,9 @@ def _build_analysis_books_data(books_df):
     import numpy as np
     from pathlib import Path
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_IF_ANALYSIS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import KPI_KEYS_ORDER_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE 
-    
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     
     # Setting useful column names aliases
@@ -102,24 +96,22 @@ def _build_analysis_books_data(books_df):
     depts_col_list    = col_final_list[11:16] 
     
     # Setting new col names and related parameters
-    chapters_nb_col_alias  = COL_NAMES_IF_ANALYSIS['articles_nb']
+    chapters_nb_col_alias  = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
     
     # Building the books KPIs dict covering all departments
     books_kpi_dict = {}
-    for dept in [INSTITUTE] + depts_col_list:
+    for dept in [ig.INSTITUTE] + depts_col_list:
         
         # Building the books dataframe for "dept"
-        if dept!= INSTITUTE:
+        if dept!= ig.INSTITUTE:
             dept_books_df = books_df[books_df[dept]==1].copy()
         else:
             dept_books_df = books_df.copy()
         
         # Adding a column with number of articles per journal then droping duplicate rows
-        count_books_df = dept_books_df[book_col_alias].value_counts().to_frame()
-        count_books_df.rename(columns = {book_col_alias: chapters_nb_col_alias}, inplace = True)
+        count_books_df = dept_books_df[book_col_alias].value_counts().to_frame()    
+        count_books_df.rename(columns = {"count": chapters_nb_col_alias}, inplace = True)
         count_books_df.reset_index(inplace = True)
-        count_books_df.rename_axis("idx", axis = 1,  inplace = True)        
-        count_books_df.rename(columns = {"index": book_col_alias,}, inplace = True)        
         dept_books_df = dept_books_df.drop_duplicates([book_col_alias])
         dept_books_df = count_books_df.merge(dept_books_df, how = "outer", on = book_col_alias)
         
@@ -139,10 +131,10 @@ def _build_analysis_books_data(books_df):
         
         # Building the dict of books KPIs of department 'dept'
         dept_kpi_dict = {}
-        dept_kpi_dict = {KPI_KEYS_ORDER_DICT[2] : nb_books,
-                         KPI_KEYS_ORDER_DICT[3] : nb_chapters,
-                         KPI_KEYS_ORDER_DICT[4] : chapters_per_book,
-                         KPI_KEYS_ORDER_DICT[5] : chapters_per_book_max,
+        dept_kpi_dict = {pg.KPI_KEYS_ORDER_DICT[2] : nb_books,
+                         pg.KPI_KEYS_ORDER_DICT[3] : nb_chapters,
+                         pg.KPI_KEYS_ORDER_DICT[4] : chapters_per_book,
+                         pg.KPI_KEYS_ORDER_DICT[5] : chapters_per_book_max,
                         }
         
         # Updating KPI dict with KPIs of department 'dept'
@@ -151,7 +143,7 @@ def _build_analysis_books_data(books_df):
     return books_kpi_dict
 
 
-def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dict, 
+def _build_analysis_if_data(analysis_df, if_col_dict, books_kpi_dict, 
                             if_analysis_col, if_analysis_year,
                             if_analysis_folder_path, verbose = True):
     """
@@ -160,21 +152,17 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
     # Standard Library imports
     import numpy as np
     from pathlib import Path
+           
+    # 3rd party imports
+    import BiblioParsing as bp   
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_IF_ANALYSIS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DOC_TYPE_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import KPI_KEYS_ORDER_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE 
-    
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     
     # Setting useful aliases
-    doctype_article_alias  = DOC_TYPE_DICT['Articles']
+    doctype_article_alias  = pg.DOC_TYPE_DICT['Articles']
     
     # Setting useful column names aliases
     col_final_list         = set_final_col_names()
@@ -182,18 +170,18 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
     doctype_col_alias      = col_final_list[7]
     issn_col_alias         = col_final_list[10]
     depts_col_list         = col_final_list[11:16]
-    journal_norm_col_alias = COL_NAMES['temp_col'][1]
-    articles_nb_col_alias  = COL_NAMES_IF_ANALYSIS['articles_nb']
+    journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
+    articles_nb_col_alias  = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
     
     # Setting useful columns list
     if_col_list = list(if_col_dict.keys()) 
     
     # Building the full KPIs dict covering all departments
     kpi_dict = {}    
-    for dept in [INSTITUTE] + depts_col_list:
+    for dept in [ig.INSTITUTE] + depts_col_list:
         
         # Building the IFs analysis dataframe for "dept"
-        if dept!= INSTITUTE:
+        if dept!= ig.INSTITUTE:
             dept_analysis_df = analysis_df[analysis_df[dept]==1].copy()
         else:
             dept_analysis_df = analysis_df.copy() 
@@ -201,10 +189,8 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
             
         # Adding a column with number of articles per journal then droping duplicate rows
         count_journal_df = dept_analysis_df[issn_col_alias].value_counts().to_frame()
-        count_journal_df.rename(columns = {issn_col_alias: articles_nb_col_alias}, inplace = True)
+        count_journal_df.rename(columns = {'count': articles_nb_col_alias}, inplace = True)
         count_journal_df.reset_index(inplace = True)
-        count_journal_df.rename_axis("idx", axis = 1,  inplace = True)
-        count_journal_df.rename(columns = {"index":issn_col_alias}, inplace = True)
         dept_analysis_df = dept_analysis_df.drop_duplicates([issn_col_alias])
         dept_analysis_df = count_journal_df.merge(dept_analysis_df, how = "outer", on = issn_col_alias)              
 
@@ -233,20 +219,20 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
             articles_per_journal_max = round(dept_articles_df[articles_nb_col_alias].max())
             
             ## Total number of publications
-        nb_chapters     = books_kpi_dict[dept][KPI_KEYS_ORDER_DICT[3]]
+        nb_chapters     = books_kpi_dict[dept][pg.KPI_KEYS_ORDER_DICT[3]]
         nb_publications = round(nb_chapters + nb_articles_communications)        
         
         # Completing the KPIs dict with IF independant KPIs of department 'dept'
         dept_kpi_dict = {k:v for k,v in books_kpi_dict[dept].items()}
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[1]]  = nb_publications
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[6]]  = nb_journals_proceedings
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[7]]  = nb_journals
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[8]]  = nb_articles_communications
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[9]]  = nb_communications
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[10]] = communications_ratio        
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[11]] = nb_articles
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[12]] = articles_per_journal
-        dept_kpi_dict[KPI_KEYS_ORDER_DICT[13]] = articles_per_journal_max
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[1]]  = nb_publications
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[6]]  = nb_journals_proceedings
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[7]]  = nb_journals
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[8]]  = nb_articles_communications
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[9]]  = nb_communications
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[10]] = communications_ratio        
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[11]] = nb_articles
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[12]] = articles_per_journal
+        dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[13]] = articles_per_journal_max
                
         # Selecting useful columns for barchart plot
         dept_if_df = dept_articles_df[[journal_col_alias, articles_nb_col_alias, if_analysis_col]]           
@@ -269,11 +255,11 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
         if nb_articles: wo_if_ratio = nb_art_wo_if / nb_articles * 100                       
 
         # Completing the KPIs dict with IF useful values
-        dept_kpi_dict[if_analysis_col_new] = {KPI_KEYS_ORDER_DICT[15] : round(if_max,1),
-                                              KPI_KEYS_ORDER_DICT[16] : round(if_min,1),
-                                              KPI_KEYS_ORDER_DICT[17] : round(if_moyen,1),
-                                              KPI_KEYS_ORDER_DICT[18] : round(nb_art_wo_if),
-                                              KPI_KEYS_ORDER_DICT[19] : round(wo_if_ratio),
+        dept_kpi_dict[if_analysis_col_new] = {pg.KPI_KEYS_ORDER_DICT[15] : round(if_max,1),
+                                              pg.KPI_KEYS_ORDER_DICT[16] : round(if_min,1),
+                                              pg.KPI_KEYS_ORDER_DICT[17] : round(if_moyen,1),
+                                              pg.KPI_KEYS_ORDER_DICT[18] : round(nb_art_wo_if),
+                                              pg.KPI_KEYS_ORDER_DICT[19] : round(wo_if_ratio),
                                              }        
         
         # Updating KPI dict with KPIs of department 'dept'
@@ -283,7 +269,7 @@ def _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dic
         file_name = f'{if_analysis_col_new}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
         first_col_width = 50
-        wb, ws = formatting_df(dept_if_df, first_col_width)
+        wb, ws = _formatting_df(dept_if_df, first_col_width)
         ws.title = dept + ' IFs '
         wb.save(dept_xlsx_file_path)
         
@@ -302,34 +288,31 @@ def _update_kpi_database(bibliometer_path, corpus_year, kpi_dict, if_key, verbos
     import os
     from pathlib import Path
     
-    # 3rd parties import
+    # 3rd party imports
     import pandas as pd
     
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import KPI_KEYS_ORDER_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE 
-    
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     
     # Setting useful aliases
-    kpi_folder_alias         = ARCHI_BDD_MULTI_ANNUELLE["root"]
-    kpi_file_base_alias      = ARCHI_BDD_MULTI_ANNUELLE["IF analysis file name base"]
+    kpi_folder_alias         = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    kpi_file_base_alias      = pg.ARCHI_BDD_MULTI_ANNUELLE["IF analysis file name base"]
     
     # Setting useful column names aliases
     col_final_list        = set_final_col_names()
     depts_col_list        = col_final_list[11:16]  
-    corpus_year_row_alias = KPI_KEYS_ORDER_DICT[0]
+    corpus_year_row_alias = pg.KPI_KEYS_ORDER_DICT[0]
 
     # Building as a dataframe the column of KPIs of each 'dept'
-    for dept in [INSTITUTE] + depts_col_list:
+    for dept in [ig.INSTITUTE] + depts_col_list:
         
         # Building sub dict of KPIs dict for 'dept'
         dept_kpi_dict = {k:v for k,v in kpi_dict[dept].items()}
         
         # Building sub dict of publications KPIs of 'dept' in keys order specified by 'ordered_keys'
-        ordered_keys  = [v for k,v in KPI_KEYS_ORDER_DICT.items() if k in range(1,14)]
+        ordered_keys  = [v for k,v in pg.KPI_KEYS_ORDER_DICT.items() if k in range(1,14)]
         
         dept_pub_dict = {k: dept_kpi_dict[k] for k in ordered_keys}
         
@@ -344,7 +327,7 @@ def _update_kpi_database(bibliometer_path, corpus_year, kpi_dict, if_key, verbos
         
         # Building sub dict of IFs KPIs of 'dept' in keys order specified by 'ordered_keys'        
         part_dept_if_dict = {k:v for k,v in dept_kpi_dict[if_key].items()}
-        dept_if_dict = dict({KPI_KEYS_ORDER_DICT[14] : if_key}, **part_dept_if_dict)
+        dept_if_dict = dict({pg.KPI_KEYS_ORDER_DICT[14] : if_key}, **part_dept_if_dict)
         
         # Building 'dept_if_df' using keys of 'dept_if_dict' as indexes 
         # and setting the name of the values column to 'corpus_year'      
@@ -373,11 +356,11 @@ def _update_kpi_database(bibliometer_path, corpus_year, kpi_dict, if_key, verbos
             
         # Saving after formatting the updated dataframe
         first_col_width = 35
-        wb, ws = formatting_df(db_dept_kpi_df, first_col_width)
+        wb, ws = _formatting_df(db_dept_kpi_df, first_col_width)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
         
-        if dept== INSTITUTE : institute_kpi_df = db_dept_kpi_df
+        if dept== ig.INSTITUTE : institute_kpi_df = db_dept_kpi_df
         
     message = f"\n    Kpi database updated and saved in folder: \n {file_path}"   
     if verbose: print(message)
@@ -392,25 +375,16 @@ def _create_if_barchart(corpus_year, dept, if_df, if_col, kpi_dict, journal_col_
     import plotly
     import plotly.express as px
     
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_COLOR_RANGE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_COLOR_SCALE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_HEIGHT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_HEIGHT_RATIO
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_X_RANGE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_Y_LABEL_MAX
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_Y_MAX
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BAR_WIDTH 
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_IF_ANALYSIS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import KPI_KEYS_ORDER_DICT
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # internal functions               
     _shorting_journal_name = lambda x: x[:max_journal_short_name]+'...' if len(x)>max_journal_short_name else x
     
     # Setting new col names and related parameters
-    journal_short_col_alias = COL_NAMES_IF_ANALYSIS['journal_short']
-    articles_nb_col_alias   = COL_NAMES_IF_ANALYSIS['articles_nb']
-    max_journal_short_name  = BAR_Y_LABEL_MAX
+    journal_short_col_alias = pg.COL_NAMES_IF_ANALYSIS['journal_short']
+    articles_nb_col_alias   = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
+    max_journal_short_name  = pg.BAR_Y_LABEL_MAX
     
     # Creating columns with shortnames of journals for barchart plots
     plot_df = if_df.copy()
@@ -418,14 +392,14 @@ def _create_if_barchart(corpus_year, dept, if_df, if_col, kpi_dict, journal_col_
     
     # Setting useful values for barchart plot and title     
     dept_kpi_dict = kpi_dict[dept]
-    nb_journals          = dept_kpi_dict[KPI_KEYS_ORDER_DICT[7]]            #"journals number"
-    nb_articles          = dept_kpi_dict[KPI_KEYS_ORDER_DICT[11]]           #"articles number"
-    articles_per_journal = dept_kpi_dict[KPI_KEYS_ORDER_DICT[12]]           #"articles_per_journal"
-    nb_articles_max      = dept_kpi_dict[KPI_KEYS_ORDER_DICT[13]]           #"max articles_per_journal"
-    if_max               = dept_kpi_dict[if_col][KPI_KEYS_ORDER_DICT[15]]   #"IF max"
-    if_min               = dept_kpi_dict[if_col][KPI_KEYS_ORDER_DICT[16]]   #"IF min"
-    if_moyen             = dept_kpi_dict[if_col][KPI_KEYS_ORDER_DICT[17]]   #"IF mean"
-    wo_if_ratio          = dept_kpi_dict[if_col][KPI_KEYS_ORDER_DICT[19]]   #"Articles-w/o-IF ratio"
+    nb_journals          = dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[7]]            #"journals number"
+    nb_articles          = dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[11]]           #"articles number"
+    articles_per_journal = dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[12]]           #"articles_per_journal"
+    nb_articles_max      = dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[13]]           #"max articles_per_journal"
+    if_max               = dept_kpi_dict[if_col][pg.KPI_KEYS_ORDER_DICT[15]]   #"IF max"
+    if_min               = dept_kpi_dict[if_col][pg.KPI_KEYS_ORDER_DICT[16]]   #"IF min"
+    if_moyen             = dept_kpi_dict[if_col][pg.KPI_KEYS_ORDER_DICT[17]]   #"IF mean"
+    wo_if_ratio          = dept_kpi_dict[if_col][pg.KPI_KEYS_ORDER_DICT[19]]   #"Articles-w/o-IF ratio"
        
     # Setting the first part of the barchart title
     title_base  = f"{dept} corpus {corpus_year}: "
@@ -444,13 +418,13 @@ def _create_if_barchart(corpus_year, dept, if_df, if_col, kpi_dict, journal_col_
     # Setting barchart parameters   
     labels_dict       = {articles_nb_col_alias  : 'Articles number',
                          journal_short_col_alias: 'Short name'}
-    nb_articles_range = BAR_X_RANGE
-    barchart_width    = BAR_WIDTH
-    barchart_height   = BAR_HEIGHT 
-    if nb_journals <= BAR_Y_MAX or part != "all": 
-        barchart_height = round(BAR_HEIGHT / BAR_HEIGHT_RATIO)
-    color_range       = BAR_COLOR_RANGE
-    color_scale       = BAR_COLOR_SCALE
+    nb_articles_range = pg.BAR_X_RANGE
+    barchart_width    = pg.BAR_WIDTH
+    barchart_height   = pg.BAR_HEIGHT 
+    if nb_journals <= pg.BAR_Y_MAX or part != "all": 
+        barchart_height = round(pg.BAR_HEIGHT / pg.BAR_HEIGHT_RATIO)
+    color_range       = pg.BAR_COLOR_RANGE
+    color_scale       = pg.BAR_COLOR_SCALE
     
     barchart = px.bar(data_frame             = plot_df,
                       x                      = articles_nb_col_alias,
@@ -501,47 +475,45 @@ def _plot_if_analysis(corpus_year, kpi_dict, if_col, if_analysis_folder_path, ve
     import pandas as pd
     from pathlib import Path
     
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import KPI_KEYS_ORDER_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE 
-    
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     
     # internal functions    
     def _create_save_barchart(dept, bar_chart_if_df, part):
         barchart = _create_if_barchart(corpus_year, dept, bar_chart_if_df, if_col, kpi_dict, journal_col_alias, part)
-        message = _save_dept_barchart(barchart, dept, if_col, if_analysis_folder_path, part)
+        message  = _save_dept_barchart(barchart, dept, if_col, if_analysis_folder_path, part)
         return message
         
     # Setting useful column names aliases
-    col_final_list          = set_final_col_names()
-    journal_col_alias       = col_final_list[6]   
-    depts_col_list          = col_final_list[11:16]
+    col_final_list    = set_final_col_names()
+    journal_col_alias = col_final_list[6]   
+    depts_col_list    = col_final_list[11:16]
     
-    for dept in [INSTITUTE] + depts_col_list:
+    for dept in [ig.INSTITUTE] + depts_col_list:
         dept_kpi_dict = kpi_dict[dept]        
         file_name     = f'{if_col}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
         dept_if_df = pd.read_excel(dept_xlsx_file_path)
 
-        if dept == INSTITUTE:
+        if dept == ig.INSTITUTE:
             # Setting two dataframes with, respectively, upper and lower values of full IF dataframe of INSTITUTE
-            nb_journals       = dept_kpi_dict[KPI_KEYS_ORDER_DICT[7]]
+            nb_journals       = dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[7]]
             journal_median    = dept_if_df.loc[int(nb_journals/2), journal_col_alias]
             if_median         = dept_if_df[dept_if_df[journal_col_alias]==journal_median][if_col].values[0]
             upper_dept_if_df  = dept_if_df[dept_if_df[if_col]>=if_median]
             lower_dept_if_df  = dept_if_df[dept_if_df[if_col]<if_median]
 
-            # creating barchart with full IF dataframe of INSTITUTE
+            # Creating barchart with full IF dataframe of INSTITUTE
             message = _create_save_barchart(dept, dept_if_df, "all")
             if verbose: print(message, "\n")
 
-            # creating barchart with upper values of IF dataframe of INSTITUTE
+            # Creating barchart with upper values of IF dataframe of INSTITUTE
             message = _create_save_barchart(dept, upper_dept_if_df, "upper")           
             if verbose: print(message, "\n")
 
-            # creating barchart with upper values of IF dataframe of INSTITUTE
+            # Creating barchart with upper values of IF dataframe of INSTITUTE
             message = _create_save_barchart(dept, lower_dept_if_df, "lower")  
             if verbose: print(message, "\n")
 
@@ -565,39 +537,29 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
     import numpy as np
     import os
     from pathlib import Path
-    
-    # 3rd parties import
+
+    # 3rd party imports
+    import BiblioParsing as bp
     import pandas as pd
-    
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DEDUPLICATED_XLSX
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ANALYSIS_IF
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DOC_TYPE_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DOCTYPE_TO_SAVE_DICT    
-    from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
-    
-    # Local library imports
+
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import journal_capwords
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
     
-    # internal functions  
-    
+    # internal functions      
     def _unique_journal_name(init_analysis_df):
         """Sets a unique journal name by ISSN value.
         """
         analysis_df = pd.DataFrame(columns = init_analysis_df.columns)
-        for _, df in init_analysis_df.groupby(by=[issn_col_alias]):
+        for _, df in init_analysis_df.groupby(by = [issn_col_alias]):
             issn_df = df.copy()
             issn = issn_df[issn_col_alias].to_list()[0]
             journal_names_list = issn_df[journal_col_alias].to_list()
             if len(journal_names_list)>1:
-                if issn!=UNKNOWN:
+                if issn != unknown_alias:
                     journal_length_list = [len(journal) for journal in journal_names_list]
                     journal_names_dict  = dict(zip(journal_length_list,journal_names_list))
                     length_min          = min(journal_length_list)
@@ -612,35 +574,30 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
         return analysis_df
     
     _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])    
-    _replace_no_if = lambda x: x if x != UNKNOWN and x != NOT_AVAILABLE_IF else 0
+    _replace_no_if = lambda x: x if x != unknown_alias and x != pg.NOT_AVAILABLE_IF else 0
     
-    # Setting useful aliases for paths and filenames building
-    corpus_folder_alias            = ARCHI_YEAR["corpus"]
-    dedup_folder_alias             = ARCHI_YEAR["dedup"]
-    parsing_folder_alias           = ARCHI_YEAR["parsing"]
-    pub_list_folder_alias          = ARCHI_YEAR["pub list folder"]
-    analysis_folder_alias          = ARCHI_YEAR["analyses"]
-    if_analysis_folder_alias       = ARCHI_YEAR["if analysis"]
-    pub_list_filename_base         = ARCHI_YEAR["pub list file name base"]
-    papers_doctype_alias           = list(DOCTYPE_TO_SAVE_DICT.keys())[0]
-    books_doctype_alias            = list(DOCTYPE_TO_SAVE_DICT.keys())[1]
-    dedup_articles_file_name_alias = DEDUPLICATED_XLSX
+    # Setting useful aliases
+    unknown_alias            = bp.UNKNOWN  
+    articles_item_alias      = bp.PARSING_ITEMS_LIST[0]  
+    pub_list_folder_alias    = pg.ARCHI_YEAR["pub list folder"]
+    analysis_folder_alias    = pg.ARCHI_YEAR["analyses"]
+    if_analysis_folder_alias = pg.ARCHI_YEAR["if analysis"]
+    pub_list_filename_base   = pg.ARCHI_YEAR["pub list file name base"]
+    papers_doctype_alias     = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
+    books_doctype_alias      = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[1]   
     
-    # Setting useful file names 
-    papers_list_filename = pub_list_filename_base + " " + corpus_year + "_" + papers_doctype_alias + ".xlsx"
-    books_list_filename  = pub_list_filename_base + " " + corpus_year + "_" + books_doctype_alias + ".xlsx"
-
+    # Setting useful xlsx file names for results saving 
+    year_pub_list_filename = pub_list_filename_base + " " + corpus_year
+    papers_list_filename   = year_pub_list_filename + "_" + papers_doctype_alias + ".xlsx"
+    books_list_filename    = year_pub_list_filename + "_" + books_doctype_alias + ".xlsx"
+        
     # Setting useful paths
-    year_folder_path         = bibliometer_path / Path(corpus_year)
-    corpus_folder_path       = year_folder_path / Path(corpus_folder_alias) 
-    dedup_folder_path        = corpus_folder_path / Path(dedup_folder_alias)
-    parsing_folder_path      = dedup_folder_path / Path(parsing_folder_alias)
-    dedup_articles_file_path = parsing_folder_path / Path(dedup_articles_file_name_alias)
-    pub_list_folder_path     = year_folder_path / Path(pub_list_folder_alias)
-    papers_list_file_path    = pub_list_folder_path / Path(papers_list_filename)
-    books_list_file_path     = pub_list_folder_path / Path(books_list_filename)
-    analysis_folder_path     = year_folder_path / Path(analysis_folder_alias)
-    if_analysis_folder_path  = analysis_folder_path / Path(if_analysis_folder_alias)
+    year_folder_path        = bibliometer_path / Path(corpus_year)    
+    pub_list_folder_path    = year_folder_path / Path(pub_list_folder_alias)
+    papers_list_file_path   = pub_list_folder_path / Path(papers_list_filename)
+    books_list_file_path    = pub_list_folder_path / Path(books_list_filename)
+    analysis_folder_path    = year_folder_path / Path(analysis_folder_alias)
+    if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias) 
                                        
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
@@ -654,33 +611,49 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
     doctype_col_alias                  = col_final_list[7] 
     issn_col_alias                     = col_final_list[10] 
     depts_col_list                     = col_final_list[11:16]
-    journal_norm_col_alias             = COL_NAMES['temp_col'][1]
-    most_recent_year_if_col_base_alias = COL_NAMES_BONUS["IF en cours"]
-    corpus_year_if_col                 = COL_NAMES_BONUS['IF année publi']    
+    journal_norm_col_alias             = bp.COL_NAMES['temp_col'][1]
+    most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
+    corpus_year_if_col                 = pg.COL_NAMES_BONUS['IF année publi']    
     most_recent_year_if_col_alias      = most_recent_year_if_col_base_alias + ", " + if_most_recent_year
+    
+    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    rawdata_path_dict, parsing_path_dict, item_filename_dict = config_tup[0], config_tup[1], config_tup[2]
+    
+    # Setting parsing files extension of saved results
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    
+    # Setting path of deduplicated parsings
+    dedup_parsing_path = parsing_path_dict['dedup']
+    
+    # Getting the dict of deduplication results 
+    dedup_parsing_dict = read_parsing_dict(dedup_parsing_path, item_filename_dict, 
+                                           parsing_save_extent) 
+    
+    # Building the dict {journal name : normalized journal name,}
+    df_articles = dedup_parsing_dict[articles_item_alias]
+    journal_norm_dict = dict(zip(df_articles[journal_col_alias],df_articles[journal_norm_col_alias]))
+    #journal_norm_df = pd.read_excel(dedup_articles_file_path,
+    #                                usecols = [journal_col_alias, journal_norm_col_alias])   
+    #journal_norm_dict = dict(zip(journal_norm_df[journal_col_alias],journal_norm_df[journal_norm_col_alias]))    
     
     # Building the dataframe to be analysed from the file which full path is 'books_list_file_path'
     usecols = [journal_col_alias, doctype_col_alias] + depts_col_list
     books_df = pd.read_excel(books_list_file_path,
                              usecols = usecols)
-    books_kpi_dict = _build_analysis_books_data(books_df) 
+    books_kpi_dict = _build_analysis_books_data(books_df)
     
     # Setting the IF column dict
     if_col_dict = {most_recent_year_if_col_alias: if_most_recent_year,
                    corpus_year_if_col           : corpus_year}
     
     # Setting the IF analysis year and column   
-    if if_most_recent_year>=corpus_year: 
-        if_analysis_col  = ANALYSIS_IF
-        if_analysis_year = if_col_dict[ANALYSIS_IF]
+    if if_most_recent_year >= corpus_year: 
+        if_analysis_col  = pg.ANALYSIS_IF
+        if_analysis_year = if_col_dict[pg.ANALYSIS_IF]
     else:
         if_analysis_col  = most_recent_year_if_col_alias
         if_analysis_year = if_most_recent_year
-    
-    # Building the dataframe of normalized journal names
-    journal_norm_df = pd.read_excel(dedup_articles_file_path,
-                                    usecols = [journal_col_alias, journal_norm_col_alias])   
-    journal_norm_dict = dict(zip(journal_norm_df[journal_col_alias],journal_norm_df[journal_norm_col_alias]))
     
     # Building the dataframe to be analysed from the file which full path is 'papers_list_file_path'
     if_col_list = list(if_col_dict.keys())
@@ -695,7 +668,7 @@ def if_analysis(bibliometer_path, corpus_year, if_most_recent_year, verbose = Tr
         analysis_df[if_col] = analysis_df[if_col].apply(_replace_no_if)  
 
     # Building the data resulting from IFs analysis and saving them as xlsx files
-    kpi_dict, if_analysis_col_new = _build_analysis_if_data(corpus_year, analysis_df, if_col_dict, books_kpi_dict,
+    kpi_dict, if_analysis_col_new = _build_analysis_if_data(analysis_df, if_col_dict, books_kpi_dict,
                                                             if_analysis_col, if_analysis_year,
                                                             if_analysis_folder_path, verbose = verbose)
 
@@ -719,11 +692,11 @@ def _create_kw_analysis_data(year, analysis_df, kw_type, kw_df, usecols,
     # Standard Library imports
     from pathlib import Path
     
-    # 3rd parties import
+    # 3rd party imports
     import pandas as pd 
     
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     
     # Setting useful column names aliases
     final_pub_id_col_alias   = usecols[0]    
@@ -733,11 +706,11 @@ def _create_kw_analysis_data(year, analysis_df, kw_type, kw_df, usecols,
     weight_col_alias         = usecols[4]
     
     # Analyzing the keywords for each of the department in 'depts_col_list'         
-    for dept in [INSTITUTE] + depts_col_list:                                                 
+    for dept in [ig.INSTITUTE] + depts_col_list:                                                 
         # Collecting and normalizing all the Pub_ids of the department 'dept'
-        # by removing the 4 first characters corresponding to the corpus year
+        # by removing the 4 first characters corresponding to the corpus "year"
         # in order to make them comparable to 'parsing_pub_id_col_alias' values
-        if dept!= INSTITUTE:
+        if dept!= ig.INSTITUTE:
             dept_pub_id_list = [int(x[5:8]) for x in analysis_df[analysis_df[dept]==1][final_pub_id_col_alias].tolist()]
         else:
             dept_pub_id_list = [int(x[5:8]) for x in analysis_df[final_pub_id_col_alias].tolist()] 
@@ -748,8 +721,8 @@ def _create_kw_analysis_data(year, analysis_df, kw_type, kw_df, usecols,
             pub_id  = row[parsing_pub_id_col_alias]
             keyword = row[keywords_col_alias]              
             if pub_id in dept_pub_id_list: 
-                pub_kw_list = [word.strip() for word in keyword.split(";")]
-                dept_kw_list= dept_kw_list + pub_kw_list
+                pub_kw_list  = [word.strip() for word in keyword.split(";")]
+                dept_kw_list = dept_kw_list + pub_kw_list
 
         # Building a dataframe with the keywords and their weight for the keywords type 'kw_type'
         # and the department 'dept'
@@ -757,18 +730,18 @@ def _create_kw_analysis_data(year, analysis_df, kw_type, kw_df, usecols,
         dept_kw_set_to_list = sorted(list(set(dept_kw_list)))
         kw_drop = 0
         for idx, keyword in enumerate(dept_kw_set_to_list):
-            if len(keyword)>1:
+            if len(keyword) > 1:
                 dept_kw_df.loc[idx, keywords_col_alias] = keyword
                 dept_kw_df.loc[idx, weight_col_alias]   = dept_kw_list.count(keyword)
             else:
                 kw_drop +=1
-        if kw_drop and dept==INSTITUTE:
-            print(f"    WARNING: {kw_drop} dropped keywords of 1 character among {len(dept_kw_set_to_list)} {kw_type} ones of {INSTITUTE}")
+        if kw_drop and dept == ig.INSTITUTE:
+            print(f"    WARNING: {kw_drop} dropped keywords of 1 character among {len(dept_kw_set_to_list)} {kw_type} ones of {ig.INSTITUTE}")
         
         # Saving the keywords dataframe as EXCEL file
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
         first_col_width = 50
-        wb, ws = formatting_df(dept_kw_df, first_col_width)
+        wb, ws = _formatting_df(dept_kw_df, first_col_width)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
 
@@ -791,7 +764,7 @@ def keywords_cloud(txt, out, bckg, h, w, mxw, verbose = False):
         (str): Message about the completion of the image building.
         
     """
-    # 3rd parties import
+    # 3rd party imports
     from wordcloud import WordCloud
     
     wc = WordCloud(background_color = bckg,
@@ -814,30 +787,25 @@ def _create_kw_cloud(year, kw_type, kw_analysis_folder_path, usecols,
     # Standard Library imports
     from pathlib import Path
     
-    # 3rd parties import
-    import pandas as pd 
+    # 3rd party imports
+    import BiblioParsing as bp
+    import pandas as pd
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_BCKG
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_HEIGHT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_WIDTH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_MAX_WORDS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import CLOUD_MAX_WORDS_LENGTH
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INSTITUTE
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # Setting the maximum length of the words for the cloud
-    kw_length = CLOUD_MAX_WORDS_LENGTH
+    kw_length = pg.CLOUD_MAX_WORDS_LENGTH
     
-    # Setting useful column names aliases   
-    depts_col_list           = usecols[1]
-    keywords_col_alias       = usecols[3]
-    weight_col_alias         = usecols[4]
+    # Setting useful aliases   
+    depts_col_list     = usecols[1]
+    keywords_col_alias = usecols[3]
+    weight_col_alias   = usecols[4]
+    unknown_alias      = bp.UNKNOWN
     
     # creating the keywords text for each of the department in 'depts_col_list'         
-    for dept in [INSTITUTE] + depts_col_list:
+    for dept in [ig.INSTITUTE] + depts_col_list:
         
         # Getting the dataframe of keywords with their weight
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
@@ -849,7 +817,7 @@ def _create_kw_cloud(year, kw_type, kw_analysis_folder_path, usecols,
         for _, row in dept_kw_df.iterrows():
             keyword = row[keywords_col_alias]
             weight  = row[weight_col_alias]
-            if keyword != UNKNOWN:
+            if keyword != unknown_alias:
                 keyword_list = [keyword] * weight
                 dept_kw_list = dept_kw_list + keyword_list
                 
@@ -862,16 +830,16 @@ def _create_kw_cloud(year, kw_type, kw_analysis_folder_path, usecols,
             dept_png_file_path = Path(kw_analysis_folder_path) / Path(f"{kw_type} {year}-{dept}.png")  
             keywords_cloud(dept_kw_txt, 
                            dept_png_file_path, 
-                           CLOUD_BCKG, 
-                           CLOUD_HEIGHT, 
-                           CLOUD_WIDTH, 
-                           CLOUD_MAX_WORDS)
+                           pg.CLOUD_BCKG, 
+                           pg.CLOUD_HEIGHT, 
+                           pg.CLOUD_WIDTH, 
+                           pg.CLOUD_MAX_WORDS)
             
     message = f"\n    Wordcloud images for all keywords types and all departments saved in : \n {kw_analysis_folder_path}"
     if verbose: print(message, "\n")    
     return
 
-def keywords_analysis(bibliometer_path, year, verbose=False):
+def keywords_analysis(bibliometer_path, year, verbose = False): 
     """
     """
     
@@ -879,39 +847,31 @@ def keywords_analysis(bibliometer_path, year, verbose=False):
     import os
     from pathlib import Path
     
-    # 3rd parties import
+    # 3rd party imports
+    import BiblioParsing as bp
     import pandas as pd
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import DIC_OUTDIR_PARSING
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DOCTYPE_TO_SAVE_DICT
-    
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
     
     # Setting useful aliases
-    corpus_folder_alias      = ARCHI_YEAR["corpus"]
-    dedup_folder_alias       = ARCHI_YEAR["dedup"]
-    parsing_folder_alias     = ARCHI_YEAR["parsing"]
-    pub_list_folder_alias    = ARCHI_YEAR["pub list folder"]
-    analysis_folder_alias    = ARCHI_YEAR["analyses"] 
-    kw_analysis_folder_alias = ARCHI_YEAR["keywords analysis"]    
-    pub_list_filename_base   = ARCHI_YEAR["pub list file name base"]
-    doctype_alias            = list(DOCTYPE_TO_SAVE_DICT.keys())[0]
+    auth_kw_item_alias       = bp.PARSING_ITEMS_LIST[7]
+    index_kw_item_alias      = bp.PARSING_ITEMS_LIST[8]
+    title_kw_item_alias      = bp.PARSING_ITEMS_LIST[9]
+    pub_list_folder_alias    = pg.ARCHI_YEAR["pub list folder"]
+    analysis_folder_alias    = pg.ARCHI_YEAR["analyses"] 
+    kw_analysis_folder_alias = pg.ARCHI_YEAR["keywords analysis"]    
+    pub_list_filename_base   = pg.ARCHI_YEAR["pub list file name base"]
+    doctype_alias            = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
     
     # Setting useful file names 
     pub_list_filename = pub_list_filename_base + " " + str(year) + "_" + doctype_alias + ".xlsx"
 
     # Setting useful paths
     year_folder_path        = bibliometer_path / Path(str(year))
-    corpus_folder_path      = year_folder_path / Path(corpus_folder_alias) 
-    dedup_folder_path       = corpus_folder_path / Path(dedup_folder_alias)
-    parsing_folder_path     = dedup_folder_path / Path(parsing_folder_alias)
     pub_list_folder_path    = year_folder_path / Path(pub_list_folder_alias)
     pub_list_file_path      = pub_list_folder_path / Path(pub_list_filename)
     analysis_folder_path    = year_folder_path / Path(analysis_folder_alias)
@@ -927,26 +887,40 @@ def keywords_analysis(bibliometer_path, year, verbose=False):
     col_final_list           = set_final_col_names()
     final_pub_id_col_alias   = col_final_list[0]
     depts_col_list           = col_final_list[11:16]
-    parsing_pub_id_col_alias = COL_NAMES['pub_id'] 
-    keywords_col_alias       = COL_NAMES['keywords'][1]
-    weight_col_alias         = COL_NAMES_BONUS['weight']
-
+    parsing_pub_id_col_alias = bp.COL_NAMES['pub_id'] 
+    keywords_col_alias       = bp.COL_NAMES['keywords'][1]
+    weight_col_alias         = pg.COL_NAMES_BONUS['weight']
+        
+    # Getting the full paths of the working folder architecture for the corpus "year"
+    config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+    parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
+    
+    # Setting parsing files extension of saved results
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    
+    # Setting path of deduplicated parsings
+    dedup_parsing_path = parsing_path_dict['dedup']
+    
+    # Getting the dict of deduplication results 
+    dedup_parsing_dict = read_parsing_dict(dedup_parsing_path, item_filename_dict, 
+                                           parsing_save_extent) 
+    
     # Setting useful filenames dict
-    kw_filename_dict = {'AK' : DIC_OUTDIR_PARSING['AK'],
-                        'IK' : DIC_OUTDIR_PARSING['IK'],
-                        'TK' : DIC_OUTDIR_PARSING['TK'],
-                       }
+    kw_item_alias_dict = {'AK' : auth_kw_item_alias, 
+                          'IK' : index_kw_item_alias,
+                          'TK' : title_kw_item_alias,
+                         }
     
     # Building the dataframe to be analysed from the file which full path is 'pub_list_file_path'  
     analysis_df = pd.read_excel(pub_list_file_path,
                                 usecols = [final_pub_id_col_alias] + depts_col_list)
 
     # Plotting the words-cloud of the different kinds of keywords
-    for kw_type, kw_file in kw_filename_dict.items():
+    for kw_type, kw_item_alias in kw_item_alias_dict.items():
 
-        # Building the keywords dataframe for the keywords type 'kw_type' from the file 'kw_file'
-        kw_file_path = parsing_folder_path / Path(kw_file)
-        kw_df = pd.read_csv(kw_file_path, sep='\t') 
+        # Building the keywords dataframe for the keywords type 'kw_type' 
+        # from 'dedup_parsing_dict' dict at 'kw_item_alias' key
+        kw_df = dedup_parsing_dict[kw_item_alias]
         kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.replace(' ','_').replace('-','_'))
         kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.replace('_(',';').replace(')','')) 
         kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.lower())

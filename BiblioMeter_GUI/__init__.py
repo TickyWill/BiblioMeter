@@ -1,4 +1,4 @@
-__version__ = '3.7.1'
+__version__ = '4.0.0'
 __author__  = 'BiblioMeter team'
 __license__ = 'MIT'
 

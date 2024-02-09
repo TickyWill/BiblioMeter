@@ -27,11 +27,9 @@ def mise_en_page(df, wb = None, if_database = None):
     from openpyxl.styles import Border as openpyxl_Border
     from openpyxl.styles import Side as openpyxl_Side
         
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
        
     # Setting useful column sizes
     col_attr, col_set_list = set_col_attr()
@@ -40,8 +38,8 @@ def mise_en_page(df, wb = None, if_database = None):
         if col not in col_set_list: col_attr[col] = col_attr['else']
         
      # Setting list of cell colors   
-    cell_colors = [openpyxl_PatternFill(fgColor = ROW_COLORS['odd'], fill_type = "solid"),
-                  openpyxl_PatternFill(fgColor = ROW_COLORS['even'], fill_type = "solid")]
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
     
     # Initialize wb as a workbook and ws its active worksheet
     if not wb : wb = Workbook()
@@ -116,27 +114,26 @@ def save_shaped_homonyms_file(df_homonyms, out_path):
     from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
     from openpyxl.styles import PatternFill as openpyxl_PatternFill
     
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import HOMONYM_FLAG
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # Setting useful column names 
     col_homonyms = list(df_homonyms.columns)
     
     # Useful aliases of renamed columns names 
-    name_alias      = col_homonyms[12] #renamed EMPLOYEES_USEFUL_COLS['name'] 
-    firstname_alias = col_homonyms[13] #renamed EMPLOYEES_USEFUL_COLS['first_name']
-    homonym_alias   = col_homonyms[18] #renamed COL_NAMES_BONUS['homonym']
+    name_alias      = col_homonyms[12] 
+    firstname_alias = col_homonyms[13] 
+    homonym_alias   = col_homonyms[18] 
     
     wb = openpyxl_Workbook()
     ws = wb.active    
     ws.title = 'Consolidation Homonymes'    
-    yellow_ft = openpyxl_PatternFill(fgColor = ROW_COLORS['highlight'], fill_type = "solid")
+    yellow_ft = openpyxl_PatternFill(fgColor = pg.ROW_COLORS['highlight'], fill_type = "solid")
 
     for indice, r in enumerate(openpyxl_dataframe_to_rows(df_homonyms, index=False, header=True)):
         ws.append(r)
         last_row = ws[ws.max_row]
-        if r[col_homonyms.index(homonym_alias)] == HOMONYM_FLAG and indice > 0:
+        if r[col_homonyms.index(homonym_alias)] == pg.HOMONYM_FLAG and indice > 0:
             cell      = last_row[col_homonyms.index(name_alias)] 
             cell.fill = yellow_ft
             cell      = last_row[col_homonyms.index(firstname_alias)] 
@@ -152,12 +149,10 @@ def solving_homonyms(in_path, out_path):
     """
     # 3rd party imports
     import pandas as pd
-    
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_homonym_col_names
 
-    # Local globals import
-    from BiblioMeter_FUNCTS.BM_PubGlobals import HOMONYM_FLAG
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_homonym_col_names
     
     # Setting useful column names 
     col_homonyms = set_homonym_col_names()
@@ -171,7 +166,7 @@ def solving_homonyms(in_path, out_path):
     
     # Setting homonyms status
     homonyms_status = False
-    if HOMONYM_FLAG in df_homonyms[homonym_col_alias].to_list(): homonyms_status = True
+    if pg.HOMONYM_FLAG in df_homonyms[homonym_col_alias].to_list(): homonyms_status = True
     
     # Saving shaped df_homonyms
     save_shaped_homonyms_file(df_homonyms, out_path)
@@ -197,7 +192,7 @@ def _add_authors_name_list(in_path, out_path):
     
     Notes:
         The global 'COL_NAMES' is imported from 'BiblioSpecificGlobals' module 
-        of 'BiblioAnalysis_Utils' package.
+        of 'BiblioParsing' package.
         The global 'EMPLOYEES_USEFUL_COLS' is imported from 'BM_EmployeesGlobals' 
         module of 'BiblioMeter_FUNCTS' package.  
         The global 'COL_NAMES_BONUS' is imported from 'BM_PubGlobals' 
@@ -205,31 +200,27 @@ def _add_authors_name_list(in_path, out_path):
     '''
     # 3rd party imports
     import pandas as pd
+    import BiblioParsing as bp
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ROW_COLORS
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # Internal functions
     def _get_dpt_key(dpt_raw):
-        for key, values in DPT_LABEL_DICT.items():
+        for key, values in ig.DPT_LABEL_DICT.items():
             if dpt_raw in values: return key        
     
     # Setting useful aliases
-    pub_id_alias          = BM_COL_RENAME_DIC[COL_NAMES['pub_id']]
-    idx_authors_alias     = BM_COL_RENAME_DIC[COL_NAMES['authors'][1]]
-    nom_alias             = BM_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['name']]
-    prenom_alias          = BM_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['first_name']]
-    full_name_alias       = BM_COL_RENAME_DIC[COL_NAMES_BONUS['nom prénom']]
-    author_type_col_alias = BM_COL_RENAME_DIC[COL_NAMES_BONUS['author_type']]
-    full_name_list_alias  = BM_COL_RENAME_DIC[COL_NAMES_BONUS['nom prénom liste']]
-    dept_col_alias        = BM_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['dpt']]
+    pub_id_alias          = pg.BM_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]
+    idx_authors_alias     = pg.BM_COL_RENAME_DIC[bp.COL_NAMES['authors'][1]]
+    nom_alias             = pg.BM_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['name']]
+    prenom_alias          = pg.BM_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['first_name']]
+    full_name_alias       = pg.BM_COL_RENAME_DIC[pg.COL_NAMES_BONUS['nom prénom']]
+    author_type_col_alias = pg.BM_COL_RENAME_DIC[pg.COL_NAMES_BONUS['author_type']]
+    full_name_list_alias  = pg.BM_COL_RENAME_DIC[pg.COL_NAMES_BONUS['nom prénom liste']]
+    dept_col_alias        = pg.BM_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['dpt']]
 
     # Reading the excel file
     df_in = pd.read_excel(in_path)
@@ -271,11 +262,9 @@ def _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dpt_path, col
     from openpyxl.worksheet.datavalidation import DataValidation as openpyxl_DataValidation
     from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
     
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
-    
-    # Local globals imports  
-    from BiblioMeter_FUNCTS.BM_PubGlobals import OTP_SHEET_NAME_BASE
     
     # Building validation list of OTP for 'dpt' department
     validation_list = '"'+','.join(dpt_otp_list) + '"' 
@@ -294,7 +283,7 @@ def _save_dpt_OTP_file(dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dpt_path, col
 
     # Formatting the EXCEL file
     wb, ws = mise_en_page(df_dpt)
-    ws.title = OTP_SHEET_NAME_BASE + " " +  dpt 
+    ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt 
 
     # Setting num of first col and first row in EXCEL files
     excel_first_col_num = 1
@@ -327,7 +316,7 @@ def add_OTP(in_path, out_path, out_file_base):
     
     Notes:
         The global 'COL_NAMES' is imported from the module 'BiblioSpecificGlobals'  
-        of the package 'BiblioAnalysis_Utils'.
+        of the package 'BiblioParsing'.
         The functions `_add_authors_name_list` and `mise_en_page` are imported 
         from the module 'BiblioMeterFonctions' of the package 'BiblioMeter_FUNCTS'.
         The global 'EMPLOYEES_USEFUL_COLS' is imported from the module 'BM_EmployeesGlobals' 
@@ -341,32 +330,25 @@ def add_OTP(in_path, out_path, out_file_base):
 
     # 3rd party imports
     import pandas as pd
+    import BiblioParsing as bp
     
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
-    
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import _add_authors_name_list
     from BiblioMeter_FUNCTS.BM_RenameCols import set_otp_col_names
-    
-    # Local globals imports 
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_COL_RENAME_DIC
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_ATTRIBUTS_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_KEY
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_OTP_KEY
     
     # Setting useful column names 
     col_otp = set_otp_col_names()    
     
     # Setting useful aliases
-    pub_id_alias     = BM_COL_RENAME_DIC[COL_NAMES['pub_id']]           # Pub_id
-    idx_author_alias = BM_COL_RENAME_DIC[COL_NAMES['authors'][1]]       # Idx_author
-    dpt_alias        = BM_COL_RENAME_DIC[EMPLOYEES_USEFUL_COLS['dpt']]  # Dpt/DOB (lib court)
-    OTP_alias        = BM_COL_RENAME_DIC[COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
-    dpt_label_alias  = DPT_LABEL_KEY
-    dpt_otp_alias    = DPT_OTP_KEY
+    pub_id_alias     = pg.BM_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]           # Pub_id
+    idx_author_alias = pg.BM_COL_RENAME_DIC[bp.COL_NAMES['authors'][1]]       # Idx_author
+    dpt_alias        = pg.BM_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['dpt']]  # Dpt/DOB (lib court)
+    OTP_alias        = pg.BM_COL_RENAME_DIC[pg.COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
+    dpt_label_alias  = ig.DPT_LABEL_KEY
+    dpt_otp_alias    = ig.DPT_OTP_KEY
     
     # Adding a column with a list of the authors in the file where homonymies 
     # have been solved and pointed by in_path
@@ -376,12 +358,12 @@ def add_OTP(in_path, out_path, out_file_base):
     solved_homonymies_df = pd.read_excel(in_path)
     solved_homonymies_df.fillna('', inplace = True)
     
-    dpt_list = list(DPT_ATTRIBUTS_DICT.keys())
+    dpt_list = list(ig.DPT_ATTRIBUTS_DICT.keys())
      
     # For each department adding a column containing 1 or 0 
     # depending if the author belongs or not to the department
     for dpt in dpt_list:
-        dpt_label_list = DPT_ATTRIBUTS_DICT[dpt][dpt_label_alias]
+        dpt_label_list = ig.DPT_ATTRIBUTS_DICT[dpt][dpt_label_alias]
         solved_homonymies_df[dpt] = solved_homonymies_df[dpt_alias].apply(lambda x: 1 
                                                                           if x in dpt_label_list 
                                                                           else 0)    
@@ -392,22 +374,23 @@ def add_OTP(in_path, out_path, out_file_base):
     # the detailed information is related to the first author only
     df_out = pd.DataFrame()
     for pub_id, dg in solved_homonymies_df.groupby(pub_id_alias):
-        dg = dg.sort_values(by=[idx_author_alias])
-        x = dg[dpt_list].any().astype(int) #sum()
-        dg[dpt_list] = x
-        df_out = pd.concat([df_out,dg.iloc[:1]]) 
+        dg = dg.sort_values(by = [idx_author_alias])
+        for dpt in dpt_list:
+            x = dg[dpt].any().astype(int)
+            dg[dpt] = x      
+        df_out = pd.concat([df_out, dg.iloc[:1]]) 
     
     # Configuring an Excel file per department with the list of OTPs
     for dpt in sorted(dpt_list):
         # Setting df_dpt with only pub_ids for which the first author
         # is from the 'dpt' department
         filtre_dpt = False
-        for dpt_value in DPT_ATTRIBUTS_DICT[dpt][dpt_label_alias]:
+        for dpt_value in ig.DPT_ATTRIBUTS_DICT[dpt][dpt_label_alias]:
             filtre_dpt = filtre_dpt | (df_out[dpt_alias] == dpt_value)
         df_dpt = df_out[filtre_dpt].copy()
         
         # Setting the list of OTPs for the 'dpt' department
-        dpt_otp_list = DPT_ATTRIBUTS_DICT[dpt][dpt_otp_alias]
+        dpt_otp_list = ig.DPT_ATTRIBUTS_DICT[dpt][dpt_otp_alias]
                
         # Setting the full path of the EXCEl file for the 'dpt' department
         OTP_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'
@@ -448,14 +431,13 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
     # 3rd party import
     import pandas as pd
+    import BiblioParsing as bp
 
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import UNKNOWN 
-
-    # Setting useful column names
+    # Setting useful aliases
     journal_col_alias = use_col_list[0]
     issn_col_alias    = use_col_list[1]
     eissn_col_alias   = use_col_list[2]
+    unknown_alias     = bp.UNKNOWN    
     
     years_list = list(if_db_df.keys())
 
@@ -463,18 +445,19 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
     for year in years_list:
         year_sub_df = if_db_df[year][use_col_list].copy()
-        init_inst_issn_df = init_inst_issn_df.append(year_sub_df)
+        init_inst_issn_df = pd.concat([init_inst_issn_df, year_sub_df])
+        #init_inst_issn_df = init_inst_issn_df.append(year_sub_df)
     init_inst_issn_df[journal_col_alias] = init_inst_issn_df.apply(lambda row: row[journal_col_alias].upper(), axis=1)
 
     inst_issn_df = pd.DataFrame() 
     for _ , dg in init_inst_issn_df.groupby(journal_col_alias):
 
-        issn_list = list(set(dg[issn_col_alias].to_list()) - {UNKNOWN})
-        if not issn_list: issn_list = [UNKNOWN]
+        issn_list = list(set(dg[issn_col_alias].to_list()) - {unknown_alias})
+        if not issn_list: issn_list = [unknown_alias]
         dg[issn_col_alias] = issn_list[0]
 
-        eissn_list = list(set(dg[eissn_col_alias].to_list()) - {UNKNOWN})
-        if not eissn_list: eissn_list = [UNKNOWN]
+        eissn_list = list(set(dg[eissn_col_alias].to_list()) - {unknown_alias})
+        if not eissn_list: eissn_list = [unknown_alias]
         dg[eissn_col_alias] = eissn_list[0]
 
         inst_issn_df = pd.concat([inst_issn_df,dg.iloc[:1]])
@@ -491,17 +474,17 @@ def get_if_db(bibliometer_path):
     from pathlib import Path
     
     # 3rd party imports
-    import pandas as pd    
+    import pandas as pd 
     
-    # local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF    
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS    
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
     
     # Setting useful aliases
-    if_root_folder_alias             = ARCHI_IF["root"]
-    if_filename_alias                = ARCHI_IF["all IF"]    
-    inst_if_filename_alias           = ARCHI_IF["institute_if_all_years"]
-    if INST_IF_STATUS: if_filename_alias = inst_if_filename_alias
+    if_root_folder_alias   = pg.ARCHI_IF["root"]
+    if_filename_alias      = pg.ARCHI_IF["all IF"]    
+    inst_if_filename_alias = pg.ARCHI_IF["institute_if_all_years"]
+    if ig.INST_IF_STATUS: if_filename_alias = inst_if_filename_alias
     
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
@@ -548,18 +531,13 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
     '''
     
     # 3rd party imports
-    import pandas as pd    
+    import pandas as pd
     
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
-    
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import COL_NAMES_BONUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import FILL_EMPTY_KEY_WORD
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import NO_IF_DOCTYPE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import NOT_AVAILABLE_IF
     
     # Internal functions
     
@@ -639,23 +617,23 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
     current_if_col_name_alias = col_maj_if[17]
     corpus_year_if_col_name   = col_maj_if[18]
     
-    corpus_issn_col_alias     = COL_NAMES_BONUS["database ISSN"]
-    database_if_col_alias     = COL_NAMES_BONUS['IF clarivate']
-    eissn_col_alias           = COL_NAMES_BONUS['e-ISSN']
-    otp_col_new_alias         = COL_NAMES_BONUS['final OTP']
-    pub_id_nb_col_alias       = COL_NAMES_BONUS['pub number']      
+    corpus_issn_col_alias     = pg.COL_NAMES_BONUS["database ISSN"]
+    database_if_col_alias     = pg.COL_NAMES_BONUS['IF clarivate']
+    eissn_col_alias           = pg.COL_NAMES_BONUS['e-ISSN']
+    otp_col_new_alias         = pg.COL_NAMES_BONUS['final OTP']
+    pub_id_nb_col_alias       = pg.COL_NAMES_BONUS['pub number']      
   
     # Setting globals aliases
-    doctype_to_drop_list_alias = NO_IF_DOCTYPE
-    not_available_if_alias     = NOT_AVAILABLE_IF
-    unknown_if_fill_alias      = FILL_EMPTY_KEY_WORD
-    unknown_alias              = FILL_EMPTY_KEY_WORD
+    doctype_to_drop_list_alias = pg.NO_IF_DOCTYPE
+    not_available_if_alias     = pg.NOT_AVAILABLE_IF
+    unknown_if_fill_alias      = pg.FILL_EMPTY_KEY_WORD
+    unknown_alias              = pg.FILL_EMPTY_KEY_WORD
     
     # Getting the df of the IFs database
     if_df, if_available_years_list, if_most_recent_year = get_if_db(bibliometer_path)
     
     # Taking care all IF column names in if_df are database_if_col_alias
-    if INST_IF_STATUS: 
+    if ig.INST_IF_STATUS: 
         for year in if_available_years_list: 
             if_df[year].rename(columns = {database_if_col_alias + " " + year : database_if_col_alias},
                                inplace = True) 
@@ -672,7 +650,7 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
     most_recent_year_if_dict = _build_if_dict(if_most_recent_year, issn_col_alias, eissn_col_alias, database_if_col_alias)
     
     # Setting local column names    
-    most_recent_year_if_col_name = current_if_col_name_alias + ', ' + if_most_recent_year   #COL_NAMES_BONUS['IF en cours']   
+    most_recent_year_if_col_name = current_if_col_name_alias + ', ' + if_most_recent_year 
     year_db_if_col_name          = database_if_col_alias + ' ' + corpus_year
     final_year_col               = year_col_alias[0:5]    
     journal_upper_col            = journal_col_alias + '_Upper'
@@ -727,7 +705,7 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
         corpus_df_bis[corpus_year_if_col_name] = not_available_if_alias
     
     # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
-    corpus_df_bis.sort_values(by=[pub_id_col_alias], inplace = True)  
+    corpus_df_bis.sort_values(by = [pub_id_col_alias], inplace = True)  
     wb, _ = mise_en_page(corpus_df_bis)
     wb.save(out_file_path)
     
@@ -746,7 +724,7 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
     year_article_if_df = pd.DataFrame(columns = year_pub_if_df.columns)
     for doc_type, doc_type_df in year_pub_if_df.groupby(doctype_col_alias):
         if doc_type.upper() not in doctype_to_drop_list_alias:
-            year_article_if_df = year_article_if_df.append(doc_type_df)
+            year_article_if_df = pd.concat([year_article_if_df, doc_type_df])
     year_article_if_df.drop(doctype_col_alias, axis = 1, inplace = True)
         
     # Building 'year_if_df' by keeping one row for each issn adding a column with number of related articles
@@ -758,8 +736,9 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
         issn_df.drop(pub_id_col_alias, axis = 1, inplace = True)    
         issn_df[journal_upper_col] = issn_df[journal_col_alias].astype(str).str.upper()
         issn_df.drop_duplicates(subset=[journal_upper_col], keep='first', inplace = True)
-        issn_df.drop([journal_upper_col], axis=1, inplace=True)   
-        year_if_df = year_if_df.append(issn_df) 
+        issn_df.drop([journal_upper_col], axis = 1, inplace = True)
+        year_if_df = pd.concat([year_if_df, issn_df])  
+        #year_if_df = year_if_df.append(issn_df) 
     
     # Removing from 'year_if_df' the rows which ISSN value is not in IF database and keeping them in 'year_missing_issn_df'
     year_missing_issn_df = pd.DataFrame(columns = year_if_df.columns)
@@ -769,21 +748,23 @@ def add_if(bibliometer_path, in_file_path, out_file_path, missing_if_path, missi
     for row_num, row in year_if_df.iterrows():     
         row_issn = row[issn_col_alias]
         row_most_recent_year_if = row[most_recent_year_if_col_name]
-        row_corpus_year_if = row[corpus_year_if_col_name]
+        row_corpus_year_if      = row[corpus_year_if_col_name]
         if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
-            year_missing_issn_df = year_missing_issn_df.append(row)
+            year_missing_issn_df = pd.concat([year_missing_issn_df, row])  
+            #year_missing_issn_df = year_missing_issn_df.append(row)
         elif unknown_alias in [row_most_recent_year_if, row_corpus_year_if]:
             row_journal = row[journal_col_alias]
             row[issn_col_alias]  = _get_id(row_journal, issn_col_alias)
             row[eissn_col_alias] = _get_id(row_journal, eissn_col_alias)
-            year_missing_if_df   = year_missing_if_df.append(row)
+            year_missing_if_df   = pd.concat([year_missing_if_df, row])  
+            #year_missing_if_df   = year_missing_if_df.append(row)
     
     if_database_complete = True
     if not year_missing_issn_df.empty or not year_missing_if_df.empty: 
         if_database_complete = False
     
-    _format_and_save(year_missing_issn_df, missing_issn_path, add_cols=True)
-    _format_and_save(year_missing_if_df, missing_if_path, add_cols=False)
+    _format_and_save(year_missing_issn_df, missing_issn_path, add_cols = True)
+    _format_and_save(year_missing_if_df, missing_if_path, add_cols = False)
     
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"
     return end_message, if_database_complete
@@ -799,16 +780,13 @@ def split_pub_list(bibliometer_path, corpus_year ):
     # 3rd party import
     import pandas as pd
 
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
 
-    # Local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DOCTYPE_TO_SAVE_DICT
-
-    pub_list_path_alias      = ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = ARCHI_YEAR["pub list file name base"]
+    pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
 
     year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
     pub_list_file_alias      =  year_pub_list_file_alias + ".xlsx"
@@ -817,19 +795,19 @@ def split_pub_list(bibliometer_path, corpus_year ):
     pub_list_file_path       = pub_list_path / Path(pub_list_file_alias)
 
     # Setting useful column names
-    col_final_list = set_final_col_names()
+    col_final_list   = set_final_col_names()
     pub_id_col_alias = col_final_list[0]
     doc_type_alias   = col_final_list[7]   
 
     full_pub_list_df = pd.read_excel(pub_list_file_path)
     pub_nb = len(full_pub_list_df)
     key_pub_nb = 0
-    for key, doctype_list in DOCTYPE_TO_SAVE_DICT.items():
+    for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
         doctype_list = [x.upper() for x in  doctype_list]
         key_dg = pd.DataFrame(columns = full_pub_list_df.columns)
         
         for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
-            if doc_type.upper() in doctype_list: key_dg = key_dg.append(dg)
+            if doc_type.upper() in doctype_list: key_dg = pd.concat([key_dg, dg])  
 
         key_pub_nb += len(key_dg)
         
@@ -860,20 +838,13 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     import os
     
     # 3rd party imports
-    import pandas as pd    
-
-    # BiblioAnalysis_Utils package imports
-    from BiblioAnalysis_Utils.BiblioSpecificGlobals import COL_NAMES
+    import pandas as pd
     
-    # Local library imports
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig 
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
-    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps  
-
-    # local globals imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_IF
-    from BiblioMeter_FUNCTS.BM_PubGlobals import DPT_LABEL_DICT
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INST_IF_STATUS
-    from BiblioMeter_FUNCTS.BM_PubGlobals import INVALIDE
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps 
     
     # internal functions
     def _set_df_OTP_dpt(dpt_label):        
@@ -890,9 +861,9 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     col_final_list = set_final_col_names()
     
     # Setting useful aliases
-    missing_if_filename_base_alias   = ARCHI_IF["missing_if_base"]
-    missing_issn_filename_base_alias = ARCHI_IF["missing_issn_base"]
-    pub_id_alias                     = col_final_list[0]   #COL_NAMES['pub_id']
+    missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
+    missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
+    pub_id_alias                     = col_final_list[0] 
     OTP_alias                        = col_final_list[16]   # Choix de l'OTP
        
     # Setting useful paths
@@ -900,14 +871,14 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)    
     
     ### Charger les df et les concatener 
-    dpt_label_list = list(DPT_LABEL_DICT.keys())
+    dpt_label_list = list(ig.DPT_LABEL_DICT.keys())
     OTP_df_init_status = True
     for dpt_label in dpt_label_list:
         dpt_df =  _set_df_OTP_dpt(dpt_label)
         if OTP_df_init_status:
             OTP_df = dpt_df.copy()            
         else:
-            OTP_df = OTP_df.append(dpt_df)
+            OTP_df = pd.concat([OTP_df, dpt_df])  
         OTP_df_init_status = False
 
     # Deduplicating rows on Pub_id
@@ -926,7 +897,7 @@ def consolidate_pub_list(bibliometer_path, in_path, out_path, out_file_path, in_
     consolidate_pub_list_df.set_index(pub_id_alias, inplace = True)
     
     # Droping invalide publications by pub Id as index
-    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[OTP_alias] == INVALIDE].index, 
+    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[OTP_alias] == ig.INVALIDE].index, 
                                  inplace = True)
     
     # Resetting pub ID as a standard column
@@ -967,15 +938,14 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     # 3rd library imports
     import pandas as pd    
     
-    # Local library imports
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_BDD_MULTI_ANNUELLE
-    from BiblioMeter_FUNCTS.BM_PubGlobals import ARCHI_YEAR
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # Setting useful aliases
-    pub_list_path_alias      = ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = ARCHI_YEAR["pub list file name base"]
-    bdd_multi_annuelle_folder_alias = ARCHI_BDD_MULTI_ANNUELLE["root"]
-    bdd_multi_annuelle_file_alias   = ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
+    pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
+    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    bdd_multi_annuelle_file_alias   = pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
     
     # Building the concatenated dataframe of available publications lists
     df_concat = pd.DataFrame()    
@@ -985,8 +955,8 @@ def concatenate_pub_lists(bibliometer_path, years_list):
             year = years_list[i]
             pub_list_file_name = f"{pub_list_file_base_alias} {year}.xlsx"
             pub_list_path = bibliometer_path / Path(year) / Path(pub_list_path_alias) / Path(pub_list_file_name)
-            df_inter = pd.read_excel(pub_list_path)
-            df_concat = df_concat.append(df_inter)        
+            df_inter  = pd.read_excel(pub_list_path)
+            df_concat = pd.concat([df_concat, df_inter])        
             available_liste_conso += f" {year}"
         
         except FileNotFoundError:

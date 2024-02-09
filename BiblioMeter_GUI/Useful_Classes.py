@@ -95,21 +95,12 @@ class CheckBoxCorpuses:
         import tkinter as tk
         from tkinter import font as tkFont
         
-        # BiblioAnalysis_Utils package imports
-        from BiblioAnalysis_Utils.BiblioGui import _mm_to_px
-        
-        # Local library imports
-        from BiblioMeter_GUI.GUI_Globals import root_properties        
-        from BiblioMeter_GUI.Useful_Functions import font_size
-        
-        # Local globals imports
-        from BiblioMeter_GUI.GUI_Globals import FONT_NAME
-        from BiblioMeter_GUI.GUI_Globals import PPI
-        from BiblioMeter_GUI.GUI_Globals import REF_CHECK_BOXES_SEP_SPACE        
-        from BiblioMeter_GUI.GUI_Globals import ROOT_PATH        
+        # Local imports
+        import BiblioMeter_GUI.GUI_Globals as gg
+        import BiblioMeter_GUI.Useful_Functions as guf     
         
         # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = root_properties(parent)
+        sizes_tuple   = guf.root_properties(parent)
         win_width_px  = sizes_tuple[0]    # unused here
         win_height_px = sizes_tuple[1]    # unused here
         width_sf_px   = sizes_tuple[2]    # unused here
@@ -118,8 +109,8 @@ class CheckBoxCorpuses:
         height_sf_mm  = sizes_tuple[5]
         width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        self.check_boxes_sep_space = _mm_to_px(REF_CHECK_BOXES_SEP_SPACE * width_sf_mm, PPI)
-        font = tkFont.Font(family = FONT_NAME, size = font_size(11, width_sf_min))
+        self.check_boxes_sep_space = guf.mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * width_sf_mm, gg.PPI)
+        font = tkFont.Font(family = gg.FONT_NAME, size = guf.font_size(11, width_sf_min))
         self.lab = tk.Label(parent, 
                             text = 'Année ' + year, 
                             font = font)
@@ -218,8 +209,7 @@ class ColumnFilter:
         else:
             self.drop_down.configure(state = 'disable')
             
-    def open_list_box_create_filter(self, df, column, parent):
-        
+    def open_list_box_create_filter(self, df, column, parent):        
         # 3rd party imports
         import tkinter as tk
         from tkinter import Toplevel
@@ -351,6 +341,7 @@ class LabelEntry_toValue:
         
         # 3rd party imports
         import tkinter as tk
+        
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable=self.val)
