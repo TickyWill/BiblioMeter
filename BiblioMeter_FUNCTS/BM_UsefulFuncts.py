@@ -62,7 +62,7 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
     dedup_folder = create_folder(corpus_folder, archi_alias["dedup"], verbose = verbose)
     _ = create_folder(dedup_folder, archi_alias["parsing"], verbose = verbose)
 
-    scopus_folder = create_folder(corpus_folder, ARCHI_YEAR["scopus"], verbose = verbose)
+    scopus_folder = create_folder(corpus_folder, archi_alias["scopus"], verbose = verbose)
     _ = create_folder(scopus_folder, archi_alias["parsing"], verbose = verbose)
     _ = create_folder(scopus_folder, archi_alias["rawdata"], verbose = verbose)
 

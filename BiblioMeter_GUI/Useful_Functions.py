@@ -142,12 +142,14 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
         years_list.append(year)
         
         # Wos
+        database_type = bp.WOS
         wos_rawdata_file_path     = _get_rawdata_file_path(wos_rawdata_path, wos_rawdata_extent)
         wos_parsing_articles_path = _get_parsing_file_paths(wos_parsing_path)
         wos_rawdata_list.append(wos_rawdata_file_path.is_file())
         wos_parsing_list.append(wos_parsing_articles_path.is_file())
         
         # Scopus
+        database_type = bp.SCOPUS
         scopus_rawdata_file_path     = _get_rawdata_file_path(scopus_rawdata_path, scopus_rawdata_extent)
         scopus_parsing_articles_path = _get_parsing_file_paths(scopus_parsing_path)
         scopus_rawdata_list.append(scopus_rawdata_file_path.is_file())        

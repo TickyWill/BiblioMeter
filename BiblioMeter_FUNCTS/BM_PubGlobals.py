@@ -260,7 +260,8 @@ def _build_col_conversion_dic():
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
-
+    
+    dpt_col_list   = list(ig.COL_NAMES_DPT.values())     
     inst_col_list  = [tup[0] + '_' + tup[1] for tup in ig.INSTITUTE_INST_LIST]
     
     init_orphan_col_list = sum([bp.COL_NAMES['auth_inst'][:5],
@@ -288,12 +289,9 @@ def _build_col_conversion_dic():
     init_bm_col_list = sum([init_submit_col_list,
                            [COL_NAMES_BONUS['nom prénom liste'],
                             COL_NAMES_BONUS['nom prénom'],
-                            ig.COL_NAMES_DPT['DTNM'],
-                            ig.COL_NAMES_DPT['DTCH'],
-                            ig.COL_NAMES_DPT['DEHT'],
-                            ig.COL_NAMES_DPT['DTS'],
-                            ig.COL_NAMES_DPT['DIR'],
-                            COL_NAMES_BONUS['list OTP'],
+                             ],
+                            dpt_col_list, 
+                           [COL_NAMES_BONUS['list OTP'],
                             COL_NAMES_BONUS['IF en cours'],
                             COL_NAMES_BONUS['IF année publi'],
                            ]
@@ -349,12 +347,9 @@ def _build_col_conversion_dic():
                               COL_NAMES_BONUS['liste biblio'],
                               COL_NAMES_BONUS['nom prénom liste'],
                               COL_NAMES_BONUS['nom prénom'],
-                              ig.COL_NAMES_DPT['DTNM'],
-                              ig.COL_NAMES_DPT['DTCH'],
-                              ig.COL_NAMES_DPT['DEHT'],
-                              ig.COL_NAMES_DPT['DTS'],
-                              ig.COL_NAMES_DPT['DIR'],
-                              COL_NAMES_BONUS['list OTP'],
+                             ],
+                              dpt_col_list,
+                             [COL_NAMES_BONUS['list OTP'],
                               COL_NAMES_BONUS['IF en cours'],
                               COL_NAMES_BONUS['IF année publi'],
                              ]

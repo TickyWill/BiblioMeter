@@ -17,7 +17,8 @@ __all__ = ['COL_NAMES_DPT',
 ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.2-Infos communes\BiblioMeter\BiblioMeter_Files"
 
 # Setting institute name
-INSTITUTE = "Liten"
+#INSTITUTE = "Liten"
+INSTITUTE = "Leti"
 
 # Institute organization # 
 DPT_LABEL_KEY = 'dpt_label'
