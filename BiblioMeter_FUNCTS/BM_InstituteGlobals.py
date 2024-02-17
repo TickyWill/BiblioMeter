@@ -12,130 +12,67 @@ __all__ = ['COL_NAMES_DPT',
           ]
 
 
-
-# Setting the default value for the working directory
-ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.2-Infos communes\BiblioMeter\BiblioMeter_Files"
-
 # Setting institute name
-#INSTITUTE = "Liten"
-INSTITUTE = "Leti"
+INSTITUTE = "Liten"
+#INSTITUTE = "Leti"
+
+print("Institute:", INSTITUTE)
 
 # Institute organization # 
 DPT_LABEL_KEY = 'dpt_label'
 DPT_OTP_KEY   = 'dpt_otp'
 INVALIDE      = 'Invalide'
 
-if INSTITUTE == "Liten":
+def _set_inst_org(institute, dpt_label_key, dpt_otp_key):
+    # Standard library imports
+    import ast
+    import json
+    from pathlib import Path
     
-    # Setting the default value for the working directory
-    ROOT_PATH = r"S:\130-LITEN\130.1-Direction\130.1.2-Direction Scientifique\130.1.2.2-Infos communes\BiblioMeter\BiblioMeter_Files"
+    if institute == 'Liten':
+        config_json_file_name = 'LitenOrg_config.json'
+    elif institute == 'Leti':
+        config_json_file_name = 'LetiOrg_config.json'
+    else:
+        print("Institute should be 'Liten' or 'Leti'.")
     
-    COL_NAMES_DPT = {'DEHT': 'DEHT',
-                     'DTCH': 'DTCH',
-                     'DTNM': 'DTNM',
-                     'DTS' : 'DTS',
-                     'DIR' : 'DIR',
-                    }
+    # Reads the Institute json_file_name config file
+    config_file_path = Path(__file__).parent / Path('ConfigFiles') / Path(config_json_file_name)
 
-
-    DPT_LABEL_DICT = {'DEHT': ['DEHT'],
-                      'DTCH': ['DTCH', 'DTBH'],
-                      'DTNM': ['DTNM'],
-                      'DTS' : ['DTS'],
-                      'DIR' : ['(' + INSTITUTE.upper() + ')']
-                     }
-
-    DPT_ATTRIBUTS_DICT = {'DEHT': {DPT_LABEL_KEY: DPT_LABEL_DICT['DEHT'],
-                                   DPT_OTP_KEY  : ['MSBAT', 'INDIB', 'COBH2', 'STSH2', 
-                                                   'EMEPE', 'SYS2E','SYSIE', 'TEENV',
-                                                   INVALIDE],
-                                  },
-                          'DTCH': {DPT_LABEL_KEY: DPT_LABEL_DICT['DTCH'],
-                                   DPT_OTP_KEY  : ['PROH2', 'STSH2', 'ASMAT', 'SECSY', 
-                                                   'INREL', 'MATEP', 'ESQVE', 'MATNA', 
-                                                   'TECNA', 'IDNES', 'COTHE', 'SYS2E', 
-                                                   'SYSIE', 'CHECC', INVALIDE],
-                                  },
-                          'DTNM': {DPT_LABEL_KEY: DPT_LABEL_DICT['DTNM'],
-                                   DPT_OTP_KEY  : ['PROH2', 'COTHE', 'ASMAT', 'FAB3D', 
-                                                   'INDIB', 'STSH2', 'INNAN', 'TEENV', 
-                                                   'CHECC', 'NRBCT', 'ELORG', INVALIDE],
-                                  },
-                          'DTS' : {DPT_LABEL_KEY: DPT_LABEL_DICT['DTS'],
-                                   DPT_OTP_KEY  : ['MACPV', 'HETPV', 'MSYPV', 'TEENV', 
-                                                   'MSBAT', 'EMEPE', 'SYS2E', 'SYSIE', INVALIDE],
-                                  },
-                         }
-
-    DPT_ATTRIBUTS_DICT['DIR'] = {DPT_LABEL_KEY: ['(' + INSTITUTE.upper() + ')'],
-                                 DPT_OTP_KEY  : list(set(sum([DPT_ATTRIBUTS_DICT[dpt_label][DPT_OTP_KEY] 
-                                                              for dpt_label in DPT_ATTRIBUTS_DICT.keys()],[]))),
-                                }  
-
-    INST_FILTER_LIST = [(INSTITUTE.upper(),'France'),('INES','France')]
-
-    INSTITUTE_INST_LIST = [('INES',  'France'), 
-                           (INSTITUTE.upper(), 'France'),
-                          ]
-    INST_IF_STATUS = True
-    
-    
-elif INSTITUTE == "Leti":
+    with open(config_file_path) as file:
+        inst_org_dict = json.load(file)    
         
-    # Setting the default value for the working directory
-    ROOT_PATH = r"C:\Users\AC265100\Documents\BiblioMeter_App\LETI\BiblioMeter_Files"
+    root_path           = inst_org_dict["ROOT_PATH"]
+    col_names_dpt       = inst_org_dict["COL_NAMES_DPT"]
+    dpt_label_dict      = inst_org_dict["DPT_LABEL_DICT"]
+    dpt_otp_dict        = inst_org_dict["DPT_OTP_DICT"]
+    dpt_attributs_dict  = {}
+    for dpt in list(col_names_dpt.keys())[:-1]:
+        dpt_attributs_dict[dpt] = {}
+        dpt_attributs_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
+        dpt_attributs_dict[dpt][dpt_otp_key]   = dpt_otp_dict[dpt]    
+        
+    inst_filter_list    = inst_org_dict["INST_FILTER_LIST"]
+    institute_inst_list = inst_org_dict["INSTITUTE_INST_LIST"]
+    inst_if_status      = inst_org_dict["INST_IF_STATUS"]
     
-    COL_NAMES_DPT = {'DCOS': 'DCOS',
-                     'DOPT': 'DOPT',
-                     'DSYS': 'DSYS',
-                     'DTBS': 'DTBS',
-                     'DPFT': 'DPFT',
-                     'DIR' : 'DIR',
-                    }
-    
-    DPT_LABEL_DICT = {'DCOS': ['DCOS'],
-                      'DOPT': ['DOPT'],
-                      'DPFT': ['DPFT', 'DTSI'],
-                      'DSYS': ['DSYS'],
-                      'DTBS': ['DTBS'],
-                      'DIR' : ['(' + INSTITUTE.upper() + ')']
-                     }
+    return_tup = (root_path, col_names_dpt, dpt_label_dict, dpt_attributs_dict, 
+                  inst_filter_list, institute_inst_list, inst_if_status) 
+    return return_tup
 
-    DPT_ATTRIBUTS_DICT = {'DCOS': {DPT_LABEL_KEY: DPT_LABEL_DICT['DCOS'],
-                                   DPT_OTP_KEY  : ['aaaa', 'bbbb', 'cccc', 'dddd', 
-                                                   'eeee', 'ffff', 'gggg', 'hhhh',
-                                                   INVALIDE],
-                                  },
-                          'DOPT': {DPT_LABEL_KEY: DPT_LABEL_DICT['DOPT'],
-                                   DPT_OTP_KEY  : ['aaaa', 'bbbb', 'cccc', 'dddd', 
-                                                   'eeee', 'ffff', 'gggg', 'hhhh',
-                                                   INVALIDE],
-                                  },
-                          'DPFT': {DPT_LABEL_KEY: DPT_LABEL_DICT['DPFT'],
-                                   DPT_OTP_KEY  : ['aaaa', 'bbbb', 'cccc', 'dddd', 
-                                                   'eeee', 'ffff', 'gggg', 'hhhh',
-                                                   INVALIDE],
-                                  },
-                          'DSYS': {DPT_LABEL_KEY: DPT_LABEL_DICT['DSYS'],
-                                   DPT_OTP_KEY  : ['aaaa', 'bbbb', 'cccc', 'dddd', 
-                                                   'eeee', 'ffff', 'gggg', 'hhhh',
-                                                   INVALIDE],
-                                  },
-                          'DTBS': {DPT_LABEL_KEY: DPT_LABEL_DICT['DTBS'],
-                                   DPT_OTP_KEY  : ['aaaa', 'bbbb', 'cccc', 'dddd', 
-                                                   'eeee', 'ffff', 'gggg', 'hhhh',
-                                                   INVALIDE],
-                                  },
-                         }
+org_tup = _set_inst_org(INSTITUTE, DPT_LABEL_KEY, DPT_OTP_KEY)
+ROOT_PATH           = org_tup[0]
+COL_NAMES_DPT       = org_tup[1]
+DPT_LABEL_DICT      = org_tup[2]
+DPT_ATTRIBUTS_DICT  = org_tup[3]
+INST_FILTER_LIST    = [tuple(x) for x in org_tup[4]]
+INSTITUTE_INST_LIST = [tuple(x) for x in org_tup[5]]
+INST_IF_STATUS      = org_tup[6]
 
-    DPT_ATTRIBUTS_DICT['DIR'] = {DPT_LABEL_KEY: ['(' + INSTITUTE.upper() + ')'],
-                                 DPT_OTP_KEY  : list(set(sum([DPT_ATTRIBUTS_DICT[dpt_label][DPT_OTP_KEY] 
-                                                              for dpt_label in DPT_ATTRIBUTS_DICT.keys()],[]))),
-                                }
+DPT_ATTRIBUTS_DICT['DIR'] = {DPT_LABEL_KEY: ['(' + INSTITUTE.upper() + ')'],
+                             DPT_OTP_KEY  : list(set(sum([DPT_ATTRIBUTS_DICT[dpt_label][DPT_OTP_KEY] 
+                                                         for dpt_label in DPT_ATTRIBUTS_DICT.keys()],[]))),}
+for dpt in list(COL_NAMES_DPT.keys()): DPT_ATTRIBUTS_DICT[dpt][DPT_OTP_KEY] += [INVALIDE]
 
-    INST_FILTER_LIST = [(INSTITUTE.upper(),'France')]
 
-    INSTITUTE_INST_LIST = [(INSTITUTE.upper(), 'France'),
-                          ]
 
-    INST_IF_STATUS = False
