@@ -13,8 +13,8 @@ __all__ = ['COL_NAMES_DPT',
 
 
 # Setting institute name
-INSTITUTE = "Liten"
-#INSTITUTE = "Leti"
+#INSTITUTE = "Liten"
+INSTITUTE = "Leti"
 
 print("Institute:", INSTITUTE)
 

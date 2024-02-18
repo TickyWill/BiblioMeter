@@ -11,7 +11,7 @@ def _get_bm_config():
     config_json_file_name = 'BiblioParsing_config.json'
     
     # Reads the default json_file_name config file
-    pck_config_file_path = Path(__file__).parent / Path('ConfigFile') / Path(config_json_file_name)
+    pck_config_file_path = Path(__file__).parent / Path('ConfigFiles') / Path(config_json_file_name)
     with open(pck_config_file_path) as file:
         config_dict = json.load(file)       
 
