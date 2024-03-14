@@ -13,7 +13,6 @@ __all__ = ['ANALYSIS_IF',
            'BAR_Y_MAX',
            'BAR_WIDTH',
            'BDD_LIST',
-           'BM_COL_RENAME_DIC',
            'BM_LOW_WORDS_LIST',
            'CLOUD_BCKG', 
            'CLOUD_HEIGHT',
@@ -35,12 +34,10 @@ __all__ = ['ANALYSIS_IF',
            'KPI_KEYS_ORDER_DICT',
            'NO_IF_DOCTYPE',
            'NOT_AVAILABLE_IF',
-           'ORPHAN_COL_RENAME_DIC',
            'OTP_SHEET_NAME_BASE',
            'PARSING_PERF',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
-           'SUBMIT_COL_RENAME_DIC',
            'TSV_SAVE_EXTENT'
           ]
 
@@ -48,8 +45,7 @@ __all__ = ['ANALYSIS_IF',
 import BiblioParsing as bp
 
 # local imports
-import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg 
-import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig 
+import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
 
 # Setting the databases of corpuses extraction
 BDD_LIST = [bp.SCOPUS, bp.WOS]
@@ -72,7 +68,7 @@ ARCHI_IF = {"root"                   : "Impact Factor",
             "missing"                : "ISSN_manquants.xlsx",
             "missing_issn_base"      : "_ISSN manquants.xlsx",
             "missing_if_base"        : "_IF manquants.xlsx",
-            "institute_if_all_years" : ig.INSTITUTE + "_IF all years.xlsx"}
+            "institute_if_all_years" : "_IF all years.xlsx"}
 
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
@@ -151,10 +147,10 @@ COL_HASH = {'hash_id'    : "Hash_id",
            }
 
 
-COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur " + ig.INSTITUTE, 
-                   'nom prénom liste' : "Liste ordonnée des auteurs " + ig.INSTITUTE, 
+COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ", 
+                   'nom prénom liste' : "Liste ordonnée des auteurs ", 
                    'liste biblio'     : "Référence bibliographique complète", 
-                   'author_type'      : "Type de l'auteur " + ig.INSTITUTE,
+                   'author_type'      : "Type de l'auteur",
                    'homonym'          : 'Homonymes',
                    'list OTP'         : "Choix de l'OTP",
                    'final OTP'        : "OTP",
@@ -206,7 +202,7 @@ COL_NAMES_EXT = {'last name'   : pub_last_name,
 
 
 SHEET_NAMES_ORPHAN = {"to replace"    : "Spécifique par publi",
-                      "to remove"     : "Externes " + ig.INSTITUTE,
+                      "to remove"     : "Externes ",
                       "docs to add"   : "Doctorants externes",
                       "others to add" : "Autres externes",
                      }
@@ -248,127 +244,6 @@ KPI_KEYS_ORDER_DICT = {0  : "Année de publication",
                        18 : "Articles sans facteur d'impact",
                        19 : "Articles sans facteur d'impact (%)",          
                       }
-
-
-def _build_col_conversion_dic():
-    """
-    """
-    
-    # 3rd party imports
-    import BiblioParsing as bp
-
-    # Local imports
-    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
-    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
-    
-    dpt_col_list   = list(ig.COL_NAMES_DPT.values())     
-    inst_col_list  = [tup[0] + '_' + tup[1] for tup in ig.INSTITUTE_INST_LIST]
-    
-    init_orphan_col_list = sum([bp.COL_NAMES['auth_inst'][:5],
-                                inst_col_list,
-                                [bp.COL_NAMES['authors'][2]], 
-                                bp.COL_NAMES['articles'][1:11],
-                                [COL_NAMES_BONUS['corpus_year']],
-                                [COL_NAMES_BM['Full_name'], 
-                                 COL_NAMES_BM['Last_name'], 
-                                 COL_NAMES_BM['First_name']],
-                               ],
-                               [],
-                              )
-
-    init_submit_col_list = sum([init_orphan_col_list,
-                                [COL_NAMES_BONUS['homonym']],
-                                list(eg.EMPLOYEES_USEFUL_COLS.values()),
-                                list(eg.EMPLOYEES_ADD_COLS.values()),
-                                [COL_NAMES_BONUS['author_type'], 
-                                 COL_NAMES_BONUS['liste biblio']],
-                               ],
-                               [],
-                              )
-
-    init_bm_col_list = sum([init_submit_col_list,
-                           [COL_NAMES_BONUS['nom prénom liste'],
-                            COL_NAMES_BONUS['nom prénom'],
-                             ],
-                            dpt_col_list, 
-                           [COL_NAMES_BONUS['list OTP'],
-                            COL_NAMES_BONUS['IF en cours'],
-                            COL_NAMES_BONUS['IF année publi'],
-                           ]
-                          ],
-                          [],
-                         )
-
-    final_bm_col_list = sum([["Pub_id",
-                              "Auteur_id",
-                              "Adresse",
-                              "Pays",
-                              "Institutions",
-                             ],
-                             inst_col_list,
-                             ["Co_auteur " + ig.INSTITUTE,
-                             "Premier auteur",
-                             "Année de publication finale",
-                             "Journal",
-                             "Volume",
-                             "Page",
-                             "DOI",
-                             "Type du document",
-                             "Langue",
-                             "Titre",
-                             "ISSN",
-                             "Année de première publication",
-                             ],
-                             [COL_NAMES_BM['Full_name'],
-                              COL_NAMES_BM['Last_name'],
-                              COL_NAMES_BM['First_name'],
-                             ],
-                             ["Homonymes",
-                              "Matricule",
-                              "Nom",
-                              "Prénom",
-                              "Genre",
-                              "Nationalité", 
-                              "Catégorie de salarié",
-                              "Statut de salarié",
-                              "Qualification classement",
-                              "Date début contrat",
-                              "Date dernière entrée",
-                              "Date de fin de contrat",
-                              "Dept",
-                              "Serv",
-                              "Labo",
-                              "Affiliation",
-                              "Date de naissance",
-                              "Tranche d'age (5 ans)",
-                             ],
-                             list(eg.EMPLOYEES_ADD_COLS.values()),
-                             [COL_NAMES_BONUS['author_type'], 
-                              COL_NAMES_BONUS['liste biblio'],
-                              COL_NAMES_BONUS['nom prénom liste'],
-                              COL_NAMES_BONUS['nom prénom'],
-                             ],
-                              dpt_col_list,
-                             [COL_NAMES_BONUS['list OTP'],
-                              COL_NAMES_BONUS['IF en cours'],
-                              COL_NAMES_BONUS['IF année publi'],
-                             ]
-                            ],
-                            [],
-                           )
-    
-    all_col_rename_dic     = dict(zip(init_bm_col_list,final_bm_col_list))
-    
-    final_submit_col_list  = [all_col_rename_dic[col] for col in init_submit_col_list]
-    submit_col_rename_dic  = dict(zip(init_submit_col_list,final_submit_col_list))
-    
-    final_orphan_col_list  = [all_col_rename_dic[col] for col in init_orphan_col_list]
-    orphan_col_rename_dic  = dict(zip(init_orphan_col_list,final_orphan_col_list))
-    
-    return (orphan_col_rename_dic, submit_col_rename_dic, all_col_rename_dic)
-
-ORPHAN_COL_RENAME_DIC, SUBMIT_COL_RENAME_DIC, BM_COL_RENAME_DIC = _build_col_conversion_dic()
-
 
 # Parameters of cloud representation 
 CLOUD_BCKG             = 'ivory'

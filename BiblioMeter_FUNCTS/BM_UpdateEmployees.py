@@ -279,8 +279,6 @@ def _add_column_full_name(df):
     
     # local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_ADD_COLS
-    from BiblioMeter_FUNCTS.BM_EmployeesGlobals import EMPLOYEES_USEFUL_COLS  
     
     col_last_name_alias          = eg.EMPLOYEES_USEFUL_COLS['name']
     col_first_name_initial_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']

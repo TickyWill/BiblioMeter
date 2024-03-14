@@ -5,7 +5,7 @@ __all__ = ['save_homonyms',
           ]
 
 
-def save_homonyms(bibliometer_path, corpus_year):
+def save_homonyms(institute, bibliometer_path, corpus_year):
     """
     """
     # Standard library imports
@@ -17,7 +17,12 @@ def save_homonyms(bibliometer_path, corpus_year):
 
     # local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg   
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute)
+    submit_col_rename_dic = col_rename_tup[1]    
     
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -30,9 +35,9 @@ def save_homonyms(bibliometer_path, corpus_year):
     
     # Setting useful column name aliases    
     hash_id_col_alias   = pg.COL_HASH['hash_id']
-    pub_id_alias        = pg.SUBMIT_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]
-    homonyms_col_alias  = pg.SUBMIT_COL_RENAME_DIC[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = pg.SUBMIT_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['matricule']]       
+    pub_id_alias        = submit_col_rename_dic[bp.COL_NAMES['pub_id']]
+    homonyms_col_alias  = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]       
     
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)    
@@ -83,7 +88,7 @@ def save_homonyms(bibliometer_path, corpus_year):
     return message
 
 
-def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
+def set_saved_homonyms(institute, bibliometer_path, corpus_year, actual_homonym_status):
     """
     """
     # Standard library imports
@@ -96,7 +101,12 @@ def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
     # local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import save_shaped_homonyms_file    
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import save_shaped_homonyms_file
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute)
+    submit_col_rename_dic = col_rename_tup[1]     
     
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -109,9 +119,9 @@ def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
     
     # Setting useful column name aliases
     hash_id_col_alias   = pg.COL_HASH['hash_id']
-    pub_id_alias        = pg.SUBMIT_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]
-    homonyms_col_alias  = pg.SUBMIT_COL_RENAME_DIC[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = pg.SUBMIT_COL_RENAME_DIC[eg.EMPLOYEES_USEFUL_COLS['matricule']]        
+    pub_id_alias        = submit_col_rename_dic[bp.COL_NAMES['pub_id']]
+    homonyms_col_alias  = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]        
     
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)    
@@ -168,7 +178,7 @@ def set_saved_homonyms(bibliometer_path, corpus_year, actual_homonym_status):
     return message, actual_homonym_status 
 
 
-def save_otps(bibliometer_path, corpus_year):
+def save_otps(institute, bibliometer_path, corpus_year):
     """
     """
     # Standard library imports
@@ -180,6 +190,11 @@ def save_otps(bibliometer_path, corpus_year):
 
     # local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute)
+    submit_col_rename_dic = col_rename_tup[1] 
         
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -192,7 +207,7 @@ def save_otps(bibliometer_path, corpus_year):
     
     # Setting useful column name aliases       
     hash_id_col_alias  = pg.COL_HASH['hash_id']
-    pub_id_alias       = pg.SUBMIT_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]    
+    pub_id_alias       = submit_col_rename_dic[bp.COL_NAMES['pub_id']]    
     otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']
     otp_list_col_alias = pg.COL_NAMES_BONUS['list OTP']
     
@@ -240,7 +255,7 @@ def save_otps(bibliometer_path, corpus_year):
     return message 
 
 
-def _re_save_dpt_OTP_file(dpt, otp_set_dpt_df, otp_to_set_dpt_df, 
+def _re_save_dpt_OTP_file(institute, dpt, otp_set_dpt_df, otp_to_set_dpt_df, 
                           dpt_otp_list, excel_dpt_path, otp_list_col_alias, columns_list):
 
     ''' Rebuild and store the Excel file under 'excel_dpt_path' for the department 
@@ -264,7 +279,7 @@ def _re_save_dpt_OTP_file(dpt, otp_set_dpt_df, otp_to_set_dpt_df,
     from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
     
     # Setting useful column sizes and cell colors
-    col_attr, col_set_list = set_col_attr()
+    col_attr, col_set_list = set_col_attr(institute)
     cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
                    openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
     
@@ -281,7 +296,7 @@ def _re_save_dpt_OTP_file(dpt, otp_set_dpt_df, otp_to_set_dpt_df,
     df_dpt_new[otp_list_col_alias] = validation_list
 
     # Formatting the EXCEL file
-    wb, ws = mise_en_page(df_dpt_new)
+    wb, ws = mise_en_page(institute, df_dpt_new)
 
     # Setting num of first col and first row in EXCEL files
     excel_first_col_num = 1
@@ -331,7 +346,7 @@ def _re_save_dpt_OTP_file(dpt, otp_set_dpt_df, otp_to_set_dpt_df,
     wb.save(excel_dpt_path)
 
 
-def set_saved_otps(bibliometer_path, corpus_year):
+def set_saved_otps(institute, bibliometer_path, corpus_year):
     """
     
     The OPTs of the choosen department are added in a new column 
@@ -346,7 +361,13 @@ def set_saved_otps(bibliometer_path, corpus_year):
 
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute)       
+    bm_col_rename_dic = col_rename_tup[2] 
     
     # Setting useful folder and file aliases
     bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -356,15 +377,26 @@ def set_saved_otps(bibliometer_path, corpus_year):
     kept_otps_file_alias = pg.ARCHI_YEAR["kept otps file name"]
     hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"] 
     
-    # Setting useful key and specific character aliases
-    dpt_label_alias = 'dpt_label'
-    dpt_otp_alias   = 'dpt_otp'
-        
-    # Setting useful column names alises       
+    # Setting useful key character aliases
+    dpt_label_alias = ig.DPT_LABEL_KEY
+    dpt_otp_alias   = ig.DPT_OTP_KEY    
+    
+    # Getting institute parameters
+    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
+                           dpt_label_key = dpt_label_alias, 
+                           dpt_otp_key = dpt_otp_alias)
+    col_names_dpt       = org_tup[1]
+    dpt_attributs_dict  = org_tup[3]
+    dpt_attributs_dict['DIR'] = {dpt_label_alias: ['(' + institute.upper() + ')'],
+                                 dpt_otp_alias  : list(set(sum([dpt_attributs_dict[dpt_label][dpt_otp_alias] 
+                                                         for dpt_label in dpt_attributs_dict.keys()],[]))),}    
+    for dpt in list(col_names_dpt.keys()): dpt_attributs_dict[dpt][dpt_otp_alias] += [ig.INVALIDE]
+    
+    # Setting useful column names aliases       
     hash_id_col_alias  = pg.COL_HASH['hash_id']
-    pub_id_alias       = pg.BM_COL_RENAME_DIC[bp.COL_NAMES['pub_id']]    
-    otp_list_col_alias = pg.BM_COL_RENAME_DIC[pg.COL_NAMES_BONUS['list OTP']] 
-    otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']                      
+    pub_id_alias       = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
+    otp_list_col_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]
+    otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']
     
     # Setting useful paths
     corpus_year_path    = bibliometer_path / Path(corpus_year)    
@@ -393,7 +425,7 @@ def set_saved_otps(bibliometer_path, corpus_year):
         otp_to_set_list      = [str(row[otp_col_alias]) for _,row in pub_id_otp_to_set_df.iterrows()]
         
         # Setting departments list
-        dpt_list = list(ig.DPT_ATTRIBUTS_DICT.keys())
+        dpt_list = list(dpt_attributs_dict.keys())
 
         # Setting the known OTPs  
         for dpt in sorted(dpt_list):
@@ -428,10 +460,10 @@ def set_saved_otps(bibliometer_path, corpus_year):
                     otp_to_set_dpt_pub_df.drop(index = pub_id_idx, inplace = True)
             
             # Setting the list of OTPs for the 'dpt' department
-            dpt_otp_list = ig.DPT_ATTRIBUTS_DICT[dpt][dpt_otp_alias]
+            dpt_otp_list = dpt_attributs_dict[dpt][dpt_otp_alias]
 
             # Resetting validation list for OTPs when not already set and saving the file
-            _re_save_dpt_OTP_file(dpt, otp_set_dpt_pub_df, otp_to_set_dpt_pub_df, 
+            _re_save_dpt_OTP_file(institute, dpt, otp_set_dpt_pub_df, otp_to_set_dpt_pub_df, 
                                   dpt_otp_list, otp_file_name_dpt_path, otp_list_col_alias, col_list)
         
         message = f"Already set OTPS used"

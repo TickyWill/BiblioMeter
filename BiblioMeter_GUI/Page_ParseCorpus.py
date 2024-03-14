@@ -345,7 +345,7 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     _update(self, bibliometer_path, pos_x, pos_y, esp_ligne)
 
     
-def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_ligne):
+def _launch_synthese(self, corpus_year, institute, bibliometer_path, pos_x, pos_y, esp_ligne):
     """The internal function `_launch_synthese` concatenates the parsing 
     from wos or scopus databases using the function 'parsing_concatenate_deduplicate'.
     It tags the Institute authors using the function 'extend_author_institutions' 
@@ -392,8 +392,9 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     import BiblioMeter_GUI.Useful_Functions as guf
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config      
-    
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
+       
     # Internal functions
     def _deduplicate_corpus_parsing():
         if not os.path.exists(concat_parsing_path): os.mkdir(concat_parsing_path)
@@ -404,13 +405,18 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
         wos_parsing_dict    = fuf.read_parsing_dict(wos_parsing_path, item_filename_dict, 
                                                     parsing_save_extent)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict, 
-                                                     inst_filter_list = ig.INSTITUTE_INST_LIST)
+                                                     inst_filter_list = institute_inst_list)
         fuf.save_parsing_dict(concat_parsing_dict, concat_parsing_path, 
                               item_filename_dict, parsing_save_extent)
         dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict)
         fuf.save_parsing_dict(dedup_parsing_dict, dedup_parsing_path, 
                           item_filename_dict, parsing_save_extent)
-      
+        
+    # Getting institute parameters
+    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
+                           dpt_label_key = ig.DPT_LABEL_KEY, 
+                           dpt_otp_key = ig.DPT_OTP_KEY)
+    institute_inst_list = [tuple(x) for x in org_tup[5]]
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
@@ -489,7 +495,7 @@ def _launch_synthese(self, corpus_year, bibliometer_path, pos_x, pos_y, esp_lign
     _update(self, bibliometer_path, pos_x, pos_y, esp_ligne)
     
 
-def create_parsing_concat(self, bibliometer_path, parent):
+def create_parsing_concat(self, institute, bibliometer_path, parent):
     """ The function `create_parsing_concat` creates the first page of the application GUI 
     using internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
     It calls also the functions `_launch_parsing``and `_launch_synthese` internal 
@@ -737,6 +743,7 @@ def create_parsing_concat(self, bibliometer_path, parent):
                                      font = font_launch_synthese, 
                                      command = lambda: _launch_synthese(self, 
                                                                         self.var_year_pc_2.get(),
+                                                                        institute,
                                                                         bibliometer_path,
                                                                         position_selon_x_check, 
                                                                         position_selon_y_check, 

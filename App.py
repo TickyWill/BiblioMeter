@@ -3,7 +3,7 @@
 
 # In[ ]:
 
-
+# Local imports
 from BiblioMeter_GUI.Page_Classes import app_main
 
 app = app_main()

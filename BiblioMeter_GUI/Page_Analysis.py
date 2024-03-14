@@ -1,9 +1,7 @@
 __all__ = ['create_analysis']
 
-# Under deep modification !!! Not yet used !!!
 
-
-def _launch_kw_analysis(bibliometer_path, year_select):
+def _launch_kw_analysis(institute, bibliometer_path, year_select):
     """
     """
 
@@ -13,7 +11,7 @@ def _launch_kw_analysis(bibliometer_path, year_select):
     # Local imports
     from BiblioMeter_FUNCTS.BM_PubAnalysis import keywords_analysis
 
-    kw_analysis_folder_path = keywords_analysis(bibliometer_path, year_select, verbose = False)
+    kw_analysis_folder_path = keywords_analysis(institute, bibliometer_path, year_select, verbose = False)
     
     info_title = "- Information -"
     info_text  = f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
@@ -23,7 +21,7 @@ def _launch_kw_analysis(bibliometer_path, year_select):
     
 
 
-def _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder_alias):
+def _launch_if_analysis(institute, bibliometer_path, year_select, bdd_multi_annuelle_folder_alias):
     """
     """
     
@@ -36,13 +34,13 @@ def _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder
     from BiblioMeter_FUNCTS.BM_PubAnalysis import if_analysis
 
     # Getting year of most recent IFs 
-    _,_,if_most_recent_year = get_if_db(bibliometer_path)
+    _,_,if_most_recent_year = get_if_db(institute, bibliometer_path)
 
     analysis_if  = "IF " + if_most_recent_year
     if pg.ANALYSIS_IF == pg.COL_NAMES_BONUS['IF année publi'] and if_most_recent_year>=year_select:
         analysis_if  = "IF " + year_select            
 
-    if_analysis_folder_path,_,_ = if_analysis(bibliometer_path, year_select, if_most_recent_year, verbose = False) 
+    if_analysis_folder_path,_,_ = if_analysis(institute, bibliometer_path, year_select, if_most_recent_year, verbose = False) 
     
     info_title = "- Information -"
     info_text  = f"L'analyse des IFs a été effectuée pour l'année {year_select} "
@@ -53,11 +51,10 @@ def _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder
     info_text += f"et de chaque département a été mise à jour "
     info_text += f"avec les résultats de cette analyse et se trouve dans le dossier :" 
     info_text += f"\n\n'{bdd_multi_annuelle_folder_alias}'."
-    messagebox.showinfo(info_title, info_text)    
-    
+    messagebox.showinfo(info_title, info_text)       
     
 
-def create_analysis(self, bibliometer_path, parent):
+def create_analysis(self, institute, bibliometer_path, parent):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -98,7 +95,7 @@ def create_analysis(self, bibliometer_path, parent):
         year_select =  variable_years.get()
         
         print(f"\nIFs analysis launched for year {year_select}")
-        _launch_if_analysis(bibliometer_path, year_select, bdd_multi_annuelle_folder_alias)
+        _launch_if_analysis(institute, bibliometer_path, year_select, bdd_multi_annuelle_folder_alias)
         return
     
     def _launch_kw_analysis_try():
@@ -106,7 +103,7 @@ def create_analysis(self, bibliometer_path, parent):
         year_select =  variable_years.get()
         
         print(f"Keywords analysis launched for year {year_select}")
-        _launch_kw_analysis(bibliometer_path, year_select)
+        _launch_kw_analysis(institute, bibliometer_path, year_select)
         return   
             
     def _launch_exit():

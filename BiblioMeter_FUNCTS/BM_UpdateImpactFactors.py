@@ -6,8 +6,7 @@ __all__ = ['update_inst_if_database',
 
 def journal_capwords(text):
     # local imports
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
-    from BiblioMeter_FUNCTS.BM_PubGlobals import BM_LOW_WORDS_LIST
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     text_split_list = []
     for x in text.split():
@@ -20,7 +19,7 @@ def journal_capwords(text):
     return text
 
 
-def _update_year_if_database(bibliometer_path, corpus_year, year_if_db_df, 
+def _update_year_if_database(institute, bibliometer_path, corpus_year, year_if_db_df, 
                              pub_list_path_alias, missing_if_filename_base_alias, 
                              missing_issn_filename_base_alias, most_recent_year):
     """
@@ -51,7 +50,7 @@ def _update_year_if_database(bibliometer_path, corpus_year, year_if_db_df,
         return missing_df
 
     # Setting aliases of useful columns 
-    col_final_list = set_final_col_names()
+    col_final_list = set_final_col_names(institute)
     journal_col_alias                  = col_final_list[6]
     issn_col_alias                     = col_final_list[10]
     eissn_col_alias                    = pg.COL_NAMES_BONUS['e-ISSN']
@@ -106,7 +105,7 @@ def _update_year_if_database(bibliometer_path, corpus_year, year_if_db_df,
     return (fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df) 
 
 
-def update_inst_if_database(bibliometer_path, corpi_years_list):
+def update_inst_if_database(institute, bibliometer_path, corpi_years_list):
     """
     Note:
         Uses internal fonction `journal_capwords`
@@ -133,16 +132,16 @@ def update_inst_if_database(bibliometer_path, corpi_years_list):
         if first:
             ws = wb.active
             ws.title = year
-            wb,ws = mise_en_page(df, wb, if_database)        
+            wb,ws = mise_en_page(institute, df, wb, if_database)        
         else:
             wb.create_sheet(year)
             wb.active = wb[year]
             ws = wb.active
-            wb,_ = mise_en_page(df, wb, if_database)
+            wb,_ = mise_en_page(institute, df, wb, if_database)
         return wb       
 
     # Setting aliases of useful columns 
-    col_final_list = set_final_col_names()
+    col_final_list = set_final_col_names(institute)
     journal_col_alias = col_final_list[6]    
 
     # Setting useful aliases
@@ -150,7 +149,7 @@ def update_inst_if_database(bibliometer_path, corpi_years_list):
     if_root_folder_alias             = pg.ARCHI_IF["root"]
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    inst_all_if_filename_alias       = pg.ARCHI_IF["institute_if_all_years"]
+    inst_all_if_filename_alias       = institute + pg.ARCHI_IF["institute_if_all_years"]
     pub_list_path_alias              = pg.ARCHI_YEAR["pub list folder"]
 
     # Setting useful paths
@@ -177,7 +176,8 @@ def update_inst_if_database(bibliometer_path, corpi_years_list):
         year_if_db_df.fillna(unknown_alias, inplace = True)
         year_if_db_df[journal_col_alias] = year_if_db_df.apply(_capwords_journal_col, axis=1)
         corpus_year = if_db_year
-        dfs_tup = _update_year_if_database(bibliometer_path, 
+        dfs_tup = _update_year_if_database(institute,
+                                           bibliometer_path, 
                                            corpus_year, 
                                            year_if_db_df,
                                            pub_list_path_alias, 
@@ -197,13 +197,14 @@ def update_inst_if_database(bibliometer_path, corpi_years_list):
     most_recent_year_if_db_df[journal_col_alias] = most_recent_year_if_db_df.apply(_capwords_journal_col, 
                                                                                    axis = 1)
     for corpus_year in off_if_db_years_list:      
-        _, corpus_year_most_recent_year_if_df_to_add = _update_year_if_database(bibliometer_path, 
-                                                                         corpus_year, 
-                                                                         most_recent_year_if_db_df,
-                                                                         pub_list_path_alias, 
-                                                                         missing_if_filename_base_alias,
-                                                                         missing_issn_filename_base_alias, 
-                                                                         most_recent_year)  
+        _, corpus_year_most_recent_year_if_df_to_add = _update_year_if_database(institute,
+                                                                                bibliometer_path, 
+                                                                                corpus_year, 
+                                                                                most_recent_year_if_db_df,
+                                                                                pub_list_path_alias, 
+                                                                                missing_if_filename_base_alias,
+                                                                                missing_issn_filename_base_alias, 
+                                                                                most_recent_year)  
         most_recent_year_if_df_to_add = pd.concat([most_recent_year_if_df_to_add, 
                                                    corpus_year_most_recent_year_if_df_to_add])  
     

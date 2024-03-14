@@ -113,6 +113,7 @@ def _launch_update_employees(bibliometer_path,
             
 def _launch_recursive_year_search_try(year_select, 
                                       search_depth,
+                                      institute,
                                       bibliometer_path,
                                       bdd_mensuelle_path,
                                       submit_path,
@@ -136,6 +137,7 @@ def _launch_recursive_year_search_try(year_select,
         try:            
             end_message, orphan_status = recursive_year_search(bdd_mensuelle_path, 
                                                                all_effectifs_path,
+                                                               institute,
                                                                bibliometer_path,
                                                                year_select, 
                                                                search_depth)
@@ -235,7 +237,8 @@ def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
         return None
 
 
-def _launch_resolution_homonymies_try(bibliometer_path, 
+def _launch_resolution_homonymies_try(institute,
+                                      bibliometer_path, 
                                       submit_path, 
                                       homonymes_path, 
                                       homonymes_file_path, 
@@ -256,11 +259,12 @@ def _launch_resolution_homonymies_try(bibliometer_path,
     
     def _resolution_homonymies_try():
         try:
-            end_message, actual_homonym_status = solving_homonyms(submit_path, homonymes_file_path)
+            end_message, actual_homonym_status = solving_homonyms(institute, submit_path, homonymes_file_path)
             print(end_message)
             print('\n Actual homonyms status before setting saved homonyms:', actual_homonym_status)
             if actual_homonym_status: 
-                end_message, actual_homonym_status = set_saved_homonyms(bibliometer_path, year_select, actual_homonym_status)
+                end_message, actual_homonym_status = set_saved_homonyms(institute, bibliometer_path, 
+                                                                        year_select, actual_homonym_status)
             print('\n',end_message)
             print('\n Actual homonyms status after setting saved homonyms:', actual_homonym_status)
             info_title = "- Information -"            
@@ -325,7 +329,8 @@ def _launch_resolution_homonymies_try(bibliometer_path,
     return    
 
 
-def _launch_add_OTP_try(bibliometer_path,
+def _launch_add_OTP_try(institute, 
+                        bibliometer_path,
                         homonymes_path, 
                         homonymes_file_path, 
                         OTP_path, 
@@ -349,11 +354,11 @@ def _launch_add_OTP_try(bibliometer_path,
 
     def _add_OTP_try():
         try:
-            end_message = save_homonyms(bibliometer_path, year_select)
+            end_message = save_homonyms(institute, bibliometer_path, year_select)
             print('\n',end_message)
-            end_message = add_OTP(homonymes_file_path, OTP_path, OTP_file_base_alias)
+            end_message = add_OTP(institute, homonymes_file_path, OTP_path, OTP_file_base_alias)
             print(end_message)
-            end_message = set_saved_otps(bibliometer_path, year_select)
+            end_message = set_saved_otps(institute, bibliometer_path, year_select)
             print(end_message)                
             info_title = "- Information -"
             info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
@@ -420,7 +425,8 @@ def _launch_add_OTP_try(bibliometer_path,
     return   
 
 
-def _launch_pub_list_conso_try(bibliometer_path, 
+def _launch_pub_list_conso_try(institute, 
+                               bibliometer_path, 
                                OTP_path,
                                pub_list_path,
                                pub_list_file_path, 
@@ -442,18 +448,15 @@ def _launch_pub_list_conso_try(bibliometer_path,
     # Local library imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import consolidate_pub_list
-    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps
     
     def _consolidate_pub_list():
-        try:
-            end_message, split_ratio, if_database_complete = consolidate_pub_list(bibliometer_path, 
+        try:            
+            end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, bibliometer_path, 
                                                                                   OTP_path, pub_list_path, 
                                                                                   pub_list_file_path, OTP_file_base_alias, 
                                                                                   year_select)
             print(end_message)
-            #end_message = save_otps(bibliometer_path, year_select)
-            #print('\n',end_message)
-            end_message = concatenate_pub_lists(bibliometer_path, years_list)
+            end_message = concatenate_pub_lists(institute, bibliometer_path, years_list)
             print('\n',end_message)
             info_title = "- Information -"
             info_text  = f"La liste consolidée des publications de l'année {year_select} "
@@ -528,7 +531,7 @@ def _launch_pub_list_conso_try(bibliometer_path,
     return     
 
 
-def create_consolidate_corpus(self, bibliometer_path, parent):
+def create_consolidate_corpus(self, institute, bibliometer_path, parent):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -564,7 +567,8 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_GUI.Useful_Functions as guf  
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg      
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org      
 
     # Internal functions
 
@@ -656,8 +660,11 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
     maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
     all_effectifs_path        = effectifs_folder_path / Path(effectifs_file_name_alias)
 
-    # Getting departments label list
-    dpt_label_list = list(ig.DPT_LABEL_DICT.keys()) 
+    # Gettting institute parameters
+    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
+                           dpt_label_key = ig.DPT_LABEL_KEY, 
+                           dpt_otp_key = ig.DPT_OTP_KEY)
+    dpt_label_list = list(org_tup[2].keys()) 
     
     ### Décoration de la page
     # - Canvas
@@ -738,6 +745,7 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         # Trying launch of recursive search for authors in employees file        
         _launch_recursive_year_search_try(year_select, 
                                           search_depth,
+                                          institute,
                                           bibliometer_path,
                                           bdd_mensuelle_path,
                                           submit_path,
@@ -797,7 +805,8 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         homonymes_file_path = homonymes_path / Path(homonymes_file_alias)
         
         # Trying launch creation of file for homonymies resolution
-        _launch_resolution_homonymies_try(bibliometer_path, 
+        _launch_resolution_homonymies_try(institute, 
+                                          bibliometer_path, 
                                           submit_path, 
                                           homonymes_path, 
                                           homonymes_file_path, 
@@ -835,7 +844,8 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         OTP_path             = corpus_year_path / Path(OTP_path_alias)        
         
         # Trying launch creation of files for OTP attribution
-        _launch_add_OTP_try(bibliometer_path, 
+        _launch_add_OTP_try(institute, 
+                            bibliometer_path, 
                             homonymes_path, 
                             homonymes_file_path, 
                             OTP_path, 
@@ -877,7 +887,8 @@ def create_consolidate_corpus(self, bibliometer_path, parent):
         pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)             
         
         # Trying launch creation of consolidated publications lists
-        _launch_pub_list_conso_try(bibliometer_path, 
+        _launch_pub_list_conso_try(institute,
+                                   bibliometer_path, 
                                    OTP_path,
                                    pub_list_path,
                                    pub_list_file_path, 

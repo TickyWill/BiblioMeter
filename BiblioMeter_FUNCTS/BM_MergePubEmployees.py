@@ -1,6 +1,5 @@
 __all__ = ['recursive_year_search']
 
-
 def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', verbose = False):
 
     """
@@ -326,7 +325,7 @@ def _check_names_to_replace(bibliometer_path, year, init_df, col0, col1, col2):
     return new_df
 
 
-def _check_authors_to_remove(bibliometer_path, pub_df, pub_last_col, pub_initials_col):
+def _check_authors_to_remove(institute, bibliometer_path, pub_df, pub_last_col, pub_initials_col):
     '''
     '''
     # Standard Library imports
@@ -342,7 +341,7 @@ def _check_authors_to_remove(bibliometer_path, pub_df, pub_last_col, pub_initial
     # Setting useful aliases
     orphan_treat_alias          = pg.ARCHI_ORPHAN["root"]
     outliers_file_alias         = pg.ARCHI_ORPHAN["complementary file"]
-    outliers_sheet_alias        = pg.SHEET_NAMES_ORPHAN["to remove"]
+    outliers_sheet_alias        = pg.SHEET_NAMES_ORPHAN["to remove"] + institute
     outliers_lastname_col_alias = pg.COL_NAMES_EXT['last name']
     outliers_initials_col_alias = pg.COL_NAMES_EXT['initials']
     
@@ -378,7 +377,7 @@ def _check_authors_to_remove(bibliometer_path, pub_df, pub_last_col, pub_initial
     return new_pub_df
 
 
-def _build_institute_pubs_authors(year, bibliometer_path):
+def _build_institute_pubs_authors(institute, year, bibliometer_path):
 
     """ 
     Uses following local functions of the module "BM_MergePubEmployees.py":
@@ -406,6 +405,7 @@ def _build_institute_pubs_authors(year, bibliometer_path):
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
 
@@ -492,7 +492,11 @@ def _build_institute_pubs_authors(year, bibliometer_path):
                                       right_on = [bp_pub_id_alias, bp_auth_idx_alias])
 
     # Building the authors filter of the institution INSTITUTE
-    institute_col_list  = [tup[0] + '_' + tup[1] for tup in ig.INSTITUTE_INST_LIST]
+    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
+                           dpt_label_key = ig.DPT_LABEL_KEY, 
+                           dpt_otp_key = ig.DPT_OTP_KEY)
+    institute_inst_list = [tuple(x) for x in org_tup[5]]
+    institute_col_list  = [tup[0] + '_' + tup[1] for tup in institute_inst_list]
     filt_authors_inst = _build_filt_authors_inst(institute_col_list) 
 
     # Associating each publication (with its complementary info) whith each of its INSTITUTE authors
@@ -531,7 +535,7 @@ def _build_institute_pubs_authors(year, bibliometer_path):
     col_full, col_last, col_initials = bm_colnames_alias['Full_name'], bm_colnames_alias['Last_name'], bm_colnames_alias['First_name']
     inst_merged_df = _check_names_orthograph(bibliometer_path, inst_merged_df, col_full, col_last, col_initials) 
     inst_merged_df = _check_names_to_replace(bibliometer_path, year, inst_merged_df, col_full, col_last, col_initials)
-    inst_merged_df = _check_authors_to_remove(bibliometer_path, inst_merged_df, col_last, col_initials)
+    inst_merged_df = _check_authors_to_remove(institute, bibliometer_path, inst_merged_df, col_last, col_initials)
 
     return  inst_merged_df
 
@@ -965,7 +969,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     return (new_submit_df, new_orphan_df)
 
 
-def _change_col_names(submit_path, orphan_path):
+def _change_col_names(institute, submit_path, orphan_path):
     """
     
     """
@@ -979,17 +983,23 @@ def _change_col_names(submit_path, orphan_path):
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute)
+    orphan_col_rename_dic = col_rename_tup[0]
+    submit_col_rename_dic = col_rename_tup[1]
     
     # Read of the 'submit' file with dates convertion through EMPLOYEES_CONVERTERS_DIC
     submit_df = pd.read_excel(submit_path, converters = eg.EMPLOYEES_CONVERTERS_DIC)    
-    submit_df.rename(columns = pg.SUBMIT_COL_RENAME_DIC, inplace = True)
+    submit_df.rename(columns = submit_col_rename_dic, inplace = True)
 
     # Resaving df_submit
     submit_df.to_excel(submit_path, index = False)
     
     # Read of the 'orphan' file 
     orphan_df = pd.read_excel(orphan_path)    
-    orphan_df.rename(columns = pg.ORPHAN_COL_RENAME_DIC, inplace = True)
+    orphan_df.rename(columns = orphan_col_rename_dic, inplace = True)
 
     # Resaving df_submit
     orphan_df.to_excel(orphan_path, index = False)
@@ -1008,7 +1018,7 @@ def _myHash(text:str):
     return my_hash
 
 
-def _creating_hash_id(bibliometer_path, corpus_year):
+def _creating_hash_id(institute, bibliometer_path, corpus_year):
     """
     """
     # Standard library imports
@@ -1019,6 +1029,11 @@ def _creating_hash_id(bibliometer_path, corpus_year):
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute)
+    submit_col_rename_dic = col_rename_tup[1]
   
     # Setting useful aliases
     bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -1026,12 +1041,12 @@ def _creating_hash_id(bibliometer_path, corpus_year):
     orphan_file_alias    = pg.ARCHI_YEAR["orphan file name"]
     hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"]
     hash_id_col_alias    = pg.COL_HASH['hash_id']
-    pub_id_alias         = pg.SUBMIT_COL_RENAME_DIC['Pub_id']
-    year_alias           = pg.SUBMIT_COL_RENAME_DIC['Year']
-    first_auth           = pg.SUBMIT_COL_RENAME_DIC['Authors']
-    title_alias          = pg.SUBMIT_COL_RENAME_DIC['Title']
-    ISSN_alias           = pg.SUBMIT_COL_RENAME_DIC['ISSN']
-    doi_alias            = pg.SUBMIT_COL_RENAME_DIC['DOI']     
+    pub_id_alias         = submit_col_rename_dic['Pub_id']
+    year_alias           = submit_col_rename_dic['Year']
+    first_auth           = submit_col_rename_dic['Authors']
+    title_alias          = submit_col_rename_dic['Title']
+    ISSN_alias           = submit_col_rename_dic['ISSN']
+    doi_alias            = submit_col_rename_dic['DOI']     
        
     # Setting useful paths
     corpus_year_path   = bibliometer_path / Path(corpus_year)
@@ -1071,7 +1086,7 @@ def _creating_hash_id(bibliometer_path, corpus_year):
     return message
 
 
-def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_year, go_back_years):
+def recursive_year_search(path_out, effectifs_path, institute, bibliometer_path, corpus_year, go_back_years):
     """
     Uses following local functions of the module "BM_MergePubEmployees.py":
     - `_build_institute_pubs_authors`
@@ -1143,7 +1158,7 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     corpus_year_status = corpus_year in eff_available_years 
     
     # Building the articles dataframe 
-    df_pub = _build_institute_pubs_authors(corpus_year, bibliometer_path)
+    df_pub = _build_institute_pubs_authors(institute, corpus_year, bibliometer_path)
 
     # Building the search time depth of Institute co-authors among the employees dataframe
     year_start = int(corpus_year)
@@ -1223,11 +1238,11 @@ def recursive_year_search(path_out, effectifs_path, bibliometer_path, corpus_yea
     # Adding full article reference and saving new df_submit
     _add_biblio_list(submit_path, submit_path)
 
-    # Renaming column names using SUBMIT_COL_RENAME_DIC and ORPHAN_COL_RENAME_DIC globals
-    _change_col_names(submit_path, orphan_path)
+    # Renaming column names using submit_col_rename_dic and orphan_col_rename_dic
+    _change_col_names(institute, submit_path, orphan_path)
     
     # Creating universal identification of articles independant from database extraction
-    _creating_hash_id(bibliometer_path, corpus_year)    
+    _creating_hash_id(institute, bibliometer_path, corpus_year)    
     
     end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
     return (end_message, orphan_status) 

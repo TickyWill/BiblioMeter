@@ -33,6 +33,8 @@ __all__ = ['ADD_SPACE_MM',
            'REF_ETAPE_POS_Y_MM_LIST',
            'REF_EXIT_BUT_POS_X_MM',
            'REF_EXIT_BUT_POS_Y_MM',
+           'REF_INST_POS_X_MM',
+           'REF_INST_POS_Y_MM',
            'REF_LABEL_FONT_SIZE',
            'REF_LABEL_POS_Y_MM',
            'REF_LAUNCH_FONT_SIZE',
@@ -42,6 +44,7 @@ __all__ = ['ADD_SPACE_MM',
            'REF_SCREEN_HEIGHT_PX',
            'REF_SCREEN_WIDTH_MM',
            'REF_SCREEN_HEIGHT_MM',
+           'REF_SUB_TITLE_FONT_SIZE',
            'REF_WINDOW_WIDTH_MM',
            'REF_WINDOW_HEIGHT_MM',
            'REF_VERSION_FONT_SIZE',
@@ -67,6 +70,7 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_HOMONYMES',
            'TEXT_KW_ANALYSIS', 
            'TEXT_IF_ANALYSIS',
+           'TEXT_INSTITUTE',
            'TEXT_LAUNCH_PARSING', 
            'TEXT_LAUNCH_SYNTHESE',
            'TEXT_MAJ_BDD_IF',
@@ -87,8 +91,6 @@ __all__ = ['ADD_SPACE_MM',
 
 
 ################################## General globals ##################################
-# Local imports
-import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig 
 
 # Setting BiblioMeter version value (internal)
 VERSION ='4.0.0'
@@ -97,7 +99,7 @@ VERSION ='4.0.0'
 CORPUSES_NUMBER = 6
 
 # Setting the title of the application main window (internal)
-APPLICATION_WINDOW_TITLE = f"BiblioMeter - Analyse de la production scientifique de l'institut {ig.INSTITUTE}"
+APPLICATION_WINDOW_TITLE = f"BiblioMeter - Analyse de la production scientifique d'un institut"
 
 ######################## Definition of display globals ###########################
 
@@ -180,9 +182,10 @@ FONT_NAME = "Helvetica"
 REF_ENTRY_NB_CHAR          = 100     #100
 
 # Font size references for page label and button
+REF_SUB_TITLE_FONT_SIZE    = 15      #15
 REF_PAGE_TITLE_FONT_SIZE   = 30      #30
 REF_LAUNCH_FONT_SIZE       = 25      #25
-REF_BMF_FONT_SIZE          = 15      #15
+REF_BMF_FONT_SIZE          = 15      #15        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 REF_BUTTON_FONT_SIZE       = 12      #10
 REF_COPYRIGHT_FONT_SIZE    = 12      #10
 REF_VERSION_FONT_SIZE      = 12      #10
@@ -190,15 +193,19 @@ REF_VERSION_FONT_SIZE      = 12      #10
 # Y position reference in mm for page label
 REF_PAGE_TITLE_POS_Y_MM    = 20      #20 
 
+# Positions reference in mm for institute selection button
+REF_INST_POS_X_MM          = 5       #5
+REF_INST_POS_Y_MM          = 40      #45
+
 # Positions reference in mm for bmf label and button
 REF_BMF_POS_X_MM           = 5       #5
-REF_BMF_POS_Y_MM           = 45      #45
+REF_BMF_POS_Y_MM           = 55      #45
 REF_BUTTON_DX_MM           = -147    #-147
 REF_BUTTON_DY_MM           = 10      #10
 
 # Positions reference in mm for corpus creation button
 REF_CORPI_POS_X_MM         = 5       #5
-REF_CORPI_POS_Y_MM         = 75      #75
+REF_CORPI_POS_Y_MM         = 85      #75
 
 # Space between label and value
 ADD_SPACE_MM               = 10      #10
@@ -251,6 +258,9 @@ PAGES_NAMES = {'first' : 'Page_ParseCorpus',
 
 # Titre de la page
 TEXT_TITLE                  = "- BiblioMeter -\nInitialisation de l'analyse"
+
+# Choix de l'année de l'Institut
+TEXT_INSTITUTE              = "Sélection de l'Institut"
 
 # Titre LabelEntry of BiblioMeter_Files folder
 TEXT_BMF                    = "Dossier de travail "
@@ -312,7 +322,7 @@ TEXT_LAUNCH_SYNTHESE = "Lancer la synthèse"
 TEXT_YEAR_PI       = "Sélection de l'année "
 
 ### - Etape 1
-TEXT_ETAPE_1       = f"Etape 1 : Croisement auteurs-efffectifs de l'institut {ig.INSTITUTE}"
+TEXT_ETAPE_1       = f"Etape 1 : Croisement auteurs-efffectifs de l'institut"
 TEXT_MAJ_EFFECTIFS = "Mettre à jour les effectifs de l'institut avant le croisement (coché = OUI) ?"
 TEXT_CROISEMENT    = f"Effectuer le croisement auteurs-efffectifs"
 

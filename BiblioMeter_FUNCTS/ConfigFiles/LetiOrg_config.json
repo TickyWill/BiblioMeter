@@ -16,14 +16,14 @@
                       "DOPT": "DOPT",
                       "DPFT": "DPFT",
                       "DSYS": "DSYS",
-					  "DTBS": "DTBS",
+					  "DTIS": "DTIS",
                       "DIR" : "DIR"
     },
 	"DPT_LABEL_DICT": {"DCOS": ["DCOS"],
                        "DOPT": ["DOPT"],
                        "DPFT": ["DPFT", "DTSI"],
                        "DSYS": ["DSYS", "DSIS"],
-					   "DTBS": ["DTBS"],
+					   "DTIS": ["DTIS", "DTBS"],
                        "DIR" : ["(LETI)"]
     },
     "DPT_OTP_DICT": {"DCOS": ["aaaa", "bbbb", "cccc", "dddd", 
@@ -34,7 +34,7 @@
 					          "eeee", "ffff", "gggg", "hhhh"],
                      "DSYS": ["aaaa", "bbbb", "cccc", "dddd", 
 					          "eeee", "ffff", "gggg", "hhhh"],
-					 "DTBS": ["aaaa", "bbbb", "cccc", "dddd", 
+					 "DTIS": ["aaaa", "bbbb", "cccc", "dddd", 
 					          "eeee", "ffff", "gggg", "hhhh"]		  
     },
 	"INST_FILTER_LIST" : [["LETI","France"]],
