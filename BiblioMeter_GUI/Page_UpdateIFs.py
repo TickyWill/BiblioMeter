@@ -66,7 +66,7 @@ def _launch_update_pub_if(institute,
     
     # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_if
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import split_pub_list
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import split_pub_list_by_doc_type
     
     if_database_complete = None
     missing_pub_file_year = None
@@ -92,7 +92,7 @@ def _launch_update_pub_if(institute,
                                              corpus_year)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-            split_pub_list(institute, bibliometer_path, corpus_year)
+            split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year)
             if not if_database_complete:
                 info_title = "- Information -"
                 info_text  = f"La base de données des facteurs d'impact étant incomplète, "

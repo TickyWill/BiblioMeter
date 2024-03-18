@@ -9,7 +9,11 @@
 		"The field 'INSTITUTE_INST_LIST' sets the list of intitutions used for identifying authors of the Institute.",
 		"The field 'INST_IF_STATUS' sets the status for using the file of IFs of journals: ",
 		    "- true : use of the IFS of the Institute publications; ",
-		    "- false: use of the full IFs database."
+		    "- false: use of the full IFs database.",
+		"The field 'INST_NO_IF_DOCTYPE_KEYS_LIST' sets the list of document types that will not be searched for impact factors among: ",
+			"- Articles",
+			"- Books",
+			"- Proceedings"
     ],
 	"ROOT_PATH": "C:\\Users\\AC265100\\Documents\\BiblioMeter_App\\LETI\\BiblioMeter_Files",
 	"COL_NAMES_DPT": {"DCOS": "DCOS",
@@ -39,5 +43,6 @@
     },
 	"INST_FILTER_LIST" : [["LETI","France"]],
 	"INSTITUTE_INST_LIST" : [["LETI", "France"]],
-	"INST_IF_STATUS" : false    
+	"INST_IF_STATUS" : false,
+    "INST_NO_IF_DOCTYPE_KEYS_LIST" : ["Books"]    
 }

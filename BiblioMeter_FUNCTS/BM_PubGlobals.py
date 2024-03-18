@@ -32,7 +32,6 @@ __all__ = ['ANALYSIS_IF',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
            'KPI_KEYS_ORDER_DICT',
-           'NO_IF_DOCTYPE',
            'NOT_AVAILABLE_IF',
            'OTP_SHEET_NAME_BASE',
            'PARSING_PERF',
@@ -121,11 +120,9 @@ ROW_COLORS = {'odd'      : '0000FFFF',
 
 DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
                                  'Erratum', 'Note', 'Review', 'Short Survey'],
-                 'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial Material'],
+                 'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial', 'Editorial Material'],
                  'Proceedings': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper']}
 
-NO_IF_DOCTYPE = DOC_TYPE_DICT['Books'] + DOC_TYPE_DICT['Proceedings']
-NO_IF_DOCTYPE = [x.upper() for x in NO_IF_DOCTYPE]
 
 DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + DOC_TYPE_DICT['Proceedings'],
                         'Books & Editorials'     : DOC_TYPE_DICT['Books'],
@@ -169,8 +166,8 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
 COL_NAMES_BM = {'Dpts'      : eg.EMPLOYEES_ADD_COLS['dpts_list'], 
                 'Servs'     : eg.EMPLOYEES_ADD_COLS['servs_list'],
                 'First_name': eg.EMPLOYEES_ADD_COLS['first_name_initials'],
-                'Last_name' : 'Co_author_joined',  # 'Co_author_joined' DOE J --> DOE
-                'Full_name' : 'Full_name', # DOE J
+                'Last_name' : 'Co_author_joined',
+                'Full_name' : 'Full_name',
                 'Homonym'   : COL_NAMES_BONUS['homonym'],
                }
 

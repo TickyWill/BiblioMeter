@@ -6,7 +6,7 @@ __all__ = ['add_if',
            'mise_en_page',
            'save_shaped_homonyms_file',
            'solving_homonyms',
-           'split_pub_list',
+           'split_pub_list_by_doc_type',
           ]
 
 def mise_en_page(institute, df, wb = None, if_database = None):
@@ -632,10 +632,10 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
         else:
             if results_df.empty: results_df[eissn_col_alias] = unknown_alias
             results_df = results_df[final_order_col_list[:-1]]
-        results_df.sort_values(by=[journal_col_alias], inplace = True)
+        sorted_results_df = results_df.sort_values(by=[journal_col_alias])
 
         # Saving 'results_df' as EXCEL file at full path 'df_full_path'
-        wb, _ = mise_en_page(institute, results_df)
+        wb, _ = mise_en_page(institute, sorted_results_df)
         wb.save(df_full_path)
     
     # Setting useful column names
@@ -660,7 +660,7 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
     pub_id_nb_col_alias       = pg.COL_NAMES_BONUS['pub number']      
   
     # Setting globals aliases
-    doctype_to_drop_list_alias = pg.NO_IF_DOCTYPE
+    doc_type_dict_alias        = pg.DOC_TYPE_DICT
     not_available_if_alias     = pg.NOT_AVAILABLE_IF
     unknown_if_fill_alias      = pg.FILL_EMPTY_KEY_WORD
     unknown_alias              = pg.FILL_EMPTY_KEY_WORD
@@ -673,6 +673,9 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
                            dpt_label_key = ig.DPT_LABEL_KEY, 
                            dpt_otp_key = ig.DPT_OTP_KEY)    
     inst_if_status = org_tup[6]
+    inst_no_if_doctype_keys_list = org_tup[7]
+    no_if_doctype = sum([doc_type_dict_alias[x] for x in inst_no_if_doctype_keys_list] , [])
+    doctype_to_drop_list_alias = [x.upper() for x in no_if_doctype]
     
     # Taking care all IF column names in if_df are database_if_col_alias
     if inst_if_status: 
@@ -778,27 +781,24 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
         issn_df[journal_upper_col] = issn_df[journal_col_alias].astype(str).str.upper()
         issn_df.drop_duplicates(subset=[journal_upper_col], keep='first', inplace = True)
         issn_df.drop([journal_upper_col], axis = 1, inplace = True)
-        year_if_df = pd.concat([year_if_df, issn_df])  
-        #year_if_df = year_if_df.append(issn_df) 
+        year_if_df = pd.concat([year_if_df, issn_df])
     
     # Removing from 'year_if_df' the rows which ISSN value is not in IF database and keeping them in 'year_missing_issn_df'
     year_missing_issn_df = pd.DataFrame(columns = year_if_df.columns)
     year_missing_if_df   = pd.DataFrame(columns = year_if_df.columns)
     inst_issn_list  = inst_issn_df[issn_col_alias].to_list()
     inst_eissn_list = inst_issn_df[eissn_col_alias].to_list()
-    for row_num, row in year_if_df.iterrows():     
+    for _, row in year_if_df.iterrows():     
         row_issn = row[issn_col_alias]
         row_most_recent_year_if = row[most_recent_year_if_col_name]
         row_corpus_year_if      = row[corpus_year_if_col_name]
         if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
-            year_missing_issn_df = pd.concat([year_missing_issn_df, row])  
-            #year_missing_issn_df = year_missing_issn_df.append(row)
+            year_missing_issn_df = pd.concat([year_missing_issn_df, row.to_frame().T])
         elif unknown_alias in [row_most_recent_year_if, row_corpus_year_if]:
             row_journal = row[journal_col_alias]
             row[issn_col_alias]  = _get_id(row_journal, issn_col_alias)
             row[eissn_col_alias] = _get_id(row_journal, eissn_col_alias)
-            year_missing_if_df   = pd.concat([year_missing_if_df, row])  
-            #year_missing_if_df   = year_missing_if_df.append(row)
+            year_missing_if_df   = pd.concat([year_missing_if_df, row.to_frame().T])
     
     if_database_complete = True
     if not year_missing_issn_df.empty or not year_missing_if_df.empty: 
@@ -811,7 +811,7 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
     return end_message, if_database_complete
 
 
-def split_pub_list(institute, bibliometer_path, corpus_year):
+def split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year):
     """
     
     """
@@ -841,7 +841,7 @@ def split_pub_list(institute, bibliometer_path, corpus_year):
     doc_type_alias   = col_final_list[7]   
 
     full_pub_list_df = pd.read_excel(pub_list_file_path)
-    pub_nb = len(full_pub_list_df)
+    pub_nb = len(full_pub_list_df)    
     key_pub_nb = 0
     for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
         doctype_list = [x.upper() for x in  doctype_list]
@@ -858,8 +858,10 @@ def split_pub_list(institute, bibliometer_path, corpus_year):
         key_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
         wb, _ = mise_en_page(institute, key_dg)
         wb.save(key_dg_path)
-        
-    split_ratio = key_pub_nb/pub_nb*100
+    
+    split_ratio = 100
+    if pub_nb != 0:    
+        split_ratio = round(key_pub_nb/pub_nb*100)
     return split_ratio
 
 
@@ -966,7 +968,7 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
                                      corpus_year)
     
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio = split_pub_list(institute, bibliometer_path, corpus_year)
+    split_ratio = split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year)
     
     end_message  = f"\n" + otp_message
     end_message += f"\nOTPs identification integrated in file : \n  '{out_file_path}'"

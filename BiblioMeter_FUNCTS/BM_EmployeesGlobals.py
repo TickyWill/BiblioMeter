@@ -138,7 +138,7 @@ _employees_col_convert_key = ['hiring_date',
 
 employees_col_convert_list = [EMPLOYEES_USEFUL_COLS[col_key] for col_key in _employees_col_convert_key]
 
-EMPLOYEES_CONVERTERS_DIC = {}    # <= EFF_CONVERTERS_DIC
+EMPLOYEES_CONVERTERS_DIC = {} 
 for col_convert in employees_col_convert_list: 
     EMPLOYEES_CONVERTERS_DIC[col_convert] = lambda x: _get_str_date(str(x))
 

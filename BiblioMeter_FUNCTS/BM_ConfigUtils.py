@@ -142,12 +142,13 @@ def set_inst_org(config_json_file_name, dpt_label_key = None, dpt_otp_key = None
             dpt_attributs_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
             dpt_attributs_dict[dpt][dpt_otp_key]   = dpt_otp_dict[dpt]    
 
-        inst_filter_list    = inst_org_dict["INST_FILTER_LIST"]
-        institute_inst_list = inst_org_dict["INSTITUTE_INST_LIST"]
-        inst_if_status      = inst_org_dict["INST_IF_STATUS"]
+        inst_filter_list             = inst_org_dict["INST_FILTER_LIST"]
+        institute_inst_list          = inst_org_dict["INSTITUTE_INST_LIST"]
+        inst_if_status               = inst_org_dict["INST_IF_STATUS"]
+        inst_no_if_doctype_keys_list = inst_org_dict["INST_NO_IF_DOCTYPE_KEYS_LIST"]
 
         return_tup = (root_path, col_names_dpt, dpt_label_dict, dpt_attributs_dict, 
-                      inst_filter_list, institute_inst_list, inst_if_status)
+                      inst_filter_list, institute_inst_list, inst_if_status, inst_no_if_doctype_keys_list)
     else:
         return_tup = (root_path,)
     return return_tup

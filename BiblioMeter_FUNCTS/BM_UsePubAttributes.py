@@ -57,8 +57,7 @@ def save_homonyms(institute, bibliometer_path, corpus_year):
     # Building pub_id and kept matricules df for solved homonymes
     temp_df = pub_df[pub_df[homonyms_col_alias] == pg.HOMONYM_FLAG]
     not_solved_homonyms_pub_id = [pub_id for idx,pub_id in enumerate(temp_df[pub_id_alias]) 
-                                  if int(temp_df[temp_df[pub_id_alias] == pub_id] 
-                                         [pub_id_alias].value_counts()) > 1]
+                                  if len(temp_df[temp_df[pub_id_alias] == pub_id][pub_id_alias]) > 1]
     homonyms_df = temp_df.copy().reset_index()
     for idx, pub_id in enumerate(temp_df[pub_id_alias]):
         if pub_id in not_solved_homonyms_pub_id:
