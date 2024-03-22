@@ -1,10 +1,10 @@
 __all__ = [
            'CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
-           'EMPLOYEES_ARCHI',              # <= ARCHI_RH
-           'EMPLOYEES_COL_TYPES',          # <= COL_TYPES_RH
-           'EMPLOYEES_CONVERTERS_DIC',     # <= EFF_CONVERTERS_DIC
-           'EMPLOYEES_FULL_COLS',          # <= COL_NAMES_RH
+           'EMPLOYEES_ARCHI',             
+           'EMPLOYEES_COL_TYPES',  
+           'EMPLOYEES_CONVERTERS_DIC', 
+           'EMPLOYEES_FULL_COLS',
            'EMPLOYEES_USEFUL_COLS',
            'EXT_DOCS_USEFUL_COL_LIST',
            'QUALIFICATION_DIC',
@@ -14,12 +14,12 @@ __all__ = [
 
 SEARCH_DEPTH = 10
 
-EMPLOYEES_ARCHI = {"root"                        : "Listing RH",
+EMPLOYEES_ARCHI = {"root"                        : "Parametres Institut",
                    "all_years_employees"         : "Effectifs consolidés",
                    "one_year_employees"          : "Effectifs annuels",
                    "employees_file_name"         : "All_effectifs.xlsx",
                    "one_year_employees_filebase" : "_Effectifs.xlsx",
-                   "complementary_employees"     : "Effectifs additionnels",}
+                   "complementary_employees"     : "Effectifs de consolidation",}
 
 
 # This is only the full list of employees file columns available to be add to EMPLOYEES_USEFUL_COLS global

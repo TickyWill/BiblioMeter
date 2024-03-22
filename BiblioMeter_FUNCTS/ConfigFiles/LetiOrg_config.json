@@ -43,6 +43,6 @@
     },
 	"INST_FILTER_LIST" : [["LETI","France"]],
 	"INSTITUTE_INST_LIST" : [["LETI", "France"]],
-	"INST_IF_STATUS" : false,
+	"INST_IF_STATUS" : true,
     "INST_NO_IF_DOCTYPE_KEYS_LIST" : ["Books"]    
 }
