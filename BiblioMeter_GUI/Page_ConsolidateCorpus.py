@@ -112,8 +112,9 @@ def _launch_update_employees(bibliometer_path,
 
             
 def _launch_recursive_year_search_try(year_select, 
-                                      search_depth,
+                                      search_depth_init,
                                       institute,
+                                      org_tup,
                                       bibliometer_path,
                                       bdd_mensuelle_path,
                                       submit_path,
@@ -136,8 +137,9 @@ def _launch_recursive_year_search_try(year_select,
     def _recursive_year_search_try():
         try:            
             end_message, orphan_status = recursive_year_search(bdd_mensuelle_path, 
-                                                               all_effectifs_path,
+                                                               all_effectifs_df,
                                                                institute,
+                                                               org_tup,
                                                                bibliometer_path,
                                                                year_select, 
                                                                search_depth)
@@ -165,67 +167,75 @@ def _launch_recursive_year_search_try(year_select,
             warning_text += f"\n3- Puis relancez le croisement pour cette année."                         
             messagebox.showwarning(warning_title, warning_text)
             return None  
-        
-    # Adapting search depth to available years for search                                                                         
-    annees_disponibles = _annee_croisement(year_select, all_effectifs_path, search_depth)
+    
+    # Adapting search depth to available years for search                                                                        
+    all_effectifs_df, search_depth, annees_disponibles = _annee_croisement(year_select, all_effectifs_path, search_depth_init)
     if annees_disponibles == None:
         return
     else:
-        search_depth = min(int(search_depth), len(annees_disponibles))
-        
-    if employees_update_status: 
-        status = "avec"
-    else:
         status = "sans"
-
-    ask_title = "- Confirmation du croisement auteurs-effectifs -"
-    ask_text  = f"Le croisement avec les effectifs des années "
-    ask_text += f"{', '.join([str(i) for i in annees_disponibles])} "
-    ask_text += f"a été lancé pour l'année {year_select}."
-    ask_text += f"\nCe croisement se fera {status} la mise à jour "
-    ask_text += f"du fichier des effectifs."
-    ask_text += f"\n\nCette opération peut prendre quelques minutes."
-    ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
-    ask_text += f"\n\nContinuer ?"
-    answer    = messagebox.askokcancel(ask_title, ask_text)
-    if answer:
-        submit_status = os.path.exists(submit_path)                             
-        if not submit_status:
-            _recursive_year_search_try()
-        else: 
-            ask_title = "- Reconstruction du croisement auteurs-effectifs -"
-            ask_text  = f"Le croisement pour l'année {year_select} est déjà disponible."
-            ask_text += f"\n\nReconstruire le croisement ?"
-            answer_4  = messagebox.askokcancel(ask_title, ask_text)                         
-            if answer_4:
+        if employees_update_status: 
+            status = "avec"
+        ask_title = "- Confirmation du croisement auteurs-effectifs -"
+        ask_text  = f"Le croisement avec les effectifs des années "
+        ask_text += f"{', '.join([str(i) for i in annees_disponibles])} "
+        ask_text += f"a été lancé pour l'année {year_select}."
+        ask_text += f"\nCe croisement se fera {status} la mise à jour "
+        ask_text += f"du fichier des effectifs."
+        ask_text += f"\n\nCette opération peut prendre quelques minutes."
+        ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."
+        ask_text += f"\n\nContinuer ?"
+        answer    = messagebox.askokcancel(ask_title, ask_text)
+        if answer:
+            submit_status = os.path.exists(submit_path)                             
+            if not submit_status:
                 _recursive_year_search_try()
-            else:
-                info_title = "- Information -"
-                info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
-                info_text += f"dejà disponible est conservé."                   
-                messagebox.showinfo(info_title, info_text)                     
-    else:
-        info_title = "- Information -"
-        info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
-        info_text += f"est annulé."            
-        messagebox.showinfo(info_title, info_text)
-        return            
+            else: 
+                ask_title = "- Reconstruction du croisement auteurs-effectifs -"
+                ask_text  = f"Le croisement pour l'année {year_select} est déjà disponible."
+                ask_text += f"\n\nReconstruire le croisement ?"
+                answer_4  = messagebox.askokcancel(ask_title, ask_text)                         
+                if answer_4:
+                    _recursive_year_search_try()
+                else:
+                    info_title = "- Information -"
+                    info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
+                    info_text += f"dejà disponible est conservé."                   
+                    messagebox.showinfo(info_title, info_text)                     
+        else:
+            info_title = "- Information -"
+            info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
+            info_text += f"est annulé."            
+            messagebox.showinfo(info_title, info_text)
+            return            
 
 
 def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
     
-    # 3rd party imports    
-    import pandas as pd
+    # 3rd party imports
+    import pandas as pd 
     from tkinter import messagebox
     
-    all_effectifs_df = pd.read_excel(all_effectifs_path, sheet_name = None)
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    
+    # Getting employees df
+    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values()) + list(eg.EMPLOYEES_ADD_COLS.values())
+    all_effectifs_df = pd.read_excel(all_effectifs_path,  
+                                     sheet_name = None, 
+                                     dtype = eg.EMPLOYEES_COL_TYPES, 
+                                     usecols = useful_col_list)
+    
+    # Identifying available years in employees df
     annees_dispo = [int(x) for x in list(all_effectifs_df.keys())]
     annees_a_verifier = [int(corpus_year) - int(search_depth) + (i+1) for i in range(int(search_depth))]
     annees_verifiees = list()
     for i in annees_a_verifier:
         if i in annees_dispo: annees_verifiees.append(i)
+        
     if len(annees_verifiees) > 0:
-        return annees_verifiees
+        search_depth = min(int(search_depth), len(annees_verifiees))
+        return (all_effectifs_df, search_depth, annees_verifiees)
     else:
         warning_title = "!!! Attention !!!"
         warning_text  = f"Le nombre d'années disponibles est insuffisant "
@@ -238,6 +248,7 @@ def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
 
 
 def _launch_resolution_homonymies_try(institute,
+                                      org_tup,
                                       bibliometer_path, 
                                       submit_path, 
                                       homonymes_path, 
@@ -259,11 +270,11 @@ def _launch_resolution_homonymies_try(institute,
     
     def _resolution_homonymies_try():
         try:
-            end_message, actual_homonym_status = solving_homonyms(institute, submit_path, homonymes_file_path)
+            end_message, actual_homonym_status = solving_homonyms(institute, org_tup, submit_path, homonymes_file_path)
             print(end_message)
             print('\n Actual homonyms status before setting saved homonyms:', actual_homonym_status)
             if actual_homonym_status: 
-                end_message, actual_homonym_status = set_saved_homonyms(institute, bibliometer_path, 
+                end_message, actual_homonym_status = set_saved_homonyms(institute, org_tup, bibliometer_path, 
                                                                         year_select, actual_homonym_status)
             print('\n',end_message)
             print('\n Actual homonyms status after setting saved homonyms:', actual_homonym_status)
@@ -330,12 +341,12 @@ def _launch_resolution_homonymies_try(institute,
 
 
 def _launch_add_OTP_try(institute, 
+                        org_tup, 
                         bibliometer_path,
                         homonymes_path, 
                         homonymes_file_path, 
                         OTP_path, 
                         OTP_file_base_alias,
-                        dpt_label_list,
                         year_select):
     """
     """
@@ -354,11 +365,11 @@ def _launch_add_OTP_try(institute,
 
     def _add_OTP_try():
         try:
-            end_message = save_homonyms(institute, bibliometer_path, year_select)
+            end_message = save_homonyms(institute, org_tup, bibliometer_path, year_select)
             print('\n',end_message)
-            end_message = add_OTP(institute, homonymes_file_path, OTP_path, OTP_file_base_alias)
+            end_message = add_OTP(institute, org_tup, homonymes_file_path, OTP_path, OTP_file_base_alias)
             print(end_message)
-            end_message = set_saved_otps(institute, bibliometer_path, year_select)
+            end_message = set_saved_otps(institute, org_tup, bibliometer_path, year_select)
             print(end_message)                
             info_title = "- Information -"
             info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
@@ -385,6 +396,9 @@ def _launch_add_OTP_try(institute,
             warning_text  = f"Contactez les auteurs de l'application."                        
             messagebox.showwarning(warning_title, warning_text)                
             return None
+        
+    # Getting institute parameters
+    dpt_label_list = list(org_tup[1].keys())    
 
     ask_title = "- Confirmation de l'étape d'attribution des OTPs -"
     ask_text  = f"La création des fichiers pour cette attribution "
@@ -426,6 +440,7 @@ def _launch_add_OTP_try(institute,
 
 
 def _launch_pub_list_conso_try(institute, 
+                               org_tup,  
                                bibliometer_path, 
                                OTP_path,
                                pub_list_path,
@@ -451,12 +466,12 @@ def _launch_pub_list_conso_try(institute,
     
     def _consolidate_pub_list():
         try:            
-            end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, bibliometer_path, 
+            end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, org_tup, bibliometer_path, 
                                                                                   OTP_path, pub_list_path, 
                                                                                   pub_list_file_path, OTP_file_base_alias, 
                                                                                   year_select)
             print(end_message)
-            end_message = concatenate_pub_lists(institute, bibliometer_path, years_list)
+            end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
             print('\n',end_message)
             info_title = "- Information -"
             info_text  = f"La liste consolidée des publications de l'année {year_select} "
@@ -568,7 +583,7 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
     import BiblioMeter_GUI.Useful_Functions as guf  
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org      
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params     
 
     # Internal functions
 
@@ -660,11 +675,8 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
     maj_effectifs_folder_path = effectifs_root_path / Path(maj_effectifs_folder_name_alias)    
     all_effectifs_path        = effectifs_folder_path / Path(effectifs_file_name_alias)
 
-    # Gettting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)
-    dpt_label_list = list(org_tup[2].keys()) 
+    # Getting institute parameters
+    org_tup = set_org_params(institute, bibliometer_path)
     
     ### Décoration de la page
     # - Canvas
@@ -723,9 +735,6 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
         bdd_mensuelle_path =  corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias) 
         
-        # Getting search depth selection
-        search_depth = go_back_years.get()
-        
         # Getting check_effectif_status
         check_effectif_status = check_effectif_var.get()
         
@@ -742,10 +751,11 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
             check_effectif_var.set(0)
             check_effectif_status = check_effectif_var.get()
             
-        # Trying launch of recursive search for authors in employees file        
+        # Trying launch of recursive search for authors in employees file
         _launch_recursive_year_search_try(year_select, 
-                                          search_depth,
+                                          eg.SEARCH_DEPTH,
                                           institute,
+                                          org_tup,
                                           bibliometer_path,
                                           bdd_mensuelle_path,
                                           submit_path,
@@ -753,12 +763,6 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
                                           employees_update_status,
                                           orphan_alias,
                                          )
-
-    ### Définition ou choix de la profondeur de recherche
-    # Fixe la profondeur de recherche à SEARCH_DEPTH dans l'historique des effectifs
-    go_back_years_list = [i for i in range(1,date.today().year-2009)]
-    go_back_years = tk.StringVar(self)
-    go_back_years.set(go_back_years_list[eg.SEARCH_DEPTH-1])
     
     ### Définition du  bouton 'button_croisement' 
     font_croisement = tkFont.Font(family = gg.FONT_NAME, 
@@ -805,7 +809,8 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
         homonymes_file_path = homonymes_path / Path(homonymes_file_alias)
         
         # Trying launch creation of file for homonymies resolution
-        _launch_resolution_homonymies_try(institute, 
+        _launch_resolution_homonymies_try(institute,
+                                          org_tup,
                                           bibliometer_path, 
                                           submit_path, 
                                           homonymes_path, 
@@ -845,12 +850,12 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
         
         # Trying launch creation of files for OTP attribution
         _launch_add_OTP_try(institute, 
+                            org_tup, 
                             bibliometer_path, 
                             homonymes_path, 
                             homonymes_file_path, 
                             OTP_path, 
                             OTP_file_base_alias,
-                            dpt_label_list,
                             year_select)
 
     ### Définition du bouton "button_OTP"
@@ -887,7 +892,8 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
         pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)             
         
         # Trying launch creation of consolidated publications lists
-        _launch_pub_list_conso_try(institute,
+        _launch_pub_list_conso_try(institute, 
+                                   org_tup, 
                                    bibliometer_path, 
                                    OTP_path,
                                    pub_list_path,

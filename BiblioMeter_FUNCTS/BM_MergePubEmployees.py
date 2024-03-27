@@ -377,12 +377,13 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, pub_last_col, 
     return new_pub_df
 
 
-def _build_institute_pubs_authors(institute, year, bibliometer_path):
+def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
 
     """ 
     Uses following local functions of the module "BM_MergePubEmployees.py":
         - `_check_names_orthograph`
-        - `_check_names_to_replace`.
+        - `_check_names_to_replace`
+        -`_check_authors_to_remove`.
     
     Args:
         year (str): Contains the corpus year defined by 4 digits.
@@ -405,7 +406,6 @@ def _build_institute_pubs_authors(institute, year, bibliometer_path):
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
 
@@ -492,11 +492,7 @@ def _build_institute_pubs_authors(institute, year, bibliometer_path):
                                       right_on = [bp_pub_id_alias, bp_auth_idx_alias])
 
     # Building the authors filter of the institution INSTITUTE
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)
-    institute_inst_list = [tuple(x) for x in org_tup[5]]
-    institute_col_list  = [tup[0] + '_' + tup[1] for tup in institute_inst_list]
+    institute_col_list = org_tup[4]   
     filt_authors_inst = _build_filt_authors_inst(institute_col_list) 
 
     # Associating each publication (with its complementary info) whith each of its INSTITUTE authors
@@ -969,7 +965,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     return (new_submit_df, new_orphan_df)
 
 
-def _change_col_names(institute, submit_path, orphan_path):
+def _change_col_names(institute, org_tup, submit_path, orphan_path):
     """
     
     """
@@ -986,7 +982,7 @@ def _change_col_names(institute, submit_path, orphan_path):
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
     
     #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute)
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
     orphan_col_rename_dic = col_rename_tup[0]
     submit_col_rename_dic = col_rename_tup[1]
     
@@ -1018,7 +1014,7 @@ def _myHash(text:str):
     return my_hash
 
 
-def _creating_hash_id(institute, bibliometer_path, corpus_year):
+def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
     """
     """
     # Standard library imports
@@ -1032,7 +1028,7 @@ def _creating_hash_id(institute, bibliometer_path, corpus_year):
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
     
     #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute)
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
   
     # Setting useful aliases
@@ -1086,7 +1082,8 @@ def _creating_hash_id(institute, bibliometer_path, corpus_year):
     return message
 
 
-def recursive_year_search(path_out, effectifs_path, institute, bibliometer_path, corpus_year, go_back_years):
+def recursive_year_search(path_out, df_eff, institute, org_tup, 
+                          bibliometer_path, corpus_year, search_depth):
     """
     Uses following local functions of the module "BM_MergePubEmployees.py":
     - `_build_institute_pubs_authors`
@@ -1146,25 +1143,17 @@ def recursive_year_search(path_out, effectifs_path, institute, bibliometer_path,
     submit_path   = path_out / Path(submit_file_name_alias)
     orphan_path   = path_out / Path(orphan_file_name_alias)
     ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
-    others_path   = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
-        
-    # Getting the employees dataframe with the useful columns only
-    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values()) + list(eg.EMPLOYEES_ADD_COLS.values())
-    df_eff = pd.read_excel(effectifs_path, 
-                           sheet_name = None, 
-                           dtype = eg.EMPLOYEES_COL_TYPES, 
-                           usecols = useful_col_list)
-    eff_available_years = list(df_eff.keys())        
-    corpus_year_status = corpus_year in eff_available_years 
+    others_path   = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)     
     
     # Building the articles dataframe 
-    df_pub = _build_institute_pubs_authors(institute, corpus_year, bibliometer_path)
+    df_pub = _build_institute_pubs_authors(institute, org_tup, bibliometer_path, corpus_year)
 
     # Building the search time depth of Institute co-authors among the employees dataframe
+    eff_available_years = list(df_eff.keys())        
+    corpus_year_status = corpus_year in eff_available_years
     year_start = int(corpus_year)
     if not corpus_year_status : year_start = int(corpus_year)-1    
-    time_line_history = int(go_back_years)
-    year_stop = year_start - (time_line_history - 1)
+    year_stop = year_start - (search_depth - 1)
     years = [str(i) for i in range(year_start, year_stop-1,-1)]
 
     #################################################################################################
@@ -1211,7 +1200,6 @@ def recursive_year_search(path_out, effectifs_path, institute, bibliometer_path,
 
         # Updating df_submit and df_orphan
         df_submit = pd.concat([df_submit, df_submit_add])
-        #df_submit = df_submit.append(df_submit_add)
 
     #####################################################################################
     # Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file #
@@ -1239,10 +1227,10 @@ def recursive_year_search(path_out, effectifs_path, institute, bibliometer_path,
     _add_biblio_list(submit_path, submit_path)
 
     # Renaming column names using submit_col_rename_dic and orphan_col_rename_dic
-    _change_col_names(institute, submit_path, orphan_path)
+    _change_col_names(institute, org_tup, submit_path, orphan_path)
     
     # Creating universal identification of articles independant from database extraction
-    _creating_hash_id(institute, bibliometer_path, corpus_year)    
+    _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)    
     
     end_message = f"Results of search of authors in employees list saved in folder: \n  {path_out}" 
     return (end_message, orphan_status) 

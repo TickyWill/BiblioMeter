@@ -1,7 +1,7 @@
 __all__ = ['create_analysis']
 
 
-def _launch_kw_analysis(institute, bibliometer_path, year_select):
+def _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select):
     """
     """
 
@@ -11,7 +11,8 @@ def _launch_kw_analysis(institute, bibliometer_path, year_select):
     # Local imports
     from BiblioMeter_FUNCTS.BM_PubAnalysis import keywords_analysis
 
-    kw_analysis_folder_path = keywords_analysis(institute, bibliometer_path, year_select, verbose = False)
+    kw_analysis_folder_path = keywords_analysis(institute, org_tup, bibliometer_path, 
+                                                year_select, verbose = False)
     
     info_title = "- Information -"
     info_text  = f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
@@ -21,7 +22,8 @@ def _launch_kw_analysis(institute, bibliometer_path, year_select):
     
 
 
-def _launch_if_analysis(institute, bibliometer_path, year_select, bdd_multi_annuelle_folder_alias):
+def _launch_if_analysis(institute, org_tup, bibliometer_path, 
+                        year_select, bdd_multi_annuelle_folder_alias):
     """
     """
     
@@ -34,13 +36,14 @@ def _launch_if_analysis(institute, bibliometer_path, year_select, bdd_multi_annu
     from BiblioMeter_FUNCTS.BM_PubAnalysis import if_analysis
 
     # Getting year of most recent IFs 
-    _,_,if_most_recent_year = get_if_db(institute, bibliometer_path)
+    _,_,if_most_recent_year = get_if_db(institute, org_tup, bibliometer_path)
 
     analysis_if  = "IF " + if_most_recent_year
-    if pg.ANALYSIS_IF == pg.COL_NAMES_BONUS['IF année publi'] and if_most_recent_year>=year_select:
+    if pg.ANALYSIS_IF == pg.COL_NAMES_BONUS['IF année publi'] and if_most_recent_year >= year_select:
         analysis_if  = "IF " + year_select            
 
-    if_analysis_folder_path,_,_ = if_analysis(institute, bibliometer_path, year_select, if_most_recent_year, verbose = False) 
+    if_analysis_folder_path,_,_ = if_analysis(institute, org_tup, bibliometer_path, 
+                                              year_select, if_most_recent_year, verbose = False) 
     
     info_title = "- Information -"
     info_text  = f"L'analyse des IFs a été effectuée pour l'année {year_select} "
@@ -87,7 +90,8 @@ def create_analysis(self, institute, bibliometer_path, parent):
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_GUI.Useful_Functions as guf
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg  
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
    
     # Internal functions    
     def _launch_if_analysis_try():        
@@ -95,7 +99,8 @@ def create_analysis(self, institute, bibliometer_path, parent):
         year_select =  variable_years.get()
         
         print(f"\nIFs analysis launched for year {year_select}")
-        _launch_if_analysis(institute, bibliometer_path, year_select, bdd_multi_annuelle_folder_alias)
+        _launch_if_analysis(institute, org_tup, bibliometer_path, 
+                            year_select, bdd_multi_annuelle_folder_alias)
         return
     
     def _launch_kw_analysis_try():
@@ -103,7 +108,7 @@ def create_analysis(self, institute, bibliometer_path, parent):
         year_select =  variable_years.get()
         
         print(f"Keywords analysis launched for year {year_select}")
-        _launch_kw_analysis(institute, bibliometer_path, year_select)
+        _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select)
         return   
             
     def _launch_exit():
@@ -112,9 +117,7 @@ def create_analysis(self, institute, bibliometer_path, parent):
         message += "\n\nSouhaitez-vous faire une pause dans le traitement ?"
         answer_1 = messagebox.askokcancel('Information', message)
         if answer_1:
-            parent.destroy()
-
-    ########################## Function start    
+            parent.destroy()   
             
     # Getting useful window sizes and scale factors depending on displays properties
     sizes_tuple   = guf.root_properties(self)
@@ -154,6 +157,9 @@ def create_analysis(self, institute, bibliometer_path, parent):
 
     # Setting useful paths independent from corpus year
     bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    
+    # Getting institute parameters
+    org_tup = set_org_params(institute, bibliometer_path)    
     
     # Décoration de la page
     # - Canvas

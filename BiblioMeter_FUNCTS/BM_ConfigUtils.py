@@ -1,6 +1,6 @@
 '''
 '''
-__all__ = ['set_inst_org',
+__all__ = ['set_org_params',
            'set_user_config',
           ]
 
@@ -118,37 +118,45 @@ def set_user_config(bibliometer_path, year, db_list):
     return (rawdata_path_dict, parsing_path_dict, item_filename_dict)
 
 
-def set_inst_org(config_json_file_name, dpt_label_key = None, dpt_otp_key = None):
+def set_org_params(institute, bibliometer_path):    
     # Standard library imports
-    import ast
     import json
     from pathlib import Path
-    
-    # Reads the Institute json_file_name config file
-    config_file_path = Path(__file__).parent / Path('ConfigFiles') / Path(config_json_file_name)
 
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+
+    config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])
+    config_file_path = config_root_path / Path(ig.CONFIG_JSON_FILES_DICT[institute])
+    dpt_label_key = ig.DPT_LABEL_KEY
+    dpt_otp_key   = ig.DPT_OTP_KEY
+    
     with open(config_file_path) as file:
-        inst_org_dict = json.load(file)    
-        
-    root_path = inst_org_dict["ROOT_PATH"]
+        inst_org_dict = json.load(file)        
     
-    if dpt_label_key or dpt_otp_key:
-        col_names_dpt       = inst_org_dict["COL_NAMES_DPT"]
-        dpt_label_dict      = inst_org_dict["DPT_LABEL_DICT"]
-        dpt_otp_dict        = inst_org_dict["DPT_OTP_DICT"]
-        dpt_attributs_dict  = {}
-        for dpt in list(col_names_dpt.keys())[:-1]:
-            dpt_attributs_dict[dpt] = {}
-            dpt_attributs_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
-            dpt_attributs_dict[dpt][dpt_otp_key]   = dpt_otp_dict[dpt]    
+    col_names_dpt       = inst_org_dict["COL_NAMES_DPT"]
+    dpt_label_dict      = inst_org_dict["DPT_LABEL_DICT"]
+    dpt_otp_dict        = inst_org_dict["DPT_OTP_DICT"]
+    dpt_attributs_dict  = {}
+    for dpt in list(col_names_dpt.keys())[:-1]:
+        dpt_attributs_dict[dpt] = {}
+        dpt_attributs_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
+        dpt_attributs_dict[dpt][dpt_otp_key]   = dpt_otp_dict[dpt] 
+        
+    dpt_attributs_dict['DIR'] = {dpt_label_key: ['(' + institute.upper() + ')'],
+                                 dpt_otp_key  : list(set(sum([dpt_attributs_dict[dpt_label][dpt_otp_key] 
+                                                         for dpt_label in dpt_attributs_dict.keys()],[]))),}    
+    for dpt in list(col_names_dpt.keys()): dpt_attributs_dict[dpt][dpt_otp_key] += [ig.INVALIDE]
 
-        inst_filter_list             = inst_org_dict["INST_FILTER_LIST"]
-        institute_inst_list          = inst_org_dict["INSTITUTE_INST_LIST"]
-        inst_if_status               = inst_org_dict["INST_IF_STATUS"]
-        inst_no_if_doctype_keys_list = inst_org_dict["INST_NO_IF_DOCTYPE_KEYS_LIST"]
+    institutions_filter_list    = [tuple(x) for x in inst_org_dict["INSTITUTIONS_FILTER_LIST"]] 
+    institute_institutions_list = [tuple(x) for x in inst_org_dict["INSTITUTE_INSTITUTIONS_LIST"]]  
+    inst_col_list               = [tup[0] + '_' + tup[1] for tup in institute_institutions_list]
+    if_db_status                = inst_org_dict["IF_DB_STATUS"]                                
+    no_if_doctype_keys_list     = inst_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]                    
 
-        return_tup = (root_path, col_names_dpt, dpt_label_dict, dpt_attributs_dict, 
-                      inst_filter_list, institute_inst_list, inst_if_status, inst_no_if_doctype_keys_list)
-    else:
-        return_tup = (root_path,)
-    return return_tup
+    return_tup = (col_names_dpt, dpt_label_dict, dpt_attributs_dict, 
+                  institutions_filter_list, inst_col_list, 
+                  if_db_status, no_if_doctype_keys_list)
+    return return_tup    
+

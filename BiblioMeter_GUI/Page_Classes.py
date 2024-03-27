@@ -25,7 +25,6 @@ class app_main(tk.Tk):
         import BiblioMeter_GUI.GUI_Globals as gg
         import BiblioMeter_GUI.Useful_Functions as guf
         import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
-        from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
         from BiblioMeter_FUNCTS.BM_UsefulFuncts import create_archi 
         
         # Internal functions - start
@@ -185,8 +184,7 @@ class app_main(tk.Tk):
                 
         def _update_page(*args, widget = None):
             institute_select = widget.get()
-            org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute_select])
-            inst_default_bmf = org_tup[0]
+            inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select] 
             
             # Managing working folder (bmf stands for "BiblioMeter_Files") 
             _set_bmf_widget_param(institute_select, inst_default_bmf)
@@ -326,8 +324,6 @@ class app_main(tk.Tk):
                          y = eff_page_title_pos_y_px, 
                          anchor = "center")
         ######################################## Title - end        
-        
-        #self.REP = list() 
                 
         ######################################## Selection de l'Institut   
         institute_val = tk.StringVar(self)

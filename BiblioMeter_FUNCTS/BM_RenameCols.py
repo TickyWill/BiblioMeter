@@ -7,7 +7,7 @@ __all__ = ['build_col_conversion_dic',
           ]
 
 
-def build_col_conversion_dic(institute):
+def build_col_conversion_dic(institute, org_tup): 
     """
     """
     
@@ -18,18 +18,12 @@ def build_col_conversion_dic(institute):
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)
-    col_names_dpt  = org_tup[1]
-    dpt_label_dict = org_tup[2]
-    institute_inst_list = [tuple(x) for x in org_tup[5]]
-    
-    dpt_col_list   = list(col_names_dpt.values())     
-    inst_col_list  = [tup[0] + '_' + tup[1] for tup in institute_inst_list]
+    # Setting institute parameters
+    col_names_dpt  = org_tup[0]
+    dpt_label_dict = org_tup[1]
+    dpt_col_list   = list(col_names_dpt.values()) 
+    inst_col_list  = org_tup[4]
     
     init_orphan_col_list = sum([bp.COL_NAMES['auth_inst'][:5],
                                 inst_col_list,
@@ -135,7 +129,7 @@ def build_col_conversion_dic(institute):
     return (orphan_col_rename_dic, submit_col_rename_dic, all_col_rename_dic)
 
 
-def set_homonym_col_names(institute):
+def set_homonym_col_names(institute, org_tup): 
     """
     """
     # 3rd party imports
@@ -147,7 +141,7 @@ def set_homonym_col_names(institute):
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
     
     #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute)
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
     bm_col_rename_dic = col_rename_tup[2]
 
     col_homonyms_dic = {0 : bp.COL_NAMES['pub_id'],
@@ -175,7 +169,7 @@ def set_homonym_col_names(institute):
     return col_homonyms
 
 
-def set_otp_col_names(institute):
+def set_otp_col_names(institute, org_tup):
     '''
     '''
     # 3rd party imports
@@ -185,18 +179,14 @@ def set_otp_col_names(institute):
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
-    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic  
+    
+    # Setting institute parameters
+    col_names_dpt = org_tup[0]
     
     #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute)
-    bm_col_rename_dic = col_rename_tup[2]  
-    
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)    
-    col_names_dpt = org_tup[1]
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
+    bm_col_rename_dic = col_rename_tup[2]
     
     # Setting useful column names
     col_otp_dic = {0  : bp.COL_NAMES['pub_id'],
@@ -226,7 +216,7 @@ def set_otp_col_names(institute):
     return col_otp
 
 
-def set_final_col_names(institute):
+def set_final_col_names(institute, org_tup): 
     '''
     '''
     # 3rd party imports
@@ -235,18 +225,14 @@ def set_final_col_names(institute):
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
-    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
+    from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic 
+    
+    # Setting institute parameters    
+    col_names_dpt = org_tup[0] 
     
     #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute)
-    bm_col_rename_dic = col_rename_tup[2]  
-    
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)    
-    col_names_dpt = org_tup[1] 
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
+    bm_col_rename_dic = col_rename_tup[2] 
     
     col_final_dic = {0  : bp.COL_NAMES['pub_id'],
                      1  : pg.COL_NAMES_BONUS['corpus_year'],
@@ -271,7 +257,7 @@ def set_final_col_names(institute):
     return col_final
 
 
-def set_if_col_names(institute):
+def set_if_col_names(institute, org_tup): 
     '''
     
     Note:
@@ -282,7 +268,7 @@ def set_if_col_names(institute):
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     
-    col_base_if = set_final_col_names(institute)
+    col_base_if = set_final_col_names(institute, org_tup)
     
     col_spec_if = [pg.COL_NAMES_BONUS['IF en cours'],                 
                    pg.COL_NAMES_BONUS['IF année publi'], 
@@ -293,7 +279,7 @@ def set_if_col_names(institute):
     return (col_base_if, col_maj_if)
 
 
-def set_col_attr(institute):
+def set_col_attr(institute, org_tup): 
     '''
     '''
     # 3rd party imports
@@ -303,18 +289,14 @@ def set_col_attr(institute):
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
     
-    #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute)
-    bm_col_rename_dic = col_rename_tup[2]
+    # Setting institute parameters
+    col_names_dpt = org_tup[0] 
     
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)    
-    col_names_dpt = org_tup[1] 
+    #  Setting useful col names
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
+    bm_col_rename_dic = col_rename_tup[2]
     
     init_col_attr   = {bp.COL_NAMES['pub_id']                             : [15, "center"],
                        pg.COL_NAMES_BONUS['nom prénom liste'] + institute : [40, "left"],

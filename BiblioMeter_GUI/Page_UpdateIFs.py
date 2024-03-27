@@ -2,7 +2,8 @@ __all__ = ['create_update_ifs']
 
 # Nom de module et nom de fonctions à revoir !!!
 
-def _launch_update_if_db(institute, 
+def _launch_update_if_db(institute,
+                         org_tup,
                          bibliometer_path,
                          corpus_years_list,
                          pub_list_folder_path,
@@ -29,7 +30,7 @@ def _launch_update_if_db(institute,
     answer    = messagebox.askokcancel(ask_title, ask_text)
     if answer:
         # Mise à jour de la base de données des IFs
-        _, if_years_list = update_inst_if_database(institute, bibliometer_path, corpus_years_list)
+        _, if_years_list = update_inst_if_database(institute, org_tup, bibliometer_path, corpus_years_list)
         info_title = "- Information -"
         info_text  = f"La mise à jour de la base de données des IFs a été effectuée "
         info_text += f"pour les années  {if_years_list}."
@@ -46,7 +47,8 @@ def _launch_update_if_db(institute,
         update_status = False
     return update_status 
     
-def _launch_update_pub_if(institute, 
+def _launch_update_pub_if(institute,
+                          org_tup,
                           bibliometer_path, 
                           corpus_years_list,
                           pub_list_folder_alias,
@@ -83,7 +85,8 @@ def _launch_update_pub_if(institute,
         if out_file_status:
             # Updating Impact Factors and saving new consolidated list of publications 
             # this also for saving results files to complete IFs database
-            _, if_database_complete = add_if(institute, 
+            _, if_database_complete = add_if(institute,
+                                             org_tup,
                                              bibliometer_path,
                                              out_file_path, 
                                              out_file_path, 
@@ -92,7 +95,7 @@ def _launch_update_pub_if(institute,
                                              corpus_year)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-            split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year)
+            split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
             if not if_database_complete:
                 info_title = "- Information -"
                 info_text  = f"La base de données des facteurs d'impact étant incomplète, "
@@ -153,7 +156,7 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
     import BiblioMeter_GUI.Useful_Functions as guf
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists  
     
     # Internal functions    
@@ -162,7 +165,8 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
         if_db_file_status = os.path.exists(if_db_path)    
         if if_db_file_status:
             print("Update of IFs database launched")
-            if_db_update_status = _launch_update_if_db(institute, 
+            if_db_update_status = _launch_update_if_db(institute,
+                                                       org_tup,
                                                        bibliometer_path,
                                                        corpus_years_list,
                                                        pub_list_folder_path,
@@ -181,7 +185,8 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
         return
 
     def _missing_pub_file_year_check():
-        missing_pub_file_year, if_database_complete = _launch_update_pub_if(institute, 
+        missing_pub_file_year, if_database_complete = _launch_update_pub_if(institute,
+                                                                            org_tup,
                                                                             bibliometer_path, 
                                                                             corpus_years_list,
                                                                             pub_list_folder_alias,
@@ -191,7 +196,7 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
                                                                             if_db_path,
                                                                            )
         if not missing_pub_file_year:
-            concatenate_pub_lists(institute, bibliometer_path, corpus_years_list)
+            concatenate_pub_lists(institute, org_tup, bibliometer_path, corpus_years_list)
             print("Consolidated lists of publications concatenated after IFs update")
             info_title = '- Information -'
             info_text  = f"La mise à jour des IFs dans les listes consolidées des publications des corpus :"
@@ -291,11 +296,9 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
     inst_if_file_name_alias         = pg.ARCHI_IF["institute_if_all_years"] 
 
     # Gettting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)
-    inst_if_status = org_tup[6] 
-    if inst_if_status: if_file_name_alias = institute + inst_if_file_name_alias
+    org_tup = set_org_params(institute, bibliometer_path)
+    if_db_status = org_tup[5]
+    if if_db_status: if_file_name_alias = institute + inst_if_file_name_alias
        
     # Setting useful paths
     if_root_path = bibliometer_path / Path(if_root_path_alias)

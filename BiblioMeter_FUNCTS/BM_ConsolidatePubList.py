@@ -9,8 +9,8 @@ __all__ = ['add_if',
            'split_pub_list_by_doc_type',
           ]
 
-def mise_en_page(institute, df, wb = None, if_database = None):
-    
+def mise_en_page(institute, org_tup, df,                        
+                 wb = None, if_database = None):    
     ''' 
     When the workbook wb is not None, this is applied 
     to the active worksheet of the passed workbook. 
@@ -32,7 +32,7 @@ def mise_en_page(institute, df, wb = None, if_database = None):
     from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
        
     # Setting useful column sizes
-    col_attr, col_set_list = set_col_attr(institute)
+    col_attr, col_set_list = set_col_attr(institute, org_tup)
     columns_list = list(df.columns)
     for col in columns_list:
         if col not in col_set_list: col_attr[col] = col_attr['else']
@@ -142,7 +142,7 @@ def save_shaped_homonyms_file(df_homonyms, out_path):
     wb.save(out_path)
 
     
-def solving_homonyms(institute, in_path, out_path):
+def solving_homonyms(institute, org_tup, in_path, out_path): 
     """
     Uses the local function 'save_shaped_homonyms_file' 
     to shape then save the homonyms df.
@@ -155,7 +155,7 @@ def solving_homonyms(institute, in_path, out_path):
     from BiblioMeter_FUNCTS.BM_RenameCols import set_homonym_col_names
     
     # Setting useful column names 
-    col_homonyms = set_homonym_col_names(institute)
+    col_homonyms = set_homonym_col_names(institute, org_tup)
     homonym_col_alias = col_homonyms[18]
     
     # Reading the submit file #
@@ -175,7 +175,7 @@ def solving_homonyms(institute, in_path, out_path):
     return (end_message, homonyms_status)
 
 
-def _add_authors_name_list(institute, in_path, out_path):    
+def _add_authors_name_list(institute, org_tup, in_path, out_path): 
     ''' The function ` _add_authors_name_list` adds two columns to the dataframe get 
     from the Excel file pointed by 'in_path'.
     The columns contain respectively the full name of each author as "NAME, Firstname" 
@@ -206,16 +206,20 @@ def _add_authors_name_list(institute, in_path, out_path):
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
     
     # Internal functions
     def _get_dpt_key(dpt_raw):
         for key, values in dpt_label_dict.items():
-            if dpt_raw in values: return key     
+            if dpt_raw in values: return key 
+        
+    # Setting institute parameters
+    col_names_dpt  = org_tup[0]
+    dpt_label_dict = org_tup[1]
+    inst_col_list  = org_tup[4]  
     
     # Setting useful column names
-    col_rename_tup = build_col_conversion_dic(institute)
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
     bm_col_rename_dic = col_rename_tup[2]       
     
     # Setting useful aliases
@@ -227,12 +231,6 @@ def _add_authors_name_list(institute, in_path, out_path):
     author_type_col_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
     full_name_list_alias  = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste'] + institute]
     dept_col_alias        = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
-
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)
-    dpt_label_dict = org_tup[2]
     
     # Reading the excel file
     df_in = pd.read_excel(in_path)
@@ -261,7 +259,8 @@ def _add_authors_name_list(institute, in_path, out_path):
     return end_message
 
 
-def _save_dpt_OTP_file(institute, dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dpt_path, col_otp):
+def _save_dpt_OTP_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
+                       OTP_alias, excel_dpt_path, col_otp):
 
     ''' Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
     The OPTs of the choosen department are added in a new column named 'OTP_alias'. 
@@ -294,7 +293,7 @@ def _save_dpt_OTP_file(institute, dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dp
     # df_dpt = df_dpt.rename(columns = COL_OTP_DICT)
 
     # Formatting the EXCEL file
-    wb, ws = mise_en_page(institute, df_dpt)
+    wb, ws = mise_en_page(institute, org_tup, df_dpt)
     ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt 
 
     # Setting num of first col and first row in EXCEL files
@@ -317,7 +316,7 @@ def _save_dpt_OTP_file(institute, dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dp
     wb.save(excel_dpt_path)
 
 
-def add_OTP(institute, in_path, out_path, out_file_base):
+def add_OTP(institute, org_tup, in_path, out_path, out_file_base):     
     '''    
     Args:
         in_path (path): fullpath of the working excel file. 
@@ -348,14 +347,17 @@ def add_OTP(institute, in_path, out_path, out_file_base):
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import _add_authors_name_list
     from BiblioMeter_FUNCTS.BM_RenameCols import set_otp_col_names
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
 
+    # Setting institute parameters
+    col_names_dpt      = org_tup[0]
+    dpt_attributs_dict = org_tup[2]
+
     # Setting useful column names 
-    col_otp = set_otp_col_names(institute) 
-    col_rename_tup = build_col_conversion_dic(institute)
+    col_otp = set_otp_col_names(institute, org_tup) 
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
     bm_col_rename_dic = col_rename_tup[2]
     
     # Setting useful aliases
@@ -365,21 +367,10 @@ def add_OTP(institute, in_path, out_path, out_file_base):
     OTP_alias        = bm_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
     dpt_label_alias  = ig.DPT_LABEL_KEY
     dpt_otp_alias    = ig.DPT_OTP_KEY 
-
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = dpt_label_alias, 
-                           dpt_otp_key = dpt_otp_alias)
-    col_names_dpt       = org_tup[1]
-    dpt_attributs_dict  = org_tup[3]
-    dpt_attributs_dict['DIR'] = {dpt_label_alias: ['(' + institute.upper() + ')'],
-                                 dpt_otp_alias  : list(set(sum([dpt_attributs_dict[dpt_label][dpt_otp_alias] 
-                                                         for dpt_label in dpt_attributs_dict.keys()],[]))),}    
-    for dpt in list(col_names_dpt.keys()): dpt_attributs_dict[dpt][dpt_otp_alias] += [ig.INVALIDE]
         
     # Adding a column with a list of the authors in the file where homonymies 
     # have been solved and pointed by in_path
-    end_message = _add_authors_name_list(institute, in_path, in_path)
+    end_message = _add_authors_name_list(institute, org_tup, in_path, in_path)
     print('\n ',end_message)
     
     solved_homonymies_df = pd.read_excel(in_path)
@@ -424,7 +415,8 @@ def add_OTP(institute, in_path, out_path, out_file_base):
         excel_dpt_path    = out_path / Path(OTP_file_name_dpt)
         
         # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_OTP_file(institute, dpt, df_dpt, dpt_otp_list, OTP_alias, excel_dpt_path, col_otp)
+        _save_dpt_OTP_file(institute, org_tup, dpt, df_dpt, dpt_otp_list, 
+                           OTP_alias, excel_dpt_path, col_otp)
 
     end_message  = f"Files for setting publication OTPs per department "
     end_message += f"saved in folder: \n  '{out_path}'"
@@ -494,7 +486,7 @@ def _build_inst_issn_df(if_db_df, use_col_list):
     return inst_issn_df
 
 
-def get_if_db(institute, bibliometer_path):
+def get_if_db(institute, org_tup, bibliometer_path):
     
     # Standard imports
     from pathlib import Path
@@ -503,22 +495,18 @@ def get_if_db(institute, bibliometer_path):
     import pandas as pd 
     
     # Local imports
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
         
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)    
-    inst_if_status = org_tup[6]
+    ## Setting institute parameters    
+    if_db_status = org_tup[5]
     
     # Setting useful aliases
     if_root_folder_alias   = pg.ARCHI_IF["root"]
     if_filename_alias      = pg.ARCHI_IF["all IF"]    
     inst_if_filename_alias = institute + pg.ARCHI_IF["institute_if_all_years"]
     
-    if inst_if_status: if_filename_alias = inst_if_filename_alias
+    if if_db_status: if_filename_alias = inst_if_filename_alias
     
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
@@ -535,7 +523,7 @@ def get_if_db(institute, bibliometer_path):
     return if_df, if_available_years_list, if_most_recent_year
 
 
-def add_if(institute, bibliometer_path, in_file_path, out_file_path, 
+def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path, 
            missing_if_path, missing_issn_path, corpus_year): 
 
     '''The function `add_if` adds two new columns containing impact factors
@@ -571,7 +559,6 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org 
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
     
@@ -635,12 +622,12 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
         sorted_results_df = results_df.sort_values(by=[journal_col_alias])
 
         # Saving 'results_df' as EXCEL file at full path 'df_full_path'
-        wb, _ = mise_en_page(institute, sorted_results_df)
+        wb, _ = mise_en_page(institute, org_tup, sorted_results_df)
         wb.save(df_full_path)
     
     # Setting useful column names
-    col_final_list = set_final_col_names(institute)
-    col_base_if, col_maj_if = set_if_col_names(institute)
+    col_final_list = set_final_col_names(institute, org_tup)
+    col_base_if, col_maj_if = set_if_col_names(institute, org_tup)
 
     # Setting useful column aliases
     pub_id_col_alias          = col_final_list[0]   
@@ -664,21 +651,19 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
     not_available_if_alias     = pg.NOT_AVAILABLE_IF
     unknown_if_fill_alias      = pg.FILL_EMPTY_KEY_WORD
     unknown_alias              = pg.FILL_EMPTY_KEY_WORD
+            
+    # Setting institute parameters
+    if_db_status            = org_tup[5] 
+    no_if_doctype_keys_list = org_tup[6] 
     
-    # Getting the df of the IFs database
-    if_df, if_available_years_list, if_most_recent_year = get_if_db(institute, bibliometer_path)
-        
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)    
-    inst_if_status = org_tup[6]
-    inst_no_if_doctype_keys_list = org_tup[7]
-    no_if_doctype = sum([doc_type_dict_alias[x] for x in inst_no_if_doctype_keys_list] , [])
+    no_if_doctype = sum([doc_type_dict_alias[x] for x in no_if_doctype_keys_list] , [])
     doctype_to_drop_list_alias = [x.upper() for x in no_if_doctype]
     
+    # Getting the df of the IFs database
+    if_df, if_available_years_list, if_most_recent_year = get_if_db(institute, org_tup, bibliometer_path)    
+    
     # Taking care all IF column names in if_df are database_if_col_alias
-    if inst_if_status: 
+    if if_db_status: 
         for year in if_available_years_list: 
             if_df[year].rename(columns = {database_if_col_alias + " " + year : database_if_col_alias},
                                inplace = True) 
@@ -750,7 +735,7 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
     
     # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
     corpus_df_bis.sort_values(by = [pub_id_col_alias], inplace = True)  
-    wb, _ = mise_en_page(institute, corpus_df_bis)
+    wb, _ = mise_en_page(institute, org_tup, corpus_df_bis)
     wb.save(out_file_path)
     
     # Building 'year_pub_if_df' with subset of 'corpus_df_bis' columns
@@ -811,7 +796,7 @@ def add_if(institute, bibliometer_path, in_file_path, out_file_path,
     return end_message, if_database_complete
 
 
-def split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year):
+def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year): 
     """
     
     """
@@ -836,7 +821,7 @@ def split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year):
     pub_list_file_path       = pub_list_path / Path(pub_list_file_alias)
 
     # Setting useful column names
-    col_final_list   = set_final_col_names(institute)
+    col_final_list   = set_final_col_names(institute, org_tup)
     pub_id_col_alias = col_final_list[0]
     doc_type_alias   = col_final_list[7]   
 
@@ -856,16 +841,16 @@ def split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year):
         key_dg_path = pub_list_path / Path(key_dg_file_alias)
         
         key_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
-        wb, _ = mise_en_page(institute, key_dg)
+        wb, _ = mise_en_page(institute, org_tup, key_dg)
         wb.save(key_dg_path)
     
     split_ratio = 100
     if pub_nb != 0:    
-        split_ratio = round(key_pub_nb/pub_nb*100)
+        split_ratio = round(key_pub_nb / pub_nb*100)
     return split_ratio
 
 
-def consolidate_pub_list(institute, bibliometer_path, in_path, out_path, 
+def consolidate_pub_list(institute, org_tup, bibliometer_path, in_path, out_path, 
                          out_file_path, in_file_base, corpus_year):  
     '''    
     Args : 
@@ -887,7 +872,6 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig 
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_inst_org
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps 
     
@@ -903,7 +887,7 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
         return dpt_df
     
     # Setting useful column names
-    col_final_list = set_final_col_names(institute)
+    col_final_list = set_final_col_names(institute, org_tup)
     
     # Setting useful aliases
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
@@ -915,11 +899,8 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
     missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
     missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)
         
-    # Getting institute parameters
-    org_tup = set_inst_org(ig.CONFIG_JSON_FILES_DICT[institute], 
-                           dpt_label_key = ig.DPT_LABEL_KEY, 
-                           dpt_otp_key = ig.DPT_OTP_KEY)
-    dpt_label_dict = org_tup[2]   
+    # Setting institute parameters
+    dpt_label_dict = org_tup[1]   
     
     ### Charger les df et les concatener 
     dpt_label_list = list(dpt_label_dict.keys())
@@ -942,7 +923,7 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
     
     # Saving set OTPs
-    otp_message = save_otps(institute, bibliometer_path, corpus_year)
+    otp_message = save_otps(institute, org_tup, bibliometer_path, corpus_year)
     
     # Setting pub ID as index for unique identification of rows
     consolidate_pub_list_df.set_index(pub_id_alias, inplace = True)
@@ -960,6 +941,7 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
     # Adding Impact Factors and saving new consolidate_pub_list_df 
     # this also for saving results files to complete IFs database
     _, if_database_complete = add_if(institute, 
+                                     org_tup,
                                      bibliometer_path, 
                                      out_file_path, 
                                      out_file_path, 
@@ -968,7 +950,7 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
                                      corpus_year)
     
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio = split_pub_list_by_doc_type(institute, bibliometer_path, corpus_year)
+    split_ratio = split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
     
     end_message  = f"\n" + otp_message
     end_message += f"\nOTPs identification integrated in file : \n  '{out_file_path}'"
@@ -978,7 +960,7 @@ def consolidate_pub_list(institute, bibliometer_path, in_path, out_path,
     return end_message, split_ratio, if_database_complete 
                     
     
-def concatenate_pub_lists(institute, bibliometer_path, years_list):
+def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     
     """
     """
@@ -1020,7 +1002,7 @@ def concatenate_pub_lists(institute, bibliometer_path, years_list):
     out_path = bibliometer_path / Path(bdd_multi_annuelle_folder_alias)
     out_file_path = out_path / Path(out_file)
     
-    wb, _ = mise_en_page(institute, df_concat)
+    wb, _ = mise_en_page(institute, org_tup, df_concat)
     wb.save(out_file_path)
     
     end_message  = f"Concatenation of consolidated pub lists saved in folder: \n  '{out_path}'"

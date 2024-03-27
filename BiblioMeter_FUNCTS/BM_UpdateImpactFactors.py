@@ -19,8 +19,8 @@ def journal_capwords(text):
     return text
 
 
-def _update_year_if_database(institute, bibliometer_path, corpus_year, year_if_db_df, 
-                             pub_list_path_alias, missing_if_filename_base_alias, 
+def _update_year_if_database(institute, org_tup, bibliometer_path, corpus_year, 
+                             year_if_db_df, pub_list_path_alias, missing_if_filename_base_alias, 
                              missing_issn_filename_base_alias, most_recent_year):
     """
     Args:
@@ -50,7 +50,7 @@ def _update_year_if_database(institute, bibliometer_path, corpus_year, year_if_d
         return missing_df
 
     # Setting aliases of useful columns 
-    col_final_list = set_final_col_names(institute)
+    col_final_list = set_final_col_names(institute, org_tup)
     journal_col_alias                  = col_final_list[6]
     issn_col_alias                     = col_final_list[10]
     eissn_col_alias                    = pg.COL_NAMES_BONUS['e-ISSN']
@@ -105,7 +105,7 @@ def _update_year_if_database(institute, bibliometer_path, corpus_year, year_if_d
     return (fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df) 
 
 
-def update_inst_if_database(institute, bibliometer_path, corpi_years_list):
+def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_list):
     """
     Note:
         Uses internal fonction `journal_capwords`
@@ -132,16 +132,16 @@ def update_inst_if_database(institute, bibliometer_path, corpi_years_list):
         if first:
             ws = wb.active
             ws.title = year
-            wb,ws = mise_en_page(institute, df, wb, if_database)        
+            wb,ws = mise_en_page(institute, org_tup, df, wb, if_database)        
         else:
             wb.create_sheet(year)
             wb.active = wb[year]
             ws = wb.active
-            wb,_ = mise_en_page(institute, df, wb, if_database)
+            wb,_ = mise_en_page(institute, org_tup, df, wb, if_database)
         return wb       
 
     # Setting aliases of useful columns 
-    col_final_list = set_final_col_names(institute)
+    col_final_list = set_final_col_names(institute, org_tup)
     journal_col_alias = col_final_list[6]    
 
     # Setting useful aliases
@@ -177,6 +177,7 @@ def update_inst_if_database(institute, bibliometer_path, corpi_years_list):
         year_if_db_df[journal_col_alias] = year_if_db_df.apply(_capwords_journal_col, axis=1)
         corpus_year = if_db_year
         dfs_tup = _update_year_if_database(institute,
+                                           org_tup,
                                            bibliometer_path, 
                                            corpus_year, 
                                            year_if_db_df,
@@ -198,6 +199,7 @@ def update_inst_if_database(institute, bibliometer_path, corpi_years_list):
                                                                                    axis = 1)
     for corpus_year in off_if_db_years_list:      
         _, corpus_year_most_recent_year_if_df_to_add = _update_year_if_database(institute,
+                                                                                org_tup,
                                                                                 bibliometer_path, 
                                                                                 corpus_year, 
                                                                                 most_recent_year_if_db_df,

@@ -77,7 +77,7 @@ def _formatting_df(df, first_col_width):
 # IFs analysis specific functions #
 ###################################
 
-def _build_analysis_books_data(institute, books_df):
+def _build_analysis_books_data(institute, org_tup, books_df): 
     """
     """
     # Standard Library imports
@@ -89,7 +89,7 @@ def _build_analysis_books_data(institute, books_df):
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     
     # Setting useful column names aliases
-    col_final_list    = set_final_col_names(institute)
+    col_final_list    = set_final_col_names(institute, org_tup)
     book_col_alias    = col_final_list[6]
     doctype_col_alias = col_final_list[7]
     depts_col_list    = col_final_list[11:16] 
@@ -142,7 +142,7 @@ def _build_analysis_books_data(institute, books_df):
     return books_kpi_dict
 
 
-def _build_analysis_if_data(institute, analysis_df, if_col_dict, books_kpi_dict, 
+def _build_analysis_if_data(institute, org_tup,  analysis_df, if_col_dict, books_kpi_dict, 
                             if_analysis_col, if_analysis_year,
                             if_analysis_folder_path, verbose = True):
     """
@@ -163,7 +163,7 @@ def _build_analysis_if_data(institute, analysis_df, if_col_dict, books_kpi_dict,
     doctype_article_alias  = pg.DOC_TYPE_DICT['Articles']
     
     # Setting useful column names aliases
-    col_final_list         = set_final_col_names(institute)
+    col_final_list         = set_final_col_names(institute, org_tup)
     journal_col_alias      = col_final_list[6]
     doctype_col_alias      = col_final_list[7]
     issn_col_alias         = col_final_list[10]
@@ -278,7 +278,8 @@ def _build_analysis_if_data(institute, analysis_df, if_col_dict, books_kpi_dict,
     return kpi_dict, if_analysis_col_new
 
 
-def _update_kpi_database(institute, bibliometer_path, corpus_year, kpi_dict, if_key, verbose = False):
+def _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year, 
+                         kpi_dict, if_key, verbose = False):
     """
     """
     
@@ -298,7 +299,7 @@ def _update_kpi_database(institute, bibliometer_path, corpus_year, kpi_dict, if_
     kpi_file_base_alias      = pg.ARCHI_BDD_MULTI_ANNUELLE["IF analysis file name base"]
     
     # Setting useful column names aliases
-    col_final_list        = set_final_col_names(institute)
+    col_final_list        = set_final_col_names(institute, org_tup)
     depts_col_list        = col_final_list[11:16]  
     corpus_year_row_alias = pg.KPI_KEYS_ORDER_DICT[0]
 
@@ -463,7 +464,7 @@ def _save_dept_barchart(barchart, dept, if_col, if_analysis_folder_path, part = 
     return end_message
 
 
-def _plot_if_analysis(institute, corpus_year, kpi_dict, if_col, 
+def _plot_if_analysis(institute, org_tup, corpus_year, kpi_dict, if_col, 
                       if_analysis_folder_path, verbose = True):
     """
     Module internal functions: _create_if_barchart, _save_dept_barchart
@@ -484,7 +485,7 @@ def _plot_if_analysis(institute, corpus_year, kpi_dict, if_col,
         return message
         
     # Setting useful column names aliases
-    col_final_list    = set_final_col_names(institute)
+    col_final_list    = set_final_col_names(institute, org_tup)
     journal_col_alias = col_final_list[6]   
     depts_col_list    = col_final_list[11:16]
     
@@ -524,7 +525,8 @@ def _plot_if_analysis(institute, corpus_year, kpi_dict, if_col,
     return    
     
 
-def if_analysis(institute, bibliometer_path, corpus_year, if_most_recent_year, verbose = True):
+def if_analysis(institute, org_tup, bibliometer_path, corpus_year, 
+                if_most_recent_year, verbose = True):
     """
     
     Module internal functions: _build_analysis_if_data, _plot_if_analysis
@@ -603,7 +605,7 @@ def if_analysis(institute, bibliometer_path, corpus_year, if_most_recent_year, v
         os.makedirs(if_analysis_folder_path) 
     
     # Setting useful column names aliases
-    col_final_list                     = set_final_col_names(institute)
+    col_final_list                     = set_final_col_names(institute, org_tup)
     journal_col_alias                  = col_final_list[6]
     doctype_col_alias                  = col_final_list[7] 
     issn_col_alias                     = col_final_list[10] 
@@ -629,16 +631,13 @@ def if_analysis(institute, bibliometer_path, corpus_year, if_most_recent_year, v
     
     # Building the dict {journal name : normalized journal name,}
     df_articles = dedup_parsing_dict[articles_item_alias]
-    journal_norm_dict = dict(zip(df_articles[journal_col_alias],df_articles[journal_norm_col_alias]))
-    #journal_norm_df = pd.read_excel(dedup_articles_file_path,
-    #                                usecols = [journal_col_alias, journal_norm_col_alias])   
-    #journal_norm_dict = dict(zip(journal_norm_df[journal_col_alias],journal_norm_df[journal_norm_col_alias]))    
+    journal_norm_dict = dict(zip(df_articles[journal_col_alias],df_articles[journal_norm_col_alias]))    
     
     # Building the dataframe to be analysed from the file which full path is 'books_list_file_path'
     usecols = [journal_col_alias, doctype_col_alias] + depts_col_list
     books_df = pd.read_excel(books_list_file_path,
                              usecols = usecols)
-    books_kpi_dict = _build_analysis_books_data(institute, books_df)
+    books_kpi_dict = _build_analysis_books_data(institute, org_tup, books_df)
     
     # Setting the IF column dict
     if_col_dict = {most_recent_year_if_col_alias: if_most_recent_year,
@@ -665,16 +664,16 @@ def if_analysis(institute, bibliometer_path, corpus_year, if_most_recent_year, v
         analysis_df[if_col] = analysis_df[if_col].apply(_replace_no_if)  
 
     # Building the data resulting from IFs analysis and saving them as xlsx files
-    kpi_dict, if_analysis_col_new = _build_analysis_if_data(institute, analysis_df, if_col_dict, books_kpi_dict,
+    kpi_dict, if_analysis_col_new = _build_analysis_if_data(institute, org_tup, analysis_df, if_col_dict, books_kpi_dict,
                                                             if_analysis_col, if_analysis_year,
                                                             if_analysis_folder_path, verbose = verbose)
 
     # Updating the KPIs database 
-    institute_kpi_df = _update_kpi_database(institute, bibliometer_path, corpus_year, kpi_dict, 
+    institute_kpi_df = _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year, kpi_dict, 
                                             if_analysis_col_new, verbose = verbose)
     
     # Ploting IF analysis data as html files
-    _plot_if_analysis(institute, corpus_year, kpi_dict, if_analysis_col_new, 
+    _plot_if_analysis(institute, org_tup, corpus_year, kpi_dict, if_analysis_col_new, 
                       if_analysis_folder_path, verbose = verbose)
     
     return if_analysis_folder_path, institute_kpi_df, kpi_dict
@@ -834,7 +833,7 @@ def _create_kw_cloud(institute, year, kw_type, kw_analysis_folder_path, usecols,
     if verbose: print(message, "\n")    
     return
 
-def keywords_analysis(institute, bibliometer_path, year, verbose = False): 
+def keywords_analysis(institute, org_tup, bibliometer_path, year, verbose = False): 
     """
     """
     
@@ -879,7 +878,7 @@ def keywords_analysis(institute, bibliometer_path, year, verbose = False):
         os.makedirs(kw_analysis_folder_path)
     
     # Setting useful column names aliases
-    col_final_list           = set_final_col_names(institute)
+    col_final_list           = set_final_col_names(institute, org_tup)
     final_pub_id_col_alias   = col_final_list[0]
     depts_col_list           = col_final_list[11:16]
     parsing_pub_id_col_alias = bp.COL_NAMES['pub_id'] 
