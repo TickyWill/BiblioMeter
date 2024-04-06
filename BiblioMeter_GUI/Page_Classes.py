@@ -313,7 +313,8 @@ class app_main(tk.Tk):
         
         # Setting default values
         institutes_list = ig.INSTITUTES_LIST
-        default_institute = institutes_list[0]             
+        #default_institute = institutes_list[0]    
+        default_institute = "   "  
         
         ######################################## Title - start                       
         page_title = tk.Label(self, 
