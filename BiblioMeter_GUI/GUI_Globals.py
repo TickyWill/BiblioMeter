@@ -10,7 +10,7 @@ __all__ = ['ADD_SPACE_MM',
            'HELP_ETAPE_8',
            'IN_TO_MM',
            'PAGES_LABELS',
-           'PAGES_NAMES',
+           #'PAGES_NAMES',
            'PPI',
            'REF_BMF_FONT_SIZE',
            'REF_BMF_POS_X_MM',
@@ -239,19 +239,19 @@ REF_YEAR_BUT_POS_Y_MM      = 26      #26
 REF_CHECK_BOXES_SEP_SPACE  = 25      #25
 
 # Setting label for each gui page
-PAGES_LABELS = {'first' : "Analyse élémentaire des corpus",
-                'second': "Consolidation annuelle des corpus",
-                'third' : "Mise à jour des facteurs d'impact",
-                'fourth': "KPIs et graphes"
+PAGES_LABELS = {'Page_ParseCorpus'      : "Analyse élémentaire des corpus",
+                'Page_ConsolidateCorpus': "Consolidation annuelle des corpus",
+                'Page_UpdateIFs'        : "Mise à jour des facteurs d'impact",
+                'Page_Analysis'        : "KPIs et graphes"
                }
 
 
 # Setting module name for each gui page
-PAGES_NAMES = {'first' : 'Page_ParseCorpus',
-               'second': 'Page_ConsolidateCorpus',
-               'third' : 'Page_UpdateIFs',
-               'fourth': 'Page_Analysis'
-              }
+#PAGES_NAMES = {'first' : 'Page_ParseCorpus',
+#               'second': 'Page_ConsolidateCorpus',
+#               'third' : 'Page_UpdateIFs',
+#               'fourth': 'Page_UpdateIFs'
+#              }
 
 
 ########################## Cover Page (BiblioMeter launching Page) ##########################

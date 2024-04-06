@@ -473,13 +473,10 @@ class Page_ParseCorpus(tk.Frame):
         height_sf_mm  = sizes_tuple[5]
         width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        # Setting page identifier
-        page = 'first'
-        
-        # Setting specific texts 
-        label_text = gg.PAGES_LABELS[page]
-        page_title = label_text + " du " + institute
-        page_name  = gg.PAGES_NAMES[page]  
+        # Setting specific texts
+        page_name  = self.__class__.__name__
+        label_text = gg.PAGES_LABELS[page_name]
+        page_title = label_text + " du " + institute         
         
         # Setting font size for page label and button
         eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
@@ -564,14 +561,11 @@ class Page_ConsolidateCorpus(tk.Frame):
         width_sf_mm   = sizes_tuple[4]
         height_sf_mm  = sizes_tuple[5]
         width_sf_min  = min(width_sf_mm, width_sf_px)
-        
-        # Setting page identifier
-        page = 'second'
                 
         # Setting specific texts
-        label_text = gg.PAGES_LABELS[page]
+        page_name  = self.__class__.__name__
+        label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute
-        page_name  = gg.PAGES_NAMES[page]  
 
         # Setting font size for page label and button
         eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
@@ -635,13 +629,10 @@ class Page_UpdateIFs(tk.Frame):
         height_sf_mm  = sizes_tuple[5]
         width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        # Setting page identifier
-        page = 'third'
-        
-        # Setting specific texts 
-        label_text = gg.PAGES_LABELS[page]
+        # Setting specific texts
+        page_name  = self.__class__.__name__ 
+        label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute
-        page_name  = gg.PAGES_NAMES[page]  
         
         # Setting font size for page label and button
         eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
@@ -698,13 +689,10 @@ class Page_Analysis(tk.Frame):
         height_sf_mm  = sizes_tuple[5]
         width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        # Setting page identifier
-        page = 'fourth'
-        
         # Setting specific texts 
-        label_text = gg.PAGES_LABELS[page]
+        page_name  = self.__class__.__name__
+        label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute
-        page_name  = gg.PAGES_NAMES[page]  
         
         # Setting font size for page label and button
         eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
