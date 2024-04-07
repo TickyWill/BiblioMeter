@@ -276,6 +276,7 @@ def mm_to_px(size_mm, ppi, fact = 1.0):
 def _window_properties(screen_width_px, screen_height_px):
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
     
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
     ppi = gg.DISPLAYS[gg.BM_GUI_DISP]["ppi"]
@@ -326,7 +327,7 @@ def general_properties(self):
     of the package "BiblioMeter_GUI".
     
     Args:
-        self (???): ????.
+        None.
         
     Returns:
         (tuple): self, 2 window sizes in pixels, 2 scale factors for sizes in mm 

@@ -97,10 +97,12 @@ class CheckBoxCorpuses:
         
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
-        import BiblioMeter_GUI.Useful_Functions as guf     
+        from BiblioMeter_GUI.Useful_Functions import font_size 
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import root_properties        
         
         # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = guf.root_properties(parent)
+        sizes_tuple   = root_properties(parent)
         win_width_px  = sizes_tuple[0]    # unused here
         win_height_px = sizes_tuple[1]    # unused here
         width_sf_px   = sizes_tuple[2]    # unused here
@@ -109,8 +111,8 @@ class CheckBoxCorpuses:
         height_sf_mm  = sizes_tuple[5]
         width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        self.check_boxes_sep_space = guf.mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * width_sf_mm, gg.PPI)
-        font = tkFont.Font(family = gg.FONT_NAME, size = guf.font_size(11, width_sf_min))
+        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * width_sf_mm, gg.PPI)
+        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, width_sf_min))
         self.lab = tk.Label(parent, 
                             text = 'Année ' + year, 
                             font = font)

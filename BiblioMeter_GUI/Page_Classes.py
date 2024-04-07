@@ -23,9 +23,14 @@ class app_main(tk.Tk):
         
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
-        import BiblioMeter_GUI.Useful_Functions as guf
         import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
         from BiblioMeter_FUNCTS.BM_UsefulFuncts import create_archi 
+        from BiblioMeter_GUI.Useful_Functions import font_size
+        from BiblioMeter_GUI.Useful_Functions import general_properties
+        from BiblioMeter_GUI.Useful_Functions import last_available_years
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px 
+        from BiblioMeter_GUI.Useful_Functions import place_after
+        from BiblioMeter_GUI.Useful_Functions import str_size_mm
         
         # Internal functions - start
         
@@ -73,10 +78,8 @@ class app_main(tk.Tk):
             bmf_label.place(x = eff_bmf_pos_x_px,
                             y = eff_bmf_pos_y_px,)
 
-            text_width_mm, _ = guf.str_size_mm(gg.TEXT_BMF,
-                                               bmf_font,
-                                               gg.PPI)
-            eff_path_pos_x_px = guf.mm_to_px(text_width_mm + add_space_mm, gg.PPI)                
+            text_width_mm, _ = str_size_mm(gg.TEXT_BMF, bmf_font, gg.PPI)
+            eff_path_pos_x_px = mm_to_px(text_width_mm + add_space_mm, gg.PPI)                
             bmf_entree2.place(x = eff_path_pos_x_px,
                               y = eff_bmf_pos_y_px,)
 
@@ -91,7 +94,7 @@ class app_main(tk.Tk):
             bmf_path = Path(inst_bmf)
             try: 
                 # Setting new corpus year folder name
-                corpuses_list    = guf.last_available_years(bmf_path, gg.CORPUSES_NUMBER)
+                corpuses_list    = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
                 last_corpus_year = corpuses_list[-1]
                 new_corpus_year_folder = str(int(last_corpus_year) + 1)
                 
@@ -100,7 +103,7 @@ class app_main(tk.Tk):
                 print("\n",message)
 
                 # Getting updated corpuses list
-                corpuses_list = guf.last_available_years(bmf_path, gg.CORPUSES_NUMBER)
+                corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
                 
                 # Setting corpi_val value to corpuses list 
                 corpi_val.set(str(corpuses_list))
@@ -135,10 +138,8 @@ class app_main(tk.Tk):
             corpi_label.place(x = eff_corpi_pos_x_px,
                               y = eff_corpi_pos_y_px,)
 
-            text_width_mm, _ = guf.str_size_mm(gg.TEXT_CORPUSES,
-                                               corpi_font,
-                                               gg.PPI)
-            eff_list_pos_x_px = guf.mm_to_px(text_width_mm + add_space_mm, gg.PPI)                
+            text_width_mm, _ = str_size_mm(gg.TEXT_CORPUSES, corpi_font, gg.PPI)
+            eff_list_pos_x_px = mm_to_px(text_width_mm + add_space_mm, gg.PPI)                
             corpi_entry.place(x = eff_list_pos_x_px ,
                               y = eff_corpi_pos_y_px,)
 
@@ -152,7 +153,7 @@ class app_main(tk.Tk):
             bmf_path = Path(inst_bmf)
             try: 
                 # Getting updated corpuses list
-                corpuses_list = guf.last_available_years(bmf_path, gg.CORPUSES_NUMBER)
+                corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
                 
                 # Setting corpi_val value to corpuses list
                 corpi_val.set(str(corpuses_list))
@@ -193,7 +194,7 @@ class app_main(tk.Tk):
             corpi_val = _set_corpi_widgets_param(inst_default_bmf)            
                 # Setting and displating corpuses list initial values
             try:
-                init_corpuses_list = guf.last_available_years(inst_default_bmf, gg.CORPUSES_NUMBER)
+                init_corpuses_list = last_available_years(inst_default_bmf, gg.CORPUSES_NUMBER)
                 corpi_val.set(str(init_corpuses_list))
             except FileNotFoundError:
                 warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
@@ -217,7 +218,7 @@ class app_main(tk.Tk):
         self.REP = list()                    
         
         # Getting useful screen sizes and scale factors depending on displays properties
-        self, sizes_tuple = guf.general_properties(self)
+        self, sizes_tuple = general_properties(self)
         win_width_px  = sizes_tuple[0]
         win_height_px = sizes_tuple[1]
         width_sf_px   = sizes_tuple[2] 
@@ -231,40 +232,34 @@ class app_main(tk.Tk):
         
         ####################### Title and copyright widgets parameters ########################
         # Setting font size for page title and copyright
-        eff_page_title_font_size = guf.font_size(gg.REF_PAGE_TITLE_FONT_SIZE, width_sf_min)     
+        eff_page_title_font_size = font_size(gg.REF_PAGE_TITLE_FONT_SIZE, width_sf_min)     
        
         # Setting reference Y position in mm and effective Y position in pixels for page label 
-        eff_page_title_pos_y_px = guf.mm_to_px(gg.REF_PAGE_TITLE_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_page_title_pos_y_px = mm_to_px(gg.REF_PAGE_TITLE_POS_Y_MM * height_sf_mm, gg.PPI)
        
         # Setting x position in pixels for page title 
         mid_page_pos_x_px = win_width_px  * 0.5 
         
-        # Setting font size for copyright
-        ref_copyright_font_size = gg.REF_COPYRIGHT_FONT_SIZE       
-        eff_copyright_font_size = guf.font_size(ref_copyright_font_size, width_sf_min)
+        # Setting font size for copyright     
+        eff_copyright_font_size = font_size(gg.REF_COPYRIGHT_FONT_SIZE, width_sf_min)
         
         # Setting X and Y positions reference in mm for copyright
-        ref_copyright_x_mm = gg.REF_COPYRIGHT_X_MM              #5
-        eff_copyright_x_px = guf.mm_to_px(ref_copyright_x_mm * width_sf_mm, gg.PPI)
-        ref_copyright_y_mm = gg.REF_COPYRIGHT_Y_MM              #170
-        eff_copyright_y_px = guf.mm_to_px(ref_copyright_y_mm * height_sf_mm, gg.PPI)
+        eff_copyright_x_px = mm_to_px(gg.REF_COPYRIGHT_X_MM * width_sf_mm, gg.PPI)
+        eff_copyright_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * height_sf_mm, gg.PPI)
         
         # Setting font size for version
-        ref_version_font_size = gg.REF_VERSION_FONT_SIZE         #12
-        eff_version_font_size = guf.font_size(ref_version_font_size, width_sf_min)
+        eff_version_font_size = font_size(gg.REF_VERSION_FONT_SIZE, width_sf_min)
         
         # Setting X and Y positions reference in mm for version
-        ref_version_x_mm = gg.REF_VERSION_X_MM                   #185
-        eff_version_x_px = guf.mm_to_px(ref_version_x_mm * width_sf_mm, gg.PPI)
-        ref_version_y_mm = gg.REF_COPYRIGHT_Y_MM                 #170
-        eff_version_y_px = guf.mm_to_px(ref_version_y_mm * height_sf_mm, gg.PPI)
+        eff_version_x_px = mm_to_px(gg.REF_VERSION_X_MM * width_sf_mm, gg.PPI)
+        eff_version_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * height_sf_mm, gg.PPI)
         
         ####################### Institute-selection widgets parameters ########################
         # Setting institut selection widgets parameters
-        eff_buttons_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
-        eff_select_font_size  = guf.font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
-        inst_button_x_pos     = guf.mm_to_px(gg.REF_INST_POS_X_MM * width_sf_mm,  gg.PPI)  
-        inst_button_y_pos     = guf.mm_to_px(gg.REF_INST_POS_Y_MM * height_sf_mm, gg.PPI)     
+        eff_buttons_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_select_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
+        inst_button_x_pos     = mm_to_px(gg.REF_INST_POS_X_MM * width_sf_mm,  gg.PPI)  
+        inst_button_y_pos     = mm_to_px(gg.REF_INST_POS_Y_MM * height_sf_mm, gg.PPI)     
         dy_inst               = -10
         
         ##################### Working-folder selection widgets parameters ######################
@@ -272,48 +267,44 @@ class app_main(tk.Tk):
         eff_bmf_width = int(gg.REF_ENTRY_NB_CHAR * width_sf_min)
 
         # Setting font size for bmf
-        eff_bmf_font_size    = guf.font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
-        eff_button_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_bmf_font_size    = font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
 
         # Setting reference positions in mm and effective ones in pixels for bmf 
-        eff_bmf_pos_x_px = guf.mm_to_px(gg.REF_BMF_POS_X_MM * height_sf_mm, gg.PPI)  
-        eff_bmf_pos_y_px = guf.mm_to_px(gg.REF_BMF_POS_Y_MM * height_sf_mm, gg.PPI)         
+        eff_bmf_pos_x_px = mm_to_px(gg.REF_BMF_POS_X_MM * height_sf_mm, gg.PPI)  
+        eff_bmf_pos_y_px = mm_to_px(gg.REF_BMF_POS_Y_MM * height_sf_mm, gg.PPI)         
 
         # Setting reference relative positions in mm and effective relative 
         # X,Y positions in pixels for bmf change button
-        eff_button_dx_px = guf.mm_to_px(gg.REF_BUTTON_DX_MM * width_sf_mm,  gg.PPI)
-        eff_button_dy_px = guf.mm_to_px(gg.REF_BUTTON_DY_MM * height_sf_mm, gg.PPI) 
+        eff_button_dx_px = mm_to_px(gg.REF_BUTTON_DX_MM * width_sf_mm,  gg.PPI)
+        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * height_sf_mm, gg.PPI) 
         
         ##################### Corpuses-list-display widgets parameters ######################                
         # Setting effective value for corpi setting width        
         eff_list_width = int(gg.REF_ENTRY_NB_CHAR * width_sf_min)
 
         # Setting font size for corpi
-        eff_corpi_font_size  = guf.font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
-        eff_button_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_corpi_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
 
-        # Setting reference positions in mm and effective ones in pixels for corpuses 
-        ref_corpi_pos_x_mm = gg.REF_CORPI_POS_X_MM           #5       
-        eff_corpi_pos_x_px = guf.mm_to_px(ref_corpi_pos_x_mm * height_sf_mm, gg.PPI)       
-        ref_corpi_pos_y_mm = gg.REF_CORPI_POS_Y_MM          #75
-        eff_corpi_pos_y_px = guf.mm_to_px(ref_corpi_pos_y_mm * height_sf_mm, gg.PPI)
+        # Setting reference positions in mm and effective ones in pixels for corpuses      
+        eff_corpi_pos_x_px = mm_to_px(gg.REF_CORPI_POS_X_MM * height_sf_mm, gg.PPI)
+        eff_corpi_pos_y_px = mm_to_px(gg.REF_CORPI_POS_Y_MM * height_sf_mm, gg.PPI)
 
         # Setting reference relative positions in mm and effective relative 
         # Y positions in pixels for bmf change button
-        eff_button_dy_px = guf.mm_to_px(gg.REF_BUTTON_DY_MM * height_sf_mm, gg.PPI)         
+        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * height_sf_mm, gg.PPI)         
          
         ############################# Launch button parameters ############################## 
         # Setting font size for launch button
-        ref_launch_font_size = gg.REF_LAUNCH_FONT_SIZE          #25
-        eff_launch_font_size = guf.font_size(ref_launch_font_size, width_sf_min) 
+        eff_launch_font_size = font_size(gg.REF_LAUNCH_FONT_SIZE, width_sf_min) 
 
         # Setting x and y position in pixels for launch button
         launch_but_pos_x_px = win_width_px  * 0.5
         launch_but_pos_y_px = win_height_px * 0.8         
         
         # Setting default values
-        institutes_list = ig.INSTITUTES_LIST
-        #default_institute = institutes_list[0]    
+        institutes_list = ig.INSTITUTES_LIST   
         default_institute = "   "  
         
         ######################################## Title - start                       
@@ -346,7 +337,7 @@ class app_main(tk.Tk):
                                    text = gg.TEXT_INSTITUTE, 
                                    font = self.font_Label_inst)
         self.Label_inst.place(x = inst_button_x_pos, y = inst_button_y_pos)
-        guf.place_after(self.Label_inst, self.OptionButton_inst, dy = dy_inst)
+        place_after(self.Label_inst, self.OptionButton_inst, dy = dy_inst)
         
         # Suivi de la sélection
         institute_val.trace('w', partial(_update_page, widget = institute_val))                
@@ -459,12 +450,14 @@ class Page_ParseCorpus(tk.Frame):
 
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
-        import BiblioMeter_GUI.Useful_Functions as guf
-        from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat    
+        from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat
+        from BiblioMeter_GUI.Useful_Functions import font_size 
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import root_properties   
         
         
         # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = guf.root_properties(controller)
+        sizes_tuple   = root_properties(controller)
         win_width_px  = sizes_tuple[0]
         win_height_px = sizes_tuple[1]    # unused here
         width_sf_px   = sizes_tuple[2] 
@@ -479,11 +472,11 @@ class Page_ParseCorpus(tk.Frame):
         page_title = label_text + " du " + institute         
         
         # Setting font size for page label and button
-        eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px   = guf.mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px   = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
@@ -521,14 +514,17 @@ class Page_ConsolidateCorpus(tk.Frame):
 
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
-        import BiblioMeter_GUI.Useful_Functions as guf
         from BiblioMeter_GUI.Page_ConsolidateCorpus import create_consolidate_corpus
+        from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+        from BiblioMeter_GUI.Useful_Functions import font_size 
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import root_properties   
         
         # Internal functions
         def _launch_consolidate_corpus():
        
             # Getting years of available corpuses from files status       
-            files_status = guf.existing_corpuses(bibliometer_path)    
+            files_status = existing_corpuses(bibliometer_path)    
             corpus_years_list = files_status[0]
             Liste_2 = corpus_years_list
             
@@ -553,7 +549,7 @@ class Page_ConsolidateCorpus(tk.Frame):
             controller._show_frame(page_name)
         
         # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = guf.root_properties(controller)
+        sizes_tuple   = root_properties(controller)
         win_width_px  = sizes_tuple[0]
         win_height_px = sizes_tuple[1]    # unused here
         width_sf_px   = sizes_tuple[2] 
@@ -568,17 +564,17 @@ class Page_ConsolidateCorpus(tk.Frame):
         page_title = label_text + " du " + institute
 
         # Setting font size for page label and button
-        eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px = guf.mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
         
         # Getting years of available corpuses from files status       
-        files_status = guf.existing_corpuses(bibliometer_path)    
+        files_status = existing_corpuses(bibliometer_path)    
         corpus_years_list = files_status[0]
         self.Liste_1 = corpus_years_list        
         
@@ -615,12 +611,14 @@ class Page_UpdateIFs(tk.Frame):
         from tkinter import font as tkFont
 
         # Local imports
-        import BiblioMeter_GUI.GUI_Globals as gg
-        import BiblioMeter_GUI.Useful_Functions as guf   
+        import BiblioMeter_GUI.GUI_Globals as gg  
         from BiblioMeter_GUI.Page_UpdateIFs import create_update_ifs
+        from BiblioMeter_GUI.Useful_Functions import font_size 
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import root_properties   
         
         # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = guf.root_properties(controller)
+        sizes_tuple   = root_properties(controller)
         win_width_px  = sizes_tuple[0]
         win_height_px = sizes_tuple[1]    # unused here
         width_sf_px   = sizes_tuple[2] 
@@ -635,11 +633,11 @@ class Page_UpdateIFs(tk.Frame):
         page_title = label_text + " du " + institute
         
         # Setting font size for page label and button
-        eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px = guf.mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2
@@ -675,12 +673,14 @@ class Page_Analysis(tk.Frame):
         from tkinter import font as tkFont
 
         # Local imports
-        import BiblioMeter_GUI.GUI_Globals as gg
-        import BiblioMeter_GUI.Useful_Functions as guf   
+        import BiblioMeter_GUI.GUI_Globals as gg   
         from BiblioMeter_GUI.Page_Analysis import create_analysis
+        from BiblioMeter_GUI.Useful_Functions import font_size 
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import root_properties  
 
         # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = guf.root_properties(controller)
+        sizes_tuple   = root_properties(controller)
         win_width_px  = sizes_tuple[0]
         win_height_px = sizes_tuple[1]    # unused here
         width_sf_px   = sizes_tuple[2] 
@@ -695,11 +695,11 @@ class Page_Analysis(tk.Frame):
         page_title = label_text + " du " + institute
         
         # Setting font size for page label and button
-        eff_label_font_size  = guf.font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = guf.font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px = guf.mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
         mid_page_pos_x_px = win_width_px / 2

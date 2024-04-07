@@ -30,7 +30,9 @@ def _create_table(self, bibliometer_path, pos_x_init):
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
-    import BiblioMeter_GUI.Useful_Functions as guf
+    from BiblioMeter_GUI.Useful_Functions import font_size 
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+    from BiblioMeter_GUI.Useful_Functions import root_properties  
     
     # Internal functions
     def _set_table_item(item_text, item_pos_x):
@@ -41,7 +43,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
         self.TABLE.append(item_case)
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = guf.root_properties(self)
+    sizes_tuple   = root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -52,13 +54,13 @@ def _create_table(self, bibliometer_path, pos_x_init):
     
     # Setting specific font properties
     ref_font_size = 11
-    local_font_size = guf.font_size(ref_font_size, width_sf_min)    
+    local_font_size = font_size(ref_font_size, width_sf_min)    
     header_font = tkFont.Font(family = gg.FONT_NAME, 
                               size   = local_font_size)
     
     # Setting useful x position shift and y position reference in pixels    
-    pos_x_shift = guf.mm_to_px(25 * width_sf_mm,  gg.PPI)                                 
-    pos_y_ref   = guf.mm_to_px(30 * height_sf_mm, gg.PPI) # 35
+    pos_x_shift = mm_to_px(25 * width_sf_mm,  gg.PPI)                                 
+    pos_y_ref   = mm_to_px(30 * height_sf_mm, gg.PPI) # 35
     
     # Initializing x position in pixels
     pos_x = pos_x_init
@@ -119,11 +121,15 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
-    import BiblioMeter_GUI.Useful_Functions as guf
     from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import font_size 
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+    from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import root_properties  
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = guf.root_properties(self)
+    sizes_tuple   = root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -134,12 +140,12 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen 
-    eff_font_size = guf.font_size(11, width_sf_min)
-    eff_dx        = guf.mm_to_px(1 * width_sf_mm,  gg.PPI)
-    eff_dy        = guf.mm_to_px(1 * height_sf_mm, gg.PPI)
+    eff_font_size = font_size(11, width_sf_min)
+    eff_dx        = mm_to_px(1 * width_sf_mm,  gg.PPI)
+    eff_dy        = mm_to_px(1 * height_sf_mm, gg.PPI)
 
     # Getting files status for corpus concatenation and deduplication
-    files_status = guf.existing_corpuses(bibliometer_path)     
+    files_status = existing_corpuses(bibliometer_path)     
     list_corpus_year    = files_status[0]
     list_wos_rawdata    = files_status[1]
     list_wos_parsing    = files_status[2]
@@ -184,10 +190,10 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_font_size)
     self.OM_year_pc_1.config(font = font_year_pc_1)
-    guf.place_after(self.label_year_pc_1, 
-                    self.OM_year_pc_1, 
-                    dx = eff_dx,
-                    dy = - eff_dy)
+    place_after(self.label_year_pc_1, 
+                self.OM_year_pc_1, 
+                dx = eff_dx,
+                dy = - eff_dy)
     
     # Destruct files status display
     self.OM_year_pc_2.destroy() 
@@ -201,10 +207,10 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_font_size)
     self.OM_year_pc_2.config(font = font_year_pc_2)
-    guf.place_after(self.label_year_pc_2, 
-                    self.OM_year_pc_2, 
-                    dx = eff_dx, 
-                    dy = - eff_dy)
+    place_after(self.label_year_pc_2, 
+                self.OM_year_pc_2, 
+                dx = eff_dx, 
+                dy = - eff_dy)
 
     
 def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, pos_y, esp_ligne):
@@ -250,18 +256,19 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     from tkinter import messagebox
     
     # Local imports
-    import BiblioMeter_FUNCTS.BM_UsefulFuncts as fuf
-    import BiblioMeter_GUI.Useful_Functions as guf
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_fails_dict
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_parsing_dict
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     
     # Internal functions    
     def _corpus_parsing(rawdata_path, parsing_path, database_type):
         if not os.path.exists(parsing_path): os.mkdir(parsing_path)
         parsing_dict, dic_failed = bp.biblio_parser(rawdata_path, database_type)
-        fuf.save_parsing_dict(parsing_dict, parsing_path, 
-                              item_filename_dict, parsing_save_extent)
-        fuf.save_fails_dict(dic_failed, parsing_path)
+        save_parsing_dict(parsing_dict, parsing_path, 
+                          item_filename_dict, parsing_save_extent)
+        save_fails_dict(dic_failed, parsing_path)
 
         articles_number = dic_failed["number of article"]
         info_title      = "Information"
@@ -281,7 +288,7 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     parsing_save_extent = pg.TSV_SAVE_EXTENT
     
     # Getting files status for corpus parsing
-    files_status = guf.existing_corpuses(bibliometer_path)    
+    files_status = existing_corpuses(bibliometer_path)    
     list_corpus_year = files_status[0]
     if database_type == 'wos':
         list_rawdata = files_status[1]
@@ -389,10 +396,11 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     from tkinter import messagebox
     
     # Local imports
-    import BiblioMeter_FUNCTS.BM_UsefulFuncts as fuf
-    import BiblioMeter_GUI.Useful_Functions as guf
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_parsing_dict
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
        
     # Internal functions
@@ -400,16 +408,16 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
         if not os.path.exists(concat_parsing_path): os.mkdir(concat_parsing_path)
         if not os.path.exists(dedup_parsing_path): os.mkdir(dedup_parsing_path)           
   
-        scopus_parsing_dict = fuf.read_parsing_dict(scopus_parsing_path, item_filename_dict, 
-                                                    parsing_save_extent)
-        wos_parsing_dict    = fuf.read_parsing_dict(wos_parsing_path, item_filename_dict, 
-                                                    parsing_save_extent)
+        scopus_parsing_dict = read_parsing_dict(scopus_parsing_path, item_filename_dict, 
+                                                parsing_save_extent)
+        wos_parsing_dict    = read_parsing_dict(wos_parsing_path, item_filename_dict, 
+                                                parsing_save_extent)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict, 
                                                      inst_filter_list = institutions_filter_list)
-        fuf.save_parsing_dict(concat_parsing_dict, concat_parsing_path, 
-                              item_filename_dict, parsing_save_extent)
+        save_parsing_dict(concat_parsing_dict, concat_parsing_path, 
+                          item_filename_dict, parsing_save_extent)
         dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict)
-        fuf.save_parsing_dict(dedup_parsing_dict, dedup_parsing_path, 
+        save_parsing_dict(dedup_parsing_dict, dedup_parsing_path, 
                           item_filename_dict, parsing_save_extent)
         
     # Setting institute parameters
@@ -429,7 +437,7 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     parsing_save_extent = pg.TSV_SAVE_EXTENT
     
     # Getting files status for corpus concatenation and deduplication
-    files_status = guf.existing_corpuses(bibliometer_path)     
+    files_status = existing_corpuses(bibliometer_path)     
     list_corpus_year    = files_status[0]
     list_wos_parsing    = files_status[2]
     list_scopus_parsing = files_status[4]
@@ -528,8 +536,12 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
-    import BiblioMeter_GUI.Useful_Functions as guf
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+    from BiblioMeter_GUI.Useful_Functions import font_size 
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+    from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import root_properties
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     
     # Internal functions
@@ -544,7 +556,7 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
             parent.destroy() 
     
     # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = guf.root_properties(self)
+    sizes_tuple   = root_properties(self)
     win_width_px  = sizes_tuple[0]    # unused here
     win_height_px = sizes_tuple[1]    # unused here
     width_sf_px   = sizes_tuple[2] 
@@ -555,34 +567,34 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
                 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
-    position_selon_x_check   = guf.mm_to_px(70  * width_sf_mm,  gg.PPI)
-    position_selon_y_check   = guf.mm_to_px(40  * height_sf_mm, gg.PPI)  #40   
-    espace_entre_ligne_check = guf.mm_to_px(10  * height_sf_mm, gg.PPI)    
-    labels_x_pos             = guf.mm_to_px(10  * width_sf_mm,  gg.PPI)
-    labels_y_space           = guf.mm_to_px(10  * height_sf_mm, gg.PPI)
-    status_label_y_pos       = guf.mm_to_px(25  * height_sf_mm, gg.PPI)  #25      
-    parsing_label_y_pos      = guf.mm_to_px(107 * height_sf_mm, gg.PPI)  
-    synthese_label_y_pos     = guf.mm_to_px(135 * height_sf_mm, gg.PPI)                             
-    status_button_x_pos      = guf.mm_to_px(148  * width_sf_mm, gg.PPI)  #148       
-    status_button_y_pos      = guf.mm_to_px(98  * height_sf_mm, gg.PPI)  #98                         
-    exit_button_x_pos        = guf.mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)  #193 
-    exit_button_y_pos        = guf.mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)  #145
-    dx_year_select           = guf.mm_to_px(1   * width_sf_mm,  gg.PPI)
-    dy_year_select           = guf.mm_to_px(1   * height_sf_mm, gg.PPI)
-    dx_bdd_select            = guf.mm_to_px(12  * width_sf_mm,  gg.PPI)  #12
-    dy_bdd_select            = guf.mm_to_px(1   * height_sf_mm, gg.PPI)
-    dx_launch                = guf.mm_to_px(15  * width_sf_mm,  gg.PPI)  #15
-    dy_launch                = guf.mm_to_px(0.2 * height_sf_mm, gg.PPI)
-    eff_labels_font_size     = guf.font_size(14, width_sf_min)
-    eff_select_font_size     = guf.font_size(12, width_sf_min) 
-    eff_buttons_font_size    = guf.font_size(11, width_sf_min)
+    position_selon_x_check   = mm_to_px(70  * width_sf_mm,  gg.PPI)
+    position_selon_y_check   = mm_to_px(40  * height_sf_mm, gg.PPI)  #40   
+    espace_entre_ligne_check = mm_to_px(10  * height_sf_mm, gg.PPI)    
+    labels_x_pos             = mm_to_px(10  * width_sf_mm,  gg.PPI)
+    labels_y_space           = mm_to_px(10  * height_sf_mm, gg.PPI)
+    status_label_y_pos       = mm_to_px(25  * height_sf_mm, gg.PPI)  #25      
+    parsing_label_y_pos      = mm_to_px(107 * height_sf_mm, gg.PPI)  
+    synthese_label_y_pos     = mm_to_px(135 * height_sf_mm, gg.PPI)                             
+    status_button_x_pos      = mm_to_px(148  * width_sf_mm, gg.PPI)  #148       
+    status_button_y_pos      = mm_to_px(98  * height_sf_mm, gg.PPI)  #98                         
+    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)  #193 
+    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)  #145
+    dx_year_select           = mm_to_px(1   * width_sf_mm,  gg.PPI)
+    dy_year_select           = mm_to_px(1   * height_sf_mm, gg.PPI)
+    dx_bdd_select            = mm_to_px(12  * width_sf_mm,  gg.PPI)  #12
+    dy_bdd_select            = mm_to_px(1   * height_sf_mm, gg.PPI)
+    dx_launch                = mm_to_px(15  * width_sf_mm,  gg.PPI)  #15
+    dy_launch                = mm_to_px(0.2 * height_sf_mm, gg.PPI)
+    eff_labels_font_size     = font_size(14, width_sf_min)
+    eff_select_font_size     = font_size(12, width_sf_min) 
+    eff_buttons_font_size    = font_size(11, width_sf_min)
                 
     year_x_pos = labels_x_pos           
-    parsing_year_y_pos   =  parsing_label_y_pos + labels_y_space
-    synthese_year_y_pos  =  synthese_label_y_pos + labels_y_space
+    parsing_year_y_pos  = parsing_label_y_pos + labels_y_space
+    synthese_year_y_pos = synthese_label_y_pos + labels_y_space
     
     # Getting files status for corpus concatenation and deduplication
-    files_status = guf.existing_corpuses(bibliometer_path)     
+    files_status = existing_corpuses(bibliometer_path)     
     list_corpus_year    = files_status[0]
     list_wos_rawdata    = files_status[1]     # unused here
     list_wos_parsing    = files_status[2]     # unused here
@@ -655,10 +667,10 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_buttons_font_size)
     self.OM_year_pc_1.config(font = font_year_pc_1)
-    guf.place_after(self.label_year_pc_1, 
-                    self.OM_year_pc_1, 
-                    dx = + dx_year_select,
-                    dy = - dy_year_select)
+    place_after(self.label_year_pc_1, 
+                self.OM_year_pc_1, 
+                dx = + dx_year_select,
+                dy = - dy_year_select)
     
     # Choix de la BDD
     font_bdd_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
@@ -666,10 +678,10 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     label_bdd_pc_1 = tk.Label(self, 
                               text = gg.TEXT_BDD_PC, 
                               font = font_bdd_pc_1)
-    guf.place_after(self.OM_year_pc_1, 
-                    label_bdd_pc_1, 
-                    dx = dx_bdd_select, 
-                    dy = dy_bdd_select)
+    place_after(self.OM_year_pc_1, 
+                label_bdd_pc_1, 
+                dx = dx_bdd_select, 
+                dy = dy_bdd_select)
     
     var_bdd_pc_1 = tk.StringVar(self)
     var_bdd_pc_1.set(default_bdd)
@@ -679,10 +691,10 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     font_bdd_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
                                 size   = eff_buttons_font_size)
     OM_bdd_pc_1.config(font = font_bdd_pc_1)
-    guf.place_after(label_bdd_pc_1, 
-                    OM_bdd_pc_1, 
-                    dx = + dx_year_select,
-                    dy = - dy_year_select)
+    place_after(label_bdd_pc_1, 
+                OM_bdd_pc_1, 
+                dx = + dx_year_select,
+                dy = - dy_year_select)
     
     # Lancement du parsing
     font_launch_parsing = tkFont.Font(family = gg.FONT_NAME, 
@@ -697,10 +709,10 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
                                                                         position_selon_x_check, 
                                                                         position_selon_y_check, 
                                                                         espace_entre_ligne_check))
-    guf.place_after(OM_bdd_pc_1, 
-                    button_launch_parsing, 
-                    dx = dx_launch,
-                    dy = dy_launch)
+    place_after(OM_bdd_pc_1, 
+                button_launch_parsing, 
+                dx = dx_launch,
+                dy = dy_launch)
     
     ################## Zone Synthèse des fichiers de parsing de toutes les BDD
     font_synthese = tkFont.Font(family = gg.FONT_NAME, 
@@ -731,10 +743,10 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_buttons_font_size)
     self.OM_year_pc_2.config(font = font_year_pc_2)
-    guf.place_after(self.label_year_pc_2, 
-                    self.OM_year_pc_2, 
-                    dx = + dx_year_select, 
-                    dy = - dy_year_select)
+    place_after(self.label_year_pc_2, 
+                self.OM_year_pc_2, 
+                dx = + dx_year_select, 
+                dy = - dy_year_select)
         
     # Lancement de la synthèse
     font_launch_synthese = tkFont.Font(family = gg.FONT_NAME, 
@@ -749,13 +761,14 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
                                                                         position_selon_x_check, 
                                                                         position_selon_y_check, 
                                                                         espace_entre_ligne_check))
-    guf.place_after(self.OM_year_pc_2, 
-                    button_launch_synthese, 
-                    dx = dx_launch,
-                    dy = dy_launch)
+    place_after(self.OM_year_pc_2, 
+                button_launch_synthese, 
+                dx = dx_launch,
+                dy = dy_launch)
 
     ################## Placement de CHECKBOXCORPUSES :
-    _update(self, bibliometer_path, position_selon_x_check, position_selon_y_check, espace_entre_ligne_check)
+    _update(self, bibliometer_path, position_selon_x_check, position_selon_y_check, 
+            espace_entre_ligne_check)
     
     ################## Bouton pour sortir de la page
     font_button_quit = tkFont.Font(family = gg.FONT_NAME, 
