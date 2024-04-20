@@ -20,9 +20,8 @@ class LabelEntry:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label, text_button, font_button, *args, **kargs):
-        
-        # 3rd party imports
+    def __init__(self, parent, text_label, font_label, text_button, font_button, *args, **kargs):        
+        # Standard library imports
         import tkinter as tk
         
         self.lab = tk.Label(parent, text = text_label, font = font_label)
@@ -53,14 +52,11 @@ class LabelEntry:
         p = Path(value)
         self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
         
-    def get_file(self):
-        
+    def get_file(self):        
         # Standard library imports
-        from pathlib import Path
-        
-        # 3rd party imports
         import tkinter as tk
         from tkinter import filedialog
+        from pathlib import Path
 
         # Local variables
         dialog_title = "Choisir un nouveau dossier de travail"
@@ -89,30 +85,30 @@ class CheckBoxCorpuses:
         - Scopus rawdata/parsing dispo
     """
     
-    def __init__(self, parent, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):
-        
-        # 3rd library imports
+    def __init__(self, parent, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):        
+        # Standard library imports
         import tkinter as tk
         from tkinter import font as tkFont
         
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
+        from BiblioMeter_GUI.Page_Classes import app_main 
         from BiblioMeter_GUI.Useful_Functions import font_size 
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        from BiblioMeter_GUI.Useful_Functions import root_properties        
+        #from BiblioMeter_GUI.Useful_Functions import root_properties        
         
-        # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = root_properties(parent)
-        win_width_px  = sizes_tuple[0]    # unused here
-        win_height_px = sizes_tuple[1]    # unused here
-        width_sf_px   = sizes_tuple[2]    # unused here
-        height_sf_px  = sizes_tuple[3]    # unused here
-        width_sf_mm   = sizes_tuple[4]
-        height_sf_mm  = sizes_tuple[5]
-        width_sf_min  = min(width_sf_mm, width_sf_px)
+        ## Getting useful window sizes and scale factors depending on displays properties
+        #sizes_tuple   = root_properties(parent)
+        #win_width_px  = sizes_tuple[0]    # unused here
+        #win_height_px = sizes_tuple[1]    # unused here
+        #width_sf_px   = sizes_tuple[2]    # unused here
+        #height_sf_px  = sizes_tuple[3]    # unused here
+        #width_sf_mm   = sizes_tuple[4]
+        #height_sf_mm  = sizes_tuple[5]
+        #width_sf_min  = min(width_sf_mm, width_sf_px)
         
-        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * width_sf_mm, gg.PPI)
-        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, width_sf_min))
+        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * app_main.width_sf_mm, gg.PPI)
+        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, app_main.width_sf_min))
         self.lab = tk.Label(parent, 
                             text = 'Année ' + year, 
                             font = font)
@@ -157,9 +153,8 @@ class ColumnFilter:
     """
     """
     
-    def __init__(self, parent, text_label, df, *arg, **kargs):
-        
-        # 3rd party imports
+    def __init__(self, parent, text_label, df, *arg, **kargs):        
+        # Standard library imports
         import tkinter as tk
         
         # Local variables
@@ -212,7 +207,7 @@ class ColumnFilter:
             self.drop_down.configure(state = 'disable')
             
     def open_list_box_create_filter(self, df, column, parent):        
-        # 3rd party imports
+        # Standard library imports
         import tkinter as tk
         from tkinter import Toplevel
         
@@ -263,9 +258,8 @@ class LabelEntry_toFile:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):
-        
-        # 3rd party imports
+    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):        
+        # Standard library imports
         import tkinter as tk
         
         # Local variables
@@ -299,11 +293,9 @@ class LabelEntry_toFile:
         
     def get_file(self):
         # Standard library imports
-        from pathlib import Path
-        
-        # 3rd party imports
         import tkinter as tk
         from tkinter import filedialog
+        from pathlib import Path
         
         # Local variables
         dialog_title = 'Choisir un fichier petit pingouin des Alpes'
@@ -323,8 +315,7 @@ class LabelEntry_toFile:
             x.place_forget()
 
             
-class LabelEntry_toValue:
-    
+class LabelEntry_toValue:    
     """
     Petit automat permettant d'afficher sur la même ligne :
     - un texte d'info
@@ -339,9 +330,8 @@ class LabelEntry_toValue:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label):
-        
-        # 3rd party imports
+    def __init__(self, parent, text_label, font_label):        
+        # Standard library imports
         import tkinter as tk
         
         self.lab = tk.Label(parent, text = text_label, font = font_label)

@@ -5,15 +5,14 @@ def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', ve
     """
     
     """
-
-    #Standard Library imports
+    # Standard Library imports
     import os
     from pathlib import Path
 
-    # 3rd party import
+    # 3rd party imports
+    import BiblioParsing as bp
     import numpy as np
     import pandas as pd
-    import BiblioParsing as bp
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
@@ -229,11 +228,11 @@ def _check_names_orthograph(bibliometer_path, init_df, col0, col1, col2):
     '''
     '''
     # Standard Library imports
+    import warnings
     from pathlib import Path
     
-    # 3rd party import
+    # 3rd party imports
     import pandas as pd
-    import warnings
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
@@ -276,11 +275,11 @@ def _check_names_to_replace(bibliometer_path, year, init_df, col0, col1, col2):
     '''
     '''
     # Standard Library imports
+    import warnings
     from pathlib import Path
     
-    # 3rd party import
+    # 3rd party imports
     import pandas as pd
-    import warnings
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
@@ -329,11 +328,11 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, pub_last_col, 
     '''
     '''
     # Standard Library imports
+    import warnings
     from pathlib import Path
     
-    # 3rd party import
+    # 3rd party imports
     import pandas as pd
-    import warnings
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
@@ -399,9 +398,9 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     import os
     from pathlib import Path
 
-    # 3rd party import
-    import pandas as pd
+    # 3rd party imports
     import BiblioParsing as bp
+    import pandas as pd
 
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
@@ -642,8 +641,8 @@ def _add_biblio_list(in_path, out_path):
         of the package 'BiblioMeter_FUNCTS'.             
     """
     # 3rd party imports
-    import pandas as pd
     import BiblioParsing as bp
+    import pandas as pd
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
@@ -707,10 +706,13 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
         of the package 'BiblioMeter_FUNCTS'. 
     
     """
-    # 3rd party import
+    
+    # Standard library imports
+    import warnings
+    
+    # 3rd party imports
     import BiblioParsing as bp
     import pandas as pd
-    import warnings
 
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
@@ -849,10 +851,12 @@ def _add_other_ext(submit_path, orphan_path, others_path):
         of the package 'BiblioMeter_FUNCTS'. 
     
     """
-    # 3rd party import
-    import pandas as pd
+    # Standard library imports
     import warnings
+    
+    # 3rd party imports
     import BiblioParsing as bp
+    import pandas as pd
 
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
@@ -969,7 +973,6 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     """
     
     """
-
     # Standard library imports
     from pathlib import Path
 
@@ -1020,14 +1023,14 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
     # Standard library imports
     from pathlib import Path
     
-    # 3rd library imports
+    # 3rd party imports
     import pandas as pd    
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import build_col_conversion_dic
     
-    #  Setting useful col names
+    # Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
   
@@ -1095,13 +1098,12 @@ def recursive_year_search(path_out, df_eff, institute, org_tup,
     - `_change_col_names`   
     - `_creating_hash_id`
     """
-
     # Standard library imports
     from pathlib import Path
 
     # 3rd party imports
-    import pandas as pd
     import BiblioParsing as bp
+    import pandas as pd
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg

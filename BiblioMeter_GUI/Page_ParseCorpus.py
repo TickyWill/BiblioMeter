@@ -6,7 +6,7 @@ def _create_table(self, bibliometer_path, pos_x_init):
     to display which files of the parsing treatment are available in the folder 'BiblioMeter_Files'. 
     The full path of this folder is given by the argument 'bibliometer_path'.
     The positions of the table items in the gui window 'root' are set using the argument 'pos_x_init',  
-    and the returns of the function 'root_properties'.
+    and the tk window general properties as 'app_main' class variables.
     
     Args:
         bibliometer_path (path): The files root path for "BiblioMeter_Files" folder.
@@ -17,22 +17,22 @@ def _create_table(self, bibliometer_path, pos_x_init):
         None.
         
     Note:
-        The functions 'font_size', 'mm_to_px' and 'root_properties' are imported 
+        The functions 'font_size' and 'mm_to_px' are imported 
         from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
         The globals 'FONT_NAME' and 'PPI' are imported from the module 'GUI_Globals' 
         of the package 'BiblioMeter_GUI'.
 
     """
     
-    # 3rd party imports
+    # Standard library imports
     import tkinter as tk
     from tkinter import font as tkFont
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
+    from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Functions import font_size 
-    from BiblioMeter_GUI.Useful_Functions import mm_to_px
-    from BiblioMeter_GUI.Useful_Functions import root_properties  
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px 
     
     # Internal functions
     def _set_table_item(item_text, item_pos_x):
@@ -42,25 +42,15 @@ def _create_table(self, bibliometer_path, pos_x_init):
         item_case.place(x = item_pos_x, y = pos_y_ref, anchor = 'center')
         self.TABLE.append(item_case)
     
-    # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
-    win_width_px  = sizes_tuple[0]    # unused here
-    win_height_px = sizes_tuple[1]    # unused here
-    width_sf_px   = sizes_tuple[2] 
-    height_sf_px  = sizes_tuple[3]    # unused here
-    width_sf_mm   = sizes_tuple[4]
-    height_sf_mm  = sizes_tuple[5]    # unused here
-    width_sf_min  = min(width_sf_mm, width_sf_px)     # ! check why using min(width_sf_mm, width_sf_px)
-    
     # Setting specific font properties
     ref_font_size = 11
-    local_font_size = font_size(ref_font_size, width_sf_min)    
+    local_font_size = font_size(ref_font_size, app_main.width_sf_min)    
     header_font = tkFont.Font(family = gg.FONT_NAME, 
                               size   = local_font_size)
     
     # Setting useful x position shift and y position reference in pixels    
-    pos_x_shift = mm_to_px(25 * width_sf_mm,  gg.PPI)                                 
-    pos_y_ref   = mm_to_px(30 * height_sf_mm, gg.PPI) # 35
+    pos_x_shift = mm_to_px(25 * app_main.width_sf_mm,  gg.PPI)                                 
+    pos_y_ref   = mm_to_px(30 * app_main.height_sf_mm, gg.PPI) # 35
     
     # Initializing x position in pixels
     pos_x = pos_x_init
@@ -104,8 +94,6 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     Note:
         The function 'mm_to_px' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The function 'root_properties' is imported from the module 'Useful_Functions' 
-        of the package 'BiblioMeter_GUI'.
         The functions 'existing_corpuses', 'font_size' and 'place_after'
         are imported from the module 'Useful_Functions' of the package 'BiblioMeter_GUI'.
         The class 'CheckBoxCorpuses' is imported from the module 'Useful_Classes' 
@@ -115,34 +103,24 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
             
     '''
     
-    # 3rd party imports
+    # Standard library imports
     import tkinter as tk
     from tkinter import font as tkFont
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
+    from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size 
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import root_properties  
-    
-    # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
-    win_width_px  = sizes_tuple[0]    # unused here
-    win_height_px = sizes_tuple[1]    # unused here
-    width_sf_px   = sizes_tuple[2] 
-    height_sf_px  = sizes_tuple[3]    # unused here
-    width_sf_mm   = sizes_tuple[4]
-    height_sf_mm  = sizes_tuple[5]
-    width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen 
-    eff_font_size = font_size(11, width_sf_min)
-    eff_dx        = mm_to_px(1 * width_sf_mm,  gg.PPI)
-    eff_dy        = mm_to_px(1 * height_sf_mm, gg.PPI)
+    eff_font_size = font_size(11, app_main.width_sf_min)
+    eff_dx        = mm_to_px(1 * app_main.width_sf_mm,  gg.PPI)
+    eff_dy        = mm_to_px(1 * app_main.height_sf_mm, gg.PPI)
 
     # Getting files status for corpus concatenation and deduplication
     files_status = existing_corpuses(bibliometer_path)     
@@ -249,11 +227,11 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     
     # Standard library imports
     import os
+    import tkinter as tk
+    from tkinter import messagebox
     
     # 3rd party imports
     import BiblioParsing as bp
-    import tkinter as tk
-    from tkinter import messagebox
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
@@ -390,10 +368,10 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     """
     # Standard library imports
     import os
+    from tkinter import messagebox
 
     # 3rd party imports
     import BiblioParsing as bp
-    from tkinter import messagebox
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
@@ -515,8 +493,6 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     Note:
         The function 'mm_to_px' is imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
-        The function 'root_properties' is imported from the module 'Useful_Functions' 
-        of the package 'BiblioMeter_GUI'.
         The functions 'existing_corpuses', 'font_size' and 'place_after' 
         are imported from the module 'Useful_Functions' 
         of the package 'BiblioMeter_GUI'.
@@ -527,8 +503,6 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
 
     # Standard library imports
     import os
-
-    # 3rd party imports
     import tkinter as tk
     from tkinter import filedialog
     from tkinter import messagebox
@@ -537,11 +511,11 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size 
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import root_properties
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     
     # Internal functions
@@ -553,41 +527,31 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
         ask_text += "\nConfirmez la mise en pause ?"
         exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
-            parent.destroy() 
-    
-    # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
-    win_width_px  = sizes_tuple[0]    # unused here
-    win_height_px = sizes_tuple[1]    # unused here
-    width_sf_px   = sizes_tuple[2] 
-    height_sf_px  = sizes_tuple[3]    # unused here
-    width_sf_mm   = sizes_tuple[4]
-    height_sf_mm  = sizes_tuple[5]
-    width_sf_min  = min(width_sf_mm, width_sf_px)                     
+            parent.destroy()                    
                 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
-    position_selon_x_check   = mm_to_px(70  * width_sf_mm,  gg.PPI)
-    position_selon_y_check   = mm_to_px(40  * height_sf_mm, gg.PPI)  #40   
-    espace_entre_ligne_check = mm_to_px(10  * height_sf_mm, gg.PPI)    
-    labels_x_pos             = mm_to_px(10  * width_sf_mm,  gg.PPI)
-    labels_y_space           = mm_to_px(10  * height_sf_mm, gg.PPI)
-    status_label_y_pos       = mm_to_px(25  * height_sf_mm, gg.PPI)  #25      
-    parsing_label_y_pos      = mm_to_px(107 * height_sf_mm, gg.PPI)  
-    synthese_label_y_pos     = mm_to_px(135 * height_sf_mm, gg.PPI)                             
-    status_button_x_pos      = mm_to_px(148  * width_sf_mm, gg.PPI)  #148       
-    status_button_y_pos      = mm_to_px(98  * height_sf_mm, gg.PPI)  #98                         
-    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)  #193 
-    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)  #145
-    dx_year_select           = mm_to_px(1   * width_sf_mm,  gg.PPI)
-    dy_year_select           = mm_to_px(1   * height_sf_mm, gg.PPI)
-    dx_bdd_select            = mm_to_px(12  * width_sf_mm,  gg.PPI)  #12
-    dy_bdd_select            = mm_to_px(1   * height_sf_mm, gg.PPI)
-    dx_launch                = mm_to_px(15  * width_sf_mm,  gg.PPI)  #15
-    dy_launch                = mm_to_px(0.2 * height_sf_mm, gg.PPI)
-    eff_labels_font_size     = font_size(14, width_sf_min)
-    eff_select_font_size     = font_size(12, width_sf_min) 
-    eff_buttons_font_size    = font_size(11, width_sf_min)
+    position_selon_x_check   = mm_to_px(70  * app_main.width_sf_mm,  gg.PPI)
+    position_selon_y_check   = mm_to_px(40  * app_main.height_sf_mm, gg.PPI)  #40   
+    espace_entre_ligne_check = mm_to_px(10  * app_main.height_sf_mm, gg.PPI)    
+    labels_x_pos             = mm_to_px(10  * app_main.width_sf_mm,  gg.PPI)
+    labels_y_space           = mm_to_px(10  * app_main.height_sf_mm, gg.PPI)
+    status_label_y_pos       = mm_to_px(25  * app_main.height_sf_mm, gg.PPI)  #25      
+    parsing_label_y_pos      = mm_to_px(107 * app_main.height_sf_mm, gg.PPI)  
+    synthese_label_y_pos     = mm_to_px(135 * app_main.height_sf_mm, gg.PPI)                             
+    status_button_x_pos      = mm_to_px(148 * app_main.width_sf_mm, gg.PPI)  #148       
+    status_button_y_pos      = mm_to_px(98  * app_main.height_sf_mm, gg.PPI)  #98                         
+    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)  #193 
+    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)  #145
+    dx_year_select           = mm_to_px(1   * app_main.width_sf_mm,  gg.PPI)
+    dy_year_select           = mm_to_px(1   * app_main.height_sf_mm, gg.PPI)
+    dx_bdd_select            = mm_to_px(12  * app_main.width_sf_mm,  gg.PPI)  #12
+    dy_bdd_select            = mm_to_px(1   * app_main.height_sf_mm, gg.PPI)
+    dx_launch                = mm_to_px(15  * app_main.width_sf_mm,  gg.PPI)  #15
+    dy_launch                = mm_to_px(0.2 * app_main.height_sf_mm, gg.PPI)
+    eff_labels_font_size     = font_size(14, app_main.width_sf_min)
+    eff_select_font_size     = font_size(12, app_main.width_sf_min) 
+    eff_buttons_font_size    = font_size(11, app_main.width_sf_min)
                 
     year_x_pos = labels_x_pos           
     parsing_year_y_pos  = parsing_label_y_pos + labels_y_space

@@ -8,7 +8,7 @@ __all__ = ['existing_corpuses',
            'place_after', 
            'place_bellow', 
            'place_bellow_LabelEntry', 
-           'root_properties',
+           'root_properties',                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            'str_size_mm',
           ]
     
@@ -20,8 +20,6 @@ def last_available_years(bibliometer_path, year_number):
         
     # Standard library imports
     import os
-    
-    # 3rd party imports
     from tkinter import messagebox
     
     # Récupérer les corpus disponibles TO DO : consolider le choix des années

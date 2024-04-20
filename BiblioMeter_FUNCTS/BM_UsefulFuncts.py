@@ -111,10 +111,8 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     from pathlib import Path
     
     # 3rd party imports
-    import pandas as pd
-    
-    # 3rd party imports
     import BiblioParsing as bp
+    import pandas as pd
     
     parsing_dict = {}
     # Cycling on parsing items 

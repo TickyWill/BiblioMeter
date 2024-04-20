@@ -11,7 +11,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     # Standard library imports
     from pathlib import Path
     
-    # 3rd library imports
+    # 3rd party imports
     import BiblioParsing as bp
     import pandas as pd 
 
@@ -94,7 +94,7 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     # Standard library imports
     from pathlib import Path
     
-    # 3rd library imports
+    # 3rd party imports
     import BiblioParsing as bp
     import pandas as pd 
     
@@ -184,7 +184,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     # Standard library imports
     from pathlib import Path
     
-    # 3rd library imports
+    # 3rd party imports
     import BiblioParsing as bp
     import pandas as pd 
 

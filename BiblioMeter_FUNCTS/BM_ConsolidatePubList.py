@@ -340,8 +340,8 @@ def add_OTP(institute, org_tup, in_path, out_path, out_file_base):
     from pathlib import Path
 
     # 3rd party imports
-    import pandas as pd
     import BiblioParsing as bp
+    import pandas as pd
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
@@ -488,7 +488,7 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
 def get_if_db(institute, org_tup, bibliometer_path):
     
-    # Standard imports
+    # Standard library imports
     from pathlib import Path
     
     # 3rd party imports
@@ -862,9 +862,9 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, in_path, out_path
         un fichier excel
     '''
     
-    # Standard imports
-    from pathlib import Path
+    # Standard library imports
     import os
+    from pathlib import Path
     
     # 3rd party imports
     import pandas as pd
@@ -966,10 +966,10 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     """
     # Standard library imports
     import os
-    from pathlib import Path
     from datetime import datetime
+    from pathlib import Path
     
-    # 3rd library imports
+    # 3rd party imports
     import pandas as pd    
     
     # Local imports

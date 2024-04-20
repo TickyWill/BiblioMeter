@@ -441,10 +441,8 @@ def update_employees(bibliometer_path, replace = True):
     
     # Standard library imports
     import os
-    from pathlib import Path
-    
-    # Third party imports
     import shutil
+    from pathlib import Path
     
     # local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg

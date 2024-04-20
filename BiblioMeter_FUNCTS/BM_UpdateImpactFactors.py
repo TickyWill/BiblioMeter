@@ -29,12 +29,12 @@ def _update_year_if_database(institute, org_tup, bibliometer_path, corpus_year,
     Note:
         Uses internal fonction `journal_capwords`
     """
-    # Standard library imports
+    # Standard library imports 
+    import string 
     from pathlib import Path
 
-    # 3rd party import
-    import pandas as pd 
-    import string 
+    # 3rd party imports
+    import pandas as pd
     
     # local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
@@ -112,11 +112,11 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
     """
 
     # Standard library imports
-    import numpy as np
     from pathlib import Path
 
-    # 3rd party import
+    # 3rd party imports
     import BiblioParsing as bp
+    import numpy as np
     import pandas as pd
     from openpyxl import Workbook
 

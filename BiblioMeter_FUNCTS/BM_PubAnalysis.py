@@ -2,7 +2,6 @@ __all__ = ['if_analysis',
            'keywords_analysis',          
           ]
 
-
 def _formatting_df(df, first_col_width):
     """
     """
@@ -149,11 +148,11 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, if_col_dict, books
     
     """
     # Standard Library imports
-    import numpy as np
     from pathlib import Path
            
     # 3rd party imports
-    import BiblioParsing as bp   
+    import BiblioParsing as bp
+    import numpy as np   
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
@@ -368,7 +367,7 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year,
 def _create_if_barchart(corpus_year, dept, if_df, if_col, kpi_dict, journal_col_alias, part = "all"):
     """
     """
-    # Standard Library imports
+    # 3rd party imports
     import numpy as np
     import plotly
     import plotly.express as px
@@ -533,12 +532,12 @@ def if_analysis(institute, org_tup, bibliometer_path, corpus_year,
     """
     
     # Standard Library imports
-    import numpy as np
     import os
     from pathlib import Path
 
     # 3rd party imports
     import BiblioParsing as bp
+    import numpy as np
     import pandas as pd
 
     # Local imports

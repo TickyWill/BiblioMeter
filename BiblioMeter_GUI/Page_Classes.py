@@ -1,25 +1,27 @@
 __all__ = ['app_main']
 
+# Standard library imports
 import tkinter as tk 
  
 class app_main(tk.Tk):
-    '''PAGE de lancement.
-    bmf stands for BiblioMeter_Files.
-    '''               
+    '''The class app_main inherite the attributes and methods of "tk.Tk".
+    "bmf" stands for BiblioMeter_Files.
+    ''' 
+    
     ############################### Class init - start ###############################
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        # Setting the link with "tk.Tk"
+        tk.Tk.__init__(self)
         
         # Standard library imports
-        from functools import partial
-        from screeninfo import get_monitors
-        from pathlib import Path
-        
-        # 3rd party imports
-        import tkinter as tk
         from tkinter import filedialog
         from tkinter import messagebox
         from tkinter import font as tkFont
+        from functools import partial
+        from pathlib import Path
+        
+        # 3rd party imports
+        from screeninfo import get_monitors
         
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
@@ -32,8 +34,7 @@ class app_main(tk.Tk):
         from BiblioMeter_GUI.Useful_Functions import place_after
         from BiblioMeter_GUI.Useful_Functions import str_size_mm
         
-        # Internal functions - start
-        
+        # Internal functions - start        
         def _display_path(inst_bmf):
             """Shortening bmf path for easy display""" 
             p = Path(inst_bmf)
@@ -212,96 +213,104 @@ class app_main(tk.Tk):
   
         # Identifying tk window of init class   
         _ = get_monitors() # OBLIGATOIRE        
-        self.lift()
+        #self.lift()
         self.attributes("-topmost", True)
-        self.after_idle(self.attributes,'-topmost',False)
-        self.REP = list()                    
+        #self.after_idle(self.attributes,'-topmost',False)
+        #self.REP = list()  
+        
+        # Defining pages classes and 
+        app_main.pages = (Page_Analysis,
+                          Page_UpdateIFs,
+                          Page_ConsolidateCorpus,
+                          Page_ParseCorpus,                     
+                         )
+        app_main.pages_ordered_list = [x.__name__ for x in app_main.pages][::-1]
         
         # Getting useful screen sizes and scale factors depending on displays properties
         self, sizes_tuple = general_properties(self)
-        win_width_px  = sizes_tuple[0]
-        win_height_px = sizes_tuple[1]
-        width_sf_px   = sizes_tuple[2] 
-        height_sf_px  = sizes_tuple[3]     # unused here
-        width_sf_mm   = sizes_tuple[4]
-        height_sf_mm  = sizes_tuple[5]
-        width_sf_min  = min(width_sf_mm, width_sf_px)
+        app_main.win_width_px  = sizes_tuple[0]
+        app_main.win_height_px = sizes_tuple[1]
+        app_main.width_sf_px   = sizes_tuple[2] 
+        app_main.height_sf_px  = sizes_tuple[3]     # unused here
+        app_main.width_sf_mm   = sizes_tuple[4]
+        app_main.height_sf_mm  = sizes_tuple[5]
+        app_main.width_sf_min  = min(app_main.width_sf_mm, app_main.width_sf_px)
         
         # Setting common parameters for widgets
         add_space_mm = gg.ADD_SPACE_MM
         
         ####################### Title and copyright widgets parameters ########################
         # Setting font size for page title and copyright
-        eff_page_title_font_size = font_size(gg.REF_PAGE_TITLE_FONT_SIZE, width_sf_min)     
+        eff_page_title_font_size = font_size(gg.REF_PAGE_TITLE_FONT_SIZE, app_main.width_sf_min)     
        
         # Setting reference Y position in mm and effective Y position in pixels for page label 
-        eff_page_title_pos_y_px = mm_to_px(gg.REF_PAGE_TITLE_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_page_title_pos_y_px = mm_to_px(gg.REF_PAGE_TITLE_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
        
         # Setting x position in pixels for page title 
-        mid_page_pos_x_px = win_width_px  * 0.5 
+        mid_page_pos_x_px = app_main.win_width_px  * 0.5 
         
         # Setting font size for copyright     
-        eff_copyright_font_size = font_size(gg.REF_COPYRIGHT_FONT_SIZE, width_sf_min)
+        eff_copyright_font_size = font_size(gg.REF_COPYRIGHT_FONT_SIZE, app_main.width_sf_min)
         
         # Setting X and Y positions reference in mm for copyright
-        eff_copyright_x_px = mm_to_px(gg.REF_COPYRIGHT_X_MM * width_sf_mm, gg.PPI)
-        eff_copyright_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * height_sf_mm, gg.PPI)
+        eff_copyright_x_px = mm_to_px(gg.REF_COPYRIGHT_X_MM * app_main.width_sf_mm, gg.PPI)
+        eff_copyright_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting font size for version
-        eff_version_font_size = font_size(gg.REF_VERSION_FONT_SIZE, width_sf_min)
+        eff_version_font_size = font_size(gg.REF_VERSION_FONT_SIZE, app_main.width_sf_min)
         
         # Setting X and Y positions reference in mm for version
-        eff_version_x_px = mm_to_px(gg.REF_VERSION_X_MM * width_sf_mm, gg.PPI)
-        eff_version_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * height_sf_mm, gg.PPI)
+        eff_version_x_px = mm_to_px(gg.REF_VERSION_X_MM * app_main.width_sf_mm, gg.PPI)
+        eff_version_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         ####################### Institute-selection widgets parameters ########################
         # Setting institut selection widgets parameters
-        eff_buttons_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
-        eff_select_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
-        inst_button_x_pos     = mm_to_px(gg.REF_INST_POS_X_MM * width_sf_mm,  gg.PPI)  
-        inst_button_y_pos     = mm_to_px(gg.REF_INST_POS_Y_MM * height_sf_mm, gg.PPI)     
+        eff_buttons_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
+        eff_select_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)
+        inst_button_x_pos     = mm_to_px(gg.REF_INST_POS_X_MM * app_main.width_sf_mm,  gg.PPI)  
+        inst_button_y_pos     = mm_to_px(gg.REF_INST_POS_Y_MM * app_main.height_sf_mm, gg.PPI)     
         dy_inst               = -10
         
         ##################### Working-folder selection widgets parameters ######################
         # Setting effective value for bmf entry width
-        eff_bmf_width = int(gg.REF_ENTRY_NB_CHAR * width_sf_min)
+        eff_bmf_width = int(gg.REF_ENTRY_NB_CHAR * app_main.width_sf_min)
 
         # Setting font size for bmf
-        eff_bmf_font_size    = font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_bmf_font_size    = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
 
         # Setting reference positions in mm and effective ones in pixels for bmf 
-        eff_bmf_pos_x_px = mm_to_px(gg.REF_BMF_POS_X_MM * height_sf_mm, gg.PPI)  
-        eff_bmf_pos_y_px = mm_to_px(gg.REF_BMF_POS_Y_MM * height_sf_mm, gg.PPI)         
+        eff_bmf_pos_x_px = mm_to_px(gg.REF_BMF_POS_X_MM * app_main.height_sf_mm, gg.PPI)  
+        eff_bmf_pos_y_px = mm_to_px(gg.REF_BMF_POS_Y_MM * app_main.height_sf_mm, gg.PPI)         
 
         # Setting reference relative positions in mm and effective relative 
         # X,Y positions in pixels for bmf change button
-        eff_button_dx_px = mm_to_px(gg.REF_BUTTON_DX_MM * width_sf_mm,  gg.PPI)
-        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * height_sf_mm, gg.PPI) 
+        eff_button_dx_px = mm_to_px(gg.REF_BUTTON_DX_MM * app_main.width_sf_mm,  gg.PPI)
+        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * app_main.height_sf_mm, gg.PPI) 
         
         ##################### Corpuses-list-display widgets parameters ######################                
         # Setting effective value for corpi setting width        
-        eff_list_width = int(gg.REF_ENTRY_NB_CHAR * width_sf_min)
+        eff_list_width = int(gg.REF_ENTRY_NB_CHAR * app_main.width_sf_min)
 
         # Setting font size for corpi
-        eff_corpi_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_corpi_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
 
         # Setting reference positions in mm and effective ones in pixels for corpuses      
-        eff_corpi_pos_x_px = mm_to_px(gg.REF_CORPI_POS_X_MM * height_sf_mm, gg.PPI)
-        eff_corpi_pos_y_px = mm_to_px(gg.REF_CORPI_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_corpi_pos_x_px = mm_to_px(gg.REF_CORPI_POS_X_MM * app_main.height_sf_mm, gg.PPI)
+        eff_corpi_pos_y_px = mm_to_px(gg.REF_CORPI_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
 
         # Setting reference relative positions in mm and effective relative 
         # Y positions in pixels for bmf change button
-        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * height_sf_mm, gg.PPI)         
+        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * app_main.height_sf_mm, gg.PPI)         
          
         ############################# Launch button parameters ############################## 
         # Setting font size for launch button
-        eff_launch_font_size = font_size(gg.REF_LAUNCH_FONT_SIZE, width_sf_min) 
+        eff_launch_font_size = font_size(gg.REF_LAUNCH_FONT_SIZE, app_main.width_sf_min) 
 
         # Setting x and y position in pixels for launch button
-        launch_but_pos_x_px = win_width_px  * 0.5
-        launch_but_pos_y_px = win_height_px * 0.8         
+        launch_but_pos_x_px = app_main.win_width_px  * 0.5
+        launch_but_pos_y_px = app_main.win_height_px * 0.8         
         
         # Setting default values
         institutes_list = ig.INSTITUTES_LIST   
@@ -375,8 +384,7 @@ class app_main(tk.Tk):
         Vérifie qu'un chemin a été renseigné et continue le cas échant, 
         sinon redemande de renseigner un chemin.
         ''' 
-        # 3rd party imports
-        import tkinter as tk
+        # Standard library imports
         from tkinter import messagebox
         
         # Local imports
@@ -390,14 +398,7 @@ class app_main(tk.Tk):
             messagebox.showwarning(warning_title, warning_text)
 
         else:
-            # Creating buttons pointing on classes listed in pages
-            pages = (Page_Analysis,
-                     Page_UpdateIFs,
-                     Page_ConsolidateCorpus,
-                     Page_ParseCorpus,                     
-                    )
-
-            # Création de mes deux containers
+            # Creating two frames in the tk window
             container_button = tk.Frame(self, 
                                         height = gg.CONTAINER_BUTTON_HEIGHT_PX, 
                                         bg = 'red')
@@ -415,7 +416,7 @@ class app_main(tk.Tk):
                                                  weight = 1)
 
             self.frames = {}
-            for page in pages:
+            for page in app_main.pages:
                 page_name = page.__name__
                 frame = page(parent           = container_frame, 
                              controller       = self, 
@@ -444,42 +445,30 @@ class Page_ParseCorpus(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        # 3rd party imports
-        import tkinter as tk
+        # Standard library imports
         from tkinter import font as tkFont        
 
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
         from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat
         from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        from BiblioMeter_GUI.Useful_Functions import root_properties   
-        
-        
-        # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = root_properties(controller)
-        win_width_px  = sizes_tuple[0]
-        win_height_px = sizes_tuple[1]    # unused here
-        width_sf_px   = sizes_tuple[2] 
-        height_sf_px  = sizes_tuple[3]    # unused here
-        width_sf_mm   = sizes_tuple[4]
-        height_sf_mm  = sizes_tuple[5]
-        width_sf_min  = min(width_sf_mm, width_sf_px)
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px   
         
         # Setting specific texts
         page_name  = self.__class__.__name__
+        page_num   = app_main.pages_ordered_list.index(page_name)
         label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute         
         
         # Setting font size for page label and button
-        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, app_main.width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px   = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px   = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px / 2
         
         # Creation of the class object Page 1
         create_parsing_concat(self, institute, bibliometer_path, controller)
@@ -498,7 +487,7 @@ class Page_ParseCorpus(tk.Frame):
                            text = label_text, 
                            font = button_font, 
                            command = lambda: controller._show_frame(page_name))
-        button.grid(row = 0, column = 0)
+        button.grid(row = 0, column = page_num)
 
 
 class Page_ConsolidateCorpus(tk.Frame):
@@ -508,8 +497,7 @@ class Page_ConsolidateCorpus(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         
-        # 3rd party imports
-        import tkinter as tk 
+        # Standard library imports
         from tkinter import font as tkFont
 
         # Local imports
@@ -517,8 +505,7 @@ class Page_ConsolidateCorpus(tk.Frame):
         from BiblioMeter_GUI.Page_ConsolidateCorpus import create_consolidate_corpus
         from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        from BiblioMeter_GUI.Useful_Functions import root_properties   
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px  
         
         # Internal functions
         def _launch_consolidate_corpus():
@@ -547,31 +534,22 @@ class Page_ConsolidateCorpus(tk.Frame):
                                    command = lambda: _launch_consolidate_corpus())
                 button.grid(row = 0, column = 1)        
             controller._show_frame(page_name)
-        
-        # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = root_properties(controller)
-        win_width_px  = sizes_tuple[0]
-        win_height_px = sizes_tuple[1]    # unused here
-        width_sf_px   = sizes_tuple[2] 
-        height_sf_px  = sizes_tuple[3]    # unused here
-        width_sf_mm   = sizes_tuple[4]
-        height_sf_mm  = sizes_tuple[5]
-        width_sf_min  = min(width_sf_mm, width_sf_px)
                 
         # Setting specific texts
         page_name  = self.__class__.__name__
+        page_num   = app_main.pages_ordered_list.index(page_name)
         label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute
 
         # Setting font size for page label and button
-        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, app_main.width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px / 2
         
         # Getting years of available corpuses from files status       
         files_status = existing_corpuses(bibliometer_path)    
@@ -594,7 +572,7 @@ class Page_ConsolidateCorpus(tk.Frame):
                            text = label_text, 
                            font = button_font, 
                            command = lambda: _launch_consolidate_corpus())
-        button.grid(row = 0, column = 1)
+        button.grid(row = 0, column = page_num)
 
             
 ############################ ############################
@@ -606,41 +584,30 @@ class Page_UpdateIFs(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        # 3rd party imports
-        import tkinter as tk 
+        # Standard library imports
         from tkinter import font as tkFont
 
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg  
         from BiblioMeter_GUI.Page_UpdateIFs import create_update_ifs
         from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        from BiblioMeter_GUI.Useful_Functions import root_properties   
-        
-        # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = root_properties(controller)
-        win_width_px  = sizes_tuple[0]
-        win_height_px = sizes_tuple[1]    # unused here
-        width_sf_px   = sizes_tuple[2] 
-        height_sf_px  = sizes_tuple[3]    # unused here
-        width_sf_mm   = sizes_tuple[4]
-        height_sf_mm  = sizes_tuple[5]
-        width_sf_min  = min(width_sf_mm, width_sf_px)
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px 
         
         # Setting specific texts
-        page_name  = self.__class__.__name__ 
+        page_name  = self.__class__.__name__
+        page_num   = app_main.pages_ordered_list.index(page_name) 
         label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute
         
         # Setting font size for page label and button
-        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, app_main.width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px / 2
         
         # Creation of the class object Page 3
         create_update_ifs(self, institute, bibliometer_path, controller)
@@ -658,7 +625,7 @@ class Page_UpdateIFs(tk.Frame):
                            text = label_text, 
                            font = button_font, 
                            command = lambda: controller._show_frame(page_name))
-        button.grid(row = 0, column = 2)
+        button.grid(row = 0, column = page_num)
 
 
 class Page_Analysis(tk.Frame):
@@ -668,8 +635,7 @@ class Page_Analysis(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        # 3rd party imports
-        import tkinter as tk 
+        # Standard library imports
         from tkinter import font as tkFont
 
         # Local imports
@@ -677,32 +643,22 @@ class Page_Analysis(tk.Frame):
         from BiblioMeter_GUI.Page_Analysis import create_analysis
         from BiblioMeter_GUI.Useful_Functions import font_size 
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        from BiblioMeter_GUI.Useful_Functions import root_properties  
-
-        # Getting useful window sizes and scale factors depending on displays properties
-        sizes_tuple   = root_properties(controller)
-        win_width_px  = sizes_tuple[0]
-        win_height_px = sizes_tuple[1]    # unused here
-        width_sf_px   = sizes_tuple[2] 
-        height_sf_px  = sizes_tuple[3]    # unused here
-        width_sf_mm   = sizes_tuple[4]
-        height_sf_mm  = sizes_tuple[5]
-        width_sf_min  = min(width_sf_mm, width_sf_px)
         
         # Setting specific texts 
         page_name  = self.__class__.__name__
+        page_num   = app_main.pages_ordered_list.index(page_name)
         label_text = gg.PAGES_LABELS[page_name]
         page_title = label_text + " du " + institute
         
         # Setting font size for page label and button
-        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, width_sf_min)
+        eff_label_font_size  = font_size(gg.REF_LABEL_FONT_SIZE, app_main.width_sf_min)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
         
         # Setting y_position in px for page label
-        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * height_sf_mm, gg.PPI)
+        eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px / 2
         
         # Creation of the class object Page 4
         create_analysis(self, institute, bibliometer_path, controller)
@@ -720,4 +676,4 @@ class Page_Analysis(tk.Frame):
                            text = label_text, 
                            font = button_font, 
                            command = lambda: controller._show_frame(page_name))
-        button.grid(row = 0, column = 3)        
+        button.grid(row = 0, column = page_num)        

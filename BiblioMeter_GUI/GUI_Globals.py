@@ -245,14 +245,6 @@ PAGES_LABELS = {'Page_ParseCorpus'      : "Analyse élémentaire des corpus",
                }
 
 
-# Setting module name for each gui page
-#PAGES_NAMES = {'first' : 'Page_ParseCorpus',
-#               'second': 'Page_ConsolidateCorpus',
-#               'third' : 'Page_UpdateIFs',
-#               'fourth': 'Page_UpdateIFs'
-#              }
-
-
 ########################## Cover Page (BiblioMeter launching Page) ##########################
 
 # Titre de la page

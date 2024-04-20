@@ -11,7 +11,7 @@ def _launch_update_employees(bibliometer_path,
     """
     """
     
-    # 3rd party imports    
+    # Standard library imports    
     from tkinter import messagebox
     
     # Local imports     
@@ -128,8 +128,6 @@ def _launch_recursive_year_search_try(year_select,
     
     # Standard library imports
     import os
-    
-    # 3rd party imports
     from tkinter import messagebox
     
     # Local imports
@@ -213,9 +211,11 @@ def _launch_recursive_year_search_try(year_select,
 
 def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
     
-    # 3rd party imports
-    import pandas as pd 
+    # Standard library imports
     from tkinter import messagebox
+    
+    # 3rd party imports
+    import pandas as pd
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
@@ -260,9 +260,7 @@ def _launch_resolution_homonymies_try(institute,
     """
     
     # Standard library imports
-    import os
-    
-    # 3rd party imports    
+    import os   
     from tkinter import messagebox
     
     # Local imports
@@ -353,11 +351,9 @@ def _launch_add_OTP_try(institute,
     """
     
     # Standard library imports
-    import os
-    from pathlib import Path
-    
-    # 3rd party imports    
+    import os    
     from tkinter import messagebox
+    from pathlib import Path
     
     # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_OTP
@@ -456,9 +452,7 @@ def _launch_pub_list_conso_try(institute,
     """
     
     # Standard library imports
-    import os
-    
-    # 3rd party imports    
+    import os   
     from tkinter import messagebox
     
     # Local library imports
@@ -568,28 +562,28 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
 
     # Standard library imports
     import os
+    import tkinter as tk
+    from tkinter import font as tkFont
+    from tkinter import filedialog
+    from tkinter import messagebox
+    from datetime import date   
     from pathlib import Path
 
     # 3rd party imports
-    import pandas as pd
-    import tkinter as tk
-    from datetime import date
-    from tkinter import font as tkFont
-    from tkinter import filedialog
-    from tkinter import messagebox       
+    import pandas as pd    
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
-    from BiblioMeter_GUI.Useful_Functions import root_properties   
+    from BiblioMeter_GUI.Useful_Functions import place_bellow  
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params     
 
     # Internal functions
@@ -623,35 +617,26 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
     
     ########################## Function start
     
-    # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
-    win_width_px  = sizes_tuple[0]    # unused here
-    win_height_px = sizes_tuple[1]    # unused here
-    width_sf_px   = sizes_tuple[2] 
-    height_sf_px  = sizes_tuple[3]    # unused here
-    width_sf_mm   = sizes_tuple[4]
-    height_sf_mm  = sizes_tuple[5]
-    width_sf_min  = min(width_sf_mm, width_sf_px)
-    
     # Setting useful local variables for positions modification
     # numbers are reference values in mm for reference screen
-    eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE, width_sf_min)           #14
-    eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_answer_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-2, width_sf_min)
-    eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3, width_sf_min)                                         
+    eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,   app_main.width_sf_min)           #14
+    eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, app_main.width_sf_min)
+    eff_answer_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, app_main.width_sf_min)
+    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-2, app_main.width_sf_min)
+    eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3, app_main.width_sf_min)                                         
 
-    etape_label_pos_x        = mm_to_px(gg.REF_ETAPE_POS_X_MM * width_sf_mm, gg.PPI)        #10
-    etape_label_pos_y_list   = [mm_to_px( y * height_sf_mm, gg.PPI) for y in gg.REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
-    etape_button_dx          = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * width_sf_mm, gg.PPI)       #10
-    etape_button_dy          = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * height_sf_mm, gg.PPI)      #5
-    etape_check_dy           = mm_to_px(gg.REF_ETAPE_CHECK_DY_MM * height_sf_mm, gg.PPI)    #-8
+    etape_label_pos_x        = mm_to_px(gg.REF_ETAPE_POS_X_MM * app_main.width_sf_mm, gg.PPI)        #10
+    etape_label_pos_y_list   = [mm_to_px( y * app_main.height_sf_mm, gg.PPI) 
+                                for y in gg.REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
+    etape_button_dx          = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * app_main.width_sf_mm, gg.PPI)       #10
+    etape_button_dy          = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * app_main.height_sf_mm, gg.PPI)      #5
+    etape_check_dy           = mm_to_px(gg.REF_ETAPE_CHECK_DY_MM * app_main.height_sf_mm, gg.PPI)    #-8
 
-    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #193 
-    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #145
+    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #193 
+    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #145
 
-    year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #10  
-    year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #26     
+    year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #10  
+    year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #26     
     dy_year                  = -6
     ds_year                  = 5
 
@@ -688,8 +673,8 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
     ### Décoration de la page
     # - Canvas
     fond = tk.Canvas(self, 
-                     width = win_width_px, 
-                     height = win_height_px)
+                     width  = app_main.win_width_px, 
+                     height = app_main.win_height_px)
     fond.place(x = 0, y = 0)
     
     # - Etapes labels

@@ -12,7 +12,7 @@ def _launch_update_if_db(institute,
     """
     """
     
-    # 3rd party imports    
+    # Standard library imports    
     from tkinter import messagebox
     
     # Local imports     
@@ -60,11 +60,9 @@ def _launch_update_pub_if(institute,
     """
     """
     # Standard library imports
-    import os
-    from pathlib import Path
-    
-    # 3rd party imports    
+    import os    
     from tkinter import messagebox
+    from pathlib import Path
     
     # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_if
@@ -144,22 +142,20 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
     
     # Standard library imports
     import os
-    from pathlib import Path
-    
-    # 3rd party imports
     import tkinter as tk
     from tkinter import font as tkFont
     from tkinter import messagebox
+    from pathlib import Path
     
     # Local imports
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Page_Classes import app_main 
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
-    from BiblioMeter_GUI.Useful_Functions import place_bellow
-    from BiblioMeter_GUI.Useful_Functions import root_properties   
+    from BiblioMeter_GUI.Useful_Functions import place_bellow  
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists  
     
@@ -258,31 +254,21 @@ def create_update_ifs(self, institute, bibliometer_path, parent):
         answer_1 = messagebox.askokcancel('Information', message)
         if answer_1:
             parent.destroy()
-            
-    # Getting useful window sizes and scale factors depending on displays properties
-    sizes_tuple   = root_properties(self)
-    win_width_px  = sizes_tuple[0]    # unused here
-    win_height_px = sizes_tuple[1]    # unused here
-    width_sf_px   = sizes_tuple[2] 
-    height_sf_px  = sizes_tuple[3]    # unused here
-    width_sf_mm   = sizes_tuple[4]
-    height_sf_mm  = sizes_tuple[5]
-    width_sf_min  = min(width_sf_mm, width_sf_px)
     
     # Setting effective font sizes and positions (numbers are reference values in mm)
-    eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE, width_sf_min)           #14
-    eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, width_sf_min)
-    eff_help_font_size       = font_size(gg.REF_ETAPE_FONT_SIZE-2, width_sf_min)
-    eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3, width_sf_min)      
+    eff_etape_font_size   = font_size(gg.REF_ETAPE_FONT_SIZE, app_main.width_sf_min)           #14
+    eff_launch_font_size  = font_size(gg.REF_ETAPE_FONT_SIZE-1, app_main.width_sf_min)
+    eff_help_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-2, app_main.width_sf_min)
+    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, app_main.width_sf_min)      
     
-    if_db_update_x_pos_px    = mm_to_px(10 * width_sf_mm,  gg.PPI)
-    if_db_update_y_pos_px    = mm_to_px(35 * height_sf_mm, gg.PPI)     
-    update_if_label_dx_px    = mm_to_px( 0 * width_sf_mm,  gg.PPI)  
-    update_if_label_dy_px    = mm_to_px(15 * height_sf_mm, gg.PPI)   
-    launch_dx_px             = mm_to_px( 0 * width_sf_mm,  gg.PPI)    
-    launch_dy_px             = mm_to_px( 5 * height_sf_mm, gg.PPI)   
-    exit_button_x_pos_px     = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * width_sf_mm,  gg.PPI)    #193 
-    exit_button_y_pos_px     = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * height_sf_mm, gg.PPI)    #145    
+    if_db_update_x_pos_px = mm_to_px(10 * app_main.width_sf_mm,  gg.PPI)
+    if_db_update_y_pos_px = mm_to_px(35 * app_main.height_sf_mm, gg.PPI)     
+    update_if_label_dx_px = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)  
+    update_if_label_dy_px = mm_to_px(15 * app_main.height_sf_mm, gg.PPI)   
+    launch_dx_px          = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)    
+    launch_dy_px          = mm_to_px( 5 * app_main.height_sf_mm, gg.PPI)   
+    exit_button_x_pos_px  = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #193 
+    exit_button_y_pos_px  = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #145    
     
     # Setting common attributs
     etape_label_format = 'left'
