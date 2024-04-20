@@ -218,7 +218,7 @@ class app_main(tk.Tk):
         #self.after_idle(self.attributes,'-topmost',False)
         #self.REP = list()  
         
-        # Defining pages classes and 
+        # Defining pages classes and pages list
         app_main.pages = (Page_Analysis,
                           Page_UpdateIFs,
                           Page_ConsolidateCorpus,

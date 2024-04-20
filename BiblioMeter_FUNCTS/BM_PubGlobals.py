@@ -125,7 +125,7 @@ DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction
 
 
 DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + DOC_TYPE_DICT['Proceedings'],
-                        'Books & Editorials'     : DOC_TYPE_DICT['Books'],
+                        'Books & Editorials'     : DOC_TYPE_DICT['Books'],                        
                        } 
 
 

@@ -824,8 +824,10 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     col_final_list   = set_final_col_names(institute, org_tup)
     pub_id_col_alias = col_final_list[0]
     doc_type_alias   = col_final_list[7]   
-
+    
     full_pub_list_df = pd.read_excel(pub_list_file_path)
+    other_dg = full_pub_list_df.copy()
+    other_dg_file_alias = year_pub_list_file_alias + "_Others.xlsx"
     pub_nb = len(full_pub_list_df)    
     key_pub_nb = 0
     for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
@@ -833,7 +835,9 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         key_dg = pd.DataFrame(columns = full_pub_list_df.columns)
         
         for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
-            if doc_type.upper() in doctype_list: key_dg = pd.concat([key_dg, dg])  
+            if doc_type.upper() in doctype_list: 
+                key_dg = pd.concat([key_dg, dg])
+                other_dg = other_dg.drop(dg.index)
 
         key_pub_nb += len(key_dg)
         
@@ -843,6 +847,12 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         key_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
         wb, _ = mise_en_page(institute, org_tup, key_dg)
         wb.save(key_dg_path)
+        
+    other_dg_path = pub_list_path / Path(other_dg_file_alias)
+        
+    other_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
+    wb, _ = mise_en_page(institute, org_tup, other_dg)
+    wb.save(other_dg_path)       
     
     split_ratio = 100
     if pub_nb != 0:    
