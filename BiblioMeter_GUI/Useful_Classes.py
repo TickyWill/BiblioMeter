@@ -95,17 +95,6 @@ class CheckBoxCorpuses:
         from BiblioMeter_GUI.Page_Classes import app_main 
         from BiblioMeter_GUI.Useful_Functions import font_size 
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        #from BiblioMeter_GUI.Useful_Functions import root_properties        
-        
-        ## Getting useful window sizes and scale factors depending on displays properties
-        #sizes_tuple   = root_properties(parent)
-        #win_width_px  = sizes_tuple[0]    # unused here
-        #win_height_px = sizes_tuple[1]    # unused here
-        #width_sf_px   = sizes_tuple[2]    # unused here
-        #height_sf_px  = sizes_tuple[3]    # unused here
-        #width_sf_mm   = sizes_tuple[4]
-        #height_sf_mm  = sizes_tuple[5]
-        #width_sf_min  = min(width_sf_mm, width_sf_px)
         
         self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * app_main.width_sf_mm, gg.PPI)
         font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, app_main.width_sf_min))

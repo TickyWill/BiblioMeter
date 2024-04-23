@@ -4,14 +4,15 @@ __all__ = ['app_main']
 import tkinter as tk 
  
 class app_main(tk.Tk):
-    '''The class app_main inherite the attributes and methods of "tk.Tk".
+    '''The class app_main inherite the attributes and methods of "tk.Tk" 
+    that is the "master" window.
     "bmf" stands for BiblioMeter_Files.
     ''' 
     
     ############################### Class init - start ###############################
-    def __init__(self):
+    def __init__(master):
         # Setting the link with "tk.Tk"
-        tk.Tk.__init__(self)
+        tk.Tk.__init__(master)
         
         # Standard library imports
         from tkinter import filedialog
@@ -40,8 +41,7 @@ class app_main(tk.Tk):
             p = Path(inst_bmf)
             p_disp = ('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:]))
             return p_disp
-        
-        
+               
         def _get_file(institute_select):
             # Getting new working directory
             dialog_title = "Choisir un nouveau dossier de travail"
@@ -54,24 +54,23 @@ class app_main(tk.Tk):
             # Updating bmf values using new working directory
             _set_bmf_widget_param(institute_select, bmf_str)            
             _update_corpi(bmf_str)
-            _set_launch_button(institute_select, bmf_str)
-            
+            SetLaunchButton(master, institute_select, bmf_str)            
         
         def _set_bmf_widget_param(institute_select, inst_bmf):
             # Setting bmf widgets parameters
             bmf_font = tkFont.Font(family = gg.FONT_NAME, 
                                    size   = eff_bmf_font_size,
                                    weight = 'bold')
-            bmf_label       = tk.Label(self, 
+            bmf_label       = tk.Label(master, 
                                        text = gg.TEXT_BMF,  
                                        font = bmf_font,)
-            bmf_val         = tk.StringVar(self) 
-            bmf_val2        = tk.StringVar(self)
-            bmf_entree      = tk.Entry(self, textvariable = bmf_val)
-            bmf_entree2     = tk.Entry(self, textvariable = bmf_val2, width = eff_bmf_width)
+            bmf_val         = tk.StringVar(master) 
+            bmf_val2        = tk.StringVar(master)
+            bmf_entree      = tk.Entry(master, textvariable = bmf_val)
+            bmf_entree2     = tk.Entry(master, textvariable = bmf_val2, width = eff_bmf_width)
             bmf_button_font = tkFont.Font(family = gg.FONT_NAME,
                                           size   = eff_button_font_size)                
-            bmf_button      = tk.Button(self, 
+            bmf_button      = tk.Button(master, 
                                         text = gg.TEXT_BMF_CHANGE, 
                                         font = bmf_button_font, 
                                         command = lambda: _get_file(institute_select))
@@ -88,7 +87,6 @@ class app_main(tk.Tk):
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)            
             bmf_val.set(inst_bmf)
             bmf_val2.set((_display_path(inst_bmf))) 
-
         
         def _create_corpus(inst_bmf):
             corpi_val = _set_corpi_widgets_param(inst_bmf)
@@ -116,22 +114,21 @@ class app_main(tk.Tk):
                 messagebox.showwarning(warning_title, warning_text)
                 
                 # Setting corpi_val value to empty string
-                corpi_val.set("")                           
-                
+                corpi_val.set("")                                           
                 
         def _set_corpi_widgets_param(inst_bmf):           
             # Setting corpuses widgets parameters 
             corpi_font   = tkFont.Font(family = gg.FONT_NAME, 
                                        size   = eff_corpi_font_size,
                                        weight = 'bold')
-            corpi_val    = tk.StringVar(self)        
-            corpi_entry  = tk.Entry(self, textvariable = corpi_val, width = eff_list_width) 
+            corpi_val    = tk.StringVar(master)        
+            corpi_entry  = tk.Entry(master, textvariable = corpi_val, width = eff_list_width) 
             corpi_button_font = tkFont.Font(family = gg.FONT_NAME,
                                             size   = eff_button_font_size)
-            corpi_label  = tk.Label(self, 
+            corpi_label  = tk.Label(master, 
                                     text = gg.TEXT_CORPUSES,  
                                     font = corpi_font,)                          
-            corpi_button = tk.Button(self, 
+            corpi_button = tk.Button(master, 
                                      text = gg.TEXT_BOUTON_CREATION_CORPUS, 
                                      font = corpi_button_font, 
                                      command = lambda: _create_corpus(inst_bmf))
@@ -147,7 +144,6 @@ class app_main(tk.Tk):
             corpi_button.place(x = eff_list_pos_x_px, 
                                y = eff_corpi_pos_y_px + eff_button_dy_px,)
             return corpi_val
-
             
         def _update_corpi(inst_bmf):
             corpi_val = _set_corpi_widgets_param(inst_bmf)
@@ -166,23 +162,7 @@ class app_main(tk.Tk):
                 messagebox.showwarning(warning_title, warning_text)
                 
                 # Setting corpi_val value to empty string
-                corpi_val.set("")            
-
-                
-        def _set_launch_button(institute, inst_bmf):
-            # Setting launch button
-            launch_font = tkFont.Font(family = gg.FONT_NAME,
-                                      size   = eff_launch_font_size,
-                                      weight = 'bold')
-            launch_button = tk.Button(self,
-                                      text = gg.TEXT_BOUTON_LANCEMENT,
-                                      font = launch_font,
-                                      command = lambda: self._generate_pages(institute, inst_bmf))                            
-            # Plqcing launch button    
-            launch_button.place(x = launch_but_pos_x_px,
-                                y = launch_but_pos_y_px,
-                                anchor = "s") 
-                            
+                corpi_val.set("")                                       
                 
         def _update_page(*args, widget = None):
             institute_select = widget.get()
@@ -205,18 +185,19 @@ class app_main(tk.Tk):
                 # Setting corpuses list value to empty string
                 corpi_val.set("")              
             
-            # Managing analysis launch button             
-            _set_launch_button(institute_select, inst_default_bmf)                            
+            # Managing analysis launch button 
+            SetLaunchButton(master, institute_select, inst_default_bmf)
+            
         ############################## Internal functions - end ##############################                   
         
         ######################################## Main ########################################
   
         # Identifying tk window of init class   
         _ = get_monitors() # OBLIGATOIRE        
-        #self.lift()
-        self.attributes("-topmost", True)
-        #self.after_idle(self.attributes,'-topmost',False)
-        #self.REP = list()  
+        #master.lift()
+        master.attributes("-topmost", True)
+        #master.after_idle(master.attributes,'-topmost',False)
+        #master.REP = list()  
         
         # Defining pages classes and pages list
         app_main.pages = (Page_Analysis,
@@ -227,7 +208,7 @@ class app_main(tk.Tk):
         app_main.pages_ordered_list = [x.__name__ for x in app_main.pages][::-1]
         
         # Getting useful screen sizes and scale factors depending on displays properties
-        self, sizes_tuple = general_properties(self)
+        sizes_tuple = general_properties(master)
         app_main.win_width_px  = sizes_tuple[0]
         app_main.win_height_px = sizes_tuple[1]
         app_main.width_sf_px   = sizes_tuple[2] 
@@ -238,30 +219,7 @@ class app_main(tk.Tk):
         
         # Setting common parameters for widgets
         add_space_mm = gg.ADD_SPACE_MM
-        
-        ####################### Title and copyright widgets parameters ########################
-        # Setting font size for page title and copyright
-        eff_page_title_font_size = font_size(gg.REF_PAGE_TITLE_FONT_SIZE, app_main.width_sf_min)     
-       
-        # Setting reference Y position in mm and effective Y position in pixels for page label 
-        eff_page_title_pos_y_px = mm_to_px(gg.REF_PAGE_TITLE_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
-       
-        # Setting x position in pixels for page title 
-        mid_page_pos_x_px = app_main.win_width_px  * 0.5 
-        
-        # Setting font size for copyright     
-        eff_copyright_font_size = font_size(gg.REF_COPYRIGHT_FONT_SIZE, app_main.width_sf_min)
-        
-        # Setting X and Y positions reference in mm for copyright
-        eff_copyright_x_px = mm_to_px(gg.REF_COPYRIGHT_X_MM * app_main.width_sf_mm, gg.PPI)
-        eff_copyright_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * app_main.height_sf_mm, gg.PPI)
-        
-        # Setting font size for version
-        eff_version_font_size = font_size(gg.REF_VERSION_FONT_SIZE, app_main.width_sf_min)
-        
-        # Setting X and Y positions reference in mm for version
-        eff_version_x_px = mm_to_px(gg.REF_VERSION_X_MM * app_main.width_sf_mm, gg.PPI)
-        eff_version_y_px = mm_to_px(gg.REF_COPYRIGHT_Y_MM * app_main.height_sf_mm, gg.PPI)
+        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
         
         ####################### Institute-selection widgets parameters ########################
         # Setting institut selection widgets parameters
@@ -276,16 +234,14 @@ class app_main(tk.Tk):
         eff_bmf_width = int(gg.REF_ENTRY_NB_CHAR * app_main.width_sf_min)
 
         # Setting font size for bmf
-        eff_bmf_font_size    = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
+        eff_bmf_font_size = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)       
 
         # Setting reference positions in mm and effective ones in pixels for bmf 
         eff_bmf_pos_x_px = mm_to_px(gg.REF_BMF_POS_X_MM * app_main.height_sf_mm, gg.PPI)  
-        eff_bmf_pos_y_px = mm_to_px(gg.REF_BMF_POS_Y_MM * app_main.height_sf_mm, gg.PPI)         
-
+        eff_bmf_pos_y_px = mm_to_px(gg.REF_BMF_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
+        
         # Setting reference relative positions in mm and effective relative 
-        # X,Y positions in pixels for bmf change button
-        eff_button_dx_px = mm_to_px(gg.REF_BUTTON_DX_MM * app_main.width_sf_mm,  gg.PPI)
+        # Y positions in pixels for bmf change button
         eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * app_main.height_sf_mm, gg.PPI) 
         
         ##################### Corpuses-list-display widgets parameters ######################                
@@ -294,15 +250,10 @@ class app_main(tk.Tk):
 
         # Setting font size for corpi
         eff_corpi_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)
-        eff_button_font_size = font_size(gg.REF_BUTTON_FONT_SIZE, app_main.width_sf_min)
 
         # Setting reference positions in mm and effective ones in pixels for corpuses      
         eff_corpi_pos_x_px = mm_to_px(gg.REF_CORPI_POS_X_MM * app_main.height_sf_mm, gg.PPI)
-        eff_corpi_pos_y_px = mm_to_px(gg.REF_CORPI_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
-
-        # Setting reference relative positions in mm and effective relative 
-        # Y positions in pixels for bmf change button
-        eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * app_main.height_sf_mm, gg.PPI)         
+        eff_corpi_pos_y_px = mm_to_px(gg.REF_CORPI_POS_Y_MM * app_main.height_sf_mm, gg.PPI)         
          
         ############################# Launch button parameters ############################## 
         # Setting font size for launch button
@@ -310,74 +261,78 @@ class app_main(tk.Tk):
 
         # Setting x and y position in pixels for launch button
         launch_but_pos_x_px = app_main.win_width_px  * 0.5
-        launch_but_pos_y_px = app_main.win_height_px * 0.8         
+        launch_but_pos_y_px = app_main.win_height_px * 0.8
         
         # Setting default values
         institutes_list = ig.INSTITUTES_LIST   
         default_institute = "   "  
         
-        ######################################## Title - start                       
-        page_title = tk.Label(self, 
-                              text = gg.TEXT_TITLE, 
-                              font = (gg.FONT_NAME, eff_page_title_font_size), 
-                              justify = "center")
-        page_title.place(x = mid_page_pos_x_px, 
-                         y = eff_page_title_pos_y_px, 
-                         anchor = "center")
-        ######################################## Title - end        
+        ######################################## Title and copyright                       
+        PageTitle(master)
+        AuthorCopyright(master)
                 
         ######################################## Selection de l'Institut   
-        institute_val = tk.StringVar(self)
+        institute_val = tk.StringVar(master)
         institute_val.set(default_institute)
 
         # Création de l'option button des instituts    
-        self.font_OptionButton_inst = tkFont.Font(family = gg.FONT_NAME, 
+        master.font_OptionButton_inst = tkFont.Font(family = gg.FONT_NAME, 
                                                   size = eff_buttons_font_size)
-        self.OptionButton_inst = tk.OptionMenu(self, 
+        master.OptionButton_inst = tk.OptionMenu(master, 
                                                institute_val, 
                                                *institutes_list)
-        self.OptionButton_inst.config(font = self.font_OptionButton_inst)
+        master.OptionButton_inst.config(font = master.font_OptionButton_inst)
 
         # Création du label
-        self.font_Label_inst = tkFont.Font(family = gg.FONT_NAME, 
+        master.font_Label_inst = tkFont.Font(family = gg.FONT_NAME, 
                                            size = eff_select_font_size,
                                            weight = 'bold') 
-        self.Label_inst = tk.Label(self, 
+        master.Label_inst = tk.Label(master, 
                                    text = gg.TEXT_INSTITUTE, 
-                                   font = self.font_Label_inst)
-        self.Label_inst.place(x = inst_button_x_pos, y = inst_button_y_pos)
-        place_after(self.Label_inst, self.OptionButton_inst, dy = dy_inst)
+                                   font = master.font_Label_inst)
+        master.Label_inst.place(x = inst_button_x_pos, y = inst_button_y_pos)
+        place_after(master.Label_inst, master.OptionButton_inst, dy = dy_inst)
         
         # Suivi de la sélection
         institute_val.trace('w', partial(_update_page, widget = institute_val))                
-
-        
-        ######################################## Auteurs et versions         
-        Auteurs_font_label = tkFont.Font(family = gg.FONT_NAME, 
-                                         size   = eff_copyright_font_size,)
-        Auteurs_label = tk.Label(self, 
-                                 text = gg.TEXT_COPYRIGHT, 
-                                 font = Auteurs_font_label,
-                                 justify = "left")
-        Auteurs_label.place(x = eff_copyright_x_px, 
-                            y = eff_copyright_y_px, 
-                            anchor = "sw")
-      
-        version_font_label = tkFont.Font(family = gg.FONT_NAME, 
-                                         size = eff_version_font_size,
-                                         weight = 'bold')
-        version_label = tk.Label(self, 
-                                 text = gg.TEXT_VERSION, 
-                                 font = version_font_label,
-                                 justify = "right")
-        version_label.place(x = eff_version_x_px, 
-                            y = eff_version_y_px, 
-                            anchor = "sw") 
         
     ################################ Class init - end ################################
-  
-    ######################## Class internal functions - start ########################   
-    def _generate_pages(self, institute, bibliometer_path):
+        
+class SetLaunchButton(tk.Tk):
+
+    def __init__(self, master, institute, bibliometer_path):        
+        # Standard library imports
+        from tkinter import font as tkFont
+        
+        # Local imports
+        import BiblioMeter_GUI.GUI_Globals as gg 
+        from BiblioMeter_GUI.Useful_Functions import font_size
+        
+        tk.Frame.__init__(self)
+        
+        # Setting font size for launch button
+        eff_launch_font_size = font_size(gg.REF_LAUNCH_FONT_SIZE, app_main.width_sf_min)
+        
+        # Setting x and y position in pixels for launch button
+        launch_but_pos_x_px = app_main.win_width_px  * 0.5
+        launch_but_pos_y_px = app_main.win_height_px * 0.8
+        
+        # Setting launch button
+        launch_font = tkFont.Font(family = gg.FONT_NAME,
+                                  size   = eff_launch_font_size,
+                                  weight = 'bold')
+        launch_button = tk.Button(master,
+                                  text = gg.TEXT_BOUTON_LANCEMENT,
+                                  font = launch_font,
+                                  command = lambda: self._generate_pages(master, 
+                                                                         institute, 
+                                                                         bibliometer_path)) 
+        # Placing launch button    
+        launch_button.place(x = launch_but_pos_x_px,
+                            y = launch_but_pos_y_px,
+                            anchor = "s")  
+
+    def _generate_pages(self, master, institute, bibliometer_path):
         
         '''Permet la génération des pages après spécification du chemin 
         vers la zone de stockage.
@@ -399,14 +354,14 @@ class app_main(tk.Tk):
 
         else:
             # Creating two frames in the tk window
-            container_button = tk.Frame(self, 
+            container_button = tk.Frame(master, 
                                         height = gg.CONTAINER_BUTTON_HEIGHT_PX, 
                                         bg = 'red')
             container_button.pack(side = "top", 
                                   fill = "both", 
                                   expand = False)
 
-            container_frame = tk.Frame(self)
+            container_frame = tk.Frame(master)
             container_frame.pack(side="top", 
                                  fill="both", 
                                  expand=True)
@@ -418,11 +373,7 @@ class app_main(tk.Tk):
             self.frames = {}
             for page in app_main.pages:
                 page_name = page.__name__
-                frame = page(parent           = container_frame, 
-                             controller       = self, 
-                             container_button = container_button,
-                             institute        = institute,
-                             bibliometer_path = bibliometer_path)
+                frame = page(container_frame, master, container_button, institute, bibliometer_path)
                 self.frames[page_name] = frame
 
                 # put all of the pages in the same location;
@@ -431,11 +382,87 @@ class app_main(tk.Tk):
                 frame.grid(row = 0, 
                            column = 0, 
                            sticky = "nsew")
+            master.frames = self.frames
+
+
+class PageTitle(tk.Tk):
+    
+    def __init__(self, parent):
+        # Standard library imports
+        from tkinter import font as tkFont
         
-    def _show_frame(self, page_name):        
-        '''Show a frame for the given page name'''        
-        frame = self.frames[page_name]
-        frame.tkraise()
+        # Local imports
+        import BiblioMeter_GUI.GUI_Globals as gg
+        import BiblioMeter_GUI.Useful_Functions as guf
+        
+        ####################### Title and copyright widgets parameters ########################
+        # Setting font size for page title and copyright
+        eff_page_title_font_size = guf.font_size(gg.REF_PAGE_TITLE_FONT_SIZE, app_main.width_sf_min)     
+        
+        # Setting reference Y position in mm and effective Y position in pixels for page label 
+        eff_page_title_pos_y_px = guf.mm_to_px(gg.REF_PAGE_TITLE_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
+        
+        # Setting x position in pixels for page title 
+        mid_page_pos_x_px = app_main.win_width_px  * 0.5
+        page_title = tk.Label(parent, 
+                              text = gg.TEXT_TITLE, 
+                              font = (gg.FONT_NAME, eff_page_title_font_size), 
+                              justify = "center")
+        page_title.place(x = mid_page_pos_x_px, 
+                         y = eff_page_title_pos_y_px, 
+                         anchor = "center")
+
+class AuthorCopyright(tk.Frame):
+        
+    def __init__(self, parent):
+        # Standard library imports
+        from tkinter import font as tkFont
+        
+        # Local imports
+        import BiblioMeter_GUI.GUI_Globals as gg
+        import BiblioMeter_GUI.Useful_Functions as guf
+        
+        # Setting font size for copyright
+        ref_copyright_font_size = gg.REF_COPYRIGHT_FONT_SIZE       
+        eff_copyright_font_size = guf.font_size(ref_copyright_font_size, app_main.width_sf_min)
+        
+        # Setting X and Y positions reference in mm for copyright
+        ref_copyright_x_mm = gg.REF_COPYRIGHT_X_MM              #5
+        eff_copyright_x_px = guf.mm_to_px(ref_copyright_x_mm * app_main.width_sf_mm, gg.PPI)
+        ref_copyright_y_mm = gg.REF_COPYRIGHT_Y_MM              #170
+        eff_copyright_y_px = guf.mm_to_px(ref_copyright_y_mm * app_main.height_sf_mm, gg.PPI)
+        
+        # Setting font size for version
+        ref_version_font_size = gg.REF_VERSION_FONT_SIZE         #12
+        eff_version_font_size = guf.font_size(ref_version_font_size,app_main.width_sf_min)
+        
+        # Setting X and Y positions reference in mm for version
+        ref_version_x_mm = gg.REF_VERSION_X_MM                   #185
+        ref_version_y_mm = gg.REF_COPYRIGHT_Y_MM                 #170
+        eff_version_y_px = guf.mm_to_px(ref_version_y_mm * app_main.height_sf_mm, gg.PPI)
+        eff_version_x_px = guf.mm_to_px(ref_version_x_mm * app_main.width_sf_mm, gg.PPI)
+           
+    
+        Auteurs_font_label = tkFont.Font(family = gg.FONT_NAME, 
+                                             size   = eff_copyright_font_size,)
+        Auteurs_label = tk.Label(parent, 
+                                 text = gg.TEXT_COPYRIGHT, 
+                                 font = Auteurs_font_label,
+                                 justify = "left")
+        Auteurs_label.place(x = eff_copyright_x_px, 
+                            y = eff_copyright_y_px, 
+                            anchor = "sw")
+      
+        version_font_label = tkFont.Font(family = gg.FONT_NAME, 
+                                         size = eff_version_font_size,
+                                         weight = 'bold')
+        version_label = tk.Label(parent, 
+                                 text = gg.TEXT_VERSION, 
+                                 font = version_font_label,
+                                 justify = "right")
+        version_label.place(x = eff_version_x_px, 
+                            y = eff_version_y_px, 
+                            anchor = "sw")
 
 
 class Page_ParseCorpus(tk.Frame):
@@ -452,7 +479,8 @@ class Page_ParseCorpus(tk.Frame):
         import BiblioMeter_GUI.GUI_Globals as gg
         from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat
         from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px   
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import show_frame
         
         # Setting specific texts
         page_name  = self.__class__.__name__
@@ -485,8 +513,8 @@ class Page_ParseCorpus(tk.Frame):
                                   size   = eff_button_font_size)
         button = tk.Button(container_button, 
                            text = label_text, 
-                           font = button_font, 
-                           command = lambda: controller._show_frame(page_name))
+                           font = button_font,
+                           command = lambda: show_frame(controller, page_name))
         button.grid(row = 0, column = page_num)
 
 
@@ -505,7 +533,8 @@ class Page_ConsolidateCorpus(tk.Frame):
         from BiblioMeter_GUI.Page_ConsolidateCorpus import create_consolidate_corpus
         from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px  
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import show_frame  
         
         # Internal functions
         def _launch_consolidate_corpus():
@@ -533,7 +562,7 @@ class Page_ConsolidateCorpus(tk.Frame):
                                    font = button_font, 
                                    command = lambda: _launch_consolidate_corpus())
                 button.grid(row = 0, column = 1)        
-            controller._show_frame(page_name)
+            show_frame(controller, page_name)
                 
         # Setting specific texts
         page_name  = self.__class__.__name__
@@ -591,7 +620,8 @@ class Page_UpdateIFs(tk.Frame):
         import BiblioMeter_GUI.GUI_Globals as gg  
         from BiblioMeter_GUI.Page_UpdateIFs import create_update_ifs
         from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px 
+        from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import show_frame  
         
         # Setting specific texts
         page_name  = self.__class__.__name__
@@ -624,7 +654,7 @@ class Page_UpdateIFs(tk.Frame):
         button = tk.Button(container_button, 
                            text = label_text, 
                            font = button_font, 
-                           command = lambda: controller._show_frame(page_name))
+                           command = lambda: show_frame(controller, page_name))
         button.grid(row = 0, column = page_num)
 
 
@@ -643,6 +673,7 @@ class Page_Analysis(tk.Frame):
         from BiblioMeter_GUI.Page_Analysis import create_analysis
         from BiblioMeter_GUI.Useful_Functions import font_size 
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
+        from BiblioMeter_GUI.Useful_Functions import show_frame 
         
         # Setting specific texts 
         page_name  = self.__class__.__name__
@@ -675,5 +706,5 @@ class Page_Analysis(tk.Frame):
         button = tk.Button(container_button, 
                            text = label_text, 
                            font = button_font, 
-                           command = lambda: controller._show_frame(page_name))
+                           command = lambda: show_frame(controller, page_name))
         button.grid(row = 0, column = page_num)        

@@ -7,11 +7,17 @@ __all__ = ['existing_corpuses',
            'mm_to_px',
            'place_after', 
            'place_bellow', 
-           'place_bellow_LabelEntry', 
-           'root_properties',                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           'place_bellow_LabelEntry',
            'str_size_mm',
+           'show_frame',
           ]
+
+def show_frame(self, page_name):        
+    '''Show a frame for the given page name'''
+    frame = self.frames[page_name]
+    frame.tkraise()
     
+
 def last_available_years(bibliometer_path, year_number):
     
     '''
@@ -350,36 +356,5 @@ def general_properties(self):
     # Setting title window
     self.title(gg.APPLICATION_WINDOW_TITLE)
         
-    return self, sizes_tuple
-
-
-def root_properties(root):
-    '''The function `root_properties` calculate the window sizes 
-    and useful scale factors for the application secondary windows.
-    For that, it uses reference values for the display sizes in pixels
-    and mm through the globals:
-    - "REF_SCREEN_WIDTH_PX" and "REF_SCREEN_HEIGHT_PX";
-    - "REF_SCREEN_WIDTH_MM" and "REF_SCREEN_HEIGHT_MM".
-    The secondary window sizes in mm are set by the globals: 
-    - "REF_WINDOW_WIDTH_MM" and "REF_WINDOW_HEIGHT_MM".
-    These globals are defined locally in the module "GUI_Globals.py" 
-    of the package "BiblioMeter_GUI".
-    
-    Args:
-        root (str): reference window for getting screen information
-        
-    Returns:
-        (tuple): 2 window sizes in pixels, 2 scale factors for sizes in mm 
-                 and 2 scale factors for sizes in pixels.
-    '''
-   
-    # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
-    screen_width_px  = root.winfo_screenwidth()
-    screen_height_px = root.winfo_screenheight()
-    
-    sizes_tuple = _window_properties(screen_width_px, screen_height_px)
-
     return sizes_tuple
-
-
 
