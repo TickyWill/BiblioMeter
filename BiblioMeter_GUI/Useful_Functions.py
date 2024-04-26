@@ -9,6 +9,7 @@ __all__ = ['existing_corpuses',
            'place_bellow', 
            'place_bellow_LabelEntry',
            'str_size_mm',
+           'set_page_title',
            'show_frame',
           ]
 
@@ -16,6 +17,38 @@ def show_frame(self, page_name):
     '''Show a frame for the given page name'''
     frame = self.frames[page_name]
     frame.tkraise()
+
+    
+def set_page_title(self, page_name, institute):
+        
+    # Standard library imports
+    import tkinter as tk
+    from tkinter import font as tkFont        
+    
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    from BiblioMeter_GUI.Page_Classes import app_main
+    from BiblioMeter_GUI.Useful_Functions import font_size 
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+    
+    # Setting page title
+    label_text = gg.PAGES_LABELS[page_name]
+    page_title = label_text + " du " + institute 
+
+    # Setting font size for page label and button
+    eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, app_main.width_sf_min)
+    eff_label_pos_y_px  = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
+    mid_page_pos_x_px   = app_main.win_width_px * 0.5
+
+    # Creating title widget
+    label_font = tkFont.Font(family = gg.FONT_NAME, 
+                             size   = eff_label_font_size)
+    self.label = tk.Label(self, 
+                          text = page_title, 
+                          font = label_font)
+    self.label.place(x = mid_page_pos_x_px, 
+                     y = eff_label_pos_y_px,
+                     anchor = "center") 
     
 
 def last_available_years(bibliometer_path, year_number):

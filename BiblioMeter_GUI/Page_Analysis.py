@@ -57,7 +57,7 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path,
     messagebox.showinfo(info_title, info_text)       
     
 
-def create_analysis(self, master, institute, bibliometer_path):
+def create_analysis(self, master, page_name, institute, bibliometer_path):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -96,7 +96,8 @@ def create_analysis(self, master, institute, bibliometer_path):
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
-    from BiblioMeter_GUI.Useful_Functions import place_bellow   
+    from BiblioMeter_GUI.Useful_Functions import place_bellow
+    from BiblioMeter_GUI.Useful_Functions import set_page_title   
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
    
     # Internal functions    
@@ -131,7 +132,7 @@ def create_analysis(self, master, institute, bibliometer_path):
     eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,   app_main.width_sf_min)           #14
     eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, app_main.width_sf_min)
     eff_help_font_size       = font_size(gg.REF_ETAPE_FONT_SIZE-2, app_main.width_sf_min)
-    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-2, app_main.width_sf_min)
+    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE, app_main.width_sf_min)
     eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3, app_main.width_sf_min)  
     
     if_analysis_x_pos_px     = mm_to_px(10 * app_main.width_sf_mm,  gg.PPI)
@@ -157,15 +158,10 @@ def create_analysis(self, master, institute, bibliometer_path):
     bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
     
     # Getting institute parameters
-    org_tup = set_org_params(institute, bibliometer_path)    
+    org_tup = set_org_params(institute, bibliometer_path)
     
-    # Décoration de la page
-    # - Canvas
-    fond = tk.Canvas(self, 
-                     width  = app_main.win_width_px, 
-                     height = app_main.win_height_px)
-    fond.place(x = 0, y = 0)
-
+    # Creating and setting widgets for page title
+    set_page_title(self, page_name, institute)
     
     ### Choix de l'année 
     years_list = last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
@@ -173,7 +169,7 @@ def create_analysis(self, master, institute, bibliometer_path):
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
     
-    # Création de l'option button des années    
+        # Création de l'option button des années    
     self.font_OptionButton_years = tkFont.Font(family = gg.FONT_NAME, 
                                                size = eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self, 
@@ -183,14 +179,14 @@ def create_analysis(self, master, institute, bibliometer_path):
     
         # Création du label
     self.font_Label_years = tkFont.Font(family = gg.FONT_NAME, 
-                                        size = eff_select_font_size)
+                                        size = eff_select_font_size,
+                                        weight = 'bold')
     self.Label_years = tk.Label(self, 
                                 text = gg.TEXT_YEAR_PI, 
                                 font = self.font_Label_years)
     self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
     
-    place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
-    encadre_RL(fond, self.Label_years, self.OptionButton_years, ds = ds_year)    
+    place_after(self.Label_years, self.OptionButton_years, dy = dy_year)    
     
     ################## Analyse des IFs
 

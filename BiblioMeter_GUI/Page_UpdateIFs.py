@@ -122,7 +122,7 @@ def _launch_update_pub_if(institute,
     return missing_pub_file_year, if_database_complete
 
 
-def create_update_ifs(self, master, institute, bibliometer_path):
+def create_update_ifs(self, master, page_name, institute, bibliometer_path):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -155,7 +155,8 @@ def create_update_ifs(self, master, institute, bibliometer_path):
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
-    from BiblioMeter_GUI.Useful_Functions import place_bellow  
+    from BiblioMeter_GUI.Useful_Functions import place_bellow
+    from BiblioMeter_GUI.Useful_Functions import set_page_title  
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists  
     
@@ -291,6 +292,9 @@ def create_update_ifs(self, master, institute, bibliometer_path):
     org_tup = set_org_params(institute, bibliometer_path)
     if_db_status = org_tup[5]
     if if_db_status: if_file_name_alias = institute + inst_if_file_name_alias
+    
+    # Creating and setting widgets for page title
+    set_page_title(self, page_name, institute)
        
     # Setting useful paths
     if_root_path = bibliometer_path / Path(if_root_path_alias)

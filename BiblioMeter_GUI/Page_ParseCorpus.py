@@ -478,7 +478,7 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     _update(self, bibliometer_path, pos_x, pos_y, esp_ligne)
     
 
-def create_parsing_concat(self, master, institute, bibliometer_path):
+def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
     """ The function `create_parsing_concat` creates the first page of the application GUI 
     using internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
     It calls also the functions `_launch_parsing``and `_launch_synthese` internal 
@@ -516,6 +516,7 @@ def create_parsing_concat(self, master, institute, bibliometer_path):
     from BiblioMeter_GUI.Useful_Functions import font_size 
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import set_page_title  
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     
     # Internal functions
@@ -572,6 +573,9 @@ def create_parsing_concat(self, master, institute, bibliometer_path):
     
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
+    
+    # Creating and setting widgets for page title
+    set_page_title(self, page_name, institute)
     
     ################### Zone Statut des fichiers de "parsing"
     # Liste des checkbox des corpuses
