@@ -93,10 +93,10 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
     from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
+    from BiblioMeter_GUI.Useful_Functions import set_exit_button
     from BiblioMeter_GUI.Useful_Functions import set_page_title   
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
    
@@ -116,17 +116,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
         
         print(f"Keywords analysis launched for year {year_select}")
         _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select)
-        return   
-            
-    def _launch_exit():
-        ask_title = 'Arrêt de BiblioMeter'
-        ask_text =  "Après la fermeture des fenêtres, "
-        ask_text += "les traitements effectués sont sauvegardés."
-        ask_text += "\nLe traitement peut être repris ultérieurement."
-        ask_text += "\nConfirmez la mise en pause ?"
-        exit_answer = messagebox.askokcancel(ask_title, ask_text)
-        if exit_answer:
-            master.destroy()  
+        return
     
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,   app_main.width_sf_min)           #14
@@ -147,9 +137,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
     dy_year                  = -6
     ds_year                  = 5
     
-    exit_button_x_pos_px     = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #193 
-    exit_button_y_pos_px     = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #145 
-    
     # Setting common attributs
     etape_label_format = 'left'
     etape_underline    = -1                              
@@ -160,12 +147,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
     
-    # Creating and setting widgets for page title
+    # Creating and setting widgets for page title and exit button
     set_page_title(self, page_name, institute)
+    set_exit_button(self, master)
     
-    ### Choix de l'année 
-    years_list = last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
-    default_year = years_list[-1]  
+    ### Choix de l'année
+    default_year = app_main.years_list[-1]  
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
     
@@ -174,7 +161,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
                                                size = eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self, 
                                             variable_years, 
-                                            *years_list)
+                                            *app_main.years_list)
     self.OptionButton_years.config(font = self.font_OptionButton_years)
     
         # Création du label
@@ -262,13 +249,3 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
                  dx = launch_dx_px, 
                  dy = launch_dy_px)
     
-    
-    ################## Bouton pour sortir de la page
-    quit_font = tkFont.Font(family = gg.FONT_NAME, 
-                            size   = eff_buttons_font_size)
-    quit_button = tk.Button(self, 
-                            text = gg.TEXT_PAUSE, 
-                            font = quit_font, 
-                            command = lambda: _launch_exit()).place(x = exit_button_x_pos_px, 
-                                                                    y = exit_button_y_pos_px, 
-                                                                    anchor = 'n')

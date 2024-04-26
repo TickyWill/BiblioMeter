@@ -153,9 +153,9 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_GUI.Page_Classes import app_main 
     from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_bellow
+    from BiblioMeter_GUI.Useful_Functions import set_exit_button
     from BiblioMeter_GUI.Useful_Functions import set_page_title  
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import concatenate_pub_lists  
@@ -169,7 +169,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
             if_db_update_status = _launch_update_if_db(institute,
                                                        org_tup,
                                                        bibliometer_path,
-                                                       corpus_years_list,
+                                                       app_main.years_list,
                                                        pub_list_folder_path,
                                                        if_db_path,
                                                       )
@@ -189,7 +189,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
         missing_pub_file_year, if_database_complete = _launch_update_pub_if(institute,
                                                                             org_tup,
                                                                             bibliometer_path, 
-                                                                            corpus_years_list,
+                                                                            app_main.years_list,
                                                                             pub_list_folder_alias,
                                                                             pub_list_file_base_alias,
                                                                             missing_if_base_alias,
@@ -197,11 +197,11 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
                                                                             if_db_path,
                                                                            )
         if not missing_pub_file_year:
-            concatenate_pub_lists(institute, org_tup, bibliometer_path, corpus_years_list)
+            concatenate_pub_lists(institute, org_tup, bibliometer_path, app_main.years_list)
             print("Consolidated lists of publications concatenated after IFs update")
             info_title = '- Information -'
             info_text  = f"La mise à jour des IFs dans les listes consolidées des publications des corpus :"
-            info_text += f"\n\n   {corpus_years_list}"
+            info_text += f"\n\n   {app_main.years_list}"
             info_text += f"\n\na été effectuée avec une base de données des IFs "
             if if_database_complete:
                 info_text += f"complète."
@@ -234,7 +234,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
             ask_title = "- Confirmation de la mise à jour des IFs dans les listes consolidées des publications -"
             ask_text  = f"La base de données des IFs n'a pas été préalablement mise à jour."
             ask_text += f"\n\nLa mise à jour des IFs dans les listes consolidées des corpus des années "
-            ask_text += f"\n\n  {corpus_years_list} "
+            ask_text += f"\n\n  {app_main.years_list} "
             ask_text += f"\n\nva être effectuée avec la version de la base de données des IFs qui est disponible."           
             ask_text += f"\n\nCette opération peut prendre quelques secondes."
             ask_text += f"\nDans l'attente, ne pas fermer 'BiblioMeter'."        
@@ -247,16 +247,6 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
                 info_text  = f"La lmise à jour des listes consolidées des publications est abandonnée."
                 messagebox.showinfo(info_title, info_text)
         return   
-            
-    def _launch_exit():
-        ask_title = 'Arrêt de BiblioMeter'
-        ask_text =  "Après la fermeture des fenêtres, "
-        ask_text += "les traitements effectués sont sauvegardés."
-        ask_text += "\nLe traitement peut être repris ultérieurement."
-        ask_text += "\nConfirmez la mise en pause ?"
-        exit_answer = messagebox.askokcancel(ask_title, ask_text)
-        if exit_answer:
-            master.destroy()  
     
     # Setting effective font sizes and positions (numbers are reference values in mm)
     eff_etape_font_size   = font_size(gg.REF_ETAPE_FONT_SIZE, app_main.width_sf_min)           #14
@@ -269,9 +259,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
     update_if_label_dx_px = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)  
     update_if_label_dy_px = mm_to_px(15 * app_main.height_sf_mm, gg.PPI)   
     launch_dx_px          = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)    
-    launch_dy_px          = mm_to_px( 5 * app_main.height_sf_mm, gg.PPI)   
-    exit_button_x_pos_px  = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #193 
-    exit_button_y_pos_px  = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #145    
+    launch_dy_px          = mm_to_px( 5 * app_main.height_sf_mm, gg.PPI) 
     
     # Setting common attributs
     etape_label_format = 'left'
@@ -293,8 +281,9 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
     if_db_status = org_tup[5]
     if if_db_status: if_file_name_alias = institute + inst_if_file_name_alias
     
-    # Creating and setting widgets for page title
+    # Creating and setting widgets for page title and exit button
     set_page_title(self, page_name, institute)
+    set_exit_button(self, master)
        
     # Setting useful paths
     if_root_path = bibliometer_path / Path(if_root_path_alias)
@@ -302,9 +291,6 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
     backup_if_folder_path = bibliometer_path / Path(backup_folder_name_alias)
     backup_if_file_path   = backup_if_folder_path / Path (if_file_name_alias)
     pub_list_folder_path  =  bibliometer_path / Path(pub_list_folder_alias)
-    
-    # Setting list of corpus years
-    corpus_years_list = last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
     
     # Initializing status of IFs database update
     if_db_update_status = False
@@ -382,14 +368,3 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
                  button_update_if, 
                  dx = launch_dx_px, 
                  dy = launch_dy_px)
-    
-    
-    ################## Bouton pour sortir de la page
-    font_button_quit = tkFont.Font(family =gg.FONT_NAME, 
-                                   size   = eff_buttons_font_size)
-    button_quit = tk.Button(self, 
-                            text = gg.TEXT_PAUSE, 
-                            font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = exit_button_x_pos_px, 
-                                                                    y = exit_button_y_pos_px, 
-                                                                    anchor = 'n')

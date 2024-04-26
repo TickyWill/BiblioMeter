@@ -111,7 +111,6 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     import BiblioMeter_GUI.GUI_Globals as gg
     from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size 
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
@@ -121,31 +120,22 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     eff_font_size = font_size(11, app_main.width_sf_min)
     eff_dx        = mm_to_px(1 * app_main.width_sf_mm,  gg.PPI)
     eff_dy        = mm_to_px(1 * app_main.height_sf_mm, gg.PPI)
-
-    # Getting files status for corpus concatenation and deduplication
-    files_status = existing_corpuses(bibliometer_path)     
-    list_corpus_year    = files_status[0]
-    list_wos_rawdata    = files_status[1]
-    list_wos_parsing    = files_status[2]
-    list_scopus_rawdata = files_status[3]
-    list_scopus_parsing = files_status[4]
-    list_rational       = files_status[5]
     
     # Setting useful local variables for default selection items in selection lists 
-    default_year = list_corpus_year[-1]   
+    default_year = app_main.list_corpus_year[-1]   
     
     # ????
     for i in range(len(self.CHECK)):
         self.CHECK[i].efface()    
 
-    for i, annee in enumerate(list_corpus_year):
+    for i, annee in enumerate(app_main.list_corpus_year):
         tmp = CheckBoxCorpuses(self, 
                                annee, 
-                               list_wos_rawdata[i], 
-                               list_wos_parsing[i], 
-                               list_scopus_rawdata[i], 
-                               list_scopus_parsing[i], 
-                               list_rational[i])
+                               app_main.list_wos_rawdata[i], 
+                               app_main.list_wos_parsing[i], 
+                               app_main.list_scopus_rawdata[i], 
+                               app_main.list_scopus_parsing[i], 
+                               app_main.list_dedup[i])
         tmp.place(x = pos_x, 
                   y = i * esp_ligne + pos_y)
         self.CHECK.append(tmp)
@@ -164,7 +154,7 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     self.var_year_pc_1.set(default_year)
     self.OM_year_pc_1 = tk.OptionMenu(self, 
                                       self.var_year_pc_1, 
-                                      *list_corpus_year)
+                                      *app_main.list_corpus_year)
     font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_font_size)
     self.OM_year_pc_1.config(font = font_year_pc_1)
@@ -181,7 +171,7 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     self.var_year_pc_2.set(default_year)
     self.OM_year_pc_2 = tk.OptionMenu(self, 
                                       self.var_year_pc_2, 
-                                      *list_corpus_year)
+                                      *app_main.list_corpus_year)
     font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_font_size)
     self.OM_year_pc_2.config(font = font_year_pc_2)
@@ -235,7 +225,6 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_fails_dict
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_parsing_dict
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
@@ -266,14 +255,12 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     parsing_save_extent = pg.TSV_SAVE_EXTENT
     
     # Getting files status for corpus parsing
-    files_status = existing_corpuses(bibliometer_path)    
-    list_corpus_year = files_status[0]
     if database_type == 'wos':
-        list_rawdata = files_status[1]
-        list_parsing = files_status[2]
+        list_rawdata = app_main.list_wos_rawdata
+        list_parsing = app_main.list_wos_parsing
     elif database_type == 'scopus': 
-        list_rawdata = files_status[3]
-        list_parsing = files_status[4]
+        list_rawdata = app_main.list_scopus_rawdata
+        list_parsing = app_main.list_scopus_parsing
     else:
         warning_title = "Attention : Erreur type de BDD"
         warning_text  = f"Le type de BDD {database_type}"
@@ -282,8 +269,8 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
         warning_text += f"\n\nModifiez le type de BDD sélectionné et relancez le 'parsing'."
         messagebox.showwarning(warning_title, warning_text)
         return
-    rawdata_status = list_rawdata[list_corpus_year.index(corpus_year)]
-    parsing_status = list_parsing[list_corpus_year.index(corpus_year)]
+    rawdata_status = list_rawdata[app_main.list_corpus_year.index(corpus_year)]
+    parsing_status = list_parsing[app_main.list_corpus_year.index(corpus_year)]
        
     # Asking for confirmation of corpus year to parse
     ask_title = "Confirmation de l'année de traitement"
@@ -414,16 +401,10 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     # Setting parsing files extension for saving
     parsing_save_extent = pg.TSV_SAVE_EXTENT
     
-    # Getting files status for corpus concatenation and deduplication
-    files_status = existing_corpuses(bibliometer_path)     
-    list_corpus_year    = files_status[0]
-    list_wos_parsing    = files_status[2]
-    list_scopus_parsing = files_status[4]
-    list_dedup          = files_status[5]
-    
-    wos_parsing_status    = list_wos_parsing[list_corpus_year.index(corpus_year)]
-    scopus_parsing_status = list_scopus_parsing[list_corpus_year.index(corpus_year)]
-    dedup_parsing_status  = list_dedup[list_corpus_year.index(corpus_year)]
+    # Getting files status for corpus concatenation and deduplication    
+    wos_parsing_status    = app_main.list_wos_parsing[app_main.list_corpus_year.index(corpus_year)]
+    scopus_parsing_status = app_main.list_scopus_parsing[app_main.list_corpus_year.index(corpus_year)]
+    dedup_parsing_status  = app_main.list_dedup[app_main.list_corpus_year.index(corpus_year)]
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
     ask_title = "Confirmation de l'année de traitement"
@@ -500,7 +481,6 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
         of the package 'BiblioMeter_GUI'.
     
     """
-
     # Standard library imports
     import os
     import tkinter as tk
@@ -512,23 +492,12 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_GUI.Page_Classes import app_main
-    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size 
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
+    from BiblioMeter_GUI.Useful_Functions import set_exit_button
     from BiblioMeter_GUI.Useful_Functions import set_page_title  
-    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params  
-    
-    # Internal functions
-    def _launch_exit():
-        ask_title = 'Arrêt de BiblioMeter'
-        ask_text =  "Après la fermeture des fenêtres, "
-        ask_text += "les traitements effectués sont sauvegardés."
-        ask_text += "\nLe traitement peut être repris ultérieurement."
-        ask_text += "\nConfirmez la mise en pause ?"
-        exit_answer = messagebox.askokcancel(ask_title, ask_text)
-        if exit_answer:
-            master.destroy()                    
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params              
                 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
@@ -541,9 +510,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
     parsing_label_y_pos      = mm_to_px(107 * app_main.height_sf_mm, gg.PPI)  
     synthese_label_y_pos     = mm_to_px(135 * app_main.height_sf_mm, gg.PPI)                             
     status_button_x_pos      = mm_to_px(148 * app_main.width_sf_mm, gg.PPI)  #148       
-    status_button_y_pos      = mm_to_px(98  * app_main.height_sf_mm, gg.PPI)  #98                         
-    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)  #193 
-    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)  #145
+    status_button_y_pos      = mm_to_px(98  * app_main.height_sf_mm, gg.PPI)  #98
     dx_year_select           = mm_to_px(1   * app_main.width_sf_mm,  gg.PPI)
     dy_year_select           = mm_to_px(1   * app_main.height_sf_mm, gg.PPI)
     dx_bdd_select            = mm_to_px(12  * app_main.width_sf_mm,  gg.PPI)  #12
@@ -558,24 +525,16 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
     parsing_year_y_pos  = parsing_label_y_pos + labels_y_space
     synthese_year_y_pos = synthese_label_y_pos + labels_y_space
     
-    # Getting files status for corpus concatenation and deduplication
-    files_status = existing_corpuses(bibliometer_path)     
-    list_corpus_year    = files_status[0]
-    list_wos_rawdata    = files_status[1]     # unused here
-    list_wos_parsing    = files_status[2]     # unused here
-    list_scopus_rawdata = files_status[3]     # unused here
-    list_scopus_parsing = files_status[4]     # unused here
-    list_dedup          = files_status[5]     # unused here
-    
     # Setting useful local variables for default selection items in selection lists 
-    default_year = list_corpus_year[-1]    
+    default_year = app_main.list_corpus_year[-1]    
     default_bdd  = pg.BDD_LIST[0]
     
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
     
-    # Creating and setting widgets for page title
+    # Creating and setting widgets for page title and exit button
     set_page_title(self, page_name, institute)
+    set_exit_button(self, master)
     
     ################### Zone Statut des fichiers de "parsing"
     # Liste des checkbox des corpuses
@@ -631,7 +590,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
     self.var_year_pc_1.set(default_year)
     self.OM_year_pc_1 = tk.OptionMenu(self, 
                                       self.var_year_pc_1, 
-                                      *list_corpus_year)
+                                      *app_main.list_corpus_year)
     font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_buttons_font_size)
     self.OM_year_pc_1.config(font = font_year_pc_1)
@@ -704,10 +663,10 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
                                anchor = "nw")
     
     self.var_year_pc_2 = tk.StringVar(self)
-    self.var_year_pc_2.set(list_corpus_year[-1])
+    self.var_year_pc_2.set(app_main.list_corpus_year[-1])
     self.OM_year_pc_2 = tk.OptionMenu(self, 
                                       self.var_year_pc_2, 
-                                      *list_corpus_year)
+                                      *app_main.list_corpus_year)
     font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_buttons_font_size)
     self.OM_year_pc_2.config(font = font_year_pc_2)
@@ -737,13 +696,3 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
     ################## Placement de CHECKBOXCORPUSES :
     _update(self, bibliometer_path, position_selon_x_check, position_selon_y_check, 
             espace_entre_ligne_check)
-    
-    ################## Bouton pour sortir de la page
-    font_button_quit = tkFont.Font(family = gg.FONT_NAME, 
-                                   size   = eff_buttons_font_size)
-    button_quit = tk.Button(self, 
-                            text = gg.TEXT_PAUSE, 
-                            font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = exit_button_x_pos, 
-                                                                    y = exit_button_y_pos, 
-                                                                    anchor = 'n')

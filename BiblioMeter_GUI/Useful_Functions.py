@@ -1,14 +1,12 @@
 __all__ = ['existing_corpuses',
-           'encadre_RL', 
-           'encadre_UD', 
            'font_size',
            'general_properties',
            'last_available_years',
            'mm_to_px',
            'place_after', 
-           'place_bellow', 
-           'place_bellow_LabelEntry',
+           'place_bellow',
            'str_size_mm',
+           'set_exit_button',
            'set_page_title',
            'show_frame',
           ]
@@ -17,10 +15,8 @@ def show_frame(self, page_name):
     '''Show a frame for the given page name'''
     frame = self.frames[page_name]
     frame.tkraise()
-
     
-def set_page_title(self, page_name, institute):
-        
+def set_page_title(self, page_name, institute):        
     # Standard library imports
     import tkinter as tk
     from tkinter import font as tkFont        
@@ -48,15 +44,53 @@ def set_page_title(self, page_name, institute):
                           font = label_font)
     self.label.place(x = mid_page_pos_x_px, 
                      y = eff_label_pos_y_px,
-                     anchor = "center") 
+                     anchor = "center")
     
+def set_exit_button(self, master):
+    
+    # Standard library imports
+    import tkinter as tk
+    from tkinter import messagebox
+    from tkinter import font as tkFont    
+    
+    # Local imports
+    import BiblioMeter_GUI.GUI_Globals as gg
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Page_Classes import app_main
+    from BiblioMeter_GUI.Useful_Functions import font_size 
+    from BiblioMeter_GUI.Useful_Functions import mm_to_px
+    
+    # Internal functions
+    def _launch_exit():
+        ask_title = 'Arrêt de BiblioMeter'
+        ask_text =  "Après la fermeture des fenêtres, "
+        ask_text += "les traitements effectués sont sauvegardés."
+        ask_text += "\nLe traitement peut être repris ultérieurement."
+        ask_text += "\nConfirmez la mise en pause ?"
+        exit_answer = messagebox.askokcancel(ask_title, ask_text)
+        if exit_answer:
+            master.destroy()
 
-def last_available_years(bibliometer_path, year_number):
+    # Setting useful local variables for positions modification (globals to create ??)
+    # numbers are reference values in mm for reference screen    
+    exit_button_x_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI) 
+    exit_button_y_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
+    eff_buttons_font_size = font_size(11, app_main.width_sf_min)
     
-    '''
-    Returns a list of the available five last available years where corpuses are stored
-    '''
-        
+    # Setting widget for exit button
+    font_button_quit = tkFont.Font(family = gg.FONT_NAME, 
+                                   size   = eff_buttons_font_size)
+    button_quit = tk.Button(self, 
+                            text = gg.TEXT_PAUSE, 
+                            font = font_button_quit, 
+                            command = lambda: _launch_exit()).place(x = exit_button_x_pos, 
+                                                                    y = exit_button_y_pos, 
+                                                                    anchor = 'n')
+
+def last_available_years(bibliometer_path, year_number):    
+    '''Returns a list of the available five last available years 
+    where corpuses are stored.
+    '''        
     # Standard library imports
     import os
     from tkinter import messagebox
@@ -77,10 +111,8 @@ def last_available_years(bibliometer_path, year_number):
         years_list = []
     return years_list
 
-
 def existing_corpuses(bibliometer_path, corpuses_number = None):
-    """ 
-    Description: Returns a list of list of booleans displaying True 
+    """Returns a list of list of booleans displaying True 
     if rawdata and parsing results are available, and False if they are not 
     this for each of the available year folder.
     ex: 
@@ -92,16 +124,14 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
      [True,True,True,True,True,False],       #Scopus Parsing
      [True,True,True,True,True,False]]       #Concatenation & Deduplication.
 
-    Args : 
+    Args: 
         bibliometer_path (path):  The working folder path.
         corpuses_number (int): The number of corpuses to be checked 
-        (default: CORPUSES_NUMBER global)
+        (default: CORPUSES_NUMBER global).
 
-    Returns : 
-        (list of lists)
-
+    Returns: 
+        (list of lists).
     """
-
     # Standard library imports
     import os
     from pathlib import Path
@@ -127,19 +157,16 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
         filenames_list = []
         for _, _, files in os.walk(rawdata_path): 
             filenames_list.extend(file for file in files if file.endswith("." + rawdata_extent)) 
-
         if filenames_list == []:
             return Path(f'{database_type} rawdata file not Found')
         else:
-            return rawdata_path / Path(filenames_list[0])
-    
+            return rawdata_path / Path(filenames_list[0])    
     
     def _get_parsing_file_paths(parsing_path):
         '''.
         '''
         file_name = articles_item_alias + "." + parsing_save_extent
-        parsing_file_path = parsing_path / Path(file_name)
-        
+        parsing_file_path = parsing_path / Path(file_name)        
         return parsing_file_path
     
     # Getting the last available corpus years
@@ -196,8 +223,8 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
         dedup_parsing_articles_path = _get_parsing_file_paths(dedup_parsing_path)
         dedup_parsing_list.append( dedup_parsing_articles_path.is_file())
 
-    return (years_list, wos_rawdata_list, wos_parsing_list, scopus_rawdata_list, scopus_parsing_list, dedup_parsing_list)
-
+    return (years_list, wos_rawdata_list, wos_parsing_list, 
+            scopus_rawdata_list, scopus_parsing_list, dedup_parsing_list)
 
 def place_after(gauche, droite, dx = 5, dy = 0):
     gauche_info = gauche.place_info()
@@ -210,53 +237,16 @@ def place_bellow(haut, bas, dx = 0, dy = 5):
     x = int(haut_info['x']) + dx
     y = int(haut_info['y']) + haut.winfo_reqheight() + dy
     bas.place(x = x, y = y)
-    
-def encadre_RL(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
-    
-    gauche_info = gauche.place_info()
-    droite_info = droite.place_info()
-
-    x1 = int(gauche_info['x']) - dw
-    y1 = int(gauche_info['y']) - dn
-    
-    x2 = int(gauche_info['x']) + gauche.winfo_reqwidth() + droite.winfo_reqwidth() + de
-    y2 = int(droite_info['y']) + max(gauche.winfo_reqheight(), droite.winfo_reqheight()) + ds
-
-    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
-    fond.place(x = 0, y = 0)
-    
-def encadre_UD(fond, haut, bas, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
-    
-    haut_info = haut.place_info()
-    bas_info = bas.place_info()
-
-    x1 = int(haut_info['x']) - dw
-    y1 = int(haut_info['y']) - dn
-    
-    x2 = int(bas_info['x']) + max(haut.winfo_reqwidth(), bas.winfo_reqwidth()) + de
-    y2 = int(bas_info['y']) + haut.winfo_reqheight() + bas.winfo_reqheight() + ds
-
-    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
-    fond.place(x = 0, y = 0)
-    
-def place_bellow_LabelEntry(haut, label_entry, dx = 0, dy = 5):
-    
-    haut_info = haut.place_info()
-    x = int(haut_info['x']) + dx
-    y = int(haut_info['y']) + haut.winfo_reqheight() + dy
-    label_entry.place(x = x, y = y)
-    
 
 def font_size(size, scale_factor):
     '''Set the fontsize based on scale_factor.
     If the fontsize is less than minimum_size, 
-    it is set to the minimum size.'''
-    
+    it is set to the minimum size.
+    '''    
     fontsize = int(size * scale_factor)    
     if fontsize < 8:
         fontsize = 8
     return fontsize
-
 
 def str_size_mm(text, font, ppi):
     '''The function `_str_size_mm` computes the sizes in mm of a string.
@@ -272,43 +262,35 @@ def str_size_mm(text, font, ppi):
     Note:
         The use of this function requires a tkinter window availability 
         since it is based on a tkinter font definition.
-
     '''
-
     # Local imports
     from BiblioMeter_GUI.GUI_Globals import IN_TO_MM
        
     (w_px,h_px) = (font.measure(text),font.metrics("linespace"))
     w_mm = w_px * IN_TO_MM / ppi
     h_mm = h_px * IN_TO_MM / ppi
-
-    return (w_mm,h_mm )
-
+    return (w_mm, h_mm)
 
 def mm_to_px(size_mm, ppi, fact = 1.0):
     '''The `mm_to_px' function converts a value in mm to a value in pixels
     using the ppi of the used display and a factor fact.
     
     Args:
-        size_mm (float): value in mm to be converted.
-        ppi ( float): pixels per inch of the display.
-        fact (float): factor (default= 1).
+        size_mm (float): Value in mm to be converted.
+        ppi (float): Pixels per inch of the display.
+        fact (float): Factor (default= 1).
         
     Returns:
-        `(int)`: upper integer value of the conversion to pixels
-        
-    '''
-    
+        (int): Upper integer value of the conversion to pixels.        
+    '''   
     # Standard library imports 
     import math
     
     # Local imports
     from BiblioMeter_GUI.GUI_Globals import IN_TO_MM
 
-    size_px = math.ceil((size_mm * fact / IN_TO_MM) * ppi)
-    
+    size_px = math.ceil((size_mm * fact / IN_TO_MM) * ppi)    
     return size_px
-
 
 def _window_properties(screen_width_px, screen_height_px):
     # Local imports
@@ -346,8 +328,7 @@ def _window_properties(screen_width_px, screen_height_px):
     
     sizes_tuple = (win_width_px, win_height_px, 
                    scale_factor_width_px, scale_factor_height_px, 
-                   scale_factor_width_mm, scale_factor_height_mm)
-    
+                   scale_factor_width_mm, scale_factor_height_mm)    
     return sizes_tuple
 
 def general_properties(self):
@@ -377,8 +358,7 @@ def general_properties(self):
     screen_width_px  = self.winfo_screenwidth()
     screen_height_px = self.winfo_screenheight()
     
-    sizes_tuple = _window_properties(screen_width_px, screen_height_px)
-    
+    sizes_tuple = _window_properties(screen_width_px, screen_height_px)    
     win_width_px  = sizes_tuple[0]
     win_height_px = sizes_tuple[1]
     
@@ -387,7 +367,43 @@ def general_properties(self):
     self.resizable(False, False)    
     
     # Setting title window
-    self.title(gg.APPLICATION_WINDOW_TITLE)
-        
+    self.title(gg.APPLICATION_WINDOW_TITLE)        
     return sizes_tuple
 
+
+################################# Unused functions #################################
+
+def encadre_RL(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
+    
+    gauche_info = gauche.place_info()
+    droite_info = droite.place_info()
+
+    x1 = int(gauche_info['x']) - dw
+    y1 = int(gauche_info['y']) - dn
+    
+    x2 = int(gauche_info['x']) + gauche.winfo_reqwidth() + droite.winfo_reqwidth() + de
+    y2 = int(droite_info['y']) + max(gauche.winfo_reqheight(), droite.winfo_reqheight()) + ds
+
+    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
+    fond.place(x = 0, y = 0)
+    
+def encadre_UD(fond, haut, bas, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
+    
+    haut_info = haut.place_info()
+    bas_info = bas.place_info()
+
+    x1 = int(haut_info['x']) - dw
+    y1 = int(haut_info['y']) - dn
+    
+    x2 = int(bas_info['x']) + max(haut.winfo_reqwidth(), bas.winfo_reqwidth()) + de
+    y2 = int(bas_info['y']) + haut.winfo_reqheight() + bas.winfo_reqheight() + ds
+
+    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
+    fond.place(x = 0, y = 0)
+    
+def place_bellow_LabelEntry(haut, label_entry, dx = 0, dy = 5):
+    
+    haut_info = haut.place_info()
+    x = int(haut_info['x']) + dx
+    y = int(haut_info['y']) + haut.winfo_reqheight() + dy
+    label_entry.place(x = x, y = y)

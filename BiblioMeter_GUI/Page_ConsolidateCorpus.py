@@ -557,7 +557,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     bibliometer_path is a type Path, and is the path to where the folders
     organised in a very specific way are stored
     
-    Returns : 
+    Returns: 
     
     """
 
@@ -580,15 +580,14 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Functions import font_size
-    from BiblioMeter_GUI.Useful_Functions import last_available_years
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
     from BiblioMeter_GUI.Useful_Functions import place_bellow
+    from BiblioMeter_GUI.Useful_Functions import set_exit_button
     from BiblioMeter_GUI.Useful_Functions import set_page_title  
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_org_params     
 
     # Internal functions
-
     def _etape_frame(self, num):
         '''The local function `_etape_frame` sets the 'etape' and place in the page
         using the global 'ETAPE_LABEL_TEXT_LIST' and the local variables 'etape_label_format', 
@@ -605,16 +604,6 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         etape.place(x = etape_label_pos_x, 
                     y = etape_label_pos_y_list[num])
         return etape
-       
-    def _launch_exit():
-        ask_title = "Arrêt de BiblioMeter"
-        ask_text =  "Après la fermeture des fenêtres, "
-        ask_text += "les traitements effectués sont sauvegardés."
-        ask_text += "\nLe traitement peut être repris ultérieurement."
-        ask_text += "\nConfirmez la mise en pause ?"
-        exit_answer = messagebox.askokcancel(ask_title, ask_text)
-        if exit_answer:
-            master.destroy()
     
     ########################## Function start
     
@@ -632,9 +621,6 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     etape_button_dx          = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * app_main.width_sf_mm, gg.PPI)       #10
     etape_button_dy          = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * app_main.height_sf_mm, gg.PPI)      #5
     etape_check_dy           = mm_to_px(gg.REF_ETAPE_CHECK_DY_MM * app_main.height_sf_mm, gg.PPI)    #-8
-
-    exit_button_x_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #193 
-    exit_button_y_pos        = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #145
 
     year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #10  
     year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #26     
@@ -671,8 +657,9 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
     
-    # Creating and setting widgets for page title
+    # Creating and setting widgets for page title and exit button
     set_page_title(self, page_name, institute)
+    set_exit_button(self, master)
     
     # - Etapes labels
     etape_label_font   = tkFont.Font(family = gg.FONT_NAME, 
@@ -684,8 +671,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     etapes             = [_etape_frame(self, etape_num) for etape_num in range(etapes_number)]    
     
     ### Choix de l'année 
-    years_list = last_available_years(bibliometer_path, gg.CORPUSES_NUMBER)
-    default_year = years_list[-1]  
+    default_year = app_main.years_list[-1]  
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
     
@@ -694,7 +680,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                                size = eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self, 
                                             variable_years, 
-                                            *years_list)
+                                            *app_main.years_list)
     self.OptionButton_years.config(font = self.font_OptionButton_years)
     
         # Création du label
@@ -891,7 +877,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                    pub_list_file_alias,
                                    year_missing_aliases,
                                    bdd_multi_annuelle_folder_alias,
-                                   years_list,
+                                   app_main.years_list,
                                    year_select)
 
     # Définition du bouton de création de la liste consolidée des publications
@@ -908,13 +894,3 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                  button_finale,
                  dx = etape_button_dx,
                  dy = etape_button_dy / 2)  
-                  
-    ################## Bouton pour sortir de la page
-    font_button_quit = tkFont.Font(family = gg.FONT_NAME, 
-                                   size   = eff_buttons_font_size)
-    button_quit = tk.Button(self, 
-                            text = gg.TEXT_PAUSE, 
-                            font = font_button_quit, 
-                            command = lambda: _launch_exit()).place(x = exit_button_x_pos, 
-                                                                    y = exit_button_y_pos, 
-                                                                    anchor = 'n')

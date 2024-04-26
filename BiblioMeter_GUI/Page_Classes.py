@@ -193,9 +193,18 @@ class app_main(tk.Tk):
         #master.lift()
         master.attributes("-topmost", True)
         #master.after_idle(master.attributes,'-topmost',False)
-        #master.REP = list()  
+        #master.REP = list()
         
-        # Defining pages classes and pages list
+        # Initializing app_main attributes set after working folder definition
+        app_main.years_list          = []        
+        app_main.list_corpus_year    = []
+        app_main.list_wos_rawdata    = [] 
+        app_main.list_wos_parsing    = [] 
+        app_main.list_scopus_rawdata = [] 
+        app_main.list_scopus_parsing = [] 
+        app_main.list_dedup          = []   
+        
+        # Setting pages classes and pages list
         app_main.pages = (Page_Analysis,
                           Page_UpdateIFs,
                           Page_ConsolidateCorpus,
@@ -382,6 +391,8 @@ class SetLaunchButton(tk.Tk):
         
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
+        from BiblioMeter_GUI.Useful_Functions import existing_corpuses
+        from BiblioMeter_GUI.Useful_Functions import last_available_years
         
         if bibliometer_path == '':
             warning_title = "!!! Attention !!!"
@@ -390,7 +401,18 @@ class SetLaunchButton(tk.Tk):
             warning_text += "\nVeuillez le définir."
             messagebox.showwarning(warning_title, warning_text)
 
-        else:
+        else:            
+            # Setting existing corpuses status
+            app_main.years_list = last_available_years(bibliometer_path, 
+                                                       gg.CORPUSES_NUMBER) 
+            files_status = existing_corpuses(bibliometer_path)
+            app_main.list_corpus_year    = files_status[0]
+            app_main.list_wos_rawdata    = files_status[1] 
+            app_main.list_wos_parsing    = files_status[2] 
+            app_main.list_scopus_rawdata = files_status[3] 
+            app_main.list_scopus_parsing = files_status[4] 
+            app_main.list_dedup          = files_status[5]                    
+            
             # Creating two frames in the tk window
             pagebutton_frame = tk.Frame(master, bg = 'red',
                                         height = gg.PAGEBUTTON_HEIGHT_PX)
@@ -409,7 +431,7 @@ class SetLaunchButton(tk.Tk):
 
                 # Putting all of the pages in the same location
                 # The one visible is the one on the top of the stacking order
-                frame.grid(row = 0, column = 0, sticky = "nsew")
+                frame.grid(row = 0, column = 0, sticky = "nsew")     
             master.frames = self.frames
 
 class PageButton(tk.Frame):
