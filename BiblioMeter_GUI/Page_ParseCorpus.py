@@ -478,7 +478,7 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     _update(self, bibliometer_path, pos_x, pos_y, esp_ligne)
     
 
-def create_parsing_concat(self, institute, bibliometer_path, parent):
+def create_parsing_concat(self, master, institute, bibliometer_path):
     """ The function `create_parsing_concat` creates the first page of the application GUI 
     using internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
     It calls also the functions `_launch_parsing``and `_launch_synthese` internal 
@@ -486,7 +486,7 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
 
     Args:
         bibliometer_path (path): The path leading to the file folder 'BilioMeter_Files'.
-        parent (): ????
+        master (): ????
     
     Returns:
         
@@ -527,7 +527,7 @@ def create_parsing_concat(self, institute, bibliometer_path, parent):
         ask_text += "\nConfirmez la mise en pause ?"
         exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
-            parent.destroy()                    
+            master.destroy()                    
                 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen

@@ -542,7 +542,7 @@ def _launch_pub_list_conso_try(institute,
     return     
 
 
-def create_consolidate_corpus(self, institute, bibliometer_path, parent):
+def create_consolidate_corpus(self, master, institute, bibliometer_path):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -614,7 +614,7 @@ def create_consolidate_corpus(self, institute, bibliometer_path, parent):
         ask_text += "\nConfirmez la mise en pause ?"
         exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
-            parent.destroy()
+            master.destroy()
     
     ########################## Function start
     

@@ -392,26 +392,26 @@ class SetLaunchButton(tk.Tk):
 
         else:
             # Creating two frames in the tk window
-            container_button = tk.Frame(master, 
-                                        height = gg.CONTAINER_BUTTON_HEIGHT_PX, 
+            pagebutton_frame = tk.Frame(master, 
+                                        height = gg.PAGEBUTTON_HEIGHT_PX, 
                                         bg = 'red')
-            container_button.pack(side = "top", 
+            pagebutton_frame.pack(side = "top", 
                                   fill = "both", 
                                   expand = False)
 
-            container_frame = tk.Frame(master)
-            container_frame.pack(side="top", 
+            page_frame = tk.Frame(master)
+            page_frame.pack(side="top", 
                                  fill="both", 
                                  expand=True)
-            container_frame.grid_rowconfigure(0, 
+            page_frame.grid_rowconfigure(0, 
                                               weight = 1)
-            container_frame.grid_columnconfigure(0, 
+            page_frame.grid_columnconfigure(0, 
                                                  weight = 1)
 
             self.frames = {}
             for page in app_main.pages:
                 page_name = page.__name__
-                frame = page(container_frame, master, container_button, institute, bibliometer_path)
+                frame = page(master, pagebutton_frame, page_frame, institute, bibliometer_path)
                 self.frames[page_name] = frame
 
                 # put all of the pages in the same location;
@@ -426,9 +426,9 @@ class SetLaunchButton(tk.Tk):
 class Page_ParseCorpus(tk.Frame):
     '''PAGE 1 'Analyse élémentaire des corpus'.
     '''             
-    def __init__(self, parent, controller, container_button, institute, bibliometer_path):
-        super().__init__(parent)
-        self.controller = controller
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+        super().__init__(page_frame)
+        self.controller = master
 
         # Standard library imports
         from tkinter import font as tkFont        
@@ -454,10 +454,10 @@ class Page_ParseCorpus(tk.Frame):
         eff_label_pos_y_px   = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = app_main.win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px * 0.5
         
         # Creation of the class object Page 1
-        create_parsing_concat(self, institute, bibliometer_path, controller)
+        create_parsing_concat(self, master, institute, bibliometer_path)
         
         label_font = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_label_font_size)
@@ -469,19 +469,19 @@ class Page_ParseCorpus(tk.Frame):
                     anchor = "center")       
         button_font = tkFont.Font(family = gg.FONT_NAME, 
                                   size   = eff_button_font_size)
-        button = tk.Button(container_button, 
+        button = tk.Button(pagebutton_frame, 
                            text = label_text, 
                            font = button_font,
-                           command = lambda: show_frame(controller, page_name))
+                           command = lambda: show_frame(master, page_name))
         button.grid(row = 0, column = page_num)
 
 
 class Page_ConsolidateCorpus(tk.Frame):
     '''PAGE 2 'Consolidation annuelle des corpus'. 
     '''        
-    def __init__(self, parent, controller, container_button, institute, bibliometer_path):
-        super().__init__(parent)
-        self.controller = controller
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+        super().__init__(page_frame)
+        self.controller = master
         
         # Standard library imports
         from tkinter import font as tkFont
@@ -489,38 +489,9 @@ class Page_ConsolidateCorpus(tk.Frame):
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
         from BiblioMeter_GUI.Page_ConsolidateCorpus import create_consolidate_corpus
-        from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         from BiblioMeter_GUI.Useful_Functions import font_size 
         from BiblioMeter_GUI.Useful_Functions import mm_to_px
         from BiblioMeter_GUI.Useful_Functions import show_frame  
-        
-        # Internal functions
-        def _launch_consolidate_corpus():
-       
-            # Getting years of available corpuses from files status       
-            files_status = existing_corpuses(bibliometer_path)    
-            corpus_years_list = files_status[0]
-            Liste_2 = corpus_years_list
-            
-            if self.Liste_1 != Liste_2:                
-                self.Liste_1 = Liste_2                
-                create_consolidate_corpus(self, institute, bibliometer_path, controller)                
-                label_font = tkFont.Font(family = gg.FONT_NAME, 
-                                         size   = eff_label_font_size)
-                label = tk.Label(self, 
-                                 text = page_title, 
-                                 font = label_font)
-                label.place(x = mid_page_pos_x_px, 
-                            y = eff_label_pos_y_px, 
-                            anchor = "center")                
-                button_font = tkFont.Font(family = gg.FONT_NAME, 
-                                          size   = eff_button_font_size)
-                button = tk.Button(container_button, 
-                                   text = label_text, 
-                                   font = button_font, 
-                                   command = lambda: _launch_consolidate_corpus())
-                button.grid(row = 0, column = 1)        
-            show_frame(controller, page_name)
                 
         # Setting specific texts
         page_name  = self.__class__.__name__
@@ -536,15 +507,10 @@ class Page_ConsolidateCorpus(tk.Frame):
         eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = app_main.win_width_px / 2
-        
-        # Getting years of available corpuses from files status       
-        files_status = existing_corpuses(bibliometer_path)    
-        corpus_years_list = files_status[0]
-        self.Liste_1 = corpus_years_list        
+        mid_page_pos_x_px = app_main.win_width_px * 0.5      
         
         # Creating the class object Page 2
-        create_consolidate_corpus(self, institute, bibliometer_path, controller)        
+        create_consolidate_corpus(self, master, institute, bibliometer_path)        
         label_font = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_label_font_size)
         label = tk.Label(self, 
@@ -555,21 +521,19 @@ class Page_ConsolidateCorpus(tk.Frame):
                     anchor = "center")        
         button_font = tkFont.Font(family = gg.FONT_NAME, 
                                   size   = eff_button_font_size)
-        button = tk.Button(container_button, 
+        button = tk.Button(pagebutton_frame, 
                            text = label_text, 
                            font = button_font, 
-                           command = lambda: _launch_consolidate_corpus())
+                           command = lambda: show_frame(master, page_name))
         button.grid(row = 0, column = page_num)
 
-            
-############################ ############################
 
 class Page_UpdateIFs(tk.Frame):
     '''PAGE 3 'Mise à jour des IF'. 
     '''    
-    def __init__(self, parent, controller, container_button, institute, bibliometer_path):
-        super().__init__(parent)
-        self.controller = controller
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+        super().__init__(page_frame)
+        self.controller = master
 
         # Standard library imports
         from tkinter import font as tkFont
@@ -595,10 +559,10 @@ class Page_UpdateIFs(tk.Frame):
         eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = app_main.win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px * 0.5
         
         # Creation of the class object Page 3
-        create_update_ifs(self, institute, bibliometer_path, controller)
+        create_update_ifs(self, master, institute, bibliometer_path)
         label_font = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_label_font_size)
         label = tk.Label(self, 
@@ -609,19 +573,19 @@ class Page_UpdateIFs(tk.Frame):
                     anchor = "center")        
         button_font = tkFont.Font(family = gg.FONT_NAME, 
                                   size   = eff_button_font_size)
-        button = tk.Button(container_button, 
+        button = tk.Button(pagebutton_frame, 
                            text = label_text, 
                            font = button_font, 
-                           command = lambda: show_frame(controller, page_name))
+                           command = lambda: show_frame(master, page_name))
         button.grid(row = 0, column = page_num)
 
 
 class Page_Analysis(tk.Frame):
     '''PAGE 4 'Analyse des corpus'.
     '''
-    def __init__(self, parent, controller, container_button, institute, bibliometer_path):
-        super().__init__(parent)
-        self.controller = controller
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+        super().__init__(page_frame)
+        self.controller = master
 
         # Standard library imports
         from tkinter import font as tkFont
@@ -647,10 +611,10 @@ class Page_Analysis(tk.Frame):
         eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
         
         # Setting x position in pixels for page label 
-        mid_page_pos_x_px = app_main.win_width_px / 2
+        mid_page_pos_x_px = app_main.win_width_px * 0.5
         
         # Creation of the class object Page 4
-        create_analysis(self, institute, bibliometer_path, controller)
+        create_analysis(self, master, institute, bibliometer_path)
         label_font = tkFont.Font(family = gg.FONT_NAME, 
                                  size   = eff_label_font_size)
         label = tk.Label(self, 
@@ -661,8 +625,8 @@ class Page_Analysis(tk.Frame):
                     anchor = "center")        
         button_font = tkFont.Font(family = gg.FONT_NAME, 
                                   size   = eff_button_font_size)
-        button = tk.Button(container_button, 
+        button = tk.Button(pagebutton_frame, 
                            text = label_text, 
                            font = button_font, 
-                           command = lambda: show_frame(controller, page_name))
+                           command = lambda: show_frame(master, page_name))
         button.grid(row = 0, column = page_num)        

@@ -57,7 +57,7 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path,
     messagebox.showinfo(info_title, info_text)       
     
 
-def create_analysis(self, institute, bibliometer_path, parent):
+def create_analysis(self, master, institute, bibliometer_path):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -118,12 +118,14 @@ def create_analysis(self, institute, bibliometer_path, parent):
         return   
             
     def _launch_exit():
-        message =  "Vous allez fermer BiblioMeter. "
-        message += "\nRien ne sera perdu et vous pourrez reprendre le traitement plus tard."
-        message += "\n\nSouhaitez-vous faire une pause dans le traitement ?"
-        answer_1 = messagebox.askokcancel('Information', message)
-        if answer_1:
-            parent.destroy()   
+        ask_title = 'Arrêt de BiblioMeter'
+        ask_text =  "Après la fermeture des fenêtres, "
+        ask_text += "les traitements effectués sont sauvegardés."
+        ask_text += "\nLe traitement peut être repris ultérieurement."
+        ask_text += "\nConfirmez la mise en pause ?"
+        exit_answer = messagebox.askokcancel(ask_title, ask_text)
+        if exit_answer:
+            master.destroy()  
     
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,   app_main.width_sf_min)           #14

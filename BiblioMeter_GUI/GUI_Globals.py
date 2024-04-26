@@ -1,6 +1,5 @@
 __all__ = ['ADD_SPACE_MM',           
            'BM_GUI_DISP',
-           'CONTAINER_BUTTON_HEIGHT_PX',
            'CORPUSES_NUMBER',
            'ETAPE_LABEL_TEXT_LIST',
            'FONT_NAME',
@@ -9,6 +8,7 @@ __all__ = ['ADD_SPACE_MM',
            'HELP_ETAPE_7',
            'HELP_ETAPE_8',
            'IN_TO_MM',
+           'PAGEBUTTON_HEIGHT_PX',
            'PAGES_LABELS',
            'PPI',
            'REF_BMF_FONT_SIZE',
@@ -214,9 +214,6 @@ REF_COPYRIGHT_X_MM         = 5       #5
 REF_COPYRIGHT_Y_MM         = 170     #170
 REF_VERSION_X_MM           = 185     #185
 
-# Container button height in pixels
-CONTAINER_BUTTON_HEIGHT_PX = 50      #50
-
 # Font size references for page label and button
 REF_LABEL_FONT_SIZE        = 25      #25
 REF_ETAPE_FONT_SIZE        = 14      #14
@@ -237,13 +234,15 @@ REF_YEAR_BUT_POS_Y_MM      = 26      #26
 # Separation space in mm for check boxes
 REF_CHECK_BOXES_SEP_SPACE  = 25      #25
 
+# Container button height in pixels
+PAGEBUTTON_HEIGHT_PX = 50      #50
+
 # Setting label for each gui page
 PAGES_LABELS = {'Page_ParseCorpus'      : "Analyse élémentaire des corpus",
                 'Page_ConsolidateCorpus': "Consolidation annuelle des corpus",
                 'Page_UpdateIFs'        : "Mise à jour des facteurs d'impact",
                 'Page_Analysis'        : "KPIs et graphes"
                }
-
 
 ########################## Cover Page (BiblioMeter launching Page) ##########################
 
