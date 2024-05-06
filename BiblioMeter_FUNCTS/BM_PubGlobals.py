@@ -2,7 +2,9 @@ __all__ = ['ANALYSIS_IF',
            'ARCHI_BACKUP',
            'ARCHI_BDD_MULTI_ANNUELLE',
            'ARCHI_IF',
+           "ARCHI_INSTITUTIONS",
            'ARCHI_ORPHAN',
+           'ARCHI_RESULTS',
            'ARCHI_YEAR',
            'BAR_COLOR_RANGE',
            'BAR_COLOR_SCALE',
@@ -27,6 +29,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_IF_ANALYSIS',
            'COL_NAMES_ORTHO',
            'COL_NAMES_PUB_NAMES',
+           'DATATYPE_LIST',
            'DOC_TYPE_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
@@ -55,20 +58,24 @@ TSV_SAVE_EXTENT = "dat"
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 
-
-ARCHI_BDD_MULTI_ANNUELLE = {"root"                      : "BDD multi annuelle",
-                            "concat file name base"     : "Concaténation par",
-                            "IF analysis file name base": "Synthèse des KPIs",
+ARCHI_BDD_MULTI_ANNUELLE = {"root"                  : "BDD multi annuelle",
+                            "concat file name base" : "Concaténation par",
+                            "kpis file name base"   : "Synthèse des KPIs",
                            }
-
 
 ARCHI_IF = {"root"                   : "Impact Factor",
             "all IF"                 : "IF all years.xlsx",
             "missing"                : "ISSN_manquants.xlsx",
             "missing_issn_base"      : "_ISSN manquants.xlsx",
             "missing_if_base"        : "_IF manquants.xlsx",
-            "institute_if_all_years" : "_IF all years.xlsx"}
+            "institute_if_all_years" : "_IF all years.xlsx",
+           }
 
+ARCHI_INSTITUTIONS = {"root"         : "Traitement Institutions",
+                      "inst_types"   : "Inst_types.xlsx",
+                      "affiliations" : "Country_affiliations.xlsx",
+                      "continents"   : "Continent_countries.xlsx",
+                     }
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
                 "orthograph file"     : "Orthographe.xlsx",
@@ -76,6 +83,22 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
                 "complementary file"  : "Autres corrections.xlsx",
                }
 
+ARCHI_RESULTS = {"root"             : "Sauvegarde des résultats",
+                 "pub-lists"        : "Listes consolidées des publications",
+                 "impact-factors"   : "Analyse des facteurs d'impact",
+                 "keywords"         : "Analyse des mots clefs",
+                 "countries"        : "Analyse géographique",
+                 "institutions"     : "Analyse des collaborations",
+                 "kpis"             : "Synthèse des indicateurs",
+                 "subjects"         : "Analyse des thématiques",
+                 "Scopus & WoS"     : "Scopus&Wos",
+                 "Scopus-HAL & WoS" : "HalScopus&Wos",
+                 "WoS"              : "Wos",
+                }
+
+# Setting list of raw data types
+datatype_nb = 3
+DATATYPE_LIST = list(ARCHI_RESULTS.keys())[-datatype_nb:]
 
 ARCHI_YEAR = {
               "analyses"                       : "5 - Analyses",
@@ -84,6 +107,10 @@ ARCHI_YEAR = {
               "subjects analysis"              : "Thématique",
               "countries analysis"             : "Géographique",
               "institutions analysis"          : "Collaborations",
+              "countries file name"            : "Pays par publication",
+              "country weight file name"       : "Statistiques par pays",
+              "norm inst file name"            : "Institutions normalisées",
+              "raw inst file name"             : "Institutions brutes",
               "bdd mensuelle"                  : "0 - BDD multi mensuelle", 
               "submit file name"               : "submit.xlsx", 
               "orphan file name"               : "orphan.xlsx",
@@ -121,7 +148,8 @@ ROW_COLORS = {'odd'      : '0000FFFF',
 DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
                                  'Erratum', 'Note', 'Review', 'Short Survey'],
                  'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial', 'Editorial Material'],
-                 'Proceedings': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper']}
+                 'Proceedings': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper'],
+                }
 
 
 DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + DOC_TYPE_DICT['Proceedings'],

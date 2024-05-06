@@ -3,107 +3,10 @@ __all__ = ['add_if',
            'concatenate_pub_lists',
            'consolidate_pub_list',
            'get_if_db',
-           'mise_en_page',
            'save_shaped_homonyms_file',
            'solving_homonyms',
            'split_pub_list_by_doc_type',
           ]
-
-def mise_en_page(institute, org_tup, df,                        
-                 wb = None, if_database = None):    
-    ''' 
-    When the workbook wb is not None, this is applied 
-    to the active worksheet of the passed workbook. 
-    If the workbook wb is None, then the worbook is created.    
-    '''
-    
-    # 3rd party imports
-    from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-    from openpyxl.styles import Font as openpyxl_Font  
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
-    from openpyxl.styles import Alignment as openpyxl_Alignment
-    from openpyxl.styles import Border as openpyxl_Border
-    from openpyxl.styles import Side as openpyxl_Side
-        
-    # Local imports
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
-       
-    # Setting useful column sizes
-    col_attr, col_set_list = set_col_attr(institute, org_tup)
-    columns_list = list(df.columns)
-    for col in columns_list:
-        if col not in col_set_list: col_attr[col] = col_attr['else']
-        
-     # Setting list of cell colors   
-    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
-    
-    # Initialize wb as a workbook and ws its active worksheet
-    if not wb : wb = Workbook()
-    ws = wb.active
-    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
-    
-    # Coloring alternatly rows in ws using list of cell colors cell_colors
-    for idx_row, row in enumerate(ws_rows):       
-        ws.append(row)        
-        last_row = ws[ws.max_row]            
-        if idx_row >= 1:
-            cell_color = cell_colors[idx_row%2]
-            for cell in last_row:
-                cell.fill = cell_color 
-    
-    # Setting cell alignement and border using dict of column attributes col_attr
-    if if_database:
-        align_list = ["left", "center","center","center"]
-        for idx_col, col in enumerate(columns_list):
-            column_letter = openpyxl_get_column_letter(idx_col + 1)
-            for cell in ws[column_letter]:
-                cell.alignment = openpyxl_Alignment(horizontal=align_list[idx_col], vertical="center")
-                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))  
-    else: 
-        for idx_col, col in enumerate(columns_list):
-            column_letter = openpyxl_get_column_letter(idx_col + 1)
-            for cell in ws[column_letter]:
-                cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))                    
-    
-    # Setting the format of the columns heading
-    cells_list = ws['A'] + ws[1]
-    if if_database: cells_list = ws[1]
-    for cell in cells_list:
-        cell.font = openpyxl_Font(bold=True)
-        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")
-    
-    # Setting de columns width using dict of column attributes col_attr if if_database = None
-    if if_database:
-        col_width_list = [60,15,15,15]
-        for idx_col, col in enumerate(columns_list):
-            column_letter = openpyxl_get_column_letter(idx_col + 1)
-            ws.column_dimensions[column_letter].width = col_width_list[idx_col]
-    else:
-        for idx_col, col in enumerate(columns_list):
-            if idx_col >= 1:
-                column_letter = openpyxl_get_column_letter(idx_col + 1)
-                try:
-                    ws.column_dimensions[column_letter].width = col_attr[col][0]
-                except:
-                    ws.column_dimensions[column_letter].width = 20
-    
-    
-    # Setting height of first row
-    first_row_num = 1
-    if if_database:
-        ws.row_dimensions[first_row_num].height = 20 
-    else:
-        ws.row_dimensions[first_row_num].height = 50
-
-    return wb, ws
-
 
 def save_shaped_homonyms_file(df_homonyms, out_path):
     """
@@ -275,7 +178,7 @@ def _save_dpt_OTP_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     
     # Building validation list of OTP for 'dpt' department
     validation_list = '"'+','.join(dpt_otp_list) + '"' 
@@ -328,7 +231,7 @@ def add_OTP(institute, org_tup, in_path, out_path, out_file_base):
     Notes:
         The global 'COL_NAMES' is imported from the module 'BiblioSpecificGlobals'  
         of the package 'BiblioParsing'.
-        The functions `_add_authors_name_list` and `mise_en_page` are imported 
+        The function `_add_authors_name_list` is imported 
         from the module 'BiblioMeterFonctions' of the package 'BiblioMeter_FUNCTS'.
         The global 'EMPLOYEES_USEFUL_COLS' is imported from the module 'BM_EmployeesGlobals' 
         of the package 'BiblioMeter_FUNCTS'. 
@@ -559,6 +462,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
     
@@ -807,8 +711,8 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     import pandas as pd
 
     # Local imports
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
 
     pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
@@ -860,8 +764,8 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     return split_ratio
 
 
-def consolidate_pub_list(institute, org_tup, bibliometer_path, in_path, out_path, 
-                         out_file_path, in_file_base, corpus_year):  
+def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype, 
+                         in_path, out_path, out_file_path, in_file_base, corpus_year):  
     '''    
     Args : 
         in_path
@@ -883,6 +787,7 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, in_path, out_path
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig 
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
     from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps 
     
     # internal functions
@@ -962,10 +867,22 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, in_path, out_path
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
     split_ratio = split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
     
+    # Saving pub list as final result
+    results_to_save_dict = {"pub_lists": True,
+                            "ifs"      : False,
+                            "kws"      : False,
+                            "countries": False,
+                            "kpis"     : False,
+                           }    
+    if_analysis_name = None
+    final_save_message = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
+                                            if_analysis_name, results_to_save_dict, verbose = False)
+    
     end_message  = f"\n" + otp_message
     end_message += f"\nOTPs identification integrated in file : \n  '{out_file_path}'"
     end_message += f"\n\nPublications list for year {corpus_year} has been {split_ratio} % splitted "
-    end_message += f"in 2 files by group of document types"
+    end_message += f"in 2 files by group of document types. \n"
+    end_message += final_save_message
     
     return end_message, split_ratio, if_database_complete 
                     
@@ -984,6 +901,7 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     
     # Setting useful aliases
     pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]

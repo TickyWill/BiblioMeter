@@ -1,7 +1,7 @@
 __all__ = ['create_analysis']
 
 
-def _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select):
+def _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype, year_select):
     """
     """
 
@@ -11,7 +11,7 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select):
     # Local imports
     from BiblioMeter_FUNCTS.BM_PubAnalysis import keywords_analysis
 
-    kw_analysis_folder_path = keywords_analysis(institute, org_tup, bibliometer_path, 
+    kw_analysis_folder_path = keywords_analysis(institute, org_tup, bibliometer_path, datatype, 
                                                 year_select, verbose = False)
     
     info_title = "- Information -"
@@ -22,7 +22,7 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select):
     
 
 
-def _launch_if_analysis(institute, org_tup, bibliometer_path, 
+def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype, 
                         year_select, bdd_multi_annuelle_folder_alias):
     """
     """
@@ -42,7 +42,7 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path,
     if pg.ANALYSIS_IF == pg.COL_NAMES_BONUS['IF année publi'] and if_most_recent_year >= year_select:
         analysis_if  = "IF " + year_select            
 
-    if_analysis_folder_path,_,_ = if_analysis(institute, org_tup, bibliometer_path, 
+    if_analysis_folder_path,_,_ = if_analysis(institute, org_tup, bibliometer_path, datatype, 
                                               year_select, if_most_recent_year, verbose = False) 
     
     info_title = "- Information -"
@@ -57,7 +57,7 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path,
     messagebox.showinfo(info_title, info_text)       
     
 
-def create_analysis(self, master, page_name, institute, bibliometer_path):
+def create_analysis(self, master, page_name, institute, bibliometer_path, datatype):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -91,7 +91,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
     import BiblioMeter_GUI.GUI_Globals as gg
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_GUI.Page_Classes import app_main
-    from BiblioMeter_GUI.Useful_Functions import encadre_RL
     from BiblioMeter_GUI.Useful_Functions import font_size
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
@@ -106,7 +105,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
         year_select =  variable_years.get()
         
         print(f"\nIFs analysis launched for year {year_select}")
-        _launch_if_analysis(institute, org_tup, bibliometer_path, 
+        _launch_if_analysis(institute, org_tup, bibliometer_path, datatype, 
                             year_select, bdd_multi_annuelle_folder_alias)
         return
     
@@ -115,7 +114,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path):
         year_select =  variable_years.get()
         
         print(f"Keywords analysis launched for year {year_select}")
-        _launch_kw_analysis(institute, org_tup, bibliometer_path, year_select)
+        _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype, year_select)
         return
     
     # Setting effective font sizes and positions (numbers are reference values)

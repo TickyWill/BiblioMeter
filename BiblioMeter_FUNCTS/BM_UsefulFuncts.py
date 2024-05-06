@@ -1,9 +1,179 @@
 __all__ = ['create_archi',
            'create_folder',
+           'format_df_4_excel',
+           'mise_en_page',
            'read_parsing_dict',
            'save_fails_dict',
            'save_parsing_dict',
           ]
+
+def mise_en_page(institute, org_tup, df,                        
+                 wb = None, if_database = None):    
+    ''' 
+    When the workbook wb is not None, this is applied 
+    to the active worksheet of the passed workbook. 
+    If the workbook wb is None, then the worbook is created.    
+    '''
+    
+    # 3rd party imports
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    from openpyxl.styles import Font as openpyxl_Font  
+    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
+    from openpyxl.styles import Alignment as openpyxl_Alignment
+    from openpyxl.styles import Border as openpyxl_Border
+    from openpyxl.styles import Side as openpyxl_Side
+        
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
+       
+    # Setting useful column sizes
+    col_attr, col_set_list = set_col_attr(institute, org_tup)
+    columns_list = list(df.columns)
+    for col in columns_list:
+        if col not in col_set_list: col_attr[col] = col_attr['else']
+        
+     # Setting list of cell colors   
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
+    
+    # Initialize wb as a workbook and ws its active worksheet
+    if not wb : wb = Workbook()
+    ws = wb.active
+    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
+    
+    # Coloring alternatly rows in ws using list of cell colors cell_colors
+    for idx_row, row in enumerate(ws_rows):       
+        ws.append(row)        
+        last_row = ws[ws.max_row]            
+        if idx_row >= 1:
+            cell_color = cell_colors[idx_row%2]
+            for cell in last_row:
+                cell.fill = cell_color 
+    
+    # Setting cell alignement and border using dict of column attributes col_attr
+    if if_database:
+        align_list = ["left", "center","center","center"]
+        for idx_col, col in enumerate(columns_list):
+            column_letter = openpyxl_get_column_letter(idx_col + 1)
+            for cell in ws[column_letter]:
+                cell.alignment = openpyxl_Alignment(horizontal=align_list[idx_col], vertical="center")
+                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))  
+    else: 
+        for idx_col, col in enumerate(columns_list):
+            column_letter = openpyxl_get_column_letter(idx_col + 1)
+            for cell in ws[column_letter]:
+                cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
+                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))                    
+    
+    # Setting the format of the columns heading
+    cells_list = ws['A'] + ws[1]
+    if if_database: cells_list = ws[1]
+    for cell in cells_list:
+        cell.font = openpyxl_Font(bold=True)
+        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")
+    
+    # Setting de columns width using dict of column attributes col_attr if if_database = None
+    if if_database:
+        col_width_list = [60,15,15,15]
+        for idx_col, col in enumerate(columns_list):
+            column_letter = openpyxl_get_column_letter(idx_col + 1)
+            ws.column_dimensions[column_letter].width = col_width_list[idx_col]
+    else:
+        for idx_col, col in enumerate(columns_list):
+            if idx_col >= 1:
+                column_letter = openpyxl_get_column_letter(idx_col + 1)
+                try:
+                    ws.column_dimensions[column_letter].width = col_attr[col][0]
+                except:
+                    ws.column_dimensions[column_letter].width = 20
+    
+    
+    # Setting height of first row
+    first_row_num = 1
+    if if_database:
+        ws.row_dimensions[first_row_num].height = 20 
+    else:
+        ws.row_dimensions[first_row_num].height = 50
+
+    return wb, ws
+
+def format_df_4_excel(df, first_col_width, last_col_width = None):
+    """
+    """
+    # 3rd party imports
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+    from openpyxl.styles import Font as openpyxl_Font  
+    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
+    from openpyxl.styles import Alignment as openpyxl_Alignment
+    from openpyxl.styles import Border as openpyxl_Border
+    from openpyxl.styles import Side as openpyxl_Side
+    
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    
+    # Setting list of cell colors   
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]   
+    
+    # Setting useful column attributes
+    columns_list = list(df.columns)
+    col_attr = {}
+    col_attr[columns_list[0]] = [first_col_width, "left"]
+    if last_col_width:
+        col_attr[columns_list[-1]] = [last_col_width, "left"]
+    else:
+        col_attr[columns_list[-1]] = [15, "center"]
+    for col in columns_list[1:-1]:
+        col_attr[col] = [15, "center"]
+
+    # Initializing wb as a workbook and ws its active worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
+        
+    # Coloring alternatly rows in ws using list of cell colors cell_colors
+    for idx_row, row in enumerate(ws_rows):       
+        ws.append(row)      
+        last_row = ws[ws.max_row]
+        if idx_row >= 1:
+            cell_color = cell_colors[idx_row%2]
+            for cell in last_row:
+                cell.fill = cell_color 
+
+    # Setting cell alignement and border using dict of column attributes col_attr
+    for idx_col, col in enumerate(columns_list):
+        column_letter = openpyxl_get_column_letter(idx_col + 1)
+        for cell in ws[column_letter]:
+            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
+            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
+                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))
+            
+    # Setting the format of the columns heading
+    cells_list = ws[1]
+    for cell in cells_list:
+        cell.font = openpyxl_Font(bold=True)
+        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")  
+        
+    # Setting de columns width using dict of column attributes col_attr
+    for idx_col, col in enumerate(columns_list):        
+        column_letter = openpyxl_get_column_letter(idx_col + 1)
+        ws.column_dimensions[column_letter].width = col_attr[col][0]
+    
+    # Setting height of rows
+    height = 30
+    for idx_row in range(ws.max_row):
+        row_num = idx_row + 1
+        if row_num > 1: height = 20
+        ws.row_dimensions[row_num].height = height
+
+    return wb, ws 
 
 def create_folder(root_path, folder, verbose = False):
     # Standard library imports

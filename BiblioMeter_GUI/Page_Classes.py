@@ -24,6 +24,7 @@ class app_main(tk.Tk):
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
         import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+        import BiblioMeter_FUNCTS.BM_PubGlobals as pg
         from BiblioMeter_FUNCTS.BM_UsefulFuncts import create_archi 
         from BiblioMeter_GUI.Useful_Functions import font_size
         from BiblioMeter_GUI.Useful_Functions import general_properties
@@ -32,14 +33,34 @@ class app_main(tk.Tk):
         from BiblioMeter_GUI.Useful_Functions import place_after
         from BiblioMeter_GUI.Useful_Functions import str_size_mm
         
-        # Internal functions        
+        # Internal functions 
+        def _set_datatype_widgets_param(datatype_val, datatype_list):
+            # Setting widgets parameters for datatype selection  
+            master.font_OptionButton_datatype = tkFont.Font(family = gg.FONT_NAME, 
+                                                     size = eff_buttons_font_size)
+            master.OptionButton_datatype = tk.OptionMenu(master, 
+                                                  datatype_val, 
+                                                  *datatype_list)
+            master.OptionButton_datatype.config(font = master.font_OptionButton_datatype,
+                                                width = eff_menu_width)
+            master.font_Label_datatype = tkFont.Font(family = gg.FONT_NAME, 
+                                              size = eff_select_font_size,
+                                              weight = 'bold') 
+            master.Label_datatype = tk.Label(master, 
+                                      text = gg.TEXT_DATATYPE, 
+                                      font = master.font_Label_datatype)
+        
+            # Placing widgets for datatype selection
+            master.Label_datatype.place(x = datatype_button_x_pos, y = datatype_button_y_pos)
+            place_after(master.Label_datatype, master.OptionButton_datatype, dy = dy_datatype)       
+        
         def _display_path(inst_bmf):
             """Shortening bmf path for easy display""" 
             p = Path(inst_bmf)
             p_disp = ('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:]))
             return p_disp
-               
-        def _get_file(institute_select):
+            
+        def _get_file(institute_select, datatype_select):
             # Getting new working directory
             dialog_title = "Choisir un nouveau dossier de travail"
             bmf_str = tk.filedialog.askdirectory(title = dialog_title)
@@ -49,11 +70,11 @@ class app_main(tk.Tk):
                 return messagebox.showwarning(warning_title, warning_text)  
             
             # Updating bmf values using new working directory
-            _set_bmf_widget_param(institute_select, bmf_str)            
+            _set_bmf_widget_param(institute_select, bmf_str, datatype_select)            
             _update_corpi(bmf_str)
-            SetLaunchButton(master, institute_select, bmf_str)            
+            SetLaunchButton(master, institute_select, bmf_str, datatype_select)         
         
-        def _set_bmf_widget_param(institute_select, inst_bmf):
+        def _set_bmf_widget_param(institute_select, inst_bmf, datatype_select):            
             # Setting bmf widgets parameters
             bmf_font = tkFont.Font(family = gg.FONT_NAME, 
                                    size   = eff_bmf_font_size,
@@ -70,7 +91,7 @@ class app_main(tk.Tk):
             bmf_button      = tk.Button(master, 
                                         text = gg.TEXT_BMF_CHANGE, 
                                         font = bmf_button_font, 
-                                        command = lambda: _get_file(institute_select))
+                                        command = lambda: _get_file(institute_select, datatype_select))
             # Placing bmf widgets
             bmf_label.place(x = eff_bmf_pos_x_px,
                             y = eff_bmf_pos_y_px,)
@@ -83,7 +104,7 @@ class app_main(tk.Tk):
             bmf_button.place(x = eff_path_pos_x_px, 
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)            
             bmf_val.set(inst_bmf)
-            bmf_val2.set((_display_path(inst_bmf))) 
+            bmf_val2.set((_display_path(inst_bmf)))             
         
         def _create_corpus(inst_bmf):
             corpi_val = _set_corpi_widgets_param(inst_bmf)
@@ -159,14 +180,16 @@ class app_main(tk.Tk):
                 messagebox.showwarning(warning_title, warning_text)
                 
                 # Setting corpi_val value to empty string
-                corpi_val.set("")                                       
+                corpi_val.set("")
                 
-        def _update_page(*args, widget = None):
-            institute_select = widget.get()
-            inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select] 
+        def _update_datatype(*args, widget = None):
+            datatype_select = widget.get()
+            master.OptionButton_datatype.configure(state = 'disabled') 
+            institute_select = institute_val.get()
             
-            # Managing working folder (bmf stands for "BiblioMeter_Files") 
-            _set_bmf_widget_param(institute_select, inst_default_bmf)
+            # Managing working folder (bmf stands for "BiblioMeter_Files")
+            inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select] 
+            _set_bmf_widget_param(institute_select, inst_default_bmf, datatype_select)
             
             # Managing corpus list
             corpi_val = _set_corpi_widgets_param(inst_default_bmf)            
@@ -180,10 +203,25 @@ class app_main(tk.Tk):
                 warning_text += f"\nChoisissez un autre dossier de travail."                       
                 messagebox.showwarning(warning_title, warning_text)
                 # Setting corpuses list value to empty string
-                corpi_val.set("")              
-            
+                corpi_val.set("")
+           
             # Managing analysis launch button 
-            SetLaunchButton(master, institute_select, inst_default_bmf)
+            SetLaunchButton(master, institute_select, inst_default_bmf, datatype_select)
+                
+        def _update_page(*args, widget = None):
+            institute_select = widget.get()
+            
+            # Setting default values for datatype selection
+            datatype_list = pg.DATATYPE_LIST
+            default_datatype = " "
+            datatype_val = tk.StringVar(master)
+            datatype_val.set(default_datatype)
+
+            # Creating widgets for datatype selection
+            _set_datatype_widgets_param(datatype_val, datatype_list)            
+             
+            # Tracing data type selection
+            datatype_val.trace('w', partial(_update_datatype, widget = datatype_val))            
         
         # Setting the link between "master" and "tk.Tk"
         tk.Tk.__init__(master)
@@ -244,6 +282,13 @@ class app_main(tk.Tk):
         eff_corpi_font_size = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)      
         eff_corpi_pos_x_px  = mm_to_px(gg.REF_CORPI_POS_X_MM * app_main.height_sf_mm, gg.PPI)
         eff_corpi_pos_y_px  = mm_to_px(gg.REF_CORPI_POS_Y_MM * app_main.height_sf_mm, gg.PPI)
+        
+        # Setting widgets parameters for datatype selection 
+        eff_menu_width = int(30 * app_main.width_sf_min)     # gg.REF_MENU_NB_CHAR
+        eff_select_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, app_main.width_sf_min)
+        datatype_button_x_pos = mm_to_px(110 * app_main.width_sf_mm,  gg.PPI)  # gg.REF_DATATYPE_POS_X_MM
+        datatype_button_y_pos = mm_to_px(40 * app_main.height_sf_mm, gg.PPI)  # gg.REF_DATATYPE_POS_Y_MM     
+        dy_datatype           = -10
         
         # Setting and placing widgets for title and copyright                       
         SetMasterTitle(master)
@@ -347,7 +392,8 @@ class SetAuthorCopyright(tk.Tk):
         
 class SetLaunchButton(tk.Tk):
 
-    def __init__(self, master, institute, bibliometer_path):        
+    def __init__(self, master, institute, bibliometer_path, datatype):
+        
         # Standard library imports
         from tkinter import font as tkFont
         
@@ -373,13 +419,14 @@ class SetLaunchButton(tk.Tk):
                                   font = launch_font,
                                   command = lambda: self._generate_pages(master, 
                                                                          institute, 
-                                                                         bibliometer_path)) 
+                                                                         bibliometer_path, 
+                                                                         datatype)) 
         # Placing launch button    
         launch_button.place(x = launch_but_pos_x_px,
                             y = launch_but_pos_y_px,
                             anchor = "s")  
 
-    def _generate_pages(self, master, institute, bibliometer_path):
+    def _generate_pages(self, master, institute, bibliometer_path, datatype):
         
         '''Permet la génération des pages après spécification du chemin 
         vers la zone de stockage.
@@ -426,7 +473,7 @@ class SetLaunchButton(tk.Tk):
             self.frames = {}
             for page in app_main.pages:
                 page_name = page.__name__
-                frame = page(master, pagebutton_frame, page_frame, institute, bibliometer_path)
+                frame = page(master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype)
                 self.frames[page_name] = frame
 
                 # Putting all of the pages in the same location
@@ -468,7 +515,7 @@ class PageButton(tk.Frame):
 class Page_ParseCorpus(tk.Frame):
     '''PAGE 1 'Analyse élémentaire des corpus'.
     '''             
-    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master      
 
@@ -483,12 +530,12 @@ class Page_ParseCorpus(tk.Frame):
         PageButton(master, page_name, pagebutton_frame)
 
         # Creating and setting widgets for page frame
-        create_parsing_concat(self, master, page_name, institute, bibliometer_path)
+        create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype)
         
 class Page_ConsolidateCorpus(tk.Frame):
     '''PAGE 2 'Consolidation annuelle des corpus'. 
     '''        
-    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
 
@@ -503,13 +550,13 @@ class Page_ConsolidateCorpus(tk.Frame):
         PageButton(master, page_name, pagebutton_frame)
         
         # Creating and setting widgets for page frame 
-        create_consolidate_corpus(self, master, page_name, institute, bibliometer_path)        
+        create_consolidate_corpus(self, master, page_name, institute, bibliometer_path, datatype)        
 
 
 class Page_UpdateIFs(tk.Frame):
     '''PAGE 3 'Mise à jour des IF'. 
     '''    
-    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
 
@@ -527,13 +574,13 @@ class Page_UpdateIFs(tk.Frame):
         PageButton(master, page_name, pagebutton_frame)
         
         # Creating and setting widgets for page frame
-        create_update_ifs(self, master, page_name, institute, bibliometer_path)
+        create_update_ifs(self, master, page_name, institute, bibliometer_path, datatype)
 
 
 class Page_Analysis(tk.Frame):
     '''PAGE 4 'Analyse des corpus'.
     '''
-    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path):
+    def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
 
@@ -551,4 +598,4 @@ class Page_Analysis(tk.Frame):
         PageButton(master, page_name, pagebutton_frame)
         
         # Creating and setting widgets for page frame
-        create_analysis(self, master, page_name, institute, bibliometer_path)
+        create_analysis(self, master, page_name, institute, bibliometer_path, datatype)

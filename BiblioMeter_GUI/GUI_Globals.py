@@ -58,6 +58,7 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_COPYRIGHT',
            'TEXT_CORPUSES',
            'TEXT_CROISEMENT',
+           'TEXT_DATATYPE',
            'TEXT_ETAPE_1',
            'TEXT_ETAPE_2',
            'TEXT_ETAPE_3',
@@ -249,7 +250,7 @@ PAGES_LABELS = {'Page_ParseCorpus'      : "Analyse élémentaire des corpus",
 # Titre de la page
 TEXT_TITLE                  = "- BiblioMeter -\nInitialisation de l'analyse"
 
-# Choix de l'année de l'Institut
+# Choix de l'Institut
 TEXT_INSTITUTE              = "Sélection de l'Institut"
 
 # Titre LabelEntry of BiblioMeter_Files folder
@@ -263,6 +264,9 @@ TEXT_CORPUSES               = "Liste des corpus "
 
 # Titre bouton création d'un dossier nouveau de corpus
 TEXT_BOUTON_CREATION_CORPUS = "Créer un nouveau dossier de corpus annuel"
+
+# Choix du type de données brutes
+TEXT_DATATYPE               = "Type de données"
 
 # Titre bouton de lancement
 TEXT_BOUTON_LANCEMENT       = "Lancer l'analyse"

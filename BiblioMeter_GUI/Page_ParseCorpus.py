@@ -459,7 +459,7 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     _update(self, bibliometer_path, pos_x, pos_y, esp_ligne)
     
 
-def create_parsing_concat(self, master, page_name, institute, bibliometer_path):
+def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
     """ The function `create_parsing_concat` creates the first page of the application GUI 
     using internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
     It calls also the functions `_launch_parsing``and `_launch_synthese` internal 

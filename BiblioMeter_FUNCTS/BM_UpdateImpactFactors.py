@@ -123,7 +123,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
     # local imports    
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
 
     # Internal functions   
     _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])

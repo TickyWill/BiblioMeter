@@ -275,7 +275,7 @@ def _re_save_dpt_OTP_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
     
     # local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import mise_en_page
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_col_attr
     
     # Setting useful column sizes and cell colors

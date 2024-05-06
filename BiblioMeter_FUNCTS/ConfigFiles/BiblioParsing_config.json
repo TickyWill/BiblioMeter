@@ -25,16 +25,16 @@
         "articles"              : "articles",
         "authors"               : "authors",
         "addresses"             : "addresses",
-        "addresses_institutions": "addressesinst",
         "countries"             : "countries",
         "institutions"          : "institutions",
         "authors_institutions"  : "authorsinst",
-        "raw_institutions"      : "rawinstitutions",
         "authors_keywords"      : "authorskeywords",
         "indexed_keywords"      : "journalkeywords",
         "title_keywords"        : "titlekeywords",
         "subjects"              : "subjects",
         "sub_subjects"          : "subjects2",
-        "references"            : "references"
+        "references"            : "references",
+		"norm_institutions"     : "addressesnorminst",
+        "raw_institutions"      : "addressesrawinst"
     }
 }

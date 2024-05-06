@@ -2,76 +2,6 @@ __all__ = ['if_analysis',
            'keywords_analysis',          
           ]
 
-def _formatting_df(df, first_col_width):
-    """
-    """
-    # 3rd party imports
-    from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-    from openpyxl.styles import Font as openpyxl_Font  
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill 
-    from openpyxl.styles import Alignment as openpyxl_Alignment
-    from openpyxl.styles import Border as openpyxl_Border
-    from openpyxl.styles import Side as openpyxl_Side
-    
-    # Local imports
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    
-    # Setting list of cell colors   
-    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]   
-    
-    # Setting useful column attributes
-    columns_list = list(df.columns)
-    col_attr = {}
-    col_attr[columns_list[0]] = [first_col_width, "left"]
-    for col in columns_list[1:]:
-        col_attr[col] = [15, "center"]
-
-    # Initializing wb as a workbook and ws its active worksheet
-    wb = Workbook()
-    ws = wb.active
-    ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
-        
-    # Coloring alternatly rows in ws using list of cell colors cell_colors
-    for idx_row, row in enumerate(ws_rows):       
-        ws.append(row)      
-        last_row = ws[ws.max_row]
-        if idx_row >= 1:
-            cell_color = cell_colors[idx_row%2]
-            for cell in last_row:
-                cell.fill = cell_color 
-
-    # Setting cell alignement and border using dict of column attributes col_attr
-    for idx_col, col in enumerate(columns_list):
-        column_letter = openpyxl_get_column_letter(idx_col + 1)
-        for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                          right=openpyxl_Side(border_style='thick', color='FFFFFF'))
-            
-    # Setting the format of the columns heading
-    cells_list = ws[1]
-    for cell in cells_list:
-        cell.font = openpyxl_Font(bold=True)
-        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")  
-        
-    # Setting de columns width using dict of column attributes col_attr
-    for idx_col, col in enumerate(columns_list):        
-        column_letter = openpyxl_get_column_letter(idx_col + 1)
-        ws.column_dimensions[column_letter].width = col_attr[col][0]
-    
-    # Setting height of rows
-    height = 25
-    for idx_row in range(ws.max_row):
-        row_num = idx_row + 1
-        if row_num >= 1: height = 20
-        ws.row_dimensions[row_num].height = height
-
-    return wb, ws  
-
-
 ###################################
 # IFs analysis specific functions #
 ###################################
@@ -155,8 +85,9 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, if_col_dict, books
     import numpy as np   
     
     # Local imports
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg    
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
     
     # Setting useful aliases
     doctype_article_alias  = pg.DOC_TYPE_DICT['Articles']
@@ -266,7 +197,7 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, if_col_dict, books
         file_name = f'{if_analysis_col_new}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
         first_col_width = 50
-        wb, ws = _formatting_df(dept_if_df, first_col_width)
+        wb, ws = format_df_4_excel(dept_if_df, first_col_width)
         ws.title = dept + ' IFs '
         wb.save(dept_xlsx_file_path)
         
@@ -277,7 +208,7 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, if_col_dict, books
     return kpi_dict, if_analysis_col_new
 
 
-def _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year, 
+def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_year, 
                          kpi_dict, if_key, verbose = False):
     """
     """
@@ -292,10 +223,12 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year,
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
     
     # Setting useful aliases
     kpi_folder_alias         = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
-    kpi_file_base_alias      = pg.ARCHI_BDD_MULTI_ANNUELLE["IF analysis file name base"]
+    kpi_file_base_alias      = pg.ARCHI_BDD_MULTI_ANNUELLE["kpis file name base"]
     
     # Setting useful column names aliases
     col_final_list        = set_final_col_names(institute, org_tup)
@@ -353,11 +286,22 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year,
             
         # Saving after formatting the updated dataframe
         first_col_width = 35
-        wb, ws = _formatting_df(db_dept_kpi_df, first_col_width)
+        wb, ws = format_df_4_excel(db_dept_kpi_df, first_col_width)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
         
-        if dept== institute : institute_kpi_df = db_dept_kpi_df
+        if dept== institute : institute_kpi_df = db_dept_kpi_df    
+        
+    # Saving KPIs database as final result
+    results_to_save_dict = {"pub_lists": False,
+                            "ifs"      : False,
+                            "kws"      : False,
+                            "countries": False,
+                            "kpis"     : True,
+                           }    
+    if_analysis_name = None
+    final_save_message = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
+                                            if_analysis_name, results_to_save_dict, verbose = False)    
         
     message = f"\n    Kpi database updated and saved in folder: \n {file_path}"   
     if verbose: print(message)
@@ -524,8 +468,8 @@ def _plot_if_analysis(institute, org_tup, corpus_year, kpi_dict, if_col,
     return    
     
 
-def if_analysis(institute, org_tup, bibliometer_path, corpus_year, 
-                if_most_recent_year, verbose = True):
+def if_analysis(institute, org_tup, bibliometer_path, datatype, 
+                corpus_year, if_most_recent_year, verbose = True):
     """
     
     Module internal functions: _build_analysis_if_data, _plot_if_analysis
@@ -544,6 +488,7 @@ def if_analysis(institute, org_tup, bibliometer_path, corpus_year,
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
     from BiblioMeter_FUNCTS.BM_UpdateImpactFactors import journal_capwords
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
     
@@ -668,12 +613,23 @@ def if_analysis(institute, org_tup, bibliometer_path, corpus_year,
                                                             if_analysis_folder_path, verbose = verbose)
 
     # Updating the KPIs database 
-    institute_kpi_df = _update_kpi_database(institute, org_tup, bibliometer_path, corpus_year, kpi_dict, 
+    institute_kpi_df = _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_year, kpi_dict, 
                                             if_analysis_col_new, verbose = verbose)
     
     # Ploting IF analysis data as html files
     _plot_if_analysis(institute, org_tup, corpus_year, kpi_dict, if_analysis_col_new, 
                       if_analysis_folder_path, verbose = verbose)
+    
+    # Saving IFs analysis as final result
+    results_to_save_dict = {"pub_lists": False,
+                            "ifs"      : True,
+                            "kws"      : False,
+                            "countries": False,
+                            "kpis"     : False,
+                           }
+    if_analysis_name = if_analysis_col_new
+    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year, 
+                           if_analysis_name, results_to_save_dict, verbose = False)    
     
     return if_analysis_folder_path, institute_kpi_df, kpi_dict
 
@@ -691,6 +647,9 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, useco
     
     # 3rd party imports
     import pandas as pd
+    
+    # Local imports
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
     
     # Setting useful column names aliases
     final_pub_id_col_alias   = usecols[0]    
@@ -735,7 +694,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, useco
         # Saving the keywords dataframe as EXCEL file
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
         first_col_width = 50
-        wb, ws = _formatting_df(dept_kw_df, first_col_width)
+        wb, ws = format_df_4_excel(dept_kw_df, first_col_width)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
 
@@ -832,7 +791,7 @@ def _create_kw_cloud(institute, year, kw_type, kw_analysis_folder_path, usecols,
     if verbose: print(message, "\n")    
     return
 
-def keywords_analysis(institute, org_tup, bibliometer_path, year, verbose = False): 
+def keywords_analysis(institute, org_tup, bibliometer_path, datatype, year, verbose = False): 
     """
     """
     
@@ -848,12 +807,13 @@ def keywords_analysis(institute, org_tup, bibliometer_path, year, verbose = Fals
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
     
     # Setting useful aliases
-    auth_kw_item_alias       = bp.PARSING_ITEMS_LIST[7]
-    index_kw_item_alias      = bp.PARSING_ITEMS_LIST[8]
-    title_kw_item_alias      = bp.PARSING_ITEMS_LIST[9]
+    auth_kw_item_alias       = bp.PARSING_ITEMS_LIST[6]
+    index_kw_item_alias      = bp.PARSING_ITEMS_LIST[7]
+    title_kw_item_alias      = bp.PARSING_ITEMS_LIST[8]
     pub_list_folder_alias    = pg.ARCHI_YEAR["pub list folder"]
     analysis_folder_alias    = pg.ARCHI_YEAR["analyses"] 
     kw_analysis_folder_alias = pg.ARCHI_YEAR["keywords analysis"]    
@@ -930,6 +890,17 @@ def keywords_analysis(institute, org_tup, bibliometer_path, year, verbose = Fals
         
         # Creating keywords clouds and saving them as png images
         _create_kw_cloud(institute, year, kw_type, kw_analysis_folder_path, usecols, verbose = verbose)
+        
+    # Saving keywords analysis as final result
+    results_to_save_dict = {"pub_lists": False,
+                            "ifs"      : False,
+                            "kws"      : True,
+                            "countries": False,
+                            "kpis"     : False,
+                           }
+    if_analysis_name = None
+    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year, 
+                           if_analysis_name, results_to_save_dict, verbose = False)
     
     return kw_analysis_folder_path
 

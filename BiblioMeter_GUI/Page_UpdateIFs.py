@@ -49,7 +49,8 @@ def _launch_update_if_db(institute,
     
 def _launch_update_pub_if(institute,
                           org_tup,
-                          bibliometer_path, 
+                          bibliometer_path,
+                          datatype,
                           corpus_years_list,
                           pub_list_folder_alias,
                           pub_list_file_base_alias,
@@ -67,6 +68,7 @@ def _launch_update_pub_if(institute,
     # Local imports
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_if
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import split_pub_list_by_doc_type
+    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
     
     if_database_complete = None
     missing_pub_file_year = None
@@ -94,6 +96,18 @@ def _launch_update_pub_if(institute,
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
             split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
+            
+            # Saving pub list as final result
+            results_to_save_dict = {"pub_lists": True,
+                                    "ifs"      : False,
+                                    "kws"      : False,
+                                    "countries": False,
+                                    "kpis"     : False,
+                                   }
+            if_analysis_name = None
+            _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
+                                   if_analysis_name, results_to_save_dict, verbose = False)
+            
             if not if_database_complete:
                 info_title = "- Information -"
                 info_text  = f"La base de données des facteurs d'impact étant incomplète, "
@@ -122,7 +136,7 @@ def _launch_update_pub_if(institute,
     return missing_pub_file_year, if_database_complete
 
 
-def create_update_ifs(self, master, page_name, institute, bibliometer_path):
+def create_update_ifs(self, master, page_name, institute, bibliometer_path, datatype):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -188,7 +202,8 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
     def _missing_pub_file_year_check():
         missing_pub_file_year, if_database_complete = _launch_update_pub_if(institute,
                                                                             org_tup,
-                                                                            bibliometer_path, 
+                                                                            bibliometer_path,
+                                                                            datatype,
                                                                             app_main.years_list,
                                                                             pub_list_folder_alias,
                                                                             pub_list_file_base_alias,
@@ -207,9 +222,9 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path):
                 info_text += f"complète."
             else:              
                 info_text += f"incomplète."
-            info_text += f"\n\nDe plus, la liste consolidée des publications a été décomposée "
+            info_text += f"\n\nDe plus, chaque liste consolidée des publications a été décomposée "
             info_text += f"en trois fichiers disponibles dans le même dossier correspondant aux différentes "
-            info_text += f"classes de documents (les classes n'étant pas exhaustives, la décomposition peut être partielle)."            
+            info_text += f"classes de documents (les classes n'étant pas exhaustives, la décomposition peut être partielle)."
             info_text += f"\n\nEnfin, la concaténation des listes consolidées des publications "
             info_text += f"disponibles, à été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
             info_text += f"\n\nsous un nom vous identifiant ainsi que la liste des années prises en compte "

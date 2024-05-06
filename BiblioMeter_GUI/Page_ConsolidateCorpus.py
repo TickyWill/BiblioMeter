@@ -438,7 +438,8 @@ def _launch_add_OTP_try(institute,
 
 def _launch_pub_list_conso_try(institute, 
                                org_tup,  
-                               bibliometer_path, 
+                               bibliometer_path,
+                               datatype, 
                                OTP_path,
                                pub_list_path,
                                pub_list_file_path, 
@@ -461,7 +462,8 @@ def _launch_pub_list_conso_try(institute,
     
     def _consolidate_pub_list():
         try:            
-            end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, org_tup, bibliometer_path, 
+            end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, org_tup, 
+                                                                                  bibliometer_path, datatype, 
                                                                                   OTP_path, pub_list_path, 
                                                                                   pub_list_file_path, OTP_file_base_alias, 
                                                                                   year_select)
@@ -542,7 +544,7 @@ def _launch_pub_list_conso_try(institute,
     return     
 
 
-def create_consolidate_corpus(self, master, page_name, institute, bibliometer_path):
+def create_consolidate_corpus(self, master, page_name, institute, bibliometer_path, datatype):
     
     """
     Description : function working as a bridge between the BiblioMeter 
@@ -869,7 +871,8 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         # Trying launch creation of consolidated publications lists
         _launch_pub_list_conso_try(institute, 
                                    org_tup, 
-                                   bibliometer_path, 
+                                   bibliometer_path,
+                                   datatype,
                                    OTP_path,
                                    pub_list_path,
                                    pub_list_file_path, 
