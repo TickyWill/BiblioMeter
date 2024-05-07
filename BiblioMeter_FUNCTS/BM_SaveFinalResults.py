@@ -1,6 +1,5 @@
 __all__ = ['save_final_countries',
            'save_final_ifs',
-           'save_final_kpis',
            'save_final_kws',
            'save_final_pub_lists',
            'save_final_results',
@@ -249,59 +248,6 @@ def save_final_countries(institute, org_tup, bibliometer_path,
     end_message = f"Final countries for year {corpus_year} saved in folder: \n  '{target_countries_file_path}'"
     return end_message
 
-def save_final_kpis(institute, org_tup, bibliometer_path, results_folder_path): 
-    """
-    
-    """
-    # Standard library imports
-    import os
-    from pathlib import Path
-
-    # 3rd party import
-    import pandas as pd
-
-    # Local imports
-    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
-    from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
-    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
-    
-    # Setting useful column names aliases
-    col_final_list = set_final_col_names(institute, org_tup)
-    depts_col_list = col_final_list[11:16]
-    
-    # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["kpis"]
-    
-    # Setting aliases of common parts of file names
-    origin_kpis_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
-    kpis_file_base_alias     = pg.ARCHI_BDD_MULTI_ANNUELLE["kpis file name base"]
-    
-    # Setting common paths                  
-    origin_kpis_folder_path = bibliometer_path / Path(origin_kpis_folder_alias)
-    target_kpis_folder_path = results_folder_path / Path(results_sub_folder_alias)  
-    
-    # Checking availability of required results folders
-    if not os.path.exists(target_kpis_folder_path): os.makedirs(target_kpis_folder_path)
-    
-    for dept in [institute] + depts_col_list:
-        
-        # Setting origin and target file paths
-        dept_file_name = f'{dept}_' + kpis_file_base_alias + '.xlsx'
-        origin_dept_file_path = Path(origin_kpis_folder_path) / Path(dept_file_name)
-        target_dept_file_path = Path(target_kpis_folder_path) / Path(dept_file_name)
-        
-        # Get "dept_df" from EXCEL file at full path 'origin_dept_file_path'
-        dept_df = pd.read_excel(origin_dept_file_path)
-
-        # Saving 'dept_df' as EXCEL file at full path 'target_dept_file_path'
-        first_col_width = 50
-        wb, ws = format_df_4_excel(dept_df, first_col_width)
-        ws.title = dept + ' KPIs '
-        wb.save(target_dept_file_path) 
-
-    end_message = f"Final KPIs saved in folder: \n  '{target_kpis_folder_path}'"
-    return end_message
-
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
                        if_analysis_name, results_to_save_dict, verbose = False):
     """
@@ -314,7 +260,6 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
     from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_countries
     from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_ifs
-    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_kpis
     from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_kws
     from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_pub_lists
     
@@ -348,10 +293,6 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     if results_to_save_dict["countries"]:    
         message = save_final_countries(institute, org_tup, bibliometer_path, 
                                        corpus_year, results_folder_path)
-        if verbose: print("\n",message)
-
-    if results_to_save_dict["kpis"]:        
-        message = save_final_kpis(institute, org_tup, bibliometer_path, results_folder_path)
         if verbose: print("\n",message)
     
     end_message = f"Final results for year {corpus_year} saved in folder:  \n  '{results_folder_path}'"

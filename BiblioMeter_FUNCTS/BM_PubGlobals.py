@@ -38,6 +38,7 @@ __all__ = ['ANALYSIS_IF',
            'NOT_AVAILABLE_IF',
            'OTP_SHEET_NAME_BASE',
            'PARSING_PERF',
+           'RESULTS_TO_SAVE',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
            'TSV_SAVE_EXTENT'
@@ -83,18 +84,22 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
                 "complementary file"  : "Autres corrections.xlsx",
                }
 
-ARCHI_RESULTS = {"root"             : "Sauvegarde des résultats",
-                 "pub-lists"        : "Listes consolidées des publications",
-                 "impact-factors"   : "Analyse des facteurs d'impact",
-                 "keywords"         : "Analyse des mots clefs",
-                 "countries"        : "Analyse géographique",
-                 "institutions"     : "Analyse des collaborations",
-                 "kpis"             : "Synthèse des indicateurs",
-                 "subjects"         : "Analyse des thématiques",
-                 "Scopus & WoS"     : "Scopus&Wos",
-                 "Scopus-HAL & WoS" : "HalScopus&Wos",
-                 "WoS"              : "Wos",
+ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
+                 "pub-lists"           : "Listes consolidées des publications",
+                 "impact-factors"      : "Analyse des facteurs d'impact",
+                 "keywords"            : "Analyse des mots clefs",
+                 "countries"           : "Analyse géographique",
+                 "institutions"        : "Analyse des collaborations",
+                 "kpis"                : "Synthèse des indicateurs",
+                 "kpis file name base" : "Synthèse des KPIs",
+                 "subjects"            : "Analyse des thématiques",
+                 "Scopus & WoS"        : "Scopus&Wos",
+                 "Scopus-HAL & WoS"    : "HalScopus&Wos",
+                 "WoS"                 : "Wos",
                 }
+
+# Setting list of final results to save
+RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries"]
 
 # Setting list of raw data types
 datatype_nb = 3

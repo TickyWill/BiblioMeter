@@ -851,7 +851,7 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
     consolidate_pub_list_df.reset_index(inplace = True)
     
     # Re_saving df to EXCEL file
-    consolidate_pub_list_df.to_excel(out_file_path, index = False)
+    consolidate_pub_list_df.to_excel(out_file_path, index = False)   
 
     # Adding Impact Factors and saving new consolidate_pub_list_df 
     # this also for saving results files to complete IFs database
@@ -868,12 +868,9 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
     split_ratio = split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
     
     # Saving pub list as final result
-    results_to_save_dict = {"pub_lists": True,
-                            "ifs"      : False,
-                            "kws"      : False,
-                            "countries": False,
-                            "kpis"     : False,
-                           }    
+    status_values = len(pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["pub_lists"] = True
     if_analysis_name = None
     final_save_message = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
                                             if_analysis_name, results_to_save_dict, verbose = False)

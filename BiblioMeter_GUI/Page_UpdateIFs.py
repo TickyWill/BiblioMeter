@@ -66,6 +66,7 @@ def _launch_update_pub_if(institute,
     from pathlib import Path
     
     # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_if
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import split_pub_list_by_doc_type
     from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
@@ -98,12 +99,9 @@ def _launch_update_pub_if(institute,
             split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
             
             # Saving pub list as final result
-            results_to_save_dict = {"pub_lists": True,
-                                    "ifs"      : False,
-                                    "kws"      : False,
-                                    "countries": False,
-                                    "kpis"     : False,
-                                   }
+            status_values = len(pg.RESULTS_TO_SAVE) * [False]
+            results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+            results_to_save_dict["pub_lists"] = True
             if_analysis_name = None
             _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
                                    if_analysis_name, results_to_save_dict, verbose = False)

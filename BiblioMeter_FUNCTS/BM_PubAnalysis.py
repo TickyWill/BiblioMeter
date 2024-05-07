@@ -223,12 +223,18 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
-    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
     
-    # Setting useful aliases
-    kpi_folder_alias         = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
-    kpi_file_base_alias      = pg.ARCHI_BDD_MULTI_ANNUELLE["kpis file name base"]
+    # Setting aliases for updating KPIs database
+    results_root_alias       = pg.ARCHI_RESULTS["root"]
+    results_folder_alias     = pg.ARCHI_RESULTS[datatype]
+    results_sub_folder_alias = pg.ARCHI_RESULTS["kpis"]
+    kpi_file_base_alias      = pg.ARCHI_RESULTS["kpis file name base"]
+    
+    # Setting paths for saving results
+    results_root_path        = bibliometer_path / Path(results_root_alias)
+    results_folder_path      = results_root_path / Path(results_folder_alias)    
+    results_kpis_folder_path = results_folder_path / Path(results_sub_folder_alias)
     
     # Setting useful column names aliases
     col_final_list        = set_final_col_names(institute, org_tup)
@@ -248,7 +254,8 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         
         # Building 'dept_pub_df' using keys of 'dept_pub_dict' as indexes 
         # and setting the name of the values column to 'corpus_year'       
-        dept_pub_df = pd.DataFrame.from_dict(dept_pub_dict, orient = "index", columns = [corpus_year])
+        dept_pub_df = pd.DataFrame.from_dict(dept_pub_dict, orient = "index", 
+                                             columns = [corpus_year])
         
         # Renaming the index column of 'dept_pub_df' as 'corpus_year_row_alias'
         dept_pub_df.reset_index(inplace = True)
@@ -261,7 +268,8 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         
         # Building 'dept_if_df' using keys of 'dept_if_dict' as indexes 
         # and setting the name of the values column to 'corpus_year'      
-        dept_if_df = pd.DataFrame.from_dict(dept_if_dict, orient = "index", columns = [corpus_year]) 
+        dept_if_df = pd.DataFrame.from_dict(dept_if_dict, orient = "index", 
+                                            columns = [corpus_year]) 
         
         # Renaming the index column with 'corpus_year_row_alias'
         dept_if_df.reset_index(inplace = True)
@@ -274,13 +282,14 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         
         # Reading as the dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"
-        file_path = bibliometer_path / Path(kpi_folder_alias) / Path(filename)       
+        file_path = results_kpis_folder_path / Path(filename)
         if os.path.isfile(file_path):
             db_dept_kpi_df = pd.read_excel(file_path)
             # Updating the dataframe with the column to append
             if corpus_year in db_dept_kpi_df.columns:
                 db_dept_kpi_df = db_dept_kpi_df.drop(columns = [corpus_year])           
-            db_dept_kpi_df = db_dept_kpi_df.merge(dept_kpi_df, how = "outer", on = corpus_year_row_alias)
+            db_dept_kpi_df = db_dept_kpi_df.merge(dept_kpi_df, how = "outer", 
+                                                  on = corpus_year_row_alias)
         else:
             db_dept_kpi_df = dept_kpi_df
             
@@ -290,19 +299,8 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         ws.title = dept + ' KPIs '
         wb.save(file_path)
         
-        if dept== institute : institute_kpi_df = db_dept_kpi_df    
-        
-    # Saving KPIs database as final result
-    results_to_save_dict = {"pub_lists": False,
-                            "ifs"      : False,
-                            "kws"      : False,
-                            "countries": False,
-                            "kpis"     : True,
-                           }    
-    if_analysis_name = None
-    final_save_message = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year, 
-                                            if_analysis_name, results_to_save_dict, verbose = False)    
-        
+        if dept == institute: institute_kpi_df = db_dept_kpi_df    
+   
     message = f"\n    Kpi database updated and saved in folder: \n {file_path}"   
     if verbose: print(message)
     
@@ -621,12 +619,9 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
                       if_analysis_folder_path, verbose = verbose)
     
     # Saving IFs analysis as final result
-    results_to_save_dict = {"pub_lists": False,
-                            "ifs"      : True,
-                            "kws"      : False,
-                            "countries": False,
-                            "kpis"     : False,
-                           }
+    status_values = len(pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["ifs"] = True    
     if_analysis_name = if_analysis_col_new
     _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year, 
                            if_analysis_name, results_to_save_dict, verbose = False)    
@@ -892,12 +887,9 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype, year, verb
         _create_kw_cloud(institute, year, kw_type, kw_analysis_folder_path, usecols, verbose = verbose)
         
     # Saving keywords analysis as final result
-    results_to_save_dict = {"pub_lists": False,
-                            "ifs"      : False,
-                            "kws"      : True,
-                            "countries": False,
-                            "kpis"     : False,
-                           }
+    status_values = len(pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["kws"] = True
     if_analysis_name = None
     _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year, 
                            if_analysis_name, results_to_save_dict, verbose = False)

@@ -461,7 +461,7 @@ def _launch_pub_list_conso_try(institute,
     from BiblioMeter_FUNCTS.BM_ConsolidatePubList import consolidate_pub_list
     
     def _consolidate_pub_list():
-        try:            
+        try:
             end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, org_tup, 
                                                                                   bibliometer_path, datatype, 
                                                                                   OTP_path, pub_list_path, 
