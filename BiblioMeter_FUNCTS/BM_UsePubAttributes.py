@@ -369,8 +369,8 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     dpt_attributs_dict  = org_tup[2]    
     
     # Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)       
-    bm_col_rename_dic = col_rename_tup[2] 
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
+    all_col_rename_dic = col_rename_tup[2] 
     
     # Setting useful folder and file aliases
     bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -381,10 +381,14 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"] 
     
     # Setting useful column names aliases       
-    hash_id_col_alias  = pg.COL_HASH['hash_id']
-    pub_id_alias       = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
-    otp_list_col_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]
-    otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']
+    hash_id_col_alias    = pg.COL_HASH['hash_id']    
+    pub_id_alias         = all_col_rename_dic[bp.COL_NAMES['pub_id']]
+    author_col_alias     = all_col_rename_dic[bp.COL_NAMES['articles'][1]] 
+    doi_col_alias        = all_col_rename_dic[bp.COL_NAMES['articles'][6]] 
+    otp_list_col_alias   = all_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]
+    otp_col_alias        = pg.COL_NAMES_BONUS['final OTP']
+    hash_otp_sheet_alias = pg.SHEET_SAVE_OTP['hash_otp']
+    doi_otp_sheet_alias  = pg.SHEET_SAVE_OTP['doi_otp']
     
     # Setting useful paths
     corpus_year_path    = bibliometer_path / Path(corpus_year)    
@@ -398,12 +402,12 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
         # Getting the hash_id dataframe
         hash_id_df = pd.read_excel(hash_id_file_path)  
 
-        # Getting the kept otps dataframe
-        otp_history_df = pd.read_excel(kept_otps_file_path)
+        # Getting the kept OTPs dataframe by hash_id
+        hash_otp_history_df = pd.read_excel(kept_otps_file_path, sheet_name = hash_otp_sheet_alias)    
 
         # Building df of pub_id and otps to set related to hash_id   
         pub_id_otp_to_set_df = pd.merge(hash_id_df, 
-                                        otp_history_df, 
+                                        hash_otp_history_df, 
                                         how = 'inner',
                                         on  = hash_id_col_alias)
         
@@ -412,10 +416,14 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
         pub_id_to_check_list = [str(row[pub_id_alias]) for _,row in pub_id_otp_to_set_df.iterrows()]
         otp_to_set_list      = [str(row[otp_col_alias]) for _,row in pub_id_otp_to_set_df.iterrows()]
         
+        # Getting the kept OTPs dataframe by DOI and first author
+        doi_otp_history_df = pd.read_excel(kept_otps_file_path, sheet_name = doi_otp_sheet_alias)                
+        author_to_check_list = doi_otp_history_df[author_col_alias].to_list()
+        doi_to_check_list    = doi_otp_history_df[doi_col_alias].to_list()
+        doi_otp_to_set_list  = doi_otp_history_df[otp_col_alias].to_list()
+        
         # Setting departments list
         dpt_list = list(dpt_attributs_dict.keys())
-        
-        print("dpt_list:", dpt_list)
 
         # Setting the known OTPs  
         for dpt in sorted(dpt_list):
@@ -426,17 +434,20 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
             # Getting the pub list for departement dpt
             dpt_pub_df = pd.read_excel(otp_file_name_dpt_path)
             
-            # Setting the pub-id list for department dpt
+            # Setting the pub-id list and the DOIs list for department dpt
             dept_pub_id_list = dpt_pub_df[pub_id_alias].to_list()
+            dept_doi_list    = dpt_pub_df[doi_col_alias].to_list()
+            #dept_auth_list   = dpt_pub_df[author_col_alias].to_list()
 
             # Setting columns list
             col_list = list(dpt_pub_df.columns)
 
-            # Building the otp_set_dpt_pub_df dataframe of publication with otp set
-            # the otp_to_set_dpt_pub_df dataframe of publication with otp still to be defined
-            otp_set_dpt_pub_df = pd.DataFrame(columns=col_list)
+            # Building the 'otp_set_dpt_pub_df' dataframe of publication with otp set
+            otp_set_dpt_pub_df = pd.DataFrame(columns = col_list)
+            
+            # Building the 'otp_to_set_dpt_pub_df' dataframe of publication with otp still to be defined
             otp_to_set_dpt_pub_df = dpt_pub_df.copy()
-            otp_to_set_dpt_pub_df.drop(columns = [otp_list_col_alias], inplace = True)
+            otp_to_set_dpt_pub_df.drop(columns = [otp_list_col_alias], inplace = True)          
             
             for otp_idx in range(len(pub_id_to_check_list)):
                 pub_id_to_check = pub_id_to_check_list[otp_idx]
@@ -444,13 +455,68 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
                 
                 if pub_id_to_check in dept_pub_id_list:
                     pub_id_idx = [i for i,e in enumerate(dept_pub_id_list) if e == pub_id_to_check][0]
-                    dpt_pub_df.loc[pub_id_idx,otp_list_col_alias] = otp_to_set
+                    dpt_pub_df.loc[pub_id_idx, otp_list_col_alias] = otp_to_set
                     otp_set_dpt_pub_df = pd.concat([otp_set_dpt_pub_df,
                                                     dpt_pub_df[dpt_pub_df[pub_id_alias] == pub_id_to_check]])
-                    otp_to_set_dpt_pub_df.drop(index = pub_id_idx, inplace = True)
-            
+                    otp_to_set_dpt_pub_df.drop(index = pub_id_idx, inplace = True)          
+                    
+            # Si tous les OTP non affectés compléter avec DOI_otp
+            if len(otp_to_set_dpt_pub_df):
+                
+                # Setting the DOIs list of otp_to_set_dpt_pub_df
+                otp_to_set_doi_list  = otp_to_set_dpt_pub_df[doi_col_alias].to_list()
+                
+                for otp_idx in range(len(doi_to_check_list)):
+                    doi_to_check   = doi_to_check_list[otp_idx]
+                    doi_otp_to_set = doi_otp_to_set_list[otp_idx]
+                    
+                    if doi_to_check in otp_to_set_doi_list:                       
+                        dpt_doi_idx_list = [i for i,e in enumerate(dept_doi_list) if e == doi_to_check]
+                        
+                        if doi_to_check != bp.UNKNOWN:                                                     
+                            doi_idx = dpt_doi_idx_list[0]
+                            dpt_pub_df_to_add = dpt_pub_df[dpt_pub_df[doi_col_alias] == doi_to_check]
+                            dpt_pub_df_to_add.loc[doi_idx, otp_list_col_alias] = doi_otp_to_set                            
+                            otp_set_dpt_pub_df = pd.concat([otp_set_dpt_pub_df,
+                                                            dpt_pub_df_to_add])
+                            otp_to_set_dpt_pub_df.drop(index = doi_idx, inplace = True)                           
+                        else:
+                            # Managing case of unknown DOIs first author name
+                            new_otp_to_set_dpt_pub_df = otp_to_set_dpt_pub_df[otp_to_set_dpt_pub_df[doi_col_alias] == doi_to_check]                            
+                            otp_to_set_auth_list = new_otp_to_set_dpt_pub_df[author_col_alias].to_list()                           
+                            
+                            new_doi_otp_history_df = doi_otp_history_df[doi_otp_history_df[doi_col_alias] == doi_to_check]
+                            author_to_check_list = new_doi_otp_history_df[author_col_alias].to_list()
+                            auth_otp_to_set_list = new_doi_otp_history_df[otp_col_alias].to_list()
+
+                            for auth_otp_idx, auth_to_check in enumerate(author_to_check_list):
+                                auth_otp_to_set = auth_otp_to_set_list[auth_otp_idx]
+                                                                
+                                if auth_to_check in otp_to_set_auth_list:                                    
+                                    dpt_pub_df_to_add_init = dpt_pub_df[dpt_pub_df[doi_col_alias] == doi_to_check]
+                                    dept_auth_list = dpt_pub_df[author_col_alias].to_list()                                    
+                                    dpt_auth_idx_list = [i for i,e in enumerate(dept_auth_list) if e == auth_to_check] 
+                                    
+                                    for auth_idx in dpt_auth_idx_list:
+                                        auth_idx_to_replace_list = []
+                                        if auth_idx in otp_to_set_dpt_pub_df.index:
+                                            auth_idx_to_replace_list.append(auth_idx)
+                                            
+                                            if auth_idx in otp_set_dpt_pub_df.index:
+                                                otp_set_dpt_pub_df.drop(index = auth_idx, inplace = True) 
+                                                
+                                        for auth_idx_to_replace in auth_idx_to_replace_list:                                           
+                                            dpt_pub_df_to_add_init.loc[auth_idx_to_replace, otp_list_col_alias] = auth_otp_to_set 
+                                            
+                                            dpt_pub_df_to_add = dpt_pub_df_to_add_init[dpt_pub_df_to_add_init[author_col_alias] == auth_to_check]
+                                            dpt_pub_df_to_add.loc[auth_idx_to_replace, otp_list_col_alias] = auth_otp_to_set                                            
+                                            otp_set_dpt_pub_df = pd.concat([otp_set_dpt_pub_df,
+                                                                            dpt_pub_df_to_add])
+                                            otp_set_dpt_pub_df.drop_duplicates(inplace = True)                                                
+                                            otp_to_set_dpt_pub_df.drop(index = auth_idx_to_replace, inplace = True)                                            
+                        
             # Setting the list of OTPs for the 'dpt' department
-            dpt_otp_list = dpt_attributs_dict[dpt][ig.DPT_OTP_KEY]
+            dpt_otp_list = dpt_attributs_dict[dpt][ig.DPT_OTP_KEY]              
 
             # Resetting validation list for OTPs when not already set and saving the file
             _re_save_dpt_OTP_file(institute, org_tup, dpt, otp_set_dpt_pub_df, otp_to_set_dpt_pub_df, 

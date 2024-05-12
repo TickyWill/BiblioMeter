@@ -292,16 +292,23 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
             item_xlsx_file = item_filename_dict[item] + ".xlsx"
             item_xlsx_path = parsing_path / Path(item_xlsx_file)
             if item_xlsx_path.is_file():
-                item_df = pd.read_excel(item_xlsx_path)
+                try:
+                    item_df = pd.read_excel(item_xlsx_path)
+                except pd.errors.EmptyDataError:
+                    item_df = pd.DataFrame()
         elif save_extent == "dat":
             item_tsv_file = item_filename_dict[item] + ".dat"
             item_tsv_path = parsing_path / Path(item_tsv_file)
             if item_tsv_path.is_file():
-                item_df = pd.read_csv(item_tsv_path, sep = "\t")
+                try:
+                    item_df = pd.read_csv(item_tsv_path, sep = "\t")
+                except pd.errors.EmptyDataError:
+                    item_df = pd.DataFrame()
         else:
             pass
+        
         if item_df is not None: parsing_dict[item] = item_df
-    return parsing_dict  
+    return parsing_dict 
 
 
 def save_fails_dict(fails_dict, parsing_path):

@@ -12,10 +12,11 @@ def save_final_pub_lists(institute, org_tup, bibliometer_path,
     """
     # Standard library imports
     import os
+    import shutil
     from pathlib import Path
 
     # 3rd party import
-    import pandas as pd
+    #import pandas as pd
 
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
@@ -57,12 +58,14 @@ def save_final_pub_lists(institute, org_tup, bibliometer_path,
     target_paths_dict["Others"] = target_pub_list_path / Path(other_pub_list_file_alias)
     
     for key in origin_paths_dict.keys():
-        # Get "key_df" from EXCEL file at full path 'origin_paths_dict[key]'
-        key_df = pd.read_excel(origin_paths_dict[key])
-
-        # Saving 'key_df' as EXCEL file at full path 'target_paths_dict[key]'
-        wb, _ = mise_en_page(institute, org_tup, key_df)
-        wb.save(target_paths_dict[key])
+        shutil.copy2(origin_paths_dict[key], target_paths_dict[key])
+        
+        ## Get "key_df" from EXCEL file at full path 'origin_paths_dict[key]'
+        #key_df = pd.read_excel(origin_paths_dict[key])
+#
+        ## Saving 'key_df' as EXCEL file at full path 'target_paths_dict[key]'
+        #wb, _ = mise_en_page(institute, org_tup, key_df)
+        #wb.save(target_paths_dict[key])
 
     end_message = f"Final publications lists for year {corpus_year} saved in folder: \n  '{target_pub_list_path}'"
     return end_message

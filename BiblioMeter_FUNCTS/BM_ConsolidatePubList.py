@@ -462,6 +462,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import get_if_db
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_RenameCols import set_if_col_names
@@ -512,7 +513,6 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         results_df.rename(columns  = {year_col_alias          : final_year_col,
                                       corpus_year_if_col_name : year_db_if_col_name,}, 
                           inplace = True)
-
         if add_cols:
             results_df.rename(columns  = {issn_col_alias : corpus_issn_col_alias,}, 
                               inplace = True)
@@ -555,6 +555,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     not_available_if_alias     = pg.NOT_AVAILABLE_IF
     unknown_if_fill_alias      = pg.FILL_EMPTY_KEY_WORD
     unknown_alias              = pg.FILL_EMPTY_KEY_WORD
+    outside_if_analysis_alias  = pg.OUTSIDE_ANALYSIS
             
     # Setting institute parameters
     if_db_status            = org_tup[5] 
@@ -637,10 +638,8 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         # with 'not_available_if_alias' value
         corpus_df_bis[corpus_year_if_col_name] = not_available_if_alias
     
-    # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
+    # Sorting 'corpus_df_bis' pub_id values
     corpus_df_bis.sort_values(by = [pub_id_col_alias], inplace = True)  
-    wb, _ = mise_en_page(institute, org_tup, corpus_df_bis)
-    wb.save(out_file_path)
     
     # Building 'year_pub_if_df' with subset of 'corpus_df_bis' columns
     subsetcols = [pub_id_col_alias,
@@ -692,6 +691,15 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     if_database_complete = True
     if not year_missing_issn_df.empty or not year_missing_if_df.empty: 
         if_database_complete = False
+    else:
+        # replace remaining unknown IF values by 'not_available_if_alias' value
+        corpus_df_bis.replace({most_recent_year_if_col_name: unknown_if_fill_alias, 
+                               corpus_year_if_col_name     : unknown_if_fill_alias,
+                              }, outside_if_analysis_alias, inplace = True)
+    
+    # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'  
+    wb, _ = mise_en_page(institute, org_tup, corpus_df_bis)
+    wb.save(out_file_path)
     
     _format_and_save(year_missing_issn_df, missing_issn_path, add_cols = True)
     _format_and_save(year_missing_if_df, missing_if_path, add_cols = False)
@@ -788,7 +796,9 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
     from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
-    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps 
+    from BiblioMeter_FUNCTS.BM_UsePubAttributes import save_otps
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import add_if
+    from BiblioMeter_FUNCTS.BM_ConsolidatePubList import split_pub_list_by_doc_type 
     
     # internal functions
     def _set_df_OTP_dpt(dpt_label):        
@@ -851,7 +861,7 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
     consolidate_pub_list_df.reset_index(inplace = True)
     
     # Re_saving df to EXCEL file
-    consolidate_pub_list_df.to_excel(out_file_path, index = False)   
+    consolidate_pub_list_df.to_excel(out_file_path, index = False) 
 
     # Adding Impact Factors and saving new consolidate_pub_list_df 
     # this also for saving results files to complete IFs database

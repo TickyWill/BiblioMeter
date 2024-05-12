@@ -1,5 +1,6 @@
 __all__ = ['if_analysis',
-           'keywords_analysis',          
+           'keywords_analysis', 
+           'coupling_analysis',
           ]
 
 ###################################
@@ -171,8 +172,9 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, if_col_dict, books
         dept_if_df.rename(columns = {if_analysis_col: if_analysis_col_new}, inplace = True)
         dept_if_df = dept_if_df.reset_index().drop(columns = ["index"])
 
-        # Computing IF useful values   
-        if_moyen = sum([x[0]*x[1] for x in zip(dept_if_df[if_analysis_col_new],dept_if_df[articles_nb_col_alias])])/nb_articles
+        # Computing IF useful values
+        if nb_articles: 
+            if_moyen = sum([x[0]*x[1] for x in zip(dept_if_df[if_analysis_col_new],dept_if_df[articles_nb_col_alias])])/nb_articles
         if_max   = np.max(dept_if_df[if_analysis_col_new])
         if_min   = np.min(dept_if_df[if_analysis_col_new])
 
@@ -236,6 +238,9 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
     results_folder_path      = results_root_path / Path(results_folder_alias)    
     results_kpis_folder_path = results_folder_path / Path(results_sub_folder_alias)
     
+    # Checking availability of required results folder
+    if not os.path.exists(results_kpis_folder_path): os.makedirs(results_kpis_folder_path)
+        
     # Setting useful column names aliases
     col_final_list        = set_final_col_names(institute, org_tup)
     depts_col_list        = col_final_list[11:16]  
@@ -896,4 +901,244 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype, year, verb
     
     return kw_analysis_folder_path
 
+def _build_countries_stat(countries_df):
+    
+    # 3rd party imports
+    import BiblioParsing as bp
+    import pandas as pd
+    
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    
+    # Setting useful local aliases
+    pub_id_alias        = bp.COL_NAMES['pub_id']             #"Pub_id"
+    country_alias       = bp.COL_NAMES['country'][2]         #"Country"
+    final_country_alias = pg.COL_NAMES_BONUS['country']      #"Pays"
+    weight_alias        = pg.COL_NAMES_BONUS['pub number']   #"Nombre de publications"
+    pub_ids_alias       = pg.COL_NAMES_BONUS["pub_ids list"] #"Liste des Pub_ids"
 
+    by_country_df = pd.DataFrame(columns = [final_country_alias, weight_alias, pub_ids_alias])
+    idx_country = 0
+    for country, pub_id_dg in countries_df.groupby(country_alias):
+        pub_id_dg = pub_id_dg.drop_duplicates([pub_id_alias, country_alias])
+        pub_ids_list = pub_id_dg[pub_id_alias].tolist()
+        pub_ids_nb = len(pub_ids_list)
+        by_country_df.loc[idx_country, final_country_alias] = country
+        by_country_df.loc[idx_country, weight_alias]  = pub_ids_nb        
+        if country != "France":
+            pud_ids_txt = "; ".join(pub_ids_list)
+        else:            
+            pud_ids_txt =  pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb-1]
+        by_country_df.loc[idx_country, pub_ids_alias] = pud_ids_txt    
+        idx_country += 1
+        
+    return by_country_df
+
+def _build_continents_stat(by_country_df):
+       
+    # 3rd party imports
+    import BiblioParsing as bp
+    import numpy as np
+    import pandas as pd
+    
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    
+    # Setting useful local aliases
+    country_alias       = pg.COL_NAMES_BONUS['country']      #"Pays"
+    weight_alias        = pg.COL_NAMES_BONUS['pub number']   #"Nombre de publications"
+    pub_ids_alias       = pg.COL_NAMES_BONUS['pub_ids list'] #"Liste des Pub_ids"
+    continent_alias     = pg.COL_NAMES_BONUS['continent']    #"Continent"
+    
+    # Getting continent information by country from COUNTRIES_CONTINENT, a BiblioParsing global 
+    country_continent_dict = bp.COUNTRIES_CONTINENT
+    
+    # Setting the test representative of the full list of pub IDs from 'by_country_df' 
+    # at 'pud_ids_alias' col for country France
+    full_pub_ids = by_country_df[by_country_df[country_alias] == 'France'][pub_ids_alias].values[0] 
+    
+    # Replacing country by its continent in a copy of 'by_country_df'
+    continents_df = by_country_df.copy()    
+    continents_df[country_alias] = continents_df[country_alias].map(lambda x: country_continent_dict[x])
+    
+    # Renaming the column 'country_alias' to 'continent_alias'
+    continents_df.rename(columns = {country_alias: continent_alias}, inplace = True)
+    
+    # Building 'by_continent_df' as number of publications per continent
+    by_continent_df = pd.DataFrame(columns = continents_df.columns)
+    idx = 0
+    for continent, dg in continents_df.groupby(continent_alias):
+        by_continent_df.loc[idx, continent_alias] = continent
+        by_continent_df.loc[idx, weight_alias] = np.sum(dg[weight_alias])
+        if continent != "Europe":
+            pub_ids_list = [x for x in dg[pub_ids_alias]]
+            by_continent_df.loc[idx, pub_ids_alias] = "; ".join(pub_ids_list)
+        else:
+            by_continent_df.loc[idx, pub_ids_alias] = full_pub_ids
+        idx += 1            
+    return by_continent_df
+
+def coupling_analysis(institute, org_tup, bibliometer_path, 
+                      year, verbose = False):
+
+    # Standard library imports
+    import os
+    from pathlib import Path
+
+    # 3rd party imports
+    import BiblioParsing as bp
+    import pandas as pd
+
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
+    from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
+    
+    # Internal functions
+    def _copy_dg_col_to_df(df, dg, col_alias):
+        df[col_alias] = dg[col_alias]       
+        cols_list = [final_pub_id_alias, idx_address_alias, countries_col_alias, institutions_alias] 
+        df = df[cols_list]
+        return df
+    
+    def _year_pub_id(df, year, pub_id_alias):
+        '''The local function `_unique_pub_id` transforms the column 'Pub_id' of the df 
+        by adding "yyyy_" to the value of the row.
+
+        Args: 
+            df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
+            year (str): 
+
+        Returns:
+            (pandas.DataFrame()): the df with its changed column.
+        '''        
+        def _rename_pub_id(old_pub_id, year):
+            pub_id_str = str(int(old_pub_id))
+            while len(pub_id_str)<3: pub_id_str = "0" + pub_id_str
+            new_pub_id = str(int(year)) + '_' + pub_id_str
+            return new_pub_id
+
+        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, year)) 
+        
+    def _save_formatted_df_to_xlsx(results_path, item_filename, item_df, 
+                                   sheet_name, year, first_col_width, last_col_width):
+        item_xlsx_file = item_filename + xlsx_extent_alias
+        item_xlsx_path = results_path / Path(item_xlsx_file)
+        wb, ws = format_df_4_excel(item_df, first_col_width, last_col_width)
+        ws.title = sheet_name + year
+        wb.save(item_xlsx_path) 
+
+    # Setting useful local aliases
+    dedup_folder_alias = "dedup"
+    xlsx_extent_alias  = ".xlsx"
+    
+    # Setting aliases from globals
+    tsv_extent_alias                     = "." + pg.TSV_SAVE_EXTENT    
+    addresses_item_alias                 = bp.PARSING_ITEMS_LIST[2]
+    norm_inst_item_alias                 = bp.PARSING_ITEMS_LIST[12]
+    raw_inst_item_alias                  = bp.PARSING_ITEMS_LIST[13]
+    pub_list_folder_alias                = pg.ARCHI_YEAR["pub list folder"]
+    analysis_folder_alias                = pg.ARCHI_YEAR["analyses"] 
+    geo_analysis_folder_alias            = pg.ARCHI_YEAR["countries analysis"] 
+    inst_analysis_folder_alias           = pg.ARCHI_YEAR["institutions analysis"]
+    pub_list_filename_base               = pg.ARCHI_YEAR["pub list file name base"]
+    countries_filename_alias             = pg.ARCHI_YEAR["countries file name"]
+    country_weight_filename_alias        = pg.ARCHI_YEAR["country weight file name"]
+    continent_weight_filename_alias      = pg.ARCHI_YEAR["continent weight file name"]
+    norm_inst_filename_alias             = pg.ARCHI_YEAR["norm inst file name"] 
+    raw_inst_filename_alias              = pg.ARCHI_YEAR["raw inst file name"] 
+    institutions_folder_alias            = pg.ARCHI_INSTITUTIONS["root"]
+    inst_types_file_base_alias           = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    country_affiliations_file_base_alias = pg.ARCHI_INSTITUTIONS["affiliations_base"]
+    
+    # Setting useful file names 
+    pub_list_filename = pub_list_filename_base + " " + str(year) + xlsx_extent_alias
+    inst_types_file_alias = institute + "_" + inst_types_file_base_alias
+    country_affiliations_file_alias = institute + "_" + country_affiliations_file_base_alias
+    
+    # Setting useful paths
+    year_folder_path               = bibliometer_path / Path(str(year))
+    pub_list_folder_path           = year_folder_path / Path(pub_list_folder_alias)
+    pub_list_file_path             = pub_list_folder_path / Path(pub_list_filename)
+    analysis_folder_path           = year_folder_path / Path(analysis_folder_alias)
+    geo_analysis_folder_path       = analysis_folder_path / Path(geo_analysis_folder_alias)
+    inst_analysis_folder_path      = analysis_folder_path / Path(inst_analysis_folder_alias)
+    institutions_folder_path       = bibliometer_path / Path(institutions_folder_alias)
+    inst_types_file_path           = institutions_folder_path / Path(inst_types_file_alias)
+    country_affiliations_file_path = institutions_folder_path / Path(country_affiliations_file_alias)
+    
+    # Creating required output folders
+    if not os.path.exists(analysis_folder_path):
+        os.makedirs(analysis_folder_path) 
+    if not os.path.exists(geo_analysis_folder_path):
+        os.makedirs(geo_analysis_folder_path) 
+    if not os.path.exists(inst_analysis_folder_path):
+        os.makedirs(inst_analysis_folder_path) 
+    
+    # Setting useful column names aliases
+    col_final_list       = set_final_col_names(institute, org_tup)
+    final_pub_id_alias   = col_final_list[0]
+    depts_col_list       = col_final_list[11:16]
+    parsing_pub_id_alias = bp.COL_NAMES['pub_id']
+    idx_address_alias    = bp.COL_NAMES['institution'][1]
+    institutions_alias   = bp.COL_NAMES['institution'][2]
+    countries_col_alias  = bp.COL_NAMES['country'][2]
+    weight_col_alias     = pg.COL_NAMES_BONUS['weight']
+    
+    # Getting the full paths of the working folder architecture for the corpus "year"
+    config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+    parsing_path_dict  = config_tup[1]
+    item_filename_dict = config_tup[2] 
+
+    # Reading the full file of addresses
+    addresses_item_file = item_filename_dict[addresses_item_alias] + tsv_extent_alias
+    addresses_item_path = parsing_path_dict[dedup_folder_alias] / Path(addresses_item_file)
+    all_address_df = pd.read_csv(addresses_item_path, sep = '\t')
+    
+    # Selecting only addresses of Institute publications
+    pub_df = pd.read_excel(pub_list_file_path,
+                           usecols = [final_pub_id_alias] + depts_col_list)
+    pub_num_list = [int(x.split("_")[1]) for x in pub_df[final_pub_id_alias].tolist()]
+    inst_pub_addresses_df = pd.DataFrame()
+    for pub_id, dg in all_address_df.groupby(parsing_pub_id_alias):
+        if pub_id in pub_num_list: inst_pub_addresses_df = pd.concat([inst_pub_addresses_df, dg])    
+    
+    return_tup = bp.build_norm_raw_institutions(inst_pub_addresses_df,    
+                                                inst_types_file_path,
+                                                country_affiliations_file_path,
+                                                verbose = False)
+    countries_df, norm_institutions_df, raw_institutions_df = return_tup
+    
+    # Adding countries column to 'norm_institutions_df' and 'raw_institutions_df'
+    norm_institutions_df = _copy_dg_col_to_df(norm_institutions_df, countries_df, countries_col_alias)
+    raw_institutions_df = _copy_dg_col_to_df(raw_institutions_df, countries_df, countries_col_alias)
+    
+    # Building pub IDs with year information
+    _year_pub_id(countries_df, year, parsing_pub_id_alias)
+    _year_pub_id(norm_institutions_df, year, parsing_pub_id_alias)
+    _year_pub_id(raw_institutions_df, year, parsing_pub_id_alias)
+    
+    # Saving formatted df of normalized and raw institutions
+    first_col_width = 12
+    last_col_width  = 80
+    _save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_filename_alias, 
+                               norm_institutions_df, 'Norm Inst', year, first_col_width, last_col_width)
+    _save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias, 
+                               raw_institutions_df, 'Raw Inst', year, first_col_width, last_col_width)
+    
+    # Building stat dataframes
+    by_country_df = _build_countries_stat(countries_df)
+    by_continent_df = _build_continents_stat(by_country_df)
+    
+    # Saving formatted stat dataframes    
+    first_col_width = 32
+    last_col_width  = 80
+    _save_formatted_df_to_xlsx(geo_analysis_folder_path, country_weight_filename_alias, 
+                               by_country_df, 'Pays', year, first_col_width, last_col_width)
+    _save_formatted_df_to_xlsx(geo_analysis_folder_path, continent_weight_filename_alias, 
+                               by_continent_df, 'Continent', year, first_col_width, last_col_width)
+
+    return (analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias)

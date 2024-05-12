@@ -225,6 +225,7 @@ def _launch_parsing(self, corpus_year, database_type, bibliometer_path, pos_x, p
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_fails_dict
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_parsing_dict
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
@@ -363,6 +364,7 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     # Local imports
     import BiblioMeter_FUNCTS.BM_InstituteGlobals as ig
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+    from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import save_parsing_dict

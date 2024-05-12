@@ -37,10 +37,12 @@ __all__ = ['ANALYSIS_IF',
            'KPI_KEYS_ORDER_DICT',
            'NOT_AVAILABLE_IF',
            'OTP_SHEET_NAME_BASE',
+           'OUTSIDE_ANALYSIS',
            'PARSING_PERF',
            'RESULTS_TO_SAVE',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
+           'SHEET_SAVE_OTP',
            'TSV_SAVE_EXTENT'
           ]
 
@@ -72,10 +74,9 @@ ARCHI_IF = {"root"                   : "Impact Factor",
             "institute_if_all_years" : "_IF all years.xlsx",
            }
 
-ARCHI_INSTITUTIONS = {"root"         : "Traitement Institutions",
-                      "inst_types"   : "Inst_types.xlsx",
-                      "affiliations" : "Country_affiliations.xlsx",
-                      "continents"   : "Continent_countries.xlsx",
+ARCHI_INSTITUTIONS = {"root"              : "Traitement Institutions",
+                      "inst_types_base"   : "Institutions_types.xlsx",
+                      "affiliations_base" : "Country_affiliations.xlsx",
                      }
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
@@ -98,12 +99,6 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "WoS"                 : "Wos",
                 }
 
-# Setting list of final results to save
-RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries"]
-
-# Setting list of raw data types
-datatype_nb = 3
-DATATYPE_LIST = list(ARCHI_RESULTS.keys())[-datatype_nb:]
 
 ARCHI_YEAR = {
               "analyses"                       : "5 - Analyses",
@@ -114,6 +109,7 @@ ARCHI_YEAR = {
               "institutions analysis"          : "Collaborations",
               "countries file name"            : "Pays par publication",
               "country weight file name"       : "Statistiques par pays",
+              "continent weight file name"     : "Statistiques par continent",              
               "norm inst file name"            : "Institutions normalisées",
               "raw inst file name"             : "Institutions brutes",
               "bdd mensuelle"                  : "0 - BDD multi mensuelle", 
@@ -138,6 +134,12 @@ ARCHI_YEAR = {
               "rawdata"                        : "rawdata",
              }
 
+# Setting list of final results to save
+RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries"]
+
+# Setting list of raw data types
+datatype_nb = 3
+DATATYPE_LIST = list(ARCHI_RESULTS.keys())[-datatype_nb:]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -163,12 +165,9 @@ DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + D
 
 
 FILL_EMPTY_KEY_WORD = 'unknown' 
-
-
 NOT_AVAILABLE_IF    = 'Not available'
-
-
-HOMONYM_FLAG = "HOMONYM"
+OUTSIDE_ANALYSIS    = 'Not analysed' 
+HOMONYM_FLAG        = "HOMONYM"
 
 
 COL_HASH = {'hash_id'    : "Hash_id",
@@ -177,21 +176,28 @@ COL_HASH = {'hash_id'    : "Hash_id",
            }
 
 
+SHEET_SAVE_OTP = {'hash_otp': 'Hash_ID-OTP',
+                  'doi_otp' : 'DOI-OTP'}
+
+
 COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ", 
                    'nom prénom liste' : "Liste ordonnée des auteurs ", 
                    'liste biblio'     : "Référence bibliographique complète", 
                    'author_type'      : "Type de l'auteur",
-                   'homonym'          : 'Homonymes',
+                   'homonym'          : "Homonymes",
                    'list OTP'         : "Choix de l'OTP",
                    'final OTP'        : "OTP",
                    'corpus_year'      : "Année de première publication",
                    'IF en cours'      : "IF en cours", 
                    'IF année publi'   : "IF de l'année de première publication",
-                   'IF clarivate'     : 'IF',
-                   'e-ISSN'           : 'e-ISSN',
+                   'IF clarivate'     : "IF",
+                   'e-ISSN'           : "e-ISSN",
                    'database ISSN'    : "ISSN via source",
                    'pub number'       : "Nombre de publications",
                    'weight'           : "Weight",
+                   'country'          : "Pays",
+                   'continent'        : "Continent",
+                   'pub_ids list'     : "Liste des Pub_ids",
                   }
 
 
