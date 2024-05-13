@@ -7,6 +7,7 @@ __all__ = ['ADD_SPACE_MM',
            'HELP_ETAPE_6',
            'HELP_ETAPE_7',
            'HELP_ETAPE_8',
+           'HELP_ETAPE_9',
            'IN_TO_MM',
            'PAGEBUTTON_HEIGHT_PX',
            'PAGES_LABELS',
@@ -67,7 +68,9 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_ETAPE_6',
            'TEXT_ETAPE_7',
            'TEXT_ETAPE_8',
+           'TEXT_ETAPE_9',
            'TEXT_HOMONYMES',
+           'TEXT_CO_ANALYSIS',
            'TEXT_KW_ANALYSIS', 
            'TEXT_IF_ANALYSIS',
            'TEXT_INSTITUTE',
@@ -361,9 +364,14 @@ HELP_ETAPE_7     = " L'analyse des IFS est effectuée à partir des fichiers"
 HELP_ETAPE_7    += " des listes consolidées des publications."
 TEXT_IF_ANALYSIS = "Lancer l'analyse des IFs"
 
-
 ### - Etape 8
-TEXT_ETAPE_8     = "Analyse des mots clefs"
-HELP_ETAPE_8     = " L'analyse des mots clefs est effectuée à partir des fichiers"
+TEXT_ETAPE_8     = "Analyse des collaborations"
+HELP_ETAPE_8     = " L'analyse des collaborations est effectuée à partir des fichiers"
 HELP_ETAPE_8    += " issus de l'étape de parsing des corpus."
+TEXT_CO_ANALYSIS = "Lancer l'analyse des collaborations"
+
+### - Etape 9
+TEXT_ETAPE_9     = "Analyse des mots clefs"
+HELP_ETAPE_9     = " L'analyse des mots clefs est effectuée à partir des fichiers"
+HELP_ETAPE_9    += " issus de l'étape de parsing des corpus."
 TEXT_KW_ANALYSIS = "Lancer l'analyse des mots clefs"

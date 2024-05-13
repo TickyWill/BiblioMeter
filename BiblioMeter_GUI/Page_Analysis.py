@@ -1,6 +1,5 @@
 __all__ = ['create_analysis']
 
-
 def _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype, year_select):
     """
     """
@@ -20,10 +19,35 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype, year_sel
     info_text += f"\n\n'{kw_analysis_folder_path}' "       
     messagebox.showinfo(info_title, info_text)        
     
+def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype, 
+                              year_select, results_folder_path):
+    """
+    """
 
+    # Standard library imports
+    from tkinter import messagebox
+    
+    # Local imports
+    from BiblioMeter_FUNCTS.BM_PubAnalysis import coupling_analysis
+
+    return_tup = coupling_analysis(institute, org_tup, bibliometer_path, 
+                                   datatype, year_select, verbose = False)
+    analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = return_tup
+    
+    info_title = "- Information -"
+    info_text  = f"L'analyse géographique et des collaborations "
+    info_text += f"a été effectuée pour l'année {year_select}."
+    info_text += f"\n\nLes fichiers obtenus ont été créés dans les dossiers :"
+    info_text += f"\n\n    '{analysis_folder_alias}/{geo_analysis_folder_alias}'"
+    info_text += f"\n\n    '{analysis_folder_alias}/{inst_analysis_folder_alias}'"
+    #info_text += f"\n\nLa base de donnée des indicateurs respective de l'Institut "
+    #info_text += f"et de chaque département a été mise à jour "
+    #info_text += f"avec les résultats de cette analyse et se trouve dans le dossier :" 
+    #info_text += f"\n\n'{results_folder_path}'."
+    messagebox.showinfo(info_title, info_text) 
 
 def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype, 
-                        year_select, bdd_multi_annuelle_folder_alias):
+                        year_select, results_folder_path):
     """
     """
     
@@ -53,19 +77,14 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
     info_text += f"\n\nLa base de donnée des indicateurs respective de l'Institut "
     info_text += f"et de chaque département a été mise à jour "
     info_text += f"avec les résultats de cette analyse et se trouve dans le dossier :" 
-    info_text += f"\n\n'{bdd_multi_annuelle_folder_alias}'."
-    messagebox.showinfo(info_title, info_text)       
-    
+    info_text += f"\n\n'{results_folder_path}'."
+    messagebox.showinfo(info_title, info_text)           
 
 def create_analysis(self, master, page_name, institute, bibliometer_path, datatype):
     
     """
     Description : function working as a bridge between the BiblioMeter 
-    App and the functionalities needed for the use of the app
-    
-    Uses the following globals : 
-    - DIC_OUT_PARSING
-    - FOLDER_NAMES
+    App and the functionalities needed for the use of the app.
     
     Args: takes only self and bibliometer_path as arguments. 
     self is the instense in which PageThree will be created
@@ -106,7 +125,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         
         print(f"\nIFs analysis launched for year {year_select}")
         _launch_if_analysis(institute, org_tup, bibliometer_path, datatype, 
-                            year_select, bdd_multi_annuelle_folder_alias)
+                            year_select, results_folder_path)
         return
     
     def _launch_kw_analysis_try():
@@ -117,6 +136,15 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype, year_select)
         return
     
+    def _launch_coupling_analysis_try():
+        # Getting year selection
+        year_select =  variable_years.get()
+        
+        print(f"Coupling analysis launched for year {year_select}")
+        _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype, 
+                                  year_select, results_folder_path)
+        return    
+    
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,   app_main.width_sf_min)           #14
     eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, app_main.width_sf_min)
@@ -126,10 +154,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     
     if_analysis_x_pos_px     = mm_to_px(10 * app_main.width_sf_mm,  gg.PPI)
     if_analysis_y_pos_px     = mm_to_px(40 * app_main.height_sf_mm, gg.PPI)     
+    co_analysis_label_dx_px  = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)  
+    co_analysis_label_dy_px  = mm_to_px(10 * app_main.height_sf_mm, gg.PPI)      
     kw_analysis_label_dx_px  = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)  
-    kw_analysis_label_dy_px  = mm_to_px(15 * app_main.height_sf_mm, gg.PPI)   
+    kw_analysis_label_dy_px  = mm_to_px(10 * app_main.height_sf_mm, gg.PPI)   
     launch_dx_px             = mm_to_px( 0 * app_main.width_sf_mm,  gg.PPI)    
-    launch_dy_px             = mm_to_px( 5 * app_main.height_sf_mm, gg.PPI)   
+    launch_dy_px             = mm_to_px( 3 * app_main.height_sf_mm, gg.PPI)   
 
     year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * app_main.width_sf_mm,  gg.PPI)    #10  
     year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * app_main.height_sf_mm, gg.PPI)    #26     
@@ -140,8 +170,13 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     etape_label_format = 'left'
     etape_underline    = -1                              
 
-    # Setting useful paths independent from corpus year
-    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    # Setting aliases for saving results independent from corpus year
+    results_root_alias   = pg.ARCHI_RESULTS["root"]
+    results_folder_alias = pg.ARCHI_RESULTS[datatype]
+
+    # Setting paths for saving results independent from corpus year
+    results_root_path   = bibliometer_path / Path(results_root_alias)
+    results_folder_path = results_root_path / Path(results_folder_alias)
     
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
@@ -211,26 +246,63 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  dx = launch_dx_px, 
                  dy = launch_dy_px)
     
+    ################## Analyse des collaborations
+    
+    ### Titre 
+    co_analysis_label_font = tkFont.Font(family = gg.FONT_NAME, 
+                                         size = eff_etape_font_size,
+                                         weight = 'bold')
+    co_analysis_label = tk.Label(self, 
+                                 text = gg.TEXT_ETAPE_8, 
+                                 justify = "left", 
+                                 font = co_analysis_label_font)
+    place_bellow(if_analysis_launch_button, 
+                 co_analysis_label, 
+                 dx = co_analysis_label_dx_px, 
+                 dy = co_analysis_label_dy_px)
+    
+    ### Explication de l'étape
+    help_label_font = tkFont.Font(family = gg.FONT_NAME,
+                                  size = eff_help_font_size)
+    help_label = tk.Label(self, 
+                          text = gg.HELP_ETAPE_8, 
+                          justify = "left", 
+                          font = help_label_font)
+    place_bellow(co_analysis_label, 
+                 help_label) 
+    
+    ### Bouton pour lancer l'analyse des mots clefs
+    co_analysis_launch_font = tkFont.Font(family = gg.FONT_NAME, 
+                                          size = eff_launch_font_size)
+    co_analysis_launch_button = tk.Button(self, 
+                                          text = gg.TEXT_CO_ANALYSIS, 
+                                          font = co_analysis_launch_font, 
+                                          command = lambda: _launch_coupling_analysis_try())  
+    place_bellow(help_label, 
+                 co_analysis_launch_button, 
+                 dx = launch_dx_px, 
+                 dy = launch_dy_px)
+    
     ################## Analyse des mots clefs
     
     ### Titre 
     kw_analysis_label_font = tkFont.Font(family = gg.FONT_NAME, 
-                                        size = eff_etape_font_size,
-                                        weight = 'bold')
+                                         size = eff_etape_font_size,
+                                         weight = 'bold')
     kw_analysis_label = tk.Label(self, 
-                               text = gg.TEXT_ETAPE_8, 
-                               justify = "left", 
-                               font = kw_analysis_label_font)
-    place_bellow(if_analysis_launch_button, 
+                                 text = gg.TEXT_ETAPE_9, 
+                                 justify = "left", 
+                                 font = kw_analysis_label_font)
+    place_bellow(co_analysis_launch_button, 
                  kw_analysis_label, 
                  dx = kw_analysis_label_dx_px, 
                  dy = kw_analysis_label_dy_px)
     
     ### Explication de l'étape
     help_label_font = tkFont.Font(family = gg.FONT_NAME,
-                               size = eff_help_font_size)
+                                  size = eff_help_font_size)
     help_label = tk.Label(self, 
-                          text = gg.HELP_ETAPE_8, 
+                          text = gg.HELP_ETAPE_9, 
                           justify = "left", 
                           font = help_label_font)
     place_bellow(kw_analysis_label, 
@@ -239,12 +311,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     ### Bouton pour lancer l'analyse des mots clefs
     kw_analysis_launch_font = tkFont.Font(family = gg.FONT_NAME, 
                                          size = eff_launch_font_size)
-    kw_analysis_button = tk.Button(self, 
-                                  text = gg.TEXT_KW_ANALYSIS, 
-                                  font = kw_analysis_launch_font, 
-                                  command = lambda: _launch_kw_analysis_try())  
+    kw_analysis_launch_button = tk.Button(self, 
+                                          text = gg.TEXT_KW_ANALYSIS, 
+                                          font = kw_analysis_launch_font, 
+                                          command = lambda: _launch_kw_analysis_try())  
     place_bellow(help_label, 
-                 kw_analysis_button, 
+                 kw_analysis_launch_button, 
                  dx = launch_dx_px, 
                  dy = launch_dy_px)
     

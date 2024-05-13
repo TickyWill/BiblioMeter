@@ -135,7 +135,7 @@ ARCHI_YEAR = {
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries"]
+RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries", "continents"]
 
 # Setting list of raw data types
 datatype_nb = 3

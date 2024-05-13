@@ -200,13 +200,13 @@ def _launch_recursive_year_search_try(year_select,
                     info_title = "- Information -"
                     info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
                     info_text += f"dejà disponible est conservé."                   
-                    messagebox.showinfo(info_title, info_text)                     
+                    messagebox.showinfo(info_title, info_text)
         else:
             info_title = "- Information -"
             info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
             info_text += f"est annulé."            
             messagebox.showinfo(info_title, info_text)
-            return            
+        return            
 
 
 def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
@@ -740,6 +740,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                           employees_update_status,
                                           orphan_alias,
                                          )
+        return
     
     ### Définition du  bouton 'button_croisement' 
     font_croisement = tkFont.Font(family = gg.FONT_NAME, 
@@ -794,6 +795,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                           homonymes_file_path, 
                                           homonymes_file_alias, 
                                           year_select)
+        return
     
     ### Définition du bouton "button_homonymes"
     font_homonymes = tkFont.Font(family = gg.FONT_NAME, 
@@ -834,6 +836,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                             OTP_path, 
                             OTP_file_base_alias,
                             year_select)
+        return
 
     ### Définition du bouton "button_OTP"
     font_OTP = tkFont.Font(family = gg.FONT_NAME, 
@@ -882,6 +885,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                    bdd_multi_annuelle_folder_alias,
                                    app_main.years_list,
                                    year_select)
+        return
 
     # Définition du bouton de création de la liste consolidée des publications
     font_finale = tkFont.Font(family = gg.FONT_NAME, 

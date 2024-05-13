@@ -979,7 +979,7 @@ def _build_continents_stat(by_country_df):
     return by_continent_df
 
 def coupling_analysis(institute, org_tup, bibliometer_path, 
-                      year, verbose = False):
+                      datatype, year, verbose = False):
 
     # Standard library imports
     import os
@@ -996,6 +996,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import format_df_4_excel
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import read_parsing_dict
+    from BiblioMeter_FUNCTS.BM_SaveFinalResults import save_final_results
     
     # Internal functions
     def _copy_dg_col_to_df(df, dg, col_alias):
@@ -1114,7 +1115,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     
     # Adding countries column to 'norm_institutions_df' and 'raw_institutions_df'
     norm_institutions_df = _copy_dg_col_to_df(norm_institutions_df, countries_df, countries_col_alias)
-    raw_institutions_df = _copy_dg_col_to_df(raw_institutions_df, countries_df, countries_col_alias)
+    raw_institutions_df  = _copy_dg_col_to_df(raw_institutions_df, countries_df, countries_col_alias)
     
     # Building pub IDs with year information
     _year_pub_id(countries_df, year, parsing_pub_id_alias)
@@ -1130,7 +1131,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
                                raw_institutions_df, 'Raw Inst', year, first_col_width, last_col_width)
     
     # Building stat dataframes
-    by_country_df = _build_countries_stat(countries_df)
+    by_country_df   = _build_countries_stat(countries_df)
     by_continent_df = _build_continents_stat(by_country_df)
     
     # Saving formatted stat dataframes    
@@ -1140,5 +1141,14 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
                                by_country_df, 'Pays', year, first_col_width, last_col_width)
     _save_formatted_df_to_xlsx(geo_analysis_folder_path, continent_weight_filename_alias, 
                                by_continent_df, 'Continent', year, first_col_width, last_col_width)
+    
+    # Saving coupling analysis as final result
+    status_values = len(pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["countries"]  = True
+    results_to_save_dict["continents"] = True
+    if_analysis_name = None
+    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year, 
+                           if_analysis_name, results_to_save_dict, verbose = False)
 
     return (analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias)
