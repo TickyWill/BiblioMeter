@@ -5,7 +5,100 @@ __all__ = ['create_archi',
            'read_parsing_dict',
            'save_fails_dict',
            'save_parsing_dict',
+           'set_rawdata',
           ]
+
+def _get_database_file_path(database_folder_path, database_file_end):
+    '''The function Lists the files ending with "database_file_end" 
+    present in folder targetted by "database_folder_path". 
+    Then it select the most recent one.
+    Returns:
+        (path): Path targeting the found and selevcted file.
+    '''
+    # Standard library imports
+    import os
+    from pathlib import Path
+    
+    # Listing the available files ending with database_file_end
+    list_data_base = []
+    for path, _, files in os.walk(database_folder_path):
+        list_data_base.extend(Path(path) / Path(file) for file in files 
+                              if file.endswith(database_file_end))
+        
+    if list_data_base:
+        # Selecting the most recent file with raw_extent extension
+        list_data_base.sort(key = lambda x: os.path.getmtime(x), reverse=True)
+        database_file_path = list_data_base[0]
+    else:
+        database_file_path = None
+    return database_file_path
+
+def _set_database_extract_info(bibliometer_path, datatype, database):
+    '''The function builts the path to database extractions and 
+    the file names ending that are specific to the datat type 'datatype'.
+    It sets the folder name of the empty files.
+    For that it uses the global 'ARCHI_EXTRACT' defined in 'BM_PubGlobals' module.
+    '''
+    # Standard library imports
+    from pathlib import Path 
+    
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg
+
+    # Setting useful aliases
+    extraction_folder    = pg.ARCHI_EXTRACT["root"]
+    empty_file_folder    = pg.ARCHI_EXTRACT["empty-file folder"]
+    database_folder      = pg.ARCHI_EXTRACT[database]["root"]
+    database_file_base   = pg.ARCHI_EXTRACT[database][datatype]
+    database_file_extent = pg.ARCHI_EXTRACT[database]["file_extent"]
+    database_file_end    = database_file_base + database_file_extent
+    
+    # Setting useful paths
+    extraction_folder_path = bibliometer_path / Path(extraction_folder)
+    database_folder_path   = extraction_folder_path / Path(database_folder)
+    
+    return (database_folder_path, database_file_end, empty_file_folder)
+
+def set_rawdata(bibliometer_path, datatype, years_list, database):
+    '''The function sets the rawdata to be used for the data type 'datatype' analysis.
+    It copies the files ending with 'database_file_end' from database folder 
+    targetted by the path 'database_folder_path' to the rawdata folder 
+    targetted by the path 'rawdata_path'.
+    When the database is Scopus and the data type to be analysed is restricted to WoS, 
+    empty files ending with 'database_file_end' are used as Scopus rawdata.
+    '''
+    # Standard library imports
+    import os
+    import shutil
+    from pathlib import Path 
+
+    # 3rd party imports
+    import BiblioParsing as bp
+
+    # Local imports
+    import BiblioMeter_FUNCTS.BM_PubGlobals as pg 
+    from BiblioMeter_FUNCTS.BM_ConfigUtils import set_user_config
+    
+    # Getting database extractions info
+    return_tup = _set_database_extract_info(bibliometer_path, datatype, database)
+    database_folder_path, database_file_end, empty_file_folder = return_tup
+       
+    # Cycling on year                                                  
+    for year in years_list:
+        if datatype == pg.DATATYPE_LIST[2] and database == bp.SCOPUS:
+            year_database_folder_path = database_folder_path / Path(empty_file_folder)            
+        else:
+            year_database_folder_path = database_folder_path / Path(year)
+        year_database_file_path = _get_database_file_path(year_database_folder_path, database_file_end)
+        
+        rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+        rawdata_path = rawdata_path_dict[database]
+        if os.path.exists(rawdata_path): 
+            shutil.rmtree(rawdata_path)
+        os.makedirs(rawdata_path)
+        shutil.copy2(year_database_file_path, rawdata_path)
+    message = f"\n{database} rawdata set for {datatype} data type."    
+    return message
 
 def mise_en_page(institute, org_tup, df,                        
                  wb = None, if_database = None):    

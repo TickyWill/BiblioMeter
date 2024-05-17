@@ -1,6 +1,7 @@
 __all__ = ['ANALYSIS_IF',
            'ARCHI_BACKUP',
            'ARCHI_BDD_MULTI_ANNUELLE',
+           'ARCHI_EXTRACT',
            'ARCHI_IF',
            "ARCHI_INSTITUTIONS",
            'ARCHI_ORPHAN',
@@ -55,6 +56,12 @@ import BiblioMeter_FUNCTS.BM_EmployeesGlobals as eg
 # Setting the databases of corpuses extraction
 BDD_LIST = [bp.SCOPUS, bp.WOS]
 
+# Setting list of raw data types
+#datatype_nb = 3
+#DATATYPE_LIST = list(ARCHI_RESULTS.keys())[-datatype_nb:]
+
+DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
+
 PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
 
 TSV_SAVE_EXTENT = "dat"
@@ -65,6 +72,22 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                  : "BDD multi annuelle",
                             "concat file name base" : "Concaténation par",
                             "kpis file name base"   : "Synthèse des KPIs",
                            }
+
+ARCHI_EXTRACT = {"root"             : "Extractions Institut",
+                 bp.SCOPUS          : {"root"          : "ScopusExtractions_Files",
+                                       DATATYPE_LIST[0]: "scopus",
+                                       DATATYPE_LIST[1]: "scopus_hal",
+                                       DATATYPE_LIST[2]: "scopus",
+                                       "file_extent"   : '.' + bp.SCOPUS_RAWDATA_EXTENT,
+                                      },
+                 bp.WOS             : {"root"          : "WosExtractions_Files",
+                                       DATATYPE_LIST[0]: "wos",
+                                       DATATYPE_LIST[1]: "wos",
+                                       DATATYPE_LIST[2]: "wos",
+                                       "file_extent"   : '.' + bp.WOS_RAWDATA_EXTENT,
+                                      },
+                 "empty-file folder": "Fichier vierge"
+                }
 
 ARCHI_IF = {"root"                   : "Impact Factor",
             "all IF"                 : "IF all years.xlsx",
@@ -94,9 +117,9 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "kpis"                : "Synthèse des indicateurs",
                  "kpis file name base" : "Synthèse des KPIs",
                  "subjects"            : "Analyse des thématiques",
-                 "Scopus & WoS"        : "Scopus&Wos",
-                 "Scopus-HAL & WoS"    : "HalScopus&Wos",
-                 "WoS"                 : "Wos",
+                 DATATYPE_LIST[0]      : "Scopus&Wos",
+                 DATATYPE_LIST[1]      : "HalScopus&Wos",
+                 DATATYPE_LIST[2]      : "Wos",
                 }
 
 
@@ -136,10 +159,6 @@ ARCHI_YEAR = {
 
 # Setting list of final results to save
 RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries", "continents"]
-
-# Setting list of raw data types
-datatype_nb = 3
-DATATYPE_LIST = list(ARCHI_RESULTS.keys())[-datatype_nb:]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 

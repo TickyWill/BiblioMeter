@@ -934,48 +934,47 @@ def _build_countries_stat(countries_df):
         
     return by_country_df
 
-def _build_continents_stat(by_country_df):
-       
+def _build_continents_stat(countries_df):
+    
     # 3rd party imports
     import BiblioParsing as bp
-    import numpy as np
     import pandas as pd
     
     # Local imports
     import BiblioMeter_FUNCTS.BM_PubGlobals as pg
     
     # Setting useful local aliases
-    country_alias       = pg.COL_NAMES_BONUS['country']      #"Pays"
+    pub_id_alias        = bp.COL_NAMES['pub_id']             #"Pub_id"
+    country_alias       = bp.COL_NAMES['country'][2]         #"Country"
     weight_alias        = pg.COL_NAMES_BONUS['pub number']   #"Nombre de publications"
-    pub_ids_alias       = pg.COL_NAMES_BONUS['pub_ids list'] #"Liste des Pub_ids"
+    pub_ids_alias       = pg.COL_NAMES_BONUS["pub_ids list"] #"Liste des Pub_ids"
     continent_alias     = pg.COL_NAMES_BONUS['continent']    #"Continent"
     
     # Getting continent information by country from COUNTRIES_CONTINENT, a BiblioParsing global 
     country_continent_dict = bp.COUNTRIES_CONTINENT
     
-    # Setting the test representative of the full list of pub IDs from 'by_country_df' 
-    # at 'pud_ids_alias' col for country France
-    full_pub_ids = by_country_df[by_country_df[country_alias] == 'France'][pub_ids_alias].values[0] 
-    
     # Replacing country by its continent in a copy of 'by_country_df'
-    continents_df = by_country_df.copy()    
+    continents_df = countries_df.copy()    
     continents_df[country_alias] = continents_df[country_alias].map(lambda x: country_continent_dict[x])
     
     # Renaming the column 'country_alias' to 'continent_alias'
     continents_df.rename(columns = {country_alias: continent_alias}, inplace = True)
-    
-    # Building 'by_continent_df' as number of publications per continent
-    by_continent_df = pd.DataFrame(columns = continents_df.columns)
-    idx = 0
-    for continent, dg in continents_df.groupby(continent_alias):
-        by_continent_df.loc[idx, continent_alias] = continent
-        by_continent_df.loc[idx, weight_alias] = np.sum(dg[weight_alias])
+
+    by_continent_df = pd.DataFrame(columns = [continent_alias, weight_alias, pub_ids_alias])
+    idx_continent = 0
+    for continent, pub_id_dg in continents_df.groupby(continent_alias):
+        pub_id_dg = pub_id_dg.drop_duplicates([pub_id_alias, continent_alias])
+        pub_ids_list = pub_id_dg[pub_id_alias].tolist()
+        pub_ids_nb = len(pub_ids_list)
+        by_continent_df.loc[idx_continent, continent_alias] = continent
+        by_continent_df.loc[idx_continent, weight_alias]  = pub_ids_nb        
         if continent != "Europe":
-            pub_ids_list = [x for x in dg[pub_ids_alias]]
-            by_continent_df.loc[idx, pub_ids_alias] = "; ".join(pub_ids_list)
-        else:
-            by_continent_df.loc[idx, pub_ids_alias] = full_pub_ids
-        idx += 1            
+            pud_ids_txt = "; ".join(pub_ids_list)
+        else:            
+            pud_ids_txt =  pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb-1]
+        by_continent_df.loc[idx_continent, pub_ids_alias] = pud_ids_txt    
+        idx_continent += 1
+        
     return by_continent_df
 
 def coupling_analysis(institute, org_tup, bibliometer_path, 
@@ -1132,7 +1131,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     
     # Building stat dataframes
     by_country_df   = _build_countries_stat(countries_df)
-    by_continent_df = _build_continents_stat(by_country_df)
+    by_continent_df = _build_continents_stat(countries_df)
     
     # Saving formatted stat dataframes    
     first_col_width = 32

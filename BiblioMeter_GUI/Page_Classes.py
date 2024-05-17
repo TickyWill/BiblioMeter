@@ -230,7 +230,7 @@ class app_main(tk.Tk):
         _ = get_monitors() # OBLIGATOIRE        
         #master.lift()
         master.attributes("-topmost", True)
-        #master.after_idle(master.attributes,'-topmost',False)
+        master.after_idle(master.attributes,'-topmost',False)
         #master.REP = list()
         
         # Initializing app_main attributes set after working folder definition
@@ -438,8 +438,10 @@ class SetLaunchButton(tk.Tk):
         
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
+        import BiblioMeter_FUNCTS.BM_PubGlobals as pg
         from BiblioMeter_GUI.Useful_Functions import existing_corpuses
         from BiblioMeter_GUI.Useful_Functions import last_available_years
+        from BiblioMeter_FUNCTS.BM_UsefulFuncts import set_rawdata 
         
         if bibliometer_path == '':
             warning_title = "!!! Attention !!!"
@@ -449,17 +451,24 @@ class SetLaunchButton(tk.Tk):
             messagebox.showwarning(warning_title, warning_text)
 
         else:            
-            # Setting existing corpuses status
+            # Setting years list
             app_main.years_list = last_available_years(bibliometer_path, 
-                                                       gg.CORPUSES_NUMBER) 
+                                                       gg.CORPUSES_NUMBER)
+            
+            # Setting rawdata for datatype
+            for database in pg.BDD_LIST:
+                message = set_rawdata(bibliometer_path, datatype, 
+                                      app_main.years_list, database)            
+            
+            # Setting existing corpuses status
             files_status = existing_corpuses(bibliometer_path)
             app_main.list_corpus_year    = files_status[0]
             app_main.list_wos_rawdata    = files_status[1] 
             app_main.list_wos_parsing    = files_status[2] 
             app_main.list_scopus_rawdata = files_status[3] 
             app_main.list_scopus_parsing = files_status[4] 
-            app_main.list_dedup          = files_status[5]                    
-            
+            app_main.list_dedup          = files_status[5]                        
+           
             # Creating two frames in the tk window
             pagebutton_frame = tk.Frame(master, bg = 'red',
                                         height = gg.PAGEBUTTON_HEIGHT_PX)
@@ -521,7 +530,7 @@ class Page_ParseCorpus(tk.Frame):
 
         # Local imports
         import BiblioMeter_GUI.GUI_Globals as gg
-        from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat      
+        from BiblioMeter_GUI.Page_ParseCorpus import create_parsing_concat 
         
         # Setting page name
         page_name = self.__class__.__name__

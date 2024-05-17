@@ -194,7 +194,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    submit_col_rename_dic = col_rename_tup[1] 
+    all_col_rename_dic = col_rename_tup[2]
         
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -206,10 +206,14 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     pub_list_file_alias      = pub_list_file_base_alias + f' {corpus_year}.xlsx'
     
     # Setting useful column name aliases       
-    hash_id_col_alias  = pg.COL_HASH['hash_id']
-    pub_id_alias       = submit_col_rename_dic[bp.COL_NAMES['pub_id']]    
-    otp_col_alias      = pg.COL_NAMES_BONUS['final OTP']
-    otp_list_col_alias = pg.COL_NAMES_BONUS['list OTP']
+    hash_id_col_alias  = pg.COL_HASH['hash_id']    
+    pub_id_alias         = all_col_rename_dic[bp.COL_NAMES['pub_id']]
+    author_col_alias     = all_col_rename_dic[bp.COL_NAMES['articles'][1]] 
+    doi_col_alias        = all_col_rename_dic[bp.COL_NAMES['articles'][6]] 
+    otp_list_col_alias   = all_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]
+    otp_col_alias        = pg.COL_NAMES_BONUS['final OTP']
+    hash_otp_sheet_alias = pg.SHEET_SAVE_OTP['hash_otp']
+    doi_otp_sheet_alias  = pg.SHEET_SAVE_OTP['doi_otp']
     
     # Setting useful paths
     corpus_year_path     = bibliometer_path / Path(corpus_year)    
@@ -226,34 +230,54 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     # Getting the dataframe of consolidated pub list with OTPs 
     pub_df = pd.read_excel(pub_list_file_path)
     
-    # Building pub_id and otp df
+    # Building set OTPs df
     if otp_col_alias in pub_df.columns: 
         otp_col = otp_col_alias
     else:
         otp_col = otp_list_col_alias    
-    kept_otps_df_init = pub_df[[pub_id_alias, otp_col]]
-    kept_otps_df_init = kept_otps_df_init.fillna(0)
-    kept_otps_df_init = kept_otps_df_init.astype(str)
-    kept_otps_df      = kept_otps_df_init.copy()
+    otps_df = pub_df[[pub_id_alias, author_col_alias, doi_col_alias, otp_col]].copy()
+    otps_df = otps_df.fillna(0)
+    otps_df = otps_df.astype(str)
+    set_otps_df = otps_df.copy()
     sep = ","
-    for idx,row in kept_otps_df_init.iterrows():
+    for idx,row in otps_df.iterrows():
         if sep in row[otp_col] or row[otp_col] == "0": 
-            kept_otps_df = kept_otps_df.drop(idx)
+            set_otps_df = set_otps_df.drop(idx)
     
     # Building hash_id and kept otp df
-    otps_history_df = pd.merge(hash_id_df, 
-                               kept_otps_df, 
-                               how = 'inner',
-                               on = pub_id_alias)
-    otps_history_df.drop(columns = [pub_id_alias], inplace = True)
-    otps_history_df = otps_history_df.astype(str)
-    otps_history_df.rename(columns = {otp_col:otp_col_alias}, inplace = True)
+    hash_otps_history_df = pd.merge(hash_id_df, 
+                                    set_otps_df, 
+                                    how = 'inner',
+                                    on = pub_id_alias)
+    hash_otps_history_df.drop(columns = [pub_id_alias, author_col_alias, doi_col_alias], inplace = True)
+    hash_otps_history_df.rename(columns = {otp_col:otp_col_alias}, inplace = True)
     
-    otps_history_df.to_excel(kept_otps_file_path, index = False) 
+    # Building DOI and kept otp df
+    doi_otps_history_df = set_otps_df[[author_col_alias, doi_col_alias, otp_col]].copy()
+    doi_otps_history_df.rename(columns = {otp_col:otp_col_alias}, inplace = True)
+        
+    # Concatenating with the dataframes of already saved solved OTPs by hash_id and by DOI
+    if kept_otps_file_path.is_file():
+        existing_otps_history_dict = pd.read_excel(kept_otps_file_path, sheet_name = None)
+        
+        existing_hash_otps_history_df = existing_otps_history_dict[hash_otp_sheet_alias] 
+        if len(existing_hash_otps_history_df)-1:
+            hash_otps_history_df = pd.concat([existing_hash_otps_history_df, hash_otps_history_df])            
+        hash_otps_history_df = hash_otps_history_df.astype('str')
+        hash_otps_history_df.drop_duplicates(inplace = True)
+        
+        existing_doi_otps_history_df = existing_otps_history_dict[doi_otp_sheet_alias]
+        if len(existing_doi_otps_history_df)-1:
+            doi_otps_history_df = pd.concat([existing_doi_otps_history_df, doi_otps_history_df])
+        doi_otps_history_df = doi_otps_history_df.astype('str')
+        doi_otps_history_df.drop_duplicates(inplace = True) 
+
+    with pd.ExcelWriter(kept_otps_file_path, mode = 'a', if_sheet_exists = 'replace') as writer:
+        hash_otps_history_df.to_excel(writer, sheet_name = hash_otp_sheet_alias, index = False)
+        doi_otps_history_df.to_excel(writer, sheet_name = doi_otp_sheet_alias, index = False) 
 
     message = f"History of kept otps saved"
     return message 
-
 
 def _re_save_dpt_OTP_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dpt_df, 
                           dpt_otp_list, excel_dpt_path, otp_list_col_alias, columns_list):
@@ -437,7 +461,6 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
             # Setting the pub-id list and the DOIs list for department dpt
             dept_pub_id_list = dpt_pub_df[pub_id_alias].to_list()
             dept_doi_list    = dpt_pub_df[doi_col_alias].to_list()
-            #dept_auth_list   = dpt_pub_df[author_col_alias].to_list()
 
             # Setting columns list
             col_list = list(dpt_pub_df.columns)

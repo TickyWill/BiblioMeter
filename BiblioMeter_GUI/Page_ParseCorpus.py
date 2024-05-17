@@ -111,6 +111,7 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     import BiblioMeter_GUI.GUI_Globals as gg
     from BiblioMeter_GUI.Page_Classes import app_main
     from BiblioMeter_GUI.Useful_Classes import CheckBoxCorpuses
+    from BiblioMeter_GUI.Useful_Functions import existing_corpuses
     from BiblioMeter_GUI.Useful_Functions import font_size 
     from BiblioMeter_GUI.Useful_Functions import mm_to_px
     from BiblioMeter_GUI.Useful_Functions import place_after
@@ -120,6 +121,16 @@ def _update(self, bibliometer_path, pos_x, pos_y, esp_ligne):
     eff_font_size = font_size(11, app_main.width_sf_min)
     eff_dx        = mm_to_px(1 * app_main.width_sf_mm,  gg.PPI)
     eff_dy        = mm_to_px(1 * app_main.height_sf_mm, gg.PPI)
+    
+    
+    # Setting existing corpuses status
+    files_status = existing_corpuses(bibliometer_path)
+    app_main.list_corpus_year    = files_status[0]
+    app_main.list_wos_rawdata    = files_status[1] 
+    app_main.list_wos_parsing    = files_status[2] 
+    app_main.list_scopus_rawdata = files_status[3] 
+    app_main.list_scopus_parsing = files_status[4] 
+    app_main.list_dedup          = files_status[5] 
     
     # Setting useful local variables for default selection items in selection lists 
     default_year = app_main.list_corpus_year[-1]   
@@ -372,7 +383,9 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
        
     # Internal functions
     def _deduplicate_corpus_parsing():
+        if not os.path.exists(concat_root_folder): os.mkdir(concat_root_folder)        
         if not os.path.exists(concat_parsing_path): os.mkdir(concat_parsing_path)
+        if not os.path.exists(dedup_root_folder): os.mkdir(dedup_root_folder)  
         if not os.path.exists(dedup_parsing_path): os.mkdir(dedup_parsing_path)           
   
         scopus_parsing_dict = read_parsing_dict(scopus_parsing_path, item_filename_dict, 
@@ -396,8 +409,10 @@ def _launch_synthese(self, corpus_year, institute, org_tup, bibliometer_path,
     
     # Setting useful paths for database 'database_type'
     scopus_parsing_path = parsing_path_dict["scopus"] 
-    wos_parsing_path    = parsing_path_dict["wos"] 
+    wos_parsing_path    = parsing_path_dict["wos"]
+    concat_root_folder  = parsing_path_dict["concat_root"]
     concat_parsing_path = parsing_path_dict["concat"]
+    dedup_root_folder   = parsing_path_dict["dedup_root"]
     dedup_parsing_path  = parsing_path_dict["dedup"]
     
     # Setting parsing files extension for saving

@@ -77,17 +77,19 @@ def _build_files_paths(year, parsing_folder_dict, BiblioMeter_path, db_list):
         db_parsing_path, _ = _get_folder_attributes(parsing_folder_dict, keys_list, db_root_path)
         parsing_path_dict[db_root_name] = db_parsing_path
             
-    # Creating the concatenation folder if not available    
+    # Getting the concatenation folders attributes   
     keys_list = ['corpus', 'concat', 'root']
     concat_root_path, concat_root_name = _get_folder_attributes(parsing_folder_dict, keys_list, corpus_folder_path)
+    parsing_path_dict['concat_root'] = concat_root_path
     
     keys_list = ['corpus', 'concat', 'parsing']
     concat_parsing_path, _ = _get_folder_attributes(parsing_folder_dict, keys_list, concat_root_path)
-    parsing_path_dict['concat'] = concat_parsing_path   
+    parsing_path_dict['concat'] = concat_parsing_path
     
-    # Creating the deduplication folder if not available
+    # Getting the deduplication folders attributes
     keys_list = ['corpus', 'dedup', 'root']
     dedup_root_path, dedup_root_name = _get_folder_attributes(parsing_folder_dict, keys_list, corpus_folder_path)
+    parsing_path_dict['dedup_root'] = dedup_root_path
     
     keys_list = ['corpus', 'dedup', 'parsing']
     dedup_parsing_path, _ = _get_folder_attributes(parsing_folder_dict, keys_list, dedup_root_path)
