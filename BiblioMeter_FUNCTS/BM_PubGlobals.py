@@ -37,6 +37,7 @@ __all__ = ['ANALYSIS_IF',
            'HOMONYM_FLAG',
            'KPI_KEYS_ORDER_DICT',
            'NOT_AVAILABLE_IF',
+           'OTHER_DOCTYPE',
            'OTP_SHEET_NAME_BASE',
            'OUTSIDE_ANALYSIS',
            'PARSING_PERF',
@@ -177,11 +178,11 @@ DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction
                  'Proceedings': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper'],
                 }
 
-
 DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + DOC_TYPE_DICT['Proceedings'],
                         'Books & Editorials'     : DOC_TYPE_DICT['Books'],                        
                        } 
 
+OTHER_DOCTYPE = 'Others'
 
 FILL_EMPTY_KEY_WORD = 'unknown' 
 NOT_AVAILABLE_IF    = 'Not available'

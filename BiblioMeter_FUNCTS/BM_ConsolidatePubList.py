@@ -723,23 +723,24 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     from BiblioMeter_FUNCTS.BM_UsefulFuncts import mise_en_page
     from BiblioMeter_FUNCTS.BM_RenameCols import set_final_col_names
 
+    # Setting useful aliases
     pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
-
     year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
-    pub_list_file_alias      =  year_pub_list_file_alias + ".xlsx"
+    pub_list_file_alias      = year_pub_list_file_alias + ".xlsx"
+    other_dg_file_alias      = year_pub_list_file_alias + "_" + pg.OTHER_DOCTYPE + ".xlsx"
     corpus_year_path         = bibliometer_path / Path(corpus_year)                  
     pub_list_path            = corpus_year_path / Path(pub_list_path_alias)
     pub_list_file_path       = pub_list_path / Path(pub_list_file_alias)
-
+    other_dg_path            = pub_list_path / Path(other_dg_file_alias)
+    
     # Setting useful column names
     col_final_list   = set_final_col_names(institute, org_tup)
     pub_id_col_alias = col_final_list[0]
     doc_type_alias   = col_final_list[7]   
     
     full_pub_list_df = pd.read_excel(pub_list_file_path)
-    other_dg = full_pub_list_df.copy()
-    other_dg_file_alias = year_pub_list_file_alias + "_Others.xlsx"
+    other_dg = full_pub_list_df.copy()    
     pub_nb = len(full_pub_list_df)    
     key_pub_nb = 0
     for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
@@ -758,11 +759,9 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         
         key_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
         wb, _ = mise_en_page(institute, org_tup, key_dg)
-        wb.save(key_dg_path)
-        
-    other_dg_path = pub_list_path / Path(other_dg_file_alias)
-        
-    other_dg.sort_values(by=[pub_id_col_alias], inplace = True)  
+        wb.save(key_dg_path)        
+            
+    other_dg.sort_values(by = [pub_id_col_alias], inplace = True)  
     wb, _ = mise_en_page(institute, org_tup, other_dg)
     wb.save(other_dg_path)       
     
