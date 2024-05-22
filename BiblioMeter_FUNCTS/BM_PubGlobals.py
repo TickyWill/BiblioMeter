@@ -202,7 +202,7 @@ SHEET_SAVE_OTP = {'hash_otp': 'Hash_ID-OTP',
 
 COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ", 
                    'nom prénom liste' : "Liste ordonnée des auteurs ", 
-                   'liste biblio'     : "Référence bibliographique complète", 
+                   'liste biblio'     : "Référence bibliographique complète",
                    'author_type'      : "Type de l'auteur",
                    'homonym'          : "Homonymes",
                    'list OTP'         : "Choix de l'OTP",

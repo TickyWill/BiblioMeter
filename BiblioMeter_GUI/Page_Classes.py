@@ -57,7 +57,12 @@ class app_main(tk.Tk):
         def _display_path(inst_bmf):
             """Shortening bmf path for easy display""" 
             p = Path(inst_bmf)
-            p_disp = ('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:]))
+            if len(p.parts) <= 4:
+                p_disp = p
+            else:
+                part_start = p.parts[0:2]
+                part_end = p.parts[-3:]
+                p_disp = ('/'.join(part_start)) / Path("...") / ('/'.join(part_end))
             return p_disp
             
         def _get_file(institute_select, datatype_select):

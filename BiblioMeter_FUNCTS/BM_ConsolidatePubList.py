@@ -82,11 +82,14 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
     ''' The function ` _add_authors_name_list` adds two columns to the dataframe get 
     from the Excel file pointed by 'in_path'.
     The columns contain respectively the full name of each author as "NAME, Firstname" 
-    and the institute co-authors list with their job type as 
-    "NAME1, Firstame1 (job type); NAME2, Firstame2 (job type);...".
+    and the institute co-authors list with attributes of each author as follows:
+    "NAME1, Firstame1 (matricule,job type,department affiliation,service affiliation); 
+     NAME2, Firstame2 (matricule,job type,department affiliation,service affiliation);
+     ...".
     
     Args:
-        in_path (path): Fullpath of the working excel file. 
+        in_path (path): Fullpath of the excel file of the publications list 
+                        with a row per Institute author and their attributes columns. 
         out_path (path): Fullpath of the processed dataframe as an Excel file 
                          saved after going through its treatment.
     
@@ -126,14 +129,16 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
     bm_col_rename_dic = col_rename_tup[2]       
     
     # Setting useful aliases
-    pub_id_alias          = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
-    idx_authors_alias     = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]
-    nom_alias             = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['name']]
-    prenom_alias          = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['first_name']]
-    full_name_alias       = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
-    author_type_col_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
-    full_name_list_alias  = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste'] + institute]
-    dept_col_alias        = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
+    pub_id_alias         = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
+    idx_authors_alias    = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]
+    nom_alias            = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['name']]
+    prenom_alias         = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['first_name']]
+    matricule_alias      = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    full_name_alias      = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
+    author_type_alias    = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
+    full_name_list_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste'] + institute]
+    dept_alias           = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
+    serv_alias           = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['serv']]
     
     # Reading the excel file
     df_in = pd.read_excel(in_path)
@@ -146,11 +151,13 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
     for pub_id, pub_id_df in df_in.groupby(pub_id_alias):
 
         authors_tup_list = sorted(list(set(zip(pub_id_df[idx_authors_alias], 
-                                               pub_id_df[full_name_alias], 
-                                               pub_id_df[author_type_col_alias],
-                                               pub_id_df[dept_col_alias]))))
+                                               pub_id_df[full_name_alias],
+                                               pub_id_df[matricule_alias],
+                                               pub_id_df[author_type_alias],
+                                               pub_id_df[dept_alias],
+                                               pub_id_df[serv_alias]))))
 
-        authors_str_list = [f'{x[1]} ({x[2]},{_get_dpt_key(x[3])})' for x in  authors_tup_list]
+        authors_str_list = [f'{x[1]} ({x[2]},{x[3]},{_get_dpt_key(x[4])},{x[5]})' for x in  authors_tup_list]
         authors_full_str ="; ".join(authors_str_list)
         pub_id_df[full_name_list_alias] = authors_full_str
         df_out = pd.concat([df_out, pub_id_df])
