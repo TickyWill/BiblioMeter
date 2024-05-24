@@ -3,7 +3,7 @@
 Python application for bibliometric purpose based on analysis of publications metadata extracted from databases such as Scopus and WoS. 
 
 ## Installation
-Run the following command to get a depository clone:
+Run the following command to get a repository clone:
 ```
 git clone https://github.com/TickyWill/BiblioMeter.git
 ```
