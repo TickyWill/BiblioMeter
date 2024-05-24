@@ -18,9 +18,9 @@ app.mainloop()
 ```
 
 **for more details on usage refer to:** 
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeter_UserManual-Fr.pdf>BiblioMeter user manual
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterUserManual-Fr.pdf>BiblioMeter user manual
 </a></p>
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeter-BuildExeManual-Fr.pdf>BiblioMeter executable building manual
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable building manual
 </a></p>
 
 # Release History
