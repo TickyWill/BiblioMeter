@@ -1,5 +1,7 @@
 git+https://github.com/TickyWill/BiblioParsing.git#egg=BiblioParsing
 auto_py_to_exe==2.42.0
+notebook==6.4.4
+plotly==5.17.0
 kaleido==0.1.*
 matplotlib==3.8.4
 plotly==5.17.0
