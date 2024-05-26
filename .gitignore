@@ -139,6 +139,7 @@ dmypy.json
 **/.DS_Store
 
 # My stuff
+requirements-ipynb.txt
 main.py
 freeze.txt
 ne pas encore ouvrir bis.py
