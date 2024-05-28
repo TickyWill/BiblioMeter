@@ -21,7 +21,7 @@ CONFIG_JSON_FILES_DICT = {}
 for institute in INSTITUTES_LIST:
     CONFIG_JSON_FILES_DICT[institute] = institute + 'Org_config.json'
 
-# Setting organization parameters of all institutes 
+# Setting organization parameters of all institutes
 DPT_LABEL_KEY = 'dpt_label'
 DPT_OTP_KEY   = 'dpt_otp'
 INVALIDE      = 'Invalide'

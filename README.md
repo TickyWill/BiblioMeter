@@ -11,9 +11,9 @@ git clone https://github.com/TickyWill/BiblioMeter.git
 ## Usage example
 ```python
 # Local imports
-from BiblioMeter_GUI.Page_Classes import app_main
+from bmgui.main_page import AppMain
 
-app = app_main()
+app = AppMain()
 app.mainloop()
 ```
 
@@ -24,7 +24,7 @@ app.mainloop()
 </a></p>
 
 # Release History
-- 4.0.0 first release
+- 1.0.0 first release
 
 # Meta
 	- authors : BiblioAnalysis team

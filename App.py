@@ -1,17 +1,16 @@
-#!/usr/bin/env python
+"""The `app` module launch the 'BiblioMeter' application through `app_main` class
+of `Page_Classes` module of `BiblioMeter_GUI` package.
+"""
+
+# !/usr/bin/env python
 # coding: utf-8
 
 # In[ ]:
 
 # Local imports
-from BiblioMeter_GUI.Page_Classes import app_main
+from bmgui.main_page import AppMain
 
-app = app_main()
+app = AppMain()
 app.mainloop()
 
-
 # In[ ]:
-
-
-
-

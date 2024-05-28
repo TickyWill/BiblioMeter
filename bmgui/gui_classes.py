@@ -1,17 +1,17 @@
 __all__= ['LabelEntry',
           'CheckBoxCorpuses',
-          'LabelEntry_toFile',
-          'LabelEntry_toValue',
+          'LabelEntryToFile',
+          'LabelEntryToValue',
          ]
 
 class LabelEntry:
-    
+
     """
     Petit automat permettant d'afficher sur la même ligne :
     - un texte d'info
     - une entrée
     - un boutton
-    
+
     Fonctionnalités :
         - l'opt "align" sur la méthode <place> permet d'alligner sur l'entrée plutot que sur le texte.
         - surcharge des méthode get() et set() : pointeur vers le tk.StringVar()
@@ -20,10 +20,10 @@ class LabelEntry:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label, text_button, font_button, *args, **kargs):        
+    def __init__(self, parent, text_label, font_label, text_button, font_button, *args, **kargs):
         # Standard library imports
         import tkinter as tk
-        
+
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
@@ -38,21 +38,21 @@ class LabelEntry:
         self.lab.place(x = x - a, y = y, anchor = "w")
         self.entree2.place(x = x + b, y = y, anchor = "w")
         self.but.place(x = x + b + self.entree2.winfo_reqwidth() + but_pos_dx, y = y + but_pos_dy, anchor = "w")
-        
+
     def get(self):
         return self.val.get()
-    
+
     def set(self, value):
         self.val.set(value)
-        
+
     def set2(self, value):
         # Standard library imports
         from pathlib import Path
-        
+
         p = Path(value)
         self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
-        
-    def get_file(self):        
+
+    def get_file(self):
         # Standard library imports
         import tkinter as tk
         from tkinter import filedialog
@@ -62,46 +62,46 @@ class LabelEntry:
         dialog_title = "Choisir un nouveau dossier de travail"
         warning_title = "!!! Attention !!!"
         warning_text = "Chemin non renseigné."
-        
+
         fic = tk.filedialog.askdirectory(title = dialog_title)
         if fic == '':
-            return tk.messagebox.showwarning(warning_title, warning_ext)
+            return tk.messagebox.showwarning(warning_title, warning_text)
         self.val.set(fic)
-        
+
         p = Path(fic)
         self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
-        
+
     def efface(self):
         for x in (self.lab, self.entree):
             x.place_forget()
 
 
 class CheckBoxCorpuses:
-    
-    """ 
+
+    """
     Petit automat permettant d'afficher sur la même ligne :
         - L'annee du corpus
         - Wos rawdata/parsing dispo
         - Scopus rawdata/parsing dispo
     """
-    
-    def __init__(self, parent, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):        
+
+    def __init__(self, parent, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):
         # Standard library imports
         import tkinter as tk
         from tkinter import font as tkFont
-        
+
         # Local imports
-        import BiblioMeter_GUI.GUI_Globals as gg
-        from BiblioMeter_GUI.Page_Classes import app_main 
-        from BiblioMeter_GUI.Useful_Functions import font_size 
-        from BiblioMeter_GUI.Useful_Functions import mm_to_px
-        
-        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * app_main.width_sf_mm, gg.PPI)
-        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, app_main.width_sf_min))
-        self.lab = tk.Label(parent, 
-                            text = 'Année ' + year, 
+        import bmgui.gui_globals as gg
+        from bmgui.main_page import AppMain
+        from bmgui.gui_functions import font_size
+        from bmgui.gui_functions import mm_to_px
+
+        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * AppMain.width_sf_mm, gg.PPI)
+        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, AppMain.width_sf_min))
+        self.lab = tk.Label(parent,
+                            text = 'Année ' + year,
                             font = font)
-        
+
         self.wos_r = tk.Checkbutton(parent)
         if wos_r == True:
             self.wos_r.select()
@@ -117,7 +117,7 @@ class CheckBoxCorpuses:
         self.concat = tk.Checkbutton(parent)
         if concat == True:
             self.concat.select()
-    
+
     def place(self, x, y):
         a = self.lab.winfo_reqwidth()
         self.lab.place(x = x-a, y = y, anchor = 'center')
@@ -131,24 +131,24 @@ class CheckBoxCorpuses:
         self.scopus_p.config(state = 'disabled')
         self.concat.place(x = x+5*self.check_boxes_sep_space, y = y, anchor = 'center')
         self.concat.config(state = 'disabled')
-        
+
     def efface(self):
         for x in (self.lab, self.wos_r, self.wos_p, self.scopus_r, self.scopus_p, self.concat):
             x.place_forget()
-            
+
 
 class ColumnFilter:
-    
+
     """
     """
-    
-    def __init__(self, parent, text_label, df, *arg, **kargs):        
+
+    def __init__(self, parent, text_label, df, *arg, **kargs):
         # Standard library imports
         import tkinter as tk
-        
+
         # Local variables
         button_label1 = 'Choix filtre inter colonne'
-        
+
         self.check_var_1 = tk.IntVar()
         self.check_column = tk.Checkbutton(parent, variable = self.check_var_1, command = lambda : self.ables_disables_1())
 
@@ -156,29 +156,29 @@ class ColumnFilter:
         self.check_value = tk.Checkbutton(parent, variable = self.check_var_2, command = lambda : self.ables_disables_2(), state = 'disable')
 
         self.column_name = tk.Label(parent, text = text_label + ' : ', state = 'disable')
-        
+
         self.drop_down = tk.Button(parent, text = button_label1, command = lambda : self.open_list_box_create_filter(df, text_label, parent))
         self.drop_down.configure(state = 'disable')
-        
+
         self.val = tk.StringVar(parent)
         self.val.set(text_label)
-        self.real_column_name = tk.Entry(parent, textvariable = self.val)        
-        
+        self.real_column_name = tk.Entry(parent, textvariable = self.val)
+
     def place(self, y):
         self.check_column.grid(row = y, column = 0)
         self.column_name.grid(row = y, column = 1)
         self.drop_down.grid(row = y, column = 3)
         self.check_value.grid(row = y, column = 2)
-    
+
     def efface(self):
         pass
-    
+
     def get_check_1(self):
         return self.check_var_1.get()
-    
+
     def get_label(self):
         return self.real_column_name.get()
-    
+
     def ables_disables_1(self):
         if self.check_var_1.get() == 1:
             self.column_name.configure(state = 'normal')
@@ -188,27 +188,27 @@ class ColumnFilter:
             self.check_value.configure(state = 'disable')
             self.drop_down.configure(state = 'disable')
             self.check_var_2.set(0)
-            
+
     def ables_disables_2(self):
         if self.check_var_2.get() == 1:
             self.drop_down.configure(state = 'normal')
         else:
             self.drop_down.configure(state = 'disable')
-            
-    def open_list_box_create_filter(self, df, column, parent):        
+
+    def open_list_box_create_filter(self, df, column, parent):
         # Standard library imports
         import tkinter as tk
         from tkinter import Toplevel
-        
+
         # Local variables
         newWindow_title_label = 'Selection des filtres inter colonnes'
         button_label2 = "Valider la sélection"
-        
+
         def _access_values(df, column):
             values = df[column].unique().tolist()
             #values.sort()
             return values
-        
+
         newWindow = tk.Toplevel(parent)
         newWindow.title(newWindow_title_label)
 
@@ -217,8 +217,8 @@ class ColumnFilter:
         yscrollbar = tk.Scrollbar(newWindow)
         yscrollbar.pack(side = tk.RIGHT, fill = tk.Y)
 
-        my_listbox = tk.Listbox(newWindow, 
-                                selectmode = tk.MULTIPLE, 
+        my_listbox = tk.Listbox(newWindow,
+                                selectmode = tk.MULTIPLE,
                                 yscrollcommand = yscrollbar.set)
         my_listbox.place(anchor = 'center', width = 400, height = 400, relx = 0.5, rely = 0.5)
 
@@ -227,18 +227,18 @@ class ColumnFilter:
             my_listbox.insert(idx, item)
             my_listbox.itemconfig(idx,
                                   bg = "white" if idx % 2 == 0 else "white")
-            
+
         button = tk.Button(newWindow, text = button_label2)
         button.place(anchor = 'n', relx = 0.5, rely = 0.9)
-        
-class LabelEntry_toFile:
-    
+
+class LabelEntryToFile:
+
     """
     Petit automat permettant d'afficher sur la même ligne :
     - un texte d'info
     - une entrée
     - un boutton
-    
+
     Fonctionnalités :
         - l'opt "align" sur la méthode <place> permet d'alligner sur l'entrée plutot que sur le texte.
         - surcharge des méthode get() et set() : pointeur vers le tk.StringVar()
@@ -247,13 +247,13 @@ class LabelEntry_toFile:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):        
+    def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):
         # Standard library imports
         import tkinter as tk
-        
+
         # Local variables
         button_label = "Choix du fichier"
-        
+
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
@@ -268,49 +268,49 @@ class LabelEntry_toFile:
         self.lab.place(x=x-a,y=y)
         self.entree2.place(x = x + b, y = y)
         self.but.place(x=x+b+self.entree2.winfo_reqwidth()+10,y=y-2)
-        
+
     def get(self):
         return self.val.get()
-    
+
     def set(self, value):
         self.val.set(value)
-        
+
     def set2(self, value):
         from pathlib import Path
         p = Path(value)
         self.val2.set(p.name)
-        
+
     def get_file(self):
         # Standard library imports
         import tkinter as tk
         from tkinter import filedialog
         from pathlib import Path
-        
+
         # Local variables
         dialog_title = 'Choisir un fichier petit pingouin des Alpes'
         warning_title = "Attention"
         warning_text = "Chemin non renseigné"
-        
+
         fic = tk.filedialog.askopenfilename(title = dialog_title)
         if fic == '':
             return tk.messagebox.showwarning(warning_title, warning_text)
         self.val.set(fic)
-        
+
         p = Path(fic)
         self.val2.set(p.name)
-        
+
     def efface(self):
         for x in (self.lab, self.entree):
             x.place_forget()
 
-            
-class LabelEntry_toValue:    
+
+class LabelEntryToValue:
     """
     Petit automat permettant d'afficher sur la même ligne :
     - un texte d'info
     - une entrée
     - un boutton
-    
+
     Fonctionnalités :
         - l'opt "align" sur la méthode <place> permet d'alligner sur l'entrée plutot que sur le texte.
         - surcharge des méthode get() et set() : pointeur vers le tk.StringVar()
@@ -319,10 +319,10 @@ class LabelEntry_toValue:
         - autorise le replacement (~déplacement) // méthode self.place(x=<float>, y=<float>)
     """
 
-    def __init__(self, parent, text_label, font_label):        
+    def __init__(self, parent, text_label, font_label):
         # Standard library imports
         import tkinter as tk
-        
+
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable=self.val)
@@ -335,18 +335,18 @@ class LabelEntry_toValue:
             a,b = b,a
         self.lab.place(x=x-a,y=y)
         self.entree2.place(x = x + b, y = y)
-        
+
     def get(self):
         return self.val.get()
-    
+
     def set(self, value):
         self.val.set(value)
-        
+
     def set2(self, value):
         from pathlib import Path
         p = Path(value)
         self.val2.set(p.name)
-        
+
     def efface(self):
         for x in (self.lab, self.entree):
-            x.place_forget()            
+            x.place_forget()

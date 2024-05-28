@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
+# Standard library imports
 from os import path
+
+# 3rd party imports
+from setuptools import setup, find_packages
 
 # read the contents of your README file
 this_directory = path.abspath(path.dirname(__file__))
@@ -18,9 +21,9 @@ setup(name='BiblioMeter',
       description='An application for bibliometry',
       long_description=long_description,
       long_description_content_type='text/markdown',
-      include_package_data = True,
-      license = 'MIT',
-      classifiers = [
+      include_package_data=True,
+      license='MIT',
+      classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.9',
@@ -28,10 +31,13 @@ setup(name='BiblioMeter',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research'
         ],
-      keywords = 'Bibliography, Corpus parsing, Corpuses merging, WOS, SCOPUS, KPIs extraction',
-      install_requires = install_requires,
-      author= 'BiblioMeter team',
-      author_email= 'francois.bertin7@wanadoo.fr, amal.chabli@orange.fr, ludovic.desmeuzes@yahoo.com',
-      url= 'https://github.com/TickyWill/BiblioMeter',
-      packages=find_packages(), # revoir le fonctionnement avec plusieurs packages
+      keywords='Bibliography, Corpus parsing, Corpuses merging, '
+               + 'WOS, SCOPUS, KPIs extraction',
+      install_requires=install_requires,
+      author='BiblioMeter team',
+      author_email='francois.bertin7@wanadoo.fr, '
+                   + 'amal.chabli@orange.fr, '
+                   + 'ludovic.desmeuzes@yahoo.com',
+      url='https://github.com/TickyWill/BiblioMeter',
+      packages=find_packages(),
       )

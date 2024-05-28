@@ -1,9 +1,9 @@
 __all__ = [
            'CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
-           'EMPLOYEES_ARCHI',             
-           'EMPLOYEES_COL_TYPES',  
-           'EMPLOYEES_CONVERTERS_DIC', 
+           'EMPLOYEES_ARCHI',
+           'EMPLOYEES_COL_TYPES',
+           'EMPLOYEES_CONVERTERS_DIC',
            'EMPLOYEES_FULL_COLS',
            'EMPLOYEES_USEFUL_COLS',
            'EXT_DOCS_USEFUL_COL_LIST',
@@ -52,7 +52,7 @@ EMPLOYEES_FULL_COLS = {'matricule'           : 'Matricule',                     
                        'working_time'        : 'Règle de plan de roulement (lib)',
                        'working_time_label'  : 'Regpt PR niveau 1(lib)',
                        'birth_date'          : 'Date de naissance',                #
-                       'year'                : 'Année', 
+                       'year'                : 'Année',
                        'age'                 : 'Age',
                        'age_range'           : "Tranche d'age (5 ans)",
                       }
@@ -82,7 +82,7 @@ EMPLOYEES_USEFUL_COLS ={}
 for key in employees_useful_cols_keys_list: EMPLOYEES_USEFUL_COLS[key] = EMPLOYEES_FULL_COLS[key]
 
 # Types dict used when reading all-years employees file
-EMPLOYEES_COL_TYPES = {} 
+EMPLOYEES_COL_TYPES = {}
 for col_name in list(EMPLOYEES_USEFUL_COLS.keys()): EMPLOYEES_COL_TYPES[col_name] = str
 
 
@@ -138,8 +138,8 @@ _employees_col_convert_key = ['hiring_date',
 
 employees_col_convert_list = [EMPLOYEES_USEFUL_COLS[col_key] for col_key in _employees_col_convert_key]
 
-EMPLOYEES_CONVERTERS_DIC = {} 
-for col_convert in employees_col_convert_list: 
+EMPLOYEES_CONVERTERS_DIC = {}
+for col_convert in employees_col_convert_list:
     EMPLOYEES_CONVERTERS_DIC[col_convert] = lambda x: _get_str_date(str(x))
 
 
@@ -147,7 +147,7 @@ CATEGORIES_DIC   = {'CDI'      : ['CDI'],
                     'CDD'      : ['CDD'],
                     'CSc'      : ['Conseiller Scient.'],
                     'Stg'      : ['Stagiaire'],
-                   }    
+                   }
 
 STATUS_DIC       = {'Doc'      : ['Thésard'],
                     'Postdoc'  : ['Post doc'],
