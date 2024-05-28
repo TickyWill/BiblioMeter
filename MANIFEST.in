@@ -1,2 +1,2 @@
-include bmfuncts/ConfigFiles/*.*
+include bBiblioMeter_FUNCTS/ConfigFiles/*.*
 include LICENSE
