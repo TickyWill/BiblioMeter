@@ -150,3 +150,6 @@ BiblioMeter_GUI/Page_ParsingConcat_save.py
 BiblioMeter_FUNCTS/BiblioMeter_MergeEffectif_in_dev.py
 BiblioMeter_FUNCTS/BiblioMeter_MergeEffectif_real.py
 Sauvegarde de secours
+
+# pylint
+Pylint_reports/

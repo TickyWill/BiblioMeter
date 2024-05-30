@@ -189,7 +189,7 @@ def set_otp_col_names(institute, org_tup):
     bm_col_rename_dic = col_rename_tup[2]
 
     # Setting useful column names
-    col_otp_dic = {0  : bp.COL_NAMES['pub_id'],
+    col_OTP_dic = {0  : bp.COL_NAMES['pub_id'],
                    1  : pg.COL_NAMES_BONUS['corpus_year'],
                    2  : bp.COL_NAMES['articles'][2],
                    3  : bp.COL_NAMES['articles'][1],
@@ -206,14 +206,14 @@ def set_otp_col_names(institute, org_tup):
                    14 : eg.EMPLOYEES_USEFUL_COLS['serv'],
                    15 : eg.EMPLOYEES_USEFUL_COLS['lab'],
                   }
-    last_num = len(col_otp_dic)
+    last_num = len(col_OTP_dic)
     for _,dpt_col_name in col_names_dpt.items():
-        col_otp_dic[last_num] = col_names_dpt[dpt_col_name]
+        col_OTP_dic[last_num] = col_names_dpt[dpt_col_name]
         last_num += 1
-    col_otp_dic[last_num] = pg.COL_NAMES_BONUS['list OTP']
+    col_OTP_dic[last_num] = pg.COL_NAMES_BONUS['list OTP']
 
-    col_otp = [bm_col_rename_dic[col_otp_dic[idx]] for idx in col_otp_dic.keys()]
-    return col_otp
+    col_OTP = [bm_col_rename_dic[col_OTP_dic[idx]] for idx in col_OTP_dic.keys()]
+    return col_OTP
 
 
 def set_final_col_names(institute, org_tup):

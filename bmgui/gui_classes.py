@@ -1,11 +1,24 @@
+""" `gui_classes` module contains useful classes for gui management."""
+
 __all__= ['LabelEntry',
           'CheckBoxCorpuses',
           'LabelEntryToFile',
           'LabelEntryToValue',
          ]
 
-class LabelEntry:
 
+# Standard library imports
+import tkinter as tk
+from tkinter import font as tkFont
+from pathlib import Path
+
+# Local imports
+import bmgui.gui_globals as gg
+from bmgui.gui_functions import font_size
+from bmgui.gui_functions import mm_to_px
+
+
+class LabelEntry:
     """
     Petit automat permettant d'afficher sur la même ligne :
     - un texte d'info
@@ -21,15 +34,13 @@ class LabelEntry:
     """
 
     def __init__(self, parent, text_label, font_label, text_button, font_button, *args, **kargs):
-        # Standard library imports
-        import tkinter as tk
 
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable = self.val)
         self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
-        self.but = tk.Button(parent, text = text_button, font = font_button, command = self.get_file)
+        self.but = tk.Button(parent, text = text_button, font = font_button, command = lambda: self.get_file)
 
     def place(self, x, y, but_pos_dx, but_pos_dy, align = True):
         a,b = self.lab.winfo_reqwidth(),0
@@ -46,30 +57,26 @@ class LabelEntry:
         self.val.set(value)
 
     def set2(self, value):
-        # Standard library imports
-        from pathlib import Path
-
         p = Path(value)
         self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
 
     def get_file(self):
-        # Standard library imports
-        import tkinter as tk
-        from tkinter import filedialog
-        from pathlib import Path
-
-        # Local variables
         dialog_title = "Choisir un nouveau dossier de travail"
-        warning_title = "!!! Attention !!!"
-        warning_text = "Chemin non renseigné."
-
         fic = tk.filedialog.askdirectory(title = dialog_title)
         if fic == '':
-            return tk.messagebox.showwarning(warning_title, warning_text)
-        self.val.set(fic)
-
-        p = Path(fic)
-        self.val2.set(('/'.join(p.parts[0:2])) / Path("...") / ('/'.join(p.parts[-3:])))
+            warning_title = "!!! Attention !!!"
+            warning_text = "Chemin non renseigné."
+            tk.messagebox.showwarning(warning_title, warning_text)
+        else:
+            self.val.set(fic)
+            p = Path(fic)
+            if len(p.parts) <= 4:
+                p_disp = p
+            else:
+                part_start = p.parts[0:2]
+                part_end = p.parts[-3:]
+                p_disp = ('/'.join(part_start)) / Path("...") / ('/'.join(part_end))
+            self.val2.set(p_disp)
 
     def efface(self):
         for x in (self.lab, self.entree):
@@ -85,37 +92,28 @@ class CheckBoxCorpuses:
         - Scopus rawdata/parsing dispo
     """
 
-    def __init__(self, parent, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):
-        # Standard library imports
-        import tkinter as tk
-        from tkinter import font as tkFont
+    def __init__(self, parent, master, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):
 
-        # Local imports
-        import bmgui.gui_globals as gg
-        from bmgui.main_page import AppMain
-        from bmgui.gui_functions import font_size
-        from bmgui.gui_functions import mm_to_px
-
-        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * AppMain.width_sf_mm, gg.PPI)
-        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, AppMain.width_sf_min))
+        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * master.width_sf_mm, gg.PPI)
+        font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, master.width_sf_min))
         self.lab = tk.Label(parent,
                             text = 'Année ' + year,
                             font = font)
 
         self.wos_r = tk.Checkbutton(parent)
-        if wos_r == True:
+        if wos_r:
             self.wos_r.select()
         self.wos_p = tk.Checkbutton(parent)
-        if wos_p == True:
+        if wos_p:
             self.wos_p.select()
         self.scopus_r = tk.Checkbutton(parent)
-        if scopus_r == True:
+        if scopus_r:
             self.scopus_r.select()
         self.scopus_p = tk.Checkbutton(parent)
-        if scopus_p == True:
+        if scopus_p:
             self.scopus_p.select()
         self.concat = tk.Checkbutton(parent)
-        if concat == True:
+        if concat:
             self.concat.select()
 
     def place(self, x, y):
@@ -138,14 +136,10 @@ class CheckBoxCorpuses:
 
 
 class ColumnFilter:
-
     """
     """
 
     def __init__(self, parent, text_label, df, *arg, **kargs):
-        # Standard library imports
-        import tkinter as tk
-
         # Local variables
         button_label1 = 'Choix filtre inter colonne'
 
@@ -196,28 +190,24 @@ class ColumnFilter:
             self.drop_down.configure(state = 'disable')
 
     def open_list_box_create_filter(self, df, column, parent):
-        # Standard library imports
-        import tkinter as tk
-        from tkinter import Toplevel
 
         # Local variables
-        newWindow_title_label = 'Selection des filtres inter colonnes'
+        new_window_title_label = 'Selection des filtres inter colonnes'
         button_label2 = "Valider la sélection"
 
         def _access_values(df, column):
             values = df[column].unique().tolist()
-            #values.sort()
             return values
 
-        newWindow = tk.Toplevel(parent)
-        newWindow.title(newWindow_title_label)
+        new_window = tk.Toplevel(parent)
+        new_window.title(new_window_title_label)
 
-        newWindow.geometry(f"600x600+{parent.winfo_rootx()}+{parent.winfo_rooty()}")
+        new_window.geometry(f"600x600+{parent.winfo_rootx()}+{parent.winfo_rooty()}")
 
-        yscrollbar = tk.Scrollbar(newWindow)
+        yscrollbar = tk.Scrollbar(new_window)
         yscrollbar.pack(side = tk.RIGHT, fill = tk.Y)
 
-        my_listbox = tk.Listbox(newWindow,
+        my_listbox = tk.Listbox(new_window,
                                 selectmode = tk.MULTIPLE,
                                 yscrollcommand = yscrollbar.set)
         my_listbox.place(anchor = 'center', width = 400, height = 400, relx = 0.5, rely = 0.5)
@@ -228,11 +218,10 @@ class ColumnFilter:
             my_listbox.itemconfig(idx,
                                   bg = "white" if idx % 2 == 0 else "white")
 
-        button = tk.Button(newWindow, text = button_label2)
+        button = tk.Button(new_window, text = button_label2)
         button.place(anchor = 'n', relx = 0.5, rely = 0.9)
 
 class LabelEntryToFile:
-
     """
     Petit automat permettant d'afficher sur la même ligne :
     - un texte d'info
@@ -248,9 +237,6 @@ class LabelEntryToFile:
     """
 
     def __init__(self, parent, text_label, font_label, font_button, *args, **kargs):
-        # Standard library imports
-        import tkinter as tk
-
         # Local variables
         button_label = "Choix du fichier"
 
@@ -259,7 +245,7 @@ class LabelEntryToFile:
         self.val2 = tk.StringVar(parent) # réel associé à la variable "fenetre".
         self.entree = tk.Entry(parent, textvariable=self.val)
         self.entree2 = tk.Entry(parent, textvariable = self.val2, *args, **kargs)
-        self.but = tk.Button(parent, text = button_label, font = font_button, command = self.get_file)
+        self.but = tk.Button(parent, text = button_label, font = font_button, command = lambda: self.get_file)
 
     def place(self,x,y,align=True):
         a,b = self.lab.winfo_reqwidth(),0
@@ -276,28 +262,20 @@ class LabelEntryToFile:
         self.val.set(value)
 
     def set2(self, value):
-        from pathlib import Path
         p = Path(value)
         self.val2.set(p.name)
 
     def get_file(self):
-        # Standard library imports
-        import tkinter as tk
-        from tkinter import filedialog
-        from pathlib import Path
-
-        # Local variables
         dialog_title = 'Choisir un fichier petit pingouin des Alpes'
-        warning_title = "Attention"
-        warning_text = "Chemin non renseigné"
-
         fic = tk.filedialog.askopenfilename(title = dialog_title)
         if fic == '':
-            return tk.messagebox.showwarning(warning_title, warning_text)
-        self.val.set(fic)
-
-        p = Path(fic)
-        self.val2.set(p.name)
+            warning_title = "Attention"
+            warning_text = "Chemin non renseigné"
+            tk.messagebox.showwarning(warning_title, warning_text)
+        else:
+            self.val.set(fic)
+            p = Path(fic)
+            self.val2.set(p.name)
 
     def efface(self):
         for x in (self.lab, self.entree):
@@ -320,8 +298,6 @@ class LabelEntryToValue:
     """
 
     def __init__(self, parent, text_label, font_label):
-        # Standard library imports
-        import tkinter as tk
 
         self.lab = tk.Label(parent, text = text_label, font = font_label)
         self.val = tk.StringVar(parent) # réel associé à la variable "fenetre".
@@ -343,7 +319,6 @@ class LabelEntryToValue:
         self.val.set(value)
 
     def set2(self, value):
-        from pathlib import Path
         p = Path(value)
         self.val2.set(p.name)
 

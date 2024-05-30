@@ -1,5 +1,9 @@
+"""
+
+"""
+
 __all__ = ['add_if',
-           'add_OTP',
+           'add_otp',
            'concatenate_pub_lists',
            'consolidate_pub_list',
            'get_if_db',
@@ -8,18 +12,40 @@ __all__ = ['add_if',
            'split_pub_list_by_doc_type',
           ]
 
+
+# Standard library imports
+import os
+from datetime import datetime
+from pathlib import Path
+
+# 3rd party imports
+import pandas as pd
+import BiblioParsing as bp
+from openpyxl import Workbook as openpyxl_Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
+from openpyxl.styles import PatternFill as openpyxl_PatternFill
+from openpyxl.worksheet.datavalidation import DataValidation as openpyxl_DataValidation
+from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
+
+# Local imports
+import bmfuncts.employees_globals as eg
+import bmfuncts.institute_globals as ig
+import bmfuncts.pub_globals as pg
+from bmfuncts.rename_cols import set_homonym_col_names
+from bmfuncts.rename_cols import build_col_conversion_dic
+from bmfuncts.useful_functs import mise_en_page
+from bmfuncts.rename_cols import set_otp_col_names
+from bmfuncts.rename_cols import build_col_conversion_dic
+from bmfuncts.rename_cols import set_final_col_names
+from bmfuncts.rename_cols import set_if_col_names
+from bmfuncts.save_final_results import save_final_results
+from bmfuncts.use_pub_attributes import save_otps
+
+
 def save_shaped_homonyms_file(df_homonyms, out_path):
     """
 
     """
-    # 3rd party imports
-    from openpyxl import Workbook as openpyxl_Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-
     # Setting useful column names
     col_homonyms = list(df_homonyms.columns)
 
@@ -50,12 +76,6 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
     Uses the local function 'save_shaped_homonyms_file'
     to shape then save the homonyms df.
     """
-    # 3rd party imports
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_homonym_col_names
 
     # Setting useful column names
     col_homonyms = set_homonym_col_names(institute, org_tup)
@@ -79,7 +99,7 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
 
 
 def _add_authors_name_list(institute, org_tup, in_path, out_path):
-    ''' The function ` _add_authors_name_list` adds two columns to the dataframe get
+    """ The function ` _add_authors_name_list` adds two columns to the dataframe get
     from the Excel file pointed by 'in_path'.
     The columns contain respectively the full name of each author as "NAME, Firstname"
     and the institute co-authors list with attributes of each author as follows:
@@ -103,21 +123,16 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
         module of 'bmfuncts' package.
         The global 'COL_NAMES_BONUS' is imported from 'pub_globals'
         module of 'bmfuncts' package.
-    '''
-    # 3rd party imports
-    import pandas as pd
-    import BiblioParsing as bp
-
-    # Local imports
-    import bmfuncts.employees_globals as eg
-    import bmfuncts.institute_globals as ig
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import build_col_conversion_dic
+    """
 
     # Internal functions
     def _get_dpt_key(dpt_raw):
+        return_key = None
         for key, values in dpt_label_dict.items():
-            if dpt_raw in values: return key
+            if dpt_raw in values:
+                return_key = key
+        return return_key
+
 
     # Setting institute parameters
     col_names_dpt  = org_tup[0]
@@ -169,32 +184,23 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
     return end_message
 
 
-def _save_dpt_OTP_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
-                       OTP_alias, excel_dpt_path, col_otp):
-
-    ''' Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
-    The OPTs of the choosen department are added in a new column named 'OTP_alias'.
+def _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
+                       otp_alias, excel_dpt_path, col_otp):
+    """ Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
+    The OPTs of the choosen department are added in a new column named 'otp_alias'.
     A list data validation rules is added to each celles of the column
-    'OTP_alias'. The data frame column are renamed using 'col_otp'. The Excel frame is
+    'otp_alias'. The data frame column are renamed using 'col_otp'. The Excel frame is
     configurated by the `mise_en_page` function.
+    """
 
-    '''
-    # 3rd party imports
-    from openpyxl.worksheet.datavalidation import DataValidation as openpyxl_DataValidation
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.useful_functs import mise_en_page
-
-    # Building validation list of OTP for 'dpt' department
+    # Building validation list of OTPs for 'dpt' department
     validation_list = '"'+','.join(dpt_otp_list) + '"'
     data_val = openpyxl_DataValidation(type = "list",
                                        formula1 = validation_list,
                                        showErrorMessage = False)
 
     # Adding a column containing OTPs of 'dpt' department
-    df_dpt[OTP_alias] = validation_list
+    df_dpt[otp_alias] = validation_list
 
     # Renaming the columns
     df_dpt = df_dpt.reindex(columns = col_otp)
@@ -211,23 +217,23 @@ def _save_dpt_OTP_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
     excel_first_row_num = 2
 
     # Getting the column letter for the OTPs column
-    OTP_alias_df_index = list(df_dpt.columns).index(OTP_alias)
-    OTP_alias_excel_index = OTP_alias_df_index + excel_first_col_num
-    OTP_alias_column_letter = openpyxl_get_column_letter(OTP_alias_excel_index)
+    otp_alias_df_index = list(df_dpt.columns).index(otp_alias)
+    otp_alias_excel_index = otp_alias_df_index + excel_first_col_num
+    otp_alias_column_letter = openpyxl_get_column_letter(otp_alias_excel_index)
 
     # Activating the validation data list in all cells of the OTPs column
     if len(df_dpt):
         # Adding a validation data list
         ws.add_data_validation(data_val)
         for df_index_row in range(len(df_dpt)):
-            OTP_cell_alias = OTP_alias_column_letter + str(df_index_row + excel_first_row_num)
-            data_val.add(ws[OTP_cell_alias])
+            otp_cell_alias = otp_alias_column_letter + str(df_index_row + excel_first_row_num)
+            data_val.add(ws[otp_cell_alias])
 
     wb.save(excel_dpt_path)
 
 
-def add_OTP(institute, org_tup, in_path, out_path, out_file_base):
-    '''
+def add_otp(institute, org_tup, in_path, out_path, out_file_base):
+    """
     Args:
         in_path (path): fullpath of the working excel file.
         out_path (path): fullpath of the saved prosseced file
@@ -244,23 +250,7 @@ def add_OTP(institute, org_tup, in_path, out_path, out_file_base):
         of the package 'bmfuncts'.
         The globals 'COL_NAMES_BONUS' and 'DPT_ATTRIBUTS_DICT' are imported
         from the module 'pub_globals' of the package 'bmfuncts'.
-    '''
-
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.employees_globals as eg
-    import bmfuncts.institute_globals as ig
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.consolidate_pub_list import _add_authors_name_list
-    from bmfuncts.rename_cols import set_otp_col_names
-    from bmfuncts.rename_cols import build_col_conversion_dic
-
+    """
     # Setting institute parameters
     col_names_dpt      = org_tup[0]
     dpt_attributs_dict = org_tup[2]
@@ -274,7 +264,7 @@ def add_OTP(institute, org_tup, in_path, out_path, out_file_base):
     pub_id_alias     = bm_col_rename_dic[bp.COL_NAMES['pub_id']]           # Pub_id
     idx_author_alias = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]       # Idx_author
     dpt_alias        = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]  # Dpt/DOB (lib court)
-    OTP_alias        = bm_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
+    otp_alias        = bm_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
     dpt_label_alias  = ig.DPT_LABEL_KEY
     dpt_otp_alias    = ig.DPT_OTP_KEY
 
@@ -321,19 +311,19 @@ def add_OTP(institute, org_tup, in_path, out_path, out_file_base):
         dpt_otp_list = dpt_attributs_dict[dpt][dpt_otp_alias]
 
         # Setting the full path of the EXCEl file for the 'dpt' department
-        OTP_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'
-        excel_dpt_path    = out_path / Path(OTP_file_name_dpt)
+        otp_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'
+        excel_dpt_path    = out_path / Path(otp_file_name_dpt)
 
         # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_OTP_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
-                           OTP_alias, excel_dpt_path, col_otp)
+        _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
+                           otp_alias, excel_dpt_path, col_otp)
 
     end_message  = f"Files for setting publication OTPs per department "
     end_message += f"saved in folder: \n  '{out_path}'"
     return end_message
 
 def _create_if_column(issn_column, if_dict, if_empty_word):
-    ''' The function `_create_if_column` builds a dataframe column 'if_column'
+    """ The function `_create_if_column` builds a dataframe column 'if_column'
     using the column 'issn_column' of this dataframe and the dict 'if_dict'
     that make the link between ISSNs ('if_dict' keys) and IFs ('if_dict' values).
     The 'nan' values in the column 'if_column' are replaced by 'empty_word'.
@@ -347,7 +337,7 @@ def _create_if_column(issn_column, if_dict, if_empty_word):
     Returns:
         (pandas serie): The column of the dataframe of interest
                         that contains the IFs values.
-    '''
+    """
     if_column = issn_column.map(if_dict)
     if_column = if_column.fillna(if_empty_word)
     return if_column
@@ -357,10 +347,6 @@ def _build_inst_issn_df(if_db_df, use_col_list):
     """
 
     """
-
-    # 3rd party import
-    import pandas as pd
-    import BiblioParsing as bp
 
     # Setting useful aliases
     journal_col_alias = use_col_list[0]
@@ -397,17 +383,9 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
 
 def get_if_db(institute, org_tup, bibliometer_path):
+    """
 
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party imports
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.institute_globals as ig
-    import bmfuncts.pub_globals as pg
-
+    """
     ## Setting institute parameters
     if_db_status = org_tup[5]
 
@@ -436,7 +414,7 @@ def get_if_db(institute, org_tup, bibliometer_path):
 def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
            missing_if_path, missing_issn_path, corpus_year):
 
-    '''The function `add_if` adds two new columns containing impact factors
+    """ The function `add_if` adds two new columns containing impact factors
     to the corpus dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
     The two columns are named through 'corpus_year_if_col_name' and 'most_recent_year_if_col_name'.
     The impact factors are got using `get_if_db` function that returns in particular the dataframe 'if_df'.
@@ -461,18 +439,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         The globals 'COL_NAMES_BONUS', 'FILL_EMPTY_KEY_WORD' and 'NOT_AVAILABLE_IF'
         are imported from the module 'pub_globals'
         of the package 'bmfuncts'.
-    '''
-
-    # 3rd party imports
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.institute_globals as ig
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.consolidate_pub_list import get_if_db
-    from bmfuncts.useful_functs import mise_en_page
-    from bmfuncts.rename_cols import set_final_col_names
-    from bmfuncts.rename_cols import set_if_col_names
+    """
 
     # Internal functions
 
@@ -719,16 +686,6 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     """
 
     """
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party import
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.useful_functs import mise_en_page
-    from bmfuncts.rename_cols import set_final_col_names
 
     # Setting useful aliases
     pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
@@ -780,7 +737,7 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
 
 def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
                          in_path, out_path, out_file_path, in_file_base, corpus_year):
-    '''
+    """
     Args :
         in_path
         out_file_path
@@ -788,32 +745,16 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     Returns :
         un fichier excel
-    '''
-
-    # Standard library imports
-    import os
-    from pathlib import Path
-
-    # 3rd party imports
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.institute_globals as ig
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_final_col_names
-    from bmfuncts.save_final_results import save_final_results
-    from bmfuncts.use_pub_attributes import save_otps
-    from bmfuncts.consolidate_pub_list import add_if
-    from bmfuncts.consolidate_pub_list import split_pub_list_by_doc_type
+    """
 
     # internal functions
-    def _set_df_OTP_dpt(dpt_label):
-        OTP_file_name_dpt_ok = in_file_base + '_' + dpt_label + '_ok.xlsx'
+    def _set_df_otp_dpt(dpt_label):
+        otp_file_name_dpt_ok = in_file_base + '_' + dpt_label + '_ok.xlsx'
 
-        dpt_path = in_path / Path(OTP_file_name_dpt_ok)
+        dpt_path = in_path / Path(otp_file_name_dpt_ok)
         if not os.path.exists(dpt_path):
-            OTP_file_name_dpt = in_file_base + '_' + dpt_label + '.xlsx'
-            dpt_path = in_path / Path(OTP_file_name_dpt)
+            otp_file_name_dpt = in_file_base + '_' + dpt_label + '.xlsx'
+            dpt_path = in_path / Path(otp_file_name_dpt)
         dpt_df = pd.read_excel(dpt_path)
         return dpt_df
 
@@ -824,7 +765,7 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
     pub_id_alias                     = col_final_list[0]
-    OTP_alias                        = col_final_list[16]   # Choix de l'OTP
+    otp_alias                        = col_final_list[16]   # Choix de l'OTP
 
     # Setting useful paths
     missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
@@ -835,20 +776,20 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     ### Charger les df et les concatener
     dpt_label_list = list(dpt_label_dict.keys())
-    OTP_df_init_status = True
+    otp_df_init_status = True
     for dpt_label in dpt_label_list:
-        dpt_df =  _set_df_OTP_dpt(dpt_label)
-        if OTP_df_init_status:
-            OTP_df = dpt_df.copy()
+        dpt_df =  _set_df_otp_dpt(dpt_label)
+        if otp_df_init_status:
+            otp_df = dpt_df.copy()
         else:
-            OTP_df = pd.concat([OTP_df, dpt_df])
-        OTP_df_init_status = False
+            otp_df = pd.concat([otp_df, dpt_df])
+        otp_df_init_status = False
 
     # Deduplicating rows on Pub_id
-    OTP_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
+    otp_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
 
     # Selecting useful columns using col_final_list
-    consolidate_pub_list_df = OTP_df[col_final_list].copy()
+    consolidate_pub_list_df = otp_df[col_final_list].copy()
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
@@ -860,7 +801,7 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
     consolidate_pub_list_df.set_index(pub_id_alias, inplace = True)
 
     # Droping invalide publications by pub Id as index
-    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[OTP_alias] == ig.INVALIDE].index,
+    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[otp_alias] == ig.INVALIDE].index,
                                  inplace = True)
 
     # Resetting pub ID as a standard column
@@ -901,21 +842,9 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
 
 
 def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
+    """
 
     """
-    """
-    # Standard library imports
-    import os
-    from datetime import datetime
-    from pathlib import Path
-
-    # 3rd party imports
-    import pandas as pd
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.useful_functs import mise_en_page
-
     # Setting useful aliases
     pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
@@ -949,7 +878,3 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     end_message  = f"Concatenation of consolidated pub lists saved in folder: \n  '{out_path}'"
     end_message += f"\n\n under filename: \n  '{out_file}'."
     return end_message
-
-
-
-

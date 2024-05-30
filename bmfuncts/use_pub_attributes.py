@@ -340,7 +340,7 @@ def _re_save_dpt_OTP_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
             OTP_cell_alias = OTP_alias_column_letter + str(df_index_row + excel_first_row_num)
             data_val.add(ws[OTP_cell_alias])
 
-    # Appending rows of the publications which otp is already set to df_dpt_new
+    # Appending rows of the publications which OTP is already set to df_dpt_new
     # and coloring the rows alternatively
     if len(otp_set_dpt_df):
         idx = 1 # continuously incremented index vs row index which is not
@@ -429,7 +429,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
         # Getting the kept OTPs dataframe by hash_id
         hash_otp_history_df = pd.read_excel(kept_otps_file_path, sheet_name = hash_otp_sheet_alias)
 
-        # Building df of pub_id and otps to set related to hash_id
+        # Building df of pub_id and OTPs to set related to hash_id
         pub_id_otp_to_set_df = pd.merge(hash_id_df,
                                         hash_otp_history_df,
                                         how = 'inner',
@@ -465,10 +465,10 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
             # Setting columns list
             col_list = list(dpt_pub_df.columns)
 
-            # Building the 'otp_set_dpt_pub_df' dataframe of publication with otp set
+            # Building the 'otp_set_dpt_pub_df' dataframe of publication with OTP set
             otp_set_dpt_pub_df = pd.DataFrame(columns = col_list)
 
-            # Building the 'otp_to_set_dpt_pub_df' dataframe of publication with otp still to be defined
+            # Building the 'otp_to_set_dpt_pub_df' dataframe of publication with OTP still to be defined
             otp_to_set_dpt_pub_df = dpt_pub_df.copy()
             otp_to_set_dpt_pub_df.drop(columns = [otp_list_col_alias], inplace = True)
 
@@ -483,7 +483,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
                                                     dpt_pub_df[dpt_pub_df[pub_id_alias] == pub_id_to_check]])
                     otp_to_set_dpt_pub_df.drop(index = pub_id_idx, inplace = True)
 
-            # Si tous les OTP non affectés compléter avec DOI_otp
+            # Si tous les OTPs non affectés compléter avec DOI_otp
             if len(otp_to_set_dpt_pub_df):
 
                 # Setting the DOIs list of otp_to_set_dpt_pub_df

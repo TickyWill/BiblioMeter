@@ -130,14 +130,11 @@ def _get_displays(in_to_mm):
         `list`: list of dicts with one dict per detected display,
                 each dict is keyed by 8 display parameters.
     """
-
-
     displays = [{'x': m.x, 'y': m.y, 'width': m.width,
                  'height': m.height, 'width_mm': m.width_mm,
                  'height_mm': m.height_mm, 'name': m.name,
                  'is_primary': m.is_primary} for m in get_monitors()]
 
-    # for disp in range(len(displays)):
     for disp, _ in enumerate(displays):
         width_px = displays[disp]['width']
         height_px = displays[disp]['height']
@@ -289,7 +286,7 @@ TEXT_VERSION = f"\nVersion {VERSION}"
 # ************ SECONDARY PAGES ************
 
 # Common to secondary pages
-TEXT_PAUSE = "Mettre en pause"
+TEXT_PAUSE = "Quitter"
 
 # Parsing page
 

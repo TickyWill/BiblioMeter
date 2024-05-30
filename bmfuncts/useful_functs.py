@@ -1,4 +1,5 @@
-__all__ = ['create_archi',
+__all__ = ['check_dedup_parsing_available',
+           'create_archi',
            'create_folder',
            'format_df_4_excel',
            'mise_en_page',
@@ -7,6 +8,41 @@ __all__ = ['create_archi',
            'save_parsing_dict',
            'set_rawdata',
           ]
+
+    
+def check_dedup_parsing_available(bibliometer_path, year):
+    """
+    """
+    # Standard library imports
+    import os
+    from pathlib import Path
+
+    # Local imports
+    import bmfuncts.pub_globals as pg
+    from bmfuncts.config_utils import set_user_config
+    
+    # Setting default returned status
+    status = False
+    
+    # Getting the full paths of the working folder architecture for the corpus "year select"
+    config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+    parsing_path_dict = config_tup[1]
+
+    # Setting parsing files extension of saved results
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
+
+    # Setting path of deduplicated parsings
+    dedup_parsing_path = parsing_path_dict['dedup']
+    if os.path.isdir(dedup_parsing_path):
+        dedup_parsing_status = False
+        dedup_files_list = []
+        for path, _, files in os.walk(dedup_parsing_path):
+            dedup_files_list.extend(Path(path) / Path(file) for file in files
+                                    if file.endswith(parsing_save_extent))
+        if len(dedup_files_list):
+            status = True
+    return status
+
 
 def _get_database_file_path(database_folder_path, database_file_end):
     '''The function Lists the files ending with "database_file_end"
@@ -33,6 +69,7 @@ def _get_database_file_path(database_folder_path, database_file_end):
         database_file_path = None
     return database_file_path
 
+
 def _set_database_extract_info(bibliometer_path, datatype, database):
     '''The function builts the path to database extractions and
     the file names ending that are specific to the datat type 'datatype'.
@@ -58,6 +95,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     database_folder_path   = extraction_folder_path / Path(database_folder)
 
     return (database_folder_path, database_file_end, empty_file_folder)
+
 
 def set_rawdata(bibliometer_path, datatype, years_list, database):
     '''The function sets the rawdata to be used for the data type 'datatype' analysis.
@@ -99,6 +137,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
         shutil.copy2(year_database_file_path, rawdata_path)
     message = f"\n{database} rawdata set for {datatype} data type."
     return message
+
 
 def mise_en_page(institute, org_tup, df,
                  wb = None, if_database = None):
@@ -195,6 +234,7 @@ def mise_en_page(institute, org_tup, df,
 
     return wb, ws
 
+
 def format_df_4_excel(df, first_col_width, last_col_width = None):
     """
     """
@@ -267,6 +307,7 @@ def format_df_4_excel(df, first_col_width, last_col_width = None):
         ws.row_dimensions[row_num].height = height
 
     return wb, ws
+
 
 def create_folder(root_path, folder, verbose = False):
     # Standard library imports

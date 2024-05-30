@@ -1,4 +1,4 @@
-"""The `analysis_page` module allows to perform impact factors, keywords and coupling analysis.
+"""The `analysis_corpus_page` module allows to perform impact factors, keywords and coupling analysis.
 """
 
 __all__ = ['create_analysis']
@@ -12,7 +12,7 @@ from tkinter import messagebox
 # Local imports
 import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
-from bmgui.main_page import AppMain
+#from bmgui.main_page import AppMain
 from bmgui.gui_functions import font_size
 from bmgui.gui_functions import mm_to_px
 from bmgui.gui_functions import place_after
@@ -72,10 +72,6 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                         year_select, results_folder_path):
     """
     """
-    # Local imports
-    #import bmfuncts.pub_globals as pg
-    #from bmfuncts.consolidate_pub_list import get_if_db
-    #from bmfuncts.pub_analysis import if_analysis
 
     # Getting year of most recent IFs
     _, _, if_most_recent_year = get_if_db(institute, org_tup, bibliometer_path)
@@ -113,17 +109,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     Returns:
         None.
     """
-    # Local imports
-    #import bmgui.gui_globals as gg
-    #import bmfuncts.pub_globals as pg
-    #from bmgui.main_page import AppMain
-    #from bmgui.gui_functions import font_size
-    #from bmgui.gui_functions import mm_to_px
-    #from bmgui.gui_functions import place_after
-    #from bmgui.gui_functions import place_bellow
-    #from bmgui.gui_functions import set_exit_button
-    #from bmgui.gui_functions import set_page_title
-    #from bmfuncts.config_utils import set_org_params
 
     # Internal functions
     def _launch_if_analysis_try():
@@ -150,21 +135,21 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                   year_select, results_folder_path)
 
     # Setting effective font sizes and positions (numbers are reference values)
-    eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, AppMain.width_sf_min)           # 14
-    eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, AppMain.width_sf_min)
-    eff_help_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-2, AppMain.width_sf_min)
-    eff_select_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, AppMain.width_sf_min)
-    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, AppMain.width_sf_min)
-    if_analysis_x_pos_px = mm_to_px(10 * AppMain.width_sf_mm, gg.PPI)
-    if_analysis_y_pos_px = mm_to_px(40 * AppMain.height_sf_mm, gg.PPI)
-    co_analysis_label_dx_px = mm_to_px(0 * AppMain.width_sf_mm, gg.PPI)
-    co_analysis_label_dy_px = mm_to_px(10 * AppMain.height_sf_mm, gg.PPI)
-    kw_analysis_label_dx_px = mm_to_px(0 * AppMain.width_sf_mm, gg.PPI)
-    kw_analysis_label_dy_px = mm_to_px(10 * AppMain.height_sf_mm, gg.PPI)
-    launch_dx_px = mm_to_px(0 * AppMain.width_sf_mm, gg.PPI)
-    launch_dy_px = mm_to_px(3 * AppMain.height_sf_mm, gg.PPI)
-    year_button_x_pos = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * AppMain.width_sf_mm, gg.PPI)     # 10
-    year_button_y_pos = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * AppMain.height_sf_mm, gg.PPI)    # 26
+    eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           # 14
+    eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
+    eff_help_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-2, master.width_sf_min)
+    eff_select_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
+    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
+    if_analysis_x_pos_px = mm_to_px(10 * master.width_sf_mm, gg.PPI)
+    if_analysis_y_pos_px = mm_to_px(40 * master.height_sf_mm, gg.PPI)
+    co_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
+    co_analysis_label_dy_px = mm_to_px(10 * master.height_sf_mm, gg.PPI)
+    kw_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
+    kw_analysis_label_dy_px = mm_to_px(10 * master.height_sf_mm, gg.PPI)
+    launch_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
+    launch_dy_px = mm_to_px(3 * master.height_sf_mm, gg.PPI)
+    year_button_x_pos = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm, gg.PPI)     # 10
+    year_button_y_pos = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)    # 26
     dy_year = -6
 
     # Setting common attributes
@@ -183,11 +168,11 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     org_tup = set_org_params(institute, bibliometer_path)
 
     # Creating and setting widgets for page title and exit button
-    set_page_title(self, page_name, institute)
+    set_page_title(self, master, page_name, institute)
     set_exit_button(self, master)
 
     # Creating and setting year selection widgets
-    default_year = AppMain.years_list[-1]
+    default_year = master.years_list[-1]
     variable_years = tk.StringVar(self)
     variable_years.set(default_year)
 
@@ -196,7 +181,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                                size=eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self,
                                             variable_years,
-                                            *AppMain.years_list)
+                                            *master.years_list)
     self.OptionButton_years.config(font=self.font_OptionButton_years)
 
     # - Creating year selection label
@@ -241,7 +226,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     if_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_IF_ANALYSIS,
                                           font=if_analysis_launch_font,
-                                          command=_launch_if_analysis_try())
+                                          command= lambda:_launch_if_analysis_try())
     place_bellow(help_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
@@ -278,7 +263,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     co_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_CO_ANALYSIS,
                                           font=co_analysis_launch_font,
-                                          command=_launch_coupling_analysis_try())
+                                          command= lambda: _launch_coupling_analysis_try())
     place_bellow(help_label,
                  co_analysis_launch_button,
                  dx=launch_dx_px,
@@ -315,7 +300,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     kw_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_KW_ANALYSIS,
                                           font=kw_analysis_launch_font,
-                                          command=_launch_kw_analysis_try())
+                                          command= lambda: _launch_kw_analysis_try())
     place_bellow(help_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,

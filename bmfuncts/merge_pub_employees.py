@@ -1158,9 +1158,9 @@ def recursive_year_search(path_out, df_eff, institute, org_tup,
     year_stop = year_start - (search_depth - 1)
     years = [str(i) for i in range(year_start, year_stop-1,-1)]
 
-    #################################################################################################
-    # Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years #
-    #################################################################################################
+    # *************************************************************************************************
+    # * Building recursively the `df_submit` and `df_orphan` dataframes using `df_eff` files of years *
+    # *************************************************************************************************
 
     # Initializing the dataframes to be built
     # a Data frame containing all matches between article Institute authors and employee names

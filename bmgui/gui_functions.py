@@ -1,3 +1,5 @@
+""" `gui_functions` module contains useful functions for gui management."""
+
 __all__ = ['existing_corpuses',
            'font_size',
            'general_properties',
@@ -11,30 +13,40 @@ __all__ = ['existing_corpuses',
            'show_frame',
           ]
 
+
+# Standard library imports
+import os
+import math
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import font as tkFont
+from pathlib import Path
+
+# 3rd party imports
+import BiblioParsing as bp
+
+# Local imports
+import bmgui.gui_globals as gg
+import bmfuncts.pub_globals as pg
+# from bmgui.gui_functions import font_size
+# from bmgui.gui_functions import mm_to_px
+# from bmgui.gui_functions import last_available_years
+from bmfuncts.config_utils import set_user_config
 def show_frame(self, page_name):
-    '''Show a frame for the given page name'''
+    """Show a frame for the given page name"""
     frame = self.frames[page_name]
     frame.tkraise()
 
-def set_page_title(self, page_name, institute):
-    # Standard library imports
-    import tkinter as tk
-    from tkinter import font as tkFont
-
-    # Local imports
-    import bmgui.gui_globals as gg
-    from bmgui.main_page import AppMain
-    from bmgui.gui_functions import font_size
-    from bmgui.gui_functions import mm_to_px
+def set_page_title(self, master, page_name, institute):
 
     # Setting page title
     label_text = gg.PAGES_LABELS[page_name]
     page_title = label_text + " du " + institute
 
     # Setting font size for page label and button
-    eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, AppMain.width_sf_min)
-    eff_label_pos_y_px  = mm_to_px(gg.REF_LABEL_POS_Y_MM * AppMain.height_sf_mm, gg.PPI)
-    mid_page_pos_x_px   = AppMain.win_width_px * 0.5
+    eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
+    eff_label_pos_y_px  = mm_to_px(gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    mid_page_pos_x_px   = master.win_width_px * 0.5
 
     # Creating title widget
     label_font = tkFont.Font(family = gg.FONT_NAME,
@@ -48,24 +60,14 @@ def set_page_title(self, page_name, institute):
 
 def set_exit_button(self, master):
 
-    # Standard library imports
-    import tkinter as tk
-    from tkinter import messagebox
-    from tkinter import font as tkFont
-
-    # Local imports
-    import bmgui.gui_globals as gg
-    import bmfuncts.pub_globals as pg
-    from bmgui.main_page import AppMain
-    from bmgui.gui_functions import font_size
-    from bmgui.gui_functions import mm_to_px
-
     # Internal functions
     def _launch_exit():
         ask_title = 'Arrêt de BiblioMeter'
         ask_text =  "Après la fermeture des fenêtres, "
-        ask_text += "les traitements effectués sont sauvegardés."
-        ask_text += "\nLe traitement peut être repris ultérieurement."
+        ask_text += "les traitements intermédiaires effectués sont sauvegardés."
+        ask_text += "\n     !!! Attention !!!"
+        ask_text += "\nSi le type de données est modifié à la reprise "
+        ask_text += "\ndu traitement, ces traitements seront écrasés."
         ask_text += "\nConfirmez la mise en pause ?"
         exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
@@ -73,9 +75,9 @@ def set_exit_button(self, master):
 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
-    exit_button_x_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * AppMain.width_sf_mm,  gg.PPI)
-    exit_button_y_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * AppMain.height_sf_mm, gg.PPI)
-    eff_buttons_font_size = font_size(11, AppMain.width_sf_min)
+    exit_button_x_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * master.width_sf_mm,  gg.PPI)
+    exit_button_y_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    eff_buttons_font_size = font_size(11, master.width_sf_min)
 
     # Setting widget for exit button
     font_button_quit = tkFont.Font(family = gg.FONT_NAME,
@@ -83,22 +85,19 @@ def set_exit_button(self, master):
     button_quit = tk.Button(self,
                             text = gg.TEXT_PAUSE,
                             font = font_button_quit,
-                            command = lambda: _launch_exit()).place(x = exit_button_x_pos,
-                                                                    y = exit_button_y_pos,
-                                                                    anchor = 'n')
+                            command = lambda: _launch_exit())
+    button_quit.place(x = exit_button_x_pos,
+                      y = exit_button_y_pos,
+                      anchor = 'n')
 
 def last_available_years(bibliometer_path, year_number):
-    '''Returns a list of the available five last available years
+    """Returns a list of the available five last available years
     where corpuses are stored.
-    '''
-    # Standard library imports
-    import os
-    from tkinter import messagebox
-
+    """
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
     try:
         list_dir = os.listdir(bibliometer_path)
-        years_full_list = list()
+        years_full_list = []
         for year in list_dir:
             if len(year) == 4:
                 years_full_list.append(year)
@@ -106,7 +105,7 @@ def last_available_years(bibliometer_path, year_number):
     except FileNotFoundError:
         warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
         warning_text  = f"L'accès au dossier {bibliometer_path} est impossible."
-        warning_text += f"\nChoisissez un autre dossier de travail."
+        warning_text += "\nChoisissez un autre dossier de travail."
         messagebox.showwarning(warning_title, warning_text)
         years_list = []
     return years_list
@@ -132,45 +131,30 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     Returns:
         (list of lists).
     """
-    # Standard library imports
-    import os
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
-
-    # Local imports
-    import bmgui.gui_globals as gg
-    import bmfuncts.pub_globals as pg
-    from bmgui.gui_functions import last_available_years
-    from bmfuncts.config_utils import set_user_config
 
     # internal functions
     def _get_rawdata_file_path(rawdata_path, rawdata_extent):
-        '''Returns the name of the rawdata file with 'rawdata_extent' extention
+        """Returns the name of the rawdata file with 'rawdata_extent' extention
         pointed by the full path 'rawdata_path'.
-        '''
-        # Standard library imports
-        import os
-        from pathlib import Path
+        """
 
         filenames_list = []
         for _, _, files in os.walk(rawdata_path):
             filenames_list.extend(file for file in files if file.endswith("." + rawdata_extent))
-        if filenames_list == []:
+        if not filenames_list:
             return Path(f'{database_type} rawdata file not Found')
-        else:
-            return rawdata_path / Path(filenames_list[0])
+        return rawdata_path / Path(filenames_list[0])
 
     def _get_parsing_file_paths(parsing_path):
-        '''.
-        '''
+        """
+        """
         file_name = articles_item_alias + "." + parsing_save_extent
         parsing_file_path = parsing_path / Path(file_name)
         return parsing_file_path
 
     # Getting the last available corpus years
-    if not corpuses_number: corpuses_number = gg.CORPUSES_NUMBER
+    if not corpuses_number:
+        corpuses_number = gg.CORPUSES_NUMBER
     years_folder_list = last_available_years(bibliometer_path, corpuses_number)
 
     # Setting the files type of raw data and saved parsing results
@@ -182,12 +166,12 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
 
     # Initialization of lists
-    years_list          = list()
-    wos_rawdata_list    = list()
-    wos_parsing_list    = list()
-    scopus_rawdata_list = list()
-    scopus_parsing_list = list()
-    dedup_parsing_list  = list()
+    years_list          = []
+    wos_rawdata_list    = []
+    wos_parsing_list    = []
+    scopus_rawdata_list = []
+    scopus_parsing_list = []
+    dedup_parsing_list  = []
 
     for year in years_folder_list:
 
@@ -202,7 +186,6 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
         wos_parsing_path    = parsing_path_dict["wos"]
         dedup_parsing_path  = parsing_path_dict["dedup"]
 
-        year_folder_path = bibliometer_path / Path(year)
         years_list.append(year)
 
         # Wos
@@ -244,8 +227,7 @@ def font_size(size, scale_factor):
     it is set to the minimum size.
     '''
     fontsize = int(size * scale_factor)
-    if fontsize < 8:
-        fontsize = 8
+    fontsize = max(fontsize, 8)
     return fontsize
 
 def str_size_mm(text, font, ppi):
@@ -263,12 +245,9 @@ def str_size_mm(text, font, ppi):
         The use of this function requires a tkinter window availability
         since it is based on a tkinter font definition.
     '''
-    # Local imports
-    from bmgui.gui_globals import IN_TO_MM
-
     (w_px,h_px) = (font.measure(text),font.metrics("linespace"))
-    w_mm = w_px * IN_TO_MM / ppi
-    h_mm = h_px * IN_TO_MM / ppi
+    w_mm = w_px * gg.IN_TO_MM / ppi
+    h_mm = h_px * gg.IN_TO_MM / ppi
     return (w_mm, h_mm)
 
 def mm_to_px(size_mm, ppi, fact = 1.0):
@@ -283,19 +262,10 @@ def mm_to_px(size_mm, ppi, fact = 1.0):
     Returns:
         (int): Upper integer value of the conversion to pixels.
     '''
-    # Standard library imports
-    import math
-
-    # Local imports
-    from bmgui.gui_globals import IN_TO_MM
-
-    size_px = math.ceil((size_mm * fact / IN_TO_MM) * ppi)
+    size_px = math.ceil((size_mm * fact / gg.IN_TO_MM) * ppi)
     return size_px
 
 def _window_properties(screen_width_px, screen_height_px):
-    # Local imports
-    import bmgui.gui_globals as gg
-    from bmgui.gui_functions import mm_to_px
 
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
     ppi = gg.DISPLAYS[gg.BM_GUI_DISP]["ppi"]
@@ -351,8 +321,6 @@ def general_properties(self):
         (tuple): self, 2 window sizes in pixels, 2 scale factors for sizes in mm
                  and 2 scale factors for sizes in pixels.
     '''
-    # Local imports
-    import bmgui.gui_globals as gg
 
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
     screen_width_px  = self.winfo_screenwidth()
@@ -369,41 +337,3 @@ def general_properties(self):
     # Setting title window
     self.title(gg.APPLICATION_WINDOW_TITLE)
     return sizes_tuple
-
-
-################################# Unused functions #################################
-
-def encadre_RL(fond, gauche, droite, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
-
-    gauche_info = gauche.place_info()
-    droite_info = droite.place_info()
-
-    x1 = int(gauche_info['x']) - dw
-    y1 = int(gauche_info['y']) - dn
-
-    x2 = int(gauche_info['x']) + gauche.winfo_reqwidth() + droite.winfo_reqwidth() + de
-    y2 = int(droite_info['y']) + max(gauche.winfo_reqheight(), droite.winfo_reqheight()) + ds
-
-    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
-    fond.place(x = 0, y = 0)
-
-def encadre_UD(fond, haut, bas, color = "red", dn = 10, de = 10, ds = 10, dw = 10):
-
-    haut_info = haut.place_info()
-    bas_info = bas.place_info()
-
-    x1 = int(haut_info['x']) - dw
-    y1 = int(haut_info['y']) - dn
-
-    x2 = int(bas_info['x']) + max(haut.winfo_reqwidth(), bas.winfo_reqwidth()) + de
-    y2 = int(bas_info['y']) + haut.winfo_reqheight() + bas.winfo_reqheight() + ds
-
-    rectangle = fond.create_rectangle(x1, y1, x2, y2, outline = color, width = 2)
-    fond.place(x = 0, y = 0)
-
-def place_bellow_LabelEntry(haut, label_entry, dx = 0, dy = 5):
-
-    haut_info = haut.place_info()
-    x = int(haut_info['x']) + dx
-    y = int(haut_info['y']) + haut.winfo_reqheight() + dy
-    label_entry.place(x = x, y = y)

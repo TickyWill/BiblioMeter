@@ -148,7 +148,7 @@ ARCHI_YEAR = {
               "pub list file name base"        : "Liste consolidée",
               "history folder"                 : "4 - Informations",
               "kept homonyms file name"        : "Homonymes conservés.xlsx",
-              "kept otps file name"            : "OTPs conservés.xlsx",
+              "kept OTPs file name"            : "OTPs conservés.xlsx",
               "corpus"                         : "Corpus",
               "concat"                         : "concatenation",
               "dedup"                          : "deduplication",
@@ -192,12 +192,12 @@ HOMONYM_FLAG        = "HOMONYM"
 
 COL_HASH = {'hash_id'    : "Hash_id",
             'homonym_id' : "Homonyme auteur",
-            'otp'        : "OTP",
+            'OTP'        : "OTP",
            }
 
 
-SHEET_SAVE_OTP = {'hash_otp': 'Hash_ID-OTP',
-                  'doi_otp' : 'DOI-OTP'}
+SHEET_SAVE_OTP = {'hash_OTP': 'Hash_ID-OTP',
+                  'doi_OTP' : 'DOI-OTP'}
 
 
 COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
