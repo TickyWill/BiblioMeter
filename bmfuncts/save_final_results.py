@@ -1,3 +1,5 @@
+""" Module of functions for saving final results."""
+
 __all__ = ['save_final_countries',
            'save_final_continents',
            'save_final_ifs',
@@ -6,18 +8,24 @@ __all__ = ['save_final_countries',
            'save_final_results',
           ]
 
-def save_final_pub_lists(institute, org_tup, bibliometer_path,
+
+# Standard library imports
+import os
+import shutil
+from pathlib import Path
+
+# 3rd party imports
+import BiblioParsing as bp
+
+# Local imports
+import bmfuncts.pub_globals as pg
+from bmfuncts.rename_cols import set_final_col_names
+
+
+def save_final_pub_lists(bibliometer_path,
                          corpus_year, results_folder_path):
     """
-
     """
-    # Standard library imports
-    import os
-    import shutil
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
 
     # Setting aliases for saving results
     results_sub_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
@@ -34,8 +42,10 @@ def save_final_pub_lists(institute, org_tup, bibliometer_path,
     target_pub_list_path    = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
-    if not os.path.exists(year_target_folder_path): os.makedirs(year_target_folder_path)
-    if not os.path.exists(target_pub_list_path): os.makedirs(target_pub_list_path)
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_pub_list_path):
+        os.makedirs(target_pub_list_path)
 
     # Setting origin and target file paths
     origin_paths_dict = {}
@@ -45,7 +55,7 @@ def save_final_pub_lists(institute, org_tup, bibliometer_path,
     origin_paths_dict["Full"] = origin_pub_list_path / Path(full_pub_list_file_alias)
     target_paths_dict["Full"] = target_pub_list_path / Path(full_pub_list_file_alias)
 
-    for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
+    for key, _ in pg.DOCTYPE_TO_SAVE_DICT.items():
         key_pub_list_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
         origin_paths_dict[key] = origin_pub_list_path / Path(key_pub_list_file_alias)
         target_paths_dict[key] = target_pub_list_path / Path(key_pub_list_file_alias)
@@ -54,25 +64,18 @@ def save_final_pub_lists(institute, org_tup, bibliometer_path,
     origin_paths_dict["Others"] = origin_pub_list_path / Path(other_pub_list_file_alias)
     target_paths_dict["Others"] = target_pub_list_path / Path(other_pub_list_file_alias)
 
-    for key in origin_paths_dict.keys():
+    for key, origin_path in origin_paths_dict.items():
         # Copying file from origin path to target path
-        shutil.copy2(origin_paths_dict[key], target_paths_dict[key])
+        shutil.copy2(origin_path, target_paths_dict[key])
 
-    end_message = f"Final publications lists for year {corpus_year} saved in folder: \n  '{target_pub_list_path}'"
+    end_message = (f"Final publications lists for year {corpus_year} saved in folder: "
+                   f"\n  '{target_pub_list_path}'")
     return end_message
 
 def save_final_ifs(institute, org_tup, bibliometer_path,
                    corpus_year, results_folder_path, if_analysis_name):
     """
     """
-    # Standard library imports
-    import os
-    import shutil
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_final_col_names
 
     # Setting useful column names aliases
     col_final_list = set_final_col_names(institute, org_tup)
@@ -94,8 +97,10 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     target_ifs_folder_path      = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
-    if not os.path.exists(year_target_folder_path): os.makedirs(year_target_folder_path)
-    if not os.path.exists(target_ifs_folder_path): os.makedirs(target_ifs_folder_path)
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_ifs_folder_path):
+        os.makedirs(target_ifs_folder_path)
 
     for dept in [institute] + depts_col_list:
 
@@ -107,7 +112,8 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
         # Copying file from origin path to target path
         shutil.copy2(origin_dept_file_path, target_dept_file_path)
 
-    end_message = f"Final impact factors for year {corpus_year} saved in folder: \n  '{target_dept_file_path}'"
+    end_message = (f"Final impact factors for year {corpus_year} saved in folder: "
+                   f"\n  '{target_dept_file_path}'")
     return end_message
 
 def save_final_kws(institute, org_tup, bibliometer_path,
@@ -115,17 +121,6 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     """
 
     """
-    # Standard library imports
-    import os
-    import shutil
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_final_col_names
 
     # Setting useful column names aliases
     col_final_list = set_final_col_names(institute, org_tup)
@@ -157,11 +152,13 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     target_kws_folder_path      = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
-    if not os.path.exists(year_target_folder_path): os.makedirs(year_target_folder_path)
-    if not os.path.exists(target_kws_folder_path): os.makedirs(target_kws_folder_path)
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_kws_folder_path):
+        os.makedirs(target_kws_folder_path)
 
     for dept in [institute] + depts_col_list:
-        for kw_type, kw_item_alias in kw_item_alias_dict.items():
+        for kw_type, _ in kw_item_alias_dict.items():
             # Setting origin and target file paths
             dept_file_name = f'{dept} {corpus_year}-{kw_type}.xlsx'
             origin_dept_file_path = Path(origin_kws_folder_path) / Path(dept_file_name)
@@ -170,21 +167,15 @@ def save_final_kws(institute, org_tup, bibliometer_path,
             # Copying file from origin path to target path
             shutil.copy2(origin_dept_file_path, target_dept_file_path)
 
-    end_message = f"Final keywords for year {corpus_year} saved in folder: \n  '{target_kws_folder_path}'"
+    end_message = (f"Final keywords for year {corpus_year} saved in folder: "
+                   f"\n  '{target_kws_folder_path}'")
     return end_message
 
-def save_final_countries(institute, org_tup, bibliometer_path,
+def save_final_countries(bibliometer_path,
                          corpus_year, results_folder_path):
     """
 
     """
-    # Standard library imports
-    import os
-    import shutil
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
 
     # Setting aliases for saving results
     results_sub_folder_alias = pg.ARCHI_RESULTS["countries"]
@@ -203,8 +194,10 @@ def save_final_countries(institute, org_tup, bibliometer_path,
     target_countries_path       = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
-    if not os.path.exists(year_target_folder_path): os.makedirs(year_target_folder_path)
-    if not os.path.exists(target_countries_path): os.makedirs(target_countries_path)
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_countries_path):
+        os.makedirs(target_countries_path)
 
     # Setting full path 'origin_countries_file_path' and 'target_countries_file_path'
     origin_countries_file_alias = countries_file_alias + ".xlsx"
@@ -215,21 +208,15 @@ def save_final_countries(institute, org_tup, bibliometer_path,
     # Copying file from origin path to target path
     shutil.copy2(origin_countries_file_path, target_countries_file_path)
 
-    end_message = f"Final countries for year {corpus_year} saved in folder: \n  '{target_countries_file_path}'"
+    end_message = (f"Final countries for year {corpus_year} saved in folder: "
+                   f"\n  '{target_countries_file_path}'")
     return end_message
 
-def save_final_continents(institute, org_tup, bibliometer_path,
+def save_final_continents(bibliometer_path,
                           corpus_year, results_folder_path):
     """
 
     """
-    # Standard library imports
-    import os
-    import shutil
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
 
     # Setting aliases for saving results
     results_sub_folder_alias = pg.ARCHI_RESULTS["countries"]
@@ -248,8 +235,10 @@ def save_final_continents(institute, org_tup, bibliometer_path,
     target_countries_path       = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
-    if not os.path.exists(year_target_folder_path): os.makedirs(year_target_folder_path)
-    if not os.path.exists(target_countries_path): os.makedirs(target_countries_path)
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_countries_path):
+        os.makedirs(target_countries_path)
 
     # Setting full path 'origin_continents_file_path' and 'target_continents_file_path'
     origin_continents_file_alias = continents_file_alias + ".xlsx"
@@ -260,24 +249,14 @@ def save_final_continents(institute, org_tup, bibliometer_path,
     # Copying file from origin path to target path
     shutil.copy2(origin_continents_file_path, target_continents_file_path)
 
-    end_message = f"Final continents for year {corpus_year} saved in folder: \n  '{target_continents_file_path}'"
+    end_message = (f"Final continents for year {corpus_year} saved in folder: "
+                   f"\n  '{target_continents_file_path}'")
     return end_message
 
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                        if_analysis_name, results_to_save_dict, verbose = False):
     """
     """
-    # Standard library imports
-    import os
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.save_final_results import save_final_countries
-    from bmfuncts.save_final_results import save_final_continents
-    from bmfuncts.save_final_results import save_final_ifs
-    from bmfuncts.save_final_results import save_final_kws
-    from bmfuncts.save_final_results import save_final_pub_lists
 
     # Setting aliases for saving results
     results_root_alias   = pg.ARCHI_RESULTS["root"]
@@ -288,33 +267,41 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     results_folder_path = results_root_path / Path(results_folder_alias)
 
     # Checking availability of required results folders
-    if not os.path.exists(results_root_path): os.makedirs(results_root_path)
-    if not os.path.exists(results_folder_path): os.makedirs(results_folder_path)
+    if not os.path.exists(results_root_path):
+        os.makedirs(results_root_path)
+    if not os.path.exists(results_folder_path):
+        os.makedirs(results_folder_path)
 
     if results_to_save_dict["pub_lists"]:
-        message = save_final_pub_lists(institute, org_tup, bibliometer_path,
+        message = save_final_pub_lists(bibliometer_path,
                                        corpus_year, results_folder_path)
-        if verbose: print(message)
+        if verbose:
+            print(message)
 
     if results_to_save_dict["ifs"]:
         message = save_final_ifs(institute, org_tup, bibliometer_path,
                                  corpus_year, results_folder_path, if_analysis_name)
-        if verbose: print("\n",message)
+        if verbose:
+            print("\n",message)
 
     if results_to_save_dict["kws"]:
         message = save_final_kws(institute, org_tup, bibliometer_path,
                                  corpus_year, results_folder_path)
-        if verbose: print("\n",message)
+        if verbose:
+            print("\n",message)
 
     if results_to_save_dict["countries"]:
-        message = save_final_countries(institute, org_tup, bibliometer_path,
+        message = save_final_countries(bibliometer_path,
                                        corpus_year, results_folder_path)
-        if verbose: print("\n",message)
+        if verbose:
+            print("\n",message)
 
     if results_to_save_dict["continents"]:
-        message = save_final_continents(institute, org_tup, bibliometer_path,
+        message = save_final_continents(bibliometer_path,
                                         corpus_year, results_folder_path)
-        if verbose: print("\n",message)
+        if verbose:
+            print("\n",message)
 
-    end_message = f"Final results for year {corpus_year} saved in folder:  \n  '{results_folder_path}'"
+    end_message = (f"Final results for year {corpus_year} saved in folder: "
+                   f"\n  '{results_folder_path}'")
     return end_message

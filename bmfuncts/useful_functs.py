@@ -1,3 +1,5 @@
+"""Module of useful functions used by several modules of package `bmfuncts`."""
+
 __all__ = ['check_dedup_parsing_available',
            'create_archi',
            'create_folder',
@@ -9,21 +11,39 @@ __all__ = ['check_dedup_parsing_available',
            'set_rawdata',
           ]
 
-    
+
+# Standard library imports
+import json
+import os
+import shutil
+from pathlib import Path
+
+# 3rd party imports
+import BiblioParsing as bp
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows \
+    as openpyxl_dataframe_to_rows
+from openpyxl.utils import get_column_letter \
+    as openpyxl_get_column_letter
+from openpyxl.styles import Font as openpyxl_Font
+from openpyxl.styles import PatternFill as openpyxl_PatternFill
+from openpyxl.styles import Alignment as openpyxl_Alignment
+from openpyxl.styles import Border as openpyxl_Border
+from openpyxl.styles import Side as openpyxl_Side
+
+# local imports
+import bmfuncts.pub_globals as pg
+from bmfuncts.rename_cols import set_col_attr
+from bmfuncts.config_utils import set_user_config
+
+
 def check_dedup_parsing_available(bibliometer_path, year):
     """
     """
-    # Standard library imports
-    import os
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.config_utils import set_user_config
-    
     # Setting default returned status
-    status = False
-    
+    dedup_parsing_status = False
+
     # Getting the full paths of the working folder architecture for the corpus "year select"
     config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
     parsing_path_dict = config_tup[1]
@@ -34,26 +54,22 @@ def check_dedup_parsing_available(bibliometer_path, year):
     # Setting path of deduplicated parsings
     dedup_parsing_path = parsing_path_dict['dedup']
     if os.path.isdir(dedup_parsing_path):
-        dedup_parsing_status = False
         dedup_files_list = []
         for path, _, files in os.walk(dedup_parsing_path):
             dedup_files_list.extend(Path(path) / Path(file) for file in files
                                     if file.endswith(parsing_save_extent))
-        if len(dedup_files_list):
-            status = True
-    return status
+        if len(dedup_files_list) != 0:
+            dedup_parsing_status = True
+    return dedup_parsing_status
 
 
 def _get_database_file_path(database_folder_path, database_file_end):
-    '''The function Lists the files ending with "database_file_end"
+    """The function Lists the files ending with "database_file_end"
     present in folder targetted by "database_folder_path".
     Then it select the most recent one.
     Returns:
         (path): Path targeting the found and selevcted file.
-    '''
-    # Standard library imports
-    import os
-    from pathlib import Path
+    """
 
     # Listing the available files ending with database_file_end
     list_data_base = []
@@ -71,16 +87,11 @@ def _get_database_file_path(database_folder_path, database_file_end):
 
 
 def _set_database_extract_info(bibliometer_path, datatype, database):
-    '''The function builts the path to database extractions and
+    """The function builds the path to database extractions and
     the file names ending that are specific to the datat type 'datatype'.
     It sets the folder name of the empty files.
     For that it uses the global 'ARCHI_EXTRACT' defined in 'pub_globals' module.
-    '''
-    # Standard library imports
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
+    """
 
     # Setting useful aliases
     extraction_folder    = pg.ARCHI_EXTRACT["root"]
@@ -94,40 +105,38 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     extraction_folder_path = bibliometer_path / Path(extraction_folder)
     database_folder_path   = extraction_folder_path / Path(database_folder)
 
-    return (database_folder_path, database_file_end, empty_file_folder)
+    return database_folder_path, database_file_end, empty_file_folder
 
 
 def set_rawdata(bibliometer_path, datatype, years_list, database):
-    '''The function sets the rawdata to be used for the data type 'datatype' analysis.
+    """The function sets the rawdata to be used for the data type 'datatype' analysis.
     It copies the files ending with 'database_file_end' from database folder
-    targetted by the path 'database_folder_path' to the rawdata folder
-    targetted by the path 'rawdata_path'.
+    targeted by the path 'database_folder_path' to the rawdata folder
+    targeted by the path 'rawdata_path'.
     When the database is Scopus and the data type to be analysed is restricted to WoS,
     empty files ending with 'database_file_end' are used as Scopus rawdata.
-    '''
-    # Standard library imports
-    import os
-    import shutil
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.config_utils import set_user_config
-
+    """
+    
     # Getting database extractions info
     return_tup = _set_database_extract_info(bibliometer_path, datatype, database)
     database_folder_path, database_file_end, empty_file_folder = return_tup
 
+    if datatype == pg.DATATYPE_LIST[1] and database == bp.SCOPUS:
+        last_year_datatype = pg.DATATYPE_LIST[0]
+        return_tup = _set_database_extract_info(bibliometer_path, last_year_datatype, database)
+        _, last_year_database_file_end, _ = return_tup
+
     # Cycling on year
     for year in years_list:
-        if datatype == pg.DATATYPE_LIST[2] and database == bp.SCOPUS:
+        if database == bp.SCOPUS and datatype == pg.DATATYPE_LIST[2]:
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
         else:
             year_database_folder_path = database_folder_path / Path(year)
-        year_database_file_path = _get_database_file_path(year_database_folder_path, database_file_end)
+            if database == bp.SCOPUS and datatype == pg.DATATYPE_LIST[1] and year == years_list[-1]:
+                database_file_end = last_year_database_file_end
+
+        year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                          database_file_end)
 
         rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
@@ -135,48 +144,36 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
             shutil.rmtree(rawdata_path)
         os.makedirs(rawdata_path)
         shutil.copy2(year_database_file_path, rawdata_path)
+
     message = f"\n{database} rawdata set for {datatype} data type."
     return message
 
 
 def mise_en_page(institute, org_tup, df,
                  wb = None, if_database = None):
-    '''
-    When the workbook wb is not None, this is applied
+    """When the workbook wb is not None, this is applied
     to the active worksheet of the passed workbook.
-    If the workbook wb is None, then the worbook is created.
-    '''
-
-    # 3rd party imports
-    from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-    from openpyxl.styles import Font as openpyxl_Font
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill
-    from openpyxl.styles import Alignment as openpyxl_Alignment
-    from openpyxl.styles import Border as openpyxl_Border
-    from openpyxl.styles import Side as openpyxl_Side
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_col_attr
+    If the workbook wb is None, then the workbook is created.
+    """
 
     # Setting useful column sizes
     col_attr, col_set_list = set_col_attr(institute, org_tup)
     columns_list = list(df.columns)
     for col in columns_list:
-        if col not in col_set_list: col_attr[col] = col_attr['else']
+        if col not in col_set_list:
+            col_attr[col] = col_attr['else']
 
-     # Setting list of cell colors
+    # Setting list of cell colors
     cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
                    openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
 
     # Initialize wb as a workbook and ws its active worksheet
-    if not wb : wb = Workbook()
+    if not wb:
+        wb = Workbook()
     ws = wb.active
     ws_rows = openpyxl_dataframe_to_rows(df, index=False, header=True)
 
-    # Coloring alternatly rows in ws using list of cell colors cell_colors
+    # Coloring alternately rows in ws using list of cell colors cell_colors
     for idx_row, row in enumerate(ws_rows):
         ws.append(row)
         last_row = ws[ws.max_row]
@@ -185,29 +182,37 @@ def mise_en_page(institute, org_tup, df,
             for cell in last_row:
                 cell.fill = cell_color
 
-    # Setting cell alignement and border using dict of column attributes col_attr
+    # Setting cell alignment and border using dict of column attributes col_attr
     if if_database:
         align_list = ["left", "center","center","center"]
         for idx_col, col in enumerate(columns_list):
             column_letter = openpyxl_get_column_letter(idx_col + 1)
             for cell in ws[column_letter]:
-                cell.alignment = openpyxl_Alignment(horizontal=align_list[idx_col], vertical="center")
-                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))
+                cell.alignment = openpyxl_Alignment(horizontal=align_list[idx_col],
+                                                    vertical="center")
+                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick',
+                                                                 color='FFFFFF'),
+                                              right=openpyxl_Side(border_style='thick',
+                                                                  color='FFFFFF'))
     else:
         for idx_col, col in enumerate(columns_list):
             column_letter = openpyxl_get_column_letter(idx_col + 1)
             for cell in ws[column_letter]:
-                cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1], vertical="center")
-                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick', color='FFFFFF'),
-                                              right=openpyxl_Side(border_style='thick', color='FFFFFF'))
+                cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1],
+                                                    vertical="center")
+                cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick',
+                                                                 color='FFFFFF'),
+                                              right=openpyxl_Side(border_style='thick',
+                                                                  color='FFFFFF'))
 
     # Setting the format of the columns heading
     cells_list = ws['A'] + ws[1]
-    if if_database: cells_list = ws[1]
+    if if_database:
+        cells_list = ws[1]
     for cell in cells_list:
         cell.font = openpyxl_Font(bold=True)
-        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center", vertical="center")
+        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center",
+                                            vertical="center")
 
     # Setting de columns width using dict of column attributes col_attr if if_database = None
     if if_database:
@@ -219,9 +224,9 @@ def mise_en_page(institute, org_tup, df,
         for idx_col, col in enumerate(columns_list):
             if idx_col >= 1:
                 column_letter = openpyxl_get_column_letter(idx_col + 1)
-                try:
+                if col in col_attr.keys():
                     ws.column_dimensions[column_letter].width = col_attr[col][0]
-                except:
+                else:
                     ws.column_dimensions[column_letter].width = 20
 
 
@@ -238,18 +243,6 @@ def mise_en_page(institute, org_tup, df,
 def format_df_4_excel(df, first_col_width, last_col_width = None):
     """
     """
-    # 3rd party imports
-    from openpyxl import Workbook
-    from openpyxl.utils.dataframe import dataframe_to_rows as openpyxl_dataframe_to_rows
-    from openpyxl.utils import get_column_letter as openpyxl_get_column_letter
-    from openpyxl.styles import Font as openpyxl_Font
-    from openpyxl.styles import PatternFill as openpyxl_PatternFill
-    from openpyxl.styles import Alignment as openpyxl_Alignment
-    from openpyxl.styles import Border as openpyxl_Border
-    from openpyxl.styles import Side as openpyxl_Side
-
-    # Local imports
-    import bmfuncts.pub_globals as pg
 
     # Setting list of cell colors
     cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
@@ -303,16 +296,15 @@ def format_df_4_excel(df, first_col_width, last_col_width = None):
     height = 30
     for idx_row in range(ws.max_row):
         row_num = idx_row + 1
-        if row_num > 1: height = 20
+        if row_num > 1:
+            height = 20
         ws.row_dimensions[row_num].height = height
 
     return wb, ws
 
 
 def create_folder(root_path, folder, verbose = False):
-    # Standard library imports
-    import os
-    from pathlib import Path
+    """ """
 
     folder_path = root_path / Path(folder)
     if not os.path.exists(folder_path):
@@ -321,12 +313,13 @@ def create_folder(root_path, folder, verbose = False):
     else:
         message = f"{folder_path} already exists"
 
-    if verbose : print(message)
+    if verbose:
+        print(message)
     return folder_path
 
 
 def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
-    '''The `create_archi` function creates a corpus folder with the required architecture.
+    """The `create_archi` function creates a corpus folder with the required architecture.
     It uses the global "ARCHI_YEAR" for the names of the sub_folders.
 
     Args:
@@ -336,11 +329,7 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
     Returns:
         (str): The message giving the folder creation status.
 
-    '''
-
-    # local imports
-    import bmfuncts.pub_globals as pg
-
+    """
     # Setting useful alias
     archi_alias = pg.ARCHI_YEAR
 
@@ -351,7 +340,8 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
     _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose = verbose)
     _ = create_folder(corpus_year_folder_path, archi_alias["history folder"], verbose = verbose)
 
-    analysis_folder = create_folder(corpus_year_folder_path, archi_alias["analyses"], verbose = verbose)
+    analysis_folder = create_folder(corpus_year_folder_path, archi_alias["analyses"],
+                                    verbose = verbose)
     _ = create_folder(analysis_folder, archi_alias["if analysis"], verbose = verbose)
     _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose = verbose)
     _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose = verbose)
@@ -382,11 +372,6 @@ def save_parsing_dict(parsing_dict, parsing_path,
                       item_filename_dict, save_extent):
     """
     """
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
 
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
@@ -403,7 +388,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
             else:
                 item_tsv_file = item_filename_dict[item] + ".csv"
                 item_tsv_path = parsing_path / Path(item_tsv_file)
-                item_df.to_csv(item_tsv_path, index = False, sep = '\,')
+                item_df.to_csv(item_tsv_path, index = False, sep = ',')
         else:
             pass
 
@@ -411,12 +396,6 @@ def save_parsing_dict(parsing_dict, parsing_path,
 def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     """
     """
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
-    import pandas as pd
 
     parsing_dict = {}
     # Cycling on parsing items
@@ -441,12 +420,13 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
         else:
             pass
 
-        if item_df is not None: parsing_dict[item] = item_df
+        if item_df is not None:
+            parsing_dict[item] = item_df
     return parsing_dict
 
 
 def save_fails_dict(fails_dict, parsing_path):
-    '''The function `save_fails_dict` saves parsing fails in a json file
+    """The function `save_fails_dict` saves parsing fails in a json file
     named by the global PARSING_PERF.
 
     Args:
@@ -457,13 +437,7 @@ def save_fails_dict(fails_dict, parsing_path):
     Returns:
         None
 
-    '''
-    # Standard library imports
-    import json
-    from pathlib import Path
-
-    # local imports
-    import bmfuncts.pub_globals as pg
-
-    with open(parsing_path / Path(pg.PARSING_PERF), 'w') as write_json:
+    """
+    parsing_perf_path = parsing_path / Path(pg.PARSING_PERF)
+    with open(parsing_perf_path, 'w', encoding = "utf-8") as write_json:
         json.dump(fails_dict, write_json, indent = 4)

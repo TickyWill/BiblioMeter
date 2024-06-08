@@ -11,7 +11,7 @@ __all__ = ['existing_corpuses',
            'set_exit_button',
            'set_page_title',
            'show_frame',
-          ]
+           ]
 
 
 # Standard library imports
@@ -28,16 +28,18 @@ import BiblioParsing as bp
 # Local imports
 import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
-# from bmgui.gui_functions import font_size
-# from bmgui.gui_functions import mm_to_px
-# from bmgui.gui_functions import last_available_years
 from bmfuncts.config_utils import set_user_config
+
+
 def show_frame(self, page_name):
     """Show a frame for the given page name"""
     frame = self.frames[page_name]
     frame.tkraise()
 
-def set_page_title(self, master, page_name, institute):
+
+def set_page_title(self, master, page_name, institute, datatype = None):
+    """
+    """
 
     # Setting page title
     label_text = gg.PAGES_LABELS[page_name]
@@ -47,6 +49,7 @@ def set_page_title(self, master, page_name, institute):
     eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
     eff_label_pos_y_px  = mm_to_px(gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, gg.PPI)
     mid_page_pos_x_px   = master.win_width_px * 0.5
+    dy_px = 20
 
     # Creating title widget
     label_font = tkFont.Font(family = gg.FONT_NAME,
@@ -57,18 +60,33 @@ def set_page_title(self, master, page_name, institute):
     self.label.place(x = mid_page_pos_x_px,
                      y = eff_label_pos_y_px,
                      anchor = "center")
+    
+    if datatype:
+        page_sub_title = f"Données {datatype}"
+        
+        # Creating title widget
+        label_font = tkFont.Font(family = gg.FONT_NAME,
+                                 size   = int(eff_label_font_size * 0.7))
+        self.label = tk.Label(self,
+                              text = page_sub_title,
+                              font = label_font)
+        self.label.place(x = mid_page_pos_x_px,
+                         y = eff_label_pos_y_px + dy_px,
+                         anchor = "center")
+        
+
 
 def set_exit_button(self, master):
-
+    """ """
     # Internal functions
     def _launch_exit():
         ask_title = 'Arrêt de BiblioMeter'
-        ask_text =  "Après la fermeture des fenêtres, "
-        ask_text += "les traitements intermédiaires effectués sont sauvegardés."
-        ask_text += "\n     !!! Attention !!!"
-        ask_text += "\nSi le type de données est modifié à la reprise "
-        ask_text += "\ndu traitement, ces traitements seront écrasés."
-        ask_text += "\nConfirmez la mise en pause ?"
+        ask_text =  ("Après la fermeture des fenêtres, "
+                     "les traitements intermédiaires effectués sont sauvegardés."
+                     "\n\n     !!! Attention !!!"
+                     "\nSi le type de données est modifié à la reprise "
+                     "\ndu traitement, ces traitements seront écrasés."
+                     "\nConfirmez la mise en pause ?")
         exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
             master.destroy()
@@ -85,14 +103,15 @@ def set_exit_button(self, master):
     button_quit = tk.Button(self,
                             text = gg.TEXT_PAUSE,
                             font = font_button_quit,
-                            command = lambda: _launch_exit())
+                            command = _launch_exit)
     button_quit.place(x = exit_button_x_pos,
                       y = exit_button_y_pos,
                       anchor = 'n')
 
+
 def last_available_years(bibliometer_path, year_number):
-    """Returns a list of the available five last available years
-    where corpuses are stored.
+    """Returns a list of the five last years
+    of available corpuses.
     """
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
     try:
@@ -104,16 +123,17 @@ def last_available_years(bibliometer_path, year_number):
         years_list = years_full_list[-year_number:]
     except FileNotFoundError:
         warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-        warning_text  = f"L'accès au dossier {bibliometer_path} est impossible."
-        warning_text += "\nChoisissez un autre dossier de travail."
+        warning_text  = (f"L'accès au dossier {bibliometer_path} est impossible."
+                         "\nChoisissez un autre dossier de travail.")
         messagebox.showwarning(warning_title, warning_text)
         years_list = []
     return years_list
 
+
 def existing_corpuses(bibliometer_path, corpuses_number = None):
-    """Returns a list of list of booleans displaying True
-    if rawdata and parsing results are available, and False if they are not
-    this for each of the available year folder.
+    """Returns a list of lists of booleans displaying True
+    if rawdata and parsing results are available, and False otherwise.
+    This is done for each of the available corpuses.
     ex:
     If only 2023 files are not present, the returned list of lists is the following:
     [[2018, 2019, 2020, 2021, 2022, 2023],   #Years
@@ -190,48 +210,56 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
 
         # Wos
         database_type = bp.WOS
-        wos_rawdata_file_path     = _get_rawdata_file_path(wos_rawdata_path, wos_rawdata_extent)
+        wos_rawdata_file_path = _get_rawdata_file_path(wos_rawdata_path,
+                                                       wos_rawdata_extent)
         wos_parsing_articles_path = _get_parsing_file_paths(wos_parsing_path)
         wos_rawdata_list.append(wos_rawdata_file_path.is_file())
         wos_parsing_list.append(wos_parsing_articles_path.is_file())
 
         # Scopus
         database_type = bp.SCOPUS
-        scopus_rawdata_file_path     = _get_rawdata_file_path(scopus_rawdata_path, scopus_rawdata_extent)
+        scopus_rawdata_file_path = _get_rawdata_file_path(scopus_rawdata_path,
+                                                          scopus_rawdata_extent)
         scopus_parsing_articles_path = _get_parsing_file_paths(scopus_parsing_path)
         scopus_rawdata_list.append(scopus_rawdata_file_path.is_file())
         scopus_parsing_list.append(scopus_parsing_articles_path.is_file())
 
         # Concatenation and deduplication
         dedup_parsing_articles_path = _get_parsing_file_paths(dedup_parsing_path)
-        dedup_parsing_list.append( dedup_parsing_articles_path.is_file())
+        dedup_parsing_list.append(dedup_parsing_articles_path.is_file())
 
     return (years_list, wos_rawdata_list, wos_parsing_list,
             scopus_rawdata_list, scopus_parsing_list, dedup_parsing_list)
 
+
 def place_after(gauche, droite, dx = 5, dy = 0):
+    """ """
     gauche_info = gauche.place_info()
     x = int(gauche_info['x']) + gauche.winfo_reqwidth() + dx
     y = int(gauche_info['y']) + dy
     droite.place(x = x, y = y)
 
+
 def place_bellow(haut, bas, dx = 0, dy = 5):
+    """ """
     haut_info = haut.place_info()
     x = int(haut_info['x']) + dx
     y = int(haut_info['y']) + haut.winfo_reqheight() + dy
     bas.place(x = x, y = y)
 
+
 def font_size(size, scale_factor):
-    '''Set the fontsize based on scale_factor.
+    """Set the fontsize based on scale_factor.
     If the fontsize is less than minimum_size,
     it is set to the minimum size.
-    '''
+    """
     fontsize = int(size * scale_factor)
     fontsize = max(fontsize, 8)
     return fontsize
 
+
 def str_size_mm(text, font, ppi):
-    '''The function `_str_size_mm` computes the sizes in mm of a string.
+    """The function `str_size_mm` computes the sizes in mm of a string.
 
     Args:
         text (str): the text of which we compute the size in mm.
@@ -244,14 +272,15 @@ def str_size_mm(text, font, ppi):
     Note:
         The use of this function requires a tkinter window availability
         since it is based on a tkinter font definition.
-    '''
-    (w_px,h_px) = (font.measure(text),font.metrics("linespace"))
+    """
+    w_px, h_px = font.measure(text), font.metrics("linespace")
     w_mm = w_px * gg.IN_TO_MM / ppi
     h_mm = h_px * gg.IN_TO_MM / ppi
-    return (w_mm, h_mm)
+    return w_mm, h_mm
+
 
 def mm_to_px(size_mm, ppi, fact = 1.0):
-    '''The `mm_to_px' function converts a value in mm to a value in pixels
+    """The `mm_to_px` function converts a value in mm to a value in pixels
     using the ppi of the used display and a factor fact.
 
     Args:
@@ -261,11 +290,13 @@ def mm_to_px(size_mm, ppi, fact = 1.0):
 
     Returns:
         (int): Upper integer value of the conversion to pixels.
-    '''
+    """
     size_px = math.ceil((size_mm * fact / gg.IN_TO_MM) * ppi)
     return size_px
 
+
 def _window_properties(screen_width_px, screen_height_px):
+    """ """
 
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
     ppi = gg.DISPLAYS[gg.BM_GUI_DISP]["ppi"]
@@ -274,13 +305,13 @@ def _window_properties(screen_width_px, screen_height_px):
     screen_width_mm  = gg.DISPLAYS[gg.BM_GUI_DISP]["width_mm"]
     screen_height_mm = gg.DISPLAYS[gg.BM_GUI_DISP]["height_mm"]
 
-    # Setting screen reference sizes in pixels and mm from globals internal to module "Coordinates.py"
+    # Setting screen reference sizes in pixels and mm
     ref_width_px  = gg.REF_SCREEN_WIDTH_PX
     ref_height_px = gg.REF_SCREEN_HEIGHT_PX
     ref_width_mm  = gg.REF_SCREEN_WIDTH_MM
     ref_height_mm = gg.REF_SCREEN_HEIGHT_MM
 
-    # Setting secondary window reference sizes in mm from globals internal to module "Coordinates.py"
+    # Setting secondary window reference sizes in mm
     ref_window_width_mm  = gg.REF_WINDOW_WIDTH_MM
     ref_window_height_mm = gg.REF_WINDOW_HEIGHT_MM
 
@@ -301,8 +332,9 @@ def _window_properties(screen_width_px, screen_height_px):
                    scale_factor_width_mm, scale_factor_height_mm)
     return sizes_tuple
 
+
 def general_properties(self):
-    '''The function `general_properties` calculate the window sizes
+    """The function `general_properties` calculate the window sizes
     and useful scale factors for the application launch window.
     For that, it uses reference values for the display sizes in pixels
     and mm through the globals:
@@ -320,7 +352,7 @@ def general_properties(self):
     Returns:
         (tuple): self, 2 window sizes in pixels, 2 scale factors for sizes in mm
                  and 2 scale factors for sizes in pixels.
-    '''
+    """
 
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
     screen_width_px  = self.winfo_screenwidth()

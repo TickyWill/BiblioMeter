@@ -1,3 +1,5 @@
+"""Module setting globals specific to Institutes."""
+
 __all__ = ['CONFIG_JSON_FILES_DICT',
            'DPT_LABEL_KEY',
            'DPT_OTP_KEY',
@@ -25,6 +27,3 @@ for institute in INSTITUTES_LIST:
 DPT_LABEL_KEY = 'dpt_label'
 DPT_OTP_KEY   = 'dpt_otp'
 INVALIDE      = 'Invalide'
-
-
-

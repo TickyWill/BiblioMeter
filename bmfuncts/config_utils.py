@@ -4,16 +4,22 @@ __all__ = ['set_org_params',
            'set_user_config', ]
 
 
-def _get_bm_config():
-    # Standard library imports
-    import json
-    from pathlib import Path
+# Standard library imports
+import json
+from pathlib import Path
 
+# Local imports
+import bmfuncts.employees_globals as eg
+import bmfuncts.institute_globals as ig
+
+
+def _get_bm_config():
+    """ """
     config_json_file_name = 'BiblioParsing_config.json'
 
     # Reads the default json_file_name config file
     pck_config_file_path = Path(__file__).parent / Path('ConfigFiles') / Path(config_json_file_name)
-    with open(pck_config_file_path) as file:
+    with open(pck_config_file_path, encoding = 'utf-8') as file:
         config_dict = json.load(file)
     return config_dict
 
@@ -37,9 +43,7 @@ def _build_effective_config(parsing_folder_dict_init, db_list):
 
 
 def _build_files_paths(year, parsing_folder_dict, bibliometer_path, db_list):
-
-    # Standard library imports
-    from pathlib import Path
+    """ """
 
     # Internal functions
     def _get_folder_attributes(parsing_folder_dict, keys_list, folder_root):
@@ -130,20 +134,13 @@ def set_org_params(institute, bibliometer_path):
     """
 
     """
-    # Standard library imports
-    import json
-    from pathlib import Path
-
-    # Local imports
-    import bmfuncts.employees_globals as eg
-    import bmfuncts.institute_globals as ig
 
     config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])
     config_file_path = config_root_path / Path(ig.CONFIG_JSON_FILES_DICT[institute])
     dpt_label_key = ig.DPT_LABEL_KEY
     dpt_otp_key = ig.DPT_OTP_KEY
 
-    with open(config_file_path) as file:
+    with open(config_file_path, encoding = 'utf-8') as file:
         inst_org_dict = json.load(file)
 
     col_names_dpt = inst_org_dict["COL_NAMES_DPT"]
@@ -155,9 +152,10 @@ def set_org_params(institute, bibliometer_path):
         dpt_attributs_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
         dpt_attributs_dict[dpt][dpt_otp_key] = dpt_otp_dict[dpt]
 
+    dpt_otp_list = list(set(sum([dpt_attributs_dict[dpt_label][dpt_otp_key]
+                                 for dpt_label, _ in dpt_attributs_dict.items()], [])))
     dpt_attributs_dict['DIR'] = {dpt_label_key: ['(' + institute.upper() + ')'],
-                                 dpt_otp_key: list(set(sum([dpt_attributs_dict[dpt_label][dpt_otp_key]
-                                                            for dpt_label in dpt_attributs_dict.keys()], []))), }
+                                 dpt_otp_key  : dpt_otp_list}
     for dpt in list(col_names_dpt.keys()):
         dpt_attributs_dict[dpt][dpt_otp_key] += [ig.INVALIDE]
 

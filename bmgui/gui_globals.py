@@ -27,6 +27,8 @@ __all__ = ['ADD_SPACE_MM',
            'REF_COPYRIGHT_Y_MM',
            'REF_CORPI_POS_X_MM',
            'REF_CORPI_POS_Y_MM',
+           'REF_DATATYPE_POS_X_MM',
+           'REF_DATATYPE_POS_Y_MM',
            'REF_ENTRY_NB_CHAR',
            'REF_ETAPE_BUT_DX_MM',
            'REF_ETAPE_BUT_DY_MM',
@@ -203,6 +205,10 @@ REF_PAGE_TITLE_POS_Y_MM = 20      # 20
 REF_INST_POS_X_MM = 5             # 5
 REF_INST_POS_Y_MM = 40            # 45
 
+# Positions reference in mm for data type selection button
+REF_DATATYPE_POS_X_MM = 110
+REF_DATATYPE_POS_Y_MM = 40
+
 # Positions reference in mm for bmf label and button
 REF_BMF_POS_X_MM = 5              # 5
 REF_BMF_POS_Y_MM = 55             # 45
@@ -227,7 +233,7 @@ REF_ETAPE_FONT_SIZE = 14          # 14
 REF_BUTTON_FONT_SIZE = 10         # 10
 
 # Positions reference in mm for pages widgets
-REF_LABEL_POS_Y_MM = 15           # 15
+REF_LABEL_POS_Y_MM = 7           # 15
 REF_ETAPE_POS_X_MM = 10           # 10
 REF_ETAPE_POS_Y_MM_LIST = [40, 74, 101, 129]   # [40, 74, 101, 129]
 REF_ETAPE_BUT_DX_MM = 10          # 10
@@ -258,7 +264,7 @@ TEXT_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
 # Choix de l'Institut
 TEXT_INSTITUTE = "Sélection de l'Institut"
 
-# Titre LabelEntry of BiblioMeter_Files folder
+# Titre du dossier de travail
 TEXT_BMF = "Dossier de travail "
 
 # Titre bouton changement de dossier de travail
@@ -267,7 +273,7 @@ TEXT_BMF_CHANGE = "Changer de dossier de travail"
 # Titre liste des corpus analysés
 TEXT_CORPUSES = "Liste des corpus "
 
-# Titre bouton création d'un dossier nouveau de corpus
+# Titre bouton création d'un nouveau dossier de corpus
 TEXT_BOUTON_CREATION_CORPUS = "Créer un nouveau dossier de corpus annuel"
 
 # Choix du type de données brutes

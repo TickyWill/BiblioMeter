@@ -1,4 +1,5 @@
-"""The `analysis_corpus_page` module allows to perform impact factors, keywords and coupling analysis.
+"""The `analysis_corpus_page` module allows to perform 
+impact factors, keywords and coupling analysis.
 """
 
 __all__ = ['create_analysis']
@@ -12,13 +13,12 @@ from tkinter import messagebox
 # Local imports
 import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
-#from bmgui.main_page import AppMain
-from bmgui.gui_functions import font_size
-from bmgui.gui_functions import mm_to_px
-from bmgui.gui_functions import place_after
-from bmgui.gui_functions import place_bellow
-from bmgui.gui_functions import set_exit_button
-from bmgui.gui_functions import set_page_title
+from bmgui.gui_utils import font_size
+from bmgui.gui_utils import mm_to_px
+from bmgui.gui_utils import place_after
+from bmgui.gui_utils import place_bellow
+from bmgui.gui_utils import set_exit_button
+from bmgui.gui_utils import set_page_title
 from bmfuncts.consolidate_pub_list import get_if_db
 from bmfuncts.pub_analysis import if_analysis
 from bmfuncts.pub_analysis import coupling_analysis
@@ -36,9 +36,9 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype, year_sel
                                                 year_select, verbose=False)
 
     info_title = "- Information -"
-    info_text = f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
-    info_text += "\nLes fichiers obtenus ont été créés dans le dossier :"
-    info_text += f"\n\n'{kw_analysis_folder_path}' "
+    info_text = (f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
+                 "\nLes fichiers obtenus ont été créés dans le dossier :"
+                 f"\n\n'{kw_analysis_folder_path}' ")
     messagebox.showinfo(info_title, info_text)
 
 
@@ -48,23 +48,20 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
     """
     # TO DO: use 'results_folder_path' in info_text
 
-    # Local imports
-    #from bmfuncts.pub_analysis import coupling_analysis
-
     return_tup = coupling_analysis(institute, org_tup, bibliometer_path,
                                    datatype, year_select, verbose=False)
     analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = return_tup
 
     info_title = "- Information -"
-    info_text = "L'analyse géographique et des collaborations "
-    info_text += f"a été effectuée pour l'année {year_select}."
-    info_text += "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
-    info_text += f"\n\n    '{analysis_folder_alias}/{geo_analysis_folder_alias}'"
-    info_text += f"\n\n    '{analysis_folder_alias}/{inst_analysis_folder_alias}'"
-    # info_text += "\n\nLa base de donnée des indicateurs respective de l'Institut "
-    # info_text += "et de chaque département a été mise à jour "
-    # info_text += "avec les résultats de cette analyse et se trouve dans le dossier :"
-    # info_text += f"\n\n'{results_folder_path}'."
+    info_text = ("L'analyse géographique et des collaborations "
+                 f"a été effectuée pour l'année {year_select}."
+                 "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
+                 f"\n\n    '{analysis_folder_alias}/{geo_analysis_folder_alias}'"
+                 f"\n\n    '{analysis_folder_alias}/{inst_analysis_folder_alias}'")
+    # info_text += ("\n\nLa base de donnée des indicateurs respective de l'Institut "
+    #            "et de chaque département a été mise à jour "
+    #            "avec les résultats de cette analyse et se trouve dans le dossier :"
+    #            f"\n\n'{results_folder_path}'.")
     messagebox.showinfo(info_title, info_text)
 
 
@@ -85,14 +82,14 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                                                 year_select, if_most_recent_year, verbose=False)
 
     info_title = "- Information -"
-    info_text = f"L'analyse des IFs a été effectuée pour l'année {year_select} "
-    info_text += f"avec les valeurs {analysis_if}. "
-    info_text += "\n\nLes fichiers obtenus ont été créés dans le dossier :"
-    info_text += f"\n\n'{if_analysis_folder_path}'."
-    info_text += "\n\nLa base de donnée des indicateurs respective de l'Institut "
-    info_text += "et de chaque département a été mise à jour "
-    info_text += "avec les résultats de cette analyse et se trouve dans le dossier :"
-    info_text += f"\n\n'{results_folder_path}'."
+    info_text = (f"L'analyse des IFs a été effectuée pour l'année {year_select} "
+                 f"avec les valeurs {analysis_if}. "
+                 "\n\nLes fichiers obtenus ont été créés dans le dossier :"
+                 f"\n\n'{if_analysis_folder_path}'."
+                 "\n\nLa base de donnée des indicateurs respective de l'Institut "
+                 "et de chaque département a été mise à jour "
+                 "avec les résultats de cette analyse et se trouve dans le dossier :"
+                 f"\n\n'{results_folder_path}'.")
     messagebox.showinfo(info_title, info_text)
 
 
@@ -168,7 +165,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     org_tup = set_org_params(institute, bibliometer_path)
 
     # Creating and setting widgets for page title and exit button
-    set_page_title(self, master, page_name, institute)
+    set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
 
     # Creating and setting year selection widgets
@@ -226,7 +223,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     if_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_IF_ANALYSIS,
                                           font=if_analysis_launch_font,
-                                          command= lambda:_launch_if_analysis_try())
+                                          command= _launch_if_analysis_try)
     place_bellow(help_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
@@ -263,7 +260,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     co_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_CO_ANALYSIS,
                                           font=co_analysis_launch_font,
-                                          command= lambda: _launch_coupling_analysis_try())
+                                          command= _launch_coupling_analysis_try)
     place_bellow(help_label,
                  co_analysis_launch_button,
                  dx=launch_dx_px,
@@ -300,7 +297,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     kw_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_KW_ANALYSIS,
                                           font=kw_analysis_launch_font,
-                                          command= lambda: _launch_kw_analysis_try())
+                                          command= _launch_kw_analysis_try)
     place_bellow(help_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,

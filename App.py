@@ -10,7 +10,9 @@ of `Page_Classes` module of `BiblioMeter_GUI` package.
 # Local imports
 from bmgui.main_page import AppMain
 
-app = AppMain()
-app.mainloop()
-
+try:
+    app = AppMain()
+    app.mainloop()
+except Exception as err:
+    print(err)
 # In[ ]:

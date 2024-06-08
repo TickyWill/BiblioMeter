@@ -1,13 +1,29 @@
+"""Module of functions for updating impact factors in database
+and in publications lists"""
 __all__ = ['update_inst_if_database',
            'journal_capwords',
           ]
 
-# to move from consolidate_pub_list : 'find_missing_if', 'update_if_multi', 'update_if_single'
+# To Do:  to move functions 'find_missing_if', 'update_if_multi'
+# and 'update_if_single' from 'consolidate_pub_list' module.
+
+
+# Standard library imports
+from pathlib import Path
+
+# 3rd party imports
+import BiblioParsing as bp
+import pandas as pd
+from openpyxl import Workbook
+
+# local imports
+import bmfuncts.pub_globals as pg
+from bmfuncts.rename_cols import set_final_col_names
+from bmfuncts.useful_functs import mise_en_page
+
 
 def journal_capwords(text):
-    # local imports
-    import bmfuncts.pub_globals as pg
-
+    """ """
     text_split_list = []
     for x in text.split():
         if x.lower() in pg.BM_LOW_WORDS_LIST:
@@ -19,8 +35,9 @@ def journal_capwords(text):
     return text
 
 
-def _update_year_if_database(institute, org_tup, bibliometer_path, corpus_year,
-                             year_if_db_df, pub_list_path_alias, missing_if_filename_base_alias,
+def _update_year_if_database(institute, org_tup, bibliometer_path,
+                             corpus_year, year_if_db_df,
+                             pub_list_path_alias, missing_if_filename_base_alias,
                              missing_issn_filename_base_alias, most_recent_year):
     """
     Args:
@@ -29,16 +46,6 @@ def _update_year_if_database(institute, org_tup, bibliometer_path, corpus_year,
     Note:
         Uses internal fonction `journal_capwords`
     """
-    # Standard library imports
-    import string
-    from pathlib import Path
-
-    # 3rd party imports
-    import pandas as pd
-
-    # local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_final_col_names
 
     # Internal functions
     _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])
@@ -59,7 +66,8 @@ def _update_year_if_database(institute, org_tup, bibliometer_path, corpus_year,
 
     # Setting specific column names
     corpus_year_if_col                 = database_if_col_alias + " " + corpus_year
-    most_recent_year_if_col_alias      = most_recent_year_if_col_base_alias + ", " + most_recent_year
+    most_recent_year_if_col_alias      = most_recent_year_if_col_base_alias + \
+                                         ", " + most_recent_year
     new_most_recent_year_if_col_alias  = database_if_col_alias + " " + most_recent_year
 
     # Setting useful paths
@@ -69,61 +77,63 @@ def _update_year_if_database(institute, org_tup, bibliometer_path, corpus_year,
     year_missing_issn_path = pub_list_path / Path(corpus_year + missing_issn_filename_base_alias)
 
     # Setting useful columns list for the year files with IFs of corpus year
-    corpus_year_useful_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias, corpus_year_if_col ]
+    corpus_year_useful_col_list = [journal_col_alias, issn_col_alias,
+                                   eissn_col_alias, corpus_year_if_col ]
 
     # Getting the IFs of the year for the ISSN or e-ISSN already present in the IF database
     missing_if_corpus_year_if_df = _get_if(year_missing_if_path, corpus_year_useful_col_list)
 
     # Getting the IFs of the year for the ISSN or e-ISSN not yet present in the IF database
-    missing_issn_corpus_year_if_df = _get_if(year_missing_issn_path, corpus_year_useful_col_list)
+    missing_issn_corpus_year_if_df = _get_if(year_missing_issn_path,
+                                             corpus_year_useful_col_list)
 
     # Appending 'missing_if_corpus_year_if_df' to  'year_if_db_df'
     if_appended_year_if_db_df = pd.concat([year_if_db_df, missing_if_corpus_year_if_df])
-    if_updated_year_if_db_df  = if_appended_year_if_db_df.drop_duplicates(subset = journal_col_alias, keep = 'last')
+    if_updated_year_if_db_df  = if_appended_year_if_db_df.\
+                                drop_duplicates(subset = journal_col_alias,
+                                                keep = 'last')
 
     # Appending 'missing_issn_corpus_year_if_df' to  'updated_year_if_db_df'
-    fully_appended_year_if_db_df = pd.concat([if_updated_year_if_db_df, missing_issn_corpus_year_if_df])
-    fully_updated_year_if_db_df  = fully_appended_year_if_db_df.drop_duplicates(subset = journal_col_alias, keep = 'last')
+    fully_appended_year_if_db_df = pd.concat([if_updated_year_if_db_df,
+                                              missing_issn_corpus_year_if_df])
+    fully_updated_year_if_db_df  = fully_appended_year_if_db_df.\
+                                   drop_duplicates(subset = journal_col_alias,
+                                                   keep = 'last')
 
     # Sorting 'updated_year_if_db_df' by journal column
     fully_updated_year_if_db_df.sort_values(by=[journal_col_alias], inplace = True)
 
-    # Setting useful columns list for the year files with IFs of most recent year
-    most_recent_year_useful_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias, most_recent_year_if_col_alias]
+    # Setting useful columns list for the year files
+    # with IFs of most recent year
+    most_recent_year_useful_col_list = [journal_col_alias, issn_col_alias,
+                                        eissn_col_alias, most_recent_year_if_col_alias]
 
-    # Getting the IFs of the year for the ISSN or e-ISSN already present in the IF database
-    missing_if_most_recent_year_if_df = _get_if(year_missing_if_path, most_recent_year_useful_col_list)
+    # Getting the IFs of the year for the ISSN or e-ISSN
+    # already present in the IF database
+    missing_if_most_recent_year_if_df = _get_if(year_missing_if_path,
+                                                most_recent_year_useful_col_list)
 
-    # Getting the IFs of the year for the ISSN or e-ISSN not yet present in the IF database
-    missing_issn_most_recent_year_if_df = _get_if(year_missing_issn_path, most_recent_year_useful_col_list)
+    # Getting the IFs of the year for the ISSN or e-ISSN
+    # not yet present in the IF database
+    missing_issn_most_recent_year_if_df = _get_if(year_missing_issn_path,
+                                                  most_recent_year_useful_col_list)
 
-    # Initializing the dataframe of IFs of most recent year that will be returned for completion of the most recent year IF database
-    corpus_year_most_recent_year_if_df = pd.concat([missing_if_most_recent_year_if_df, missing_issn_most_recent_year_if_df])
-    corpus_year_most_recent_year_if_df.rename(columns = {most_recent_year_if_col_alias : new_most_recent_year_if_col_alias,},
+    # Initializing the dataframe of IFs of most recent year
+    # that will be returned for completion of the most recent year IF database
+    corpus_year_most_recent_year_if_df = pd.concat([missing_if_most_recent_year_if_df,
+                                                    missing_issn_most_recent_year_if_df])
+    corpus_year_most_recent_year_if_df.rename(columns = {most_recent_year_if_col_alias: \
+                                                         new_most_recent_year_if_col_alias,},
                                               inplace = True)
 
-    return (fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df)
+    return fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df
 
 
 def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_list):
     """
     Note:
-        Uses internal fonction `journal_capwords`
+        Uses internal function `journal_capwords`
     """
-
-    # Standard library imports
-    from pathlib import Path
-
-    # 3rd party imports
-    import BiblioParsing as bp
-    import numpy as np
-    import pandas as pd
-    from openpyxl import Workbook
-
-    # local imports
-    import bmfuncts.pub_globals as pg
-    from bmfuncts.rename_cols import set_final_col_names
-    from bmfuncts.useful_functs import mise_en_page
 
     # Internal functions
     _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])
@@ -169,12 +179,15 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
     wb = Workbook()
     first = True
 
-    # Building fully updated IFs database for years before the most recent year available for IFs
-    most_recent_year_if_df_to_add = pd.DataFrame(columns = if_db_df[most_recent_year].columns)
+    # Building fully updated IFs database for years
+    # before the most recent year available for IFs
+    most_recent_year_if_df_to_add = pd.DataFrame(columns = if_db_df[most_recent_year].\
+                                                 columns)
     for if_db_year in if_db_years_list[:-1]:
         year_if_db_df = if_db_df[if_db_year]
         year_if_db_df.fillna(unknown_alias, inplace = True)
-        year_if_db_df[journal_col_alias] = year_if_db_df.apply(_capwords_journal_col, axis=1)
+        year_if_db_df[journal_col_alias] = year_if_db_df.\
+                                           apply(_capwords_journal_col, axis = 1)
         corpus_year = if_db_year
         dfs_tup = _update_year_if_database(institute,
                                            org_tup,
@@ -185,36 +198,42 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
                                            missing_if_filename_base_alias,
                                            missing_issn_filename_base_alias,
                                            most_recent_year)
-        fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df_to_add = dfs_tup[0], dfs_tup[1]
+        fully_updated_year_if_db_df = dfs_tup[0]
+        corpus_year_most_recent_year_if_df_to_add = dfs_tup[1]
         wb = _formatting_wb_sheet(if_db_year, fully_updated_year_if_db_df,
                                   wb, first, if_database)
         first = False
-        most_recent_year_if_df_to_add = pd.concat([most_recent_year_if_df_to_add,
-                                                   corpus_year_most_recent_year_if_df_to_add])
+        dfs_list = [most_recent_year_if_df_to_add,
+                    corpus_year_most_recent_year_if_df_to_add]
+        most_recent_year_if_df_to_add = pd.concat(dfs_list)
 
-    # Building fully updated Ifs database for years begening from the most recent year available for IFs
+    # Building fully updated Ifs database for years beginning
+    # from the most recent year available for IFs
     most_recent_year_if_db_df = if_db_df[most_recent_year]
     most_recent_year_if_db_df.fillna(unknown_alias, inplace = True)
-    most_recent_year_if_db_df[journal_col_alias] = most_recent_year_if_db_df.apply(_capwords_journal_col,
-                                                                                   axis = 1)
+    most_recent_year_if_db_df[journal_col_alias] = most_recent_year_if_db_df.\
+                                                   apply(_capwords_journal_col,
+                                                         axis = 1)
     for corpus_year in off_if_db_years_list:
-        _, corpus_year_most_recent_year_if_df_to_add = _update_year_if_database(institute,
-                                                                                org_tup,
-                                                                                bibliometer_path,
-                                                                                corpus_year,
-                                                                                most_recent_year_if_db_df,
-                                                                                pub_list_path_alias,
-                                                                                missing_if_filename_base_alias,
-                                                                                missing_issn_filename_base_alias,
-                                                                                most_recent_year)
+        tup = _update_year_if_database(institute,
+                                       org_tup,
+                                       bibliometer_path,
+                                       corpus_year,
+                                       most_recent_year_if_db_df,
+                                       pub_list_path_alias,
+                                       missing_if_filename_base_alias,
+                                       missing_issn_filename_base_alias,
+                                       most_recent_year)
+        corpus_year_most_recent_year_if_df_to_add = tup[1]
         most_recent_year_if_df_to_add = pd.concat([most_recent_year_if_df_to_add,
                                                    corpus_year_most_recent_year_if_df_to_add])
 
     most_recent_year_if_df_to_add.drop_duplicates(inplace = True)
     most_recent_year_if_db_df = pd.concat([most_recent_year_if_db_df,
                                            most_recent_year_if_df_to_add])
-    most_recent_year_if_db_df = most_recent_year_if_db_df.drop_duplicates(subset = journal_col_alias,
-                                                                          keep = 'last')
+    most_recent_year_if_db_df = most_recent_year_if_db_df.\
+                                drop_duplicates(subset = journal_col_alias,
+                                                keep = 'last')
 
     wb = _formatting_wb_sheet(most_recent_year,
                               most_recent_year_if_db_df, wb, first, if_database)

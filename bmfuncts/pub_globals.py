@@ -1,3 +1,6 @@
+"""Module for setting globals specific to publications
+management and analysis."""
+
 __all__ = ['ANALYSIS_IF',
            'ARCHI_BACKUP',
            'ARCHI_BDD_MULTI_ANNUELLE',
@@ -48,6 +51,9 @@ __all__ = ['ANALYSIS_IF',
            'TSV_SAVE_EXTENT'
           ]
 
+# Standard library imports
+import plotly.express as px
+
 # 3rd party imports
 import BiblioParsing as bp
 
@@ -58,9 +64,6 @@ import bmfuncts.employees_globals as eg
 BDD_LIST = [bp.SCOPUS, bp.WOS]
 
 # Setting list of raw data types
-#datatype_nb = 3
-#DATATYPE_LIST = list(ARCHI_RESULTS.keys())[-datatype_nb:]
-
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 
 PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
@@ -174,11 +177,14 @@ ROW_COLORS = {'odd'      : '0000FFFF',
 
 DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
                                  'Erratum', 'Note', 'Review', 'Short Survey'],
-                 'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial', 'Editorial Material'],
-                 'Proceedings': ['Conference Paper', 'Meeting Abstract', 'Article; Proceedings Paper'],
+                 'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial',
+                                 'Editorial Material'],
+                 'Proceedings': ['Conference Paper', 'Meeting Abstract',
+                                 'Article; Proceedings Paper'],
                 }
 
-DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + DOC_TYPE_DICT['Proceedings'],
+DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + \
+                                                   DOC_TYPE_DICT['Proceedings'],
                         'Books & Editorials'     : DOC_TYPE_DICT['Books'],
                        }
 
@@ -235,10 +241,10 @@ pub_initials       = 'Initiales pub'
 employee_last_name = 'Nom eff'
 employee_initials  = 'Initiales eff'
 
-COL_NAMES_ORTHO = {'last name init' : pub_last_name,
-                   'initials init'  : pub_initials,
-                   'last name new'  : employee_last_name,
-                   'initials new'   : employee_initials,
+COL_NAMES_ORTHO = {'last name init': pub_last_name,
+                   'initials init' : pub_initials,
+                   'last name new' : employee_last_name,
+                   'initials new'  : employee_initials,
                   }
 
 
@@ -309,9 +315,6 @@ CLOUD_MAX_WORDS        = 100
 CLOUD_MAX_WORDS_LENGTH = 60
 
 # Parameters of bar chart representation
-import plotly
-import plotly.express as px
-
 BAR_Y_LABEL_MAX  = 35          # Nb of characters
 BAR_X_RANGE      = [0,10]      # Nb of articles
 BAR_Y_MAX        = 60          # Nb journals (max per barchart plot)

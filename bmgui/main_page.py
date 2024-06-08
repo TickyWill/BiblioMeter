@@ -3,6 +3,7 @@
 __all__ = ['AppMain']
 
 # Standard library imports
+import os
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import font as tkFont
@@ -20,14 +21,14 @@ from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
 from bmgui.update_if_page import create_update_ifs
-from bmgui.gui_functions import existing_corpuses
-from bmgui.gui_functions import font_size
-from bmgui.gui_functions import general_properties
-from bmgui.gui_functions import last_available_years
-from bmgui.gui_functions import mm_to_px
-from bmgui.gui_functions import place_after
-from bmgui.gui_functions import show_frame
-from bmgui.gui_functions import str_size_mm
+from bmgui.gui_utils import existing_corpuses
+from bmgui.gui_utils import font_size
+from bmgui.gui_utils import general_properties
+from bmgui.gui_utils import last_available_years
+from bmgui.gui_utils import mm_to_px
+from bmgui.gui_utils import place_after
+from bmgui.gui_utils import show_frame
+from bmgui.gui_utils import str_size_mm
 from bmfuncts.useful_functs import create_archi
 from bmfuncts.useful_functs import set_rawdata
 
@@ -40,23 +41,23 @@ class AppMain(tk.Tk):
         # Internal functions
         def _set_datatype_widgets_param(datatype_val, datatype_list):
             # Setting widgets parameters for datatype selection
-            self.font_OptionButton_datatype = tkFont.Font(family = gg.FONT_NAME,
+            self.datatype_optionbutton_font = tkFont.Font(family = gg.FONT_NAME,
                                                           size = eff_buttons_font_size)
-            self.OptionButton_datatype = tk.OptionMenu(self,
+            self.datatype_optionbutton = tk.OptionMenu(self,
                                                        datatype_val,
                                                        *datatype_list)
-            self.OptionButton_datatype.config(font = self.font_OptionButton_datatype,
+            self.datatype_optionbutton.config(font = self.datatype_optionbutton_font,
                                               width = eff_menu_width)
-            self.font_Label_datatype = tkFont.Font(family = gg.FONT_NAME,
+            self.datatype_label_font = tkFont.Font(family = gg.FONT_NAME,
                                                    size = eff_select_font_size,
                                                    weight = 'bold')
-            self.Label_datatype = tk.Label(self,
+            self.datatype_label = tk.Label(self,
                                            text = gg.TEXT_DATATYPE,
-                                           font = self.font_Label_datatype)
+                                           font = self.datatype_label_font)
 
             # Placing widgets for datatype selection
-            self.Label_datatype.place(x = datatype_button_x_pos, y = datatype_button_y_pos)
-            place_after(self.Label_datatype, self.OptionButton_datatype, dy = dy_datatype)
+            self.datatype_label.place(x = datatype_button_x_pos, y = datatype_button_y_pos)
+            place_after(self.datatype_label, self.datatype_optionbutton, dy = dy_datatype)
 
         def _display_path(inst_bmf):
             """Shortening bmf path for easy display"""
@@ -100,7 +101,8 @@ class AppMain(tk.Tk):
             bmf_button      = tk.Button(self,
                                         text = gg.TEXT_BMF_CHANGE,
                                         font = bmf_button_font,
-                                        command = lambda: _get_file(institute_select, datatype_select))
+                                        command = lambda: _get_file(institute_select,
+                                                                    datatype_select))
             # Placing bmf widgets
             bmf_label.place(x = eff_bmf_pos_x_px,
                             y = eff_bmf_pos_y_px,)
@@ -114,11 +116,23 @@ class AppMain(tk.Tk):
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)
             bmf_val.set(inst_bmf)
             bmf_val2.set(_display_path(inst_bmf))
+        def _try_bmf_access(bmf_path):
+            bmf_access_status = False
+            if os.access(bmf_path, os.F_OK | os.R_OK | os.W_OK):
+                bmf_access_status = True
+            else:
+                warning_title = "!!! ATTENTION : Accés au dossier impossible !!!"
+                warning_text  = (f"Accès non autorisé ou absence du dossier \n   {bmf_path}."
+                                 "\n\nChoisissez un autre dossier de travail.")
+                messagebox.showwarning(warning_title, warning_text)
+            return bmf_access_status
 
         def _create_corpus(inst_bmf):
             corpi_val = _set_corpi_widgets_param(inst_bmf)
+            corpi_val_to_set = ""
             bmf_path = Path(inst_bmf)
-            try:
+            bmf_access_status = _try_bmf_access(bmf_path)
+            if bmf_access_status:
                 # Setting new corpus year folder name
                 corpuses_list    = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
                 last_corpus_year = corpuses_list[-1]
@@ -132,16 +146,8 @@ class AppMain(tk.Tk):
                 corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
 
                 # Setting corpi_val value to corpuses list
-                corpi_val.set(str(corpuses_list))
-
-            except FileNotFoundError:
-                warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-                warning_text  = f"L'accès au dossier {bmf_path} est impossible."
-                warning_text += "\nChoisissez un autre dossier de travail."
-                messagebox.showwarning(warning_title, warning_text)
-
-                # Setting corpi_val value to empty string
-                corpi_val.set("")
+                corpi_val_to_set = str(corpuses_list)
+            corpi_val.set(corpi_val_to_set)
 
         def _set_corpi_widgets_param(inst_bmf):
             # Setting corpuses widgets parameters
@@ -175,52 +181,54 @@ class AppMain(tk.Tk):
 
         def _update_corpi(inst_bmf):
             corpi_val = _set_corpi_widgets_param(inst_bmf)
+            corpi_val_to_set = ""
             bmf_path = Path(inst_bmf)
-            try:
+            bmf_access_status = _try_bmf_access(bmf_path)
+            if bmf_access_status:
                 # Getting updated corpuses list
                 corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
 
                 # Setting corpi_val value to corpuses list
-                corpi_val.set(str(corpuses_list))
+                corpi_val_to_set = str(corpuses_list)
+            corpi_val.set(corpi_val_to_set)
 
-            except FileNotFoundError:
-                warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-                warning_text  = f"L'accès au dossier {bmf_path} est impossible."
-                warning_text += "\nChoisissez un autre dossier de travail."
-                messagebox.showwarning(warning_title, warning_text)
-
-                # Setting corpi_val value to empty string
-                corpi_val.set("")
-
-        def _update_datatype(*args, widget = None):
-            datatype_select = widget.get()
-            self.OptionButton_datatype.configure(state = 'disabled')
-            institute_select = institute_val.get()
+        def _update_datatype(*args, datatype_widget = None):
+            datatype_select = datatype_widget.get()
+            self.datatype_optionbutton.configure(state = 'disabled')
 
             # Managing working folder (bmf stands for "BiblioMeter_Files")
+            institute_select = args[0]
             inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select]
             _set_bmf_widget_param(institute_select, inst_default_bmf, datatype_select)
 
             # Managing corpus list
             corpi_val = _set_corpi_widgets_param(inst_default_bmf)
 
-            # Setting and displating corpuses list initial values
-            try:
-                init_corpuses_list = last_available_years(inst_default_bmf, gg.CORPUSES_NUMBER)
-                corpi_val.set(str(init_corpuses_list))
-            except FileNotFoundError:
-                warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-                warning_text  = f"L'accès au dossier {inst_default_bmf} est impossible."
-                warning_text += "\nChoisissez un autre dossier de travail."
-                messagebox.showwarning(warning_title, warning_text)
-                # Setting corpuses list value to empty string
-                corpi_val.set("")
+            # Setting and displaying corpuses list initial values
+            corpi_val_to_set = ""
+            default_bmf_path = Path(inst_default_bmf)
+            info_title = "- Information -"
+            info_text = ("Le test de l'accès au dossier de travail défini "
+                         "par défaut peut prendre un peu de temps."
+                         "\n\nMerci de patienter.")
+            messagebox.showinfo(info_title, info_text)
+            bmf_access_status = _try_bmf_access(default_bmf_path)
+            if bmf_access_status:
+                info_title = "- Information -"
+                info_text = ("L'accès au dossier de travail défini "
+                             "par défaut est autorisé mais vous pouvez "
+                             "en choisir un autre.")
+                messagebox.showinfo(info_title, info_text)
+                init_corpuses_list = last_available_years(default_bmf_path, gg.CORPUSES_NUMBER)
+                corpi_val_to_set = str(init_corpuses_list)
+            corpi_val.set(corpi_val_to_set)
 
             # Managing analysis launch button
             SetLaunchButton(self, institute_select, inst_default_bmf, datatype_select)
 
-        def _update_page(*args, widget = None):
-            institute_select = widget.get()
+        def _update_page(*args, institute_widget = None):
+            _ = args
+            institute_select = institute_widget.get()
 
             # Setting default values for datatype selection
             datatype_list = pg.DATATYPE_LIST
@@ -232,7 +240,9 @@ class AppMain(tk.Tk):
             _set_datatype_widgets_param(datatype_val, datatype_list)
 
             # Tracing data type selection
-            datatype_val.trace('w', partial(_update_datatype, widget = datatype_val))
+            datatype_val.trace('w',
+                               partial(_update_datatype, institute_select,
+                                       datatype_widget = datatype_val))
 
         # Setting the link between "self" and "tk.Tk"
         tk.Tk.__init__(self)
@@ -295,9 +305,10 @@ class AppMain(tk.Tk):
 
         # Setting widgets parameters for datatype selection
         eff_menu_width = int(30 * AppMain.width_sf_min)     # gg.REF_MENU_NB_CHAR
-        eff_select_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
-        datatype_button_x_pos = mm_to_px(110 * AppMain.width_sf_mm, gg.PPI)  # gg.REF_DATATYPE_POS_X_MM
-        datatype_button_y_pos = mm_to_px(40 * AppMain.height_sf_mm, gg.PPI)  # gg.REF_DATATYPE_POS_Y_MM
+        eff_select_font_size  = font_size(gg.REF_SUB_TITLE_FONT_SIZE,
+                                          AppMain.width_sf_min)
+        datatype_button_x_pos = mm_to_px(gg.REF_DATATYPE_POS_X_MM * AppMain.width_sf_mm, gg.PPI)
+        datatype_button_y_pos = mm_to_px(gg.REF_DATATYPE_POS_Y_MM * AppMain.height_sf_mm, gg.PPI)
         dy_datatype           = -10
 
         # Setting and placing widgets for title and copyright
@@ -311,27 +322,27 @@ class AppMain(tk.Tk):
         institute_val.set(default_institute)
 
         # Creating widgets for Institute selection
-        self.font_OptionButton_inst = tkFont.Font(family = gg.FONT_NAME,
+        self.inst_optionbutton_font = tkFont.Font(family = gg.FONT_NAME,
                                                   size = eff_buttons_font_size)
-        self.OptionButton_inst = tk.OptionMenu(self,
+        self.inst_optionbutton = tk.OptionMenu(self,
                                                institute_val,
                                                *institutes_list)
-        self.OptionButton_inst.config(font = self.font_OptionButton_inst)
-        self.font_Label_inst = tkFont.Font(family = gg.FONT_NAME,
+        self.inst_optionbutton.config(font = self.inst_optionbutton_font)
+        self.inst_label_font = tkFont.Font(family = gg.FONT_NAME,
                                            size = eff_select_font_size,
                                            weight = 'bold')
-        self.Label_inst = tk.Label(self,
+        self.inst_label = tk.Label(self,
                                    text = gg.TEXT_INSTITUTE,
-                                   font = self.font_Label_inst)
+                                   font = self.inst_label_font)
 
         # Placing widgets for Institute selection
-        self.Label_inst.place(x = inst_button_x_pos, y = inst_button_y_pos)
-        place_after(self.Label_inst, self.OptionButton_inst, dy = dy_inst)
+        self.inst_label.place(x = inst_button_x_pos, y = inst_button_y_pos)
+        place_after(self.inst_label, self.inst_optionbutton, dy = dy_inst)
 
         # Tracing Institute selection
-        institute_val.trace('w', partial(_update_page, widget = institute_val))
+        institute_val.trace('w', partial(_update_page, institute_widget = institute_val))
 
-class SetMasterTitle(tk.Tk):
+class SetMasterTitle():
     """
 
     """
@@ -354,7 +365,7 @@ class SetMasterTitle(tk.Tk):
                          y = eff_page_title_pos_y_px,
                          anchor = "center")
 
-class SetAuthorCopyright(tk.Tk):
+class SetAuthorCopyright():
     """
 
     """
@@ -443,8 +454,8 @@ class SetLaunchButton(tk.Tk):
 
             # Setting rawdata for datatype
             for database in pg.BDD_LIST:
-                message = set_rawdata(bibliometer_path, datatype,
-                                      master.years_list, database)
+                _ = set_rawdata(bibliometer_path, datatype,
+                                master.years_list, database)
 
             # Setting existing corpuses status
             files_status = existing_corpuses(bibliometer_path)

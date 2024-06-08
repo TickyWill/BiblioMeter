@@ -1,3 +1,5 @@
+"""Module setting globals specific to employees database management."""
+
 __all__ = [
            'CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
@@ -22,7 +24,8 @@ EMPLOYEES_ARCHI = {"root"                        : "Parametres Institut",
                    "complementary_employees"     : "Effectifs de consolidation",}
 
 
-# This is only the full list of employees file columns available to be add to EMPLOYEES_USEFUL_COLS global
+# This is only the full list of employees file columns available
+# to be add to EMPLOYEES_USEFUL_COLS global
 EMPLOYEES_FULL_COLS = {'matricule'           : 'Matricule',                       #
                        'name'                : 'Nom',                             #
                        'first_name'          : 'Prénom',                          #
@@ -79,14 +82,16 @@ employees_useful_cols_keys_list = ['matricule',
                                    'age_range',]
 
 EMPLOYEES_USEFUL_COLS ={}
-for key in employees_useful_cols_keys_list: EMPLOYEES_USEFUL_COLS[key] = EMPLOYEES_FULL_COLS[key]
+for key in employees_useful_cols_keys_list:
+    EMPLOYEES_USEFUL_COLS[key] = EMPLOYEES_FULL_COLS[key]
 
 # Types dict used when reading all-years employees file
 EMPLOYEES_COL_TYPES = {}
-for col_name in list(EMPLOYEES_USEFUL_COLS.keys()): EMPLOYEES_COL_TYPES[col_name] = str
+for col_name in list(EMPLOYEES_USEFUL_COLS.keys()):
+    EMPLOYEES_COL_TYPES[col_name] = str
 
 
-# The name of the 6 columns added by the function  _build_year_month_dpt
+# The name of the 6 columns added by the function _build_year_month_dpt
 EMPLOYEES_ADD_COLS = {'dpts_list'          : 'Dpts',
                       'servs_list'         : 'Servs',
                       'months_list'        : 'Months',
@@ -136,7 +141,8 @@ _employees_col_convert_key = ['hiring_date',
                               'birth_date',
                              ]
 
-employees_col_convert_list = [EMPLOYEES_USEFUL_COLS[col_key] for col_key in _employees_col_convert_key]
+employees_col_convert_list = [EMPLOYEES_USEFUL_COLS[col_key]
+                              for col_key in _employees_col_convert_key]
 
 EMPLOYEES_CONVERTERS_DIC = {}
 for col_convert in employees_col_convert_list:

@@ -36,12 +36,12 @@ from bmfuncts.use_pub_attributes import save_homonyms
 from bmfuncts.use_pub_attributes import set_saved_otps
 from bmfuncts.use_pub_attributes import set_saved_homonyms
 from bmfuncts.useful_functs import check_dedup_parsing_available
-from bmgui.gui_functions import font_size
-from bmgui.gui_functions import mm_to_px
-from bmgui.gui_functions import place_after
-from bmgui.gui_functions import place_bellow
-from bmgui.gui_functions import set_exit_button
-from bmgui.gui_functions import set_page_title
+from bmgui.gui_utils import font_size
+from bmgui.gui_utils import mm_to_px
+from bmgui.gui_utils import place_after
+from bmgui.gui_utils import place_bellow
+from bmgui.gui_utils import set_exit_button
+from bmgui.gui_utils import set_page_title
 
 
 def _launch_update_employees(bibliometer_path,
@@ -57,13 +57,13 @@ def _launch_update_employees(bibliometer_path,
     if check_effectif_status:
         # Launch employees database update
         ask_title = "- Confirmation de la mise à jour des effectifs -"
-        ask_text  = "Le fichier des effectifs de l'Institut va être mis à jour "
-        ask_text += "avec les nouvelles données disponibles dans le dossier :"
-        ask_text += f"\n\n '{maj_effectifs_folder_path}'."
-        ask_text += "\n\nCette opération peut prendre quelques minutes."
-        ask_text += "\nDans l'attente, ne pas fermer 'BiblioMeter'."
-        ask_text += "\n\nAvant de poursuivre le croisement auteurs-effectifs, "
-        ask_text += "confirmez la mise à jour ?"
+        ask_text  = ("Le fichier des effectifs de l'Institut va être mis à jour "
+                     "avec les nouvelles données disponibles dans le dossier :"
+                     f"\n\n '{maj_effectifs_folder_path}'."
+                     "\n\nCette opération peut prendre quelques minutes."
+                     "\nDans l'attente, ne pas fermer 'BiblioMeter'."
+                     "\n\nAvant de poursuivre le croisement auteurs-effectifs, "
+                     "confirmez la mise à jour ?")
         answer_1  = messagebox.askokcancel(ask_title, ask_text)
         if answer_1:
             (employees_year,
@@ -72,72 +72,87 @@ def _launch_update_employees(bibliometer_path,
              column_error,
              years2add_error,
              all_years_file_error) = update_employees(bibliometer_path)
-            if not any(files_number_error, sheet_name_error, column_error,
-                        years2add_error, all_years_file_error):
+            if not any([files_number_error, sheet_name_error, column_error,
+                        years2add_error, all_years_file_error]):
                 info_title = "- Information -"
-                info_text  = f"La mise à jour des effectifs a été effectuée pour l'année {employees_year}."
-                info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
+                info_text  = ("La mise à jour des effectifs a été effectuée "
+                              f"pour l'année {employees_year}."
+                              f"\nLe croisement pour l'année {year_select} "
+                              "va être poursuivi.")
                 messagebox.showinfo(info_title, info_text)
                 update_status = True
             elif all_years_file_error:
                 info_title = "- Information -"
-                info_text  = f"La mise à jour des effectifs a été effectuée pour l'année {employees_year}."
-                info_text += f"\nMais le fichier des effectifs consolidés '{effectifs_file_name_alias}' "
-                info_text += "non disponible a été créé dans le dossier :"
-                info_text += f"\n '{effectifs_folder_path}'.\n"
-                info_text += "\nErreur précise retournée :"
-                info_text += f"\n '{all_years_file_error}'.\n"
-                info_text += f"\nLe croisement pour l'année {year_select} va être poursuivi."
+                info_text  = ("La mise à jour des effectifs a été effectuée "
+                              f"pour l'année {employees_year}."
+                              "\nMais le fichier des effectifs consolidés "
+                              f"'{effectifs_file_name_alias}' "
+                              "non disponible a été créé dans le dossier :"
+                              f"\n '{effectifs_folder_path}'.\n"
+                              f"\nErreur précise retournée :\n '{all_years_file_error}'.\n"
+                              f"\nLe croisement pour l'année {year_select} "
+                              "va être poursuivi.")
                 messagebox.showinfo(info_title, info_text)
                 update_status = True
             else:
                 warning_title = "!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!"
                 if files_number_error:
-                    warning_text  = "Absence de fichier ou plus d'un fichier présent dans le dossier :"
-                    warning_text += f"\n\n '{maj_effectifs_folder_path}'."
-                    warning_text += "\n\nNe conservez que le fichier utile et relancer la mise à jour,"
-                    warning_text += "\n\nou bien relancez le traitement sans mise à jour des effectifs."
+                    warning_text  = ("Absence de fichier ou plus d'un fichier "
+                                     "présent dans le dossier :"
+                                     f"\n\n '{maj_effectifs_folder_path}'."
+                                     "\n\nNe conservez que le fichier utile "
+                                     "et relancez la mise à jour,"
+                                     "\n\nou bien relancez le traitement "
+                                     "sans mise à jour des effectifs.")
                     messagebox.showwarning(warning_title, warning_text)
                     update_status = False
                 if sheet_name_error:
-                    warning_text  = "Un nom de feuille du fichier des effectifs additionnels est de format incorrect "
-                    warning_text += "dans le fichier des effectifs additionnels du dossier :"
-                    warning_text += f"\n\n '{maj_effectifs_folder_path}'.\n"
-                    warning_text += "\nErreur précise retournée :\n"
-                    warning_text += f"\n '{sheet_name_error}'.\n"
-                    warning_text += "\n 1- Ouvrez le fichier;"
-                    warning_text += "\n 2- Vérifiez et corrigez les noms des feuilles dans ce fichier;"
-                    warning_text += "\n 3- Sauvegardez le ficher;"
-                    warning_text += "\n 4- Relancez la mise à jour des effectifs (via le croisement auteurs-effectifs)."
+                    warning_text  = ("Un nom de feuille est de format incorrect "
+                                     "dans le fichier des effectifs additionnels du dossier :"
+                                     f"\n\n '{maj_effectifs_folder_path}'.\n"
+                                     "\nErreur précise retournée :\n"
+                                     f"\n '{sheet_name_error}'.\n"
+                                     "\n 1- Ouvrez le fichier;"
+                                     "\n 2- Vérifiez et corrigez les noms des feuilles "
+                                     "dans ce fichier;"
+                                     "\n 3- Sauvegardez le ficher;"
+                                     "\n 4- Relancez la mise à jour des effectifs "
+                                     "(via le croisement auteurs-effectifs).")
                     messagebox.showwarning(warning_title, warning_text)
                     update_status = False
                 if column_error:
-                    warning_text  = "Une colonne est manquante ou mal nommée dans une feuille "
-                    warning_text += "dans le fichier des effectifs additionnels du dossier :"
-                    warning_text += f"\n\n '{maj_effectifs_folder_path}'.\n"
-                    warning_text += "\nErreur précise retournée :\n"
-                    warning_text += f"\n '{column_error}'.\n"
-                    warning_text += "\n 1- Ouvrez le fichier;"
-                    warning_text += "\n 2- Vérifiez et corrigez les noms des colonnes des feuilles dans ce fichier;"
-                    warning_text += "\n 3- Sauvegardez le ficher."
-                    warning_text += "\n 4- Relancez la mise à jour des effectifs (via le croisement auteurs-effectifs)."
+                    warning_text  = ("Une colonne est manquante ou mal nommée dans une feuille "
+                                     "dans le fichier des effectifs additionnels du dossier :"
+                                     f"\n\n '{maj_effectifs_folder_path}'.\n"
+                                     "\nErreur précise retournée :\n"
+                                     f"\n '{column_error}'.\n"
+                                     "\n 1- Ouvrez le fichier;"
+                                     "\n 2- Vérifiez et corrigez les noms des colonnes "
+                                     "des feuilles dans ce fichier;"
+                                     "\n 3- Sauvegardez le ficher."
+                                     "\n 4- Relancez la mise à jour des effectifs "
+                                     "(via le croisement auteurs-effectifs).")
                     messagebox.showwarning(warning_title, warning_text)
                     update_status = False
                 if years2add_error:
-                    warning_text  = "Le fichier des effectifs additionnels couvre plusieurs années "
-                    warning_text += "dans le fichier des effectifs additionnels du dossier :"
-                    warning_text += f"\n\n '{maj_effectifs_folder_path}'.\n"
-                    warning_text += "\n 1- Séparez les feuilles d'années différentes en fichiers d'effectifs additionnels différents;"
-                    warning_text += "\n 2- Relancer la mise à jour des effectifs (via le croisement auteurs-effectifs) "
-                    warning_text += "\n    pour chacun des fichiers créés en les positionant seul dans le dossier successivement."
+                    warning_text  = ("Le fichier des effectifs additionnels "
+                                     "couvre plusieurs années "
+                                     "dans le fichier des effectifs additionnels du dossier :"
+                                     f"\n\n '{maj_effectifs_folder_path}'.\n"
+                                     "\n 1- Séparez les feuilles d'années différentes "
+                                     "en fichiers d'effectifs additionnels différents;"
+                                     "\n 2- Relancer la mise à jour des effectifs "
+                                     "(via le croisement auteurs-effectifs) "
+                                     "\n    pour chacun des fichiers créés en les positionant seul "
+                                     "dans le dossier successivement.")
                     messagebox.showwarning(warning_title, warning_text)
                     update_status = False
         else:
             # Cancel employees database update
             warning_title = "- Information -"
-            warning_text  = "La mise à jour des effectifs est abandonnée."
-            warning_text += f"\n\nSi le croisement auteurs-effectifs pour l'année {year_select} "
-            warning_text += "est confirmé, il se fera sans cette mise à jour."
+            warning_text  = ("La mise à jour des effectifs est abandonnée."
+                             f"\n\nSi le croisement auteurs-effectifs pour l'année {year_select} "
+                             "est confirmé, il se fera sans cette mise à jour.")
             messagebox.showwarning(warning_title, warning_text)
             update_status = False
     return update_status
@@ -171,40 +186,45 @@ def _launch_recursive_year_search_try(year_select,
             info_title = '- Information -'
             info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
             if orphan_status:
-                info_text += "\n\nTous les auteurs de l'Institut ont été identifiés dans les effectifs."
-                info_text += "\n\nLa résolution des homonymes peut être lancée."
+                info_text += ("\n\nTous les auteurs de l'Institut ont été "
+                              "identifiés dans les effectifs."
+                              "\n\nLa résolution des homonymes peut être lancée.")
             else:
-                info_text += "\n\nMais, des auteurs affiiés à l'Institut n'ont pas été identifiés dans les effectifs."
-                info_text += f"\n1- Ouvrez le fichier {orphan_alias} du dossier :\n  {bdd_mensuelle_path} ;"
-                info_text += "\n\n2- Suivez le mode opératoire disponible pour son utilisation ;"
-                info_text += "\n3- Puis relancez le croisement pour cette année."
-                info_text += "\n\nNéanmoins, la résolution des homonymes peut être lancée sans cette opération, "
-                info_text += "mais la liste consolidée des publications sera incomplète."
+                info_text += ("\n\nMais, des auteurs affiiés à l'Institut "
+                              "n'ont pas été identifiés dans les effectifs."
+                              f"\n1- Ouvrez le fichier {orphan_alias} "
+                              f"du dossier :\n  {bdd_mensuelle_path} ;"
+                              "\n\n2- Suivez le mode opératoire disponible pour son utilisation ;"
+                              "\n3- Puis relancez le croisement pour cette année."
+                              "\n\nNéanmoins, la résolution des homonymes "
+                              "peut être lancée sans cette) opération, "
+                              "mais la liste consolidée des publications sera incomplète.")
             messagebox.showinfo(info_title, info_text)
 
         else:
             warning_title = "!!! ATTENTION : fichier manquant !!!"
-            warning_text  = f"La synthèse de l'année {year_select} n'est pas disponible."
-            warning_text += "\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
-            warning_text += "\n2- Effectuez la synthèse pour cette année ;"
-            warning_text += "\n3- Puis relancez le croisement pour cette année."
+            warning_text  = (f"La synthèse de l'année {year_select} n'est pas disponible."
+                             "\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
+                             "\n2- Effectuez la synthèse pour cette année ;"
+                             "\n3- Puis relancez le croisement pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
     # Adapting search depth to available years for search
-    all_effectifs_df, search_depth, annees_disponibles = _annee_croisement(year_select, all_effectifs_path, search_depth_init)
+    tup = _annee_croisement(year_select, all_effectifs_path, search_depth_init)
+    all_effectifs_df, search_depth, annees_disponibles = tup[0], tup[1], tup[2]
     if annees_disponibles:
         status = "sans"
         if employees_update_status:
             status = "avec"
         ask_title = "- Confirmation du croisement auteurs-effectifs -"
-        ask_text  = "Le croisement avec les effectifs des années "
-        ask_text += f"{', '.join([str(i) for i in annees_disponibles])} "
-        ask_text += f"a été lancé pour l'année {year_select}."
-        ask_text += f"\nCe croisement se fera {status} la mise à jour "
-        ask_text += "du fichier des effectifs."
-        ask_text += "\n\nCette opération peut prendre quelques minutes."
-        ask_text += "\nDans l'attente, ne pas fermer 'BiblioMeter'."
-        ask_text += "\n\nContinuer ?"
+        ask_text  = ("Le croisement avec les effectifs des années "
+                     f"{', '.join([str(i) for i in annees_disponibles])} "
+                     f"a été lancé pour l'année {year_select}."
+                     f"\nCe croisement se fera {status} la mise à jour "
+                     "du fichier des effectifs."
+                     "\n\nCette opération peut prendre quelques minutes."
+                     "\nDans l'attente, ne pas fermer 'BiblioMeter'."
+                     "\n\nContinuer ?")
         answer    = messagebox.askokcancel(ask_title, ask_text)
         if answer:
             submit_status = os.path.exists(submit_path)
@@ -212,20 +232,20 @@ def _launch_recursive_year_search_try(year_select,
                 _recursive_year_search_try()
             else:
                 ask_title = "- Reconstruction du croisement auteurs-effectifs -"
-                ask_text  = f"Le croisement pour l'année {year_select} est déjà disponible."
-                ask_text += "\n\nReconstruire le croisement ?"
+                ask_text  = (f"Le croisement pour l'année {year_select} est déjà disponible."
+                             "\n\nReconstruire le croisement ?")
                 answer_4  = messagebox.askokcancel(ask_title, ask_text)
                 if answer_4:
                     _recursive_year_search_try()
                 else:
                     info_title = "- Information -"
-                    info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
-                    info_text += "dejà disponible est conservé."
+                    info_text  = (f"Le croisement auteurs-effectifs de l'année {year_select} "
+                                  "dejà disponible est conservé.")
                     messagebox.showinfo(info_title, info_text)
         else:
             info_title = "- Information -"
-            info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} "
-            info_text += "est annulé."
+            info_text  = (f"Le croisement auteurs-effectifs de l'année {year_select} "
+                          "est annulé.")
             messagebox.showinfo(info_title, info_text)
 
 
@@ -241,7 +261,8 @@ def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
 
     # Identifying available years in employees df
     annees_dispo = [int(x) for x in list(all_effectifs_df.keys())]
-    annees_a_verifier = [int(corpus_year) - int(search_depth) + (i+1) for i in range(int(search_depth))]
+    annees_a_verifier = [int(corpus_year) - int(search_depth)
+                         + (i+1) for i in range(int(search_depth))]
     annees_verifiees = []
     for i in annees_a_verifier:
         if i in annees_dispo:
@@ -252,11 +273,11 @@ def _annee_croisement(corpus_year, all_effectifs_path, search_depth):
     else:
         search_depth = 0
         warning_title = "!!! Attention !!!"
-        warning_text  = "Le nombre d'années disponibles est insuffisant "
-        warning_text += "dans le fichier des effectifs de l'Institut."
-        warning_text += "\nLe croisement auteurs-effectifs ne peut être effectué !"
-        warning_text += "\n1- Complétez le fichier des effectifs de l'Institut ;"
-        warning_text += "\n2- Puis relancer le croisement auteurs-effectifs."
+        warning_text  = ("Le nombre d'années disponibles est insuffisant "
+                         "dans le fichier des effectifs de l'Institut."
+                         "\nLe croisement auteurs-effectifs ne peut être effectué !"
+                         "\n1- Complétez le fichier des effectifs de l'Institut ;"
+                         "\n2- Puis relancer le croisement auteurs-effectifs.")
         messagebox.showwarning(warning_title, warning_text)
     return (all_effectifs_df, search_depth, annees_verifiees)
 
@@ -274,42 +295,50 @@ def _launch_resolution_homonymies_try(institute,
 
     def _resolution_homonymies_try():
         if os.path.isfile(submit_path):
-            end_message, actual_homonym_status = solving_homonyms(institute, org_tup, submit_path, homonymes_file_path)
+            end_message, actual_homonym_status = solving_homonyms(institute, org_tup,
+                                                                  submit_path, homonymes_file_path)
             print(end_message)
-            print('\n Actual homonyms status before setting saved homonyms:', actual_homonym_status)
+            print('\n Actual homonyms status before setting saved homonyms:',
+                  actual_homonym_status)
             if actual_homonym_status:
-                end_message, actual_homonym_status = set_saved_homonyms(institute, org_tup, bibliometer_path,
-                                                                        year_select, actual_homonym_status)
+                end_message, actual_homonym_status = set_saved_homonyms(institute, org_tup,
+                                                                        bibliometer_path,
+                                                                        year_select,
+                                                                        actual_homonym_status)
             print('\n',end_message)
             print('\n Actual homonyms status after setting saved homonyms:', actual_homonym_status)
             info_title = "- Information -"
-            info_text  = f"Le fichier pour la résolution des homonymies de l'année {year_select} a été créé "
-            info_text += f"dans le dossier :\n\n  '{homonymes_path}' "
-            info_text += f"\n\nsous le nom :  '{homonymes_file_alias}'."
+            info_text  = ("Le fichier pour la résolution des homonymies "
+                          f"de l'année {year_select} a été créé "
+                          f"dans le dossier :\n\n  '{homonymes_path}' "
+                          f"\n\nsous le nom :  '{homonymes_file_alias}'.")
             if actual_homonym_status:
-                info_text += "\n\nDes homonymes existent parmi les auteurs dans les effectifs."
-                info_text += "\n\n1- Ouvrez ce fichier, "
-                info_text += "\n2- Supprimez manuellement les lignes des homonymes non-auteurs, "
-                info_text += "\n3- Puis sauvegardez le fichier sous le même nom."
-                info_text += "\n\nDès que le fichier est traité, "
-                info_text += "\nl'affectation des OTPs peut être lancée."
+                info_text += ("\n\nDes homonymes existent parmi "
+                              "les auteurs dans les effectifs."
+                              "\n\n1- Ouvrez ce fichier, "
+                              "\n2- Supprimez manuellement les lignes "
+                              "des homonymes non-auteurs, "
+                              "\n3- Puis sauvegardez le fichier sous le même nom."
+                              "\n\nDès que le fichier est traité, "
+                              "\nl'affectation des OTPs peut être lancée.")
             else:
-                info_text += "\n\nAucun homonyme n'est trouvé parmi les auteurs dans les effectifs."
-                info_text += "\n\nL'affectation des OTPs peut être lancée."
+                info_text += ("\n\nAucun homonyme n'est trouvé parmi "
+                              "les auteurs dans les effectifs."
+                              "\n\nL'affectation des OTPs peut être lancée.")
             messagebox.showinfo(info_title, info_text)
 
         else:
             warning_title = "!!! ATTENTION : fichier manquant !!!"
-            warning_text  = "Le fichier contenant le croisement auteurs-effectifs "
-            warning_text += f"de l'année {year_select} n'est pas disponible."
-            warning_text += "\n1- Effectuez d'abord le croisement pour cette année."
-            warning_text += "\n2- Puis relancez la résolution des homonymies pour cette année."
+            warning_text  = ("Le fichier contenant le croisement auteurs-effectifs "
+                             f"de l'année {year_select} n'est pas disponible."
+                             "\n1- Effectuez d'abord le croisement pour cette année."
+                             "\n2- Puis relancez la résolution des homonymies pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
     ask_title = "- Confirmation de l'étape de résolution des homonymies -"
-    ask_text  = "La création du fichier pour cette résolution "
-    ask_text += "a été lancée pour l'année {year_select}."
-    ask_text += "\n\nContinuer ?"
+    ask_text  = ("La création du fichier pour cette résolution "
+                 "a été lancée pour l'année {year_select}."
+                 "\n\nContinuer ?")
     answer    = messagebox.askokcancel(ask_title, ask_text)
     if answer:
         homonymes_status = os.path.exists(homonymes_file_path)
@@ -317,21 +346,21 @@ def _launch_resolution_homonymies_try(institute,
             _resolution_homonymies_try()
         else:
             ask_title = "- Reconstruction de la résolution des homonymes -"
-            ask_text  = "Le fichier pour la résolution des homonymies "
-            ask_text += f"de l'année {year_select} est déjà disponible."
-            ask_text += "\n\nReconstruire ce fichier ?"
+            ask_text  = ("Le fichier pour la résolution des homonymies "
+                         f"de l'année {year_select} est déjà disponible."
+                         "\n\nReconstruire ce fichier ?")
             answer_1  = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:
                 _resolution_homonymies_try()
             else:
                 info_title = "- Information -"
-                info_text  = "Le fichier pour la résolution des homonymies "
-                info_text += f"de l'année {year_select} dejà disponible est conservé."
+                info_text  = ("Le fichier pour la résolution des homonymies "
+                              f"de l'année {year_select} dejà disponible est conservé.")
                 messagebox.showinfo(info_title, info_text)
     else:
         info_title = "- Information -"
-        info_text = "La création du fichier pour la résolution "
-        info_text += f"des homonymies de l'année {year_select} est annulée."
+        info_text = ("La création du fichier pour la résolution "
+                     f"des homonymies de l'année {year_select} est annulée.")
         messagebox.showinfo(info_title, info_text)
 
 
@@ -348,35 +377,37 @@ def _launch_add_otp_try(institute,
         if os.path.isfile(homonymes_file_path):
             end_message = save_homonyms(institute, org_tup, bibliometer_path, year_select)
             print('\n',end_message)
-            end_message = add_otp(institute, org_tup, homonymes_file_path, otp_path, otp_file_base_alias)
+            end_message = add_otp(institute, org_tup, homonymes_file_path,
+                                  otp_path, otp_file_base_alias)
             print(end_message)
             end_message = set_saved_otps(institute, org_tup, bibliometer_path, year_select)
             print(end_message)
             info_title = "- Information -"
-            info_text  = f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
-            info_text += f"ont été créés dans le dossier : \n\n'{otp_path}' "
-            info_text += "\n\n1- Ouvrez le fichier du département ad-hoc, "
-            info_text += "\n2- Attribuez manuellement à chacune des publications un OTP, "
-            info_text += "\n3- Sauvegardez le fichier en ajoutant à son nom '_ok'."
-            info_text += "\n\nDès que les fichiers de tous les départements sont traités, "
-            info_text += f"\nla liste consolidée des publications de l'année {year_select} peut être créée."
+            info_text  = (f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
+                          f"ont été créés dans le dossier : \n\n'{otp_path}' "
+                          "\n\n1- Ouvrez le fichier du département ad-hoc, "
+                          "\n2- Attribuez manuellement à chacune des publications un OTP, "
+                          "\n3- Sauvegardez le fichier en ajoutant à son nom '_ok'."
+                          "\n\nDès que les fichiers de tous les départements "
+                          "sont traités, la liste consolidée des publications "
+                          f"de l'année {year_select} peut être créée.")
             messagebox.showinfo(info_title, info_text)
 
         else:
             warning_title = "!!! ATTENTION : fichier manquant !!!"
-            warning_text  = "Le fichier contenant la résolution des homonymies "
-            warning_text += f"de l'année {year_select} n'est pas disponible."
-            warning_text += "\n1- Effectuez la résolution des homonymies pour cette année."
-            warning_text += "\n2- Relancez l'attribution des OTPs pour cette année."
+            warning_text  = ("Le fichier contenant la résolution des homonymies "
+                             f"de l'année {year_select} n'est pas disponible."
+                             "\n1- Effectuez la résolution des homonymies pour cette année."
+                             "\n2- Relancez l'attribution des OTPs pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
     # Getting institute parameters
     dpt_label_list = list(org_tup[1].keys())
 
     ask_title = "- Confirmation de l'étape d'attribution des OTPs -"
-    ask_text  = "La création des fichiers pour cette attribution "
-    ask_text += f"a été lancée pour l'année {year_select}."
-    ask_text += "\n\nContinuer ?"
+    ask_text  = ("La création des fichiers pour cette attribution "
+                 f"a été lancée pour l'année {year_select}."
+                 "\n\nContinuer ?")
     answer    = messagebox.askokcancel(ask_title, ask_text)
     if answer:
         otp_path_status = os.path.exists(otp_path)
@@ -390,24 +421,24 @@ def _launch_add_otp_try(institute,
                 _add_otp_try()
             else:
                 ask_title = "- Reconstruction de l'attribution des OTPs -"
-                ask_text  = "Les fichiers pour l'attribution des OTPs "
-                ask_text += f"de l'année {year_select} sont déjà disponibles."
-                ask_text += "\n\nReconstruire ces fichiers ?"
+                ask_text  = ("Les fichiers pour l'attribution des OTPs "
+                             f"de l'année {year_select} sont déjà disponibles."
+                             "\n\nReconstruire ces fichiers ?")
                 answer_1  = messagebox.askokcancel(ask_title, ask_text)
                 if answer_1:
                     _add_otp_try()
                 else:
                     info_title = "- Information -"
-                    info_text  = "Les fichiers pour l'attribution des OTPs "
-                    info_text += f"de l'année {year_select} dejà disponibles sont conservés."
+                    info_text  = ("Les fichiers pour l'attribution des OTPs "
+                                  f"de l'année {year_select} dejà disponibles sont conservés.")
                     messagebox.showinfo(info_title, info_text)
         else:
             os.mkdir(otp_path)
             _add_otp_try()
     else:
         info_title = "- Information -"
-        info_text = "La création des fichiers pour l'attribution des OTPs "
-        info_text += f"de l'année {year_select} est annulée."
+        info_text = ("La création des fichiers pour l'attribution des OTPs "
+                     f"de l'année {year_select} est annulée.")
         messagebox.showinfo(info_title, info_text)
 
 
@@ -429,54 +460,64 @@ def _launch_pub_list_conso_try(institute,
 
     def _consolidate_pub_list():
         if os.path.isdir(otp_path) and os.listdir(otp_path):
-            end_message, split_ratio, if_database_complete = consolidate_pub_list(institute, org_tup,
-                                                                                  bibliometer_path, datatype,
-                                                                                  otp_path, pub_list_path,
-                                                                                  pub_list_file_path, otp_file_base_alias,
-                                                                                  year_select)
+            conso_tup = consolidate_pub_list(institute, org_tup,
+                                             bibliometer_path, datatype,
+                                             otp_path, pub_list_path,
+                                             pub_list_file_path, otp_file_base_alias,
+                                             year_select)
+            end_message, split_ratio, if_database_complete = (conso_tup[0], conso_tup[1],
+                                                              conso_tup[2])
             print(end_message)
             end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
             print('\n',end_message)
             info_title = "- Information -"
-            info_text  = f"La liste consolidée des publications de l'année {year_select} "
-            info_text += f"a été créée dans le dossier :\n\n '{pub_list_path}' "
-            info_text += f"\n\nsous le nom :   '{pub_list_file_alias}'."
-            info_text += "\n\nLes IFs disponibles ont été automatiquement attribués."
+            info_text  = (f"La liste consolidée des publications de l'année {year_select} "
+                          f"a été créée dans le dossier :\n\n '{pub_list_path}' "
+                          f"\n\nsous le nom :   '{pub_list_file_alias}'."
+                          "\n\nLes IFs disponibles ont été automatiquement attribués.")
             if if_database_complete:
-                info_text += "\n\nLa base de données des facteurs d'impact étant complète, "
-                info_text += "les listes des journaux avec IFs ou ISSNs inconnus sont vides."
+                info_text += ("\n\nLa base de données des facteurs d'impact étant complète, "
+                              "les listes des journaux avec IFs ou ISSNs inconnus sont vides.")
             else:
-                info_text += "\n\nAttention, les listes des journaux avec IFs ou ISSNs inconnus "
-                info_text += "ont été créées dans le même dossier sous les noms :"
-                info_text += f"\n\n '{year_missing_aliases[0]}' "
-                info_text += f"\n\n '{year_missing_aliases[1]}' "
-                info_text += "\n\n Ces fichiers peuvent être modifiés pour compléter la base de donnée des IFs :"
-                info_text += "\n\n1- Ouvrez chacun de ces fichiers ;"
-                info_text += "\n2- Complétez manuellement les IFs inconnus ou les ISSNs et IFs inconnus, selon le fichier - "
-                info_text += "\n       Attention : VIRGULE pour le séparateur décimal des IFS ;"
-                info_text += "\n3- Puis sauvegardez les fichiers sous le même nom ;"
-                info_text += "\n4- Pour prendre en compte ces compléments, allez à la page de mise à jour des IFs."
-            info_text += f"\n\nPar ailleurs, la liste consolidée des publications a été décomposée à {split_ratio} % "
-            info_text += "en trois fichiers disponibles dans le même dossier correspondant aux différentes "
-            info_text += "classes de documents (les classes n'étant pas exhaustives, la décomposition peut être partielle)."
-            info_text += "\n\nEnfin, la concaténation des listes consolidées des publications "
-            info_text += f"disponibles, a été créée dans le dossier :\n\n '{bdd_multi_annuelle_folder_alias}' "
-            info_text += "\n\nsous un nom vous identifiant ainsi que la liste des années prises en compte "
-            info_text += "et caractérisé par la date et l'heure de la création."
+                info_text += ("\n\nAttention, les listes des journaux avec IFs ou ISSNs inconnus "
+                              "ont été créées dans le même dossier sous les noms :"
+                              f"\n\n '{year_missing_aliases[0]}' "
+                              f"\n\n '{year_missing_aliases[1]}' "
+                              "\n\n Ces fichiers peuvent être modifiés pour compléter "
+                              "la base de donnée des IFs :"
+                              "\n\n1- Ouvrez chacun de ces fichiers ;"
+                              "\n2- Complétez manuellement les IFs inconnus ou les ISSNs "
+                              "et IFs inconnus, selon le fichier - "
+                              "\n       Attention : VIRGULE pour le séparateur décimal des IFS ;"
+                              "\n3- Puis sauvegardez les fichiers sous le même nom ;"
+                              "\n4- Pour prendre en compte ces compléments, allez à la page "
+                              "de mise à jour des IFs.")
+            info_text += ("\n\nPar ailleurs, la liste consolidée des publications "
+                          f"a été décomposée à {split_ratio} % "
+                          "en trois fichiers disponibles dans le même dossier "
+                          "correspondant aux différentes "
+                          "classes de documents (les classes n'étant pas exhaustives, "
+                          "la décomposition peut être partielle)."
+                          "\n\nEnfin, la concaténation des listes consolidées des publications "
+                          "disponibles, a été créée dans le dossier :"
+                          f"\n\n '{bdd_multi_annuelle_folder_alias}' "
+                          "\n\nsous un nom vous identifiant ainsi que la liste des années "
+                          "prises en compte et caractérisé par la date et l'heure de la création.")
             messagebox.showinfo(info_title, info_text)
 
         else:
             warning_title = "!!! ATTENTION : fichiers manquants !!!"
-            warning_text  = "Les fichiers d'attribution des OTPs "
-            warning_text += f"de l'année {year_select} ne sont pas disponibles."
-            warning_text += "\n1- Effectuez l'attribution des OTPs pour cette année."
-            warning_text += "\n2- Relancez la consolidation de la liste des publications pour cette année."
+            warning_text  = ("Les fichiers d'attribution des OTPs "
+                             f"de l'année {year_select} ne sont pas disponibles."
+                             "\n1- Effectuez l'attribution des OTPs pour cette année."
+                             "\n2- Relancez la consolidation de la liste des publications "
+                             "pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
     ask_title = "- Confirmation de l'étape de consolidation de la liste des publications -"
-    ask_text  = "La création du fichier de la liste consolidée des publications "
-    ask_text += f"a été lancée pour l'année {year_select}."
-    ask_text += "\n\nContinuer ?"
+    ask_text  = ("La création du fichier de la liste consolidée des publications "
+                 f"a été lancée pour l'année {year_select}."
+                 "\n\nContinuer ?")
     answer    = messagebox.askokcancel(ask_title, ask_text)
     if answer:
         pub_list_status = os.path.exists(pub_list_file_path)
@@ -484,21 +525,21 @@ def _launch_pub_list_conso_try(institute,
             _consolidate_pub_list()
         else:
             ask_title = "- Reconstruction de la liste consolidée des publications -"
-            ask_text  = "Le fichier de la liste consolidée des publications "
-            ask_text += "de l'année {year_select} est déjà disponible."
-            ask_text += "\n\nReconstruire ce fichier ?"
+            ask_text  = ("Le fichier de la liste consolidée des publications "
+                         "de l'année {year_select} est déjà disponible."
+                         "\n\nReconstruire ce fichier ?")
             answer_1  = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:
                 _consolidate_pub_list()
             else:
                 info_title = "- Information -"
-                info_text  = "Le fichier de la liste consolidée des publications "
-                info_text += f"de l'année {year_select} dejà disponible est conservé."
+                info_text  = ("Le fichier de la liste consolidée des publications "
+                              f"de l'année {year_select} dejà disponible est conservé.")
                 messagebox.showinfo(info_title, info_text)
     else:
         info_title = "- Information -"
-        info_text = "La création du fichier de la liste consolidée des publications "
-        info_text += f"de l'année {year_select} est annulée."
+        info_text = ("La création du fichier de la liste consolidée des publications "
+                     f"de l'année {year_select} est annulée.")
         messagebox.showinfo(info_title, info_text)
 
 
@@ -543,19 +584,28 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
     # Setting useful local variables for positions modification
     # numbers are reference values in mm for reference screen
-    eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,   master.width_sf_min)           #14
-    eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
-    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
-    eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
+    eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,
+                                         master.width_sf_min)           #14
+    eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1,
+                                         master.width_sf_min)
+    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE,
+                                         master.width_sf_min)
+    eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3,
+                                         master.width_sf_min)
 
-    etape_label_pos_x        = mm_to_px(gg.REF_ETAPE_POS_X_MM * master.width_sf_mm, gg.PPI)        #10
+    etape_label_pos_x        = mm_to_px(gg.REF_ETAPE_POS_X_MM * master.width_sf_mm,
+                                        gg.PPI)        #10
     etape_label_pos_y_list   = [mm_to_px( y * master.height_sf_mm, gg.PPI)
                                 for y in gg.REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
-    etape_button_dx          = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * master.width_sf_mm, gg.PPI)       #10
-    etape_button_dy          = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * master.height_sf_mm, gg.PPI)      #5
+    etape_button_dx          = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * master.width_sf_mm,
+                                        gg.PPI)       #10
+    etape_button_dy          = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * master.height_sf_mm,
+                                        gg.PPI)      #5
 
-    year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm,  gg.PPI)    #10
-    year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)    #26
+    year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm,
+                                        gg.PPI)    #10
+    year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm,
+                                        gg.PPI)    #26
     dy_year                  = -6
 
     # Setting useful aliases
@@ -586,7 +636,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     org_tup = set_org_params(institute, bibliometer_path)
 
     # Creating and setting widgets for page title and exit button
-    set_page_title(self, master, page_name, institute)
+    set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
 
     # - Etapes labels
@@ -670,7 +720,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     button_croisement = tk.Button(self,
                                   text = gg.TEXT_CROISEMENT,
                                   font = font_croisement,
-                                  command = lambda: _launch_recursive_year_search())
+                                  command = _launch_recursive_year_search)
 
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self,
@@ -719,7 +769,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     button_homonymes = tk.Button(self,
                                      text = gg.TEXT_HOMONYMES,
                                      font = font_homonymes,
-                                     command = lambda: _launch_resolution_homonymies())
+                                     command = _launch_resolution_homonymies)
     etape_2 = etapes[1]
     place_bellow(etape_2,
                  button_homonymes,
@@ -756,7 +806,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     button_otp = tk.Button(self,
                            text = gg.TEXT_OTP,
                            font = font_otp,
-                           command = lambda: _launch_add_otp())
+                           command = _launch_add_otp)
     etape_3 = etapes[2]
     place_bellow(etape_3,
                  button_otp,
@@ -802,7 +852,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     button_finale = tk.Button(self,
                               text = gg.TEXT_PUB_CONSO,
                               font = font_finale,
-                              command = lambda: _launch_pub_list_conso())
+                              command = _launch_pub_list_conso)
 
     etape_4 = etapes[3]
 
