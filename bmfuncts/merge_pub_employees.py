@@ -362,14 +362,14 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, pub_last_col, 
     # with the same columns names as the dataframe to update
     drop_df = pd.DataFrame(columns = list(pub_df.columns))
 
-    # Searching for the outliers in the dataframe to update by lastname and initiales
+    # Searching for the outliers in the dataframe to update by lastname and initials
     for pub_row_num in range(len(pub_df)):
         pub_lastname  = pub_df[pub_last_col][pub_row_num]
-        pub_initiales = pub_df[pub_initials_col][pub_row_num]
+        pub_initials = pub_df[pub_initials_col][pub_row_num]
         for outliers_row_num in range(len(outliers_df)):
             outliers_lastname = outliers_df[outliers_lastname_col_alias][outliers_row_num]
             outliers_initials = outliers_df[outliers_initials_col_alias][outliers_row_num]
-            if pub_lastname == outliers_lastname and pub_initiales == outliers_initials:
+            if pub_lastname == outliers_lastname and pub_initials == outliers_initials:
                 # Setting the row to drop as a dataframe
                 row_to_drop_df = pub_df.loc[pub_row_num].to_frame().T
                 # Appending the row to drop to the dataframe that will contain all the rows to drop
@@ -399,10 +399,11 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     """
 
     # Internal functions
-    def _retain_firstname_initiales(row):
+
+    def _retain_firstname_initials(row):
         row = row.replace('-',' ')
-        initiales = ''.join(row.split(' '))
-        return initiales
+        initials = ''.join(row.split(' '))
+        return initials
 
     def _split_lastname_firstname(row, digits_min = 4):
         names_list = row.split()
@@ -415,25 +416,24 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                 first_names_list = first_names_list[::-1]
                 last_names_list  = last_names_list[:name_idx] + last_names_list[(name_idx + 1):]
 
-        first_name_initiales = _retain_firstname_initiales((' ').join(first_names_list))
+        first_name_initials = _retain_firstname_initials((' ').join(first_names_list))
         last_name = (' ').join(last_names_list)
-        return (last_name, first_name_initiales)
+        return (last_name, first_name_initials)
 
     def _build_filt_authors_inst(inst_col_list):
-        """The function `_build_filt_authors_inst` builds the `filt_authors_inst` filter
+        """The function `_build_filt_authors_inst` builds the `filt_authors_inst_` filter
         to select the authors by their institution.
-        Returns a filter, as a Pandas Serie, with:
+        Returns a filter, as a Pandas Series, with:
                 - true if any institution in the institution list is equal
                 to the author institution;
                 - false otherwise.
         """
-
+        first_inst_col = inst_col_list[0]
+        filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1
         for inst_idx, inst_col in enumerate(inst_col_list):
-            if inst_idx==0:
-                filt_authors_inst = df_authorsinst_authors[inst_col] == 1
-            else:
-                filt_authors_inst = filt_authors_inst | (df_authorsinst_authors[inst_col] == 1)
-        return filt_authors_inst
+            if inst_idx != 0:
+                filt_authors_inst_ = filt_authors_inst_ | (df_authorsinst_authors[inst_col] == 1)
+        return filt_authors_inst_
 
     # Setting useful col list
     bp_auth_col_list  = bp.COL_NAMES['authors']
@@ -441,7 +441,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     bp_auth_idx_alias = bp_auth_col_list[1]
     bp_co_auth_alias  = bp_auth_col_list[2]
 
-    # Setting usefull aliases
+    # Setting useful aliases
     articles_item_alias   = bp.PARSING_ITEMS_LIST[0]
     authors_item_alias    = bp.PARSING_ITEMS_LIST[1]
     auth_inst_item_alias  = bp.PARSING_ITEMS_LIST[5]
@@ -514,8 +514,8 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     inst_merged_df[[col1_out, col2_out]] = pd.DataFrame(inst_merged_df[col_in].tolist())
 
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
-    col_in = bm_colnames_alias['Full_name'] #Last_name + firstname initials
-    inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))
+    col_in = bm_colnames_alias['Full_name'] # Last_name + firstname initials
+    inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
 
     # Checking author name spelling and correct it then replacing author names
     # resulting from publication metadata errors
@@ -539,7 +539,7 @@ def _add_author_job_type(in_path, out_path):
         containing the job type for each author
     of each publication listed in an EXCEL file and saves it.
     The job type is get from the employee information available
-    in 3 particular columns wich names
+    in 3 particular columns which names
     are defined by the global 'EMPLOYEES_USEFUL_COLS'
     at keys 'category', 'status' and 'qualification'.
     The name of the new column is defined by

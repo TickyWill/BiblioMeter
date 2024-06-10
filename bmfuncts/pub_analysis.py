@@ -153,7 +153,7 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, books_kpi_dict,
         nb_publications = round(nb_chapters + nb_articles_communications)
 
         # Completing the KPIs dict with IF independent KPIs of department 'dept'
-        dept_kpi_dict = {k:v for k,v in books_kpi_dict[dept].items()}
+        dept_kpi_dict = dict(books_kpi_dict[dept].items())
         dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[1]]  = nb_publications
         dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[6]]  = nb_journals_proceedings
         dept_kpi_dict[pg.KPI_KEYS_ORDER_DICT[7]]  = nb_journals
@@ -177,8 +177,8 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, books_kpi_dict,
         # Computing IF useful values
         if_moyen = 0
         if nb_articles:
-            if_moyen = sum([x[0]*x[1] for x in zip(dept_if_df[if_analysis_col_new],
-                                                   dept_if_df[articles_nb_col_alias])])/nb_articles
+            if_moyen = sum(x[0]*x[1] for x in zip(dept_if_df[if_analysis_col_new],
+                                                   dept_if_df[articles_nb_col_alias]))/nb_articles
         if_max   = np.max(dept_if_df[if_analysis_col_new])
         if_min   = np.min(dept_if_df[if_analysis_col_new])
 
@@ -247,7 +247,7 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
     for dept in [institute] + depts_col_list:
 
         # Building sub dict of KPIs dict for 'dept'
-        dept_kpi_dict = {k:v for k,v in kpi_dict[dept].items()}
+        dept_kpi_dict = dict(kpi_dict[dept].items())
 
         # Building sub dict of publications KPIs of 'dept' in keys order specified by 'ordered_keys'
         ordered_keys  = [v for k,v in pg.KPI_KEYS_ORDER_DICT.items() if k in range(1,14)]
@@ -265,7 +265,7 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         dept_pub_df.rename(columns = {"index":corpus_year_row_alias,}, inplace = True)
 
         # Building sub dict of IFs KPIs of 'dept' in keys order specified by 'ordered_keys'
-        part_dept_if_dict = {k:v for k,v in dept_kpi_dict[if_key].items()}
+        part_dept_if_dict = dict(dept_kpi_dict[if_key].items())
         dept_if_dict = dict({pg.KPI_KEYS_ORDER_DICT[14] : if_key}, **part_dept_if_dict)
 
         # Building 'dept_if_df' using keys of 'dept_if_dict' as indexes
@@ -317,8 +317,9 @@ def _create_if_barchart(corpus_year, dept, if_df, if_col, kpi_dict,
     """
 
     # internal functions
-    _short_journal_name = lambda x: (x[:max_journal_short_name] + '...'
-                                     if len(x) > max_journal_short_name else x)
+    def _short_journal_name(max_journal_short_name):
+        return lambda x: (x[:max_journal_short_name] + '...'
+                          if len(x) > max_journal_short_name else x)
 
     # Setting new col names and related parameters
     journal_short_col_alias = pg.COL_NAMES_IF_ANALYSIS['journal_short']
@@ -327,7 +328,8 @@ def _create_if_barchart(corpus_year, dept, if_df, if_col, kpi_dict,
 
     # Creating columns with shortnames of journals for barchart plots
     plot_df = if_df.copy()
-    plot_df[journal_short_col_alias] = plot_df[journal_col_alias].apply(_short_journal_name)
+    plot_df[journal_short_col_alias] = plot_df[journal_col_alias].\
+        apply(_short_journal_name(max_journal_short_name))
 
     # Setting useful values for barchart plot and title
     dept_kpi_dict = kpi_dict[dept]
@@ -496,8 +498,11 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
             analysis_df = pd.concat([analysis_df, issn_df], ignore_index=True)
         return analysis_df
 
-    _capwords_journal_col = lambda row: journal_capwords(row[journal_col_alias])
-    _replace_no_if = lambda x: x if x  not in (unknown_alias, pg.NOT_AVAILABLE_IF) else 0
+    def _capwords_journal_col(journal_col):
+        return lambda row: journal_capwords(row[journal_col])
+
+    def _replace_no_if(no_if1, no_if2):
+        return lambda x: x if x not in (no_if1, no_if2) else 0
 
     # Setting useful aliases
     unknown_alias            = bp.UNKNOWN
@@ -586,9 +591,11 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     analysis_df = _unique_journal_name(init_analysis_df)
     analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias]
     analysis_df[journal_norm_col_alias] = analysis_df[journal_norm_col_alias].map(journal_norm_dict)
-    analysis_df[journal_col_alias]      = analysis_df.apply(_capwords_journal_col, axis = 1)
+    analysis_df[journal_col_alias]      = analysis_df.\
+        apply(_capwords_journal_col(journal_col_alias), axis = 1)
     for if_col, _ in if_col_dict.items():
-        analysis_df[if_col] = analysis_df[if_col].apply(_replace_no_if)
+        analysis_df[if_col] = analysis_df[if_col].\
+            apply(_replace_no_if(unknown_alias, pg.NOT_AVAILABLE_IF))
 
     # Building the data resulting from IFs analysis and saving them as xlsx files
     kpi_dict, if_analysis_col_new = _build_analysis_if_data(institute, org_tup, analysis_df,
@@ -727,8 +734,8 @@ def _create_kw_cloud(institute, year, kw_type, kw_analysis_folder_path, usecols,
         # Getting the dataframe of keywords with their weight
         dept_xlsx_file_path = kw_analysis_folder_path / Path(f'{dept} {year}-{kw_type}.xlsx')
         dept_kw_df = pd.read_excel(dept_xlsx_file_path)
-        short_kw = lambda x: x[0:kw_length]
-        dept_kw_df[keywords_col_alias] = dept_kw_df[keywords_col_alias].apply(short_kw)
+        dept_kw_df[keywords_col_alias] = dept_kw_df[keywords_col_alias].\
+            apply(lambda x: x[0:kw_length])
 
         # Building the keywords list with each keyword repeated up to its weight
         dept_kw_list = []
@@ -827,10 +834,10 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype, year, verb
         # Building the keywords dataframe for the keywords type 'kw_type'
         # from 'dedup_parsing_dict' dict at 'kw_item_alias' key
         kw_df = dedup_parsing_dict[kw_item_alias]
-        char1_replace = lambda x: x.replace(' ','_').replace('-','_')
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(char1_replace)
-        char2_replace = lambda x: x.replace('_(',';').replace(')','')
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(char2_replace)
+        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].\
+            apply(lambda x: x.replace(' ','_').replace('-','_'))
+        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].\
+            apply(lambda x: x.replace('_(',';').replace(')',''))
         kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.lower())
 
         # Creating keywords-analysis data and saving them as xlsx files

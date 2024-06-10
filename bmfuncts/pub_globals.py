@@ -236,30 +236,30 @@ COL_NAMES_BM = {'Dpts'      : eg.EMPLOYEES_ADD_COLS['dpts_list'],
                 'Homonym'   : COL_NAMES_BONUS['homonym'],
                }
 
-pub_last_name      = 'Nom pub'
-pub_initials       = 'Initiales pub'
-employee_last_name = 'Nom eff'
-employee_initials  = 'Initiales eff'
+PUB_LAST_NAME      = 'Nom pub'
+PUB_INITIALS       = 'Initiales pub'
+EMPLOYEE_LAST_NAME = 'Nom eff'
+EMPLOYEE_INITIALS  = 'Initiales eff'
 
-COL_NAMES_ORTHO = {'last name init': pub_last_name,
-                   'initials init' : pub_initials,
-                   'last name new' : employee_last_name,
-                   'initials new'  : employee_initials,
+COL_NAMES_ORTHO = {'last name init': PUB_LAST_NAME,
+                   'initials init' : PUB_INITIALS,
+                   'last name new' : EMPLOYEE_LAST_NAME,
+                   'initials new'  : EMPLOYEE_INITIALS,
                   }
 
 
-COL_NAMES_COMPL = {'last name init'   : pub_last_name,
-                   'initials init'    : pub_initials,
+COL_NAMES_COMPL = {'last name init'   : PUB_LAST_NAME,
+                   'initials init'    : PUB_INITIALS,
                    'matricule'        : 'Matricule',
-                   'last name new'    : employee_last_name,
-                   'initials new'     : employee_initials,
+                   'last name new'    : EMPLOYEE_LAST_NAME,
+                   'initials new'     : EMPLOYEE_INITIALS,
                    'dept'             : 'Dept',
                    'publication year' : 'Année pub',
                    'hash id'          : 'Hash_id',
                   }
 
-COL_NAMES_EXT = {'last name'   : pub_last_name,
-                 'initials'    : pub_initials,
+COL_NAMES_EXT = {'last name'   : PUB_LAST_NAME,
+                 'initials'    : PUB_INITIALS,
                 }
 
 
@@ -270,8 +270,8 @@ SHEET_NAMES_ORPHAN = {"to replace"    : "Spécifique par publi",
                      }
 
 
-COL_NAMES_PUB_NAMES = {'last name' : pub_last_name,
-                       'initials'  : pub_initials,
+COL_NAMES_PUB_NAMES = {'last name' : PUB_LAST_NAME,
+                       'initials'  : PUB_INITIALS,
                       }
 
 EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_BONUS['homonym'],

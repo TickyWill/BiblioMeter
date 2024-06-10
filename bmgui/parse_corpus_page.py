@@ -39,9 +39,11 @@ class CheckBoxCorpuses:
         - Scopus rawdata/parsing dispo
     """
 
-    def __init__(self, parent, master, year, wos_r, wos_p, scopus_r, scopus_p, concat, *agrs, **kargs):
+    def __init__(self, parent, master, year, wos_r, wos_p,
+                 scopus_r, scopus_p, concat):
 
-        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * master.width_sf_mm, gg.PPI)
+        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * master.width_sf_mm,
+                                              gg.PPI)
         font = tkFont.Font(family = gg.FONT_NAME, size = font_size(11, master.width_sf_min))
         self.lab = tk.Label(parent,
                             text = 'Année ' + year,
@@ -494,7 +496,7 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
             if answer_2: # Alors on effectue la synthèse
                 _deduplicate_corpus_parsing()
                 info_title = "Information"
-                info_text = "La synthèse pour l'année {corpus_year} a été reconstruite."
+                info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."
                 messagebox.showinfo(info_title, info_text)
             else:
                 info_title = "Information"

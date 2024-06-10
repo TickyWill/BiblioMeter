@@ -3,7 +3,6 @@ and the consolidated publications lists. """
 
 __all__ = ['create_update_ifs']
 
-
 # Standard library imports
 import os
 import tkinter as tk
@@ -49,6 +48,7 @@ def _launch_update_if_db(institute,
         # Mise à jour de la base de données des IFs
         _, if_years_list = update_inst_if_database(institute, org_tup,
                                                    bibliometer_path, corpus_years_list)
+        print("IFs database updated")
         info_title = "- Information -"
         info_text  = ("La mise à jour de la base de données des IFs a été effectuée "
                       f"pour les années  {if_years_list}."
@@ -58,6 +58,7 @@ def _launch_update_if_db(institute,
         messagebox.showinfo(info_title, info_text)
         update_status = True
     else:
+        print("IFs database update dropped")
         # Arrêt de la procédure
         info_title = "- Information -"
         info_text  = "La mise à jour de la base de données des IFs est abandonnée."
@@ -87,7 +88,7 @@ def _launch_update_pub_if(institute,
         missing_if_path   = year_pub_list_folder_path / Path(corpus_year + missing_if_base_alias)
         missing_issn_path = year_pub_list_folder_path / Path(corpus_year + missing_issn_base_alias)
 
-        # Cheking availability of pub_list file of the year
+        # Checking availability of pub_list file of the year
         out_file_status = os.path.exists(out_file_path)
         if out_file_status:
             # Updating Impact Factors and saving new consolidated list of publications
@@ -164,17 +165,18 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     """
 
     # Internal functions
-    def _launch_update_if_db_try(if_db_update_status):
+    def _launch_update_if_db_try():
+        print("\nUpdate of IFs database launched")
+        new_if_db_update_status = if_db_update_status
         if not if_db_update_status:
             # Checking availability of IFs database file
             if_db_file_status = os.path.exists(if_db_path)
             if if_db_file_status:
-                print("Update of IFs database launched")
-                if_db_update_status = _launch_update_if_db(institute,
-                                                           org_tup,
-                                                           bibliometer_path,
-                                                           master.years_list,
-                                                           pub_list_folder_path)
+                new_if_db_update_status = _launch_update_if_db(institute,
+                                                               org_tup,
+                                                               bibliometer_path,
+                                                               master.years_list,
+                                                               pub_list_folder_path)
             else:
                 warning_title = "!!! ATTENTION : fichier absent !!!"
                 warning_text  = (f"Le fichier {if_file_name_alias} de la base de données des IFs "
@@ -186,9 +188,11 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                  f"\n {if_root_path} ;"
                                  "\n2- Puis relancez la mise à jour de la base de données des IFs.")
                 messagebox.showwarning(warning_title, warning_text)
-                if_db_update_status = False
-        else:
-            print("IFs database already updated")
+                new_if_db_update_status = False
+                print("Update of IFs database aborted because of IFs database file missing")
+
+        # Setting status of IFs database update
+        globals()['if_db_update_status'] = new_if_db_update_status
 
     def _missing_pub_file_year_check():
         if_tup = _launch_update_pub_if(institute,
@@ -202,6 +206,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                        missing_issn_base_alias)
         missing_pub_file_year, if_database_complete = if_tup[0], if_tup[1]
         if not missing_pub_file_year:
+            print("IFs updated in all consolidated lists of publications")
             concatenate_pub_lists(institute, org_tup, bibliometer_path, master.years_list)
             print("Consolidated lists of publications concatenated after IFs update")
             info_title = '- Information -'
@@ -228,16 +233,18 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             messagebox.showinfo(info_title, info_text)
 
         else:
+            print("IFs updated in some consolidated lists of publications"
+                  "but interrupted because of missing of a consolidated list file")
             info_title = '- Information -'
-            info_text  = ("La mise à jour des IFs dans les listes consolidées "
-                          "a été interrompue par l'absence "
+            info_text  = ("La mise à jour des IFs a été effectuée dans une partie des listes "
+                          "consolidées existantes mais a été interrompue par l'absence "
                           "de la liste consolidée des publications du corpus :"
                           f" {missing_pub_file_year}")
             messagebox.showinfo(info_title, info_text)
 
-    def _launch_update_pub_if_try(if_db_update_status):
+    def _launch_update_pub_if_try():
+        print("\nUpdate of IFs in consolidated lists of publications launched")
         if if_db_update_status:
-            print("Update of IFs in consolidated lists of publications launched")
             _missing_pub_file_year_check()
         else:
             # Confirmation du lancement de la fonction de MAJ des IFs
@@ -256,10 +263,13 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             if answer:
                 _missing_pub_file_year_check()
             else:
+                print("IFs update in consolidated lists of publications dropped")
                 info_title = '- Information -'
-                info_text  = ("La lmise à jour des listes consolidées "
-                             "des publications est abandonnée.")
+                info_text  = ("La mise à jour des listes consolidées "
+                              "des publications est abandonnée.")
                 messagebox.showinfo(info_title, info_text)
+        # Re-initializing status of IFs database update
+        globals()['if_db_update_status'] = False
 
     # Setting effective font sizes and positions (numbers are reference values in mm)
     eff_etape_font_size   = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           #14
@@ -307,9 +317,9 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     # Initializing status of IFs database update
     if_db_update_status = False
 
-    ################## Mise à jour de la base de données des IFs
+    # **************** Mise à jour de la base de données des IFs
 
-    ### Titre
+    # ** Titre
     if_db_update_font = tkFont.Font(family = gg.FONT_NAME,
                                  size = eff_etape_font_size,
                                  weight = 'bold')
@@ -322,7 +332,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     if_db_update_label.place(x = if_db_update_x_pos_px,
                              y = if_db_update_y_pos_px)
 
-    ### Explication
+    # ** Explication
     help_label_font = tkFont.Font(family = gg.FONT_NAME,
                                   size = eff_help_font_size)
     help_label = tk.Label(self,
@@ -332,22 +342,21 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     place_bellow(if_db_update_label,
                  help_label)
 
-    ### Bouton pour lancer l'étape
+    # ** Bouton pour lancer l'étape
     if_db_update_launch_font = tkFont.Font(family = gg.FONT_NAME,
                                            size = eff_launch_font_size)
     if_db_update_launch_button = tk.Button(self,
                                            text = gg.TEXT_MAJ_BDD_IF,
                                            font = if_db_update_launch_font,
-                                           command = lambda :
-                                           (_launch_update_if_db_try(if_db_update_status)))
+                                           command = _launch_update_if_db_try)
     place_bellow(help_label,
                  if_db_update_launch_button,
                  dx = launch_dx_px,
                  dy = launch_dy_px)
 
-    ################## Mise à jour des Ifs dans les listes consolidées
+    # **************** Mise à jour des Ifs dans les listes consolidées
 
-    ### Titre
+    # ** Titre
     update_if_label_font = tkFont.Font(family = gg.FONT_NAME,
                                        size = eff_etape_font_size,
                                        weight = 'bold')
@@ -360,7 +369,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                  dx = update_if_label_dx_px,
                  dy = update_if_label_dy_px)
 
-    ### Explication de l'étape
+    # ** Explication de l'étape
     help_label_font = tkFont.Font(family = gg.FONT_NAME,
                                   size = eff_help_font_size)
     help_label = tk.Label(self,
@@ -376,8 +385,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     button_update_if = tk.Button(self,
                                  text = gg.TEXT_MAJ_PUB_IF,
                                  font = button_update_if_font,
-                                 command = lambda :
-                                 (_launch_update_pub_if_try(if_db_update_status)))
+                                 command = _launch_update_pub_if_try)
     place_bellow(help_label,
                  button_update_if,
                  dx = launch_dx_px,

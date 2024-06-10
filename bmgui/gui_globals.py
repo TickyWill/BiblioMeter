@@ -251,10 +251,10 @@ REF_CHECK_BOXES_SEP_SPACE = 25    # 5
 PAGEBUTTON_HEIGHT_PX = 50         # 50
 
 # Setting label for each gui page
-PAGES_LABELS = {'parse_corpus_page': "Analyse élémentaire des corpus",
-                'consolidate_corpus_page': "Consolidation annuelle des corpus",
-                'update_if_page': "Mise à jour des facteurs d'impact",
-                'analyze_corpus_page': "KPIs et graphes", }
+PAGES_LABELS = {'ParseCorpusPage': "Analyse élémentaire des corpus",
+                'ConsolidateCorpusPage': "Consolidation annuelle des corpus",
+                'UpdateIfPage': "Mise à jour des facteurs d'impact",
+                'AnalyzeCorpusPage': "KPIs et graphes", }
 
 # *************** MAIN PAGE ***************
 

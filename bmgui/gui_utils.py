@@ -60,10 +60,10 @@ def set_page_title(self, master, page_name, institute, datatype = None):
     self.label.place(x = mid_page_pos_x_px,
                      y = eff_label_pos_y_px,
                      anchor = "center")
-    
+
     if datatype:
         page_sub_title = f"Données {datatype}"
-        
+
         # Creating title widget
         label_font = tkFont.Font(family = gg.FONT_NAME,
                                  size   = int(eff_label_font_size * 0.7))
@@ -73,7 +73,6 @@ def set_page_title(self, master, page_name, institute, datatype = None):
         self.label.place(x = mid_page_pos_x_px,
                          y = eff_label_pos_y_px + dy_px,
                          anchor = "center")
-        
 
 
 def set_exit_button(self, master):

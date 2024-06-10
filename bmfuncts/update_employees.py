@@ -106,12 +106,11 @@ def _add_sheets_to_workbook(file_full_path, df_to_add, sheet_name):
     exists it is overwritten by the new one.
     """
 
-    with pd.ExcelWriter(file_full_path,
+    with pd.ExcelWriter(file_full_path,  # https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
                         engine = 'openpyxl',
                         mode = 'a',
                         if_sheet_exists = 'replace') as writer:
         df_to_add.to_excel(writer, sheet_name = sheet_name, index = False)
-
 
 def _update_months_history(months2add_file_path,
                            one_year_employees_folder_path,
@@ -373,6 +372,10 @@ def _build_year_month_dpt(year_months_file_path):
 
     """
 
+    # Internal functions
+    def _set_tup(month, year):
+        return lambda x: (month, year, x)
+
     # Setting lists of columns
     useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values())
     add_col_list    = list(eg.EMPLOYEES_ADD_COLS.values())
@@ -384,7 +387,6 @@ def _build_year_month_dpt(year_months_file_path):
     matricule_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
     serv_col_alias      = eg.EMPLOYEES_USEFUL_COLS['serv']
 
-
     # Reading the sheets from the excel file as a dict
     # {sheet-name: sheet-content dataframe}
     df_dict = pd.read_excel(year_months_file_path,
@@ -395,22 +397,22 @@ def _build_year_month_dpt(year_months_file_path):
     # list into the dataframe 'df_eff_year'
     list_df_eff_month = []
     for sheet_name,df_eff_month in df_dict.items():
-        month = sheet_name[0:2] # Extraction of the month mm for the sheet name mmyyyy
-        year = sheet_name[2:]   # Extraction of year yyyy for the sheet name mmyyyy
+        month = sheet_name[0:2]  # Extraction of the month mm for the sheet name mmyyyy
+        year = sheet_name[2:]    # Extraction of year yyyy for the sheet name mmyyyy
 
         # For the sheet 'sheet_name' of the dataframe 'df_eff_month'
         # replacing each cell of column 'dpt_col_alias'/'serv_col_alias' that specifies
         # the employee department dpt/service by a tuple (month,year,dpt)/(month,year,serv)
         for col_keep_history in [dpt_col_alias, serv_col_alias]:
-            df_eff_month[col_keep_history] = df_eff_month[col_keep_history].apply(lambda x:
-                                                                                  (month, year, x))
+            df_eff_month[col_keep_history] = df_eff_month[col_keep_history].\
+                                             apply(_set_tup(month, year))
 
         list_df_eff_month.append(df_eff_month)
 
     df_eff_year = pd.concat(list_df_eff_month, axis=0)
 
-    # For each column (except Matricule) aggregating all the information
-    # related to one matriculate as a list without duplicates
+    # Aggregating all the information related to one matriculate
+    # as a list without duplicates, for each column (except 'Matricule')
     df_eff_year_singlemat = df_eff_year.groupby(matricule_col_alias).\
                                                 agg(lambda x :list(dict.fromkeys(x))).\
                                                 reset_index()

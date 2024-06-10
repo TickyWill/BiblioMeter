@@ -264,10 +264,10 @@ class AppMain(tk.Tk):
         AppMain.list_dedup          = []
 
         # Setting pages classes and pages list
-        AppMain.pages = (analyze_corpus_page,
-                          update_if_page,
-                          consolidate_corpus_page,
-                          parse_corpus_page, )
+        AppMain.pages = (AnalyzeCorpusPage,
+                         UpdateIfPage,
+                         ConsolidateCorpusPage,
+                         ParseCorpusPage,)
         AppMain.pages_ordered_list = [x.__name__ for x in AppMain.pages][::-1]
 
         # Getting useful screen sizes and scale factors depending on displays properties
@@ -511,7 +511,8 @@ class PageButton(tk.Frame):
         # Placing widgets for page button
         button.grid(row = 0, column = page_num)
 
-class parse_corpus_page(tk.Frame):
+
+class ParseCorpusPage(tk.Frame):
     """PAGE 1 'Analyse élémentaire des corpus'.
     """
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
@@ -527,7 +528,7 @@ class parse_corpus_page(tk.Frame):
         # Creating and setting widgets for page frame
         create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype)
 
-class consolidate_corpus_page(tk.Frame):
+class ConsolidateCorpusPage(tk.Frame):
     """PAGE 2 'Consolidation annuelle des corpus'.
     """
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
@@ -544,7 +545,7 @@ class consolidate_corpus_page(tk.Frame):
         create_consolidate_corpus(self, master, page_name, institute, bibliometer_path, datatype)
 
 
-class update_if_page(tk.Frame):
+class UpdateIfPage(tk.Frame):
     """PAGE 3 'Mise à jour des IF'.
     """
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
@@ -561,7 +562,7 @@ class update_if_page(tk.Frame):
         create_update_ifs(self, master, page_name, institute, bibliometer_path, datatype)
 
 
-class analyze_corpus_page(tk.Frame):
+class AnalyzeCorpusPage(tk.Frame):
     """PAGE 4 'Analyse des corpus'.
     """
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):

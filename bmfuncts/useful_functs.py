@@ -64,11 +64,17 @@ def check_dedup_parsing_available(bibliometer_path, year):
 
 
 def _get_database_file_path(database_folder_path, database_file_end):
-    """The function Lists the files ending with "database_file_end"
-    present in folder targetted by "database_folder_path".
-    Then it select the most recent one.
+    """The function lists the files ending with "database_file_end"
+    present in the folder targeted by "database_folder_path".
+    Then it selects the most recent one.
+
+    Args:
+        database_folder_path (path): The path to the folder where files
+                                     with names ending with 'database_file_end'
+                                     will be searched.
+        database_file_end (str): Ending of the names of the files to be searched.
     Returns:
-        (path): Path targeting the found and selevcted file.
+        (path): Path targeting the file found and selected.
     """
 
     # Listing the available files ending with database_file_end
@@ -79,7 +85,7 @@ def _get_database_file_path(database_folder_path, database_file_end):
 
     if list_data_base:
         # Selecting the most recent file with raw_extent extension
-        list_data_base.sort(key = lambda x: os.path.getmtime(x), reverse=True)
+        list_data_base.sort(key = os.path.getmtime, reverse = True)
         database_file_path = list_data_base[0]
     else:
         database_file_path = None
@@ -88,9 +94,20 @@ def _get_database_file_path(database_folder_path, database_file_end):
 
 def _set_database_extract_info(bibliometer_path, datatype, database):
     """The function builds the path to database extractions and
-    the file names ending that are specific to the datat type 'datatype'.
-    It sets the folder name of the empty files.
-    For that it uses the global 'ARCHI_EXTRACT' defined in 'pub_globals' module.
+    the file names ending that are specific to the data type 'datatype'.
+    It also sets the folder name of the empty files.
+    To do that it uses the global 'ARCHI_EXTRACT' defined
+    in 'pub_globals' module.
+
+    Args:
+        bibliometer_path (path): The path to the working folder.
+        datatype (str): The data type selected for the analysis.
+        database (str): The database selected for the analysis.
+
+    Returns:
+        (path, str, path): (Path to database extractions,
+                            File name ending ,
+                            Path to the folder of empty files).
     """
 
     # Setting useful aliases
@@ -116,14 +133,16 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     When the database is Scopus and the data type to be analysed is restricted to WoS,
     empty files ending with 'database_file_end' are used as Scopus rawdata.
     """
-    
+
     # Getting database extractions info
     return_tup = _set_database_extract_info(bibliometer_path, datatype, database)
     database_folder_path, database_file_end, empty_file_folder = return_tup
 
+    last_year_database_file_end = database_file_end
     if datatype == pg.DATATYPE_LIST[1] and database == bp.SCOPUS:
         last_year_datatype = pg.DATATYPE_LIST[0]
-        return_tup = _set_database_extract_info(bibliometer_path, last_year_datatype, database)
+        return_tup = _set_database_extract_info(bibliometer_path, last_year_datatype,
+                                                database)
         _, last_year_database_file_end, _ = return_tup
 
     # Cycling on year

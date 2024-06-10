@@ -65,7 +65,7 @@ def save_shaped_homonyms_file(df_homonyms, out_path):
             cell.fill = yellow_ft
 
     wb.save(out_path)
-    
+
 
 def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     """
@@ -303,7 +303,8 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
         doi_otps_history_df = doi_otps_history_df.astype('str')
         doi_otps_history_df.drop_duplicates(inplace = True)
 
-    with pd.ExcelWriter(kept_otps_file_path, mode = 'a', if_sheet_exists = 'replace') as writer:
+    with pd.ExcelWriter(kept_otps_file_path,  # https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
+                        mode = 'a', if_sheet_exists = 'replace') as writer:
         hash_otps_history_df.to_excel(writer, sheet_name = hash_otp_sheet_alias, index = False)
         doi_otps_history_df.to_excel(writer, sheet_name = doi_otp_sheet_alias, index = False)
 

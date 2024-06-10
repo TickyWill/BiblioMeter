@@ -146,18 +146,18 @@ def set_org_params(institute, bibliometer_path):
     col_names_dpt = inst_org_dict["COL_NAMES_DPT"]
     dpt_label_dict = inst_org_dict["DPT_LABEL_DICT"]
     dpt_otp_dict = inst_org_dict["DPT_OTP_DICT"]
-    dpt_attributs_dict = {}
+    dpt_attributes_dict = {}
     for dpt in list(col_names_dpt.keys())[:-1]:
-        dpt_attributs_dict[dpt] = {}
-        dpt_attributs_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
-        dpt_attributs_dict[dpt][dpt_otp_key] = dpt_otp_dict[dpt]
+        dpt_attributes_dict[dpt] = {}
+        dpt_attributes_dict[dpt][dpt_label_key] = dpt_label_dict[dpt]
+        dpt_attributes_dict[dpt][dpt_otp_key] = dpt_otp_dict[dpt]
 
-    dpt_otp_list = list(set(sum([dpt_attributs_dict[dpt_label][dpt_otp_key]
-                                 for dpt_label, _ in dpt_attributs_dict.items()], [])))
-    dpt_attributs_dict['DIR'] = {dpt_label_key: ['(' + institute.upper() + ')'],
+    dpt_otp_list = list(set(sum([dpt_otp_df[dpt_otp_key]
+                                 for _, dpt_otp_df in dpt_attributes_dict.items()], [])))
+    dpt_attributes_dict['DIR'] = {dpt_label_key: ['(' + institute.upper() + ')'],
                                  dpt_otp_key  : dpt_otp_list}
     for dpt in list(col_names_dpt.keys()):
-        dpt_attributs_dict[dpt][dpt_otp_key] += [ig.INVALIDE]
+        dpt_attributes_dict[dpt][dpt_otp_key] += [ig.INVALIDE]
 
     institutions_filter_list = [tuple(x) for x in inst_org_dict["INSTITUTIONS_FILTER_LIST"]]
     institute_institutions_list = [tuple(x) for x in inst_org_dict["INSTITUTE_INSTITUTIONS_LIST"]]
@@ -165,7 +165,7 @@ def set_org_params(institute, bibliometer_path):
     if_db_status = inst_org_dict["IF_DB_STATUS"]
     no_if_doctype_keys_list = inst_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]
 
-    return_tup = (col_names_dpt, dpt_label_dict, dpt_attributs_dict,
+    return_tup = (col_names_dpt, dpt_label_dict, dpt_attributes_dict,
                   institutions_filter_list, inst_col_list,
                   if_db_status, no_if_doctype_keys_list)
     return return_tup

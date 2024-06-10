@@ -219,6 +219,10 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
         The globals 'COL_NAMES_BONUS' and 'DPT_ATTRIBUTS_DICT' are imported
         from the module 'pub_globals' of the package 'bmfuncts'.
     """
+    # Internal functions
+    def _set_dpt(dpt_label_list):
+        return lambda x: 1 if x in dpt_label_list else 0
+
     # Setting institute parameters
     dpt_attributs_dict = org_tup[2]
 
@@ -246,12 +250,11 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
     dpt_list = list(dpt_attributs_dict.keys())
 
     # For each department adding a column containing 1 or 0
-    # depending if the author belongs or not to the department
+    # depending on if the author belongs or not to the department
     for dpt in dpt_list:
         dpt_label_list = dpt_attributs_dict[dpt][dpt_label_alias]
-        solved_homonymies_df[dpt] = solved_homonymies_df[dpt_alias].apply(lambda x: (1
-                                                                          if x in dpt_label_list
-                                                                          else 0))
+        solved_homonymies_df[dpt] = solved_homonymies_df[dpt_alias]
+        solved_homonymies_df[dpt] = solved_homonymies_df[dpt].apply(_set_dpt(dpt_label_list))
 
     # Building 'df_out' out of 'solved_homonymies_df' with a row per pub_id
     # 1 or 0 is assigned to each department column depending
