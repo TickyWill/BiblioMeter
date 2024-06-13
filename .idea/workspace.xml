@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6c16b13c-ea32-4e92-8987-00b9d0f444fb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/App.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/App.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/App.py" beforeDir="false" afterPath="$PROJECT_DIR$/App.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_ConfigUtils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_ConsolidatePubList.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_EmployeesGlobals.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_InstituteGlobals.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_MergePubEmployees.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_PubAnalysis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_PubGlobals.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_RenameCols.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_SaveFinalResults.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UpdateEmployees.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UpdateImpactFactors.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UsePubAttributes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UsefulFuncts.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/ConfigFiles/BiblioParsing_config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/GUI_Globals.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_Analysis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_Classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_ConsolidateCorpus.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_ParseCorpus.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_UpdateIFs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Useful_Classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Useful_Functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2gzxkFjQ4xbmOAsMRd5HRDvu3JV" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.Page_Analysis.executor": "Run",
+    "Python.__init__.executor": "Run",
+    "Python.app.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "amal__dev",
+    "last_opened_file_path": "C:/Users/AC265100/PyVenv/BiblioMeter",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6c16b13c-ea32-4e92-8987-00b9d0f444fb" name="Changes" comment="" />
+      <created>1716714351027</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1716714351027</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_ConfigUtils.py</url>
+          <line>120</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
