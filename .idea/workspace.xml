@@ -5,35 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6c16b13c-ea32-4e92-8987-00b9d0f444fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/App.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/App.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/App.py" beforeDir="false" afterPath="$PROJECT_DIR$/App.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_ConfigUtils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_ConsolidatePubList.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_EmployeesGlobals.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_InstituteGlobals.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_MergePubEmployees.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_PubAnalysis.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_PubGlobals.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_RenameCols.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_SaveFinalResults.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UpdateEmployees.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UpdateImpactFactors.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UsePubAttributes.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/BM_UsefulFuncts.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/ConfigFiles/BiblioParsing_config.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_FUNCTS/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/GUI_Globals.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_Analysis.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_Classes.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_ConsolidateCorpus.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_ParseCorpus.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Page_UpdateIFs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Useful_Classes.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/Useful_Functions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BiblioMeter_GUI/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make_bibliometer_exe.bat" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,17 +27,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.Page_Analysis.executor": "Run",
-    "Python.__init__.executor": "Run",
-    "Python.app.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "amal__dev",
-    "last_opened_file_path": "C:/Users/AC265100/PyVenv/BiblioMeter",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.Page_Analysis.executor&quot;: &quot;Run&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/AC265100/PyVenv/BiblioMeter&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
