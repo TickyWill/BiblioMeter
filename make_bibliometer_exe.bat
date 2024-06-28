@@ -114,7 +114,8 @@ if exist %PGM% (
     echo %TAB%Unable to get the python program %PGM%
     GOTO FIN)
 
-:: Setting the directories to add 
+:: Setting the directories to add
+set "ICON=%working_dir%/venv/Lib/site-packages/bmfuncts/BM-logo.ico"
 set "FUNC=%working_dir%/venv/Lib/site-packages/bmfuncts;bmfuncts/"
 set "GUI=%working_dir%/venv/Lib/site-packages/bmgui;bmgui/"
 set "PARSE=%working_dir%/venv/Lib/site-packages/BiblioParsing;BiblioParsing/"
@@ -124,6 +125,7 @@ cls
 echo Making the executable App.exe to be located in dist
 echo:
 pyinstaller --noconfirm --onefile --console^
+ --icon "%ICON%"^
  --add-data "%FUNC%"^
  --add-data "%GUI%"^
  --add-data "%PARSE%"^
