@@ -1,5 +1,10 @@
-"""
-
+"""Module of functions for the consolidation of the publications-list 
+in terms of:
+- effective affiliation of the authors to the Institute;
+- attributing department affiliation to the Institute authors;
+- reduction of homonyms among the Institute authors;
+- attributing OTPs to each publication;
+- attributing impact factor (IF) to each publication.
 """
 
 __all__ = ['add_if',
@@ -42,6 +47,17 @@ from bmfuncts.use_pub_attributes import save_shaped_homonyms_file
 
 def solving_homonyms(institute, org_tup, in_path, out_path):
     """
+    
+    Args:
+        institute (str): The Intitute name.
+        org_tup (tup): The tuple of the organization structure of the Institute 
+                       used here to set column names for homonyms.
+        in_path (path): The full path to the input file where the homonyms are solved.
+        out_path (path): The full path to the output file where the solved homonyms 
+                         will be kept.
+
+    Returns:
+        (tup): The tuple composed of end message (str) and homonyms status (bool).
     """
 
     # Setting useful column names

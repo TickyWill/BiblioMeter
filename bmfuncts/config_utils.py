@@ -1,4 +1,5 @@
-"""
+"""The `config_utils.py` module gathers the useful functions 
+for setting the configuration parameters for the use of the BiblioMeter application.
 """
 __all__ = ['set_org_params',
            'set_user_config', ]
@@ -11,20 +12,49 @@ from pathlib import Path
 # Local imports
 import bmfuncts.employees_globals as eg
 import bmfuncts.institute_globals as ig
+import bmfuncts.pub_globals as pg
 
 
-def _get_bm_config():
-    """ """
-    config_json_file_name = 'BiblioParsing_config.json'
+def _get_bm_parsing_config():
+    """ The `_get_bm_parsing_config` function reads the json file giving 
+    the architecture of the parsing folder and the names of the parsing files.
+    The name of this json file is given by the global 'PARSING_CONFIG_FILE' and 
+    it is located in the folder of the `bmfuncts` package which name is given 
+    by the global 'CONFIG_FOLDER'.
+    These globals are defined in the `pub_globals.py` module 
+    of the `bmfuncts` package.
 
-    # Reads the default json_file_name config file
-    pck_config_file_path = Path(__file__).parent / Path('ConfigFiles') / Path(config_json_file_name)
-    with open(pck_config_file_path, encoding = 'utf-8') as file:
+    Args:
+        None.
+
+    Returns:
+        (dict): The dict resulting from the parsing of the json file.
+    """
+    config_folder_name = pg.CONFIG_FOLDER
+    config_json_file_name = pg.PARSING_CONFIG_FILE
+
+    # Reads the json file
+    config_folder_path = Path(__file__).parent / Path(config_folder_name)
+    config_file_path = config_folder_path / Path(config_json_file_name)
+    with open(config_file_path, encoding = 'utf-8') as file:
         config_dict = json.load(file)
     return config_dict
 
 
-def _build_effective_config(parsing_folder_dict_init, db_list):
+def _build_effective_config(db_list, parsing_folder_dict_init):
+    """The `_build_effective_config` function sets the parsing-folder architecture 
+    common to all the corpus folders taking into account the list of databases 'db_list'.
+
+    Args:
+        db_list (list): The list of the database string names.
+        parsing_folder_dict_init (hierarchical dict): The architecture of the parsing folder 
+                                                      to be used for each database 
+                                                      of the database list 'db_list'.
+
+    Returns:
+        (hierarchical dict): The hierachical dict giving the architecture 
+                             of the parsing folder for each database.
+    """
     parsing_folder_dict = {}
     parsing_folder_dict['folder_root'] = parsing_folder_dict_init['folder_root']
     parsing_folder_dict['corpus'] = {}
@@ -42,8 +72,25 @@ def _build_effective_config(parsing_folder_dict_init, db_list):
     return parsing_folder_dict
 
 
-def _build_files_paths(year, parsing_folder_dict, bibliometer_path, db_list):
-    """ """
+def _build_files_paths(bibliometer_path, year, db_list, parsing_folder_dict):
+    """ the `_build_files_paths` function sets the full paths to the rawdata folders 
+    and to the parsing folders for the working folder selected by the user, 
+    the corpus year 'year' and for each database in the list 'db_list'.
+    For that, it uses the `_build_effective_config` function of the same module.
+
+    Args:
+        bibliometer_path (path): The full path to the working folder.
+        year (str): The name of the corpus folder defined by 4 digits 
+                    corresponding to the corpus year.
+        db_list (list): The list of the database string names.
+        parsing_folder_dict (hierachical dict): The architecture of the parsing folder 
+                                                used to set the full paths.
+
+    Returns:
+        (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata 
+                        full paths for each database and the second, the parsing full 
+                        paths for each parsing step and for each database.
+    """
 
     # Internal functions
     def _get_folder_attributes(parsing_folder_dict, keys_list, folder_root):
@@ -55,7 +102,7 @@ def _build_files_paths(year, parsing_folder_dict, bibliometer_path, db_list):
         return (folder_path, folder_name)
 
     # Updating 'parsing_folder_dict' using the list of databases 'db_list'
-    parsing_folder_dict = _build_effective_config(parsing_folder_dict, db_list)
+    parsing_folder_dict = _build_effective_config(db_list, parsing_folder_dict)
 
     # Getting the year folder attributes
     year_files_path = bibliometer_path / Path(str(year))
@@ -111,18 +158,36 @@ def _build_files_paths(year, parsing_folder_dict, bibliometer_path, db_list):
 
 
 def set_user_config(bibliometer_path, year, db_list):
-    """
+    """The `set_user_config` function sets the full paths to the rawdata folders 
+    and to the parsing folders for the working folder selected by the user, 
+    the corpus year 'year' and for each database in the list 'db_list'.
+    It also sets the names of the parsing file for each parsed item. 
+    For that, it uses the configuration dict returned by the `_get_bm_parsing_config` 
+    function and the `_build_files_paths` function of the same module.
+    The parameters set are returned in a tuple as follows:
+    - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database;
+    - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step 
+                and for each database;
+    - index 3 = the dict giving the name of the parsing file for each parsed item.            
 
+    Args:
+        bibliometer_path (path): The full path to the working folder.
+        year (str): The name of the corpus folder defined by 4 digits 
+                    corresponding to the corpus year.
+        db_list (list): The list of the database string names.
+
+    Returns:
+        (tup of dicts): A tuple of the 3 parameters set.
     """
     # Getting the configuration dict
-    config_dict = _get_bm_config()
+    config_dict = _get_bm_parsing_config()
 
     # Getting the working folder architecture base
     parsing_folder_dict = config_dict['PARSING_FOLDER_ARCHI']
 
     # getting useful paths of the working folder architecture for a corpus single year "year"
-    rawdata_path_dict, parsing_path_dict = _build_files_paths(year, parsing_folder_dict,
-                                                              bibliometer_path, db_list)
+    rawdata_path_dict, parsing_path_dict = _build_files_paths(bibliometer_path, year, db_list,
+                                                              parsing_folder_dict)
 
     # Getting the filenames for each parsing item
     item_filename_dict = config_dict['PARSING_FILE_NAMES']
@@ -130,9 +195,59 @@ def set_user_config(bibliometer_path, year, db_list):
     return (rawdata_path_dict, parsing_path_dict, item_filename_dict)
 
 
-def set_org_params(institute, bibliometer_path):
-    """
+def _get_insitute_config(institute, bibliometer_path):
+    """ The `_get_insitute_config` function reads the json file giving 
+    the parameters of the organization structure for the Institute.
+    The name of this json file is given by the global 'CONFIG_JSON_FILES_DICT' and 
+    it is located in the folder of the working folder which name is given 
+    by the global 'EMPLOYEES_ARCHI' at key "root".
+    The global 'CONFIG_JSON_FILES_DICT' is defined in the `institute_globals.py` module 
+    of the `bmfuncts` package.
+    The global 'EMPLOYEES_ARCHI' is defined in the `employees_globals.py` module 
+    of the `bmfuncts` package.
 
+    Args:
+        institute (str): The Intitute name.
+        bibliometer_path (path): The full path to the working folder.
+
+    Returns:
+        (dict): The dict resulting from the parsing of the json file.
+    """
+    config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])
+    config_file_path = config_root_path / Path(ig.CONFIG_JSON_FILES_DICT[institute])
+
+    # Reads the json_file
+    with open(config_file_path, encoding = 'utf-8') as file:
+        inst_org_dict = json.load(file)
+    return inst_org_dict
+
+
+def set_org_params(institute, bibliometer_path):
+    """The `set_org_params` function sets the parameters of the organization 
+    structure for the Institute and the working folder.
+    For that, it uses the configuration dict returned by the `_get_insitute_config` 
+    function of the same module.
+    The parameters set are returned in a tuple as follows:
+    - index 1 = the dict giving the column name (str) for each department (str);
+    - index 2 = the dict giving the list of historical labels (str) for each department (str);
+    - index 3 = the dict giving the list of attributes (OTPs, str) for each department (str);
+    - index 4 = the list of tuples giving the potential labels (str) of the Institute 
+    in the authors affiliations associated with the country (str) that will be used 
+    to filter the authors affiliated to the Institute;
+        ex: [("LITEN","France"), ("INES","France")]
+    - index 5 = the list of columns names (str) that will be used for each of the potential labels 
+    of the Institute filtering the authors affiliated to the Institute;
+    - index 6 = the status (bool) of the impact factors database 
+        - True, if the database specific to the Institute will be used;
+        - False, if a general database will be used;
+    - index 7 = the list of document types (str) for which the impact factors will not be analysed.
+
+    Args:
+        institute (str): The Intitute name.
+        bibliometer_path (path): The full path to the working folder.
+
+    Returns:
+        (tup): A tuple of the 7 parameters set.
     """
 
     config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])

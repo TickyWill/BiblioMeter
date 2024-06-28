@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 
 # Standard library imports
+import shutil
 from os import path
+from pathlib import Path
 
 # 3rd party imports
 from setuptools import setup, find_packages
 
-# read the contents of your README file
+# Reading the contents of your README file
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
     install_requires = f.read().strip().split('\n')
+
+# Copying the 'App.py' python program to launch the application 
+shutil.copy(path.join(this_directory, 'App.py'),
+            path.join(config_dir, 'App.py'))
 
 # This setup is suitable for "python setup.py develop".
 

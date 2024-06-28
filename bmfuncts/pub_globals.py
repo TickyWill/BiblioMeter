@@ -33,6 +33,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_IF_ANALYSIS',
            'COL_NAMES_ORTHO',
            'COL_NAMES_PUB_NAMES',
+           'CONFIG_FOLDER',
            'DATATYPE_LIST',
            'DOC_TYPE_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
@@ -43,6 +44,7 @@ __all__ = ['ANALYSIS_IF',
            'OTHER_DOCTYPE',
            'OTP_SHEET_NAME_BASE',
            'OUTSIDE_ANALYSIS',
+           'PARSING_CONFIG_FILE',
            'PARSING_PERF',
            'RESULTS_TO_SAVE',
            'ROW_COLORS',
@@ -65,6 +67,10 @@ BDD_LIST = [bp.SCOPUS, bp.WOS]
 
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
+
+CONFIG_FOLDER = 'ConfigFiles'
+
+PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 
 PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
 
@@ -175,10 +181,11 @@ ROW_COLORS = {'odd'      : '0000FFFF',
              }
 
 
-DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction', 'Data Paper',
-                                 'Erratum', 'Note', 'Review', 'Short Survey'],
-                 'Books'      : ['Book', 'Book chapter', 'Article; Book Chapter', 'Editorial',
-                                 'Editorial Material'],
+DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction',
+                                 'Correction; Early Access', 'Data Paper', 'Erratum',
+                                 'Note', 'Review', 'Review; early access', 'Short Survey'],
+                 'Books'      : ['Article; Book Chapter', 'Book', 'Book chapter',
+                                 'Biographical-Item', 'Editorial', 'Editorial Material'],
                  'Proceedings': ['Conference Paper', 'Meeting Abstract',
                                  'Article; Proceedings Paper'],
                 }

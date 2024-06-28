@@ -76,19 +76,16 @@ if exist %working_dir%\venv (
     echo %TAB%Unable to create a virtual environment
     GOTO FIN)    
 
-:: Building the python program to launch the application
-echo Building the python program to launch the application
-set "PGM=%working_dir%\App.py"
-echo from bmgui.main_page import AppMain > %PGM%
-echo app = AppMain() >> %PGM%
-echo app.mainloop() >> %PGM%
+:: Getting the python program to launch the application
+echo Getting the python program to launch the application
+set "PGM=%working_dir%\venv\Lib\site-packages\bmfuncts\ConfigFiles\App.py"
 if exist %PGM% (
-    echo The python program %PGM% successfully built >> %LOG%
-    echo %TAB%The python program %PGM% successfully built
+    echo The python program %PGM% successfully found >> %LOG%
+    echo %TAB%The python program %PGM% successfully found
     echo:         
 ) else ( 
-    echo Unable to built the python program %PGM% >> %LOG%
-    echo %TAB%Unable to built the python program %PGM%
+    echo Unable to get the python program %PGM% >> %LOG%
+    echo %TAB%Unable to get the python program %PGM%
     GOTO FIN)
 
 :: Installing packages
