@@ -74,18 +74,6 @@ if exist %working_dir%\venv (
 ) else (
     echo Unable to create a virtual environment >> %LOG%
     echo %TAB%Unable to create a virtual environment
-    GOTO FIN)    
-
-:: Getting the python program to launch the application
-echo Getting the python program to launch the application
-set "PGM=%working_dir%\venv\Lib\site-packages\bmfuncts\ConfigFiles\App.py"
-if exist %PGM% (
-    echo The python program %PGM% successfully found >> %LOG%
-    echo %TAB%The python program %PGM% successfully found
-    echo:         
-) else ( 
-    echo Unable to get the python program %PGM% >> %LOG%
-    echo %TAB%Unable to get the python program %PGM%
     GOTO FIN)
 
 :: Installing packages
@@ -112,7 +100,19 @@ cls
 echo The package auto-py-to-exe successfully installed >> %LOG%
 echo:
 echo The package auto-py-to-exe successfully installed
-echo:
+echo:    
+
+:: Getting the python program to launch the application
+echo Getting the python program to launch the application
+set "PGM=%working_dir%\venv\Lib\site-packages\bmfuncts\ConfigFiles\App.py"
+if exist %PGM% (
+    echo The python program %PGM% successfully found >> %LOG%
+    echo %TAB%The python program %PGM% successfully found
+    echo:         
+) else ( 
+    echo Unable to get the python program %PGM% >> %LOG%
+    echo %TAB%Unable to get the python program %PGM%
+    GOTO FIN)
 
 :: Setting the directories to add 
 set "FUNC=%working_dir%/venv/Lib/site-packages/bmfuncts;bmfuncts/"
