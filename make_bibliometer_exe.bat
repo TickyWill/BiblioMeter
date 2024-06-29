@@ -114,8 +114,8 @@ if exist %PGM% (
     echo %TAB%Unable to get the python program %PGM%
     GOTO FIN)
 
-:: Setting the directories to add
-set "ICON=%working_dir%/venv/Lib/site-packages/bmfuncts/BM-logo.ico"
+:: Setting the icon and the directories to add
+set "ICON=%working_dir%/venv/Lib/site-packages/bmfuncts/ConfigFiles/BM-logo.ico"
 set "FUNC=%working_dir%/venv/Lib/site-packages/bmfuncts;bmfuncts/"
 set "GUI=%working_dir%/venv/Lib/site-packages/bmgui;bmgui/"
 set "PARSE=%working_dir%/venv/Lib/site-packages/BiblioParsing;BiblioParsing/"
@@ -125,7 +125,7 @@ cls
 echo Making the executable App.exe to be located in dist
 echo:
 pyinstaller --noconfirm --onefile --console^
- --icon "%ICON%"^
+ --icon="%ICON%"^
  --add-data "%FUNC%"^
  --add-data "%GUI%"^
  --add-data "%PARSE%"^
@@ -194,7 +194,7 @@ echo Copying the built exe to a user folder
 set "input_file=%working_dir%\%dirname%\%new_file_name%"
 set /p "rep=Do you want to copy this file in an other folder (y/n): "
 if NOT %rep%==y GOTO FIN
-set /p "rep1=Do you want to use %save_dir% (y/n): "
+set /p "rep=Do you want to use %save_dir% (y/n): "
 if NOT %rep%==y GOTO A
 copy  %input_file% %save_dir%
 echo %new_file_name% saved in %save_dir% >> %LOG%
