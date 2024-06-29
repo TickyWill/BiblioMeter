@@ -61,14 +61,15 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
     """
 
     # Setting useful column names
-    col_homonyms = set_homonym_col_names(institute, org_tup)
-    homonym_col_alias = col_homonyms[18]
+    homonyms_col_dic = set_homonym_col_names(institute, org_tup)
+    homonyms_col_list = list(homonyms_col_dic.values())
+    homonym_col_alias = homonyms_col_dic['homonym']
 
     # Reading the submit file #
     df_submit = pd.read_excel(in_path)
 
     # Getting rid of the columns we don't want #
-    df_homonyms = df_submit[col_homonyms].copy()
+    df_homonyms = df_submit[homonyms_col_list].copy()
 
     # Setting homonyms status
     homonyms_status = False
@@ -169,11 +170,11 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
 
 
 def _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
-                       otp_alias, excel_dpt_path, col_otp):
+                       otp_alias, excel_dpt_path, otp_col_list):
     """ Create and store an Excel file under 'excel_dpt_path' for the department labelled 'dpt'.
     The OPTs of the choosen department are added in a new column named 'otp_alias'.
     A list data validation rules is added to each celles of the column
-    'otp_alias'. The data frame column are renamed using 'col_otp'. The Excel frame is
+    'otp_alias'. The data frame column are renamed using 'otp_col_list'. The Excel frame is
     configurated by the `mise_en_page` function.
     """
 
@@ -187,10 +188,7 @@ def _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
     df_dpt[otp_alias] = validation_list
 
     # Renaming the columns
-    df_dpt = df_dpt.reindex(columns = col_otp)
-    # to replace by :
-    # COL_OTP_DICT {col_old_name : col_new_name}
-    # df_dpt = df_dpt.rename(columns = COL_OTP_DICT)
+    df_dpt = df_dpt.reindex(columns = otp_col_list)
 
     # Formatting the EXCEL file
     wb, ws = mise_en_page(institute, org_tup, df_dpt)
@@ -243,15 +241,14 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
     dpt_attributs_dict = org_tup[2]
 
     # Setting useful column names
-    col_otp = set_otp_col_names(institute, org_tup)
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    bm_col_rename_dic = col_rename_tup[2]
+    otp_col_dic = set_otp_col_names(institute, org_tup)
+    otp_col_list = list(otp_col_dic.values())
 
     # Setting useful aliases
-    pub_id_alias     = bm_col_rename_dic[bp.COL_NAMES['pub_id']]           # Pub_id
-    idx_author_alias = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]       # Idx_author
-    dpt_alias        = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]  # Dpt/DOB (lib court)
-    otp_alias        = bm_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]   # Choix de l'OTP
+    pub_id_alias     = otp_col_dic['pub_id']
+    idx_author_alias = otp_col_dic['author_id']
+    dpt_alias        = otp_col_dic['dpt']
+    otp_alias        = otp_col_dic['otp_list']
     dpt_label_alias  = ig.DPT_LABEL_KEY
     dpt_otp_alias    = ig.DPT_OTP_KEY
 
@@ -302,7 +299,7 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
 
         # Adding a column with validation list for OTPs and saving the file
         _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
-                           otp_alias, excel_dpt_path, col_otp)
+                           otp_alias, excel_dpt_path, otp_col_list)
 
     end_message  = ("Files for setting publication OTPs per department "
                     f"saved in folder: \n  '{out_path}'")
@@ -426,7 +423,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         corpus_year (int): The year of the corpus to be appended with the two new IF columns.
 
     Returns:
-        (str): Message indicating which file has been affected and how.
+        (str): Message indicating which file has been mofified and how.
 
     Notes:
         The globals 'COL_NAMES_BONUS', 'FILL_EMPTY_KEY_WORD' and 'NOT_AVAILABLE_IF'
@@ -502,20 +499,19 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         wb.save(df_full_path)
 
     # Setting useful column names
-    col_final_list = set_final_col_names(institute, org_tup)
-    col_base_if, col_maj_if = set_if_col_names(institute, org_tup)
+    final_col_dic = set_final_col_names(institute, org_tup)
+    base_col_list = list(final_col_dic.values()) 
+    if_maj_col_dic = set_if_col_names(institute, org_tup)
 
     # Setting useful column aliases
-    pub_id_col_alias          = col_final_list[0]
-    year_col_alias            = col_final_list[1]
-    journal_col_alias         = col_final_list[6]
-    doctype_col_alias         = col_final_list[7]
-    issn_col_alias            = col_final_list[10]
-    otp_col_alias             = col_final_list[16]
-
-    current_if_col_name_alias = col_maj_if[17]
-    corpus_year_if_col_name   = col_maj_if[18]
-
+    pub_id_col_alias          = final_col_dic['pub_id']
+    year_col_alias            = final_col_dic['corpus_year']
+    journal_col_alias         = final_col_dic['journal']
+    doctype_col_alias         = final_col_dic['doc_type']
+    issn_col_alias            = final_col_dic['issn']
+    otp_col_alias             = final_col_dic['otp']
+    current_if_col_name_alias = if_maj_col_dic['current_if']
+    corpus_year_if_col_name   = if_maj_col_dic['pub_year_if']
     corpus_issn_col_alias     = pg.COL_NAMES_BONUS["database ISSN"]
     database_if_col_alias     = pg.COL_NAMES_BONUS['IF clarivate']
     eissn_col_alias           = pg.COL_NAMES_BONUS['e-ISSN']
@@ -540,7 +536,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     if_df, if_available_years_list, if_most_recent_year = get_if_db(institute, org_tup,
                                                                     bibliometer_path)
 
-    # Taking care all IF column names in if_df are database_if_col_alias
+    # Taking care all IF column names in if_df are set to database_if_col_alias
     if if_db_status:
         for year in if_available_years_list:
             year_database_if_col_alias = database_if_col_alias + " " + year
@@ -577,7 +573,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     corpus_df = pd.read_excel(in_file_path)
 
     # Recasting column names
-    new_col_base_if = list(map(lambda x: x.replace(otp_col_alias, otp_col_new_alias), col_base_if))
+    new_base_col_list = list(map(lambda x: x.replace(otp_col_alias, otp_col_new_alias), base_col_list))
     if otp_col_alias in corpus_df.columns:
         corpus_df.rename(columns = {otp_col_alias : otp_col_new_alias}, inplace = True)
 
@@ -585,7 +581,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     corpus_df = corpus_df.astype({year_col_alias : str})
 
     # Initializing 'corpus_df_bis' as copy of 'corpus_df'
-    corpus_df_bis = corpus_df[new_col_base_if].copy()
+    corpus_df_bis = corpus_df[new_base_col_list].copy()
 
     # Getting the df of ISSN and eISSN database of the institut
     use_col_list = [journal_col_alias, issn_col_alias, eissn_col_alias]
@@ -704,9 +700,9 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     other_dg_path            = pub_list_path / Path(other_dg_file_alias)
 
     # Setting useful column names
-    col_final_list   = set_final_col_names(institute, org_tup)
-    pub_id_col_alias = col_final_list[0]
-    doc_type_alias   = col_final_list[7]
+    final_col_dic    = set_final_col_names(institute, org_tup)
+    pub_id_col_alias = final_col_dic['pub_id']
+    doc_type_alias   = final_col_dic['doc_type']
 
     full_pub_list_df = pd.read_excel(pub_list_file_path)
     other_dg = full_pub_list_df.copy()
@@ -764,13 +760,14 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
         return dpt_df
 
     # Setting useful column names
-    col_final_list = set_final_col_names(institute, org_tup)
+    final_col_dic = set_final_col_names(institute, org_tup)
+    final_col_list = list(final_col_dic.values())
 
     # Setting useful aliases
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    pub_id_alias                     = col_final_list[0]
-    otp_alias                        = col_final_list[16]   # Choix de l'OTP
+    pub_id_alias                     = final_col_dic['pub_id']
+    otp_alias                        = final_col_dic['otp']   # Choix de l'OTP
 
     # Setting useful paths
     missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
@@ -792,9 +789,11 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Deduplicating rows on Pub_id
     otp_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
+    
+    #return otp_df, final_col_list
 
-    # Selecting useful columns using col_final_list
-    consolidate_pub_list_df = otp_df[col_final_list].copy()
+    # Selecting useful columns using final_col_list
+    consolidate_pub_list_df = otp_df[final_col_list].copy()
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
@@ -843,7 +842,7 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
                     f"\nOTPs identification integrated in file: \n  '{out_file_path}'"
                     f"\n\nPublications list for year {corpus_year} "
                     f"has been {split_ratio} % split "
-                    "in 2 files by group of document types. \n"
+                    "in several files by group of document types. \n"
                     f"{final_save_message}")
 
     return end_message, split_ratio, if_database_complete

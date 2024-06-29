@@ -683,7 +683,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         # Setting paths dependent on year_select
         corpus_year_path = bibliometer_path / Path(year_select)
         bdd_mensuelle_path =  corpus_year_path / Path(bdd_mensuelle_alias)
-        submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias)
+        submit_path = bdd_mensuelle_path / Path(submit_alias)
 
         # Getting check_effectif_status
         check_effectif_status = check_effectif_var.get()
@@ -749,7 +749,8 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         # Setting paths and aliases dependent pn year_select
         homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path = bibliometer_path / Path(year_select)
-        submit_path = corpus_year_path / Path(bdd_mensuelle_alias) / Path(submit_alias)
+        bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
+        submit_path = bdd_mensuelle_path / Path(submit_alias)
         homonymes_path = corpus_year_path / Path(homonymes_path_alias)
         homonymes_file_path = homonymes_path / Path(homonymes_file_alias)
 
