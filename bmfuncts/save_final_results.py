@@ -78,8 +78,7 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     """
 
     # Setting useful column names aliases
-    col_final_list = set_final_col_names(institute, org_tup)
-    depts_col_list = col_final_list[11:16]
+    _, depts_col_list = set_final_col_names(institute, org_tup)
 
     # Setting aliases for saving results
     results_sub_folder_alias = pg.ARCHI_RESULTS["impact-factors"]
@@ -123,8 +122,7 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     """
 
     # Setting useful column names aliases
-    col_final_list = set_final_col_names(institute, org_tup)
-    depts_col_list = col_final_list[11:16]
+    _, depts_col_list = set_final_col_names(institute, org_tup)
 
     # Setting useful aliases
     auth_kw_item_alias  = bp.PARSING_ITEMS_LIST[6]

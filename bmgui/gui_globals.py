@@ -40,6 +40,7 @@ __all__ = ['ADD_SPACE_MM',
            'REF_EXIT_BUT_POS_Y_MM',
            'REF_INST_POS_X_MM',
            'REF_INST_POS_Y_MM',
+           'REF_LABEL_DX_Y_MM',
            'REF_LABEL_FONT_SIZE',
            'REF_LABEL_POS_Y_MM',
            'REF_LAUNCH_FONT_SIZE',
@@ -188,67 +189,68 @@ FONT_NAME = "Helvetica"
 # **** REFERENCE COORDINATES FOR PAGES ****
 
 # Number of characters reference for editing the entered files-folder path
-REF_ENTRY_NB_CHAR = 100     # 100
+REF_ENTRY_NB_CHAR = 100
 
 # Font size references for page label and button
-REF_SUB_TITLE_FONT_SIZE = 15      # 15
-REF_PAGE_TITLE_FONT_SIZE = 30     # 30
-REF_LAUNCH_FONT_SIZE = 25         # 25
-REF_BMF_FONT_SIZE = 15            # 15
-REF_COPYRIGHT_FONT_SIZE = 12      # 10
-REF_VERSION_FONT_SIZE = 12        # 10
+REF_SUB_TITLE_FONT_SIZE = 15
+REF_PAGE_TITLE_FONT_SIZE = 30
+REF_LAUNCH_FONT_SIZE = 25
+REF_BMF_FONT_SIZE = 15
+REF_COPYRIGHT_FONT_SIZE = 12
+REF_VERSION_FONT_SIZE = 12
 
 # Y position reference in mm for page label
-REF_PAGE_TITLE_POS_Y_MM = 20      # 20
+REF_PAGE_TITLE_POS_Y_MM = 20
 
 # Positions reference in mm for institute selection button
-REF_INST_POS_X_MM = 5             # 5
-REF_INST_POS_Y_MM = 40            # 45
+REF_INST_POS_X_MM = 5
+REF_INST_POS_Y_MM = 40
 
 # Positions reference in mm for data type selection button
 REF_DATATYPE_POS_X_MM = 110
 REF_DATATYPE_POS_Y_MM = 40
 
 # Positions reference in mm for bmf label and button
-REF_BMF_POS_X_MM = 5              # 5
-REF_BMF_POS_Y_MM = 55             # 45
-REF_BUTTON_DX_MM = -147           # -147
-REF_BUTTON_DY_MM = 10             # 10
+REF_BMF_POS_X_MM = 5
+REF_BMF_POS_Y_MM = 55
+REF_BUTTON_DX_MM = -147
+REF_BUTTON_DY_MM = 10
 
 # Positions reference in mm for corpus creation button
-REF_CORPI_POS_X_MM = 5            # 5
-REF_CORPI_POS_Y_MM = 85           # 75
+REF_CORPI_POS_X_MM = 5
+REF_CORPI_POS_Y_MM = 85
 
 # Space between label and value
-ADD_SPACE_MM = 10                 # 10
+ADD_SPACE_MM = 10
 
 # Setting X and Y positions reference in mm for copyright
-REF_COPYRIGHT_X_MM = 5            # 5
-REF_COPYRIGHT_Y_MM = 170          # 170
-REF_VERSION_X_MM = 185            # 185
+REF_COPYRIGHT_X_MM = 5
+REF_COPYRIGHT_Y_MM = 170
+REF_VERSION_X_MM = 185
 
 # Font size references for page label and button
-REF_LABEL_FONT_SIZE = 25          # 25
-REF_ETAPE_FONT_SIZE = 14          # 14
-REF_BUTTON_FONT_SIZE = 10         # 10
+REF_LABEL_FONT_SIZE = 25
+REF_ETAPE_FONT_SIZE = 14
+REF_BUTTON_FONT_SIZE = 10
 
 # Positions reference in mm for pages widgets
-REF_LABEL_POS_Y_MM = 7           # 15
-REF_ETAPE_POS_X_MM = 10           # 10
-REF_ETAPE_POS_Y_MM_LIST = [40, 74, 101, 129]   # [40, 74, 101, 129]
-REF_ETAPE_BUT_DX_MM = 10          # 10
-REF_ETAPE_BUT_DY_MM = 5           # 5
-REF_ETAPE_CHECK_DY_MM = -8        # -8
-REF_EXIT_BUT_POS_X_MM = 193       # 193
-REF_EXIT_BUT_POS_Y_MM = 145       # 145
-REF_YEAR_BUT_POS_X_MM = 10        # 10
-REF_YEAR_BUT_POS_Y_MM = 26        # 26
+REF_LABEL_POS_Y_MM = 7
+REF_LABEL_DX_Y_MM  = 10
+REF_ETAPE_POS_X_MM = 10
+REF_ETAPE_POS_Y_MM_LIST = [40, 74, 101, 129]
+REF_ETAPE_BUT_DX_MM = 10
+REF_ETAPE_BUT_DY_MM = 5
+REF_ETAPE_CHECK_DY_MM = -8
+REF_EXIT_BUT_POS_X_MM = 193
+REF_EXIT_BUT_POS_Y_MM = 145
+REF_YEAR_BUT_POS_X_MM = 10
+REF_YEAR_BUT_POS_Y_MM = 26
 
 # Separation space in mm for check boxes
-REF_CHECK_BOXES_SEP_SPACE = 25    # 5
+REF_CHECK_BOXES_SEP_SPACE = 25
 
 # Container button height in pixels
-PAGEBUTTON_HEIGHT_PX = 50         # 50
+PAGEBUTTON_HEIGHT_PX = 50
 
 # Setting label for each gui page
 PAGES_LABELS = {'ParseCorpusPage': "Analyse élémentaire des corpus",

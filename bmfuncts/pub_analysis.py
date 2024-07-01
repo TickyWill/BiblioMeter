@@ -33,9 +33,8 @@ def _build_analysis_books_data(institute, org_tup, books_df):
     """
 
     # Setting useful column names aliases
-    col_final_list    = set_final_col_names(institute, org_tup)
-    book_col_alias    = col_final_list[6]
-    depts_col_list    = col_final_list[11:16]
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    book_col_alias = final_col_dic['journal']
 
     # Setting new col names and related parameters
     chapters_nb_col_alias  = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
@@ -85,7 +84,7 @@ def _build_analysis_books_data(institute, org_tup, books_df):
     return books_kpi_dict
 
 
-def _build_analysis_if_data(institute, org_tup,  analysis_df, books_kpi_dict,
+def _build_analysis_if_data(institute, org_tup, analysis_df, books_kpi_dict,
                             if_analysis_col, if_analysis_year,
                             if_analysis_folder_path, verbose = True):
     """
@@ -96,12 +95,11 @@ def _build_analysis_if_data(institute, org_tup,  analysis_df, books_kpi_dict,
     doctype_article_alias  = pg.DOC_TYPE_DICT['Articles']
 
     # Setting useful column names aliases
-    col_final_list         = set_final_col_names(institute, org_tup)
-    journal_col_alias      = col_final_list[6]
-    doctype_col_alias      = col_final_list[7]
-    issn_col_alias         = col_final_list[10]
-    depts_col_list         = col_final_list[11:16]
-    articles_nb_col_alias  = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    journal_col_alias = final_col_dic['journal']
+    doctype_col_alias = final_col_dic['doc_type']
+    issn_col_alias    = final_col_dic['issn']
+    articles_nb_col_alias = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
 
     # Building the full KPIs dict covering all departments
     kpi_dict = {}
@@ -236,8 +234,7 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         os.makedirs(results_kpis_folder_path)
 
     # Setting useful column names aliases
-    col_final_list        = set_final_col_names(institute, org_tup)
-    depts_col_list        = col_final_list[11:16]
+    _, depts_col_list = set_final_col_names(institute, org_tup)
     corpus_year_row_alias = pg.KPI_KEYS_ORDER_DICT[0]
 
     # Initializing return dataframe
@@ -420,9 +417,8 @@ def _plot_if_analysis(institute, org_tup, corpus_year, kpi_dict, if_col,
         return message
 
     # Setting useful column names aliases
-    col_final_list    = set_final_col_names(institute, org_tup)
-    journal_col_alias = col_final_list[6]
-    depts_col_list    = col_final_list[11:16]
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    journal_col_alias = final_col_dic['journal']
 
     for dept in [institute] + depts_col_list:
         dept_kpi_dict = kpi_dict[dept]
@@ -534,11 +530,10 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         os.makedirs(if_analysis_folder_path)
 
     # Setting useful column names aliases
-    col_final_list                     = set_final_col_names(institute, org_tup)
-    journal_col_alias                  = col_final_list[6]
-    doctype_col_alias                  = col_final_list[7]
-    issn_col_alias                     = col_final_list[10]
-    depts_col_list                     = col_final_list[11:16]
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    journal_col_alias = final_col_dic['journal']
+    doctype_col_alias = final_col_dic['doc_type']
+    issn_col_alias    = final_col_dic['issn']
     journal_norm_col_alias             = bp.COL_NAMES['temp_col'][1]
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
     corpus_year_if_col                 = pg.COL_NAMES_BONUS['IF année publi']
@@ -797,9 +792,8 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype, year, verb
         os.makedirs(kw_analysis_folder_path)
 
     # Setting useful column names aliases
-    col_final_list           = set_final_col_names(institute, org_tup)
-    final_pub_id_col_alias   = col_final_list[0]
-    depts_col_list           = col_final_list[11:16]
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    final_pub_id_col_alias   = final_col_dic['pub_id']
     parsing_pub_id_col_alias = bp.COL_NAMES['pub_id']
     keywords_col_alias       = bp.COL_NAMES['keywords'][1]
     weight_col_alias         = pg.COL_NAMES_BONUS['weight']
@@ -1015,13 +1009,12 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         os.makedirs(inst_analysis_folder_path)
 
     # Setting useful column names aliases
-    col_final_list       = set_final_col_names(institute, org_tup)
-    final_pub_id_alias   = col_final_list[0]
-    depts_col_list       = col_final_list[11:16]
-    parsing_pub_id_alias = bp.COL_NAMES['pub_id']
-    idx_address_alias    = bp.COL_NAMES['institution'][1]
-    institutions_alias   = bp.COL_NAMES['institution'][2]
-    countries_col_alias  = bp.COL_NAMES['country'][2]
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    final_pub_id_alias    = final_col_dic['pub_id']
+    parsing_pub_id_alias  = bp.COL_NAMES['pub_id']
+    idx_address_alias     = bp.COL_NAMES['institution'][1]
+    institutions_alias    = bp.COL_NAMES['institution'][2]
+    countries_col_alias   = bp.COL_NAMES['country'][2]
 
     # Getting the full paths of the working folder architecture for the corpus "year"
     config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)

@@ -203,8 +203,13 @@ def set_final_col_names(institute, org_tup):
     for _,dpt_col_name in dpt_col_names.items():
         final_col_dic[dpt_col_name] = dpt_col_names[dpt_col_name]
     final_col_dic['otp'] = pg.COL_NAMES_BONUS['list OTP']
+    
+    # Setting the final dept column names in case of getting changed
+    # in this function from initial 'dpt_col_names' list
+    final_depts_col_list = [final_col_dic[dpt_col_name]
+                            for dpt_col_name in dpt_col_names]
 
-    return final_col_dic
+    return final_col_dic, final_depts_col_list 
 
 
 def set_if_col_names(institute, org_tup):
@@ -214,7 +219,7 @@ def set_if_col_names(institute, org_tup):
         of the 'bmfuncts' package.
     """
 
-    if_maj_col_dic = set_final_col_names(institute, org_tup)
+    if_maj_col_dic, _ = set_final_col_names(institute, org_tup)
     if_maj_col_dic['current_if']  = pg.COL_NAMES_BONUS['IF en cours']
     if_maj_col_dic['pub_year_if'] = pg.COL_NAMES_BONUS['IF année publi']
 
@@ -231,7 +236,7 @@ def set_col_attr(institute, org_tup):
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     all_col_rename_dic = col_rename_tup[2]
 
-    init_col_attr   = {bp.COL_NAMES['pub_id']                             : [15, "center"],
+    init_col_attr   = {bp.COL_NAMES['pub_id']                             : [20, "center"],
                        pg.COL_NAMES_BONUS['nom prénom liste'] + institute : [40, "left"],
                        bp.COL_NAMES['authors'][1]                         : [15, "center"],
                        eg.EMPLOYEES_USEFUL_COLS['matricule']              : [15, "center"],

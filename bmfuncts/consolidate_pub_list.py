@@ -499,9 +499,9 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         wb.save(df_full_path)
 
     # Setting useful column names
-    final_col_dic = set_final_col_names(institute, org_tup)
-    base_col_list = list(final_col_dic.values()) 
-    if_maj_col_dic = set_if_col_names(institute, org_tup)
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+    base_col_list    = list(final_col_dic.values()) 
+    if_maj_col_dic   = set_if_col_names(institute, org_tup)
 
     # Setting useful column aliases
     pub_id_col_alias          = final_col_dic['pub_id']
@@ -700,7 +700,7 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     other_dg_path            = pub_list_path / Path(other_dg_file_alias)
 
     # Setting useful column names
-    final_col_dic    = set_final_col_names(institute, org_tup)
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
     pub_id_col_alias = final_col_dic['pub_id']
     doc_type_alias   = final_col_dic['doc_type']
 
@@ -760,8 +760,8 @@ def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
         return dpt_df
 
     # Setting useful column names
-    final_col_dic = set_final_col_names(institute, org_tup)
-    final_col_list = list(final_col_dic.values())
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+    final_col_list   = list(final_col_dic.values())
 
     # Setting useful aliases
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]

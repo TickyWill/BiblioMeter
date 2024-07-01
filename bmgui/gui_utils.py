@@ -48,8 +48,8 @@ def set_page_title(self, master, page_name, institute, datatype = None):
     # Setting font size for page label and button
     eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
     eff_label_pos_y_px  = mm_to_px(gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    eff_dy_px           = mm_to_px(gg.REF_LABEL_DX_Y_MM * master.height_sf_mm, gg.PPI)
     mid_page_pos_x_px   = master.win_width_px * 0.5
-    dy_px = 20
 
     # Creating title widget
     label_font = tkFont.Font(family = gg.FONT_NAME,
@@ -71,7 +71,7 @@ def set_page_title(self, master, page_name, institute, datatype = None):
                               text = page_sub_title,
                               font = label_font)
         self.label.place(x = mid_page_pos_x_px,
-                         y = eff_label_pos_y_px + dy_px,
+                         y = eff_label_pos_y_px + eff_dy_px,
                          anchor = "center")
 
 

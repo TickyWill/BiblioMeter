@@ -193,9 +193,9 @@ echo:
 echo Copying the built exe to a user folder
 set "input_file=%working_dir%\%dirname%\%new_file_name%"
 set /p "rep=Do you want to copy this file in an other folder (y/n): "
-if NOT %rep%==y GOTO FIN
+if %rep%==n GOTO FIN
 set /p "rep=Do you want to use %save_dir% (y/n): "
-if NOT %rep%==y GOTO A
+if %rep%==n GOTO A
 copy  %input_file% %save_dir%
 echo %new_file_name% saved in %save_dir% >> %LOG%
 echo %TAB%%new_file_name% saved in %save_dir%

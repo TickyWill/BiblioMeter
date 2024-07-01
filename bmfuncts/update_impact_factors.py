@@ -62,9 +62,9 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
         return missing_df
 
     # Setting aliases of useful columns
-    col_final_list = set_final_col_names(institute, org_tup)
-    journal_col_alias                  = col_final_list[6]
-    issn_col_alias                     = col_final_list[10]
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+    journal_col_alias                  = final_col_dic['journal']
+    issn_col_alias                     = final_col_dic['issn']
     eissn_col_alias                    = pg.COL_NAMES_BONUS['e-ISSN']
     database_if_col_alias              = pg.COL_NAMES_BONUS["IF clarivate"]
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
@@ -160,8 +160,8 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
         return wb
 
     # Setting aliases of useful columns
-    col_final_list = set_final_col_names(institute, org_tup)
-    journal_col_alias = col_final_list[6]
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+    journal_col_alias = final_col_dic['journal']
 
     # Setting useful aliases
     unknown_alias = bp.UNKNOWN
