@@ -58,12 +58,7 @@ echo:
 :: Activating the venv
 echo Activating the virtual environment
 set "virtual_env=%working_dir%\venv"
-if defined _old_virtual_pythonhome set pythonhome=%_old_virtual_pythonhome%
-if defined pythonhome set _old_virtual_pythonhome=%pythonhome%
-set pythonhome=
-if defined _old_virtual_path set PATH=%_old_virtual_path%
-if not defined _old_virtual_path set _old_virtual_path=%PATH%
-set "PATH=%virtual_env%\Scripts;%PATH%"
+call %virtual_env%\Scripts\activate.bat
 
 :: Getting and displaying the python version used
 for /F "tokens=* USEBACKQ" %%F in (`python --version`) do (set var=%%F)
@@ -104,7 +99,7 @@ echo:
 
 :: Getting the python program to launch the application
 echo Getting the python program to launch the application
-set "PGM=%working_dir%\venv\Lib\site-packages\bmfuncts\ConfigFiles\App.py"
+set "PGM=%working_dir%\venv\Lib\site-packages\bmfuncts\ConfigFiles\app.py"
 if exist %PGM% (
     echo The python program %PGM% successfully found >> %LOG%
     echo %TAB%The python program %PGM% successfully found
@@ -120,9 +115,9 @@ set "FUNC=%working_dir%/venv/Lib/site-packages/bmfuncts;bmfuncts/"
 set "GUI=%working_dir%/venv/Lib/site-packages/bmgui;bmgui/"
 set "PARSE=%working_dir%/venv/Lib/site-packages/BiblioParsing;BiblioParsing/"
 
-:: Making the executable App.exe to be located in dist
+:: Making the executable app.exe to be located in dist
 cls
-echo Making the executable App.exe to be located in dist
+echo Making the executable app.exe to be located in dist
 echo:
 pyinstaller --noconfirm --onefile --console^
  --icon="%ICON%"^
@@ -130,15 +125,15 @@ pyinstaller --noconfirm --onefile --console^
  --add-data "%GUI%"^
  --add-data "%PARSE%"^
  "%PGM%"
-if exist %working_dir%\dist\App.exe (
-    echo The executable App.exe successfully made in dist directory >> %LOG%
+if exist %working_dir%\dist\app.exe (
+    echo The executable app.exe successfully made in dist directory >> %LOG%
     echo:
-    echo %TAB%The executable App.exe successfully made in dist directory
+    echo %TAB%The executable app.exe successfully made in dist directory
     cls
 ) else (
-    echo Making of the executable App.exe failed >> %LOG%
+    echo Making of the executable app.exe failed >> %LOG%
     echo:
-    echo %TAB%Making of the executable App.exe failed
+    echo %TAB%Making of the executable app.exe failed
     GOTO FIN)
 
 :: Renaming the directory dist to aaaa_mm_jj BiblioMeter 
@@ -164,10 +159,8 @@ if not exist %working_dir%\dist (
 echo Cleaning the working dir
 rmdir /s /q %working_dir%\build
 if not exist %working_dir%\build (echo %TAB%%TAB%build dir successfully removed)
-del /f %working_dir%\App.py
-if not exist %working_dir%\App.py (echo %TAB%%TAB%App.py file successfully delated)
-if exist %working_dir%\App.spec (del /f %working_dir%\App.spec)
-if not exist %working_dir%\App.spec (echo %TAB%%TAB%App.spec file successfully delated)
+if exist %working_dir%\app.spec (del /f %working_dir%\app.spec)
+if not exist %working_dir%\app.spec (echo %TAB%%TAB%app.spec file successfully delated)
 echo %working_dir% cleaned successfully >> %LOG%
 echo %TAB%%working_dir% cleaned successfully 
 echo:
@@ -175,7 +168,7 @@ echo:
 :: Renaming the built exe
 echo Renaming the built exe
 set "new_file_name=%dirname%.exe"
-ren %dirname%\App.exe %new_file_name%
+ren %dirname%\app.exe %new_file_name%
 if exist %dirname%\%new_file_name% (
     echo The executable is renamed to %new_file_name% >> %LOG%
     echo The executable is located in the directory: %working_dir%\%dirname% >> %LOG%
@@ -183,9 +176,9 @@ if exist %dirname%\%new_file_name% (
     echo %TAB%The executable is located in the directory:
     echo %TAB%%TAB%%working_dir%\%dirname%
 ) else (
-    echo The executable still named App.exe >> %LOG%
+    echo The executable still named app.exe >> %LOG%
     echo The executable is located in %working_dir%\%dirname% >> %LOG%
-    echo %TAB%The executable still named App.exe and is located in the directory:
+    echo %TAB%The executable still named app.exe and is located in the directory:
     echo %TAB%%TAB%%working_dir%\%dirname%)
 
 :: Copying the built exe to a user folder

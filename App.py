@@ -1,5 +1,5 @@
-"""The `app` module launch the 'BiblioMeter' application through `app_main` class
-of `Page_Classes` module of `BiblioMeter_GUI` package.
+"""The `app` module launch the 'BiblioMeter' application through `AppMain` class
+of `main_page` module of `bmgui` package.
 """
 
 # !/usr/bin/env python
