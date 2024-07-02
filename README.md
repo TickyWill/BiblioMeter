@@ -17,7 +17,7 @@ git clone https://github.com/TickyWill/BiblioMeter.git
 
 ## Building executable
 Either run the following batch file:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/make_bibliometer_exe.bat>BiblioMeter executable-building batch file
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
 </a></p>
 Or refer to the following manual:
 <p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual

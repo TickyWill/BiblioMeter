@@ -9,15 +9,15 @@ set "TAB=   "
 
 :: Setting useful directories
 set "working_dir=%TEMP%\BIBLIO_exe"
-set "save_dir=%userprofile%\Desktop"
+set "save_dir=C:\Program"
 
 :: Setting the name of the log file to debbug the executable making
 set "LOG=%working_dir%\log.txt"
 
 :: Creating a clean %working_dir%
-echo Creating a clean %working_dir%
+echo Creating a clean %working_dir% directory
 if exist %working_dir% (
-    echo %TAB%%working_dir% exists and will be removed - Please wait
+    echo %TAB%%working_dir% exists and will be removed - Please wait...
     rmdir /s /q %working_dir%
     if not exist %working_dir% (
         echo %TAB%Existing %working_dir% removed
@@ -143,11 +143,11 @@ for /f "skip=1" %%x in ('wmic os get localdatetime') do if not defined MyDate se
 for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
 set fmonth=00%Month%
 set fday=00%Day%
-set dirname="%Year%-%fmonth:~-2%-%fday:~-2% BiblioMeter"
-rename %working_dir%\dist %dirname%
+set dir_name="%Year%-%fmonth:~-2%-%fday:~-2% BiblioMeter"
+rename %working_dir%\dist %dir_name%
 if not exist %working_dir%\dist (
-    echo The executable directory successfully renamed to %dirname% >> %LOG%
-    echo %TAB%The executable directory successfully renamed to %dirname%
+    echo The executable directory successfully renamed to %dir_name% >> %LOG%
+    echo %TAB%The executable directory successfully renamed to %dir_name%
     echo:
 ) else (
     echo The executable directory renaming failed >> %LOG%
@@ -167,41 +167,77 @@ echo:
 
 :: Renaming the built exe
 echo Renaming the built exe
-set "new_file_name=%dirname%.exe"
-ren %dirname%\app.exe %new_file_name%
-if exist %dirname%\%new_file_name% (
+set "new_file_name=%dir_name%.exe"
+ren %dir_name%\app.exe %new_file_name%
+if exist %dir_name%\%new_file_name% (
     echo The executable is renamed to %new_file_name% >> %LOG%
-    echo The executable is located in the directory: %working_dir%\%dirname% >> %LOG%
+    echo The executable is located in the directory: %working_dir%\%dir_name% >> %LOG%
     echo %TAB%The executable is renamed to %new_file_name%    
     echo %TAB%The executable is located in the directory:
-    echo %TAB%%TAB%%working_dir%\%dirname%
+    echo %TAB%%TAB%%working_dir%\%dir_name%
 ) else (
     echo The executable still named app.exe >> %LOG%
-    echo The executable is located in %working_dir%\%dirname% >> %LOG%
+    echo The executable is located in %working_dir%\%dir_name% >> %LOG%
     echo %TAB%The executable still named app.exe and is located in the directory:
-    echo %TAB%%TAB%%working_dir%\%dirname%)
+    echo %TAB%%TAB%%working_dir%\%dir_name%)
 
-:: Copying the built exe to a user folder
+:: Copying the built exe to a user directory
 echo:
-echo Copying the built exe to a user folder
-set "input_file=%working_dir%\%dirname%\%new_file_name%"
-set /p "rep=Do you want to copy this file in an other folder (y/n): "
-if %rep%==n GOTO FIN
-set /p "rep=Do you want to use %save_dir% (y/n): "
-if %rep%==n GOTO A
-copy  %input_file% %save_dir%
-echo %new_file_name% saved in %save_dir% >> %LOG%
-echo %TAB%%new_file_name% saved in %save_dir%
+echo Copying the built exe to a user directory
 echo:
-GOTO FIN
-A: set /p "new_dir=Enter the full path of the folder: "
-set "output_file=%new_dir%\%new_file_name%"
-copy  %input_file% %output_file%
-echo %new_file_name% saved in %output_file% >> %LOG%
-echo %TAB%%new_file_name% saved in %output_file%
+set "rep=n"
+set /p "rep=Do you want to save the exe directory in an other directory than %save_dir% (y/n)? "
+if %rep%==y goto OTHER
+set "output_dir=%save_dir%\%dir_name%"
+goto COPY
+:OTHER
+echo:
+set /p "new_dir=Enter the other full path for saving the exe directory: "
+echo:
+set "output_dir="%new_dir%"\%dir_name%"
+:COPY
+echo:
+if exist %output_dir% (
+    rmdir /s /q %output_dir%
+    echo Existing %output_dir% directory removed before creation >> %LOG%
+    echo %TAB%Existing %output_dir% directory removed before creation
+    )
+echo:
+mkdir %output_dir%
+if exist %output_dir% (
+    echo %output_dir% directory successfully created >> %LOG%
+    echo %TAB%%output_dir% directory successfully created
+    goto COPY_FILE
+) else (
+    echo:
+    echo Unable to create %output_dir% directory >> %LOG%
+    echo %TAB%Unable to create %output_dir% directory
+    goto RETRY)
+:COPY_FILE
+echo %TAB%Please wait while copying the built exe...
+set "input_file=%working_dir%\%dir_name%\%new_file_name%"
+set "output_file=%output_dir%\%new_file_name%"
+copy %input_file% %output_file%
+if %ERRORLEVEL% == 0 (
+    echo %new_file_name% file successfully saved in %output_dir% directory >> %LOG%
+    echo %TAB%%new_file_name% file successfully saved in %output_dir% directory
+    goto FIN
+) else (
+    echo %TAB%Errors encountered during copy of exe file.  Copy canceled with status: %errorlevel%
+    echo Errors encountered during copy of exe file.  Copy canceled with status: %errorlevel% >> %LOG%
+)
+:RETRY
+echo:
+set "rep=n"
+set /p "rep=Do you want to try an other full path for saving the exe directory (y/n)? "
+if  %rep%==y goto OTHER
 :FIN
 echo:
-echo The report on the executable making is available in the file:
+set "rep=n"
+set /p "rep=Do you want to use an other full path for saving the exe directory (y/n)? "
+if  %rep%==y goto OTHER
+echo:
+echo The report on the executable building is available in the file:
 echo %TAB%%LOG%
 echo:
 

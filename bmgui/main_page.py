@@ -411,8 +411,6 @@ class SetLaunchButton(tk.Tk):
     """
     def __init__(self, master, institute, bibliometer_path, datatype):
 
-        # tk.Frame.__init__(self)
-
         # Setting font size for launch button
         eff_launch_font_size = font_size(gg.REF_LAUNCH_FONT_SIZE, master.width_sf_min)
 
@@ -531,6 +529,7 @@ class ParseCorpusPage(tk.Frame):
         # Creating and setting widgets for page frame
         create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype)
 
+        
 class ConsolidateCorpusPage(tk.Frame):
     """PAGE 2 'Consolidation annuelle des corpus'.
     """
