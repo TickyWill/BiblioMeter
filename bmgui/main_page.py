@@ -411,7 +411,7 @@ class SetLaunchButton(tk.Tk):
     """
     def __init__(self, master, institute, bibliometer_path, datatype):
 
-        tk.Frame.__init__(self)
+        # tk.Frame.__init__(self)
 
         # Setting font size for launch button
         eff_launch_font_size = font_size(gg.REF_LAUNCH_FONT_SIZE, master.width_sf_min)
