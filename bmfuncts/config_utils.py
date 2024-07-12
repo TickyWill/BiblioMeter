@@ -247,7 +247,7 @@ def set_org_params(institute, bibliometer_path):
         bibliometer_path (path): The full path to the working folder.
 
     Returns:
-        (tup): A tuple of the 7 parameters set.
+        (tup): A tuple of the 9 parameters set.
     """
 
     config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])
@@ -275,12 +275,14 @@ def set_org_params(institute, bibliometer_path):
         dpt_attributes_dict[dpt][dpt_otp_key] += [ig.INVALIDE]
 
     institutions_filter_list = [tuple(x) for x in inst_org_dict["INSTITUTIONS_FILTER_LIST"]]
-    institute_institutions_list = [tuple(x) for x in inst_org_dict["INSTITUTE_INSTITUTIONS_LIST"]]
-    inst_col_list = [tup[0] + '_' + tup[1] for tup in institute_institutions_list]
+    inst_col_list = [tup[1] for tup in institutions_filter_list]
+    main_inst_idx = inst_org_dict["MAIN_INSTITUTION_IDX"]
+    and_inst_status = inst_org_dict["MAIN_INSTITUTION_STATUS"]
     if_db_status = inst_org_dict["IF_DB_STATUS"]
     no_if_doctype_keys_list = inst_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]
 
     return_tup = (col_names_dpt, dpt_label_dict, dpt_attributes_dict,
                   institutions_filter_list, inst_col_list,
-                  if_db_status, no_if_doctype_keys_list)
+                  if_db_status, no_if_doctype_keys_list,
+                  main_inst_idx, and_inst_status)
     return return_tup

@@ -26,15 +26,15 @@ import bmgui.gui_globals as gg
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_org_params
-from bmfuncts.consolidate_pub_list import concatenate_pub_lists
-from bmfuncts.consolidate_pub_list import consolidate_pub_list
-from bmfuncts.consolidate_pub_list import solving_homonyms
 from bmfuncts.consolidate_pub_list import add_otp
+from bmfuncts.consolidate_pub_list import built_final_pub_list
+from bmfuncts.consolidate_pub_list import concatenate_pub_lists
+from bmfuncts.consolidate_pub_list import solving_homonyms
 from bmfuncts.merge_pub_employees import recursive_year_search
 from bmfuncts.update_employees import update_employees
 from bmfuncts.use_pub_attributes import save_homonyms
-from bmfuncts.use_pub_attributes import set_saved_otps
 from bmfuncts.use_pub_attributes import set_saved_homonyms
+from bmfuncts.use_pub_attributes import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import mm_to_px
@@ -337,7 +337,7 @@ def _launch_resolution_homonymies_try(institute,
 
     ask_title = "- Confirmation de l'étape de résolution des homonymies -"
     ask_text  = ("La création du fichier pour cette résolution "
-                 "a été lancée pour l'année {year_select}."
+                 f"a été lancée pour l'année {year_select}."
                  "\n\nContinuer ?")
     answer    = messagebox.askokcancel(ask_title, ask_text)
     if answer:
@@ -460,7 +460,7 @@ def _launch_pub_list_conso_try(institute,
 
     def _consolidate_pub_list():
         if os.path.isdir(otp_path) and os.listdir(otp_path):
-            conso_tup = consolidate_pub_list(institute, org_tup,
+            conso_tup = built_final_pub_list(institute, org_tup,
                                              bibliometer_path, datatype,
                                              otp_path, pub_list_path,
                                              pub_list_file_path, otp_file_base_alias,
@@ -526,7 +526,7 @@ def _launch_pub_list_conso_try(institute,
         else:
             ask_title = "- Reconstruction de la liste consolidée des publications -"
             ask_text  = ("Le fichier de la liste consolidée des publications "
-                         "de l'année {year_select} est déjà disponible."
+                         f"de l'année {year_select} est déjà disponible."
                          "\n\nReconstruire ce fichier ?")
             answer_1  = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:

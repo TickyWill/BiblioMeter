@@ -107,9 +107,10 @@ ARCHI_IF = {"root"                   : "Impact Factor",
             "institute_if_all_years" : "_IF all years.xlsx",
            }
 
-ARCHI_INSTITUTIONS = {"root"              : "Traitement Institutions",
-                      "inst_types_base"   : "Institutions_types.xlsx",
-                      "affiliations_base" : "Country_affiliations.xlsx",
+ARCHI_INSTITUTIONS = {"root"                 : "Traitement Institutions",
+                      "institute_affil_base" : "Institute_affiliations.xlsx",
+                      "inst_types_base"      : "Institutions_types.xlsx",
+                      "affiliations_base"    : "Country_affiliations.xlsx",
                      }
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",

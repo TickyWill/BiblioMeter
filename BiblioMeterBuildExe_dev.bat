@@ -74,7 +74,7 @@ if exist %working_dir%\venv (
 :: Installing packages
 echo Installing BiblioParsing package
 echo:
-pip install git+https://github.com/TickyWill/BiblioParsing.git=BiblioParsing
+pip install git+https://github.com/TickyWill/BiblioParsing.git=BiblioParsing@amal_dev
 cls
 echo The package BiblioParsing successfully installed >> %LOG%
 echo:
@@ -82,7 +82,7 @@ echo The package BiblioParsing successfully installed
 echo:
 echo Installing BiblioMeter packages
 echo:
-pip install git+https://github.com/TickyWill/BiblioMeter.git=BiblioMeter
+pip install git+https://github.com/TickyWill/BiblioMeter.git#egg=BiblioMeter@amal_dev
 cls
 echo The package BiblioMeter successfully installed >> %LOG%
 echo:

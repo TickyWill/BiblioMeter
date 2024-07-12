@@ -10,7 +10,7 @@ in terms of:
 __all__ = ['add_if',
            'add_otp',
            'concatenate_pub_lists',
-           'consolidate_pub_list',
+           'built_final_pub_list',
            'get_if_db',
            'solving_homonyms',
            'split_pub_list_by_doc_type',
@@ -736,7 +736,7 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     return split_ratio
 
 
-def consolidate_pub_list(institute, org_tup, bibliometer_path, datatype,
+def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                          in_path, out_path, out_file_path, in_file_base, corpus_year):
     """
     Args :

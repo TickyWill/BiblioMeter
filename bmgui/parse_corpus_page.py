@@ -10,6 +10,7 @@ import os
 import tkinter as tk
 from tkinter import font as tkFont
 from tkinter import messagebox
+from pathlib import Path
 
 # 3rd party imports
 import BiblioParsing as bp
@@ -255,8 +256,9 @@ def _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne):
                 dy = - eff_dy)
 
 
-def _launch_parsing(self, master, corpus_year, database_type,
-                    bibliometer_path, pos_x, pos_y, esp_ligne):
+def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
+                    institute_affil_file_path, inst_types_file_path,
+                    pos_x, pos_y, esp_ligne):
     """The internal function `_launch_parsing` parses corpuses from wos or scopus
     using the function 'biblio_parser'. It checks if all useful files are available
     in the working folder using the function 'existing_corpuses'.
@@ -292,7 +294,11 @@ def _launch_parsing(self, master, corpus_year, database_type,
     def _corpus_parsing(rawdata_path, parsing_path, database_type):
         if not os.path.exists(parsing_path):
             os.mkdir(parsing_path)
-        parsing_dict, dic_failed = bp.biblio_parser(rawdata_path, database_type)
+        parsing_tup = bp.biblio_parser(rawdata_path, database_type,
+                                       inst_filter_list = None,
+                                       country_affiliations_file_path = institute_affil_file_path,
+                                       inst_types_file_path = inst_types_file_path)
+        parsing_dict, dic_failed = parsing_tup
         save_parsing_dict(parsing_dict, parsing_path,
                           item_filename_dict, parsing_save_extent)
         save_fails_dict(dic_failed, parsing_path)
@@ -301,7 +307,7 @@ def _launch_parsing(self, master, corpus_year, database_type,
         info_title      = "Information"
         info_text       = (f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
                            f"\n\n  Nombre d'articles du corpus : {articles_number}")
-        messagebox.showinfo(info_title, info_text)
+        messagebox.showinfo(info_title, info_text)    
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
@@ -379,6 +385,7 @@ def _launch_parsing(self, master, corpus_year, database_type,
 
 
 def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
+                     institute_affil_file_path, inst_types_file_path,
                      pos_x, pos_y, esp_ligne):
     """The internal function `_launch_synthese` concatenates the parsing
     from wos or scopus databases using the function 'parsing_concatenate_deduplicate'.
@@ -432,7 +439,10 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                                                      inst_filter_list = institutions_filter_list)
         save_parsing_dict(concat_parsing_dict, concat_parsing_path,
                           item_filename_dict, parsing_save_extent)
-        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict)
+        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict, 
+                                                     norm_inst_status = False,
+                                                     inst_types_file_path = inst_types_file_path,
+                                                     country_affiliations_file_path = institute_affil_file_path)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
                           item_filename_dict, parsing_save_extent)
 
@@ -570,6 +580,20 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
 
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # Setting useful aliases
+    institutions_folder_alias  = pg.ARCHI_INSTITUTIONS["root"]
+    inst_aff_file_base_alias   = pg.ARCHI_INSTITUTIONS["institute_affil_base"]
+    inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+
+    # Setting useful file names  and paths for Institute affiliations
+    institute_affil_file = institute + "_" + inst_aff_file_base_alias
+    inst_types_file      = institute + "_" + inst_types_file_base_alias
+    institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
+    institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
+    inst_types_file_path = institutions_folder_path / Path(inst_types_file)    
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     # Creating and setting widgets for page title and exit button
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
@@ -673,6 +697,8 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                                                                         self.var_year_pc_1.get(),
                                                                         var_bdd_pc_1.get(),
                                                                         bibliometer_path,
+                                                                        institute_affil_file_path,
+                                                                        inst_types_file_path,
                                                                         position_selon_x_check,
                                                                         position_selon_y_check,
                                                                         espace_entre_ligne_check))
@@ -726,6 +752,8 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                                                                         self.var_year_pc_2.get(),
                                                                         org_tup,
                                                                         bibliometer_path,
+                                                                        institute_affil_file_path,
+                                                                        inst_types_file_path,
                                                                         position_selon_x_check,
                                                                         position_selon_y_check,
                                                                         espace_entre_ligne_check))

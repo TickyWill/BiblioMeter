@@ -420,7 +420,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
         last_name = (' ').join(last_names_list)
         return (last_name, first_name_initials)
 
-    def _build_filt_authors_inst(inst_col_list):
+    def _build_filt_authors_inst(inst_col_list, main_inst_idx, main_status):
         """The function `_build_filt_authors_inst` builds the `filt_authors_inst_` filter
         to select the authors by their institution.
         Returns a filter, as a Pandas Series, with:
@@ -428,11 +428,15 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                 to the author institution;
                 - false otherwise.
         """
-        first_inst_col = inst_col_list[0]
-        filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1
-        for inst_idx, inst_col in enumerate(inst_col_list):
-            if inst_idx != 0:
-                filt_authors_inst_ = filt_authors_inst_ | (df_authorsinst_authors[inst_col] == 1)
+        main_inst_col = inst_col_list[main_inst_idx]        
+        if main_status:
+            filt_authors_inst_ = df_authorsinst_authors[main_inst_col] == 1
+        else:
+            first_inst_col = inst_col_list[0]
+            filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1 
+            for inst_idx, inst_col in enumerate(inst_col_list):
+                if inst_idx != 0:
+                    filt_authors_inst_ = filt_authors_inst_ | (df_authorsinst_authors[inst_col] == 1)
         return filt_authors_inst_
 
     # Setting useful col list
@@ -482,8 +486,10 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                                       right_on = [bp_pub_id_alias, bp_auth_idx_alias])
 
     # Building the authors filter of the institution INSTITUTE
-    institute_col_list = org_tup[4]
-    filt_authors_inst = _build_filt_authors_inst(institute_col_list)
+    inst_col_list = org_tup[4]
+    main_inst_idx = org_tup[7]
+    main_status   = org_tup[8]    
+    filt_authors_inst = _build_filt_authors_inst(inst_col_list, main_inst_idx, main_status)
 
     # Associating each publication (including its complementary info)
     # whith each of its INSTITUTE authors
