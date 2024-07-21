@@ -126,10 +126,22 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     def _launch_coupling_analysis_try():
         # Getting year selection
         year_select = variable_years.get()
-
-        print(f"Coupling analysis launched for year {year_select}")
-        _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
-                                  year_select, results_folder_path)
+        
+        ask_title = "- Confirmation de l'analyse des collaborations -"
+        ask_text  = ("L'analyse des collaborations a été lancée "
+                     f"pour l'année {year_select}."
+                     "\nCette opération peut prendre quelques minutes."
+                     "\n\nContinuer ?")
+        answer    = messagebox.askokcancel(ask_title, ask_text)
+        if answer:
+            print(f"Coupling analysis launched for year {year_select}")
+            _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
+                                      year_select, results_folder_path)
+        else:
+            info_title = "- Information -"
+            info_text = ("L'analyse des collaborations "
+                         f"de l'année {year_select} est annulée.")
+            messagebox.showinfo(info_title, info_text)
 
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           # 14
@@ -258,20 +270,20 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     co_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     co_analysis_launch_button = tk.Button(self,
-                                          text=gg.TEXT_CO_ANALYSIS,
-                                          font=co_analysis_launch_font,
-                                          command= _launch_coupling_analysis_try)
+                                          text = gg.TEXT_CO_ANALYSIS,
+                                          font = co_analysis_launch_font,
+                                          command = _launch_coupling_analysis_try)
     place_bellow(help_label,
                  co_analysis_launch_button,
-                 dx=launch_dx_px,
-                 dy=launch_dy_px)
+                 dx = launch_dx_px,
+                 dy = launch_dy_px)
 
     # Creating and setting keywords analysis widgets
 
     # - Setting title
-    kw_analysis_label_font = tkFont.Font(family=gg.FONT_NAME,
-                                         size=eff_etape_font_size,
-                                         weight='bold')
+    kw_analysis_label_font = tkFont.Font(family = gg.FONT_NAME,
+                                         size = eff_etape_font_size,
+                                         weight = 'bold')
     kw_analysis_label = tk.Label(self,
                                  text=gg.TEXT_ETAPE_9,
                                  justify="left",

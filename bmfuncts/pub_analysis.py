@@ -983,11 +983,13 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     institutions_folder_alias            = pg.ARCHI_INSTITUTIONS["root"]
     inst_types_file_base_alias           = pg.ARCHI_INSTITUTIONS["inst_types_base"]
     country_affiliations_file_base_alias = pg.ARCHI_INSTITUTIONS["affiliations_base"]
+    country_towns_file_base_alias        = pg.ARCHI_INSTITUTIONS["country_towns_base"]
 
     # Setting useful file names
     pub_list_filename = pub_list_filename_base + " " + str(year) + xlsx_extent_alias
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
     country_affil_file_alias = institute + "_" + country_affiliations_file_base_alias
+    country_towns_file_alias = institute + "_" + country_towns_file_base_alias
 
     # Setting useful paths
     year_folder_path          = bibliometer_path / Path(str(year))
@@ -1036,8 +1038,10 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
             inst_pub_addresses_df = pd.concat([inst_pub_addresses_df, dg])
 
     return_tup = bp.build_norm_raw_institutions(inst_pub_addresses_df,
-                                                inst_types_file_path,
-                                                country_affil_file_path,
+                                                inst_types_file_path = inst_types_file_path,
+                                                country_affiliations_file_path = country_affil_file_path,
+                                                country_towns_file = country_towns_file_alias,
+                                                country_towns_folder_path = institutions_folder_path,
                                                 verbose = verbose)
     countries_df, norm_institutions_df, raw_institutions_df = return_tup
 
