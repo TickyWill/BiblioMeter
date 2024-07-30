@@ -349,6 +349,8 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
 
     # - Setting launch button
     def _start_launch_kw_analysis_try():
+        if_analysis_launch_button.config(state=tk.DISABLED)
+        co_analysis_launch_button.config(state=tk.DISABLED)
         kw_analysis_launch_button.config(state=tk.DISABLED)
         progress_var.set(0)
         threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
