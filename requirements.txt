@@ -1,5 +1,9 @@
 kaleido==0.1.*
-matplotlib==3.8.4
-plotly==5.17.0
+matplotlib==3.9.1
+numpy==1.26.3
+openpyxl==3.1.2
+pandas==2.1.4
+plotly==5.22.0
 screeninfo==0.8.1
-wordcloud==1.9.2
+setuptools==71.1.0
+wordcloud==1.9.3
