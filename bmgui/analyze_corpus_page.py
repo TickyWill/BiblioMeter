@@ -228,6 +228,16 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
             co_analysis_launch_button.config(state=tk.NORMAL)
             kw_analysis_launch_button.config(state=tk.NORMAL)
 
+    # exception handling
+    def _except_hook(args):
+        messagebox.showwarning("Error", args)
+        progress_var.set(0)
+        if_analysis_launch_button.config(state=tk.NORMAL)
+        co_analysis_launch_button.config(state=tk.NORMAL)
+        kw_analysis_launch_button.config(state=tk.NORMAL)
+
+    threading.excepthook = _except_hook
+
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
     progress_bar = ttk.Progressbar(
         self, orient="horizontal", length=200, mode="determinate", variable=progress_var
