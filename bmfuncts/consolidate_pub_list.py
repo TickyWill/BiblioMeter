@@ -364,10 +364,91 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
         inst_issn_df = pd.concat([inst_issn_df,dg.iloc[:1]])
 
-    inst_issn_df.sort_values(by=[journal_col_alias], inplace = True)
+    inst_issn_df.sort_values(by = [journal_col_alias], inplace = True)
     inst_issn_df.drop_duplicates(inplace = True)
 
     return inst_issn_df
+
+
+def _fullfill_issn(corpus_df_bis, inst_issn_df, unknown,
+                   journal_col, issn_col, eissn_col):
+    for corpus_idx, corpus_row in corpus_df_bis.iterrows():
+        if corpus_row[issn_col] == unknown:
+            corpus_journal = corpus_row[journal_col].upper()
+            for _, inst_row in inst_issn_df.iterrows():
+                inst_journal = inst_row[journal_col].upper()
+                if corpus_journal == inst_journal:
+                    if inst_row[issn_col] != unknown:
+                        corpus_df_bis.loc[corpus_idx, issn_col] = inst_row[issn_col]
+                    elif inst_row[eissn_col] != unknown:
+                        corpus_df_bis.loc[corpus_idx, issn_col] = inst_row[eissn_col]
+                    else:
+                        pass
+    return corpus_df_bis
+
+
+def _build_if_dict(if_df, if_year, unknown, issn_col, eissn_col, if_col):
+    issn_if_dict = dict(zip(if_df[if_year][issn_col],
+                            if_df[if_year][if_col]))
+    if unknown in issn_if_dict.keys():
+        del issn_if_dict[unknown]
+    eissn_if_dict = {}
+    if eissn_col in list(if_df[if_year].columns):
+        eissn_if_dict = dict(zip(if_df[if_year][eissn_col],
+                                 if_df[if_year][if_col]))
+        if unknown in eissn_if_dict.keys():
+            del eissn_if_dict[unknown]
+    if_dict = {**issn_if_dict, **eissn_if_dict}
+    return if_dict
+
+
+def _get_id(inst_issn_df, journal_name, journal_col, id_col, unknown):
+    id_lower_df = inst_issn_df[inst_issn_df[journal_col] == journal_name.lower()][id_col]
+    id_lower = unknown
+    if not id_lower_df.empty:
+        id_lower = id_lower_df.to_list()[0]
+    id_upper_df = inst_issn_df[inst_issn_df[journal_col] == journal_name.upper()][id_col]
+    id_upper = unknown
+    if not id_upper_df.empty:
+        id_upper = id_upper_df.to_list()[0]
+    journal_id = list(set([id_lower,id_upper]) - set([unknown]))[0]
+    return journal_id
+
+
+def _format_missing_df(results_df, common_args_tup, add_cols):
+    (year_col, corpus_year_if_col,
+     most_recent_year_if_col,
+     journal_col, issn_col, eissn_col,
+     pub_id_nb_col, year_db_if_col,
+     corpus_issn_col, unknown) = common_args_tup
+
+    # Setting final year column
+    final_year_col = year_col[0:5]
+
+    # Setting the ordered final columns    
+    final_order_col_list = [final_year_col, journal_col,
+                            issn_col, eissn_col,
+                            most_recent_year_if_col,
+                            year_db_if_col,
+                            pub_id_nb_col,
+                            corpus_issn_col]
+
+    # Formatting 'results_df'
+    results_df.rename(columns = {year_col           : final_year_col,
+                                 corpus_year_if_col : year_db_if_col},
+                      inplace = True)
+    if add_cols:
+        results_df.rename(columns = {issn_col : corpus_issn_col},
+                          inplace = True)
+        results_df[issn_col]  = unknown
+        results_df[eissn_col] = unknown
+        results_df = results_df[final_order_col_list]
+    else:
+        if results_df.empty:
+            results_df[eissn_col] = unknown
+        results_df = results_df[final_order_col_list[:-1]]
+    sorted_results_df = results_df.sort_values(by = [journal_col])
+    return sorted_results_df
 
 
 def get_if_db(institute, org_tup, bibliometer_path):
@@ -395,6 +476,7 @@ def get_if_db(institute, org_tup, bibliometer_path):
     # Setting list of years for which IF are available
     if_available_years_list  = list(if_df.keys())
 
+    # Setting the most recent year for which IF are available    
     if_most_recent_year = if_available_years_list[-1]
 
     return if_df, if_available_years_list, if_most_recent_year
@@ -405,13 +487,13 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
 
     """ The function `add_if` adds two new columns containing impact factors
     to the corpus dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
-    The two columns are named through 'corpus_year_if_col_name' and 'most_recent_year_if_col_name'.
+    The two columns are named through 'corpus_year_if_col_alias' and 'most_recent_year_if_col'.
     The impact factors are got using `get_if_db` function that returns
     in particular the dataframe 'if_df'.
-    The column 'corpus_year_if_col_name' is filled with the IFs values
+    The column 'corpus_year_if_col_alias' is filled with the IFs values
     of the corpus year 'corpus_year' if available in the dataframe 'if_df',
     else the values are set to 'not_available_if_alias'.
-    The column 'most_recent_year_if_col_name' is filled with the IFs values
+    The column 'most_recent_year_if_col' is filled with the IFs values
     of the most recent year available in the dataframe 'if_df'.
     In these columns, the NaN values of IFs are replaced by 'unknown_if_fill_alias'.
 
@@ -431,104 +513,38 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         of the package 'bmfuncts'.
     """
 
-    # Internal functions
-
-    def _fullfill_issn(corpus_df_bis):
-        for corpus_idx, corpus_row in corpus_df_bis.iterrows():
-            if corpus_row[issn_col_alias] == unknown_alias:
-                corpus_journal = corpus_row[journal_col_alias].upper()
-                for _, inst_row in inst_issn_df.iterrows():
-                    inst_journal = inst_row[journal_col_alias].upper()
-                    if corpus_journal == inst_journal:
-                        if inst_row[issn_col_alias] != unknown_alias:
-                            corpus_df_bis.loc[corpus_idx,issn_col_alias] = inst_row[issn_col_alias]
-                        elif inst_row[eissn_col_alias] != unknown_alias:
-                            corpus_df_bis.loc[corpus_idx,issn_col_alias] = inst_row[eissn_col_alias]
-                        else:
-                            pass
-        return corpus_df_bis
-
-    def _build_if_dict(if_year, issn_col, eissn_col, if_col):
-        issn_if_dict  = dict(zip(if_df[if_year][issn_col],
-                                 if_df[if_year][if_col]))
-        if unknown_alias in issn_if_dict.keys():
-            del issn_if_dict[unknown_alias]
-
-        eissn_if_dict = {}
-        if eissn_col_alias in list(if_df[if_year].columns):
-            eissn_if_dict = dict(zip(if_df[if_year][eissn_col],
-                                     if_df[if_year][if_col]))
-            if unknown_alias in eissn_if_dict.keys():
-                del eissn_if_dict[unknown_alias]
-
-        if_dict = {**issn_if_dict, **eissn_if_dict}
-        return if_dict
-
-    def _get_id(journal, col):
-        id_lower_df = inst_issn_df[inst_issn_df[journal_col_alias]==journal.lower()][col]
-        id_lower = unknown_alias
-        if not id_lower_df.empty:
-            id_lower = id_lower_df.to_list()[0]
-        id_upper_df = inst_issn_df[inst_issn_df[journal_col_alias]==journal.upper()][col]
-        id_upper = unknown_alias
-        if not id_upper_df.empty:
-            id_upper = id_upper_df.to_list()[0]
-        journal_id = list(set([id_lower,id_upper]) - set([unknown_alias]))[0]
-        return journal_id
-
-    def _format_and_save(results_df, df_full_path, add_cols):
-        # Formatting 'results_df'
-        results_df.rename(columns  = {year_col_alias          : final_year_col,
-                                      corpus_year_if_col_name : year_db_if_col_name,},
-                          inplace = True)
-        if add_cols:
-            results_df.rename(columns  = {issn_col_alias : corpus_issn_col_alias,},
-                              inplace = True)
-
-            results_df[issn_col_alias]  = unknown_alias
-            results_df[eissn_col_alias] = unknown_alias
-            results_df = results_df[final_order_col_list]
-        else:
-            if results_df.empty:
-                results_df[eissn_col_alias] = unknown_alias
-            results_df = results_df[final_order_col_list[:-1]]
-        sorted_results_df = results_df.sort_values(by=[journal_col_alias])
-
-        # Saving 'results_df' as EXCEL file at full path 'df_full_path'
-        wb, _ = mise_en_page(institute, org_tup, sorted_results_df)
-        wb.save(df_full_path)
-
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     base_col_list    = list(final_col_dic.values()) 
     if_maj_col_dic   = set_if_col_names(institute, org_tup)
 
     # Setting useful column aliases
-    pub_id_col_alias          = final_col_dic['pub_id']
-    year_col_alias            = final_col_dic['corpus_year']
-    journal_col_alias         = final_col_dic['journal']
-    doctype_col_alias         = final_col_dic['doc_type']
-    issn_col_alias            = final_col_dic['issn']
-    otp_col_alias             = final_col_dic['otp']
-    current_if_col_name_alias = if_maj_col_dic['current_if']
-    corpus_year_if_col_name   = if_maj_col_dic['pub_year_if']
-    corpus_issn_col_alias     = pg.COL_NAMES_BONUS["database ISSN"]
-    database_if_col_alias     = pg.COL_NAMES_BONUS['IF clarivate']
-    eissn_col_alias           = pg.COL_NAMES_BONUS['e-ISSN']
-    otp_col_new_alias         = pg.COL_NAMES_BONUS['final OTP']
-    pub_id_nb_col_alias       = pg.COL_NAMES_BONUS['pub number']
+    pub_id_col_alias         = final_col_dic['pub_id']
+    year_col_alias           = final_col_dic['corpus_year']
+    journal_col_alias        = final_col_dic['journal']
+    doctype_col_alias        = final_col_dic['doc_type']
+    issn_col_alias           = final_col_dic['issn']
+    otp_col_alias            = final_col_dic['otp']
+    current_if_col_alias     = if_maj_col_dic['current_if']
+    corpus_year_if_col_alias = if_maj_col_dic['pub_year_if']
+    corpus_issn_col_alias    = pg.COL_NAMES_BONUS["database ISSN"]
+    database_if_col_alias    = pg.COL_NAMES_BONUS['IF clarivate']
+    eissn_col_alias          = pg.COL_NAMES_BONUS['e-ISSN']
+    otp_col_new_alias        = pg.COL_NAMES_BONUS['final OTP']
+    pub_id_nb_col_alias      = pg.COL_NAMES_BONUS['pub number']
 
     # Setting globals aliases
-    doc_type_dict_alias        = pg.DOC_TYPE_DICT
-    not_available_if_alias     = pg.NOT_AVAILABLE_IF
-    unknown_if_fill_alias      = pg.FILL_EMPTY_KEY_WORD
-    unknown_alias              = pg.FILL_EMPTY_KEY_WORD
-    outside_if_analysis_alias  = pg.OUTSIDE_ANALYSIS
+    doc_type_dict_alias       = pg.DOC_TYPE_DICT
+    not_available_if_alias    = pg.NOT_AVAILABLE_IF
+    unknown_if_fill_alias     = pg.FILL_EMPTY_KEY_WORD
+    unknown_alias             = pg.FILL_EMPTY_KEY_WORD
+    outside_if_analysis_alias = pg.OUTSIDE_ANALYSIS
 
     # Setting institute parameters
     if_db_status            = org_tup[5]
     no_if_doctype_keys_list = org_tup[6]
 
+    # Setting list of document types to drop
     no_if_doctype = sum([doc_type_dict_alias[x] for x in no_if_doctype_keys_list] , [])
     doctype_to_drop_list_alias = [x.upper() for x in no_if_doctype]
 
@@ -551,23 +567,15 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         if_df[year].fillna(value = values_dict, inplace = True)
 
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year
-    most_recent_year_if_dict = _build_if_dict(if_most_recent_year, issn_col_alias,
-                                              eissn_col_alias, database_if_col_alias)
+    most_recent_year_if_dict = _build_if_dict(if_df, if_most_recent_year, unknown_alias,
+                                              issn_col_alias, eissn_col_alias,
+                                              database_if_col_alias)
 
     # Setting local column names
-    most_recent_year_if_col_name = current_if_col_name_alias + ', ' + if_most_recent_year
-    year_db_if_col_name          = database_if_col_alias + ' ' + corpus_year
-    final_year_col               = year_col_alias[0:5]
-    journal_upper_col            = journal_col_alias + '_Upper'
-
-    # Setting the ordered final columns
-    final_order_col_list = [final_year_col, journal_col_alias,
-                            issn_col_alias, eissn_col_alias,
-                            most_recent_year_if_col_name,
-                            year_db_if_col_name,
-                            pub_id_nb_col_alias,
-                            corpus_issn_col_alias,
-                           ]
+    most_recent_year_if_col = current_if_col_alias + ', ' + if_most_recent_year
+    year_db_if_col          = database_if_col_alias + ' ' + corpus_year
+    final_year_col          = year_col_alias[0:5]
+    journal_upper_col       = journal_col_alias + '_Upper'
 
     # Getting the df where to add IFs
     corpus_df = pd.read_excel(in_file_path)
@@ -588,27 +596,29 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     inst_issn_df = _build_inst_issn_df(if_df, use_col_list)
 
     # Filling unknown ISSN in 'corpus_df_bis' using 'inst_issn_df'
-    # through internal function _fullfill_issn
-    corpus_df_bis = _fullfill_issn(corpus_df_bis)
+    # through _fullfill_issn function
+    corpus_df_bis = _fullfill_issn(corpus_df_bis, inst_issn_df, unknown_alias,
+                                   journal_col_alias, issn_col_alias, eissn_col_alias)
 
-    # Adding 'most_recent_year_if_col_name' column to 'corpus_df_bis'
+    # Adding 'most_recent_year_if_col' column to 'corpus_df_bis'
     # with values defined by internal function '_create_if_column'
-    corpus_df_bis[most_recent_year_if_col_name] = _create_if_column(corpus_df_bis[issn_col_alias],
+    corpus_df_bis[most_recent_year_if_col] = _create_if_column(corpus_df_bis[issn_col_alias],
                                                                     most_recent_year_if_dict,
                                                                     unknown_if_fill_alias)
 
-    # Adding 'corpus_year_if_col_name' column to 'corpus_df_bis'
+    # Adding 'corpus_year_if_col_alias' column to 'corpus_df_bis'
     if corpus_year in if_available_years_list:
         # with values defined by internal function '_create_if_column'
         # Building the IF dict keyed by issn or e-issn of journals for the corpus year
-        current_year_if_dict = _build_if_dict(corpus_year, issn_col_alias,
-                                              eissn_col_alias, database_if_col_alias)
-        corpus_df_bis[corpus_year_if_col_name] = _create_if_column(corpus_df_bis[issn_col_alias],
+        current_year_if_dict = _build_if_dict(if_df, corpus_year, unknown_alias,
+                                              issn_col_alias, eissn_col_alias,
+                                              database_if_col_alias)
+        corpus_df_bis[corpus_year_if_col_alias] = _create_if_column(corpus_df_bis[issn_col_alias],
                                                                    current_year_if_dict,
                                                                    unknown_if_fill_alias)
     else:
         # with 'not_available_if_alias' value
-        corpus_df_bis[corpus_year_if_col_name] = not_available_if_alias
+        corpus_df_bis[corpus_year_if_col_alias] = not_available_if_alias
 
     # Sorting 'corpus_df_bis' pub_id values
     corpus_df_bis.sort_values(by = [pub_id_col_alias], inplace = True)
@@ -619,8 +629,8 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
                   journal_col_alias,
                   doctype_col_alias,
                   issn_col_alias,
-                  most_recent_year_if_col_name,
-                  corpus_year_if_col_name,]
+                  most_recent_year_if_col,
+                  corpus_year_if_col_alias,]
     year_pub_if_df = corpus_df_bis[subsetcols].copy()
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
@@ -653,14 +663,18 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     inst_eissn_list = inst_issn_df[eissn_col_alias].to_list()
     for _, row in year_if_df.iterrows():
         row_issn = row[issn_col_alias]
-        row_most_recent_year_if = row[most_recent_year_if_col_name]
-        row_corpus_year_if      = row[corpus_year_if_col_name]
+        row_most_recent_year_if = row[most_recent_year_if_col]
+        row_corpus_year_if      = row[corpus_year_if_col_alias]
         if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
             year_missing_issn_df = pd.concat([year_missing_issn_df, row.to_frame().T])
         elif unknown_alias in [row_most_recent_year_if, row_corpus_year_if]:
             row_journal = row[journal_col_alias]
-            row[issn_col_alias]  = _get_id(row_journal, issn_col_alias)
-            row[eissn_col_alias] = _get_id(row_journal, eissn_col_alias)
+            row[issn_col_alias]  = _get_id(inst_issn_df, row_journal,
+                                           journal_col_alias, issn_col_alias,
+                                           unknown_alias)
+            row[eissn_col_alias] = _get_id(inst_issn_df, row_journal,
+                                           journal_col_alias, eissn_col_alias,
+                                           unknown_alias)
             year_missing_if_df   = pd.concat([year_missing_if_df, row.to_frame().T])
 
     if_database_complete = True
@@ -668,16 +682,32 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
         if_database_complete = False
     else:
         # replace remaining unknown IF values by 'not_available_if_alias' value
-        corpus_df_bis.replace({most_recent_year_if_col_name: unknown_if_fill_alias,
-                               corpus_year_if_col_name     : unknown_if_fill_alias,
+        corpus_df_bis.replace({most_recent_year_if_col: unknown_if_fill_alias,
+                               corpus_year_if_col_alias    : unknown_if_fill_alias,
                               }, outside_if_analysis_alias, inplace = True)
 
     # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
     wb, _ = mise_en_page(institute, org_tup, corpus_df_bis)
     wb.save(out_file_path)
+    
+    # Setting common args list for '_format_missing_df' function
+    common_args_tup = (year_col_alias, corpus_year_if_col_alias,
+                       most_recent_year_if_col,
+                       journal_col_alias, issn_col_alias, eissn_col_alias,
+                       pub_id_nb_col_alias, year_db_if_col,
+                       corpus_issn_col_alias, unknown_alias)
 
-    _format_and_save(year_missing_issn_df, missing_issn_path, add_cols = True)
-    _format_and_save(year_missing_if_df, missing_if_path, add_cols = False)
+    # Formatting 'year_missing_issn_df' and 'year_missing_if_df'
+    sorted_year_missing_issn_df = _format_missing_df(year_missing_issn_df, common_args_tup, add_cols = True)
+    sorted_year_missing_if_df   = _format_missing_df(year_missing_if_df, common_args_tup, add_cols = False)
+    
+    # Saving 'year_missing_issn_df' as EXCEL file at full path 'missing_issn_path'
+    wb, _ = mise_en_page(institute, org_tup, sorted_year_missing_issn_df)
+    wb.save(missing_issn_path)
+
+    # Saving 'year_missing_if_df' as EXCEL file at full path 'missing_if_path'
+    wb, _ = mise_en_page(institute, org_tup, sorted_year_missing_if_df)
+    wb.save(missing_if_path)
 
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"
     return end_message, if_database_complete

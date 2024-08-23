@@ -116,6 +116,7 @@ class AppMain(tk.Tk):
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)
             bmf_val.set(inst_bmf)
             bmf_val2.set(_display_path(inst_bmf))
+            
         def _try_bmf_access(bmf_path):
             bmf_access_status = False
             if os.access(bmf_path, os.F_OK | os.R_OK | os.W_OK):
