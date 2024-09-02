@@ -7,7 +7,6 @@ import warnings
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -16,6 +15,7 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.rename_cols import build_col_conversion_dic
+import BiblioParsing as bp
 
 
 def _build_df_submit(df_eff, df_pub, bibliometer_path, test_case = 'No test', verbose = False):
@@ -428,12 +428,12 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                 to the author institution;
                 - false otherwise.
         """
-        main_inst_col = inst_col_list[main_inst_idx]        
+        main_inst_col = inst_col_list[main_inst_idx]
         if main_status:
             filt_authors_inst_ = df_authorsinst_authors[main_inst_col] == 1
         else:
             first_inst_col = inst_col_list[0]
-            filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1 
+            filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1
             for inst_idx, inst_col in enumerate(inst_col_list):
                 if inst_idx != 0:
                     filt_authors_inst_ = filt_authors_inst_ | (df_authorsinst_authors[inst_col] == 1)
@@ -488,7 +488,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     # Building the authors filter of the institution INSTITUTE
     inst_col_list = org_tup[4]
     main_inst_idx = org_tup[7]
-    main_status   = org_tup[8]    
+    main_status   = org_tup[8]
     filt_authors_inst = _build_filt_authors_inst(inst_col_list, main_inst_idx, main_status)
 
     # Associating each publication (including its complementary info)

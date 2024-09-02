@@ -307,7 +307,7 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
         info_title      = "Information"
         info_text       = (f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
                            f"\n\n  Nombre d'articles du corpus : {articles_number}")
-        messagebox.showinfo(info_title, info_text)    
+        messagebox.showinfo(info_title, info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
@@ -439,7 +439,7 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                                                      inst_filter_list = institutions_filter_list)
         save_parsing_dict(concat_parsing_dict, concat_parsing_path,
                           item_filename_dict, parsing_save_extent)
-        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict, 
+        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict,
                                                      norm_inst_status = False,
                                                      inst_types_file_path = inst_types_file_path,
                                                      country_affiliations_file_path = institute_affil_file_path)
@@ -591,7 +591,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     inst_types_file      = institute + "_" + inst_types_file_base_alias
     institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
     institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
-    inst_types_file_path = institutions_folder_path / Path(inst_types_file)    
+    inst_types_file_path = institutions_folder_path / Path(inst_types_file)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Creating and setting widgets for page title and exit button

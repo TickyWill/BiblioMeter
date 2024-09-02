@@ -126,7 +126,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     def _launch_coupling_analysis_try():
         # Getting year selection
         year_select = variable_years.get()
-        
+
         ask_title = "- Confirmation de l'analyse des collaborations -"
         ask_text  = ("L'analyse des collaborations a été lancée "
                      f"pour l'année {year_select}."
