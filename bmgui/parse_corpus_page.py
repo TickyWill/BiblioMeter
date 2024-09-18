@@ -7,28 +7,33 @@ __all__ = ['create_parsing_concat']
 
 # Standard library imports
 import os
+import threading
 import tkinter as tk
+from pathlib import Path
 from tkinter import font as tkFont
 from tkinter import messagebox
-from pathlib import Path
+from tkinter import ttk
 
 # 3rd party imports
 import BiblioParsing as bp
 
 # Local imports
-import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
-from bmgui.gui_utils import existing_corpuses
-from bmgui.gui_utils import font_size
-from bmgui.gui_utils import mm_to_px
-from bmgui.gui_utils import place_after
-from bmgui.gui_utils import set_exit_button
-from bmgui.gui_utils import set_page_title
+import bmgui.gui_globals as gg
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.useful_functs import save_fails_dict
 from bmfuncts.useful_functs import save_parsing_dict
+from bmgui.gui_utils import disable_buttons
+from bmgui.gui_utils import enable_buttons
+from bmgui.gui_utils import existing_corpuses
+from bmgui.gui_utils import font_size
+from bmgui.gui_utils import mm_to_px
+from bmgui.gui_utils import place_after
+from bmgui.gui_utils import place_bellow
+from bmgui.gui_utils import set_exit_button
+from bmgui.gui_utils import set_page_title
 
 
 class CheckBoxCorpuses:
@@ -217,48 +222,10 @@ def _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne):
 
     _create_table(self, master, pos_x)
 
-    # Destruction puis reconstruction obligatoire
-    # pour mettre à jour les boutons années
-    # lors de mise à jour de l'état de la base
-
-    # Destruct files status display
-    self.om_year_pc_1.destroy()
-
-    # Reconstruct files status display
-    self.var_year_pc_1 = tk.StringVar(self)
-    self.var_year_pc_1.set(default_year)
-    self.om_year_pc_1 = tk.OptionMenu(self,
-                                      self.var_year_pc_1,
-                                      *master.list_corpus_year)
-    font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME,
-                                 size   = eff_font_size)
-    self.om_year_pc_1.config(font = font_year_pc_1)
-    place_after(self.label_year_pc_1,
-                self.om_year_pc_1,
-                dx = eff_dx,
-                dy = - eff_dy)
-
-    # Destruct files status display
-    self.om_year_pc_2.destroy()
-
-    # Reconstruct files status display
-    self.var_year_pc_2 = tk.StringVar(self)
-    self.var_year_pc_2.set(default_year)
-    self.om_year_pc_2 = tk.OptionMenu(self,
-                                      self.var_year_pc_2,
-                                      *master.list_corpus_year)
-    font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME,
-                                 size   = eff_font_size)
-    self.om_year_pc_2.config(font = font_year_pc_2)
-    place_after(self.label_year_pc_2,
-                self.om_year_pc_2,
-                dx = eff_dx,
-                dy = - eff_dy)
-
 
 def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
                     institute_affil_file_path, inst_types_file_path,
-                    pos_x, pos_y, esp_ligne):
+                    pos_x, pos_y, esp_ligne, progress_callback):
     """The internal function `_launch_parsing` parses corpuses from wos or scopus
     using the function 'biblio_parser'. It checks if all useful files are available
     in the working folder using the function 'existing_corpuses'.
@@ -291,7 +258,9 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
     """
 
     # Internal functions
-    def _corpus_parsing(rawdata_path, parsing_path, database_type):
+    def _corpus_parsing(rawdata_path, parsing_path,
+                        database_type, progress_callback):
+        progress_callback(20)
         if not os.path.exists(parsing_path):
             os.mkdir(parsing_path)
         parsing_tup = bp.biblio_parser(rawdata_path, database_type,
@@ -299,15 +268,18 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
                                        country_affiliations_file_path = institute_affil_file_path,
                                        inst_types_file_path = inst_types_file_path)
         parsing_dict, dic_failed = parsing_tup
+        progress_callback(80)
         save_parsing_dict(parsing_dict, parsing_path,
                           item_filename_dict, parsing_save_extent)
+        progress_callback(90)
         save_fails_dict(dic_failed, parsing_path)
+        progress_callback(100)
 
         articles_number = dic_failed["number of article"]
         info_title      = "Information"
         info_text       = (f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
                            f"\n\n  Nombre d'articles du corpus : {articles_number}")
-        messagebox.showinfo(info_title, info_text)    
+        messagebox.showinfo(info_title, info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
@@ -321,6 +293,7 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
 
     # Setting parsing files extension for saving
     parsing_save_extent = pg.TSV_SAVE_EXTENT
+    progress_callback(10)
 
     # Getting files status for corpus parsing
     if database_type in ('wos', 'scopus'):
@@ -341,6 +314,7 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
         answer_1  = messagebox.askokcancel(ask_title, ask_text)
         if answer_1:
             if rawdata_status is False:
+                progress_callback(100)
                 warning_title = "Attention ! Fichier manquant"
                 warning_text  = (f"Le fichier brut d'extraction de '{database_type}' "
                                  f"de l'année {corpus_year} n'est pas disponible."
@@ -351,7 +325,6 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
             else:
                 if not os.path.exists(parsing_path):
                     os.mkdir(parsing_path)
-
                 if parsing_status == 1:
                     # Ask to carry on with parsing if already done
                     ask_title = "Confirmation de traitement"
@@ -359,34 +332,40 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
                                  f"de l'année {corpus_year} est déjà disponible."
                                  "\n\nReconstruire le 'parsing' ?")
                     answer_2  = messagebox.askokcancel(ask_title, ask_text)
-                    if not answer_2:
+                    if answer_2:
+                        # Parse when already parsed and ok for reconstructing parsing
+                        _corpus_parsing(rawdata_path, parsing_path,
+                                        database_type, progress_callback)    
+                    else:
+                        # Cancel parsing reconstruction
+                        progress_callback(100)
                         info_title = "Information"
                         info_text  = (f"Le 'parsing' existant du corpus '{database_type}' "
                                       f"de l'année {corpus_year} a été conservé.")
                         messagebox.showinfo(info_title, info_text)
-
-                # Parse when not parsed yet or ok for reconstructing parsing
-                _corpus_parsing(rawdata_path, parsing_path, database_type)
+                else:
+                    # Parse when not parsed yet
+                    _corpus_parsing(rawdata_path, parsing_path,
+                                    database_type, progress_callback)
         else:
+            progress_callback(100)
             info_title = "Information"
-            info_text  = "Modifiez l'année sélectionnée et relancez le 'parsing'."
+            info_text  = "Modifiez vos choix et relancez le 'parsing'."
             messagebox.showinfo(info_title, info_text)
 
     else:
-        warning_title = "Attention : Erreur type de BDD"
+        progress_callback(100)
+        warning_title = "Attention : Erreur sur type de BDD"
         warning_text  = (f"Le type de BDD {database_type}"
                          " n'est pas encore pris en compte."
                          "\nLe 'parsing' correspondant ne peut être construit !"
                          "\n\nModifiez le type de BDD sélectionné et relancez le 'parsing'.")
         messagebox.showwarning(warning_title, warning_text)
 
-    # update files status
-    _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne)
-
 
 def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                      institute_affil_file_path, inst_types_file_path,
-                     pos_x, pos_y, esp_ligne):
+                     pos_x, pos_y, esp_ligne, progress_callback):
     """The internal function `_launch_synthese` concatenates the parsing
     from wos or scopus databases using the function 'parsing_concatenate_deduplicate'.
     It tags the Institute authors using the function 'extend_author_institutions'
@@ -421,7 +400,7 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
     """
 
     # Internal functions
-    def _deduplicate_corpus_parsing():
+    def _deduplicate_corpus_parsing(progress_callback):
         if not os.path.exists(concat_root_folder):
             os.mkdir(concat_root_folder)
         if not os.path.exists(concat_parsing_path):
@@ -430,21 +409,27 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
             os.mkdir(dedup_root_folder)
         if not os.path.exists(dedup_parsing_path):
             os.mkdir(dedup_parsing_path)
+        progress_callback(15)
 
         scopus_parsing_dict = read_parsing_dict(scopus_parsing_path, item_filename_dict,
                                                 parsing_save_extent)
         wos_parsing_dict    = read_parsing_dict(wos_parsing_path, item_filename_dict,
                                                 parsing_save_extent)
+        progress_callback(30)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
                                                      inst_filter_list = institutions_filter_list)
+        progress_callback(50)
         save_parsing_dict(concat_parsing_dict, concat_parsing_path,
                           item_filename_dict, parsing_save_extent)
-        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict, 
+        progress_callback(60)
+        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict,
                                                      norm_inst_status = False,
                                                      inst_types_file_path = inst_types_file_path,
                                                      country_affiliations_file_path = institute_affil_file_path)
+        progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
                           item_filename_dict, parsing_save_extent)
+        progress_callback(100)
 
     # Setting Institute parameters
     institutions_filter_list = org_tup[3]
@@ -468,16 +453,18 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
     wos_parsing_status    = master.list_wos_parsing[master.list_corpus_year.index(corpus_year)]
     scopus_parsing_status = master.list_scopus_parsing[master.list_corpus_year.index(corpus_year)]
     dedup_parsing_status  = master.list_dedup[master.list_corpus_year.index(corpus_year)]
+    progress_callback(10)
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
     ask_title = "Confirmation de l'année de traitement"
     ask_text  = (f"La synthèse pour l'année {corpus_year} a été lancée."
                  "\n\nConfirmer ce choix ?")
     answer_1 = messagebox.askokcancel(ask_title, ask_text)
-    if answer_1: # Alors on lance la synthèse
+    if answer_1:
 
-        # Vérification de la présence des fichiers
+        # Checking availability of parsing files 
         if not wos_parsing_status:
+            progress_callback(100)
             warning_title = "Attention ! Fichiers manquants"
             warning_text  = ("Le 'parsing' de 'wos' "
                              f"de l'année {corpus_year} n'est pas disponible."
@@ -485,9 +472,9 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                              "\n\n-1 Lancez le 'parsing' manquant;"
                              "\n-2 Relancez la synthèse.")
             messagebox.showwarning(warning_title, warning_text)
-            return
 
         if not scopus_parsing_status:
+            progress_callback(100)
             warning_title = "Attention ! Fichiers manquants"
             warning_text  = ("Le 'parsing' de 'scopus' "
                              f"de l'année {corpus_year} n'est pas disponible."
@@ -495,31 +482,29 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                              "\n\n-1 Lancez le 'parsing' manquant;"
                              "\n-2 Relancez la synthèse.")
             messagebox.showwarning(warning_title, warning_text)
-            return
 
-        if dedup_parsing_status:
-            # Ask to carry on with parsing if already done
-            ask_title = "Reconstruction de la synthèse"
-            ask_text  = (f"La synthèse pour l'année {corpus_year} est déjà disponible."
-                         "\n\nReconstruire la synthèse ?")
-            answer_2 = messagebox.askokcancel(ask_title, ask_text)
-            if answer_2: # Alors on effectue la synthèse
-                _deduplicate_corpus_parsing()
-                info_title = "Information"
-                info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."
-                messagebox.showinfo(info_title, info_text)
+        if wos_parsing_status and scopus_parsing_status:
+            if dedup_parsing_status:
+                # Ask to carry on with concatenation and deduplication if already available
+                ask_title = "Reconstruction de la synthèse"
+                ask_text  = (f"La synthèse pour l'année {corpus_year} est déjà disponible."
+                             "\n\nReconstruire la synthèse ?")
+                answer_2 = messagebox.askokcancel(ask_title, ask_text)
+                if answer_2:
+                    _deduplicate_corpus_parsing(progress_callback)
+                    info_title = "Information"
+                    info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."
+                    messagebox.showinfo(info_title, info_text)
+                else:
+                    progress_callback(100)
+                    info_title = "Information"
+                    info_text = "La synthèse dejà disponible est conservée."
+                    messagebox.showinfo(info_title, info_text)
             else:
+                _deduplicate_corpus_parsing(progress_callback)
                 info_title = "Information"
-                info_text = "La synthèse dejà disponible est conservée."
+                info_text = f"La construction de la synthèse pour l'année {corpus_year} est terminée."
                 messagebox.showinfo(info_title, info_text)
-        else:
-            _deduplicate_corpus_parsing()
-            info_title = "Information"
-            info_text = f"La construction de la synthèse pour l'année {corpus_year} est terminée."
-            messagebox.showinfo(info_title, info_text)
-
-    # update files status
-    _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne)
 
 
 def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
@@ -546,6 +531,75 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         from the module 'gui_globals' of the package 'bmgui'.
 
     """
+    # Internal functions
+    def _launch_parsing_try(progress_callback):
+        parsing_year = self.var_year_pc_1.get()
+        parsing_bdd = var_bdd_pc_1.get()
+        _launch_parsing(self,
+                        master,
+                        parsing_year,
+                        parsing_bdd,
+                        bibliometer_path,
+                        institute_affil_file_path,
+                        inst_types_file_path,
+                        position_selon_x_check,
+                        position_selon_y_check,
+                        espace_entre_ligne_check,
+                        progress_callback)
+        progress_bar.place_forget()
+        
+    def _launch_synthese_try(progress_callback):
+        synthese_year = self.var_year_pc_2.get()
+        _launch_synthese(self,
+                         master,
+                         synthese_year,
+                         org_tup,
+                         bibliometer_path,
+                         institute_affil_file_path,
+                         inst_types_file_path,
+                         position_selon_x_check,
+                         position_selon_y_check,
+                         espace_entre_ligne_check,
+                         progress_callback)
+        progress_bar.place_forget()
+        
+    def _update_progress(value):
+        progress_var.set(value)
+        progress_bar.update_idletasks()
+        if value >= 100:
+            enable_buttons(parse_buttons_list)
+
+    def _except_hook(args):
+        messagebox.showwarning("Error", args)
+        progress_var.set(0)
+        enable_buttons(parse_buttons_list)
+
+    def _start_launch_parsing_try():
+        disable_buttons(parse_buttons_list)
+        place_bellow(parsing_launch_button,
+                     progress_bar, dx = -80, dy = 15)
+        progress_var.set(0)
+        threading.Thread(target=_launch_parsing_try,
+                         args=(_update_progress,)).start()        
+        # update files status
+        _update(self, master, bibliometer_path, 
+                position_selon_x_check,
+                position_selon_y_check,
+                espace_entre_ligne_check)
+
+    def _start_launch_synthese_try():
+        disable_buttons(parse_buttons_list)
+        place_after(synthese_launch_button,
+                    progress_bar, dx = 40, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_synthese_try,
+                         args=(_update_progress,)).start()        
+        # update files status
+        _update(self, master, bibliometer_path, 
+                position_selon_x_check,
+                position_selon_y_check,
+                espace_entre_ligne_check)
+
 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
@@ -564,7 +618,8 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     dx_bdd_select            = mm_to_px(12  * master.width_sf_mm,  gg.PPI)  #12
     dy_bdd_select            = mm_to_px(1   * master.height_sf_mm, gg.PPI)
     dx_launch                = mm_to_px(15  * master.width_sf_mm,  gg.PPI)  #15
-    dy_launch                = mm_to_px(0.2 * master.height_sf_mm, gg.PPI)
+    dy_launch                = mm_to_px(0.2 * master.height_sf_mm, gg.PPI)    
+    progress_bar_length_px = mm_to_px(50 * master.width_sf_mm, gg.PPI)
     eff_labels_font_size     = font_size(14, master.width_sf_min)
     eff_select_font_size     = font_size(12, master.width_sf_min)
     eff_buttons_font_size    = font_size(11, master.width_sf_min)
@@ -591,12 +646,23 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     inst_types_file      = institute + "_" + inst_types_file_base_alias
     institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
     institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
-    inst_types_file_path = institutions_folder_path / Path(inst_types_file)    
+    inst_types_file_path = institutions_folder_path / Path(inst_types_file)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Creating and setting widgets for page title and exit button
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
+    
+    # Handling exception
+    threading.excepthook = _except_hook
+
+    # Initializing progress bar widget
+    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
+    progress_bar = ttk.Progressbar(self,
+                                   orient="horizontal",
+                                   length=progress_bar_length_px,
+                                   mode="determinate",
+                                   variable=progress_var)
 
     # **************** Zone Statut des fichiers de "parsing"
     # Liste des checkbox des corpuses
@@ -687,23 +753,14 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                 dy = - dy_year_select)
 
     # Lancement du parsing
-    font_launch_parsing = tkFont.Font(family = gg.FONT_NAME,
+    parsing_launch_font = tkFont.Font(family = gg.FONT_NAME,
                                       size   = eff_buttons_font_size)
-    button_launch_parsing = tk.Button(self,
+    parsing_launch_button = tk.Button(self,
                                       text = gg.TEXT_LAUNCH_PARSING,
-                                      font = font_launch_parsing,
-                                      command = lambda: _launch_parsing(self,
-                                                                        master,
-                                                                        self.var_year_pc_1.get(),
-                                                                        var_bdd_pc_1.get(),
-                                                                        bibliometer_path,
-                                                                        institute_affil_file_path,
-                                                                        inst_types_file_path,
-                                                                        position_selon_x_check,
-                                                                        position_selon_y_check,
-                                                                        espace_entre_ligne_check))
+                                      font = parsing_launch_font,
+                                      command = _start_launch_parsing_try)
     place_after(om_bdd_pc_1,
-                button_launch_parsing,
+                parsing_launch_button,
                 dx = dx_launch,
                 dy = dy_launch)
 
@@ -742,26 +799,27 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                 dy = - dy_year_select)
 
     # Lancement de la synthèse
-    font_launch_synthese = tkFont.Font(family = gg.FONT_NAME,
+    synthese_launch_font = tkFont.Font(family = gg.FONT_NAME,
                                        size   = eff_buttons_font_size)
-    button_launch_synthese = tk.Button(self,
+    synthese_launch_button = tk.Button(self,
                                      text = gg.TEXT_LAUNCH_SYNTHESE,
-                                     font = font_launch_synthese,
-                                     command = lambda: _launch_synthese(self,
-                                                                        master,
-                                                                        self.var_year_pc_2.get(),
-                                                                        org_tup,
-                                                                        bibliometer_path,
-                                                                        institute_affil_file_path,
-                                                                        inst_types_file_path,
-                                                                        position_selon_x_check,
-                                                                        position_selon_y_check,
-                                                                        espace_entre_ligne_check))
+                                     font = synthese_launch_font,
+                                     command = _start_launch_synthese_try)
     place_after(self.om_year_pc_2,
-                button_launch_synthese,
+                synthese_launch_button,
                 dx = dx_launch,
                 dy = dy_launch)
 
     # **************** Placement de CHECKBOXCORPUSES :
-    _update(self, master, bibliometer_path, position_selon_x_check, position_selon_y_check,
+    _update(self, master, bibliometer_path,
+            position_selon_x_check,
+            position_selon_y_check,
             espace_entre_ligne_check)
+    
+    # Setting buttons list for status change
+    parse_buttons_list = [exist_button,
+                          self.om_year_pc_1,
+                          om_bdd_pc_1,
+                          self.om_year_pc_2,
+                          parsing_launch_button,
+                          synthese_launch_button]

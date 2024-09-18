@@ -13,18 +13,20 @@ __all__ = ['create_consolidate_corpus']
 
 # Standard library imports
 import os
+import threading
 import tkinter as tk
+from pathlib import Path
 from tkinter import font as tkFont
 from tkinter import messagebox
-from pathlib import Path
+from tkinter import ttk
 
 # 3rd party imports
 import pandas as pd
 
 # Local imports
-import bmgui.gui_globals as gg
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
+import bmgui.gui_globals as gg
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import add_otp
 from bmfuncts.consolidate_pub_list import built_final_pub_list
@@ -36,6 +38,8 @@ from bmfuncts.use_pub_attributes import save_homonyms
 from bmfuncts.use_pub_attributes import set_saved_homonyms
 from bmfuncts.use_pub_attributes import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
+from bmgui.gui_utils import disable_buttons
+from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import mm_to_px
 from bmgui.gui_utils import place_after
@@ -50,7 +54,7 @@ def _launch_update_employees(bibliometer_path,
                              effectifs_file_name_alias,
                              effectifs_folder_path,
                              check_effectif_status,
-                             ):
+                             progress_callback):
     """
     """
     update_status = False
@@ -71,7 +75,7 @@ def _launch_update_employees(bibliometer_path,
              sheet_name_error,
              column_error,
              years2add_error,
-             all_years_file_error) = update_employees(bibliometer_path)
+             all_years_file_error) = update_employees(bibliometer_path, progress_callback)
             if not any([files_number_error, sheet_name_error, column_error,
                         years2add_error, all_years_file_error]):
                 info_title = "- Information -"
@@ -168,7 +172,8 @@ def _launch_recursive_year_search_try(year_select,
                                       all_effectifs_path,
                                       employees_update_status,
                                       orphan_alias,
-                                  ):
+                                      progress_callback,
+                                      progress_bar_state):
     """
     """
 
@@ -181,7 +186,9 @@ def _launch_recursive_year_search_try(year_select,
                                                                org_tup,
                                                                bibliometer_path,
                                                                year_select,
-                                                               search_depth)
+                                                               search_depth,
+                                                               progress_callback,
+                                                               progress_bar_state)
             print('\n',end_message)
             info_title = '- Information -'
             info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
@@ -289,24 +296,30 @@ def _launch_resolution_homonymies_try(institute,
                                       homonymes_path,
                                       homonymes_file_path,
                                       homonymes_file_alias,
-                                      year_select):
+                                      year_select,
+                                      progress_callback):
     """
     """
 
     def _resolution_homonymies_try():
         if os.path.isfile(submit_path):
-            end_message, actual_homonym_status = solving_homonyms(institute, org_tup,
-                                                                  submit_path, homonymes_file_path)
+            progress_callback(10)
+            return_tup = solving_homonyms(institute, org_tup,
+                                          submit_path, homonymes_file_path)
+            end_message, actual_homonym_status = return_tup
             print(end_message)
             print('\n Actual homonyms status before setting saved homonyms:',
                   actual_homonym_status)
+            progress_callback(80)
             if actual_homonym_status:
                 end_message, actual_homonym_status = set_saved_homonyms(institute, org_tup,
                                                                         bibliometer_path,
                                                                         year_select,
                                                                         actual_homonym_status)
             print('\n',end_message)
-            print('\n Actual homonyms status after setting saved homonyms:', actual_homonym_status)
+            print('\n Actual homonyms status after setting saved homonyms:',
+                  actual_homonym_status)
+            progress_callback(100)
             info_title = "- Information -"
             info_text  = ("Le fichier pour la résolution des homonymies "
                           f"de l'année {year_select} a été créé "
@@ -370,18 +383,23 @@ def _launch_add_otp_try(institute,
                         homonymes_file_path,
                         otp_path,
                         otp_file_base_alias,
-                        year_select):
+                        year_select,
+                        progress_callback):
     """
     """
     def _add_otp_try():
         if os.path.isfile(homonymes_file_path):
+            progress_callback(10)
             end_message = save_homonyms(institute, org_tup, bibliometer_path, year_select)
             print('\n',end_message)
+            progress_callback(20)
             end_message = add_otp(institute, org_tup, homonymes_file_path,
                                   otp_path, otp_file_base_alias)
             print(end_message)
+            progress_callback(80)
             end_message = set_saved_otps(institute, org_tup, bibliometer_path, year_select)
             print(end_message)
+            progress_callback(100)
             info_title = "- Information -"
             info_text  = (f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
                           f"ont été créés dans le dossier : \n\n'{otp_path}' "
@@ -454,12 +472,14 @@ def _launch_pub_list_conso_try(institute,
                                year_missing_aliases,
                                bdd_multi_annuelle_folder_alias,
                                years_list,
-                               year_select):
+                               year_select,
+                               progress_callback):
     """
     """
 
     def _consolidate_pub_list():
         if os.path.isdir(otp_path) and os.listdir(otp_path):
+            progress_callback(10)
             conso_tup = built_final_pub_list(institute, org_tup,
                                              bibliometer_path, datatype,
                                              otp_path, pub_list_path,
@@ -468,8 +488,10 @@ def _launch_pub_list_conso_try(institute,
             end_message, split_ratio, if_database_complete = (conso_tup[0], conso_tup[1],
                                                               conso_tup[2])
             print(end_message)
+            progress_callback(50)
             end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
             print('\n',end_message)
+            progress_callback(100)
             info_title = "- Information -"
             info_text  = (f"La liste consolidée des publications de l'année {year_select} "
                           f"a été créée dans le dossier :\n\n '{pub_list_path}' "
@@ -580,33 +602,40 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                     y = etape_label_pos_y_list[num])
         return etape
 
+    def _update_progress(value):
+        progress_var.set(value)
+        progress_bar.update_idletasks()
+        if value >= 100:
+            enable_buttons(consolidate_corpus_buttons_list)
+
+    def _except_hook(args):
+        messagebox.showwarning("Error", args)
+        progress_var.set(0)
+        enable_buttons(consolidate_corpus_buttons_list)
+
     # ********************* Function start
 
     # Setting useful local variables for positions modification
     # numbers are reference values in mm for reference screen
-    eff_etape_font_size      = font_size(gg.REF_ETAPE_FONT_SIZE,
-                                         master.width_sf_min)           #14
-    eff_launch_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE-1,
-                                         master.width_sf_min)
-    eff_select_font_size     = font_size(gg.REF_ETAPE_FONT_SIZE,
-                                         master.width_sf_min)
-    eff_buttons_font_size    = font_size(gg.REF_ETAPE_FONT_SIZE-3,
-                                         master.width_sf_min)
-
-    etape_label_pos_x        = mm_to_px(gg.REF_ETAPE_POS_X_MM * master.width_sf_mm,
-                                        gg.PPI)        #10
-    etape_label_pos_y_list   = [mm_to_px( y * master.height_sf_mm, gg.PPI)
-                                for y in gg.REF_ETAPE_POS_Y_MM_LIST]  #[40, 74, 101, 129]
-    etape_button_dx          = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * master.width_sf_mm,
-                                        gg.PPI)       #10
-    etape_button_dy          = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * master.height_sf_mm,
-                                        gg.PPI)      #5
-
-    year_button_x_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm,
-                                        gg.PPI)    #10
-    year_button_y_pos        = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm,
-                                        gg.PPI)    #26
-    dy_year                  = -6
+    eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
+    eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
+    eff_select_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
+    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)    
+    progress_bar_length_px = mm_to_px(100 * master.width_sf_mm, gg.PPI)
+    progress_bar_dx = 40
+    etape_label_pos_x = mm_to_px(gg.REF_ETAPE_POS_X_MM * master.width_sf_mm,
+                                 gg.PPI)
+    etape_label_pos_y_list = [mm_to_px( y * master.height_sf_mm, gg.PPI)
+                              for y in gg.REF_ETAPE_POS_Y_MM_LIST]
+    etape_button_dx = mm_to_px(gg.REF_ETAPE_BUT_DX_MM * master.width_sf_mm,
+                               gg.PPI)
+    etape_button_dy = mm_to_px(gg.REF_ETAPE_BUT_DY_MM * master.height_sf_mm,
+                               gg.PPI)
+    year_button_x_pos = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm,
+                                 gg.PPI)
+    year_button_y_pos = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm,
+                                 gg.PPI)
+    dy_year = -6
 
     # Setting useful aliases
     bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
@@ -671,22 +700,34 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
 
     place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
+    
+    # Handling exception
+    threading.excepthook = _except_hook
+
+    # Initializing progress bar widget
+    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
+    progress_bar = ttk.Progressbar(self,
+                                   orient="horizontal",
+                                   length=progress_bar_length_px,
+                                   mode="determinate",
+                                   variable=progress_var)
 
     # *********************** Etape 1 : Croisement auteurs-effectifs
-    def _launch_recursive_year_search():
-        """ Fonction executée par le bouton 'button_croisement'.
+    def _launch_recursive_year_search(progress_callback):
+        """ Fonction executée par le bouton 'merge_button'.
         """
 
         # Getting year selection
-        year_select =  variable_years.get()
+        year_select = variable_years.get()
 
         # Setting paths dependent on year_select
         corpus_year_path = bibliometer_path / Path(year_select)
-        bdd_mensuelle_path =  corpus_year_path / Path(bdd_mensuelle_alias)
+        bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = bdd_mensuelle_path / Path(submit_alias)
 
         # Getting check_effectif_status
         check_effectif_status = check_effectif_var.get()
+        progress_callback(10)
 
         # Updating employees file
         employees_update_status = _launch_update_employees(bibliometer_path,
@@ -695,11 +736,12 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                                            effectifs_file_name_alias,
                                                            effectifs_folder_path,
                                                            check_effectif_status,
-                                                           )
-
+                                                           progress_callback)
         if not employees_update_status :
             check_effectif_var.set(0)
             check_effectif_status = check_effectif_var.get()
+        progress_callback(30)
+        progress_bar_state = 30
 
         # Trying launch of recursive search for authors in employees file
         _launch_recursive_year_search_try(year_select,
@@ -712,15 +754,25 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                           all_effectifs_path,
                                           employees_update_status,
                                           orphan_alias,
-                                         )
+                                          progress_callback,
+                                          progress_bar_state)        
+        progress_bar.place_forget()
 
-    ### Définition du  bouton 'button_croisement'
-    font_croisement = tkFont.Font(family = gg.FONT_NAME,
-                                  size   = eff_launch_font_size)
-    button_croisement = tk.Button(self,
-                                  text = gg.TEXT_CROISEMENT,
-                                  font = font_croisement,
-                                  command = _launch_recursive_year_search)
+
+    def _start_launch_recursive_year_search():
+        disable_buttons(consolidate_corpus_buttons_list)
+        place_after(merge_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_recursive_year_search, args=(_update_progress,)).start()
+
+    ### Définition du bouton 'merge_button'
+    merge_font = tkFont.Font(family = gg.FONT_NAME,
+                             size   = eff_launch_font_size)
+    merge_button = tk.Button(self,
+                             text = gg.TEXT_CROISEMENT,
+                             font = merge_font,
+                             command = _start_launch_recursive_year_search)
 
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self,
@@ -735,11 +787,11 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                  dx = etape_button_dx,
                  dy = etape_button_dy / 2)
     place_bellow(check_effectif_box,
-                 button_croisement,
+                 merge_button,
                  dy = etape_button_dy / 2)
 
     # ******************* Etape 2 : Résolution des homonymies
-    def _launch_resolution_homonymies():
+    def _launch_resolution_homonymies(progress_callback):
         """Fonction executée par le bouton 'button_homonymes'.
         """
 
@@ -762,24 +814,34 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                           homonymes_path,
                                           homonymes_file_path,
                                           homonymes_file_alias,
-                                          year_select)
+                                          year_select,
+                                          progress_callback)        
+        progress_bar.place_forget()
 
-    ### Définition du bouton "button_homonymes"
-    font_homonymes = tkFont.Font(family = gg.FONT_NAME,
-                                 size   = eff_launch_font_size)
-    button_homonymes = tk.Button(self,
-                                     text = gg.TEXT_HOMONYMES,
-                                     font = font_homonymes,
-                                     command = _launch_resolution_homonymies)
+
+    def _start_launch_resolution_homonymies():
+        disable_buttons(consolidate_corpus_buttons_list)
+        place_after(homonyms_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_resolution_homonymies, args=(_update_progress,)).start()
+
+    ### Définition du bouton "homonyms_button"
+    homonyms_font = tkFont.Font(family = gg.FONT_NAME,
+                                size   = eff_launch_font_size)
+    homonyms_button = tk.Button(self,
+                                text = gg.TEXT_HOMONYMES,
+                                font = homonyms_font,
+                                command = _start_launch_resolution_homonymies)
     etape_2 = etapes[1]
     place_bellow(etape_2,
-                 button_homonymes,
+                 homonyms_button,
                  dx = etape_button_dx,
                  dy = etape_button_dy)
 
     # ******************* Etape 3 : Attribution des OTPs
-    def _launch_add_otp():
-        """Fonction executée par le bouton 'button_otp'.
+    def _launch_add_otp(progress_callback):
+        """Fonction executée par le bouton 'otp_button'.
         """
 
         # Renewing year selection
@@ -799,24 +861,34 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                             homonymes_file_path,
                             otp_path,
                             otp_file_base_alias,
-                            year_select)
+                            year_select,
+                            progress_callback)        
+        progress_bar.place_forget()
 
-    ### Définition du bouton "button_OTP"
-    font_otp = tkFont.Font(family = gg.FONT_NAME,
+
+    def _start_launch_add_otp():
+        disable_buttons(consolidate_corpus_buttons_list)
+        place_after(otp_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_add_otp, args=(_update_progress,)).start()
+
+    ### Définition du bouton "otp_button"
+    otp_font = tkFont.Font(family = gg.FONT_NAME,
                            size   = eff_launch_font_size)
-    button_otp = tk.Button(self,
+    otp_button = tk.Button(self,
                            text = gg.TEXT_OTP,
-                           font = font_otp,
-                           command = _launch_add_otp)
+                           font = otp_font,
+                           command = _start_launch_add_otp)
     etape_3 = etapes[2]
     place_bellow(etape_3,
-                 button_otp,
+                 otp_button,
                  dx = etape_button_dx,
                  dy = etape_button_dy)
 
     # ****************** Etape 4 : Liste consolidée des publications
-    def _launch_pub_list_conso():
-        """Fonction executée par le bouton 'button_finale'.
+    def _launch_pub_list_conso(progress_callback):
+        """Fonction executée par le bouton 'final_button'.
         """
 
         # Renewing year selection and years
@@ -845,19 +917,35 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                    year_missing_aliases,
                                    bdd_multi_annuelle_folder_alias,
                                    master.years_list,
-                                   year_select)
+                                   year_select,
+                                   progress_callback)        
+        progress_bar.place_forget()
+
+
+    def _start_launch_pub_list_conso():
+        disable_buttons(consolidate_corpus_buttons_list)
+        place_after(conso_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_pub_list_conso, args=(_update_progress,)).start()
 
     # Définition du bouton de création de la liste consolidée des publications
-    font_finale = tkFont.Font(family = gg.FONT_NAME,
-                              size   = eff_launch_font_size)
-    button_finale = tk.Button(self,
-                              text = gg.TEXT_PUB_CONSO,
-                              font = font_finale,
-                              command = _launch_pub_list_conso)
+    conso_font = tkFont.Font(family = gg.FONT_NAME,
+                             size   = eff_launch_font_size)
+    conso_button = tk.Button(self,
+                             text = gg.TEXT_PUB_CONSO,
+                             font = conso_font,
+                             command = _start_launch_pub_list_conso)
 
     etape_4 = etapes[3]
 
     place_bellow(etape_4,
-                 button_finale,
+                 conso_button,
                  dx = etape_button_dx,
                  dy = etape_button_dy / 2)
+    
+    # Setting buttons list for status change
+    consolidate_corpus_buttons_list = [merge_button,
+                                       homonyms_button,
+                                       otp_button,
+                                       conso_button]

@@ -1,6 +1,6 @@
 """ `__init__` module of `bmfuncts` package."""
 
-__version__ = '4.0.0'
+__version__ = '5.0.0'
 __author__  = 'BiblioMeter team'
 __license__ = 'MIT'
 

@@ -155,15 +155,16 @@ CATEGORIES_DIC   = {'CDI'      : ['CDI'],
                     'Stg'      : ['Stagiaire'],
                    }
 
-STATUS_DIC       = {'Doc'      : ['Thésard'],
-                    'Postdoc'  : ['Post doc'],
+STATUS_DIC       = {'Doc'      : ['Thésard', 'Doctorant', 'Thèse', 'thèse'],
+                    'Postdoc'  : ['Post doc', 'Post-doctorant'],
                     'CSc'      : ['Conseiller Scient.NR'],
                     'Stg'      : ['Stagiaire'],
                     'Intrm'    : ['Intérimaire']
                    }
 
-QUALIFICATION_DIC = {'Doc'     : ['THESARD', 'THESE'],
-                     'Postdoc' : ['POST-DOC'],
+QUALIFICATION_DIC = {'Doc'     : ['THESARD', 'THESE', 'Doc'],
+                     'Postdoc' : ['POST-DOC', 'Postdoc'],
                      'CSc'     : ['CONSEILLER SCIENTIFIQUE'],
-                     'Stg'     : ['STAGIAIRE'],
+                     'Stg'     : ['STAGIAIRE', 'Stg'],
+                     'Coll'    : ['Coll']
                     }

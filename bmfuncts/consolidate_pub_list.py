@@ -372,25 +372,30 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
 def _fullfill_issn(corpus_df_bis, inst_issn_df, unknown,
                    journal_col, issn_col, eissn_col):
+    """
+    TODO Complete the docstring
+    """
     for corpus_idx, corpus_row in corpus_df_bis.iterrows():
-        if corpus_row[issn_col] == unknown:
-            corpus_journal = corpus_row[journal_col].upper()
-            for _, inst_row in inst_issn_df.iterrows():
-                inst_journal = inst_row[journal_col].upper()
-                if corpus_journal == inst_journal:
-                    if inst_row[issn_col] != unknown:
-                        corpus_df_bis.loc[corpus_idx, issn_col] = inst_row[issn_col]
-                    elif inst_row[eissn_col] != unknown:
-                        corpus_df_bis.loc[corpus_idx, issn_col] = inst_row[eissn_col]
-                    else:
-                        pass
+        if corpus_row[issn_col] != unknown:
+            continue
+        corpus_journal = corpus_row[journal_col].upper()
+        for _, inst_row in inst_issn_df.iterrows():
+            inst_journal = inst_row[journal_col].upper()
+            if corpus_journal != inst_journal:
+                continue
+            if inst_row[issn_col] != unknown:
+                corpus_df_bis.loc[corpus_idx, issn_col] = inst_row[issn_col]
+            elif inst_row[eissn_col] != unknown:
+                corpus_df_bis.loc[corpus_idx, issn_col] = inst_row[eissn_col]
+            else:
+                pass
     return corpus_df_bis
 
 
 def _build_if_dict(if_df, if_year, unknown, issn_col, eissn_col, if_col):
     issn_if_dict = dict(zip(if_df[if_year][issn_col],
                             if_df[if_year][if_col]))
-    if unknown in issn_if_dict.keys():
+    if unknown in issn_if_dict:
         del issn_if_dict[unknown]
     eissn_if_dict = {}
     if eissn_col in list(if_df[if_year].columns):
@@ -425,7 +430,7 @@ def _format_missing_df(results_df, common_args_tup, add_cols):
     # Setting final year column
     final_year_col = year_col[0:5]
 
-    # Setting the ordered final columns    
+    # Setting the ordered final columns
     final_order_col_list = [final_year_col, journal_col,
                             issn_col, eissn_col,
                             most_recent_year_if_col,
@@ -476,7 +481,7 @@ def get_if_db(institute, org_tup, bibliometer_path):
     # Setting list of years for which IF are available
     if_available_years_list  = list(if_df.keys())
 
-    # Setting the most recent year for which IF are available    
+    # Setting the most recent year for which IF are available
     if_most_recent_year = if_available_years_list[-1]
 
     return if_df, if_available_years_list, if_most_recent_year
@@ -515,7 +520,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
 
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
-    base_col_list    = list(final_col_dic.values()) 
+    base_col_list    = list(final_col_dic.values())
     if_maj_col_dic   = set_if_col_names(institute, org_tup)
 
     # Setting useful column aliases
@@ -574,16 +579,20 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     # Setting local column names
     most_recent_year_if_col = current_if_col_alias + ', ' + if_most_recent_year
     year_db_if_col          = database_if_col_alias + ' ' + corpus_year
-    final_year_col          = year_col_alias[0:5]
+    #final_year_col          = year_col_alias[0:5]
     journal_upper_col       = journal_col_alias + '_Upper'
 
     # Getting the df where to add IFs
     corpus_df = pd.read_excel(in_file_path)
 
     # Recasting column names
-    new_base_col_list = list(map(lambda x: x.replace(otp_col_alias, otp_col_new_alias), base_col_list))
+    new_base_col_list = list(
+        map(lambda x: x.replace(otp_col_alias, otp_col_new_alias),
+            base_col_list)
+    )
     if otp_col_alias in corpus_df.columns:
-        corpus_df.rename(columns = {otp_col_alias : otp_col_new_alias}, inplace = True)
+        corpus_df.rename(columns = {otp_col_alias : otp_col_new_alias},
+                         inplace = True)
 
     # Setting type of values in 'year_col_alias' as string
     corpus_df = corpus_df.astype({year_col_alias : str})
@@ -603,8 +612,8 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     # Adding 'most_recent_year_if_col' column to 'corpus_df_bis'
     # with values defined by internal function '_create_if_column'
     corpus_df_bis[most_recent_year_if_col] = _create_if_column(corpus_df_bis[issn_col_alias],
-                                                                    most_recent_year_if_dict,
-                                                                    unknown_if_fill_alias)
+                                                               most_recent_year_if_dict,
+                                                               unknown_if_fill_alias)
 
     # Adding 'corpus_year_if_col_alias' column to 'corpus_df_bis'
     if corpus_year in if_available_years_list:
@@ -689,7 +698,7 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
     # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
     wb, _ = mise_en_page(institute, org_tup, corpus_df_bis)
     wb.save(out_file_path)
-    
+
     # Setting common args list for '_format_missing_df' function
     common_args_tup = (year_col_alias, corpus_year_if_col_alias,
                        most_recent_year_if_col,
@@ -698,9 +707,11 @@ def add_if(institute, org_tup, bibliometer_path, in_file_path, out_file_path,
                        corpus_issn_col_alias, unknown_alias)
 
     # Formatting 'year_missing_issn_df' and 'year_missing_if_df'
-    sorted_year_missing_issn_df = _format_missing_df(year_missing_issn_df, common_args_tup, add_cols = True)
-    sorted_year_missing_if_df   = _format_missing_df(year_missing_if_df, common_args_tup, add_cols = False)
-    
+    sorted_year_missing_issn_df = _format_missing_df(
+        year_missing_issn_df, common_args_tup, add_cols = True)
+    sorted_year_missing_if_df   = _format_missing_df(
+        year_missing_if_df, common_args_tup, add_cols = False)
+
     # Saving 'year_missing_issn_df' as EXCEL file at full path 'missing_issn_path'
     wb, _ = mise_en_page(institute, org_tup, sorted_year_missing_issn_df)
     wb.save(missing_issn_path)
@@ -819,8 +830,6 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Deduplicating rows on Pub_id
     otp_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
-    
-    #return otp_df, final_col_list
 
     # Selecting useful columns using final_col_list
     consolidate_pub_list_df = otp_df[final_col_list].copy()

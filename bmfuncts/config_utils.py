@@ -280,9 +280,10 @@ def set_org_params(institute, bibliometer_path):
     and_inst_status = inst_org_dict["MAIN_INSTITUTION_STATUS"]
     if_db_status = inst_org_dict["IF_DB_STATUS"]
     no_if_doctype_keys_list = inst_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]
+    orphan_split_status = inst_org_dict["ORPHAN_SPLIT_STATUS"]
 
     return_tup = (col_names_dpt, dpt_label_dict, dpt_attributes_dict,
                   institutions_filter_list, inst_col_list,
                   if_db_status, no_if_doctype_keys_list,
-                  main_inst_idx, and_inst_status)
+                  main_inst_idx, and_inst_status, orphan_split_status)
     return return_tup

@@ -1,6 +1,8 @@
 """ `gui_functions` module contains useful functions for gui management."""
 
-__all__ = ['existing_corpuses',
+__all__ = ['disable_buttons',
+           'enable_buttons',
+           'existing_corpuses',
            'font_size',
            'general_properties',
            'last_available_years',
@@ -18,17 +20,26 @@ __all__ = ['existing_corpuses',
 import os
 import math
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import font as tkFont
 from pathlib import Path
+from tkinter import font as tkFont
+from tkinter import messagebox
 
 # 3rd party imports
 import BiblioParsing as bp
 
 # Local imports
-import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
+import bmgui.gui_globals as gg
 from bmfuncts.config_utils import set_user_config
+
+
+def disable_buttons(buttons_list):
+    for button in buttons_list:
+        button.config(state=tk.DISABLED)
+
+def enable_buttons(buttons_list):
+    for button in buttons_list:
+        button.config(state=tk.NORMAL)
 
 
 def show_frame(self, page_name):

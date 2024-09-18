@@ -1,8 +1,4 @@
 git+https://github.com/TickyWill/BiblioParsing.git@amal_dev
 auto_py_to_exe==2.42.0
 notebook==6.4.4
-kaleido==0.1.*
-matplotlib==3.8.4
-plotly==5.17.0
 screeninfo==0.8.1
-wordcloud==1.9.2

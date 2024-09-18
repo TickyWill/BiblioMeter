@@ -428,12 +428,12 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                 to the author institution;
                 - false otherwise.
         """
-        main_inst_col = inst_col_list[main_inst_idx]        
+        main_inst_col = inst_col_list[main_inst_idx]
         if main_status:
             filt_authors_inst_ = df_authorsinst_authors[main_inst_col] == 1
         else:
             first_inst_col = inst_col_list[0]
-            filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1 
+            filt_authors_inst_ = df_authorsinst_authors[first_inst_col] == 1
             for inst_idx, inst_col in enumerate(inst_col_list):
                 if inst_idx != 0:
                     filt_authors_inst_ = filt_authors_inst_ | (df_authorsinst_authors[inst_col] == 1)
@@ -488,7 +488,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     # Building the authors filter of the institution INSTITUTE
     inst_col_list = org_tup[4]
     main_inst_idx = org_tup[7]
-    main_status   = org_tup[8]    
+    main_status   = org_tup[8]
     filt_authors_inst = _build_filt_authors_inst(inst_col_list, main_inst_idx, main_status)
 
     # Associating each publication (including its complementary info)
@@ -986,6 +986,44 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     return end_message
 
 
+def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=False):
+    # Internal function
+    def _save_inst_col_df(inst_col, inst_col_df):
+        inst_col_file_name = inst_col + "_" + orphan_file_name_alias
+        inst_col_file_path = bdd_mensuelle_path / Path(inst_col_file_name)
+        inst_col_df.to_excel(inst_col_file_path, index=False)
+        message = f"Excel file of orphan authors created for Institute subdivision: {inst_col}"
+        if verbose: print(message)
+
+    # Setting useful aliases
+    converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
+    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
+    orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
+
+    # Setting useful column names list
+    inst_col_list = org_tup[4]
+
+    # Setting spliting status
+    orphan_split_status = org_tup[9]
+
+    # Setting useful paths
+    corpus_year_path = bibliometer_path / Path(corpus_year)
+    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
+
+    # Reading of the existing orphan excel file
+    # with dates conversion through converters_alias
+    orphan_path = bdd_mensuelle_path / Path(orphan_file_name_alias)
+    orphan_df = pd.read_excel(orphan_path, converters = converters_alias)
+
+    # Creating, and saving as Excel file, orphan authors for each Institute subdivision
+    institute_df = orphan_df.copy()
+    for inst_col in inst_col_list[1:]:
+        inst_col_df = orphan_df[orphan_df[inst_col]==1]
+        _save_inst_col_df(inst_col, inst_col_df)
+        institute_df = institute_df.drop(inst_col_df.index)
+    _save_inst_col_df(inst_col_list[0], institute_df)
+
+
 def _my_hash(text:str):
     my_hash = 0
     facts = (257,961) # prime numbers to mix up the bits
@@ -1054,8 +1092,8 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
     return message
 
 
-def recursive_year_search(path_out, df_eff, institute, org_tup,
-                          bibliometer_path, corpus_year, search_depth):
+def recursive_year_search(path_out, df_eff, institute, org_tup, bibliometer_path,
+                          corpus_year, search_depth, progress_callback, progress_bar_state):
     """
     Uses following local functions of the module "merge_pub_employees.py":
     - `_build_institute_pubs_authors`
@@ -1105,9 +1143,12 @@ def recursive_year_search(path_out, df_eff, institute, org_tup,
     orphan_path   = path_out / Path(orphan_file_name_alias)
     ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
     others_path   = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
+    step = (100 - progress_bar_state) / 100
+    progress_callback(progress_bar_state + step * 2)
 
     # Building the articles dataframe
     df_pub = _build_institute_pubs_authors(institute, org_tup, bibliometer_path, corpus_year)
+    progress_callback(progress_bar_state + step * 5)
 
     # Building the search time depth of Institute co-authors among the employees dataframe
     eff_available_years = list(df_eff.keys())
@@ -1117,6 +1158,7 @@ def recursive_year_search(path_out, df_eff, institute, org_tup,
         year_start = int(corpus_year)-1
     year_stop = year_start - (search_depth - 1)
     years = [str(i) for i in range(year_start, year_stop-1,-1)]
+    progress_callback(progress_bar_state + step * 10)
 
     # *******************************************************************
     # * Building recursively the `df_submit` and `df_orphan` dataframes *
@@ -1146,23 +1188,32 @@ def recursive_year_search(path_out, df_eff, institute, org_tup,
     # Saving initial files of df_submit and df_orphan
     df_submit.to_excel(submit_path, index = False)
     df_orphan.to_excel(orphan_path, index = False)
+    progress_callback(progress_bar_state + step * 20)
 
     # Adding authors from list of external_phd students and saving new df_submit and df_orphan
     df_submit, df_orphan = _add_ext_docs(submit_path, orphan_path, ext_docs_path)
+    progress_callback(progress_bar_state + step * 25)
 
     # Adding authors from list of external employees under other hiring contract
     # and saving new df_submit and df_orphan
     df_submit, df_orphan = _add_other_ext(submit_path, orphan_path, others_path)
-
+    new_progress_bar_state = progress_bar_state + step * 30
+    progress_callback(new_progress_bar_state)
+    progress_bar_loop_progression = step * 50 // len(years)
+    
     for _, year in enumerate(years):
         # Updating the dataframes df_submit_add and df_orphan
-        df_submit_add, df_orphan =  _build_df_submit(df_eff[year],
-                                                     df_orphan,
-                                                     bibliometer_path,
-                                                     test_case)
+        df_submit_add, df_orphan = _build_df_submit(df_eff[year],
+                                                    df_orphan,
+                                                    bibliometer_path,
+                                                    test_case)
 
         # Updating df_submit and df_orphan
         df_submit = pd.concat([df_submit, df_submit_add])
+
+        # Updating progress bar state
+        new_progress_bar_state += progress_bar_loop_progression
+        progress_callback(new_progress_bar_state)
 
     # *************************************************************************************
     # * Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file *
@@ -1186,15 +1237,22 @@ def recursive_year_search(path_out, df_eff, institute, org_tup,
 
     # Adding author job type and saving new df_submit
     _add_author_job_type(submit_path, submit_path)
+    progress_callback(new_progress_bar_state + step * 5)
 
     # Adding full article reference and saving new df_submit
     _add_biblio_list(submit_path, submit_path)
+    progress_callback(new_progress_bar_state + step * 10)
 
     # Renaming column names using submit_col_rename_dic and orphan_col_rename_dic
     _change_col_names(institute, org_tup, submit_path, orphan_path)
 
+    # Splitting orphan file in subdivisions of Institute
+    _split_orphan(institute, bibliometer_path, org_tup, corpus_year)
+    progress_callback(new_progress_bar_state + step * 15)
+
     # Creating universal identification of articles independent of database extraction
     _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
+    progress_callback(100)
 
     end_message = ("Results of search of authors in employees list "
                    f"saved in folder: \n  {path_out}")

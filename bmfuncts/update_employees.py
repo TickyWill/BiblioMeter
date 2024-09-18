@@ -442,7 +442,7 @@ def _build_year_month_dpt(year_months_file_path):
     return employees_df
 
 
-def update_employees(bibliometer_path, replace = True):
+def update_employees(bibliometer_path, progress_callback, replace = True):
     """The function `update_employees` update the file defined by the global
     'EMPLOYEES_ARCHI' at key 'employees_file_name' using the file defined
     by the global 'EMPLOYEES_ARCHI' at key "one_year_employees_filebase"
@@ -479,6 +479,7 @@ def update_employees(bibliometer_path, replace = True):
     # Setting the list of files available to add (expected only one)
     months2add_files = [file for file in os.listdir(months2add_employees_folder_path)
                              if file.endswith(".xlsx") and file[0] != '~']
+    progress_callback(15)
 
     if len(months2add_files)>1:
         files_number_error = (f"Too many files present in  '{months2add_employees_folder_path}' "
@@ -499,6 +500,7 @@ def update_employees(bibliometer_path, replace = True):
                                                one_year_employees_folder_path,
                                                one_year_employees_basename_alias,
                                                replace)
+    progress_callback(20)
 
     if employees_year is None or year_months_file_path is None:
         return None, None, sheet_name_error, column_error, years2add_error, None
@@ -506,6 +508,7 @@ def update_employees(bibliometer_path, replace = True):
     # Building the dataframe employees_df by concatenating
     # the months of the current year
     employees_df = _build_year_month_dpt(year_months_file_path)
+    progress_callback(25)
 
     # Saving employees_df as a sheet mame after employees_year,
     # in the workbook pointed by all_years_file_path

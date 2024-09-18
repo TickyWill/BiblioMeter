@@ -41,9 +41,8 @@ def _capwords_journal_col(journal_col):
 
 def _formatting_wb_sheet(institute, org_tup, year, df, wb, first, if_database):
     if first:
-        ws = wb.active
-        ws.title = year
         wb,ws = mise_en_page(institute, org_tup, df, wb, if_database)
+        ws.title = year
     else:
         wb.create_sheet(year)
         wb.active = wb[year]
@@ -54,9 +53,9 @@ def _formatting_wb_sheet(institute, org_tup, year, df, wb, first, if_database):
 
 def _get_if(missing_file_path, useful_col_list,
             journal_col, year_if_col_alias):
-    # Setting useful aliases 
+    # Setting useful aliases
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
-    
+
     missing_df = pd.read_excel(missing_file_path)
     if year_if_col_alias not in missing_df.columns:
         for col in missing_df.columns:
@@ -76,7 +75,7 @@ def _append_df(df1, df2, col_alias):
         concat_df = df2.copy()
     else:
         if not df2.empty:
-            concat_df = pd.concat([df1, df2]) 
+            concat_df = pd.concat([df1, df2])
     concat_df = concat_df.drop_duplicates(subset = col_alias,
                                           keep = 'last')
     return concat_df
@@ -117,7 +116,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     corpus_year_useful_col_list = [journal_col_alias, issn_col_alias,
                                    eissn_col_alias, corpus_year_if_col]
 
-    # Getting the IFs of the year for the ISSN or e-ISSN already present in the IF database    
+    # Getting the IFs of the year for the ISSN or e-ISSN already present in the IF database
     missing_if_corpus_year_if_df = _get_if(year_missing_if_path,
                                            corpus_year_useful_col_list,
                                            journal_col_alias,
@@ -148,7 +147,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
                                         eissn_col_alias, most_recent_year_if_col_alias]
 
     # Getting the IFs of the year for the ISSN or e-ISSN
-    # already present in the IF database    
+    # already present in the IF database
     missing_if_most_recent_year_if_df = _get_if(year_missing_if_path,
                                                 most_recent_year_useful_col_list,
                                                 journal_col_alias,
@@ -184,12 +183,13 @@ def _build_previous_years_if_df(institute,
                                 most_recent_year,
                                 journal_col_alias,
                                 wb, first, if_database):
-    # Setting useful aliases    
+    # Setting useful aliases
     unknown_alias = bp.UNKNOWN
+
     # Building fully updated IFs database for years
     # before the most recent year available for IFs
     most_recent_year_if_df_to_add = pd.DataFrame(columns = if_db_df[most_recent_year].\
-                                                 columns)    
+                                                 columns)
     for if_db_year in if_db_years_list[:-1]:
         year_if_db_df = if_db_df[if_db_year]
         year_if_db_df.fillna(unknown_alias, inplace = True)
@@ -231,7 +231,7 @@ def _build_recent_year_if_df(institute,
                              wb, first, if_database):
     # Setting useful aliases
     unknown_alias = bp.UNKNOWN
-    
+
     # Building fully updated Ifs database for years beginning
     # from the most recent year available for IFs
     most_recent_year_if_db_df = if_db_df[most_recent_year]
@@ -260,10 +260,11 @@ def _build_recent_year_if_df(institute,
     wb = _formatting_wb_sheet(institute, org_tup, off_if_db_years_list[0],
                               most_recent_year_if_db_df,
                               wb, first, if_database)
-    return wb 
+    return wb
 
 
-def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_list):
+def update_inst_if_database(institute, org_tup, bibliometer_path,
+                            corpi_years_list, progress_callback):
     """
     Note:
     
@@ -282,6 +283,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     inst_all_if_path    = if_root_folder_path / Path(inst_all_if_filename_alias)
+    progress_callback(10)
 
     # Getting the IFs database content and its IFS available years list
     if_db_df = pd.read_excel(inst_all_if_path, sheet_name = None)
@@ -290,6 +292,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
     # Setting useful parameters for the update of the IFs database
     most_recent_year     = if_db_years_list[-1]
     off_if_db_years_list = sorted(list(set(corpi_years_list) - set(if_db_years_list[:-1])))
+    progress_callback(30)
 
     # Initialize parameters for saving results as multisheet workbook
     if_database = True
@@ -310,6 +313,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
                                       journal_col_alias,
                                       wb, first, if_database)
     wb, first, most_recent_year_if_df_to_add = tup
+    progress_callback(60)
 
     # Building fully updated Ifs database for years beginning
     # from the most recent year available for IFs
@@ -325,7 +329,9 @@ def update_inst_if_database(institute, org_tup, bibliometer_path, corpi_years_li
                                   most_recent_year,
                                   journal_col_alias,
                                   wb, first, if_database)
+    progress_callback(90)
     wb.save(inst_all_if_path)
+    progress_callback(100)
 
     end_message = f"IFs database updated in file : \n  '{inst_all_if_path}'"
     return end_message, if_db_years_list
