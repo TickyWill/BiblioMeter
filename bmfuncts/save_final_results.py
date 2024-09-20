@@ -33,7 +33,9 @@ def save_final_pub_lists(bibliometer_path,
     # Setting aliases of common parts of file names
     origin_pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias     = pg.ARCHI_YEAR["pub list file name base"]
-    year_pub_list_file_alias     = pub_list_file_base_alias + " " + corpus_year
+    invalid_pub_file_base_alias  = pg.ARCHI_YEAR["invalid file name base"]
+    year_pub_list_file_alias    = pub_list_file_base_alias + " " + corpus_year
+    year_invalid_pub_file_alias = invalid_pub_file_base_alias + " " + corpus_year
 
     # Setting common paths
     origin_corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -63,6 +65,10 @@ def save_final_pub_lists(bibliometer_path,
     other_pub_list_file_alias = year_pub_list_file_alias + "_Others.xlsx"
     origin_paths_dict["Others"] = origin_pub_list_path / Path(other_pub_list_file_alias)
     target_paths_dict["Others"] = target_pub_list_path / Path(other_pub_list_file_alias)
+    
+    invalid_pub_list_file_alias = year_invalid_pub_file_alias + ".xlsx"
+    origin_paths_dict["Invalid"] = origin_pub_list_path / Path(invalid_pub_list_file_alias)
+    target_paths_dict["Invalid"] = target_pub_list_path / Path(invalid_pub_list_file_alias)
 
     for key, origin_path in origin_paths_dict.items():
         # Copying file from origin path to target path

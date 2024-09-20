@@ -807,7 +807,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     # Setting useful aliases
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    invalid_pub_filename_base_alias = pg.ARCHI_YEAR["invalid file name base"]
+    invalid_pub_filename_base_alias  = pg.ARCHI_YEAR["invalid file name base"]
     pub_id_alias                     = final_col_dic['pub_id']
     otp_alias                        = final_col_dic['otp']   # Choix de l'OTP
 
