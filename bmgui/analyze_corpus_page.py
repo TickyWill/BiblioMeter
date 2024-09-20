@@ -103,7 +103,7 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                  f"avec les valeurs {analysis_if}. "
                  "\n\nLes fichiers obtenus ont été créés dans le dossier :"
                  f"\n\n'{if_analysis_folder_path}'."
-                 "\n\nLa base de donnée des indicateurs respective de l'Institut "
+                 "\n\nLa base de données des indicateurs respective de l'Institut "
                  "et de chaque département a été mise à jour "
                  "avec les résultats de cette analyse et se trouve dans le dossier :"
                  f"\n\n'{results_folder_path}'.")

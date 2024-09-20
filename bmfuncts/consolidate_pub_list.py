@@ -807,12 +807,15 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     # Setting useful aliases
     missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
+    invalid_pub_filename_base_alias = pg.ARCHI_YEAR["invalid file name base"]
     pub_id_alias                     = final_col_dic['pub_id']
     otp_alias                        = final_col_dic['otp']   # Choix de l'OTP
 
     # Setting useful paths
     missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
     missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)
+    invalid_file_path = out_path / Path(invalid_pub_filename_base_alias
+                                        + " " + corpus_year + ".xlsx")
 
     # Setting institute parameters
     dpt_label_dict = org_tup[1]
@@ -844,6 +847,9 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     consolidate_pub_list_df.set_index(pub_id_alias, inplace = True)
 
     # Droping invalide publications by pub Id as index
+    invalid_pub_list_df = consolidate_pub_list_df.drop(
+        consolidate_pub_list_df[consolidate_pub_list_df[otp_alias] \
+                                != ig.INVALIDE].index)
     consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[otp_alias] \
                                                          == ig.INVALIDE].index,
                                  inplace = True)
@@ -853,6 +859,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Re_saving df to EXCEL file
     consolidate_pub_list_df.to_excel(out_file_path, index = False)
+    invalid_pub_list_df.to_excel(invalid_file_path, index = False)
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
     # this also for saving results files to complete IFs database

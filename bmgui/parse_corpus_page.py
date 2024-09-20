@@ -365,7 +365,7 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
 
 def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                      institute_affil_file_path, inst_types_file_path,
-                     pos_x, pos_y, esp_ligne, progress_callback):
+                     pos_x, pos_y, esp_ligne, datatype, progress_callback):
     """The internal function `_launch_synthese` concatenates the parsing
     from wos or scopus databases using the function 'parsing_concatenate_deduplicate'.
     It tags the Institute authors using the function 'extend_author_institutions'
@@ -409,6 +409,7 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
             os.mkdir(dedup_root_folder)
         if not os.path.exists(dedup_parsing_path):
             os.mkdir(dedup_parsing_path)
+            
         progress_callback(15)
 
         scopus_parsing_dict = read_parsing_dict(scopus_parsing_path, item_filename_dict,
@@ -428,7 +429,9 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                                                      country_affiliations_file_path = institute_affil_file_path)
         progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
-                          item_filename_dict, parsing_save_extent)
+                          item_filename_dict, parsing_save_extent,
+                          dedup_infos = (bibliometer_path, datatype, corpus_year))
+        
         progress_callback(100)
 
     # Setting Institute parameters
@@ -560,6 +563,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                          position_selon_x_check,
                          position_selon_y_check,
                          espace_entre_ligne_check,
+                         datatype,
                          progress_callback)
         progress_bar.place_forget()
         

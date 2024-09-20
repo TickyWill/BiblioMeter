@@ -520,6 +520,7 @@ def _launch_pub_list_conso_try(institute,
                           "correspondant aux différentes "
                           "classes de documents (les classes n'étant pas exhaustives, "
                           "la décomposition peut être partielle)."
+                          "\n\nLa liste des publications invalides a été créée dans le même dossier."
                           "\n\nEnfin, la concaténation des listes consolidées des publications "
                           "disponibles, a été créée dans le dossier :"
                           f"\n\n '{bdd_multi_annuelle_folder_alias}' "

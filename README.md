@@ -7,7 +7,7 @@ More specifically:<br />
 - Recursively dispatch the articles per department using the employees database;
 - Take care of the authors homonimies (user action required);
 - Take care of the authors affiliated to the Institute but not found in the employees database;
-- Computes and plot some key performence indicators (impact factors, collaborations and keywords occurrences...).
+- Computes key performance indicators (impact factors, collaborations and keywords occurrences...).
 
 ## Installation
 Run the following command to get a repository clone:
