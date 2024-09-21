@@ -414,8 +414,8 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
 
         scopus_parsing_dict = read_parsing_dict(scopus_parsing_path, item_filename_dict,
                                                 parsing_save_extent)
-        wos_parsing_dict    = read_parsing_dict(wos_parsing_path, item_filename_dict,
-                                                parsing_save_extent)
+        wos_parsing_dict = read_parsing_dict(wos_parsing_path, item_filename_dict,
+                                             parsing_save_extent)
         progress_callback(30)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
                                                      inst_filter_list = institutions_filter_list)
@@ -423,10 +423,10 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
         save_parsing_dict(concat_parsing_dict, concat_parsing_path,
                           item_filename_dict, parsing_save_extent)
         progress_callback(60)
-        dedup_parsing_dict  = bp.deduplicate_parsing(concat_parsing_dict,
-                                                     norm_inst_status = False,
-                                                     inst_types_file_path = inst_types_file_path,
-                                                     country_affiliations_file_path = institute_affil_file_path)
+        dedup_parsing_dict = bp.deduplicate_parsing(concat_parsing_dict,
+                                                    norm_inst_status = False,
+                                                    inst_types_file_path = inst_types_file_path,
+                                                    country_affiliations_file_path = institute_affil_file_path)
         progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
                           item_filename_dict, parsing_save_extent,
@@ -508,6 +508,11 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                 info_title = "Information"
                 info_text = f"La construction de la synthèse pour l'année {corpus_year} est terminée."
                 messagebox.showinfo(info_title, info_text)
+    else:
+        progress_callback(100)
+        info_title = "Information"
+        info_text = f"La synthèse pour l'année {corpus_year} est annulée."
+        messagebox.showinfo(info_title, info_text)        
 
 
 def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
