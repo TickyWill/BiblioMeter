@@ -109,7 +109,7 @@ from screeninfo import get_monitors
 # *****************************************
 
 # Setting BiblioMeter version value (internal)
-VERSION = '4.0.0'
+VERSION = '5.0.0'
 
 # Setting the number of corpuses to analyse
 CORPUSES_NUMBER = 6
@@ -238,11 +238,11 @@ REF_LABEL_POS_Y_MM = 7
 REF_LABEL_DX_Y_MM  = 10
 REF_ETAPE_POS_X_MM = 10
 REF_ETAPE_POS_Y_MM_LIST = [40, 74, 101, 129]
-REF_ETAPE_BUT_DX_MM = 10
+REF_ETAPE_BUT_DX_MM = 5
 REF_ETAPE_BUT_DY_MM = 5
 REF_ETAPE_CHECK_DY_MM = -8
-REF_EXIT_BUT_POS_X_MM = 193
-REF_EXIT_BUT_POS_Y_MM = 145
+REF_EXIT_BUT_POS_X_MM = 198
+REF_EXIT_BUT_POS_Y_MM = 150
 REF_YEAR_BUT_POS_X_MM = 10
 REF_YEAR_BUT_POS_Y_MM = 26
 

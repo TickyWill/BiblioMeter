@@ -3,7 +3,7 @@
 __all__ = ['check_dedup_parsing_available',
            'create_archi',
            'create_folder',
-           'format_df_4_excel',
+           'format_df_for_excel',
            'mise_en_page',
            'read_parsing_dict',
            'save_fails_dict',
@@ -259,8 +259,8 @@ def mise_en_page(institute, org_tup, df,
     return wb, ws
 
 
-def format_df_4_excel(df, first_col_width, last_col_width = None):
-    """
+def format_df_for_excel(df, first_col_width, last_col_width = None):
+    """Generates a well formatted EXCEL file from the df dataframe for sake of lisibilty, .
     """
 
     # Setting list of cell colors
@@ -385,32 +385,67 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
 
     message = f"Architecture created for {corpus_year_folder} folder"
     return message
-
-
+        
+        
 def save_parsing_dict(parsing_dict, parsing_path,
-                      item_filename_dict, save_extent):
+                      item_filename_dict, save_extent,
+                      dedup_infos=None):
     """
     """
+    # Internal functions
+    def _set_item_path(item, parsing_path):
+        item_file = item_filename_dict[item] + "." + save_extent
+        item_path = parsing_path / Path(item_file)
+        return item_path
+
+    # Setting parameters for the specific case of deduplication results
+    if dedup_infos:
+        bibliometer_path, datatype, corpus_year = dedup_infos
+        
+        # Setting aliases for final saving deduplication results
+        results_root_alias       = pg.ARCHI_RESULTS["root"]
+        results_folder_alias     = pg.ARCHI_RESULTS[datatype]
+        results_sub_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+
+        # Setting path for final saving deduplication results
+        results_root_path   = bibliometer_path / Path(results_root_alias)
+        results_folder_path = results_root_path / Path(results_folder_alias)
+        year_target_folder_path    = results_folder_path / Path(corpus_year)
+        target_parsing_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
+        
+        # Checking availability of required final results folders
+        if not os.path.exists(year_target_folder_path):
+            os.makedirs(year_target_folder_path)
+        if not os.path.exists(target_parsing_folder_path):
+            os.makedirs(target_parsing_folder_path)
 
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
         if item in parsing_dict.keys():
             item_df = parsing_dict[item]
+            item_working_path = _set_item_path(item, parsing_path)
             if save_extent == "xlsx":
-                item_xlsx_file = item_filename_dict[item] + ".xlsx"
-                item_xlsx_path = parsing_path / Path(item_xlsx_file)
-                item_df.to_excel(item_xlsx_path, index = False)
+                item_df.to_excel(item_working_path, index=False)
+                if dedup_infos:
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
+                    item_df.to_excel(item_final_path, index=False)
             elif save_extent == "dat":
-                item_tsv_file = item_filename_dict[item] + ".dat"
-                item_tsv_path = parsing_path / Path(item_tsv_file)
-                item_df.to_csv(item_tsv_path, index = False, sep = '\t')
+                item_df.to_csv(item_working_path, index=False, sep='\t')
+                if dedup_infos:
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
+                    item_df.to_csv(item_final_path, index=False, sep='\t')
             else:
-                item_tsv_file = item_filename_dict[item] + ".csv"
-                item_tsv_path = parsing_path / Path(item_tsv_file)
-                item_df.to_csv(item_tsv_path, index = False, sep = ',')
+                item_df.to_csv(item_working_path, index=False, sep=',')
+                if dedup_infos:
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
+                    item_df.to_csv(item_final_path, index=False, sep=',')
         else:
             pass
-
+    
+    if dedup_infos:
+        end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
+                       f"\n  '{target_parsing_folder_path}'")
+        print(end_message)
 
 def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     """

@@ -26,7 +26,7 @@ shutil.copy(path.join(this_directory, 'app.py'),
 # This setup is suitable for "python setup.py develop".
 
 setup(name='BiblioMeter',
-      version='4.0.0',
+      version='5.0.0',
       description='An application for bibliometry',
       long_description=long_description,
       long_description_content_type='text/markdown',

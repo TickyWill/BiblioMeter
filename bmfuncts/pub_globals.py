@@ -10,21 +10,8 @@ __all__ = ['ANALYSIS_IF',
            'ARCHI_ORPHAN',
            'ARCHI_RESULTS',
            'ARCHI_YEAR',
-           'BAR_COLOR_RANGE',
-           'BAR_COLOR_SCALE',
-           'BAR_HEIGHT',
-           'BAR_HEIGHT_RATIO',
-           'BAR_X_RANGE',
-           'BAR_Y_LABEL_MAX',
-           'BAR_Y_MAX',
-           'BAR_WIDTH',
            'BDD_LIST',
            'BM_LOW_WORDS_LIST',
-           'CLOUD_BCKG',
-           'CLOUD_HEIGHT',
-           'CLOUD_MAX_WORDS',
-           'CLOUD_MAX_WORDS_LENGTH',
-           'CLOUD_WIDTH',
            'COL_HASH',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
@@ -52,9 +39,6 @@ __all__ = ['ANALYSIS_IF',
            'SHEET_SAVE_OTP',
            'TSV_SAVE_EXTENT'
           ]
-
-# Standard library imports
-import plotly.express as px
 
 # 3rd party imports
 import BiblioParsing as bp
@@ -107,9 +91,11 @@ ARCHI_IF = {"root"                   : "Impact Factor",
             "institute_if_all_years" : "_IF all years.xlsx",
            }
 
-ARCHI_INSTITUTIONS = {"root"              : "Traitement Institutions",
-                      "inst_types_base"   : "Institutions_types.xlsx",
-                      "affiliations_base" : "Country_affiliations.xlsx",
+ARCHI_INSTITUTIONS = {"root"                 : "Traitement Institutions",
+                      "institute_affil_base" : "Institute_affiliations.xlsx",
+                      "inst_types_base"      : "Institutions_types.xlsx",
+                      "affiliations_base"    : "Country_affiliations.xlsx",
+                      "country_towns_base"   : "Country_towns.xlsx",
                      }
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
@@ -119,6 +105,7 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
                }
 
 ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
+                 "dedup_parsing"       : "Synthèse des extractions",
                  "pub-lists"           : "Listes consolidées des publications",
                  "impact-factors"      : "Analyse des facteurs d'impact",
                  "keywords"            : "Analyse des mots clefs",
@@ -134,37 +121,38 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
 
 
 ARCHI_YEAR = {
-              "analyses"                       : "5 - Analyses",
-              "if analysis"                    : "IFs",
-              "keywords analysis"              : "Mots clefs",
-              "subjects analysis"              : "Thématique",
-              "countries analysis"             : "Géographique",
-              "institutions analysis"          : "Collaborations",
-              "countries file name"            : "Pays par publication",
-              "country weight file name"       : "Statistiques par pays",
-              "continent weight file name"     : "Statistiques par continent",
-              "norm inst file name"            : "Institutions normalisées",
-              "raw inst file name"             : "Institutions brutes",
-              "bdd mensuelle"                  : "0 - BDD multi mensuelle",
-              "submit file name"               : "submit.xlsx",
-              "orphan file name"               : "orphan.xlsx",
-              "hash_id file name"              : "hash_id.xlsx",
-              "homonymes folder"               : "1 - Consolidation Homonymes",
-              "homonymes file name base"       : "Fichier Consolidation",
-              "OTP folder"                     : "2 - OTP",
-              "OTP file name base"             : "fichier_ajout_OTP",
-              "pub list folder"                : "3 - Résultats Finaux",
-              "pub list file name base"        : "Liste consolidée",
-              "history folder"                 : "4 - Informations",
-              "kept homonyms file name"        : "Homonymes conservés.xlsx",
-              "kept OTPs file name"            : "OTPs conservés.xlsx",
-              "corpus"                         : "Corpus",
-              "concat"                         : "concatenation",
-              "dedup"                          : "deduplication",
-              "scopus"                         : "scopus",
-              "wos"                            : "wos",
-              "parsing"                        : "parsing",
-              "rawdata"                        : "rawdata",
+              "analyses"                  : "5 - Analyses",
+              "if analysis"               : "IFs",
+              "keywords analysis"         : "Mots clefs",
+              "subjects analysis"         : "Thématique",
+              "countries analysis"        : "Géographique",
+              "institutions analysis"     : "Collaborations",
+              "countries file name"       : "Pays par publication",
+              "country weight file name"  : "Statistiques par pays",
+              "continent weight file name": "Statistiques par continent",
+              "norm inst file name"       : "Institutions normalisées",
+              "raw inst file name"        : "Institutions brutes",
+              "bdd mensuelle"             : "0 - BDD multi mensuelle",
+              "submit file name"          : "submit.xlsx",
+              "orphan file name"          : "orphan.xlsx",
+              "hash_id file name"         : "hash_id.xlsx",
+              "homonymes folder"          : "1 - Consolidation Homonymes",
+              "homonymes file name base"  : "Fichier Consolidation",
+              "OTP folder"                : "2 - OTP",
+              "OTP file name base"        : "fichier_ajout_OTP",
+              "pub list folder"           : "3 - Résultats Finaux",
+              "pub list file name base"   : "Liste consolidée",
+              "invalid file name base"    : "Liste des invalides",
+              "history folder"            : "4 - Informations",
+              "kept homonyms file name"   : "Homonymes conservés.xlsx",
+              "kept OTPs file name"       : "OTPs conservés.xlsx",
+              "corpus"                    : "Corpus",
+              "concat"                    : "concatenation",
+              "dedup"                     : "deduplication",
+              "scopus"                    : "scopus",
+              "wos"                       : "wos",
+              "parsing"                   : "parsing",
+              "rawdata"                   : "rawdata",
              }
 
 # Setting list of final results to save
@@ -314,20 +302,3 @@ KPI_KEYS_ORDER_DICT = {0  : "Année de publication",
                        18 : "Articles sans facteur d'impact",
                        19 : "Articles sans facteur d'impact (%)",
                       }
-
-# Parameters of cloud representation
-CLOUD_BCKG             = 'ivory'
-CLOUD_HEIGHT           = 600
-CLOUD_WIDTH            = 400
-CLOUD_MAX_WORDS        = 100
-CLOUD_MAX_WORDS_LENGTH = 60
-
-# Parameters of bar chart representation
-BAR_Y_LABEL_MAX  = 35          # Nb of characters
-BAR_X_RANGE      = [0,10]      # Nb of articles
-BAR_Y_MAX        = 60          # Nb journals (max per barchart plot)
-BAR_WIDTH        = 800
-BAR_HEIGHT       = 1600
-BAR_HEIGHT_RATIO = 1.7
-BAR_COLOR_RANGE  = [0,30]     # IFs
-BAR_COLOR_SCALE  = px.colors.sequential.Rainbow
