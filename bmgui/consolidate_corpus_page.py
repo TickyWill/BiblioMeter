@@ -177,7 +177,7 @@ def _launch_recursive_year_search_try(year_select,
     """
     """
 
-    def _recursive_year_search_try():
+    def _recursive_year_search_try(progress_callback):
         dedup_parsing_status = check_dedup_parsing_available(bibliometer_path, year_select)
         if dedup_parsing_status:
             end_message, orphan_status = recursive_year_search(bdd_mensuelle_path,
@@ -204,11 +204,12 @@ def _launch_recursive_year_search_try(year_select,
                               "\n\n2- Suivez le mode opératoire disponible pour son utilisation ;"
                               "\n3- Puis relancez le croisement pour cette année."
                               "\n\nNéanmoins, la résolution des homonymes "
-                              "peut être lancée sans cette) opération, "
+                              "peut être lancée sans cette opération, "
                               "mais la liste consolidée des publications sera incomplète.")
             messagebox.showinfo(info_title, info_text)
 
         else:
+            progress_callback(100)
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text  = (f"La synthèse de l'année {year_select} n'est pas disponible."
                              "\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
@@ -232,24 +233,26 @@ def _launch_recursive_year_search_try(year_select,
                      "\n\nCette opération peut prendre quelques minutes."
                      "\nDans l'attente, ne pas fermer 'BiblioMeter'."
                      "\n\nContinuer ?")
-        answer    = messagebox.askokcancel(ask_title, ask_text)
+        answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
             submit_status = os.path.exists(submit_path)
             if not submit_status:
-                _recursive_year_search_try()
+                _recursive_year_search_try(progress_callback)
             else:
                 ask_title = "- Reconstruction du croisement auteurs-effectifs -"
                 ask_text  = (f"Le croisement pour l'année {year_select} est déjà disponible."
                              "\n\nReconstruire le croisement ?")
                 answer_4  = messagebox.askokcancel(ask_title, ask_text)
                 if answer_4:
-                    _recursive_year_search_try()
+                    _recursive_year_search_try(progress_callback)
                 else:
+                    progress_callback(100)
                     info_title = "- Information -"
                     info_text  = (f"Le croisement auteurs-effectifs de l'année {year_select} "
                                   "dejà disponible est conservé.")
                     messagebox.showinfo(info_title, info_text)
         else:
+            progress_callback(100)
             info_title = "- Information -"
             info_text  = (f"Le croisement auteurs-effectifs de l'année {year_select} "
                           "est annulé.")
@@ -301,9 +304,9 @@ def _launch_resolution_homonymies_try(institute,
     """
     """
 
-    def _resolution_homonymies_try():
+    def _resolution_homonymies_try(progress_callback):
         if os.path.isfile(submit_path):
-            progress_callback(10)
+            progress_callback(20)
             return_tup = solving_homonyms(institute, org_tup,
                                           submit_path, homonymes_file_path)
             end_message, actual_homonym_status = return_tup
@@ -352,11 +355,12 @@ def _launch_resolution_homonymies_try(institute,
     ask_text  = ("La création du fichier pour cette résolution "
                  f"a été lancée pour l'année {year_select}."
                  "\n\nContinuer ?")
-    answer    = messagebox.askokcancel(ask_title, ask_text)
+    answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
+        progress_callback(10)
         homonymes_status = os.path.exists(homonymes_file_path)
         if not homonymes_status:
-            _resolution_homonymies_try()
+            _resolution_homonymies_try(progress_callback)
         else:
             ask_title = "- Reconstruction de la résolution des homonymes -"
             ask_text  = ("Le fichier pour la résolution des homonymies "
@@ -364,13 +368,15 @@ def _launch_resolution_homonymies_try(institute,
                          "\n\nReconstruire ce fichier ?")
             answer_1  = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:
-                _resolution_homonymies_try()
+                _resolution_homonymies_try(progress_callback)
             else:
+                progress_callback(100)
                 info_title = "- Information -"
                 info_text  = ("Le fichier pour la résolution des homonymies "
                               f"de l'année {year_select} dejà disponible est conservé.")
                 messagebox.showinfo(info_title, info_text)
     else:
+        progress_callback(100)
         info_title = "- Information -"
         info_text = ("La création du fichier pour la résolution "
                      f"des homonymies de l'année {year_select} est annulée.")
@@ -387,9 +393,9 @@ def _launch_add_otp_try(institute,
                         progress_callback):
     """
     """
-    def _add_otp_try():
+    def _add_otp_try(progress_callback):
         if os.path.isfile(homonymes_file_path):
-            progress_callback(10)
+            progress_callback(15)
             end_message = save_homonyms(institute, org_tup, bibliometer_path, year_select)
             print('\n',end_message)
             progress_callback(20)
@@ -410,8 +416,8 @@ def _launch_add_otp_try(institute,
                           "sont traités, la liste consolidée des publications "
                           f"de l'année {year_select} peut être créée.")
             messagebox.showinfo(info_title, info_text)
-
         else:
+            progress_callback(100)
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text  = ("Le fichier contenant la résolution des homonymies "
                              f"de l'année {year_select} n'est pas disponible."
@@ -426,8 +432,9 @@ def _launch_add_otp_try(institute,
     ask_text  = ("La création des fichiers pour cette attribution "
                  f"a été lancée pour l'année {year_select}."
                  "\n\nContinuer ?")
-    answer    = messagebox.askokcancel(ask_title, ask_text)
+    answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
+        progress_callback(10)
         otp_path_status = os.path.exists(otp_path)
         if otp_path_status:
             otp_files_status_list = []
@@ -436,7 +443,7 @@ def _launch_add_otp_try(institute,
                 dpt_otp_file_path = otp_path / Path(dpt_otp_file_name)
                 otp_files_status_list.append(not dpt_otp_file_path.is_file())
             if any(otp_files_status_list):
-                _add_otp_try()
+                _add_otp_try(progress_callback)
             else:
                 ask_title = "- Reconstruction de l'attribution des OTPs -"
                 ask_text  = ("Les fichiers pour l'attribution des OTPs "
@@ -444,16 +451,18 @@ def _launch_add_otp_try(institute,
                              "\n\nReconstruire ces fichiers ?")
                 answer_1  = messagebox.askokcancel(ask_title, ask_text)
                 if answer_1:
-                    _add_otp_try()
+                    _add_otp_try(progress_callback)
                 else:
+                    progress_callback(100)
                     info_title = "- Information -"
                     info_text  = ("Les fichiers pour l'attribution des OTPs "
                                   f"de l'année {year_select} dejà disponibles sont conservés.")
                     messagebox.showinfo(info_title, info_text)
         else:
             os.mkdir(otp_path)
-            _add_otp_try()
+            _add_otp_try(progress_callback)
     else:
+        progress_callback(100)
         info_title = "- Information -"
         info_text = ("La création des fichiers pour l'attribution des OTPs "
                      f"de l'année {year_select} est annulée.")
@@ -477,9 +486,9 @@ def _launch_pub_list_conso_try(institute,
     """
     """
 
-    def _consolidate_pub_list():
+    def _consolidate_pub_list(progress_callback):
         if os.path.isdir(otp_path) and os.listdir(otp_path):
-            progress_callback(10)
+            progress_callback(20)
             conso_tup = built_final_pub_list(institute, org_tup,
                                              bibliometer_path, datatype,
                                              otp_path, pub_list_path,
@@ -529,6 +538,7 @@ def _launch_pub_list_conso_try(institute,
             messagebox.showinfo(info_title, info_text)
 
         else:
+            progress_callback(100)
             warning_title = "!!! ATTENTION : fichiers manquants !!!"
             warning_text  = ("Les fichiers d'attribution des OTPs "
                              f"de l'année {year_select} ne sont pas disponibles."
@@ -541,25 +551,28 @@ def _launch_pub_list_conso_try(institute,
     ask_text  = ("La création du fichier de la liste consolidée des publications "
                  f"a été lancée pour l'année {year_select}."
                  "\n\nContinuer ?")
-    answer    = messagebox.askokcancel(ask_title, ask_text)
+    answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
+        progress_callback(10)
         pub_list_status = os.path.exists(pub_list_file_path)
         if not pub_list_status:
-            _consolidate_pub_list()
+            _consolidate_pub_list(progress_callback)
         else:
             ask_title = "- Reconstruction de la liste consolidée des publications -"
             ask_text  = ("Le fichier de la liste consolidée des publications "
                          f"de l'année {year_select} est déjà disponible."
                          "\n\nReconstruire ce fichier ?")
-            answer_1  = messagebox.askokcancel(ask_title, ask_text)
+            answer_1 = messagebox.askokcancel(ask_title, ask_text)
             if answer_1:
-                _consolidate_pub_list()
+                _consolidate_pub_list(progress_callback)
             else:
+                progress_callback(100)
                 info_title = "- Information -"
                 info_text  = ("Le fichier de la liste consolidée des publications "
                               f"de l'année {year_select} dejà disponible est conservé.")
                 messagebox.showinfo(info_title, info_text)
     else:
+        progress_callback(100)
         info_title = "- Information -"
         info_text = ("La création du fichier de la liste consolidée des publications "
                      f"de l'année {year_select} est annulée.")
@@ -738,7 +751,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                                            effectifs_folder_path,
                                                            check_effectif_status,
                                                            progress_callback)
-        if not employees_update_status :
+        if not employees_update_status:
             check_effectif_var.set(0)
             check_effectif_status = check_effectif_var.get()
         progress_callback(30)
@@ -946,7 +959,8 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                  dy = etape_button_dy / 2)
     
     # Setting buttons list for status change
-    consolidate_corpus_buttons_list = [merge_button,
+    consolidate_corpus_buttons_list = [self.OptionButton_years,
+                                       merge_button,
                                        homonyms_button,
                                        otp_button,
                                        conso_button]

@@ -283,7 +283,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     inst_all_if_path    = if_root_folder_path / Path(inst_all_if_filename_alias)
-    progress_callback(10)
+    progress_callback(20)
 
     # Getting the IFs database content and its IFS available years list
     if_db_df = pd.read_excel(inst_all_if_path, sheet_name = None)

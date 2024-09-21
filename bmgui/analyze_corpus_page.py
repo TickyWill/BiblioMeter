@@ -149,6 +149,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
             _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
                                       year_select, results_folder_path, progress_callback)
         else:
+            progress_callback(100)
             info_title = "- Information -"
             info_text = ("L'analyse des collaborations "
                          f"de l'année {year_select} est annulée.")
@@ -383,6 +384,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  dy=launch_dy_px)
     
     # Setting buttons list for status change
-    analysis_buttons_list = [if_analysis_launch_button,
+    analysis_buttons_list = [self.OptionButton_years,
+                             if_analysis_launch_button,
                              co_analysis_launch_button,
                              kw_analysis_launch_button]

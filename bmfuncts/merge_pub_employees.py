@@ -1108,14 +1108,14 @@ def recursive_year_search(path_out, df_eff, institute, org_tup, bibliometer_path
 
     # Internal functions
     def _unique_pub_id(df):
-        """The local function `_unique_pub_id` transforms the column 'Pub_id' of the df
-        by adding "yyyy_" to the value of the row.
+        """Transforms the column 'Pub_id' of df
+        by adding "yyyy_" (year in 4 digits) to the values.
 
         Args:
-            df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
+            df (pandas.DataFrame): data that we want to modify.
 
         Returns:
-            (pandas.DataFrame()): the df with its changed column.
+            (pandas.DataFrame): df with its changed column.
         """
         df_year = df[year_col_alias].iloc[0]
 

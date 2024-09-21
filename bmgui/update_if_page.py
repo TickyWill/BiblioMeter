@@ -48,8 +48,9 @@ def _launch_update_if_db(institute,
                  "\n\nCette opération peut prendre quelques secondes."
                  "\nDans l'attente, ne pas fermer 'BiblioMeter'."
                  " \n\nEffectuer la mise à jour ?")
-    answer    = messagebox.askokcancel(ask_title, ask_text)
+    answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
+        progress_callback(15)
         # Mise à jour de la base de données des IFs
         _, if_years_list = update_inst_if_database(institute, org_tup,
                                                    bibliometer_path,
@@ -65,6 +66,7 @@ def _launch_update_if_db(institute,
         messagebox.showinfo(info_title, info_text)
         update_status = True
     else:
+        progress_callback(100)
         print("IFs database update dropped")
         # Arrêt de la procédure
         info_title = "- Information -"
@@ -121,7 +123,8 @@ def _launch_update_pub_if(institute,
             if_analysis_name = None
             _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                                    if_analysis_name, results_to_save_dict, verbose = False)
-
+            # Updating progress bar state
+            progress_bar_state += progress_bar_loop_progression
             if not if_database_complete:
                 info_title = "- Information -"
                 info_text  = ("La base de données des facteurs d'impact étant incomplète, "
@@ -143,6 +146,7 @@ def _launch_update_pub_if(institute,
                               "de données des IFs incomplète.")
                 messagebox.showinfo(info_title, info_text)
         else:
+            progress_bar_state = 100
             warning_title = "!!! ATTENTION : fichier absent !!!"
             warning_text  = ("La liste consolidée des publications du corpus "
                              f"de l'année {corpus_year} "
@@ -152,9 +156,6 @@ def _launch_update_pub_if(institute,
             messagebox.showwarning(warning_title, warning_text)
             missing_pub_file_year = corpus_year
             return missing_pub_file_year, if_database_complete
-
-        # Updating progress bar state
-        progress_bar_state += progress_bar_loop_progression
         progress_callback(progress_bar_state)
     return missing_pub_file_year, if_database_complete, progress_bar_state
 
@@ -185,6 +186,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             # Checking availability of IFs database file
             if_db_file_status = os.path.exists(if_db_path)
             if if_db_file_status:
+                progress_callback(10)
                 new_if_db_update_status = _launch_update_if_db(institute,
                                                                org_tup,
                                                                bibliometer_path,
@@ -192,6 +194,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                                                pub_list_folder_path,
                                                                progress_callback)
             else:
+                progress_callback(100)
                 warning_title = "!!! ATTENTION : fichier absent !!!"
                 warning_text  = (f"Le fichier {if_file_name_alias} de la base de données des IFs "
                                  "\nn'est pas disponible à l'emplacement attendu. "
@@ -250,6 +253,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             messagebox.showinfo(info_title, info_text)
 
         else:
+            progress_callback(100)
             print("IFs updated in some consolidated lists of publications"
                   "but interrupted because of missing of a consolidated list file")
             info_title = '- Information -'
@@ -280,6 +284,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             if answer:
                 _missing_pub_file_year_check(progress_callback)
             else:
+                progress_callback(100)
                 print("IFs update in consolidated lists of publications dropped")
                 info_title = '- Information -'
                 info_text  = ("La mise à jour des listes consolidées "

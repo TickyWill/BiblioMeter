@@ -3,7 +3,7 @@
 __all__ = ['check_dedup_parsing_available',
            'create_archi',
            'create_folder',
-           'format_df_4_excel',
+           'format_df_for_excel',
            'mise_en_page',
            'read_parsing_dict',
            'save_fails_dict',
@@ -259,8 +259,8 @@ def mise_en_page(institute, org_tup, df,
     return wb, ws
 
 
-def format_df_4_excel(df, first_col_width, last_col_width = None):
-    """
+def format_df_for_excel(df, first_col_width, last_col_width = None):
+    """Generates a well formatted EXCEL file from the df dataframe for sake of lisibilty, .
     """
 
     # Setting list of cell colors
@@ -393,7 +393,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
     """
     """
     # Internal functions
-    def set_item_path(item, parsing_path):
+    def _set_item_path(item, parsing_path):
         item_file = item_filename_dict[item] + "." + save_extent
         item_path = parsing_path / Path(item_file)
         return item_path
@@ -423,21 +423,21 @@ def save_parsing_dict(parsing_dict, parsing_path,
     for item in bp.PARSING_ITEMS_LIST:
         if item in parsing_dict.keys():
             item_df = parsing_dict[item]
-            item_working_path = set_item_path(item, parsing_path)
+            item_working_path = _set_item_path(item, parsing_path)
             if save_extent == "xlsx":
                 item_df.to_excel(item_working_path, index=False)
                 if dedup_infos:
-                    item_final_path = set_item_path(item, target_parsing_folder_path)
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
                     item_df.to_excel(item_final_path, index=False)
             elif save_extent == "dat":
                 item_df.to_csv(item_working_path, index=False, sep='\t')
                 if dedup_infos:
-                    item_final_path = set_item_path(item, target_parsing_folder_path)
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
                     item_df.to_csv(item_final_path, index=False, sep='\t')
             else:
                 item_df.to_csv(item_working_path, index=False, sep=',')
                 if dedup_infos:
-                    item_final_path = set_item_path(item, target_parsing_folder_path)
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
                     item_df.to_csv(item_final_path, index=False, sep=',')
         else:
             pass
