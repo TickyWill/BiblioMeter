@@ -123,20 +123,33 @@ def last_available_years(bibliometer_path, year_number):
     """Returns a list of the five last years
     of available corpuses.
     """
+
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
     try:
         list_dir = os.listdir(bibliometer_path)
         years_full_list = []
+
         for year in list_dir:
             if len(year) == 4:
                 years_full_list.append(year)
+
         years_list = years_full_list[-year_number:]
+
     except FileNotFoundError:
         warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
         warning_text  = (f"L'accès au dossier {bibliometer_path} est impossible."
                          "\nChoisissez un autre dossier de travail.")
         messagebox.showwarning(warning_title, warning_text)
         years_list = []
+
+    except OSError:
+        warning_title = "!!! ATTENTION : Erreur lors de l'accès au dossier de travail !!!"
+        warning_text = (f"L'accès au dossier {bibliometer_path} a échoué (erreur interne)"
+                        "\nVeuillez réessayer d'accéder à votre répertoire de travail avec "
+                        "l'option \"Changer de dossier de travail\"")
+        messagebox.showwarning(warning_title, warning_text)
+        years_list = []
+
     return years_list
 
 

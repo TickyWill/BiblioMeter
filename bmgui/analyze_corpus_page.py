@@ -4,11 +4,12 @@ impact factors, keywords and coupling analysis.
 
 __all__ = ['create_analysis']
 
+import threading
 # Standard library imports
 import threading
 import tkinter as tk
 from pathlib import Path
-from tkinter import font as tkFont
+from tkinter import font as tkFont, ttk
 from tkinter import messagebox
 from tkinter import ttk
 
@@ -197,7 +198,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         progress_var.set(0)
         threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
 
-
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           # 14
     eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
@@ -273,6 +273,29 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                    variable=progress_var)
 
     # Creating and setting impact-factors analysis widgets
+    def _update_progress(value):
+        progress_var.set(value)
+        progress_bar.update_idletasks()
+        if value >= 100:
+            if_analysis_launch_button.config(state=tk.NORMAL)
+            co_analysis_launch_button.config(state=tk.NORMAL)
+            kw_analysis_launch_button.config(state=tk.NORMAL)
+
+    # exception handling
+    def _except_hook(args):
+        messagebox.showwarning("Error", args)
+        progress_var.set(0)
+        if_analysis_launch_button.config(state=tk.NORMAL)
+        co_analysis_launch_button.config(state=tk.NORMAL)
+        kw_analysis_launch_button.config(state=tk.NORMAL)
+
+    threading.excepthook = _except_hook
+
+    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
+    progress_bar = ttk.Progressbar(
+        self, orient="horizontal", length=200, mode="determinate", variable=progress_var
+    )
+    progress_bar.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 
     # - Setting title
     if_analysis_font = tkFont.Font(family=gg.FONT_NAME,
@@ -298,12 +321,20 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  help_label)
 
     # - Setting launch button
+    def _start_launch_if_analysis_try():
+        if_analysis_launch_button.config(state=tk.DISABLED)
+        co_analysis_launch_button.config(state=tk.DISABLED)
+        kw_analysis_launch_button.config(state=tk.DISABLED)
+
+        progress_var.set(0)
+        threading.Thread(target=_launch_if_analysis_try, args=(_update_progress,)).start()
+
     if_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     if_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_IF_ANALYSIS,
                                           font=if_analysis_launch_font,
-                                          command= _start_launch_if_analysis_try)
+                                          command=_start_launch_if_analysis_try)
     place_bellow(help_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
@@ -335,12 +366,20 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  help_label)
 
     # - Setting launch button
+    def _start_launch_coupling_analysis_try():
+        if_analysis_launch_button.config(state=tk.DISABLED)
+        co_analysis_launch_button.config(state=tk.DISABLED)
+        kw_analysis_launch_button.config(state=tk.DISABLED)
+
+        progress_var.set(0)
+        threading.Thread(target=_launch_coupling_analysis_try, args=(_update_progress,)).start()
+
     co_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     co_analysis_launch_button = tk.Button(self,
-                                          text = gg.TEXT_CO_ANALYSIS,
-                                          font = co_analysis_launch_font,
-                                          command = _start_launch_coupling_analysis_try)
+                                          text=gg.TEXT_CO_ANALYSIS,
+                                          font=co_analysis_launch_font,
+                                          command=_start_launch_coupling_analysis_try)
     place_bellow(help_label,
                  co_analysis_launch_button,
                  dx = launch_dx_px,
@@ -372,12 +411,19 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  help_label)
 
     # - Setting launch button
+    def _start_launch_kw_analysis_try():
+        if_analysis_launch_button.config(state=tk.DISABLED)
+        co_analysis_launch_button.config(state=tk.DISABLED)
+        kw_analysis_launch_button.config(state=tk.DISABLED)
+        progress_var.set(0)
+        threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
+
     kw_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     kw_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_KW_ANALYSIS,
                                           font=kw_analysis_launch_font,
-                                          command= _start_launch_kw_analysis_try)
+                                          command=_start_launch_kw_analysis_try)
     place_bellow(help_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,
