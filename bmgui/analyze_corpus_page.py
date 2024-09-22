@@ -4,12 +4,11 @@ impact factors, keywords and coupling analysis.
 
 __all__ = ['create_analysis']
 
-import threading
 # Standard library imports
 import threading
 import tkinter as tk
 from pathlib import Path
-from tkinter import font as tkFont, ttk
+from tkinter import font as tkFont
 from tkinter import messagebox
 from tkinter import ttk
 
@@ -30,7 +29,6 @@ from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
 from bmgui.gui_utils import set_page_title
 
-<<<<<<< HEAD
 def _launch_kw_analysis(institute, org_tup, bibliometer_path,
                         datatype, year_select, progress_callback):
     """
@@ -42,26 +40,6 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path,
                                                 year_select,
                                                 progress_callback,
                                                 verbose=False)
-=======
-
-def _launch_kw_analysis(
-        institute, org_tup, bibliometer_path, datatype, year_select, progress_callback
-):
-    """
-    """
-    # Local imports
-    # from bmfuncts.pub_analysis import keywords_analysis
-
-    kw_analysis_folder_path = keywords_analysis(
-        institute,
-        org_tup,
-        bibliometer_path,
-        datatype,
-        year_select,
-        progress_callback,
-        verbose=False
-    )
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
 
     info_title = "- Information -"
     info_text = (f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
@@ -71,16 +49,11 @@ def _launch_kw_analysis(
 
 
 def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
-<<<<<<< HEAD
                               year_select, results_folder_path, progress_callback):
-=======
-                              year_select, progress_callback):
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
     """
     """
     # TO DO: use 'results_folder_path' in info_text
 
-<<<<<<< HEAD
     return_tup = coupling_analysis(institute,
                                    org_tup,
                                    bibliometer_path,
@@ -88,17 +61,6 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
                                    year_select,
                                    progress_callback,
                                    verbose=False)
-=======
-    return_tup = coupling_analysis(
-        institute,
-        org_tup,
-        bibliometer_path,
-        datatype,
-        year_select,
-        progress_callback,
-        verbose=False
-    )
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
     analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = return_tup
 
     info_title = "- Information -"
@@ -127,7 +89,6 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
         if if_most_recent_year >= year_select:
             analysis_if = "IF " + year_select
 
-<<<<<<< HEAD
     if_analysis_folder_path, _, _ = if_analysis(institute,
                                                 org_tup,
                                                 bibliometer_path,
@@ -136,18 +97,6 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                                                 if_most_recent_year,
                                                 progress_callback,
                                                 verbose=False)
-=======
-    if_analysis_folder_path, _, _ = if_analysis(
-        institute,
-        org_tup,
-        bibliometer_path,
-        datatype,
-        year_select,
-        if_most_recent_year,
-        progress_callback,
-        verbose=False
-    )
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
 
     info_title = "- Information -"
     info_text = (f"L'analyse des IFs a été effectuée pour l'année {year_select} "
@@ -183,7 +132,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         print(f"\nIFs analysis launched for year {year_select}")
         _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                             year_select, results_folder_path, progress_callback)
-<<<<<<< HEAD
         progress_bar.place_forget()
 
     def _launch_coupling_analysis_try(progress_callback):
@@ -249,25 +197,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         progress_var.set(0)
         threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
 
-=======
-
-    def _launch_kw_analysis_try(progress_callback):
-        # Getting year selection
-        year_select = variable_years.get()
-
-        print(f"Keywords analysis launched for year {year_select}")
-        _launch_kw_analysis(
-            institute, org_tup, bibliometer_path, datatype, year_select, progress_callback
-        )
-
-    def _launch_coupling_analysis_try(progress_callback):
-        # Getting year selection
-        year_select = variable_years.get()
-
-        print(f"Coupling analysis launched for year {year_select}")
-        _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
-                                  year_select, progress_callback)
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
 
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           # 14
@@ -344,29 +273,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                    variable=progress_var)
 
     # Creating and setting impact-factors analysis widgets
-    def _update_progress(value):
-        progress_var.set(value)
-        progress_bar.update_idletasks()
-        if value >= 100:
-            if_analysis_launch_button.config(state=tk.NORMAL)
-            co_analysis_launch_button.config(state=tk.NORMAL)
-            kw_analysis_launch_button.config(state=tk.NORMAL)
-
-    # exception handling
-    def _except_hook(args):
-        messagebox.showwarning("Error", args)
-        progress_var.set(0)
-        if_analysis_launch_button.config(state=tk.NORMAL)
-        co_analysis_launch_button.config(state=tk.NORMAL)
-        kw_analysis_launch_button.config(state=tk.NORMAL)
-
-    threading.excepthook = _except_hook
-
-    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
-    progress_bar = ttk.Progressbar(
-        self, orient="horizontal", length=200, mode="determinate", variable=progress_var
-    )
-    progress_bar.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 
     # - Setting title
     if_analysis_font = tkFont.Font(family=gg.FONT_NAME,
@@ -392,24 +298,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  help_label)
 
     # - Setting launch button
-    def _start_launch_if_analysis_try():
-        if_analysis_launch_button.config(state=tk.DISABLED)
-        co_analysis_launch_button.config(state=tk.DISABLED)
-        kw_analysis_launch_button.config(state=tk.DISABLED)
-
-        progress_var.set(0)
-        threading.Thread(target=_launch_if_analysis_try, args=(_update_progress,)).start()
-
     if_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     if_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_IF_ANALYSIS,
                                           font=if_analysis_launch_font,
-<<<<<<< HEAD
                                           command= _start_launch_if_analysis_try)
-=======
-                                          command=_start_launch_if_analysis_try)
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
     place_bellow(help_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
@@ -441,26 +335,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  help_label)
 
     # - Setting launch button
-    def _start_launch_coupling_analysis_try():
-        if_analysis_launch_button.config(state=tk.DISABLED)
-        co_analysis_launch_button.config(state=tk.DISABLED)
-        kw_analysis_launch_button.config(state=tk.DISABLED)
-
-        progress_var.set(0)
-        threading.Thread(target=_launch_coupling_analysis_try, args=(_update_progress,)).start()
-
     co_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     co_analysis_launch_button = tk.Button(self,
-<<<<<<< HEAD
                                           text = gg.TEXT_CO_ANALYSIS,
                                           font = co_analysis_launch_font,
                                           command = _start_launch_coupling_analysis_try)
-=======
-                                          text=gg.TEXT_CO_ANALYSIS,
-                                          font=co_analysis_launch_font,
-                                          command=_start_launch_coupling_analysis_try)
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
     place_bellow(help_label,
                  co_analysis_launch_button,
                  dx = launch_dx_px,
@@ -492,23 +372,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  help_label)
 
     # - Setting launch button
-    def _start_launch_kw_analysis_try():
-        if_analysis_launch_button.config(state=tk.DISABLED)
-        co_analysis_launch_button.config(state=tk.DISABLED)
-        kw_analysis_launch_button.config(state=tk.DISABLED)
-        progress_var.set(0)
-        threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
-
     kw_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     kw_analysis_launch_button = tk.Button(self,
                                           text=gg.TEXT_KW_ANALYSIS,
                                           font=kw_analysis_launch_font,
-<<<<<<< HEAD
                                           command= _start_launch_kw_analysis_try)
-=======
-                                          command=_start_launch_kw_analysis_try)
->>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
     place_bellow(help_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,
