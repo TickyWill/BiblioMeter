@@ -1,1 +1,13 @@
+<<<<<<< HEAD
 screeninfo==0.8.1
+=======
+kaleido==0.1.*
+matplotlib==3.9.1
+numpy==1.26.3
+openpyxl==3.1.2
+pandas==2.1.4
+plotly==5.22.0
+screeninfo==0.8.1
+setuptools==71.1.0
+wordcloud==1.9.3
+>>>>>>> e9a250a1cd1e8b91bce17ef95ca4c1eecf3e2c1a
