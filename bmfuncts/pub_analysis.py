@@ -313,7 +313,6 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
                 corpus_year, if_most_recent_year,
                 progress_callback, verbose=False):
     """
-
     Module internal functions: _build_analysis_if_data, _plot_if_analysis
     """
 
