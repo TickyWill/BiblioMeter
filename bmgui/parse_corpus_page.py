@@ -37,12 +37,20 @@ from bmgui.gui_utils import set_page_title
 
 
 class CheckBoxCorpuses:
+    """Displays status of parsing files through Checkbutton tkinter widgets.
 
-    """
-    Petit automat permettant d'afficher sur la même ligne :
-        - L'annee du corpus
-        - Wos rawdata/parsing dispo
-        - Scopus rawdata/parsing dispo
+    Args:
+        parent (instense): Instense where parsing page will be created.
+        master (class): `bmgui.main_page.AppMain` class.
+        year (str): Corpus year defined by 4 digits.
+        wos_r (bool): Status of WoS raw-data file.
+        wos_p (bool): Status of WoS parsing files.
+        scopus_r (bool): Status of Scopus raw-data file.
+        scopus_p (bool): Status of Scopus parsing files.
+        concat (bool) : Status of concatenation and deduplication files.
+
+    Returns:
+        None.
     """
 
     def __init__(self, parent, master, year, wos_r, wos_p,
@@ -92,11 +100,10 @@ class CheckBoxCorpuses:
 
 def _create_table(self, master, pos_x_init):
     """The internal function `_create_table` creates the column names
-    of the table used by 'parse_corpus_page' to display which files
-    of the parsing treatment are available in the working folder.
-    The positions of the table items in the gui window 'root' are set
-    using the argument 'pos_x_init', and the tk window general properties
-    as 'master' class variables.
+    of the table displaing which files of the parsing step are available 
+    in the working folder.
+    The positions of the table items are set using the argument 'pos_x_init', 
+    and the general properties of tkinter window as 'master' class variables.
 
     Args:
         master (class): The controller class.
@@ -157,18 +164,18 @@ def _create_table(self, master, pos_x_init):
     _set_table_item(item_text, pos_x)
 
 
-def _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne):
-    '''The internal function `_update` refreshes the current state
-    of the files in the working folder using the function `_create_table`
-    internal to the module 'parse_corpus_page' of the package 'bmgui'.
-    It also updates the OptionMenu buttons used to select the year to be used.
+def _update(self, master, bibliometer_path, pos_tup):
+    """The internal function `_update` refreshes the current state
+    of the files in the working folder using the `_create_table` 
+    internal function.
+    It also updates the OptionMenu buttons used to select the year.
 
     Args:
         master (class): The controller class.
         bibliometer_path (path): The path leading to the working folder.
-        pos_x (int): x axe's position for widgets of the parsing page.
-        pos_y (int): y axe's position for widgets of the parsing page.
-        esp_ligne (int): space in between some widgets of the parsing page.
+        pos_tup (tup): Tuple = (x position (int) for widgets location, 
+                                y position (int) for widgets location, 
+                                space value (int) for widgets spacing).
 
     Returns:
         None.
@@ -178,13 +185,13 @@ def _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne):
         of the package 'bmgui'.
         The functions 'existing_corpuses', 'font_size' and 'place_after'
         are imported from the module 'gui_utils' of the package 'bmgui'.
-        The class 'CheckBoxCorpuses' is imported from the module 'gui_classes'
-        of the package 'bmgui'.
         The globals FONT_NAME and PPI are imported from the module 'gui_globals'
         of the package 'bmgui'.
 
-    '''
-
+    """
+    # Setting parameters from args
+    pos_x, pos_y, esp_ligne = pos_tup
+    
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
     eff_font_size = font_size(11, master.width_sf_min)
@@ -223,38 +230,31 @@ def _update(self, master, bibliometer_path, pos_x, pos_y, esp_ligne):
     _create_table(self, master, pos_x)
 
 
-def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
-                    institute_affil_file_path, inst_types_file_path,
-                    pos_x, pos_y, esp_ligne, progress_callback):
-    """The internal function `_launch_parsing` parses corpuses from wos or scopus
-    using the function 'biblio_parser'. It checks if all useful files are available
-    in the working folder using the function 'existing_corpuses'.
-    It saves the parsing files using paths set from the global 'ARCHI_YEAR'.
-    It displays the number of articles parsed using the file path set using
-    the global 'PARSING_PERF'.
-    It updates the files status using the function `_update` internal
-    to the module 'parse_corpus_page' of the package 'bmgui'.
+def _launch_parsing(self, master, corpus_year, database_type,
+                    paths_tup, pos_tup, progress_callback):    
+    """Launches parsing of raw-data of 'database_type' database 
+    through `biblio_parser` function imported from 3rd party package 
+    imported as bp after check of database name and database raw-data 
+    availability.
+    It saves the resulting parsing files using paths set through 
+    `set_user_config` function imported from `bmfuncts.config_utils` module.
+    It updates the files status using the internal function `_update`.
 
     Args:
         master (class): The controller class.
-        corpus_year (str): A string of 4 digits corresponding to the year of the corpus.
-        database_type (str): The database type, ie: 'wos' or 'scopus'.
-        bibliometer_path (path): The full path to the working folder.
-        pos_x (int): The x position to be used for widgets location in the parsing page.
-        pos_y (int): The y position to be used for widgets location in the parsing page.
-        esp_ligne (int): The space value for widgets spacing in the parsing page.
+        corpus_year (str): Corpus year defined by 4 digits.
+        database_type (str): Database name (ex: 'wos' or 'scopus').
+        paths_tup (tup): Tuple = (full path to working folder, 
+                         full path to institute-affiliations file, 
+                         full path to institutions-types file).
+        pos_tup (tup): Tuple = (x position (int) for widgets location, 
+                                y position (int) for widgets location, 
+                                space value (int) for widgets spacing).
+        progress_callback (function): Function for updating 
+                                      ProgressBar tkinter widget status.
 
     Returns:
         None.
-
-    Note:
-        The function 'biblio_parser' is imported from the module 'BiblioParsingUtils'
-        of the 3rd party package 'BiblioParsing'.
-        The function 'existing_corpuses' is imported from the module 'gui_utils'
-        of the package 'bmgui'.
-        The global 'ARCHI_YEAR' is imported from the module 'pub_globals' of the package
-        'bmfuncts'.
-
     """
 
     # Internal functions
@@ -280,7 +280,11 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
         info_text       = (f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
                            f"\n\n  Nombre d'articles du corpus : {articles_number}")
         messagebox.showinfo(info_title, info_text)
-
+        
+    # Setting parameters from args
+    bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
+    pos_x, pos_y, esp_ligne = pos_tup
+            
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
     rawdata_path_dict  = config_tup[0]
@@ -296,13 +300,13 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
     progress_callback(10)
 
     # Getting files status for corpus parsing
-    if database_type in ('wos', 'scopus'):
+    if database_type in pg.BDD_LIST:
         rawdata_status = False
         parsing_status = False
-        if database_type == 'wos':
+        if database_type == bp.WOS:
             rawdata_status = master.list_wos_rawdata[master.list_corpus_year.index(corpus_year)]
             parsing_status = master.list_wos_parsing[master.list_corpus_year.index(corpus_year)]
-        if database_type == 'scopus':
+        if database_type == bp.SCOPUS:
             rawdata_status = master.list_scopus_rawdata[master.list_corpus_year.index(corpus_year)]
             parsing_status = master.list_scopus_parsing[master.list_corpus_year.index(corpus_year)]
 
@@ -363,40 +367,31 @@ def _launch_parsing(self, master, corpus_year, database_type, bibliometer_path,
         messagebox.showwarning(warning_title, warning_text)
 
 
-def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
-                     institute_affil_file_path, inst_types_file_path,
-                     pos_x, pos_y, esp_ligne, datatype, progress_callback):
-    """The internal function `_launch_synthese` concatenates the parsing
-    from wos or scopus databases using the function 'parsing_concatenate_deduplicate'.
-    It tags the Institute authors using the function 'extend_author_institutions'
-    and using the global 'INSTITUTE_INST_LIST'.
-    It checks if all useful files are available in the 'BiblioMeter_Files' folder
-    using the function 'existing_corpuses'.
-    It saves the parsing files using paths set from the global 'ARCHI_YEAR'.
-    It updates the files status using the function `_update` internal
-    to the module 'parse_corpus_page' of the package 'bmgui'.
+def _launch_synthese(self, master, corpus_year, org_tup, datatype,
+                     paths_tup, pos_tup, progress_callback):
+    """The internal function `_launch_synthese` concatenates and deduplicates 
+    the parsing from wos or scopus databases using the functions `concatenate_parsing` 
+    and `deduplicate_parsing` imported from 3rd party package imported as bp.
+    It checks if all useful files are available in the working folder.
+    It saves the resulting parsing files using paths set through `set_user_config` 
+    function imported from `bmfuncts.config_utils` module.
+    It updates the files status using the internal function `_update`.
 
     Args:
         master (class): The controller class.
-        corpus_year (str): A string of 4 digits corresponding to the year of the corpus.
-        bibliometer_path (path): The full path to the working folder.
-        pos_x (int): The x position to be used for widgets location in the parsing page.
-        pos_y (int): The y position to be used for widgets location in the parsing page.
-        esp_ligne (int): The space value for widgets spacing in the parsing page.
-
+        corpus_year (str): Corpus year defined by 4 digits.
+        org_tup (tup): Contains Institute parameters.
+        datatype (str): Data combination type from corpuses databases.
+        paths_tup (tup): Tuple = (full path to working folder, 
+                         full path to institute-affiliations file, 
+                         full path to institutions-types file).
+        pos_tup (tup): Tuple = (x position (int) for widgets location, 
+                                y position (int) for widgets location, 
+                                space value (int) for widgets spacing).
+        progress_callback (function): Function for updating 
+                                      ProgressBar tkinter widget status.
     Returns:
         None.
-
-    Note:
-        The function 'parsing_concatenate_deduplicate' is imported from
-        the module 'BiblioParsingConcat' of the 3rd party package 'BiblioParsing'.
-        The function 'extend_author_institutions' is imported from
-        the module 'BiblioParsingUtils' of the 3rd party package 'BiblioParsing'.
-        The function 'existing_corpuses' is imported from the module 'gui_utils'
-        of the package 'bmgui'.
-        The globals 'ARCHI_YEAR' and 'INSTITUTE_INST_LIST' are imported from the module
-        'pub_globals' of the package 'bmfuncts'.
-
     """
 
     # Internal functions
@@ -433,6 +428,10 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
                           dedup_infos = (bibliometer_path, datatype, corpus_year))
         
         progress_callback(100)
+        
+    # Setting parameters from args
+    bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
+    pos_x, pos_y, esp_ligne = pos_tup
 
     # Setting Institute parameters
     institutions_filter_list = org_tup[3]
@@ -516,59 +515,36 @@ def _launch_synthese(self, master, corpus_year, org_tup, bibliometer_path,
 
 
 def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
-    """ The function `create_parsing_concat` creates the first page of the application GUI
-    using internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
-    It calls also the functions `_launch_parsing``and `_launch_synthese` internal
-    to the module 'parse_corpus_page' of the package 'bmgui' through GUI buttons.
+    """Manages creation and use of widgets for corpus parsing through 
+    internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
 
     Args:
-        master (class): The controller class.
-        page_name (str): The name of the parsing page.
-        institute (str): The Institute selected on main window.
-        bibliometer_path (path): The path leading to the working folder.
-        datatype (str): The data type to be analyzed, selected on main window. 
+        self (instense): Instense where consolidation page will be created.
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Name of parsing page.
+        institute (str): Institute name.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases. 
 
     Returns:
         None.
-
-    Note:
-        The functions 'existing_corpuses', 'font_size', 'mm_to_px' 
-        and 'place_after' are imported from the module 'gui_utils'
-        of the package 'bmgui'.
-        The globals BDD_LIST, FONT_NAME, PPI and TEXT_* are imported 
-        from the module 'gui_globals' of the package 'bmgui'.
-
     """
     # Internal functions
     def _launch_parsing_try(progress_callback):
+        paths_tup = (bibliometer_path,
+                     institute_affil_file_path,
+                     inst_types_file_path)
         parsing_year = self.var_year_pc_1.get()
         parsing_bdd = var_bdd_pc_1.get()
-        _launch_parsing(self,
-                        master,
-                        parsing_year,
-                        parsing_bdd,
-                        bibliometer_path,
-                        institute_affil_file_path,
-                        inst_types_file_path,
-                        position_selon_x_check,
-                        position_selon_y_check,
-                        espace_entre_ligne_check,
-                        progress_callback)
+        _launch_parsing(self, master, parsing_year, parsing_bdd,
+                        paths_tup, pos_tup, progress_callback)
         progress_bar.place_forget()
         
-    def _launch_synthese_try(progress_callback):
+    def _launch_synthese_try(progress_callback):        
         synthese_year = self.var_year_pc_2.get()
-        _launch_synthese(self,
-                         master,
-                         synthese_year,
-                         org_tup,
-                         bibliometer_path,
-                         institute_affil_file_path,
-                         inst_types_file_path,
-                         position_selon_x_check,
-                         position_selon_y_check,
-                         espace_entre_ligne_check,
-                         datatype,
+        _launch_synthese(self, master, synthese_year,
+                         org_tup, datatype,
+                         paths_tup, pos_tup,
                          progress_callback)
         progress_bar.place_forget()
         
@@ -591,10 +567,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         threading.Thread(target=_launch_parsing_try,
                          args=(_update_progress,)).start()        
         # update files status
-        _update(self, master, bibliometer_path, 
-                position_selon_x_check,
-                position_selon_y_check,
-                espace_entre_ligne_check)
+        _update(self, master, bibliometer_path, pos_tup)
 
     def _start_launch_synthese_try():
         disable_buttons(parse_buttons_list)
@@ -604,10 +577,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         threading.Thread(target=_launch_synthese_try,
                          args=(_update_progress,)).start()        
         # update files status
-        _update(self, master, bibliometer_path, 
-                position_selon_x_check,
-                position_selon_y_check,
-                espace_entre_ligne_check)
+        _update(self, master, bibliometer_path, pos_tup)
 
 
     # Setting useful local variables for positions modification (globals to create ??)
@@ -636,6 +606,9 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     year_x_pos = labels_x_pos
     parsing_year_y_pos  = parsing_label_y_pos + labels_y_space
     synthese_year_y_pos = synthese_label_y_pos + labels_y_space
+    pos_tup = (position_selon_x_check,
+               position_selon_y_check,
+               espace_entre_ligne_check)    
 
     # Setting useful local variables for default selection items in selection lists
     default_year = master.list_corpus_year[-1]
@@ -644,19 +617,20 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Setting useful aliases
     institutions_folder_alias  = pg.ARCHI_INSTITUTIONS["root"]
     inst_aff_file_base_alias   = pg.ARCHI_INSTITUTIONS["institute_affil_base"]
     inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
 
-    # Setting useful file names  and paths for Institute affiliations
+    # Setting useful file names and paths for Institute affiliations
     institute_affil_file = institute + "_" + inst_aff_file_base_alias
     inst_types_file      = institute + "_" + inst_types_file_base_alias
     institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
     institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    paths_tup = (bibliometer_path,
+                 institute_affil_file_path,
+                 inst_types_file_path)
 
     # Creating and setting widgets for page title and exit button
     set_page_title(self, master, page_name, institute, datatype)
@@ -697,9 +671,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                              command = lambda: _update(self,
                                                        master,
                                                        bibliometer_path,
-                                                       position_selon_x_check,
-                                                       position_selon_y_check,
-                                                       espace_entre_ligne_check))
+                                                       pos_tup))
     exist_button.place(x = status_button_x_pos,
                        y = status_button_y_pos,
                        anchor = 'n')
@@ -820,10 +792,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                 dy = dy_launch)
 
     # **************** Placement de CHECKBOXCORPUSES :
-    _update(self, master, bibliometer_path,
-            position_selon_x_check,
-            position_selon_y_check,
-            espace_entre_ligne_check)
+    _update(self, master, bibliometer_path, pos_tup)
     
     # Setting buttons list for status change
     parse_buttons_list = [exist_button,
