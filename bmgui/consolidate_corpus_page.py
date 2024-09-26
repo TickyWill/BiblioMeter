@@ -630,8 +630,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
             conso_tup = built_final_pub_list(institute, org_tup,
                                              bibliometer_path, datatype,
                                              otp_path, pub_list_path,
-                                             pub_list_file_path, otp_file_base,
-                                             year_select)
+                                             otp_file_base, year_select)
             end_message, split_ratio, if_database_complete = (conso_tup[0], conso_tup[1],
                                                               conso_tup[2])
             print(end_message)

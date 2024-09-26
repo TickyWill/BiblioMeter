@@ -73,7 +73,7 @@ def _build_effective_config(db_list, parsing_folder_dict_init):
 
 
 def _build_files_paths(bibliometer_path, year, db_list, parsing_folder_dict):
-    """ the `_build_files_paths` function sets the full paths to the rawdata folders 
+    """The `_build_files_paths` function sets the full paths to the rawdata folders 
     and to the parsing folders for the working folder selected by the user, 
     the corpus year 'year' and for each database in the list 'db_list'.
     For that, it uses the `_build_effective_config` function of the same module.

@@ -40,8 +40,6 @@ class CheckBoxCorpuses:
     """Displays status of parsing files through Checkbutton tkinter widgets.
 
     Args:
-        parent (instense): Instense where parsing page will be created.
-        master (class): `bmgui.main_page.AppMain` class.
         year (str): Corpus year defined by 4 digits.
         wos_r (bool): Status of WoS raw-data file.
         wos_p (bool): Status of WoS parsing files.
@@ -106,7 +104,6 @@ def _create_table(self, master, pos_x_init):
     and the general properties of tkinter window as 'master' class variables.
 
     Args:
-        master (class): The controller class.
         pos_x_init (int): The initial horizontal position in pixels to be used 
                           for widgets location on the parsing page.
 
@@ -171,7 +168,6 @@ def _update(self, master, bibliometer_path, pos_tup):
     It also updates the OptionMenu buttons used to select the year.
 
     Args:
-        master (class): The controller class.
         bibliometer_path (path): The path leading to the working folder.
         pos_tup (tup): Tuple = (x position (int) for widgets location, 
                                 y position (int) for widgets location, 
@@ -241,7 +237,6 @@ def _launch_parsing(self, master, corpus_year, database_type,
     It updates the files status using the internal function `_update`.
 
     Args:
-        master (class): The controller class.
         corpus_year (str): Corpus year defined by 4 digits.
         database_type (str): Database name (ex: 'wos' or 'scopus').
         paths_tup (tup): Tuple = (full path to working folder, 
@@ -378,7 +373,6 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
     It updates the files status using the internal function `_update`.
 
     Args:
-        master (class): The controller class.
         corpus_year (str): Corpus year defined by 4 digits.
         org_tup (tup): Contains Institute parameters.
         datatype (str): Data combination type from corpuses databases.
@@ -519,8 +513,6 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
 
     Args:
-        self (instense): Instense where consolidation page will be created.
-        master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of parsing page.
         institute (str): Institute name.
         bibliometer_path (path): Full path to working folder.
