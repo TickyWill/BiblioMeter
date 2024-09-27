@@ -1,4 +1,4 @@
-""" `gui_functions` module contains useful functions for gui management."""
+"""`gui_functions` module contains useful functions for gui management."""
 
 __all__ = ['disable_buttons',
            'enable_buttons',
@@ -160,11 +160,11 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     ex:
     If only 2023 files are not present, the returned list of lists is the following:
     [[2018, 2019, 2020, 2021, 2022, 2023],   #Years
-     [True,True,True,True,True,False],       #Wos Rawdata
-     [True,True,True,True,True,False],       #Scopus Rawdata
-     [True,True,True,True,True,False],       #Wos Parsing
-     [True,True,True,True,True,False],       #Scopus Parsing
-     [True,True,True,True,True,False]]       #Concatenation & Deduplication.
+    [True,True,True,True,True,False],       #Wos Rawdata
+    [True,True,True,True,True,False],       #Scopus Rawdata
+    [True,True,True,True,True,False],       #Wos Parsing
+    [True,True,True,True,True,False],       #Scopus Parsing
+    [True,True,True,True,True,False]]       #Concatenation & Deduplication.
 
     Args:
         bibliometer_path (path):  The working folder path.

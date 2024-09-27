@@ -167,7 +167,7 @@ def set_user_config(bibliometer_path, year, db_list):
     The parameters set are returned in a tuple as follows:
     - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database;
     - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step 
-                and for each database;
+    and for each database;
     - index 3 = the dict giving the name of the parsing file for each parsed item.            
 
     Args:
@@ -234,12 +234,11 @@ def set_org_params(institute, bibliometer_path):
     - index 4 = the list of tuples giving the potential labels (str) of the Institute 
     in the authors affiliations associated with the country (str) that will be used 
     to filter the authors affiliated to the Institute;
-        ex: [("LITEN","France"), ("INES","France")]
+    ex: [("LITEN","France"), ("INES","France")]
     - index 5 = the list of columns names (str) that will be used for each of the potential labels 
     of the Institute filtering the authors affiliated to the Institute;
-    - index 6 = the status (bool) of the impact factors database 
-        - True, if the database specific to the Institute will be used;
-        - False, if a general database will be used;
+    - index 6 = the status (bool) of the impact factors database: True, if the database specific
+    to the Institute will be used; False, if a general database will be used;
     - index 7 = the list of document types (str) for which the impact factors will not be analysed.
 
     Args:
