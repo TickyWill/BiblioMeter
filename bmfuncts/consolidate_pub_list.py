@@ -105,13 +105,15 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
      ...".
 
     Args:
+        institute (str): The Intitute name.
+        org_tup (tup): Contains Institute parameters.
         in_path (path): Fullpath of the excel file of the publications list
                         with a row per Institute author and their attributes columns.
         out_path (path): Fullpath of the processed dataframe as an Excel file
                          saved after going through its treatment.
 
     Returns:
-        (str): end message recalling out_path.
+        (str): End message recalling out_path.
     """
 
     # Internal functions
