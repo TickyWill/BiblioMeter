@@ -177,17 +177,29 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
     return end_message
 
 
-def _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
+def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
                        otp_alias, excel_dpt_path, otp_col_list):
     """Creates the file for setting OTP attribute of publications by the user 
     for the Institute department labelled 'dpt'.     
-    A new column named 'otp_alias' is added to the dataframe 'df_dpt'.
+    A new column named 'otp_alias' is added to the dataframe 'dpt_df'.
     A list data validation rules is added to each cells of the column
-    'otp_alias' based on the list of OPTs of the department.
+    'otp_alias' based on the list of OPTs of the department given 
+    by 'dpt_otp_list' list.
     The dataframe columns are renamed using 'otp_col_list'.
     Then the dataframe is saved as a formatted Excel file pointed 
     by 'excel_dpt_path' path through the `mise_en_page` function 
-    imported from `bmfuncts.useful_functs` module. 
+    imported from `bmfuncts.useful_functs` module.
+
+    Arg:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        dpt (str): Institute department.
+        dpt_df (dataframe): The publications-list dataframe of the 'dpt' department.
+        dpt_otp_list (list): List of Institute departments (str).
+        otp_alias (str): OTPs column name.
+        excel_dpt_path (path): Full path to the file for setting publication OTP.  
+        otp_col_list (list): Column names for rename of columns of the file created 
+                             for setting publications OTP.
     """
 
     # Building validation list of OTPs for 'dpt' department
@@ -197,13 +209,13 @@ def _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
                                        showErrorMessage = False)
 
     # Adding a column containing OTPs of 'dpt' department
-    df_dpt[otp_alias] = validation_list
+    dpt_df[otp_alias] = validation_list
 
     # Renaming the columns
-    df_dpt = df_dpt.reindex(columns = otp_col_list)
+    dpt_df = dpt_df.reindex(columns = otp_col_list)
 
     # Formatting the EXCEL file
-    wb, ws = mise_en_page(institute, org_tup, df_dpt)
+    wb, ws = mise_en_page(institute, org_tup, dpt_df)
     ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
     # Setting num of first col and first row in EXCEL files
@@ -211,15 +223,15 @@ def _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
     excel_first_row_num = 2
 
     # Getting the column letter for the OTPs column
-    otp_alias_df_index = list(df_dpt.columns).index(otp_alias)
+    otp_alias_df_index = list(dpt_df.columns).index(otp_alias)
     otp_alias_excel_index = otp_alias_df_index + excel_first_col_num
     otp_alias_column_letter = openpyxl_get_column_letter(otp_alias_excel_index)
 
     # Activating the validation data list in all cells of the OTPs column
-    if len(df_dpt):
+    if len(dpt_df):
         # Adding a validation data list
         ws.add_data_validation(data_val)
-        for df_index_row in range(len(df_dpt)):
+        for df_index_row in range(len(dpt_df)):
             otp_cell_alias = otp_alias_column_letter + str(df_index_row + excel_first_row_num)
             data_val.add(ws[otp_cell_alias])
 

@@ -1231,7 +1231,7 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
 
 
 def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_path,
-                          corpus_year, search_depth, progress_callback, progress_bar_state):
+                          corpus_year, search_depth, progress_callback=None, progress_bar_state=None):
     """Searches in the employees database of the Institute the information for the authors 
     of the publications of a corpus through the following steps:
         - First, the publications list dataframe with one row per Institute author for each 
@@ -1273,8 +1273,9 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         corpus_year (str): Contains the corpus year defined by 4 digits.
         search_depth (int): Depth for search in 'empl_df' using 'years' list.
         progress_callback (function): Function for updating ProgressBar 
-                                      tkinter widget status.
-        progress_bar_state (int): Initial status of ProgressBar tkinter widget.
+                                      tkinter widget status (default = None).
+        progress_bar_state (int): Initial status of ProgressBar tkinter widget 
+                                  (default = None).
         
     Returns:
         (tup): Tuple = (end_message (str), empty status (bool) of the publications 
@@ -1319,12 +1320,14 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     orphan_path   = out_path / Path(orphan_file_name_alias)
     ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
     others_path   = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
-    step = (100 - progress_bar_state) / 100
-    progress_callback(progress_bar_state + step * 2)
+    if progress_callback:
+        step = (100 - progress_bar_state) / 100
+        progress_callback(progress_bar_state + step * 2)
 
     # Building the articles dataframe
     pub_df = _build_institute_pubs_authors(institute, org_tup, bibliometer_path, corpus_year)
-    progress_callback(progress_bar_state + step * 5)
+    if progress_callback:
+        progress_callback(progress_bar_state + step * 5)
 
     # Building the search time depth of Institute co-authors among the employees dataframe
     eff_available_years = list(empl_df.keys())
@@ -1334,7 +1337,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         year_start = int(corpus_year)-1
     year_stop = year_start - (search_depth - 1)
     years = [str(i) for i in range(year_start, year_stop-1,-1)]
-    progress_callback(progress_bar_state + step * 10)
+    if progress_callback:
+        progress_callback(progress_bar_state + step * 10)
 
     # *******************************************************************
     # * Building recursively the `submit_df` and `orphan_df` dataframes *
@@ -1364,18 +1368,21 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     # Saving initial files of submit_df and orphan_df
     submit_df.to_excel(submit_path, index = False)
     orphan_df.to_excel(orphan_path, index = False)
-    progress_callback(progress_bar_state + step * 20)
+    if progress_callback:
+        progress_callback(progress_bar_state + step * 20)
 
     # Adding authors from list of external_phd students and saving new submit_df and orphan_df
     submit_df, orphan_df = _add_ext_docs(submit_path, orphan_path, ext_docs_path)
-    progress_callback(progress_bar_state + step * 25)
+    if progress_callback:
+        progress_callback(progress_bar_state + step * 25)
 
     # Adding authors from list of external employees under other hiring contract
     # and saving new submit_df and orphan_df
     submit_df, orphan_df = _add_other_ext(submit_path, orphan_path, others_path)
-    new_progress_bar_state = progress_bar_state + step * 30
-    progress_callback(new_progress_bar_state)
-    progress_bar_loop_progression = step * 50 // len(years)
+    if progress_callback:
+        new_progress_bar_state = progress_bar_state + step * 30
+        progress_callback(new_progress_bar_state)
+        progress_bar_loop_progression = step * 50 // len(years)
     
     for _, year in enumerate(years):
         # Updating the dataframes submit_df_add and orphan_df
@@ -1388,8 +1395,9 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         submit_df = pd.concat([submit_df, submit_df_add])
 
         # Updating progress bar state
-        new_progress_bar_state += progress_bar_loop_progression
-        progress_callback(new_progress_bar_state)
+        if progress_callback:
+            new_progress_bar_state += progress_bar_loop_progression
+            progress_callback(new_progress_bar_state)
 
     # *************************************************************************************
     # * Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file *
@@ -1413,22 +1421,26 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
 
     # Adding author job type and saving new submit_df
     _add_author_job_type(submit_path, submit_path)
-    progress_callback(new_progress_bar_state + step * 5)
+    if progress_callback:
+        progress_callback(new_progress_bar_state + step * 5)
 
     # Adding full article reference and saving new submit_df
     _add_biblio_list(submit_path, submit_path)
-    progress_callback(new_progress_bar_state + step * 10)
+    if progress_callback:
+        progress_callback(new_progress_bar_state + step * 10)
 
     # Renaming column names using submit_col_rename_dic and orphan_col_rename_dic
     _change_col_names(institute, org_tup, submit_path, orphan_path)
 
     # Splitting orphan file in subdivisions of Institute
     _split_orphan(institute, bibliometer_path, org_tup, corpus_year)
-    progress_callback(new_progress_bar_state + step * 15)
+    if progress_callback:
+        progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identification of articles independent of database extraction
     _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
-    progress_callback(100)
+    if progress_callback:
+        progress_callback(100)
 
     end_message = ("Results of search of authors in employees list "
                    f"saved in folder: \n  {out_path}")

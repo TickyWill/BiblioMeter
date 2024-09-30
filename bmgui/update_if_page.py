@@ -121,7 +121,7 @@ def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
     
     progress_callback(5)
     progress_bar_state = 5
-    progress_bar_loop_progression = 45 // len(corpus_years_list)    
+    progress_bar_loop_progression = 70 // len(corpus_years_list)    
     if_database_complete = None
     missing_pub_file_year = None
     for corpus_year in corpus_years_list:
@@ -143,7 +143,7 @@ def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
                          missing_if_path, missing_issn_path)
             _, if_database_complete = add_if(institute, org_tup, bibliometer_path,
                                              paths_tup, corpus_year)
-            
+
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
             split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
 
