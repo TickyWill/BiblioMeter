@@ -200,10 +200,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
         bibliometer_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases. 
-
-    Returns:
-        None.
+        datatype (str): Data combination type from corpuses databases.
     """
 
     # Internal functions

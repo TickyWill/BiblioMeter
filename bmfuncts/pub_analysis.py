@@ -1,5 +1,7 @@
 """Module of functions for publications-list analysis
-in terms of impact factors, key words and collaborations."""
+in terms of impact factors, key words and geographical collaborations.
+To do: Analysis of co-publication with other institutions and 
+publications per OTPs."""
 
 __all__ = ['if_analysis',
            'keywords_analysis',
@@ -680,9 +682,6 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
                                  keywords column name, keyword-weight column name).
         kw_analysis_folder_path (path): Full path to the folder for saving results.
         verbose (bool): Status of prints (default = False).
-
-    Returns:
-        None.
     """
 
     # Setting useful column names aliases

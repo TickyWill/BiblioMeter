@@ -183,7 +183,7 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
     for the Institute department labelled 'dpt'.     
     A new column named 'otp_alias' is added to the dataframe 'dpt_df'.
     A list data validation rules is added to each cells of the column
-    'otp_alias' based on the list of OPTs of the department given 
+    'otp_alias' based on the list of OTPs of the department given 
     by 'dpt_otp_list' list.
     The dataframe columns are renamed using 'otp_col_list'.
     Then the dataframe is saved as a formatted Excel file pointed 
@@ -560,7 +560,7 @@ def _format_missing_df(results_df, common_args_tup, unknown, add_cols):
 
 def get_if_db(institute, org_tup, bibliometer_path):
     """The function `get_if_db` builds a dataframe of impact-factors
-    of he Institute.
+    of the Institute.
 
     Args:
         institute (str): Institute name.
@@ -917,7 +917,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     departments.
     Meanwhile, the set OTPS are saved through the `save_otps` 
     function imported from `bmfuncts.use_pub_attributes` module.
-    Thepublications attributed with 'INVALIDE' OTP value, 
+    The publications attributed with 'INVALIDE' OTP value, 
     (imported from globals module, imported as gg) are dropped 
     in the 'consolidate_pub_list_df' dataframe and kept in 
     the 'invalid_pub_list_df' dedicated dataframe.

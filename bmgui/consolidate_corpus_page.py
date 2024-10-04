@@ -119,10 +119,7 @@ def _launch_update_employees(bibliometer_path,
         check_effectif_status (int): Value for updating 
                                      Institute employees database '0: no update; 1: update'.
         progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.
-
-    Returns:
-        None.    
+                                      ProgressBar tkinter widget status.   
     """
 
     # Setting parameters from args
@@ -267,10 +264,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                                  on available years in Institute employees database.
         progress_callback (function): Function for updating 
                                       ProgressBar tkinter widget status.
-        progress_bar_state (int): Initial status of ProgressBar tkinter widget.
-
-    Returns:
-        None.    
+        progress_bar_state (int): Initial status of ProgressBar tkinter widget.  
     """
 
     def _recursive_year_search_try(progress_callback):
@@ -388,10 +382,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
         homonymes_file (str): Name of file created for resolving homonyms.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.
-
-    Returns:
-        None.    
+                                      ProgressBar tkinter widget status.   
     """
 
     def _resolution_homonymies_try(progress_callback):
@@ -503,10 +494,7 @@ def _launch_add_otp_try(institute, org_tup,
         otp_file_base (str): Base for building created-files names.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status. 
-
-    Returns:
-        None.    
+                                      ProgressBar tkinter widget status.   
     """
 
     def _add_otp_try(progress_callback):
@@ -618,10 +606,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
         years_list (list): List of available corpus years 
                            (each item defined by a string of 4 digits).
         progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status. 
-
-    Returns:
-        None.    
+                                      ProgressBar tkinter widget status.  
     """
 
     def _consolidate_pub_list(progress_callback):
@@ -734,10 +719,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
         bibliometer_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases. 
-
-    Returns:
-        None.
+        datatype (str): Data combination type from corpuses databases.
     """
 
     # Internal functions

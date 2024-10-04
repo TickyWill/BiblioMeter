@@ -58,11 +58,7 @@ def set_page_title(self, master, page_name, institute, datatype = None):
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of 'page_name' page.
         institute (str): Institute name.
-        datatype (str): Data combination type from corpuses databases (default = None). 
-
-    Returns:
-        None.
-        
+        datatype (str): Data combination type from corpuses databases (default = None).        
     """
 
     # Setting page title
@@ -105,10 +101,6 @@ def set_exit_button(self, master):
     Args:
         self (instense): Instense where is located 'master'.
         master (class): `bmgui.main_page.AppMain` class.
-
-    Returns:
-        None.
-        
     """
     # Internal functions
     def _launch_exit():

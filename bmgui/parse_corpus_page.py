@@ -46,9 +46,6 @@ class CheckBoxCorpuses:
         scopus_r (bool): Status of Scopus raw-data file.
         scopus_p (bool): Status of Scopus parsing files.
         concat (bool) : Status of concatenation and deduplication files.
-
-    Returns:
-        None.
     """
 
     def __init__(self, parent, master, year, wos_r, wos_p,
@@ -98,7 +95,7 @@ class CheckBoxCorpuses:
 
 def _create_table(self, master, pos_x_init):
     """The internal function `_create_table` creates the column names
-    of the table displaing which files of the parsing step are available 
+    of the table displaying which files of the parsing step are available 
     in the working folder.
     The positions of the table items are set using the argument 'pos_x_init', 
     and the general properties of tkinter window as 'master' class variables.
@@ -106,9 +103,6 @@ def _create_table(self, master, pos_x_init):
     Args:
         pos_x_init (int): The initial horizontal position in pixels to be used 
                           for widgets location on the parsing page.
-
-    Returns:
-        None.
 
     Note:
         The functions 'font_size' and 'mm_to_px' are imported
@@ -172,9 +166,6 @@ def _update(self, master, bibliometer_path, pos_tup):
         pos_tup (tup): Tuple = (x position (int) for widgets location, 
                                 y position (int) for widgets location, 
                                 space value (int) for widgets spacing).
-
-    Returns:
-        None.
 
     Note:
         The function 'mm_to_px' is imported from the module 'gui_utils'
@@ -247,9 +238,6 @@ def _launch_parsing(self, master, corpus_year, database_type,
                                 space value (int) for widgets spacing).
         progress_callback (function): Function for updating 
                                       ProgressBar tkinter widget status.
-
-    Returns:
-        None.
     """
 
     # Internal functions
@@ -384,8 +372,6 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
                                 space value (int) for widgets spacing).
         progress_callback (function): Function for updating 
                                       ProgressBar tkinter widget status.
-    Returns:
-        None.
     """
 
     # Internal functions
@@ -516,10 +502,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         page_name (str): Name of parsing page.
         institute (str): Institute name.
         bibliometer_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases. 
-
-    Returns:
-        None.
+        datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
     def _launch_parsing_try(progress_callback):

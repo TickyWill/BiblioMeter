@@ -398,8 +398,8 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute publications list with one row per author. 
         bibliometer_path (path): Full path to working folder.
-        test_case (str): Test case for testing the function (default = 'No test').
-        verbose (bool): Status of prints (default = False).
+        test_case (str): Optional test case for testing the function (default = 'No test').
+        verbose (bool): Optional status of prints (default = False).
 
     Returns:
         (tup): Tuple = (dataframe of merged employees information with 
@@ -650,7 +650,7 @@ def _add_author_job_type(in_path, out_path):
     """The function `_add_author_job_type` adds a new column 
     containing the job type for each author of the publications 
     list with one row per author and saves it as Excel file.
-    The job type is get from the employee information available 
+    The job type is got from the employee information available 
     in 3 columns which names are given by 'category_col_alias', 
     'status_col_alias' and 'qualification_col_alias'.
     The name of the new column is given by 'author_type_col_alias'.
@@ -1100,10 +1100,7 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): Contains the corpus year defined by 4 digits.
-        verbose (bool): Status of prints (default = False).
-
-    Returns:
-        None.        
+        verbose (bool): Status of prints (default = False).       
     """
 
     # Internal function
