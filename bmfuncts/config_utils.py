@@ -73,7 +73,7 @@ def _build_effective_config(db_list, parsing_folder_dict_init):
 
 
 def _build_files_paths(bibliometer_path, year, db_list, parsing_folder_dict):
-    """ the `_build_files_paths` function sets the full paths to the rawdata folders 
+    """The `_build_files_paths` function sets the full paths to the rawdata folders 
     and to the parsing folders for the working folder selected by the user, 
     the corpus year 'year' and for each database in the list 'db_list'.
     For that, it uses the `_build_effective_config` function of the same module.
@@ -228,26 +228,30 @@ def set_org_params(institute, bibliometer_path):
     For that, it uses the configuration dict returned by the `_get_insitute_config` 
     function of the same module.
     The parameters set are returned in a tuple as follows:
-    - index 1 = the dict giving the column name (str) for each department (str);
-    - index 2 = the dict giving the list of historical labels (str) for each department (str);
-    - index 3 = the dict giving the list of attributes (OTPs, str) for each department (str);
-    - index 4 = the list of tuples giving the potential labels (str) of the Institute 
+    - index 0 = the dict giving the column name (str) for each department (str);
+    - index 1 = the dict giving the list of historical labels (str) for each department (str);
+    - index 2 = the dict giving the list of attributes (OTPs, str) for each department (str);
+    - index 3 = the list of tuples giving the potential labels (str) of the Institute 
     in the authors affiliations associated with the country (str) that will be used 
     to filter the authors affiliated to the Institute;
         ex: [("LITEN","France"), ("INES","France")]
-    - index 5 = the list of columns names (str) that will be used for each of the potential labels 
+    - index 4 = the list of columns names (str) that will be used for each of the potential labels 
     of the Institute filtering the authors affiliated to the Institute;
-    - index 6 = the status (bool) of the impact factors database 
+    - index 5 = the status (bool) of the impact factors database 
         - True, if the database specific to the Institute will be used;
         - False, if a general database will be used;
-    - index 7 = the list of document types (str) for which the impact factors will not be analysed.
+    - index 6 = the list of document types (str) for which the impact factors will not be analysed.
+    - index 7 = the index of the main institution among the tuples at index 3;
+    - index 8 = the status of the combination of the tuples at index 3;
+    - index 9 = the status of splitting the file of list of publication with one row per author 
+    that has not been identified as Institute employee.
 
     Args:
         institute (str): The Intitute name.
         bibliometer_path (path): The full path to the working folder.
 
     Returns:
-        (tup): A tuple of the 9 parameters set.
+        (tup): A tuple of the 9 set parameters.
     """
 
     config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])

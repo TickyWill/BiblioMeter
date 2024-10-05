@@ -31,7 +31,17 @@ from bmgui.gui_utils import set_page_title
 
 def _launch_kw_analysis(institute, org_tup, bibliometer_path,
                         datatype, year_select, progress_callback):
-    """
+    """Launches keywords analysis through `keywords_analysis` function 
+    imported from `bmfuncts.pub_analysis` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        year_select (str): Corpus year defined by 4 digits.
+        progress_callback (function): Function for updating 
+                                      ProgressBar tkinter widget status.   
     """
     kw_analysis_folder_path = keywords_analysis(institute,
                                                 org_tup,
@@ -50,7 +60,19 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path,
 
 def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
                               year_select, results_folder_path, progress_callback):
-    """
+    """Launches coupling analysis through `coupling_analysis` function 
+    imported from `bmfuncts.pub_analysis` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        year_select (str): Corpus year defined by 4 digits.
+        results_folder_path (path): Full path where coupling results 
+                                    will be saved in the futur (not yet used).
+        progress_callback (function): Function for updating 
+                                      ProgressBar tkinter widget status.    
     """
     # TO DO: use 'results_folder_path' in info_text
 
@@ -78,7 +100,20 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
 
 def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                         year_select, results_folder_path, progress_callback):
-    """
+    """Launches impact-factors analysis through `if_analysis` function 
+    imported from `bmfuncts.pub_analysis` module after 
+    getting year of most-recent impact factors.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        year_select (str): Corpus year defined by 4 digits.
+        results_folder_path (path): Full path where coupling results 
+                                    will be saved in the futur (not yet used).
+        progress_callback (function): Function for updating 
+                                      ProgressBar tkinter widget status.  
     """
 
     # Getting year of most recent IFs
@@ -111,17 +146,16 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
 
 
 def create_analysis(self, master, page_name, institute, bibliometer_path, datatype):
-    """
-    Description : function working as a bridge between the BiblioMeter
-    App and the functionalities needed for the use of the app.
+    """Manages creation and use of widgets for corpus analysis through internal 
+    functions  `_launch_if_analysis`, `_launch_coupling_analysis` and `_launch_kw_analysis`.
 
-    Args: takes only self and bibliometer_path as arguments.
-    self is the instense in which PageThree will be created.
-    bibliometer_path is a type Path, and is the path to where the folders
-    organised in a very specific way are stored.
-
-    Returns:
-        None.
+    Args:
+        self (instense): Instense where analysis page will be created.
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Name of analysis page (`AnalyzeCorpusPage` class of bmgui.main_page module).
+        institute (str): Institute name.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
     """
 
     # Internal functions

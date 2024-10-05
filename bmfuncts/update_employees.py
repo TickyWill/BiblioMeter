@@ -18,10 +18,10 @@ def _set_employees_paths(bibliometer_path):
     """The function `_set_employees_paths` sets the full paths towards
     4 working folders:
     - 'months2add_employees_folder_path': the folder containing
-    the employees EXCEL file(s) to add; this file must contain
+    the employees Excel file(s) to add; this file must contain
     one sheet per month for a given year.
     - 'all_years_employees_folder_path': the folder hosting
-    the employees EXCEL file which name is given by the global
+    the employees ExcelL file which name is given by the global
     'EMPLOYEES_ARCHI' at key 'all_years_employees' containing a sheet per year.
     - 'one_year_employees_folder_path': the folder hosting
     the annual employees Excel files which names are built
@@ -30,6 +30,12 @@ def _set_employees_paths(bibliometer_path):
     - 'backup_folder_path': the folder hosting the back-up file
     of the employees EXCEL file in case of a potential corruption
     of the active employees file.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+    
+    Returns:
+        (tup): Tuple of the 4 built paths.
     """
 
     # Setting useful aliases
@@ -66,7 +72,7 @@ def _check_sheet_month(df, sheet_name):
         sheet_name (str): The sheet name to be checked.
 
     Returns:
-        (tuple of 3 str):  (year, sheet_name_error, col_error).
+        (tup): Tuple of 3 strings = (year, sheet_name_error, col_error).
     """
 
     # Setting lists of columns
@@ -246,7 +252,7 @@ def _add_column_keep_history(df):
 
 def _add_column_firstname_initial(df):
     """The function `_add_column_firstname_initial` adds a new column defined by
-    the global 'EFFECTIF_ADD_COLS' at the key 'first_name_initials' containing
+    the global 'EMPLOYEES_ADD_COLS' at the key 'first_name_initials' containing
     the initials of the firstname.
         ex: PIERRE -->P, JEAN-PIERRE --> JP , JEAN-PIERRE MARIE --> JPM.
     It uses the columns defined by the global `EMPLOYEES_USEFUL_COLS` at key 'first_name'
@@ -276,12 +282,12 @@ def _add_column_firstname_initial(df):
 
 def _add_column_full_name(df):
     """The function `_add_column_full_name` adds a new column defined by
-    the global 'EFFECTIF_ADD_COLS' at the key 'employee_full_name' containing
+    the global 'EMPLOYEES_ADD_COLS' at the key 'employee_full_name' containing
     the employee full name composed by the last name and the first name initials.
         ex: if last name is SIMONATO and first name initials are JP --> full name is SIMONATO JP.
     It uses the columns defined by the global `EMPLOYEES_USEFUL_COLS` at key 'name'
     that contains the last name for each employee and it uses the previously added column
-    defined by the global `EFFECTIF_ADD_COLS` at key 'first_name_initials'.
+    defined by the global `EMPLOYEES_ADD_COLS` at key 'first_name_initials'.
 
     Args:
         df (dataframe): The dataframe to which the column is added.
@@ -367,7 +373,7 @@ def _build_year_month_dpt(year_months_file_path):
        (dataframe): The built employees dataframe.
 
     Notes:
-        The globals EFFECTIF_ADD_COLS and EMPLOYEES_USEFUL_COLS are imported
+        The globals EMPLOYEES_ADD_COLS and EMPLOYEES_USEFUL_COLS are imported
         from the module 'employees_globals' of the package 'bmfuncts'.
 
     """
@@ -442,7 +448,7 @@ def _build_year_month_dpt(year_months_file_path):
     return employees_df
 
 
-def update_employees(bibliometer_path, progress_callback, replace = True):
+def update_employees(bibliometer_path, progress_callback=None, replace = True):
     """The function `update_employees` update the file defined by the global
     'EMPLOYEES_ARCHI' at key 'employees_file_name' using the file defined
     by the global 'EMPLOYEES_ARCHI' at key "one_year_employees_filebase"
@@ -450,7 +456,9 @@ def update_employees(bibliometer_path, progress_callback, replace = True):
 
     Args:
         bibliometer_path (path): The path to the working folder.
-        replace (bool): Optional (default: True); if true, existing sheets
+        progress_callback (function): Function for updating ProgressBar 
+                                      tkinter widget status (default = None).
+        replace (bool): Optional (default = True); if true, existing sheets
                         are replaced in employees EXCEL files specific to a year.
 
     Returns:
@@ -479,7 +487,8 @@ def update_employees(bibliometer_path, progress_callback, replace = True):
     # Setting the list of files available to add (expected only one)
     months2add_files = [file for file in os.listdir(months2add_employees_folder_path)
                              if file.endswith(".xlsx") and file[0] != '~']
-    progress_callback(15)
+    if progress_callback:
+        progress_callback(15)
 
     if len(months2add_files)>1:
         files_number_error = (f"Too many files present in  '{months2add_employees_folder_path}' "
@@ -500,7 +509,8 @@ def update_employees(bibliometer_path, progress_callback, replace = True):
                                                one_year_employees_folder_path,
                                                one_year_employees_basename_alias,
                                                replace)
-    progress_callback(20)
+    if progress_callback:
+        progress_callback(20)
 
     if employees_year is None or year_months_file_path is None:
         return None, None, sheet_name_error, column_error, years2add_error, None
@@ -508,7 +518,8 @@ def update_employees(bibliometer_path, progress_callback, replace = True):
     # Building the dataframe employees_df by concatenating
     # the months of the current year
     employees_df = _build_year_month_dpt(year_months_file_path)
-    progress_callback(25)
+    if progress_callback:
+        progress_callback(25)
 
     # Saving employees_df as a sheet mame after employees_year,
     # in the workbook pointed by all_years_file_path
