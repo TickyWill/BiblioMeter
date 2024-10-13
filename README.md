@@ -9,6 +9,10 @@ More specifically:<br />
 - Take care of the authors affiliated to the Institute but not found in the employees database;
 - Computes key performance indicators (impact factors, collaborations and keywords occurrences...).
 
+## Sphinx documentation
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/docs/build/index.html>BiblioMeter sphinx-documentation html file
+</a></p>
+
 ## Installation
 Run the following command to get a repository clone:
 ```
