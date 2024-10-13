@@ -1,0 +1,796 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmfuncts.use_pub_attributes &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmfuncts.use_pub_attributes</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmfuncts.use_pub_attributes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module of functions for using publications attributes</span>
+<span class="sd">such as homonyms and OTPs.&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;save_homonyms&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_otps&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_shaped_homonyms_file&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_saved_homonyms&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_saved_otps&#39;</span><span class="p">,</span>
+          <span class="p">]</span>
+
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">import</span> <span class="nn">BiblioParsing</span> <span class="k">as</span> <span class="nn">bp</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">openpyxl</span> <span class="kn">import</span> <span class="n">Workbook</span> <span class="k">as</span> <span class="n">openpyxl_Workbook</span>
+<span class="kn">from</span> <span class="nn">openpyxl.utils.dataframe</span> <span class="kn">import</span> <span class="n">dataframe_to_rows</span> \
+    <span class="k">as</span> <span class="n">openpyxl_dataframe_to_rows</span>
+<span class="kn">from</span> <span class="nn">openpyxl.worksheet.datavalidation</span> <span class="kn">import</span> <span class="n">DataValidation</span> \
+    <span class="k">as</span> <span class="n">openpyxl_DataValidation</span>
+<span class="kn">from</span> <span class="nn">openpyxl.utils</span> <span class="kn">import</span> <span class="n">get_column_letter</span> \
+    <span class="k">as</span> <span class="n">openpyxl_get_column_letter</span>
+<span class="kn">from</span> <span class="nn">openpyxl.styles</span> <span class="kn">import</span> <span class="n">PatternFill</span> <span class="k">as</span> <span class="n">openpyxl_PatternFill</span>
+<span class="kn">from</span> <span class="nn">openpyxl.styles</span> <span class="kn">import</span> <span class="n">Alignment</span> <span class="k">as</span> <span class="n">openpyxl_Alignment</span>
+<span class="kn">from</span> <span class="nn">openpyxl.styles</span> <span class="kn">import</span> <span class="n">Border</span> <span class="k">as</span> <span class="n">openpyxl_Border</span>
+<span class="kn">from</span> <span class="nn">openpyxl.styles</span> <span class="kn">import</span> <span class="n">Side</span> <span class="k">as</span> <span class="n">openpyxl_Side</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.employees_globals</span> <span class="k">as</span> <span class="nn">eg</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.institute_globals</span> <span class="k">as</span> <span class="nn">ig</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.rename_cols</span> <span class="kn">import</span> <span class="n">build_col_conversion_dic</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.rename_cols</span> <span class="kn">import</span> <span class="n">set_col_attr</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.useful_functs</span> <span class="kn">import</span> <span class="n">mise_en_page</span>
+
+
+<div class="viewcode-block" id="save_shaped_homonyms_file">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.use_pub_attributes.save_shaped_homonyms_file">[docs]</a>
+<span class="k">def</span> <span class="nf">save_shaped_homonyms_file</span><span class="p">(</span><span class="n">homonyms_df</span><span class="p">,</span> <span class="n">out_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves as openpyxl workbook the dataframe for resolving </span>
+<span class="sd">    homonymies by the user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        homonyms_df (dtaframe): Data for resolving homonymies.</span>
+<span class="sd">        out_path (path): Full path for saving the created workbook.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Setting useful column names</span>
+    <span class="n">col_homonyms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">homonyms_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="c1"># Useful aliases of renamed columns names</span>
+    <span class="n">name_alias</span>      <span class="o">=</span> <span class="n">col_homonyms</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span>
+    <span class="n">firstname_alias</span> <span class="o">=</span> <span class="n">col_homonyms</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span>
+    <span class="n">homonym_alias</span>   <span class="o">=</span> <span class="n">col_homonyms</span><span class="p">[</span><span class="mi">18</span><span class="p">]</span>
+
+    <span class="n">wb</span> <span class="o">=</span> <span class="n">openpyxl_Workbook</span><span class="p">()</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">active</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Consolidation Homonymes&#39;</span>
+    <span class="n">yellow_ft</span> <span class="o">=</span> <span class="n">openpyxl_PatternFill</span><span class="p">(</span><span class="n">fgColor</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ROW_COLORS</span><span class="p">[</span><span class="s1">&#39;highlight&#39;</span><span class="p">],</span>
+                                     <span class="n">fill_type</span> <span class="o">=</span> <span class="s2">&quot;solid&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">indice</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">openpyxl_dataframe_to_rows</span><span class="p">(</span><span class="n">homonyms_df</span><span class="p">,</span>
+                                                          <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)):</span>
+        <span class="n">ws</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">last_row</span> <span class="o">=</span> <span class="n">ws</span><span class="p">[</span><span class="n">ws</span><span class="o">.</span><span class="n">max_row</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">col_homonyms</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">homonym_alias</span><span class="p">)]</span> <span class="o">==</span> <span class="n">pg</span><span class="o">.</span><span class="n">HOMONYM_FLAG</span> <span class="ow">and</span> <span class="n">indice</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cell</span>      <span class="o">=</span> <span class="n">last_row</span><span class="p">[</span><span class="n">col_homonyms</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name_alias</span><span class="p">)]</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">fill</span> <span class="o">=</span> <span class="n">yellow_ft</span>
+            <span class="n">cell</span>      <span class="o">=</span> <span class="n">last_row</span><span class="p">[</span><span class="n">col_homonyms</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">firstname_alias</span><span class="p">)]</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">fill</span> <span class="o">=</span> <span class="n">yellow_ft</span>
+
+    <span class="n">wb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="save_homonyms">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.use_pub_attributes.save_homonyms">[docs]</a>
+<span class="k">def</span> <span class="nf">save_homonyms</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves the history of the resolved homonyms by the user.</span>
+<span class="sd">    First, builds the dataframe to save with following columns:</span>
+<span class="sd">        - hash-ID of the publication for which homonyms have been solved;</span>
+<span class="sd">        - the personal number of the kept author among the homonyms.</span>
+<span class="sd">    Then, saves the dataframe as Excel file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (str): End message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">submit_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful folder and file aliases</span>
+    <span class="n">bdd_mensuelle_alias</span>      <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;bdd mensuelle&quot;</span><span class="p">]</span>
+    <span class="n">homonyms_folder_alias</span>    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;homonymes folder&quot;</span><span class="p">]</span>
+    <span class="n">homonyms_file_base_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;homonymes file name base&quot;</span><span class="p">]</span>
+    <span class="n">history_folder_alias</span>     <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;history folder&quot;</span><span class="p">]</span>
+    <span class="n">kept_homonyms_file_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;kept homonyms file name&quot;</span><span class="p">]</span>
+    <span class="n">hash_id_file_alias</span>       <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;hash_id file name&quot;</span><span class="p">]</span>
+    <span class="n">homonyms_file_alias</span>      <span class="o">=</span> <span class="n">homonyms_file_base_alias</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">corpus_year</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+
+    <span class="c1"># Setting useful column name aliases</span>
+    <span class="n">pub_id_alias</span>        <span class="o">=</span> <span class="n">submit_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">]]</span>
+    <span class="n">homonyms_col_alias</span>  <span class="o">=</span> <span class="n">submit_col_rename_dic</span><span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;homonym&#39;</span><span class="p">]]</span>
+    <span class="n">matricule_col_alias</span> <span class="o">=</span> <span class="n">submit_col_rename_dic</span><span class="p">[</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;matricule&#39;</span><span class="p">]]</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">corpus_year_path</span>        <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">bdd_mensuelle_path</span>      <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">bdd_mensuelle_alias</span><span class="p">)</span>
+    <span class="n">hash_id_file_path</span>       <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">hash_id_file_alias</span><span class="p">)</span>
+    <span class="n">homonyms_folder_path</span>    <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonyms_folder_alias</span><span class="p">)</span>
+    <span class="n">homonyms_file_path</span>      <span class="o">=</span> <span class="n">homonyms_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonyms_file_alias</span><span class="p">)</span>
+    <span class="n">history_folder_path</span>     <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">history_folder_alias</span><span class="p">)</span>
+    <span class="n">kept_homonyms_file_path</span> <span class="o">=</span> <span class="n">history_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">kept_homonyms_file_alias</span><span class="p">)</span>
+
+    <span class="c1"># Getting the hash_id dataframe</span>
+    <span class="n">hash_id_df</span>  <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">hash_id_file_path</span><span class="p">)</span>
+
+    <span class="c1"># Getting the dataframe of homonyms to solve</span>
+    <span class="n">pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">homonyms_file_path</span><span class="p">)</span>
+
+    <span class="c1"># Building dataframe of pub_id and kept personal numbers for solved homonyms</span>
+    <span class="n">temp_df</span> <span class="o">=</span> <span class="n">pub_df</span><span class="p">[</span><span class="n">pub_df</span><span class="p">[</span><span class="n">homonyms_col_alias</span><span class="p">]</span> <span class="o">==</span> <span class="n">pg</span><span class="o">.</span><span class="n">HOMONYM_FLAG</span><span class="p">]</span>
+    <span class="n">not_solved_homonyms_pub_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">pub_id</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">pub_id</span> \
+                                  <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">])</span>
+                                  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="n">temp_df</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">]</span> <span class="o">==</span> \
+                                                 <span class="n">pub_id</span><span class="p">][</span><span class="n">pub_id_alias</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">homonyms_df</span> <span class="o">=</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pub_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">temp_df</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">pub_id</span> <span class="ow">in</span> <span class="n">not_solved_homonyms_pub_id</span><span class="p">:</span>
+            <span class="n">homonyms_df</span> <span class="o">=</span> <span class="n">homonyms_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+    <span class="n">kept_matricules_df</span> <span class="o">=</span> <span class="n">homonyms_df</span><span class="p">[[</span><span class="n">pub_id_alias</span><span class="p">,</span> <span class="n">matricule_col_alias</span><span class="p">]]</span>
+
+    <span class="c1"># Building hash_id and kept matricules df</span>
+    <span class="n">homonyms_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hash_id_df</span><span class="p">,</span>
+                                   <span class="n">kept_matricules_df</span><span class="p">,</span>
+                                   <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+                                   <span class="n">on</span> <span class="o">=</span> <span class="n">pub_id_alias</span><span class="p">)</span>
+    <span class="n">homonyms_history_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">pub_id_alias</span><span class="p">],</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">homonyms_history_df</span> <span class="o">=</span> <span class="n">homonyms_history_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># Concatenating with the dataframe of already saved solved homonyms</span>
+    <span class="k">if</span> <span class="n">kept_homonyms_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="n">existing_homonyms_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">kept_homonyms_file_path</span><span class="p">)</span>
+        <span class="n">homonyms_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">existing_homonyms_history_df</span><span class="p">,</span><span class="n">homonyms_history_df</span><span class="p">])</span>
+    <span class="n">homonyms_history_df</span> <span class="o">=</span> <span class="n">homonyms_history_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)</span>
+    <span class="n">homonyms_history_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Saving the dataframe concatenated</span>
+    <span class="n">homonyms_history_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">kept_homonyms_file_path</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;History of homonyms resolution saved&quot;</span>
+    <span class="k">return</span> <span class="n">message</span></div>
+
+
+
+<div class="viewcode-block" id="set_saved_homonyms">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.use_pub_attributes.set_saved_homonyms">[docs]</a>
+<span class="k">def</span> <span class="nf">set_saved_homonyms</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                       <span class="n">corpus_year</span><span class="p">,</span> <span class="n">actual_homonym_status</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolves the homonyms from the history of the resolved homonyms </span>
+<span class="sd">    before submiting the file for resolving remaining homonyms to the user.</span>
+<span class="sd">    First, builds the dataframe with solved homonyms and homonyms remaining </span>
+<span class="sd">    to be solved. </span>
+<span class="sd">    Then, saves the dataframe through the `save_shaped_homonyms_file` </span>
+<span class="sd">    internal function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        actual_homonym_status (bool): True if homonyms exists.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (End message (str), actualized homonyms </span>
+<span class="sd">               status (bool).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">submit_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful folder and file aliases</span>
+    <span class="n">bdd_mensuelle_alias</span>      <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;bdd mensuelle&quot;</span><span class="p">]</span>
+    <span class="n">homonyms_folder_alias</span>    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;homonymes folder&quot;</span><span class="p">]</span>
+    <span class="n">homonyms_file_base_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;homonymes file name base&quot;</span><span class="p">]</span>
+    <span class="n">history_folder_alias</span>     <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;history folder&quot;</span><span class="p">]</span>
+    <span class="n">kept_homonyms_file_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;kept homonyms file name&quot;</span><span class="p">]</span>
+    <span class="n">hash_id_file_alias</span>       <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;hash_id file name&quot;</span><span class="p">]</span>
+    <span class="n">homonyms_file_alias</span>      <span class="o">=</span> <span class="n">homonyms_file_base_alias</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">corpus_year</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+
+    <span class="c1"># Setting useful column name aliases</span>
+    <span class="n">hash_id_col_alias</span>   <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_HASH</span><span class="p">[</span><span class="s1">&#39;hash_id&#39;</span><span class="p">]</span>
+    <span class="n">pub_id_alias</span>        <span class="o">=</span> <span class="n">submit_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">]]</span>
+    <span class="n">homonyms_col_alias</span>  <span class="o">=</span> <span class="n">submit_col_rename_dic</span><span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;homonym&#39;</span><span class="p">]]</span>
+    <span class="n">matricule_col_alias</span> <span class="o">=</span> <span class="n">submit_col_rename_dic</span><span class="p">[</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;matricule&#39;</span><span class="p">]]</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">corpus_year_path</span>        <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">bdd_mensuelle_path</span>      <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">bdd_mensuelle_alias</span><span class="p">)</span>
+    <span class="n">hash_id_file_path</span>       <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">hash_id_file_alias</span><span class="p">)</span>
+    <span class="n">homonyms_folder_path</span>    <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonyms_folder_alias</span><span class="p">)</span>
+    <span class="n">homonyms_file_path</span>      <span class="o">=</span> <span class="n">homonyms_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonyms_file_alias</span><span class="p">)</span>
+    <span class="n">history_folder_path</span>     <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">history_folder_alias</span><span class="p">)</span>
+    <span class="n">kept_homonyms_file_path</span> <span class="o">=</span> <span class="n">history_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">kept_homonyms_file_alias</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">kept_homonyms_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+
+        <span class="c1"># Getting the kept homonyms dataframe</span>
+        <span class="n">homonyms_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">kept_homonyms_file_path</span><span class="p">)</span>
+
+        <span class="c1"># Getting the hash_id dataframe</span>
+        <span class="n">hash_id_df</span>  <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">hash_id_file_path</span><span class="p">)</span>
+
+        <span class="c1"># Building dataframe of pub_id and personal number to keep related to hash_id</span>
+        <span class="n">pub_id_row_to_keep_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hash_id_df</span><span class="p">,</span>
+                                         <span class="n">homonyms_history_df</span><span class="p">,</span>
+                                         <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+                                         <span class="n">on</span>  <span class="o">=</span> <span class="n">hash_id_col_alias</span><span class="p">,)</span>
+        <span class="n">pub_id_row_to_keep_df</span> <span class="o">=</span> <span class="n">pub_id_row_to_keep_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">pub_id_row_to_keep_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">hash_id_col_alias</span><span class="p">],</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Getting the resolved homonyms dataframe to be updated</span>
+        <span class="n">homonyms_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">homonyms_file_path</span><span class="p">)</span>
+
+        <span class="c1"># Droping row of unkept personal numbers in homonyms_df</span>
+        <span class="n">homonyms_df_new</span> <span class="o">=</span> <span class="n">homonyms_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="n">pub_id_row_to_keep_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">pub_id_to_check</span>   <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">])</span>
+            <span class="n">matricule_to_keep</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">matricule_col_alias</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">homonyms_df</span><span class="p">)):</span>
+                <span class="n">pub_id</span>         <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">homonyms_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">pub_id_alias</span><span class="p">])</span>
+                <span class="n">matricule</span>      <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">homonyms_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">matricule_col_alias</span><span class="p">])</span>
+                <span class="n">homonym_status</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">homonyms_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">homonyms_col_alias</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">pub_id</span> <span class="o">==</span> <span class="n">pub_id_to_check</span> <span class="ow">and</span> <span class="n">homonym_status</span> <span class="o">==</span> <span class="n">pg</span><span class="o">.</span><span class="n">HOMONYM_FLAG</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">matricule</span> <span class="o">==</span> <span class="n">matricule_to_keep</span><span class="p">:</span>
+                        <span class="n">homonyms_df_new</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">homonyms_col_alias</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">homonyms_df_new</span> <span class="o">=</span> <span class="n">homonyms_df_new</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+        <span class="c1"># Setting actual homonyms status</span>
+        <span class="n">actual_homonym_status</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">pg</span><span class="o">.</span><span class="n">HOMONYM_FLAG</span> <span class="ow">in</span> <span class="n">homonyms_df_new</span><span class="p">[</span><span class="n">homonyms_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">():</span>
+            <span class="n">actual_homonym_status</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># Saving updated homonyms_df</span>
+        <span class="n">save_shaped_homonyms_file</span><span class="p">(</span><span class="n">homonyms_df_new</span><span class="p">,</span> <span class="n">homonyms_file_path</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Already resolved homonyms used&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;No already resolved homonyms available&quot;</span>
+    <span class="k">return</span> <span class="n">message</span><span class="p">,</span> <span class="n">actual_homonym_status</span></div>
+
+
+
+<div class="viewcode-block" id="save_otps">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.use_pub_attributes.save_otps">[docs]</a>
+<span class="k">def</span> <span class="nf">save_otps</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves the history of the attributed OTPs by the user.</span>
+<span class="sd">    First, builds the dataframe to save with 2 sheets:</span>
+<span class="sd">        - A sheet which name is given by &#39;SHEET_SAVE_OTP&#39; global at key &#39;hash_OTP&#39; </span>
+<span class="sd">        with the following columns:</span>
+<span class="sd">            - hash-ID of the publication for which OTPs have been attributed; </span>
+<span class="sd">            - the OTPs value attributed.</span>
+<span class="sd">        - A sheet which name is given by &#39;SHEET_SAVE_OTP&#39; global at key &#39;doi_OTP&#39; </span>
+<span class="sd">        with the following columns:</span>
+<span class="sd">            - Full name (last name + first name initials) of the first author </span>
+<span class="sd">            of the publication for which OTPs have been attributed;</span>
+<span class="sd">            - DOI of the publication for which OTPs have been attributed;</span>
+<span class="sd">            - the OTPs value attributed.</span>
+<span class="sd">    Then, saves the dataframe as Excel file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (str): End message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">all_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful folder and file aliases</span>
+    <span class="n">bdd_mensuelle_alias</span>      <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;bdd mensuelle&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_folder_alias</span>    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list folder&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_file_base_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list file name base&quot;</span><span class="p">]</span>
+    <span class="n">history_folder_alias</span>     <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;history folder&quot;</span><span class="p">]</span>
+    <span class="n">kept_otps_file_alias</span>     <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;kept OTPs file name&quot;</span><span class="p">]</span>
+    <span class="n">hash_id_file_alias</span>       <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;hash_id file name&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_file_alias</span>      <span class="o">=</span> <span class="n">pub_list_file_base_alias</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s1">.xlsx&#39;</span>
+
+    <span class="c1"># Setting useful column name aliases</span>
+    <span class="n">pub_id_alias</span>         <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">]]</span>
+    <span class="n">author_col_alias</span>     <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">doi_col_alias</span>        <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">6</span><span class="p">]]</span>
+    <span class="n">otp_list_col_alias</span>   <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">]]</span>
+    <span class="n">otp_col_alias</span>        <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;final OTP&#39;</span><span class="p">]</span>
+    <span class="n">hash_otp_sheet_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">SHEET_SAVE_OTP</span><span class="p">[</span><span class="s1">&#39;hash_OTP&#39;</span><span class="p">]</span>
+    <span class="n">doi_otp_sheet_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">SHEET_SAVE_OTP</span><span class="p">[</span><span class="s1">&#39;doi_OTP&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">corpus_year_path</span>     <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">bdd_mensuelle_path</span>   <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">bdd_mensuelle_alias</span><span class="p">)</span>
+    <span class="n">hash_id_file_path</span>    <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">hash_id_file_alias</span><span class="p">)</span>
+    <span class="n">pub_list_folder_path</span> <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_folder_alias</span><span class="p">)</span>
+    <span class="n">pub_list_file_path</span>   <span class="o">=</span> <span class="n">pub_list_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_file_alias</span><span class="p">)</span>
+    <span class="n">history_folder_path</span>  <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">history_folder_alias</span><span class="p">)</span>
+    <span class="n">kept_otps_file_path</span>  <span class="o">=</span> <span class="n">history_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">kept_otps_file_alias</span><span class="p">)</span>
+
+    <span class="c1"># Getting the hash_id dataframe</span>
+    <span class="n">hash_id_df</span>  <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">hash_id_file_path</span><span class="p">)</span>
+
+    <span class="c1"># Getting the dataframe of consolidated pub list with OTPs</span>
+    <span class="n">pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">pub_list_file_path</span><span class="p">)</span>
+
+    <span class="c1"># Building set OTPs df</span>
+    <span class="k">if</span> <span class="n">otp_col_alias</span> <span class="ow">in</span> <span class="n">pub_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">otp_col</span> <span class="o">=</span> <span class="n">otp_col_alias</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">otp_col</span> <span class="o">=</span> <span class="n">otp_list_col_alias</span>
+    <span class="n">otps_df</span> <span class="o">=</span> <span class="n">pub_df</span><span class="p">[[</span><span class="n">pub_id_alias</span><span class="p">,</span> <span class="n">author_col_alias</span><span class="p">,</span> <span class="n">doi_col_alias</span><span class="p">,</span> <span class="n">otp_col</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">otps_df</span> <span class="o">=</span> <span class="n">otps_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">otps_df</span> <span class="o">=</span> <span class="n">otps_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">set_otps_df</span> <span class="o">=</span> <span class="n">otps_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="n">otps_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="n">otp_col</span><span class="p">]</span> <span class="ow">or</span> <span class="n">row</span><span class="p">[</span><span class="n">otp_col</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+            <span class="n">set_otps_df</span> <span class="o">=</span> <span class="n">set_otps_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+    <span class="c1"># Building hash_id and kept otp df</span>
+    <span class="n">hash_otps_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hash_id_df</span><span class="p">,</span>
+                                    <span class="n">set_otps_df</span><span class="p">,</span>
+                                    <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+                                    <span class="n">on</span> <span class="o">=</span> <span class="n">pub_id_alias</span><span class="p">)</span>
+    <span class="n">hash_otps_history_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">pub_id_alias</span><span class="p">,</span> <span class="n">author_col_alias</span><span class="p">,</span> <span class="n">doi_col_alias</span><span class="p">],</span>
+                              <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">hash_otps_history_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="n">otp_col</span><span class="p">:</span><span class="n">otp_col_alias</span><span class="p">},</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Building DOI and kept otp df</span>
+    <span class="n">doi_otps_history_df</span> <span class="o">=</span> <span class="n">set_otps_df</span><span class="p">[[</span><span class="n">author_col_alias</span><span class="p">,</span> <span class="n">doi_col_alias</span><span class="p">,</span> <span class="n">otp_col</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">doi_otps_history_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="n">otp_col</span><span class="p">:</span><span class="n">otp_col_alias</span><span class="p">},</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Concatenating with the dataframes of already saved solved OTPs by hash_id and by DOI</span>
+    <span class="k">if</span> <span class="n">kept_otps_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="n">existing_otps_history_dict</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">kept_otps_file_path</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">existing_hash_otps_history_df</span> <span class="o">=</span> <span class="n">existing_otps_history_dict</span><span class="p">[</span><span class="n">hash_otp_sheet_alias</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing_hash_otps_history_df</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">hash_otps_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">existing_hash_otps_history_df</span><span class="p">,</span> <span class="n">hash_otps_history_df</span><span class="p">])</span>
+        <span class="n">hash_otps_history_df</span> <span class="o">=</span> <span class="n">hash_otps_history_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)</span>
+        <span class="n">hash_otps_history_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">existing_doi_otps_history_df</span> <span class="o">=</span> <span class="n">existing_otps_history_dict</span><span class="p">[</span><span class="n">doi_otp_sheet_alias</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing_doi_otps_history_df</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">doi_otps_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">existing_doi_otps_history_df</span><span class="p">,</span> <span class="n">doi_otps_history_df</span><span class="p">])</span>
+        <span class="n">doi_otps_history_df</span> <span class="o">=</span> <span class="n">doi_otps_history_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)</span>
+        <span class="n">doi_otps_history_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">ExcelWriter</span><span class="p">(</span><span class="n">kept_otps_file_path</span><span class="p">,</span>  <span class="c1"># https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated</span>
+                        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">if_sheet_exists</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+        <span class="n">hash_otps_history_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">hash_otp_sheet_alias</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">doi_otps_history_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">doi_otp_sheet_alias</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;History of kept OTPs saved&quot;</span>
+    <span class="k">return</span> <span class="n">message</span></div>
+
+
+<span class="k">def</span> <span class="nf">_re_save_dpt_otp_file</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">dpt</span><span class="p">,</span> <span class="n">otp_set_dpt_df</span><span class="p">,</span> <span class="n">otp_to_set_dpt_df</span><span class="p">,</span>
+                          <span class="n">dpt_otp_list</span><span class="p">,</span> <span class="n">excel_dpt_path</span><span class="p">,</span> <span class="n">otp_list_col</span><span class="p">,</span> <span class="n">columns_list</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rebuilds and saves the openpyxl workbook for the department labelled &#39;dpt&#39;.</span>
+<span class="sd">    A data validation list is added to the cells &#39;otp_cell_alias&#39; only when </span>
+<span class="sd">    the OTP in not already attributed.</span>
+<span class="sd">    The openpyxl workbook is created through the `mise_en_page` function imported from </span>
+<span class="sd">    the `bmfuncts.useful_functs` module and is re-configured in the same way as in this </span>
+<span class="sd">    function after being modified and before being saved.</span>
+<span class="sd">    The columns attributes for formatting the workbook are defined through the `set_col_attr` </span>
+<span class="sd">    function imported from `bmfuncts.rename_cols` module.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        dpt (str): Department of the Institute.</span>
+<span class="sd">        otp_set_dpt_df (dataframe): Data of the already attributed OTPs for the department.</span>
+<span class="sd">        otp_to_set_dpt_df (dataframe): Data of the OTPs still to be attributed for the department.</span>
+<span class="sd">        dpt_otp_list (list): String containing the OTPs of the department seperated by semicolons.</span>
+<span class="sd">        excel_dpt_path (path): Full path to where the workbook is saved. </span>
+<span class="sd">        otp_list_col (str): Name of the column that contains the OTPs list.</span>
+<span class="sd">        columns_list (list): Columns to be formatted.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting useful column sizes and cell colors</span>
+    <span class="n">col_attr</span><span class="p">,</span> <span class="n">col_set_list</span> <span class="o">=</span> <span class="n">set_col_attr</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">cell_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">openpyxl_PatternFill</span><span class="p">(</span><span class="n">fgColor</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ROW_COLORS</span><span class="p">[</span><span class="s1">&#39;odd&#39;</span><span class="p">],</span>
+                                        <span class="n">fill_type</span> <span class="o">=</span> <span class="s2">&quot;solid&quot;</span><span class="p">),</span>
+                   <span class="n">openpyxl_PatternFill</span><span class="p">(</span><span class="n">fgColor</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ROW_COLORS</span><span class="p">[</span><span class="s1">&#39;even&#39;</span><span class="p">],</span>
+                                        <span class="n">fill_type</span> <span class="o">=</span> <span class="s2">&quot;solid&quot;</span><span class="p">)]</span>
+
+    <span class="c1"># Building validation list of OTP for &#39;dpt&#39; department</span>
+    <span class="n">validation_list</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dpt_otp_list</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&quot;&#39;</span>
+    <span class="n">data_val</span> <span class="o">=</span> <span class="n">openpyxl_DataValidation</span><span class="p">(</span><span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                                       <span class="n">formula1</span> <span class="o">=</span> <span class="n">validation_list</span><span class="p">,</span>
+                                       <span class="n">showErrorMessage</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Initializing df_dpt_new with the publications which otp is not yet set</span>
+    <span class="n">df_dpt_new</span> <span class="o">=</span> <span class="n">otp_to_set_dpt_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Adding a column containing OTPs of &#39;dpt&#39; department</span>
+    <span class="n">df_dpt_new</span><span class="p">[</span><span class="n">otp_list_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">validation_list</span>
+
+    <span class="c1"># Creating and formatting the openpyxl workbook</span>
+    <span class="n">wb</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">mise_en_page</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">df_dpt_new</span><span class="p">)</span>
+
+    <span class="c1"># Setting num of first col and first row in EXCEL files</span>
+    <span class="n">excel_first_col_num</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">excel_first_row_num</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Getting the column letter for the OTPs column</span>
+    <span class="n">otp_alias_df_index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_dpt_new</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">otp_list_col</span><span class="p">)</span>
+    <span class="n">otp_alias_excel_index</span> <span class="o">=</span> <span class="n">otp_alias_df_index</span> <span class="o">+</span> <span class="n">excel_first_col_num</span>
+    <span class="n">otp_alias_column_letter</span> <span class="o">=</span> <span class="n">openpyxl_get_column_letter</span><span class="p">(</span><span class="n">otp_alias_excel_index</span><span class="p">)</span>
+
+    <span class="c1"># Activating the validation data list in the OTPs column of df_dpt_new</span>
+    <span class="n">df_dpt_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_dpt_new</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">df_dpt_len</span><span class="p">:</span>
+        <span class="c1"># Adding a validation data list</span>
+        <span class="n">ws</span><span class="o">.</span><span class="n">add_data_validation</span><span class="p">(</span><span class="n">data_val</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">df_index_row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_dpt_new</span><span class="p">)):</span>
+            <span class="n">otp_cell_alias</span> <span class="o">=</span> <span class="n">otp_alias_column_letter</span> <span class="o">+</span> \
+                             <span class="nb">str</span><span class="p">(</span><span class="n">df_index_row</span> <span class="o">+</span> <span class="n">excel_first_row_num</span><span class="p">)</span>
+            <span class="n">data_val</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ws</span><span class="p">[</span><span class="n">otp_cell_alias</span><span class="p">])</span>
+
+    <span class="c1"># Appending rows of the publications which OTP is already set to df_dpt_new</span>
+    <span class="c1"># and coloring the rows alternatively</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">otp_set_dpt_df</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># continuously incremented index vs row index which is not</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">otp_set_dpt_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">ws</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="c1"># Coloring the row</span>
+            <span class="n">idx_row</span> <span class="o">=</span> <span class="n">df_dpt_len</span> <span class="o">+</span> <span class="n">idx</span>
+            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">last_row</span> <span class="o">=</span> <span class="n">ws</span><span class="p">[</span><span class="n">ws</span><span class="o">.</span><span class="n">max_row</span><span class="p">]</span>
+            <span class="n">cell_color</span> <span class="o">=</span> <span class="n">cell_colors</span><span class="p">[</span><span class="n">idx_row</span><span class="o">%</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">last_row</span><span class="p">:</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">fill</span> <span class="o">=</span> <span class="n">cell_color</span>
+
+    <span class="c1"># Reshaping the alignment and the border of the columns</span>
+    <span class="k">for</span> <span class="n">idx_col</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">col_set_list</span><span class="p">:</span>
+            <span class="n">col_attr</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_attr</span><span class="p">[</span><span class="s1">&#39;else&#39;</span><span class="p">]</span>
+        <span class="n">column_letter</span> <span class="o">=</span> <span class="n">openpyxl_get_column_letter</span><span class="p">(</span><span class="n">idx_col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">ws</span><span class="p">[</span><span class="n">column_letter</span><span class="p">]:</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">alignment</span> <span class="o">=</span> <span class="n">openpyxl_Alignment</span><span class="p">(</span><span class="n">horizontal</span> <span class="o">=</span> <span class="n">col_attr</span><span class="p">[</span><span class="n">col</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                                                <span class="n">vertical</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">border</span> <span class="o">=</span> <span class="n">openpyxl_Border</span><span class="p">(</span><span class="n">left</span> <span class="o">=</span> <span class="n">openpyxl_Side</span><span class="p">(</span><span class="n">border_style</span> <span class="o">=</span> <span class="s1">&#39;thick&#39;</span><span class="p">,</span>
+                                                               <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;FFFFFF&#39;</span><span class="p">),</span>
+                                          <span class="n">right</span> <span class="o">=</span> <span class="n">openpyxl_Side</span><span class="p">(</span><span class="n">border_style</span> <span class="o">=</span> <span class="s1">&#39;thick&#39;</span><span class="p">,</span>
+                                                                <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;FFFFFF&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Setting the worksheet label</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">OTP_SHEET_NAME_BASE</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>  <span class="n">dpt</span>
+
+    <span class="c1"># Saving the workbook</span>
+    <span class="n">wb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">excel_dpt_path</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="set_saved_otps">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.use_pub_attributes.set_saved_otps">[docs]</a>
+<span class="k">def</span> <span class="nf">set_saved_otps</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Attributes the OTPs from the history of the attributed OTPs </span>
+<span class="sd">    before submiting to the user the file for attributing the not yet </span>
+<span class="sd">    attributed OTPs. </span>
+<span class="sd">    Loops on department to:</span>
+<span class="sd">        - First, builds the dataframe with already attributed OTPs </span>
+<span class="sd">    and OTPs remaining to be attributed. </span>
+<span class="sd">        - Then, saves the file to be submitted to the user through the </span>
+<span class="sd">    `_re_save_dpt_otp_file` internal function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (str): End message giving the status of the OTPs attribution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting institute parameters</span>
+    <span class="n">dpt_attributs_dict</span>  <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">all_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful folder and file aliases</span>
+    <span class="n">bdd_mensuelle_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;bdd mensuelle&quot;</span><span class="p">]</span>
+    <span class="n">otp_folder_alias</span>     <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;OTP folder&quot;</span><span class="p">]</span>
+    <span class="n">otp_file_base_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;OTP file name base&quot;</span><span class="p">]</span>
+    <span class="n">history_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;history folder&quot;</span><span class="p">]</span>
+    <span class="n">kept_otps_file_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;kept OTPs file name&quot;</span><span class="p">]</span>
+    <span class="n">hash_id_file_alias</span>   <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;hash_id file name&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful column names aliases</span>
+    <span class="n">hash_id_col_alias</span>    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_HASH</span><span class="p">[</span><span class="s1">&#39;hash_id&#39;</span><span class="p">]</span>
+    <span class="n">pub_id_alias</span>         <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">]]</span>
+    <span class="n">author_col_alias</span>     <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">doi_col_alias</span>        <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">6</span><span class="p">]]</span>
+    <span class="n">otp_list_col_alias</span>   <span class="o">=</span> <span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">]]</span>
+    <span class="n">otp_col_alias</span>        <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;final OTP&#39;</span><span class="p">]</span>
+    <span class="n">hash_otp_sheet_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">SHEET_SAVE_OTP</span><span class="p">[</span><span class="s1">&#39;hash_OTP&#39;</span><span class="p">]</span>
+    <span class="n">doi_otp_sheet_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">SHEET_SAVE_OTP</span><span class="p">[</span><span class="s1">&#39;doi_OTP&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">corpus_year_path</span>    <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">bdd_mensuelle_path</span>  <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">bdd_mensuelle_alias</span><span class="p">)</span>
+    <span class="n">hash_id_file_path</span>   <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">hash_id_file_alias</span><span class="p">)</span>
+    <span class="n">history_folder_path</span> <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">history_folder_alias</span><span class="p">)</span>
+    <span class="n">kept_otps_file_path</span> <span class="o">=</span> <span class="n">history_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">kept_otps_file_alias</span><span class="p">)</span>
+    <span class="n">otp_folder_path</span>     <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">otp_folder_alias</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">kept_otps_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="c1"># Getting the hash_id dataframe</span>
+        <span class="n">hash_id_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">hash_id_file_path</span><span class="p">)</span>
+
+        <span class="c1"># Getting the kept OTPs dataframe by hash_id</span>
+        <span class="n">hash_otp_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">kept_otps_file_path</span><span class="p">,</span>
+                                            <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">hash_otp_sheet_alias</span><span class="p">)</span>
+
+        <span class="c1"># Building df of pub_id and OTPs to set related to hash_id</span>
+        <span class="n">pub_id_otp_to_set_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hash_id_df</span><span class="p">,</span>
+                                        <span class="n">hash_otp_history_df</span><span class="p">,</span>
+                                        <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+                                        <span class="n">on</span>  <span class="o">=</span> <span class="n">hash_id_col_alias</span><span class="p">)</span>
+
+        <span class="n">pub_id_otp_to_set_df</span> <span class="o">=</span> <span class="n">pub_id_otp_to_set_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">pub_id_otp_to_set_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">hash_id_col_alias</span><span class="p">],</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">pub_id_to_check_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">row</span>
+                                <span class="ow">in</span> <span class="n">pub_id_otp_to_set_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()]</span>
+        <span class="n">otp_to_set_list</span>      <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">otp_col_alias</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">row</span>
+                                <span class="ow">in</span> <span class="n">pub_id_otp_to_set_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()]</span>
+
+        <span class="c1"># Getting the kept OTPs dataframe by DOI and first author</span>
+        <span class="n">doi_otp_history_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">kept_otps_file_path</span><span class="p">,</span>
+                                           <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">doi_otp_sheet_alias</span><span class="p">)</span>
+        <span class="n">author_to_check_list</span> <span class="o">=</span> <span class="n">doi_otp_history_df</span><span class="p">[</span><span class="n">author_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="n">doi_to_check_list</span>    <span class="o">=</span> <span class="n">doi_otp_history_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="n">doi_otp_to_set_list</span>  <span class="o">=</span> <span class="n">doi_otp_history_df</span><span class="p">[</span><span class="n">otp_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+        <span class="c1"># Setting departments list</span>
+        <span class="n">dpt_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dpt_attributs_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># Setting the already attributed OTPs for each department</span>
+        <span class="k">for</span> <span class="n">dpt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dpt_list</span><span class="p">):</span>
+            <span class="c1"># Setting the full path of the EXCEl file for the &#39;dpt&#39; department</span>
+            <span class="n">otp_file_name_dpt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">otp_file_base_alias</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">dpt</span><span class="si">}</span><span class="s1">.xlsx&#39;</span>
+            <span class="n">otp_file_name_dpt_path</span> <span class="o">=</span> <span class="n">otp_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">otp_file_name_dpt</span><span class="p">)</span>
+
+            <span class="c1"># Getting the pub list for department dpt</span>
+            <span class="n">dpt_pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">otp_file_name_dpt_path</span><span class="p">)</span>
+
+            <span class="c1"># Setting the pub-id list and the DOIs list for department dpt</span>
+            <span class="n">dept_pub_id_list</span> <span class="o">=</span> <span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+            <span class="n">dept_doi_list</span>    <span class="o">=</span> <span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+            <span class="c1"># Setting columns list</span>
+            <span class="n">col_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dpt_pub_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+            <span class="c1"># Building the &#39;otp_set_dpt_pub_df&#39; dataframe of publication with OTP set</span>
+            <span class="n">otp_set_dpt_pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="n">col_list</span><span class="p">)</span>
+
+            <span class="c1"># Building the &#39;otp_to_set_dpt_pub_df&#39; dataframe of publication</span>
+            <span class="c1"># with OTP still to be defined</span>
+            <span class="n">otp_to_set_dpt_pub_df</span> <span class="o">=</span> <span class="n">dpt_pub_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">otp_to_set_dpt_pub_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">otp_list_col_alias</span><span class="p">],</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">otp_idx</span><span class="p">,</span> <span class="n">pub_id_to_check</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pub_id_to_check_list</span><span class="p">):</span>
+                <span class="n">otp_to_set</span> <span class="o">=</span> <span class="n">otp_to_set_list</span><span class="p">[</span><span class="n">otp_idx</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">pub_id_to_check</span> <span class="ow">in</span> <span class="n">dept_pub_id_list</span><span class="p">:</span>
+                    <span class="n">pub_id_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dept_pub_id_list</span><span class="p">)</span>
+                                  <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="n">pub_id_to_check</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">dpt_pub_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pub_id_idx</span><span class="p">,</span> <span class="n">otp_list_col_alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">otp_to_set</span>
+                    <span class="n">dpt_pub_id_to_check_df</span> <span class="o">=</span> <span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">pub_id_alias</span><span class="p">]</span> <span class="o">==</span> <span class="n">pub_id_to_check</span><span class="p">]</span>
+                    <span class="n">otp_set_dpt_pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">otp_set_dpt_pub_df</span><span class="p">,</span> <span class="n">dpt_pub_id_to_check_df</span><span class="p">])</span>
+                    <span class="n">otp_to_set_dpt_pub_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="n">pub_id_idx</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Si tous les OTPs non affectés compléter avec DOI_otp</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">otp_to_set_dpt_pub_df</span><span class="p">):</span>
+
+                <span class="c1"># Setting the DOIs list of otp_to_set_dpt_pub_df</span>
+                <span class="n">otp_to_set_doi_list</span>  <span class="o">=</span> <span class="n">otp_to_set_dpt_pub_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">otp_idx</span><span class="p">,</span> <span class="n">doi_to_check</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">doi_to_check_list</span><span class="p">):</span>
+                    <span class="n">doi_otp_to_set</span> <span class="o">=</span> <span class="n">doi_otp_to_set_list</span><span class="p">[</span><span class="n">otp_idx</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">doi_to_check</span> <span class="ow">in</span> <span class="n">otp_to_set_doi_list</span><span class="p">:</span>
+                        <span class="n">dpt_doi_idx_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dept_doi_list</span><span class="p">)</span>
+                                            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="n">doi_to_check</span><span class="p">]</span>
+
+                        <span class="k">if</span> <span class="n">doi_to_check</span> <span class="o">!=</span> <span class="n">bp</span><span class="o">.</span><span class="n">UNKNOWN</span><span class="p">:</span>
+                            <span class="n">doi_idx</span> <span class="o">=</span> <span class="n">dpt_doi_idx_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">dpt_pub_df_to_add</span> <span class="o">=</span> \
+                                <span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span> <span class="o">==</span> <span class="n">doi_to_check</span><span class="p">]</span>
+                            <span class="n">dpt_pub_df_to_add</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">doi_idx</span><span class="p">,</span> <span class="n">otp_list_col_alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">doi_otp_to_set</span>
+                            <span class="n">otp_set_dpt_pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">otp_set_dpt_pub_df</span><span class="p">,</span>
+                                                            <span class="n">dpt_pub_df_to_add</span><span class="p">])</span>
+                            <span class="n">otp_to_set_dpt_pub_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="n">doi_idx</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Managing case of unknown DOIs first author name</span>
+                            <span class="n">new_otp_to_set_dpt_pub_df</span> <span class="o">=</span> \
+                                <span class="n">otp_to_set_dpt_pub_df</span><span class="p">[</span><span class="n">otp_to_set_dpt_pub_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span> \
+                                                      <span class="o">==</span> <span class="n">doi_to_check</span><span class="p">]</span>
+                            <span class="n">otp_to_set_auth_list</span> <span class="o">=</span> \
+                                <span class="n">new_otp_to_set_dpt_pub_df</span><span class="p">[</span><span class="n">author_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+                            <span class="n">new_doi_otp_history_df</span> <span class="o">=</span> \
+                                <span class="n">doi_otp_history_df</span><span class="p">[</span><span class="n">doi_otp_history_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span> \
+                                                   <span class="o">==</span> <span class="n">doi_to_check</span><span class="p">]</span>
+                            <span class="n">author_to_check_list</span> <span class="o">=</span> \
+                                <span class="n">new_doi_otp_history_df</span><span class="p">[</span><span class="n">author_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+                            <span class="n">auth_otp_to_set_list</span> <span class="o">=</span> \
+                                <span class="n">new_doi_otp_history_df</span><span class="p">[</span><span class="n">otp_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+                            <span class="k">for</span> <span class="n">auth_otp_idx</span><span class="p">,</span> <span class="n">auth_to_check</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">author_to_check_list</span><span class="p">):</span>
+                                <span class="n">auth_otp_to_set</span> <span class="o">=</span> <span class="n">auth_otp_to_set_list</span><span class="p">[</span><span class="n">auth_otp_idx</span><span class="p">]</span>
+
+                                <span class="k">if</span> <span class="n">auth_to_check</span> <span class="ow">in</span> <span class="n">otp_to_set_auth_list</span><span class="p">:</span>
+                                    <span class="n">dpt_pub_df_to_add_init</span> <span class="o">=</span> <span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">doi_col_alias</span><span class="p">]</span> \
+                                                                        <span class="o">==</span> <span class="n">doi_to_check</span><span class="p">]</span>
+                                    <span class="n">dept_auth_list</span> <span class="o">=</span> <span class="n">dpt_pub_df</span><span class="p">[</span><span class="n">author_col_alias</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+                                    <span class="n">dpt_auth_idx_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dept_auth_list</span><span class="p">)</span>
+                                                         <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="n">auth_to_check</span><span class="p">]</span>
+
+                                    <span class="k">for</span> <span class="n">auth_idx</span> <span class="ow">in</span> <span class="n">dpt_auth_idx_list</span><span class="p">:</span>
+                                        <span class="n">auth_idx_to_replace_list</span> <span class="o">=</span> <span class="p">[]</span>
+                                        <span class="k">if</span> <span class="n">auth_idx</span> <span class="ow">in</span> <span class="n">otp_to_set_dpt_pub_df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                                            <span class="n">auth_idx_to_replace_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">auth_idx</span><span class="p">)</span>
+
+                                            <span class="k">if</span> <span class="n">auth_idx</span> <span class="ow">in</span> <span class="n">otp_set_dpt_pub_df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                                                <span class="n">otp_set_dpt_pub_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="n">auth_idx</span><span class="p">,</span>
+                                                                        <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+                                        <span class="k">for</span> <span class="n">auth_idx_to_replace</span> <span class="ow">in</span> <span class="n">auth_idx_to_replace_list</span><span class="p">:</span>
+                                            <span class="n">dpt_pub_df_to_add_init</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">auth_idx_to_replace</span><span class="p">,</span> \
+                                                <span class="n">otp_list_col_alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">auth_otp_to_set</span>
+
+                                            <span class="n">dpt_pub_df_to_add</span> <span class="o">=</span> \
+                                                <span class="n">dpt_pub_df_to_add_init</span>\
+                                                    <span class="p">[</span><span class="n">dpt_pub_df_to_add_init</span><span class="p">[</span><span class="n">author_col_alias</span><span class="p">]</span> \
+                                                     <span class="o">==</span> <span class="n">auth_to_check</span><span class="p">]</span>
+                                            <span class="n">dpt_pub_df_to_add</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">auth_idx_to_replace</span><span class="p">,</span> \
+                                                <span class="n">otp_list_col_alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">auth_otp_to_set</span>
+                                            <span class="n">otp_set_dpt_pub_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">otp_set_dpt_pub_df</span><span class="p">,</span>
+                                                                            <span class="n">dpt_pub_df_to_add</span><span class="p">])</span>
+                                            <span class="n">otp_set_dpt_pub_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+                                            <span class="n">otp_to_set_dpt_pub_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="n">auth_idx_to_replace</span><span class="p">,</span>
+                                                                       <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Setting the list of OTPs for the &#39;dpt&#39; department</span>
+            <span class="n">dpt_otp_list</span> <span class="o">=</span> <span class="n">dpt_attributs_dict</span><span class="p">[</span><span class="n">dpt</span><span class="p">][</span><span class="n">ig</span><span class="o">.</span><span class="n">DPT_OTP_KEY</span><span class="p">]</span>
+
+            <span class="c1"># Resetting validation list for OTPs when not already set and saving the file</span>
+            <span class="n">_re_save_dpt_otp_file</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">dpt</span><span class="p">,</span> <span class="n">otp_set_dpt_pub_df</span><span class="p">,</span>
+                                  <span class="n">otp_to_set_dpt_pub_df</span><span class="p">,</span> <span class="n">dpt_otp_list</span><span class="p">,</span>
+                                  <span class="n">otp_file_name_dpt_path</span><span class="p">,</span> <span class="n">otp_list_col_alias</span><span class="p">,</span>
+                                  <span class="n">col_list</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Already set OTPS used&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;No already set OTPS available&quot;</span>
+    <span class="k">return</span> <span class="n">message</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

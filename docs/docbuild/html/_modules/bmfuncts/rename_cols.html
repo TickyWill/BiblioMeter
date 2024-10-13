@@ -1,0 +1,475 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmfuncts.rename_cols &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmfuncts.rename_cols</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmfuncts.rename_cols</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module of useful functions for setting columns names of dataframes.&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;build_col_conversion_dic&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_homonym_col_names&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_otp_col_names&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_final_col_names&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_if_col_names&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_col_attr&#39;</span><span class="p">,</span>
+          <span class="p">]</span>
+
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">import</span> <span class="nn">BiblioParsing</span> <span class="k">as</span> <span class="nn">bp</span>
+
+<span class="c1"># local imports</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.employees_globals</span> <span class="k">as</span> <span class="nn">eg</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+
+<div class="viewcode-block" id="build_col_conversion_dic">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.rename_cols.build_col_conversion_dic">[docs]</a>
+<span class="k">def</span> <span class="nf">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Builds a dict for setting the final column names </span>
+<span class="sd">    given the initial column names of 3 dataframes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): The Intitute name.</span>
+<span class="sd">        org_tup (tup): The tuple of the organization structure  </span>
+<span class="sd">                       of the Institute.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (dict for renaming the specific columns of the dataframe </span>
+<span class="sd">               of publications list with one row per author that has not been </span>
+<span class="sd">               identified as Institute employee, </span>
+<span class="sd">               dict for renaming the specific columns of the dataframe of merged </span>
+<span class="sd">               employees information with the publications list with one </span>
+<span class="sd">               row per Institute author, </span>
+<span class="sd">               dict for renaming the columns of all the results dataframes).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting institute parameters</span>
+    <span class="n">col_names_dpt</span>  <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dpt_col_list</span>   <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">col_names_dpt</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">inst_col_list</span>  <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+    <span class="n">init_orphan_col_list</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;auth_inst&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">],</span>
+                                <span class="n">inst_col_list</span><span class="p">,</span>
+                                <span class="p">[</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;authors&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]],</span>
+                                <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="mi">11</span><span class="p">],</span>
+                                <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;corpus_year&#39;</span><span class="p">]],</span>
+                                <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BM</span><span class="p">[</span><span class="s1">&#39;Full_name&#39;</span><span class="p">],</span>
+                                 <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BM</span><span class="p">[</span><span class="s1">&#39;Last_name&#39;</span><span class="p">],</span>
+                                 <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BM</span><span class="p">[</span><span class="s1">&#39;First_name&#39;</span><span class="p">]]],</span> <span class="p">[])</span>
+
+    <span class="n">init_submit_col_list</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">init_orphan_col_list</span><span class="p">,</span>
+                                <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;homonym&#39;</span><span class="p">]],</span>
+                                <span class="nb">list</span><span class="p">(</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                                <span class="nb">list</span><span class="p">(</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ADD_COLS</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                                <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;author_type&#39;</span><span class="p">],</span>
+                                 <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;liste biblio&#39;</span><span class="p">]]],</span> <span class="p">[])</span>
+
+    <span class="n">init_bm_col_list</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">init_submit_col_list</span><span class="p">,</span>
+                            <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom liste&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">,</span>
+                             <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">],</span>
+                            <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">],</span>
+                             <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF en cours&#39;</span><span class="p">],</span>
+                             <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF année publi&#39;</span><span class="p">]],</span>
+                            <span class="n">dpt_col_list</span><span class="p">],</span> <span class="p">[])</span>
+
+    <span class="n">final_bm_col_list</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([[</span><span class="s2">&quot;Pub_id&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Auteur_id&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Adresse&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Pays&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Institutions&quot;</span><span class="p">],</span>
+                             <span class="n">inst_col_list</span><span class="p">,</span>
+                             <span class="p">[</span><span class="s2">&quot;Co_auteur &quot;</span> <span class="o">+</span> <span class="n">institute</span><span class="p">,</span>
+                              <span class="s2">&quot;Premier auteur&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Année de publication finale&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Journal&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Volume&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Page&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;DOI&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Type du document&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Langue&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Titre&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;ISSN&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Année de première publication&quot;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BM</span><span class="p">[</span><span class="s1">&#39;Full_name&#39;</span><span class="p">],</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BM</span><span class="p">[</span><span class="s1">&#39;Last_name&#39;</span><span class="p">],</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BM</span><span class="p">[</span><span class="s1">&#39;First_name&#39;</span><span class="p">]],</span>
+                             <span class="p">[</span><span class="s2">&quot;Homonymes&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Matricule&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Nom&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Prénom&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Genre&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Nationalité&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Catégorie de salarié&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Statut de salarié&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Qualification classement&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Date début contrat&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Date dernière entrée&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Date de fin de contrat&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Dept&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Serv&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Labo&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Affiliation&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Date de naissance&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;Tranche d&#39;age (5 ans)&quot;</span><span class="p">],</span>
+                             <span class="nb">list</span><span class="p">(</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ADD_COLS</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                             <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;author_type&#39;</span><span class="p">],</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;liste biblio&#39;</span><span class="p">],</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom liste&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">,</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">],</span>
+                             <span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">],</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF en cours&#39;</span><span class="p">],</span>
+                              <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF année publi&#39;</span><span class="p">]],</span>
+                             <span class="n">dpt_col_list</span><span class="p">],</span> <span class="p">[])</span>
+
+    <span class="n">all_col_rename_dic</span>    <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">init_bm_col_list</span><span class="p">,</span> <span class="n">final_bm_col_list</span><span class="p">))</span>
+    <span class="n">final_submit_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">init_submit_col_list</span><span class="p">]</span>
+    <span class="n">submit_col_rename_dic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">init_submit_col_list</span><span class="p">,</span> <span class="n">final_submit_col_list</span><span class="p">))</span>
+    <span class="n">final_orphan_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">init_orphan_col_list</span><span class="p">]</span>
+    <span class="n">orphan_col_rename_dic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">init_orphan_col_list</span><span class="p">,</span> <span class="n">final_orphan_col_list</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">orphan_col_rename_dic</span><span class="p">,</span> <span class="n">submit_col_rename_dic</span><span class="p">,</span> <span class="n">all_col_rename_dic</span></div>
+
+
+
+<div class="viewcode-block" id="set_homonym_col_names">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.rename_cols.set_homonym_col_names">[docs]</a>
+<span class="k">def</span> <span class="nf">set_homonym_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets through the `build_col_conversion_dic` internal function </span>
+<span class="sd">    the dict for setting the final column names to be used for building </span>
+<span class="sd">    the dataframe for homonyms solving by the user .</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): The Intitute name.</span>
+<span class="sd">        org_tup (tup): The tuple of the organization structure  </span>
+<span class="sd">                       of the Institute.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict): To be used for setting the final column names </span>
+<span class="sd">                of the dataframe built for homonyms solving </span>
+<span class="sd">                by the user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">all_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">homonyms_col_dic_init</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pub_id&#39;</span>       <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;corpus_year&#39;</span>  <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;corpus_year&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;final_year&#39;</span>   <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span>
+                             <span class="s1">&#39;first_author&#39;</span> <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="s1">&#39;title&#39;</span>        <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">9</span><span class="p">],</span>
+                             <span class="s1">&#39;journal&#39;</span>      <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span>
+                             <span class="s1">&#39;doc_type&#39;</span>     <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">7</span><span class="p">],</span>
+                             <span class="s1">&#39;doi&#39;</span>          <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">6</span><span class="p">],</span>
+                             <span class="s1">&#39;full_ref&#39;</span>     <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;liste biblio&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;issn&#39;</span>         <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">10</span><span class="p">],</span>
+                             <span class="s1">&#39;author_id&#39;</span>    <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;auth_inst&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="s1">&#39;matricul&#39;</span>     <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;matricule&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;last_name&#39;</span>    <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;first_name&#39;</span>   <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;first_name&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;author_type&#39;</span>  <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;author_type&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;dpt&#39;</span>          <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;dpt&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;serv&#39;</span>         <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;serv&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;lab&#39;</span>          <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;lab&#39;</span><span class="p">],</span>
+                             <span class="s1">&#39;homonym&#39;</span>      <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;homonym&#39;</span><span class="p">],</span>
+                             <span class="p">}</span>
+
+    <span class="n">homonyms_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">homonyms_col_dic_init</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="n">homonyms_col_dic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">homonyms_col_dic_init</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">homonyms_col_list</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">homonyms_col_dic</span></div>
+
+
+
+<div class="viewcode-block" id="set_otp_col_names">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.rename_cols.set_otp_col_names">[docs]</a>
+<span class="k">def</span> <span class="nf">set_otp_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets through the `build_col_conversion_dic` internal function </span>
+<span class="sd">    the dict for setting the final column names to be used for building </span>
+<span class="sd">    the dataframes for OTPs attribution by the user .</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): The Intitute name.</span>
+<span class="sd">        org_tup (tup): The tuple of the organization structure  </span>
+<span class="sd">                       of the Institute.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict): To be used for setting the final column names of the </span>
+<span class="sd">                dataframes built for OTPs attribution by the user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Setting institute parameters</span>
+    <span class="n">dpt_col_names</span> <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
+
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">all_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">otp_col_dic_init</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pub_id&#39;</span>            <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;corpus_year&#39;</span>       <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;corpus_year&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;final_year&#39;</span>        <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span>
+                        <span class="s1">&#39;first_author&#39;</span>      <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="s2">&quot;institute_authors&quot;</span> <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom liste&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">,</span>
+                        <span class="s1">&#39;title&#39;</span>             <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">9</span><span class="p">],</span>
+                        <span class="s1">&#39;journal&#39;</span>           <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span>
+                        <span class="s1">&#39;doc_type&#39;</span>          <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">7</span><span class="p">],</span>
+                        <span class="s1">&#39;doi&#39;</span>               <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">6</span><span class="p">],</span>
+                        <span class="s1">&#39;full_ref&#39;</span>          <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;liste biblio&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;issn&#39;</span>              <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">10</span><span class="p">],</span>
+                        <span class="s1">&#39;author_id&#39;</span>         <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;auth_inst&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="s1">&#39;matricul&#39;</span>          <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;matricule&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;institute_author&#39;</span>  <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">,</span>
+                        <span class="s1">&#39;dpt&#39;</span>               <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;dpt&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;serv&#39;</span>              <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;serv&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;lab&#39;</span>               <span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;lab&#39;</span><span class="p">],</span>
+                       <span class="p">}</span>
+    <span class="n">otp_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">otp_col_dic_init</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="n">otp_col_dic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">otp_col_dic_init</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">otp_col_list</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">dpt_col_name</span> <span class="ow">in</span> <span class="n">dpt_col_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">otp_col_dic</span><span class="p">[</span><span class="n">dpt_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dpt_col_names</span><span class="p">[</span><span class="n">dpt_col_name</span><span class="p">]</span>
+    <span class="n">otp_col_dic</span><span class="p">[</span><span class="s1">&#39;otp_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">otp_col_dic</span></div>
+
+
+
+<div class="viewcode-block" id="set_final_col_names">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.rename_cols.set_final_col_names">[docs]</a>
+<span class="k">def</span> <span class="nf">set_final_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets through the `build_col_conversion_dic` internal function </span>
+<span class="sd">    the dict for setting the final column names to be used for building </span>
+<span class="sd">    the final publications-list dataframe.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): The Intitute name.</span>
+<span class="sd">        org_tup (tup): The tuple of the organization structure  </span>
+<span class="sd">                       of the Institute.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (dict to be used for setting the final </span>
+<span class="sd">               column names of the final publications-list dataframe, </span>
+<span class="sd">               list of the final column names of the departments).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Setting institute parameters</span>
+    <span class="n">dpt_col_names</span> <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">all_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">final_col_dic_init</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pub_id&#39;</span>            <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;corpus_year&#39;</span>       <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;corpus_year&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;final_year&#39;</span>        <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span>
+                          <span class="s1">&#39;first_author&#39;</span>      <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                          <span class="s1">&#39;institute_authors&#39;</span> <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom liste&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span><span class="p">,</span>
+                          <span class="s1">&#39;title&#39;</span>             <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">9</span><span class="p">],</span>
+                          <span class="s1">&#39;journal&#39;</span>           <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span>
+                          <span class="s1">&#39;doc_type&#39;</span>          <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">7</span><span class="p">],</span>
+                          <span class="s1">&#39;doi&#39;</span>               <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">6</span><span class="p">],</span>
+                          <span class="s1">&#39;full_ref&#39;</span>          <span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;liste biblio&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;issn&#39;</span>              <span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">10</span><span class="p">],</span>
+                         <span class="p">}</span>
+
+    <span class="n">final_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">final_col_dic_init</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="n">final_col_dic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">final_col_dic_init</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">final_col_list</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">dpt_col_name</span> <span class="ow">in</span> <span class="n">dpt_col_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">final_col_dic</span><span class="p">[</span><span class="n">dpt_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dpt_col_names</span><span class="p">[</span><span class="n">dpt_col_name</span><span class="p">]</span>
+    <span class="n">final_col_dic</span><span class="p">[</span><span class="s1">&#39;otp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">]</span>
+    
+    <span class="c1"># Setting the final dept column names in case of getting changed</span>
+    <span class="c1"># in this function from initial &#39;dpt_col_names&#39; list</span>
+    <span class="n">final_depts_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">final_col_dic</span><span class="p">[</span><span class="n">dpt_col_name</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">dpt_col_name</span> <span class="ow">in</span> <span class="n">dpt_col_names</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">final_col_dic</span><span class="p">,</span> <span class="n">final_depts_col_list</span> </div>
+
+
+
+<div class="viewcode-block" id="set_if_col_names">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.rename_cols.set_if_col_names">[docs]</a>
+<span class="k">def</span> <span class="nf">set_if_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets through the `set_final_col_names` internal function </span>
+<span class="sd">    the dict for setting the final column names, including columns </span>
+<span class="sd">    specific to impact-factors, to be used for updating the final </span>
+<span class="sd">    publications-list dataframe with impact factors values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): The Intitute name.</span>
+<span class="sd">        org_tup (tup): The tuple of the organization structure  </span>
+<span class="sd">                       of the Institute.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict): To to be used for updating the final publications-list </span>
+<span class="sd">                dataframe with impact factors values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">if_maj_col_dic</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">set_final_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">if_maj_col_dic</span><span class="p">[</span><span class="s1">&#39;current_if&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF en cours&#39;</span><span class="p">]</span>
+    <span class="n">if_maj_col_dic</span><span class="p">[</span><span class="s1">&#39;pub_year_if&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF année publi&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">if_maj_col_dic</span></div>
+
+
+
+<div class="viewcode-block" id="set_col_attr">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.rename_cols.set_col_attr">[docs]</a>
+<span class="k">def</span> <span class="nf">set_col_attr</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets the dict for setting the final column attributes </span>
+<span class="sd">    in terms of width and alignment to be used for formating </span>
+<span class="sd">    datarames before openpyxl save. </span>
+<span class="sd">    The final column names are got through the </span>
+<span class="sd">    `build_col_conversion_dic` internal function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): The Intitute name.</span>
+<span class="sd">        org_tup (tup): The tuple of the organization structure  </span>
+<span class="sd">                       of the Institute.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (dict to be used for setting the final column attributes </span>
+<span class="sd">               for formating datarames before openpyxl save, </span>
+<span class="sd">               list of the final column names that have attributes).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting institute parameters</span>
+    <span class="n">col_names_dpt</span> <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1">#  Setting useful col names</span>
+    <span class="n">col_rename_tup</span> <span class="o">=</span> <span class="n">build_col_conversion_dic</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">all_col_rename_dic</span> <span class="o">=</span> <span class="n">col_rename_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">init_col_attr</span>   <span class="o">=</span> <span class="p">{</span><span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;pub_id&#39;</span><span class="p">]</span>                             <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;nom prénom liste&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">institute</span> <span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;authors&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>                         <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;matricule&#39;</span><span class="p">]</span>              <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>                   <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;first_name&#39;</span><span class="p">]</span>             <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">9</span><span class="p">]</span>                        <span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>                        <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF en cours&#39;</span><span class="p">]</span>                  <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;IF année publi&#39;</span><span class="p">]</span>               <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span>                        <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">10</span><span class="p">]</span>                       <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>                        <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>                        <span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">],</span>
+                       <span class="n">bp</span><span class="o">.</span><span class="n">COL_NAMES</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span>                        <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;corpus_year&#39;</span><span class="p">]</span>                  <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;dpt&#39;</span><span class="p">]</span>                    <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;serv&#39;</span><span class="p">]</span>                   <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="p">[</span><span class="s1">&#39;lab&#39;</span><span class="p">]</span>                    <span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;liste biblio&#39;</span><span class="p">]</span>                 <span class="p">:</span> <span class="p">[</span><span class="mi">55</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;homonym&#39;</span><span class="p">]</span>                      <span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                       <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;list OTP&#39;</span><span class="p">]</span>                     <span class="p">:</span> <span class="p">[</span><span class="mi">75</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                      <span class="p">}</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">dpt_col_name</span> <span class="ow">in</span> <span class="n">col_names_dpt</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">init_col_attr</span><span class="p">[</span><span class="n">col_names_dpt</span><span class="p">[</span><span class="n">dpt_col_name</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">]</span>
+
+    <span class="n">final_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_col_rename_dic</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">init_col_attr</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+    <span class="n">col_attr_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">init_col_attr</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="n">final_col_attr</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">final_col_list</span><span class="p">,</span><span class="n">col_attr_list</span><span class="p">))</span>
+    <span class="n">final_col_attr</span><span class="p">[</span><span class="s1">&#39;else&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">final_col_attr</span><span class="p">,</span> <span class="n">final_col_list</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

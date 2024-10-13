@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmgui.gui_utils &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmgui.gui_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmgui.gui_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; `gui_functions` module contains useful functions for gui management.&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;disable_buttons&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;enable_buttons&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;existing_corpuses&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;font_size&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;general_properties&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;last_available_years&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;mm_to_px&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;place_after&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;place_bellow&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;str_size_mm&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_exit_button&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;set_page_title&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;show_frame&#39;</span><span class="p">,</span>
+           <span class="p">]</span>
+
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">font</span> <span class="k">as</span> <span class="n">tkFont</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">messagebox</span>
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">import</span> <span class="nn">BiblioParsing</span> <span class="k">as</span> <span class="nn">bp</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">import</span> <span class="nn">bmgui.gui_globals</span> <span class="k">as</span> <span class="nn">gg</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.config_utils</span> <span class="kn">import</span> <span class="n">set_user_config</span>
+
+
+<div class="viewcode-block" id="disable_buttons">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.disable_buttons">[docs]</a>
+<span class="k">def</span> <span class="nf">disable_buttons</span><span class="p">(</span><span class="n">buttons_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Disables use of tkinter widgets listed in &#39;buttons_list&#39;.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">button</span> <span class="ow">in</span> <span class="n">buttons_list</span><span class="p">:</span>
+        <span class="n">button</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">DISABLED</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="enable_buttons">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.enable_buttons">[docs]</a>
+<span class="k">def</span> <span class="nf">enable_buttons</span><span class="p">(</span><span class="n">buttons_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enables use of tkinter widgets listed in &#39;buttons_list&#39;.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">button</span> <span class="ow">in</span> <span class="n">buttons_list</span><span class="p">:</span>
+        <span class="n">button</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="show_frame">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.show_frame">[docs]</a>
+<span class="k">def</span> <span class="nf">show_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Show a frame for the &#39;page_name&#39; page.&quot;&quot;&quot;</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">page_name</span><span class="p">]</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">tkraise</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="set_page_title">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.set_page_title">[docs]</a>
+<span class="k">def</span> <span class="nf">set_page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">datatype</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets the page title of the &#39;page_name&#39; page.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        self (instense): Instense where is located &#39;page_name&#39; page.</span>
+<span class="sd">        master (class): `bmgui.main_page.AppMain` class.</span>
+<span class="sd">        page_name (str): Name of &#39;page_name&#39; page.</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases (default = None).        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting page title</span>
+    <span class="n">label_text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">PAGES_LABELS</span><span class="p">[</span><span class="n">page_name</span><span class="p">]</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">label_text</span> <span class="o">+</span> <span class="s2">&quot; du &quot;</span> <span class="o">+</span> <span class="n">institute</span>
+
+    <span class="c1"># Setting font size for page label and button</span>
+    <span class="n">eff_label_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_LABEL_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+    <span class="n">eff_label_pos_y_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_LABEL_POS_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">eff_dy_px</span>           <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_LABEL_DX_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">mid_page_pos_x_px</span>   <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">win_width_px</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+    <span class="c1"># Creating title widget</span>
+    <span class="n">label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                             <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_label_font_size</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">text</span> <span class="o">=</span> <span class="n">page_title</span><span class="p">,</span>
+                          <span class="n">font</span> <span class="o">=</span> <span class="n">label_font</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">mid_page_pos_x_px</span><span class="p">,</span>
+                     <span class="n">y</span> <span class="o">=</span> <span class="n">eff_label_pos_y_px</span><span class="p">,</span>
+                     <span class="n">anchor</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">datatype</span><span class="p">:</span>
+        <span class="n">page_sub_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Données </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Creating title widget</span>
+        <span class="n">label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                 <span class="n">size</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">eff_label_font_size</span> <span class="o">*</span> <span class="mf">0.7</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                              <span class="n">text</span> <span class="o">=</span> <span class="n">page_sub_title</span><span class="p">,</span>
+                              <span class="n">font</span> <span class="o">=</span> <span class="n">label_font</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">mid_page_pos_x_px</span><span class="p">,</span>
+                         <span class="n">y</span> <span class="o">=</span> <span class="n">eff_label_pos_y_px</span> <span class="o">+</span> <span class="n">eff_dy_px</span><span class="p">,</span>
+                         <span class="n">anchor</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_exit_button">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.set_exit_button">[docs]</a>
+<span class="k">def</span> <span class="nf">set_exit_button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets exit button on any page of &#39;master&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        self (instense): Instense where is located &#39;master&#39;.</span>
+<span class="sd">        master (class): `bmgui.main_page.AppMain` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Internal functions</span>
+    <span class="k">def</span> <span class="nf">_launch_exit</span><span class="p">():</span>
+        <span class="n">ask_title</span> <span class="o">=</span> <span class="s1">&#39;Arrêt de BiblioMeter&#39;</span>
+        <span class="n">ask_text</span> <span class="o">=</span>  <span class="p">(</span><span class="s2">&quot;Après la fermeture des fenêtres, &quot;</span>
+                     <span class="s2">&quot;les traitements intermédiaires effectués sont sauvegardés.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">     !!! Attention !!!&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Si le type de données est modifié à la reprise &quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">du traitement, ces traitements seront écrasés.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Confirmez la mise en pause ?&quot;</span><span class="p">)</span>
+        <span class="n">exit_answer</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exit_answer</span><span class="p">:</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+
+    <span class="c1"># Setting useful local variables for positions modification (globals to create ??)</span>
+    <span class="c1"># numbers are reference values in mm for reference screen</span>
+    <span class="n">exit_button_x_pos</span>     <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_EXIT_BUT_POS_X_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>  <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">exit_button_y_pos</span>     <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_EXIT_BUT_POS_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">eff_buttons_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+
+    <span class="c1"># Setting widget for exit button</span>
+    <span class="n">font_button_quit</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                   <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_buttons_font_size</span><span class="p">)</span>
+    <span class="n">button_quit</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_PAUSE</span><span class="p">,</span>
+                            <span class="n">font</span> <span class="o">=</span> <span class="n">font_button_quit</span><span class="p">,</span>
+                            <span class="n">command</span> <span class="o">=</span> <span class="n">_launch_exit</span><span class="p">)</span>
+    <span class="n">button_quit</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">exit_button_x_pos</span><span class="p">,</span>
+                      <span class="n">y</span> <span class="o">=</span> <span class="n">exit_button_y_pos</span><span class="p">,</span>
+                      <span class="n">anchor</span> <span class="o">=</span> <span class="s1">&#39;n&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="last_available_years">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.last_available_years">[docs]</a>
+<span class="k">def</span> <span class="nf">last_available_years</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">year_number</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a list of up to &#39;year_number&#39; number </span>
+<span class="sd">    of the most-recent years of available corpuses </span>
+<span class="sd">    in the working folder targetted by &#39;bibliometer_path&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        year_number (int): Data combination type from corpuses databases.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (list): List of &#39;year_number&#39; length of available corpuses as strings of 4 digits.    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Récupérer les corpus disponibles TO DO : consolider le choix des années</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">list_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">)</span>
+        <span class="n">years_full_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">list_dir</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">years_full_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+
+        <span class="n">years_list</span> <span class="o">=</span> <span class="n">years_full_list</span><span class="p">[</span><span class="o">-</span><span class="n">year_number</span><span class="p">:]</span>
+
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : Dossier de travail inaccessible !!!&quot;</span>
+        <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;L&#39;accès au dossier </span><span class="si">{</span><span class="n">bibliometer_path</span><span class="si">}</span><span class="s2"> est impossible.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Choisissez un autre dossier de travail.&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+        <span class="n">years_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : Erreur lors de l&#39;accès au dossier de travail !!!&quot;</span>
+        <span class="n">warning_text</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;L&#39;accès au dossier </span><span class="si">{</span><span class="n">bibliometer_path</span><span class="si">}</span><span class="s2"> a échoué (erreur interne)&quot;</span>
+                        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Veuillez réessayer d&#39;accéder à votre répertoire de travail avec &quot;</span>
+                        <span class="s2">&quot;l&#39;option </span><span class="se">\&quot;</span><span class="s2">Changer de dossier de travail</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+        <span class="n">years_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">return</span> <span class="n">years_list</span></div>
+
+
+
+<div class="viewcode-block" id="existing_corpuses">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.existing_corpuses">[docs]</a>
+<span class="k">def</span> <span class="nf">existing_corpuses</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">corpuses_number</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a list of lists of booleans displaying True</span>
+<span class="sd">    if rawdata and parsing results are available, and False otherwise.</span>
+<span class="sd">    This is done for each of the available corpuses.</span>
+<span class="sd">    ex:</span>
+<span class="sd">    If only 2023 files are not present, the returned tuple of lists is the following:</span>
+<span class="sd">    ([&quot;2018&quot;, &quot;2019&quot;, &quot;2020&quot;, &quot;2021&quot;, &quot;2022&quot;, &quot;2023&quot;],   # Years</span>
+<span class="sd">     [True,True,True,True,True,False],                   # WoS raw-data</span>
+<span class="sd">     [True,True,True,True,True,False],                   # Scopus raw-data</span>
+<span class="sd">     [True,True,True,True,True,False],                   # WoS parsing</span>
+<span class="sd">     [True,True,True,True,True,False],                   # Scopus parsing</span>
+<span class="sd">     [True,True,True,True,True,False])                   # Deduplication parsing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path):  Full path to working folder.</span>
+<span class="sd">        corpuses_number (int): The number of corpuses to be checked </span>
+<span class="sd">                               (default: CORPUSES_NUMBER global).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup of lists): Tuple = (years list, </span>
+<span class="sd">                                 WoS raw-data boolean list,</span>
+<span class="sd">                                 WoS parsing boolean list,</span>
+<span class="sd">                                 Scopus raw-data boolean list,</span>
+<span class="sd">                                 Scopus parsing boolean list,</span>
+<span class="sd">                                 Deduplication parsing boolean list).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># internal functions</span>
+    <span class="k">def</span> <span class="nf">_get_rawdata_file_path</span><span class="p">(</span><span class="n">rawdata_path</span><span class="p">,</span> <span class="n">rawdata_extent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the name of the rawdata file with &#39;rawdata_extent&#39; extention</span>
+<span class="sd">        pointed by the full path &#39;rawdata_path&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filenames_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">rawdata_path</span><span class="p">):</span>
+            <span class="n">filenames_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">file</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">rawdata_extent</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">database_type</span><span class="si">}</span><span class="s1"> rawdata file not Found&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rawdata_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">filenames_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_parsing_file_paths</span><span class="p">(</span><span class="n">parsing_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the full path to the file named &#39;articles_item_alias&#39; </span>
+<span class="sd">        given the full path to the parsing folder &#39;parsing_path&#39; </span>
+<span class="sd">        and the extension &#39;parsing_save_extent&#39; of the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">articles_item_alias</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">parsing_save_extent</span>
+        <span class="n">parsing_file_path</span> <span class="o">=</span> <span class="n">parsing_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parsing_file_path</span>
+
+    <span class="c1"># Getting the last available corpus years</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">corpuses_number</span><span class="p">:</span>
+        <span class="n">corpuses_number</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">CORPUSES_NUMBER</span>
+    <span class="n">years_folder_list</span> <span class="o">=</span> <span class="n">last_available_years</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">corpuses_number</span><span class="p">)</span>
+
+    <span class="c1"># Setting the files type of raw data and saved parsing results</span>
+    <span class="n">parsing_save_extent</span>   <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">TSV_SAVE_EXTENT</span>
+    <span class="n">wos_rawdata_extent</span>    <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">WOS_RAWDATA_EXTENT</span>
+    <span class="n">scopus_rawdata_extent</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">SCOPUS_RAWDATA_EXTENT</span>
+
+    <span class="c1"># Setting articles item alias for checking availability of parsing</span>
+    <span class="n">articles_item_alias</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">PARSING_ITEMS_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Initialization of lists</span>
+    <span class="n">years_list</span>          <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">wos_rawdata_list</span>    <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">wos_parsing_list</span>    <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">scopus_rawdata_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">scopus_parsing_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">dedup_parsing_list</span>  <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years_folder_list</span><span class="p">:</span>
+
+        <span class="c1"># Getting the full paths of the working folder architecture for the corpus &quot;year&quot;</span>
+        <span class="n">config_tup</span> <span class="o">=</span> <span class="n">set_user_config</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">pg</span><span class="o">.</span><span class="n">BDD_LIST</span><span class="p">)</span>
+        <span class="n">rawdata_path_dict</span><span class="p">,</span> <span class="n">parsing_path_dict</span> <span class="o">=</span> <span class="n">config_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">config_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Setting useful paths for database &#39;database_type&#39;</span>
+        <span class="n">scopus_rawdata_path</span> <span class="o">=</span> <span class="n">rawdata_path_dict</span><span class="p">[</span><span class="s2">&quot;scopus&quot;</span><span class="p">]</span>
+        <span class="n">wos_rawdata_path</span>    <span class="o">=</span> <span class="n">rawdata_path_dict</span><span class="p">[</span><span class="s2">&quot;wos&quot;</span><span class="p">]</span>
+        <span class="n">scopus_parsing_path</span> <span class="o">=</span> <span class="n">parsing_path_dict</span><span class="p">[</span><span class="s2">&quot;scopus&quot;</span><span class="p">]</span>
+        <span class="n">wos_parsing_path</span>    <span class="o">=</span> <span class="n">parsing_path_dict</span><span class="p">[</span><span class="s2">&quot;wos&quot;</span><span class="p">]</span>
+        <span class="n">dedup_parsing_path</span>  <span class="o">=</span> <span class="n">parsing_path_dict</span><span class="p">[</span><span class="s2">&quot;dedup&quot;</span><span class="p">]</span>
+
+        <span class="n">years_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+
+        <span class="c1"># Wos</span>
+        <span class="n">database_type</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">WOS</span>
+        <span class="n">wos_rawdata_file_path</span> <span class="o">=</span> <span class="n">_get_rawdata_file_path</span><span class="p">(</span><span class="n">wos_rawdata_path</span><span class="p">,</span>
+                                                       <span class="n">wos_rawdata_extent</span><span class="p">)</span>
+        <span class="n">wos_parsing_articles_path</span> <span class="o">=</span> <span class="n">_get_parsing_file_paths</span><span class="p">(</span><span class="n">wos_parsing_path</span><span class="p">)</span>
+        <span class="n">wos_rawdata_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wos_rawdata_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span>
+        <span class="n">wos_parsing_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wos_parsing_articles_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span>
+
+        <span class="c1"># Scopus</span>
+        <span class="n">database_type</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">SCOPUS</span>
+        <span class="n">scopus_rawdata_file_path</span> <span class="o">=</span> <span class="n">_get_rawdata_file_path</span><span class="p">(</span><span class="n">scopus_rawdata_path</span><span class="p">,</span>
+                                                          <span class="n">scopus_rawdata_extent</span><span class="p">)</span>
+        <span class="n">scopus_parsing_articles_path</span> <span class="o">=</span> <span class="n">_get_parsing_file_paths</span><span class="p">(</span><span class="n">scopus_parsing_path</span><span class="p">)</span>
+        <span class="n">scopus_rawdata_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scopus_rawdata_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span>
+        <span class="n">scopus_parsing_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scopus_parsing_articles_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span>
+
+        <span class="c1"># Concatenation and deduplication</span>
+        <span class="n">dedup_parsing_articles_path</span> <span class="o">=</span> <span class="n">_get_parsing_file_paths</span><span class="p">(</span><span class="n">dedup_parsing_path</span><span class="p">)</span>
+        <span class="n">dedup_parsing_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dedup_parsing_articles_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">years_list</span><span class="p">,</span> <span class="n">wos_rawdata_list</span><span class="p">,</span> <span class="n">wos_parsing_list</span><span class="p">,</span>
+            <span class="n">scopus_rawdata_list</span><span class="p">,</span> <span class="n">scopus_parsing_list</span><span class="p">,</span> <span class="n">dedup_parsing_list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="place_after">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.place_after">[docs]</a>
+<span class="k">def</span> <span class="nf">place_after</span><span class="p">(</span><span class="n">gauche</span><span class="p">,</span> <span class="n">droite</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Places widget &#39;droite&#39; after widget &#39;gauche&#39; </span>
+<span class="sd">    by dx shift in pixels on x axis without shift on y axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gauche_info</span> <span class="o">=</span> <span class="n">gauche</span><span class="o">.</span><span class="n">place_info</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gauche_info</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">gauche</span><span class="o">.</span><span class="n">winfo_reqwidth</span><span class="p">()</span> <span class="o">+</span> <span class="n">dx</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gauche_info</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">dy</span>
+    <span class="n">droite</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="place_bellow">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.place_bellow">[docs]</a>
+<span class="k">def</span> <span class="nf">place_bellow</span><span class="p">(</span><span class="n">haut</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Places widget &#39;bas&#39; after widget &#39;haut&#39; </span>
+<span class="sd">    by dy shift in pixels on y axis without shift on x axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">haut_info</span> <span class="o">=</span> <span class="n">haut</span><span class="o">.</span><span class="n">place_info</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">haut_info</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">dx</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">haut_info</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">haut</span><span class="o">.</span><span class="n">winfo_reqheight</span><span class="p">()</span> <span class="o">+</span> <span class="n">dy</span>
+    <span class="n">bas</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="font_size">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.font_size">[docs]</a>
+<span class="k">def</span> <span class="nf">font_size</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets the font-size based on scale_factor.</span>
+<span class="sd">    If the font-size is less than minimum_size,</span>
+<span class="sd">    it is set to the minimum size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fontsize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">)</span>
+    <span class="n">fontsize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">fontsize</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fontsize</span></div>
+
+
+
+<div class="viewcode-block" id="str_size_mm">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.str_size_mm">[docs]</a>
+<span class="k">def</span> <span class="nf">str_size_mm</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="p">,</span> <span class="n">ppi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The function `str_size_mm` computes the sizes in mm of a string</span>
+<span class="sd">    given the font name and the resolution of the display.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): The text of which we compute the size in mm.</span>
+<span class="sd">        font (tk.font): The font for displaying the string &#39;text&#39;.</span>
+<span class="sd">        ppi (int): The display resolution in pixels per inch.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (width in mm (float), height in mm (float)).</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The use of this function requires a tkinter window availability</span>
+<span class="sd">        since it is based on a tkinter font definition.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_px</span><span class="p">,</span> <span class="n">h_px</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">font</span><span class="o">.</span><span class="n">metrics</span><span class="p">(</span><span class="s2">&quot;linespace&quot;</span><span class="p">)</span>
+    <span class="n">w_mm</span> <span class="o">=</span> <span class="n">w_px</span> <span class="o">*</span> <span class="n">gg</span><span class="o">.</span><span class="n">IN_TO_MM</span> <span class="o">/</span> <span class="n">ppi</span>
+    <span class="n">h_mm</span> <span class="o">=</span> <span class="n">h_px</span> <span class="o">*</span> <span class="n">gg</span><span class="o">.</span><span class="n">IN_TO_MM</span> <span class="o">/</span> <span class="n">ppi</span>
+    <span class="k">return</span> <span class="n">w_mm</span><span class="p">,</span> <span class="n">h_mm</span></div>
+
+
+
+<div class="viewcode-block" id="mm_to_px">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.mm_to_px">[docs]</a>
+<span class="k">def</span> <span class="nf">mm_to_px</span><span class="p">(</span><span class="n">size_mm</span><span class="p">,</span> <span class="n">ppi</span><span class="p">,</span> <span class="n">fact</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The `mm_to_px` function converts a value in mm to a value in pixels</span>
+<span class="sd">    using the display resolution and a factor fact to adjust the result if needed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        size_mm (float): The value in mm to be converted.</span>
+<span class="sd">        ppi (float): The display resolution in pixels per inch.</span>
+<span class="sd">        fact (float): Adjusting factor (default= 1).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (int): Upper integer value of the conversion to pixels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">size_px</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">size_mm</span> <span class="o">*</span> <span class="n">fact</span> <span class="o">/</span> <span class="n">gg</span><span class="o">.</span><span class="n">IN_TO_MM</span><span class="p">)</span> <span class="o">*</span> <span class="n">ppi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">size_px</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_window_properties</span><span class="p">(</span><span class="n">screen_width_px</span><span class="p">,</span> <span class="n">screen_height_px</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes useful values for adapting tkinter windows </span>
+<span class="sd">    and widgets positions to the display resolution using reference </span>
+<span class="sd">    values given as globals in module imported as gg.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        screen_width_px (int): The display screen width in pixel.</span>
+<span class="sd">        screen_height_px (int): The display screen height in pixel.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (width of reference window converted to px,</span>
+<span class="sd">                        height of reference window converted to px,</span>
+<span class="sd">                        scale factor on width in px,</span>
+<span class="sd">                        scale factor on height in px,</span>
+<span class="sd">                        scale factor on width in mm,</span>
+<span class="sd">                        scale factor on height in mm).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Getting number of pixels per inch screen resolution from imported global DISPLAYS</span>
+    <span class="n">ppi</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">DISPLAYS</span><span class="p">[</span><span class="n">gg</span><span class="o">.</span><span class="n">BM_GUI_DISP</span><span class="p">][</span><span class="s2">&quot;ppi&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting screen effective sizes in mm from imported global DISPLAYS</span>
+    <span class="n">screen_width_mm</span>  <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">DISPLAYS</span><span class="p">[</span><span class="n">gg</span><span class="o">.</span><span class="n">BM_GUI_DISP</span><span class="p">][</span><span class="s2">&quot;width_mm&quot;</span><span class="p">]</span>
+    <span class="n">screen_height_mm</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">DISPLAYS</span><span class="p">[</span><span class="n">gg</span><span class="o">.</span><span class="n">BM_GUI_DISP</span><span class="p">][</span><span class="s2">&quot;height_mm&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting screen reference sizes in pixels and mm</span>
+    <span class="n">ref_width_px</span>  <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_SCREEN_WIDTH_PX</span>
+    <span class="n">ref_height_px</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_SCREEN_HEIGHT_PX</span>
+    <span class="n">ref_width_mm</span>  <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_SCREEN_WIDTH_MM</span>
+    <span class="n">ref_height_mm</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_SCREEN_HEIGHT_MM</span>
+
+    <span class="c1"># Setting secondary window reference sizes in mm</span>
+    <span class="n">ref_window_width_mm</span>  <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_WINDOW_WIDTH_MM</span>
+    <span class="n">ref_window_height_mm</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_WINDOW_HEIGHT_MM</span>
+
+    <span class="c1"># Computing ratii of effective screen sizes to screen reference sizes in pixels</span>
+    <span class="n">scale_factor_width_px</span>  <span class="o">=</span> <span class="n">screen_width_px</span> <span class="o">/</span> <span class="n">ref_width_px</span>
+    <span class="n">scale_factor_height_px</span> <span class="o">=</span> <span class="n">screen_height_px</span> <span class="o">/</span> <span class="n">ref_height_px</span>
+
+    <span class="c1"># Computing ratii of effective screen sizes to screen reference sizes in mm</span>
+    <span class="n">scale_factor_width_mm</span>  <span class="o">=</span> <span class="n">screen_width_mm</span> <span class="o">/</span> <span class="n">ref_width_mm</span>
+    <span class="n">scale_factor_height_mm</span> <span class="o">=</span> <span class="n">screen_height_mm</span> <span class="o">/</span> <span class="n">ref_height_mm</span>
+
+    <span class="c1"># Computing secondary window sizes in pixels depending on scale factors</span>
+    <span class="n">win_width_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">ref_window_width_mm</span> <span class="o">*</span> <span class="n">scale_factor_width_mm</span><span class="p">,</span> <span class="n">ppi</span><span class="p">)</span>
+    <span class="n">win_height_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">ref_window_height_mm</span> <span class="o">*</span> <span class="n">scale_factor_height_mm</span><span class="p">,</span> <span class="n">ppi</span><span class="p">)</span>
+
+    <span class="n">sizes_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">win_width_px</span><span class="p">,</span> <span class="n">win_height_px</span><span class="p">,</span>
+                   <span class="n">scale_factor_width_px</span><span class="p">,</span> <span class="n">scale_factor_height_px</span><span class="p">,</span>
+                   <span class="n">scale_factor_width_mm</span><span class="p">,</span> <span class="n">scale_factor_height_mm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sizes_tuple</span>
+
+
+<div class="viewcode-block" id="general_properties">
+<a class="viewcode-back" href="../../gui.html#bmgui.gui_utils.general_properties">[docs]</a>
+<span class="k">def</span> <span class="nf">general_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The function `general_properties` calculate the window sizes</span>
+<span class="sd">    and useful scale factors for the application launch window through</span>
+<span class="sd">    `_window_properties` internal function.</span>
+<span class="sd">    The window title is set through the global &quot;APPLICATION_TITLE&quot;.</span>
+<span class="sd">    These globals are defined locally in the module imported as gg.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        self (instense): Instense where application launch window is created.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (width of reference window converted to px,</span>
+<span class="sd">                        height of reference window converted to px,</span>
+<span class="sd">                        scale factor on width in px,</span>
+<span class="sd">                        scale factor on height in px,</span>
+<span class="sd">                        scale factor on width in mm,</span>
+<span class="sd">                        scale factor on height in mm).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Getting screen effective sizes in pixels for window &quot;root&quot; (not woring for Darwin platform)</span>
+    <span class="n">screen_width_px</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">winfo_screenwidth</span><span class="p">()</span>
+    <span class="n">screen_height_px</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">winfo_screenheight</span><span class="p">()</span>
+
+    <span class="n">sizes_tuple</span> <span class="o">=</span> <span class="n">_window_properties</span><span class="p">(</span><span class="n">screen_width_px</span><span class="p">,</span> <span class="n">screen_height_px</span><span class="p">)</span>
+    <span class="n">win_width_px</span>  <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">win_height_px</span> <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Setting window size depending on scale factor</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">win_width_px</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">win_height_px</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">resizable</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Setting title window</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">APPLICATION_WINDOW_TITLE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sizes_tuple</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

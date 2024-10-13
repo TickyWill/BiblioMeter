@@ -1,0 +1,513 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmfuncts.save_final_results &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmfuncts.save_final_results</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmfuncts.save_final_results</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Module of functions for saving final results.&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;save_final_countries&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_final_continents&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_final_ifs&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_final_kws&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_final_pub_lists&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;save_final_results&#39;</span><span class="p">,</span>
+          <span class="p">]</span>
+
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">import</span> <span class="nn">BiblioParsing</span> <span class="k">as</span> <span class="nn">bp</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.rename_cols</span> <span class="kn">import</span> <span class="n">set_final_col_names</span>
+
+
+<div class="viewcode-block" id="save_final_pub_lists">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.save_final_results.save_final_pub_lists">[docs]</a>
+<span class="k">def</span> <span class="nf">save_final_pub_lists</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                         <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves final results of the publications lists for the corpus year.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        results_folder_path (path): Full path to the folder where final </span>
+<span class="sd">                                    results have to be saved.</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">        (str): End message recalling corpus year and full path to </span>
+<span class="sd">               the folder where final results have been saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="c1"># Setting aliases for saving results</span>
+    <span class="n">results_sub_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="s2">&quot;pub-lists&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting aliases of common parts of file names</span>
+    <span class="n">origin_pub_list_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list folder&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_file_base_alias</span>     <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list file name base&quot;</span><span class="p">]</span>
+    <span class="n">invalid_pub_file_base_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;invalid file name base&quot;</span><span class="p">]</span>
+    <span class="n">year_pub_list_file_alias</span>    <span class="o">=</span> <span class="n">pub_list_file_base_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">corpus_year</span>
+    <span class="n">year_invalid_pub_file_alias</span> <span class="o">=</span> <span class="n">invalid_pub_file_base_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">corpus_year</span>
+
+    <span class="c1"># Setting common paths</span>
+    <span class="n">origin_corpus_year_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">origin_pub_list_path</span>    <span class="o">=</span> <span class="n">origin_corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_pub_list_folder_alias</span><span class="p">)</span>
+    <span class="n">year_target_folder_path</span> <span class="o">=</span> <span class="n">results_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">target_pub_list_path</span>    <span class="o">=</span> <span class="n">year_target_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_sub_folder_alias</span><span class="p">)</span>
+
+    <span class="c1"># Checking availability of required results folders</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_pub_list_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target_pub_list_path</span><span class="p">)</span>
+
+    <span class="c1"># Setting origin and target file paths</span>
+    <span class="n">origin_paths_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">target_paths_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">full_pub_list_file_alias</span> <span class="o">=</span>  <span class="n">year_pub_list_file_alias</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+    <span class="n">origin_paths_dict</span><span class="p">[</span><span class="s2">&quot;Full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">origin_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">full_pub_list_file_alias</span><span class="p">)</span>
+    <span class="n">target_paths_dict</span><span class="p">[</span><span class="s2">&quot;Full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">full_pub_list_file_alias</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">pg</span><span class="o">.</span><span class="n">DOCTYPE_TO_SAVE_DICT</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">key_pub_list_file_alias</span> <span class="o">=</span> <span class="n">year_pub_list_file_alias</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+        <span class="n">origin_paths_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">origin_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">key_pub_list_file_alias</span><span class="p">)</span>
+        <span class="n">target_paths_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">key_pub_list_file_alias</span><span class="p">)</span>
+
+    <span class="n">other_pub_list_file_alias</span> <span class="o">=</span> <span class="n">year_pub_list_file_alias</span> <span class="o">+</span> <span class="s2">&quot;_Others.xlsx&quot;</span>
+    <span class="n">origin_paths_dict</span><span class="p">[</span><span class="s2">&quot;Others&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">origin_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">other_pub_list_file_alias</span><span class="p">)</span>
+    <span class="n">target_paths_dict</span><span class="p">[</span><span class="s2">&quot;Others&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">other_pub_list_file_alias</span><span class="p">)</span>
+    
+    <span class="n">invalid_pub_list_file_alias</span> <span class="o">=</span> <span class="n">year_invalid_pub_file_alias</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+    <span class="n">origin_paths_dict</span><span class="p">[</span><span class="s2">&quot;Invalid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">origin_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">invalid_pub_list_file_alias</span><span class="p">)</span>
+    <span class="n">target_paths_dict</span><span class="p">[</span><span class="s2">&quot;Invalid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">invalid_pub_list_file_alias</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">origin_path</span> <span class="ow">in</span> <span class="n">origin_paths_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Copying file from origin path to target path</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">origin_path</span><span class="p">,</span> <span class="n">target_paths_dict</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final publications lists for year </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> saved in folder: &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">target_pub_list_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_message</span></div>
+
+
+<div class="viewcode-block" id="save_final_ifs">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.save_final_results.save_final_ifs">[docs]</a>
+<span class="k">def</span> <span class="nf">save_final_ifs</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                   <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">,</span> <span class="n">if_analysis_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves final results of number of publications per journal </span>
+<span class="sd">    with its impact factor for the corpus year.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        results_folder_path (path): Full path to the folder where final </span>
+<span class="sd">                                    results have to be saved.</span>
+<span class="sd">        if_analysis_name (str): Base for building file names for saving </span>
+<span class="sd">                                impact-factors results.</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">        (str): End message recalling corpus year and full path to </span>
+<span class="sd">               the folder where final results have been saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting useful column names aliases</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">depts_col_list</span> <span class="o">=</span> <span class="n">set_final_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+
+    <span class="c1"># Setting aliases for saving results</span>
+    <span class="n">results_sub_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="s2">&quot;impact-factors&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting aliases of common parts of file names</span>
+    <span class="n">origin_analysis_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;analyses&quot;</span><span class="p">]</span>
+    <span class="n">origin_ifs_folder_alias</span>      <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;if analysis&quot;</span><span class="p">]</span>
+    <span class="n">ifs_file_base_alias</span>          <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">if_analysis_name</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="c1"># Setting common paths</span>
+    <span class="n">origin_corpus_year_path</span>     <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">origin_analysis_folder_path</span> <span class="o">=</span> <span class="n">origin_corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_analysis_folder_alias</span><span class="p">)</span>
+    <span class="n">origin_ifs_folder_path</span>      <span class="o">=</span> <span class="n">origin_analysis_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_ifs_folder_alias</span><span class="p">)</span>
+    <span class="n">year_target_folder_path</span>     <span class="o">=</span> <span class="n">results_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">target_ifs_folder_path</span>      <span class="o">=</span> <span class="n">year_target_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_sub_folder_alias</span><span class="p">)</span>
+
+    <span class="c1"># Checking availability of required results folders</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_ifs_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target_ifs_folder_path</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dept</span> <span class="ow">in</span> <span class="p">[</span><span class="n">institute</span><span class="p">]</span> <span class="o">+</span> <span class="n">depts_col_list</span><span class="p">:</span>
+
+        <span class="c1"># Setting origin and target file paths</span>
+        <span class="n">dept_file_name</span> <span class="o">=</span> <span class="n">ifs_file_base_alias</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;-</span><span class="si">{</span><span class="n">dept</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;.xlsx&#39;</span>
+        <span class="n">origin_dept_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_ifs_folder_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">dept_file_name</span><span class="p">)</span>
+        <span class="n">target_dept_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_ifs_folder_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">dept_file_name</span><span class="p">)</span>
+
+        <span class="c1"># Copying file from origin path to target path</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">origin_dept_file_path</span><span class="p">,</span> <span class="n">target_dept_file_path</span><span class="p">)</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final impact factors for year </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> saved in folder: &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">target_dept_file_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_message</span></div>
+
+
+<div class="viewcode-block" id="save_final_kws">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.save_final_results.save_final_kws">[docs]</a>
+<span class="k">def</span> <span class="nf">save_final_kws</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                   <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves final results of number of publications per keyword for the corpus year.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        results_folder_path (path): Full path to the folder where final </span>
+<span class="sd">                                    results have to be saved.</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">        (str): End message recalling corpus year and full path to </span>
+<span class="sd">               the folder where final results have been saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting useful column names aliases</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">depts_col_list</span> <span class="o">=</span> <span class="n">set_final_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">auth_kw_item_alias</span>  <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">PARSING_ITEMS_LIST</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">index_kw_item_alias</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">PARSING_ITEMS_LIST</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+    <span class="n">title_kw_item_alias</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">PARSING_ITEMS_LIST</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful filenames dict</span>
+    <span class="n">kw_item_alias_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;AK&#39;</span> <span class="p">:</span> <span class="n">auth_kw_item_alias</span><span class="p">,</span>
+                          <span class="s1">&#39;IK&#39;</span> <span class="p">:</span> <span class="n">index_kw_item_alias</span><span class="p">,</span>
+                          <span class="s1">&#39;TK&#39;</span> <span class="p">:</span> <span class="n">title_kw_item_alias</span><span class="p">,</span>
+                         <span class="p">}</span>
+
+    <span class="c1"># Setting aliases for saving results</span>
+    <span class="n">results_sub_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting aliases of common parts of file names</span>
+    <span class="n">origin_analysis_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;analyses&quot;</span><span class="p">]</span>
+    <span class="n">origin_kws_folder_alias</span>      <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;keywords analysis&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting common paths</span>
+    <span class="n">origin_corpus_year_path</span>     <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">origin_analysis_folder_path</span> <span class="o">=</span> <span class="n">origin_corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_analysis_folder_alias</span><span class="p">)</span>
+    <span class="n">origin_kws_folder_path</span>      <span class="o">=</span> <span class="n">origin_analysis_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_kws_folder_alias</span><span class="p">)</span>
+    <span class="n">year_target_folder_path</span>     <span class="o">=</span> <span class="n">results_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">target_kws_folder_path</span>      <span class="o">=</span> <span class="n">year_target_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_sub_folder_alias</span><span class="p">)</span>
+
+    <span class="c1"># Checking availability of required results folders</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_kws_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target_kws_folder_path</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dept</span> <span class="ow">in</span> <span class="p">[</span><span class="n">institute</span><span class="p">]</span> <span class="o">+</span> <span class="n">depts_col_list</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">kw_type</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">kw_item_alias_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Setting origin and target file paths</span>
+            <span class="n">dept_file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">dept</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">kw_type</span><span class="si">}</span><span class="s1">.xlsx&#39;</span>
+            <span class="n">origin_dept_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_kws_folder_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">dept_file_name</span><span class="p">)</span>
+            <span class="n">target_dept_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_kws_folder_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">dept_file_name</span><span class="p">)</span>
+
+            <span class="c1"># Copying file from origin path to target path</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">origin_dept_file_path</span><span class="p">,</span> <span class="n">target_dept_file_path</span><span class="p">)</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final keywords for year </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> saved in folder: &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">target_kws_folder_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_message</span></div>
+
+
+<div class="viewcode-block" id="save_final_countries">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.save_final_results.save_final_countries">[docs]</a>
+<span class="k">def</span> <span class="nf">save_final_countries</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                         <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves final results of publications per country for the corpus year.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        results_folder_path (path): Full path to the folder where final </span>
+<span class="sd">                                    results have to be saved.</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">        (str): End message recalling corpus year and full path to </span>
+<span class="sd">               the folder where final results have been saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting aliases for saving results</span>
+    <span class="n">results_sub_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="s2">&quot;countries&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting aliases of common parts of file names</span>
+    <span class="n">origin_analysis_folder_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;analyses&quot;</span><span class="p">]</span>
+    <span class="n">origin_countries_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;countries analysis&quot;</span><span class="p">]</span>
+    <span class="n">countries_file_alias</span>          <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;country weight file name&quot;</span><span class="p">]</span>
+    <span class="n">year_countries_file_alias</span>     <span class="o">=</span> <span class="n">countries_file_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">corpus_year</span>
+
+    <span class="c1"># Setting common paths</span>
+    <span class="n">origin_corpus_year_path</span>     <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">origin_analysis_folder_path</span> <span class="o">=</span> <span class="n">origin_corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_analysis_folder_alias</span><span class="p">)</span>
+    <span class="n">origin_countries_path</span>       <span class="o">=</span> <span class="n">origin_analysis_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_countries_folder_alias</span><span class="p">)</span>
+    <span class="n">year_target_folder_path</span>     <span class="o">=</span> <span class="n">results_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">target_countries_path</span>       <span class="o">=</span> <span class="n">year_target_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_sub_folder_alias</span><span class="p">)</span>
+
+    <span class="c1"># Checking availability of required results folders</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_countries_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target_countries_path</span><span class="p">)</span>
+
+    <span class="c1"># Setting full path &#39;origin_countries_file_path&#39; and &#39;target_countries_file_path&#39;</span>
+    <span class="n">origin_countries_file_alias</span> <span class="o">=</span> <span class="n">countries_file_alias</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+    <span class="n">origin_countries_file_path</span>  <span class="o">=</span> <span class="n">origin_countries_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_countries_file_alias</span><span class="p">)</span>
+    <span class="n">target_countries_file_alias</span> <span class="o">=</span> <span class="n">year_countries_file_alias</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+    <span class="n">target_countries_file_path</span>  <span class="o">=</span> <span class="n">target_countries_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_countries_file_alias</span><span class="p">)</span>
+
+    <span class="c1"># Copying file from origin path to target path</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">origin_countries_file_path</span><span class="p">,</span> <span class="n">target_countries_file_path</span><span class="p">)</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final countries for year </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> saved in folder: &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">target_countries_file_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_message</span></div>
+
+
+<div class="viewcode-block" id="save_final_continents">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.save_final_results.save_final_continents">[docs]</a>
+<span class="k">def</span> <span class="nf">save_final_continents</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                          <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves final results of publications per continent for the corpus year.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        results_folder_path (path): Full path to the folder where final </span>
+<span class="sd">                                    results have to be saved.</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">        (str): End message recalling corpus year and full path to </span>
+<span class="sd">               the folder where final results have been saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting aliases for saving results</span>
+    <span class="n">results_sub_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="s2">&quot;countries&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting aliases of common parts of file names</span>
+    <span class="n">origin_analysis_folder_alias</span>  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;analyses&quot;</span><span class="p">]</span>
+    <span class="n">origin_countries_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;countries analysis&quot;</span><span class="p">]</span>
+    <span class="n">continents_file_alias</span>         <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;continent weight file name&quot;</span><span class="p">]</span>
+    <span class="n">year_continents_file_alias</span>    <span class="o">=</span> <span class="n">continents_file_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">corpus_year</span>
+
+    <span class="c1"># Setting common paths</span>
+    <span class="n">origin_corpus_year_path</span>     <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">origin_analysis_folder_path</span> <span class="o">=</span> <span class="n">origin_corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_analysis_folder_alias</span><span class="p">)</span>
+    <span class="n">origin_countries_path</span>       <span class="o">=</span> <span class="n">origin_analysis_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_countries_folder_alias</span><span class="p">)</span>
+    <span class="n">year_target_folder_path</span>     <span class="o">=</span> <span class="n">results_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">target_countries_path</span>       <span class="o">=</span> <span class="n">year_target_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_sub_folder_alias</span><span class="p">)</span>
+
+    <span class="c1"># Checking availability of required results folders</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">year_target_folder_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_countries_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target_countries_path</span><span class="p">)</span>
+
+    <span class="c1"># Setting full path &#39;origin_continents_file_path&#39; and &#39;target_continents_file_path&#39;</span>
+    <span class="n">origin_continents_file_alias</span> <span class="o">=</span> <span class="n">continents_file_alias</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+    <span class="n">origin_continents_file_path</span>  <span class="o">=</span> <span class="n">origin_countries_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">origin_continents_file_alias</span><span class="p">)</span>
+    <span class="n">target_continents_file_alias</span> <span class="o">=</span> <span class="n">year_continents_file_alias</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+    <span class="n">target_continents_file_path</span>  <span class="o">=</span> <span class="n">target_countries_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_continents_file_alias</span><span class="p">)</span>
+
+    <span class="c1"># Copying file from origin path to target path</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">origin_continents_file_path</span><span class="p">,</span> <span class="n">target_continents_file_path</span><span class="p">)</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final continents for year </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> saved in folder: &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">target_continents_file_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_message</span></div>
+
+
+<div class="viewcode-block" id="save_final_results">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.save_final_results.save_final_results">[docs]</a>
+<span class="k">def</span> <span class="nf">save_final_results</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">,</span>
+                       <span class="n">if_analysis_name</span><span class="p">,</span> <span class="n">results_to_save_dict</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Saves final results of given datatype and corpus year according </span>
+<span class="sd">    to the saving status of the following types of results: publications lists, </span>
+<span class="sd">    impact factors, keywords countries and continents.</span>
+<span class="sd">    To do: Saving the results of co-publication with other institutions </span>
+<span class="sd">    and publications per OTPs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases.</span>
+<span class="sd">        corpus_year (str): 4 digits year of the corpus.</span>
+<span class="sd">        if_analysis_name (str): Base for building file names for saving </span>
+<span class="sd">                                impact-factors type of results.</span>
+<span class="sd">        results_to_save_dict (dict): Dict keyyed by the type of results </span>
+<span class="sd">                                     to save and valued by saving status </span>
+<span class="sd">                                     (bool; True if the type of results </span>
+<span class="sd">                                     should be saved).</span>
+<span class="sd">        verbose (bool): Status of prints (default = False).</span>
+
+<span class="sd">    returns:</span>
+<span class="sd">        (str): End message recalling corpus year and full path to </span>
+<span class="sd">               the folder where final results have been saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting aliases for saving results</span>
+    <span class="n">results_root_alias</span>   <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">results_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_RESULTS</span><span class="p">[</span><span class="n">datatype</span><span class="p">]</span>
+
+    <span class="c1"># Setting paths for saving results</span>
+    <span class="n">results_root_path</span>   <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_root_alias</span><span class="p">)</span>
+    <span class="n">results_folder_path</span> <span class="o">=</span> <span class="n">results_root_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_folder_alias</span><span class="p">)</span>
+
+    <span class="c1"># Checking availability of required results folders</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">results_root_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">results_root_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">results_folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">results_folder_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">results_to_save_dict</span><span class="p">[</span><span class="s2">&quot;pub_lists&quot;</span><span class="p">]:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">save_final_pub_lists</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                                       <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">results_to_save_dict</span><span class="p">[</span><span class="s2">&quot;ifs&quot;</span><span class="p">]:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">save_final_ifs</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                 <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">,</span> <span class="n">if_analysis_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">results_to_save_dict</span><span class="p">[</span><span class="s2">&quot;kws&quot;</span><span class="p">]:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">save_final_kws</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                 <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">results_to_save_dict</span><span class="p">[</span><span class="s2">&quot;countries&quot;</span><span class="p">]:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">save_final_countries</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                                       <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">results_to_save_dict</span><span class="p">[</span><span class="s2">&quot;continents&quot;</span><span class="p">]:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">save_final_continents</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                                        <span class="n">corpus_year</span><span class="p">,</span> <span class="n">results_folder_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final results for year </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> saved in folder: &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">results_folder_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_message</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

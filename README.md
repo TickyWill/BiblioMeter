@@ -10,7 +10,7 @@ More specifically:<br />
 - Computes key performance indicators (impact factors, collaborations and keywords occurrences...).
 
 ## Sphinx documentation
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/docs/build/html/index.html>BiblioMeter sphinx-documentation html file
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/docs/docbuild/html/index.html>BiblioMeter sphinx-documentation html file
 </a></p>
 
 ## Installation

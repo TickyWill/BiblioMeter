@@ -1,0 +1,592 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmgui.update_if_page &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmgui.update_if_page</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmgui.update_if_page</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;`update_if_page` module allows to update the impact-factors database </span>
+<span class="sd">and the publications final lists.&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;create_update_ifs&#39;</span><span class="p">]</span>
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">font</span> <span class="k">as</span> <span class="n">tkFont</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">messagebox</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">ttk</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">import</span> <span class="nn">bmgui.gui_globals</span> <span class="k">as</span> <span class="nn">gg</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">disable_buttons</span><span class="p">,</span> <span class="n">enable_buttons</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">font_size</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">mm_to_px</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">place_after</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">place_bellow</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">set_exit_button</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">set_page_title</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.config_utils</span> <span class="kn">import</span> <span class="n">set_org_params</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">add_if</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">concatenate_pub_lists</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">split_pub_list_by_doc_type</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.save_final_results</span> <span class="kn">import</span> <span class="n">save_final_results</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.update_impact_factors</span> <span class="kn">import</span> <span class="n">update_inst_if_database</span>
+
+
+<span class="k">def</span> <span class="nf">_launch_update_if_db</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                         <span class="n">pub_list_folder_alias</span><span class="p">,</span> <span class="n">corpus_years_list</span><span class="p">,</span>
+                         <span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches updating impact-factors database of the Institute </span>
+<span class="sd">    through `update_inst_if_database` function imported from </span>
+<span class="sd">    `bmfuncts.update_impact_factors` module.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        pub_list_folder_alias (str): Publications-lists folder name.</span>
+<span class="sd">        corpus_years_list (list): List of available corpus years </span>
+<span class="sd">                                  (each item defined by a string of 4 digits).</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status. </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (bool): Status of impact-factors database.    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Lancement de la fonction de MAJ base de données des IFs</span>
+    <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Confirmation de la mise à jour de la base de données des IFs -&quot;</span>
+    <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La base de données des IFs va être mise à jour &quot;</span>
+                 <span class="s2">&quot;avec les nouvelles données disponibles dans les dossiers :&quot;</span>
+                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">pub_list_folder_alias</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> des corpus des années </span><span class="se">\n\n</span><span class="s2">  </span><span class="si">{</span><span class="n">corpus_years_list</span><span class="si">}</span><span class="s2"> .&quot;</span>
+                 <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Cette opération peut prendre quelques secondes.&quot;</span>
+                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dans l&#39;attente, ne pas fermer &#39;BiblioMeter&#39;.&quot;</span>
+                 <span class="s2">&quot; </span><span class="se">\n\n</span><span class="s2">Effectuer la mise à jour ?&quot;</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+        <span class="c1"># Mise à jour de la base de données des IFs</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">if_years_list</span> <span class="o">=</span> <span class="n">update_inst_if_database</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                                   <span class="n">bibliometer_path</span><span class="p">,</span>
+                                                   <span class="n">corpus_years_list</span><span class="p">,</span>
+                                                   <span class="n">progress_callback</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;IFs database updated&quot;</span><span class="p">)</span>
+        <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+        <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour de la base de données des IFs a été effectuée &quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot;pour les années  </span><span class="si">{</span><span class="n">if_years_list</span><span class="si">}</span><span class="s2">.&quot;</span>
+                      <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">La consolidation des corpus des années &quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">corpus_years_list</span><span class="si">}</span><span class="s2"> &quot;</span>
+                      <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">peut être lancée.&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="n">update_status</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;IFs database update dropped&quot;</span><span class="p">)</span>
+        <span class="c1"># Arrêt de la procédure</span>
+        <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+        <span class="n">info_text</span>  <span class="o">=</span> <span class="s2">&quot;La mise à jour de la base de données des IFs est abandonnée.&quot;</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">update_status</span>
+
+<span class="k">def</span> <span class="nf">_launch_update_pub_if</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+                          <span class="n">aliases_tup</span><span class="p">,</span> <span class="n">corpus_years_list</span><span class="p">,</span> <span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches updating impact factors of publications final list of the year </span>
+<span class="sd">    through `add_if` function imported from `bmfuncts.consolidate_pub_list` module </span>
+<span class="sd">    after check of availability of the corresponding file of the publications list.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases.</span>
+<span class="sd">        aliases_tup (tup): Tuple = (publications-lists folder name, </span>
+<span class="sd">                           base for building names of publications-list files, </span>
+<span class="sd">                           base for building names of missing-IFs files, </span>
+<span class="sd">                           name for building names of missing-ISSNs files).</span>
+<span class="sd">        corpus_years_list (list): List of available corpus years </span>
+<span class="sd">                                  (each item defined by a string of 4 digits).</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status. </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (year of missing publications file (string of 4 digits), </span>
+<span class="sd">                        completion status of impact-factors database (bool), </span>
+<span class="sd">                        progress-bar status (int)).    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="p">(</span><span class="n">pub_list_folder_alias</span><span class="p">,</span>
+     <span class="n">pub_list_file_base_alias</span><span class="p">,</span>
+     <span class="n">missing_if_base_alias</span><span class="p">,</span>
+     <span class="n">missing_issn_base_alias</span><span class="p">)</span> <span class="o">=</span> <span class="n">aliases_tup</span>
+    
+    <span class="n">progress_callback</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">progress_bar_state</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">progress_bar_loop_progression</span> <span class="o">=</span> <span class="mi">70</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">corpus_years_list</span><span class="p">)</span>    
+    <span class="n">if_database_complete</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">missing_pub_file_year</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">corpus_year</span> <span class="ow">in</span> <span class="n">corpus_years_list</span><span class="p">:</span>
+
+        <span class="c1"># Setting corpus dependant paths</span>
+        <span class="n">pub_list_file</span> <span class="o">=</span> <span class="n">pub_list_file_base_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">corpus_year</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+        <span class="n">year_pub_list_folder_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span> <span class="o">/</span> <span class="n">pub_list_folder_alias</span>
+        <span class="n">out_file_path</span>     <span class="o">=</span> <span class="n">year_pub_list_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_file</span><span class="p">)</span>
+        <span class="n">missing_if_path</span>   <span class="o">=</span> <span class="n">year_pub_list_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span> <span class="o">+</span> <span class="n">missing_if_base_alias</span><span class="p">)</span>
+        <span class="n">missing_issn_path</span> <span class="o">=</span> <span class="n">year_pub_list_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span> <span class="o">+</span> <span class="n">missing_issn_base_alias</span><span class="p">)</span>
+
+        <span class="c1"># Checking availability of publications-list file of the year</span>
+        <span class="n">out_file_status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_file_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">out_file_status</span><span class="p">:</span>
+
+            <span class="c1"># Updating Impact Factors and saving new consolidated list of publications</span>
+            <span class="c1"># this also for saving results files to complete IFs database</span>
+            <span class="n">paths_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">out_file_path</span><span class="p">,</span> <span class="n">out_file_path</span><span class="p">,</span>
+                         <span class="n">missing_if_path</span><span class="p">,</span> <span class="n">missing_issn_path</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">if_database_complete</span> <span class="o">=</span> <span class="n">add_if</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                             <span class="n">paths_tup</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">)</span>
+
+            <span class="c1"># Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)</span>
+            <span class="n">split_pub_list_by_doc_type</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">)</span>
+
+            <span class="c1"># Saving pub list as final result</span>
+            <span class="n">status_values</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">RESULTS_TO_SAVE</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span>
+            <span class="n">results_to_save_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">RESULTS_TO_SAVE</span><span class="p">,</span> <span class="n">status_values</span><span class="p">))</span>
+            <span class="n">results_to_save_dict</span><span class="p">[</span><span class="s2">&quot;pub_lists&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">if_analysis_name</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">save_final_results</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">corpus_year</span><span class="p">,</span>
+                                   <span class="n">if_analysis_name</span><span class="p">,</span> <span class="n">results_to_save_dict</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># Updating progress bar state</span>
+            <span class="n">progress_bar_state</span> <span class="o">+=</span> <span class="n">progress_bar_loop_progression</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">if_database_complete</span><span class="p">:</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La base de données des facteurs d&#39;impact étant incomplète, &quot;</span>
+                              <span class="s2">&quot;les listes des journaux avec IFs ou ISSNs inconnus &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;ont été créées dans le dossier </span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">year_pub_list_folder_path</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">sous les noms :&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">missing_if_path</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">missing_issn_path</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> Ces fichiers peuvent être modifiés pour compléter &quot;</span>
+                              <span class="s2">&quot;la base de donnée des IFs :&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">1- Ouvrez chacun de ces fichiers, &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Complétez manuellement les IFs inconnus ou les ISSNs &quot;</span>
+                              <span class="s2">&quot;et IFs inconnus, selon le fichier,&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3- Puis sauvegardez les fichiers sous le même nom.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Chaque fois que ces compléments sont apportés, &quot;</span>
+                              <span class="s2">&quot;la base de données des IFs doit être mise à jour, &quot;</span>
+                              <span class="s2">&quot;ainsi que toutes les listes consolidées des publications existantes.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Cependant, la mise à jour va être poursuivie avec la base &quot;</span>
+                              <span class="s2">&quot;de données des IFs incomplète.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress_bar_state</span> <span class="o">=</span> <span class="mi">100</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : fichier absent !!!&quot;</span>
+            <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La liste consolidée des publications du corpus &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">corpus_year</span><span class="si">}</span><span class="s2"> &quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">n&#39;est pas disponible à l&#39;emplacement attendu. &quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Relancer la consolidation annuelle pour ce corpus ;&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Puis relancez la mise à jour des IFs des listes consolidées.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+            <span class="n">missing_pub_file_year</span> <span class="o">=</span> <span class="n">corpus_year</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="n">progress_bar_state</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">missing_pub_file_year</span><span class="p">,</span> <span class="n">if_database_complete</span><span class="p">,</span> <span class="n">progress_bar_state</span>
+
+
+<div class="viewcode-block" id="create_update_ifs">
+<a class="viewcode-back" href="../../gui.html#bmgui.update_if_page.create_update_ifs">[docs]</a>
+<span class="k">def</span> <span class="nf">create_update_ifs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manages creation and use of widgets for impact factors update </span>
+<span class="sd">    through internal functions  `_launch_update_if_db` and `_launch_update_pub_if`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        self (instense): Instense where consolidation page will be created.</span>
+<span class="sd">        master (class): `bmgui.main_page.AppMain` class.</span>
+<span class="sd">        page_name (str): Name of consolidation page.</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Internal functions</span>
+    <span class="k">def</span> <span class="nf">_launch_update_if_db_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Update of IFs database launched&quot;</span><span class="p">)</span>
+        <span class="n">new_if_db_update_status</span> <span class="o">=</span> <span class="n">if_db_update_status</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">if_db_update_status</span><span class="p">:</span>
+            <span class="c1"># Checking availability of IFs database file</span>
+            <span class="n">if_db_file_status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">if_db_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">if_db_file_status</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+                <span class="n">new_if_db_update_status</span> <span class="o">=</span> <span class="n">_launch_update_if_db</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span>
+                                                               <span class="n">org_tup</span><span class="p">,</span>
+                                                               <span class="n">bibliometer_path</span><span class="p">,</span>
+                                                               <span class="n">pub_list_folder_alias</span><span class="p">,</span>
+                                                               <span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">,</span>
+                                                               <span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+                <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : fichier absent !!!&quot;</span>
+                <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Le fichier </span><span class="si">{</span><span class="n">if_file_name_alias</span><span class="si">}</span><span class="s2"> de la base de données des IFs &quot;</span>
+                                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">n&#39;est pas disponible à l&#39;emplacement attendu. &quot;</span>
+                                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">L&#39;utilisation de la dernière sauvegarde de secours du dossier &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">backup_if_folder_path</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">est possible : &quot;</span>
+                                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Copier le fichier de secours dans le dossier : &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">if_root_path</span><span class="si">}</span><span class="s2"> ;&quot;</span>
+                                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Puis relancez la mise à jour de la base de données des IFs.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+                <span class="n">new_if_db_update_status</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update of IFs database aborted because of IFs database file missing&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Setting status of IFs database update</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;if_db_update_status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_if_db_update_status</span>
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">place_forget</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_missing_pub_file_year_check</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="n">aliases_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">pub_list_folder_alias</span><span class="p">,</span> <span class="n">pub_list_file_base_alias</span><span class="p">,</span>
+                       <span class="n">missing_if_base_alias</span><span class="p">,</span> <span class="n">missing_issn_base_alias</span><span class="p">)</span>                                       
+        <span class="n">if_tup</span> <span class="o">=</span> <span class="n">_launch_update_pub_if</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+                                       <span class="n">aliases_tup</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">,</span> <span class="n">progress_callback</span><span class="p">)</span>
+        <span class="n">missing_pub_file_year</span><span class="p">,</span> <span class="n">if_database_complete</span><span class="p">,</span> <span class="n">progress_bar_state</span> <span class="o">=</span> <span class="n">if_tup</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">missing_pub_file_year</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;IFs updated in all consolidated lists of publications&quot;</span><span class="p">)</span>
+            <span class="n">concatenate_pub_lists</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Consolidated lists of publications concatenated after IFs update&quot;</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s1">&#39;- Information -&#39;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour des IFs dans les listes consolidées &quot;</span>
+                          <span class="s2">&quot;des publications des corpus :&quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">   </span><span class="si">{</span><span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="si">}</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">a été effectuée avec une base de données des IFs &quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">if_database_complete</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="s2">&quot;complète.&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="s2">&quot;incomplète.&quot;</span>
+            <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">De plus, chaque liste consolidée des publications &quot;</span>
+                          <span class="s2">&quot;a été décomposée en trois fichiers disponibles &quot;</span>
+                          <span class="s2">&quot;dans le même dossier correspondant &quot;</span>
+                          <span class="s2">&quot;aux différentes classes de documents &quot;</span>
+                          <span class="s2">&quot;(les classes n&#39;étant pas exhaustives, &quot;</span>
+                          <span class="s2">&quot;la décomposition peut être partielle).&quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Enfin, la concaténation des listes consolidées &quot;</span>
+                          <span class="s2">&quot;de publications disponibles, à été créée dans le dossier :&quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">bdd_multi_annuelle_folder_alias</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">sous un nom vous identifiant &quot;</span>
+                          <span class="s2">&quot;et caractérisé par la date et l&#39;heure de sa création &quot;</span>
+                          <span class="s2">&quot;ainsi que la liste des années prises en compte.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;IFs updated in some consolidated lists of publications&quot;</span>
+                  <span class="s2">&quot;but interrupted because of missing of a consolidated list file&quot;</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s1">&#39;- Information -&#39;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour des IFs a été effectuée dans une partie des listes &quot;</span>
+                          <span class="s2">&quot;consolidées existantes mais a été interrompue par l&#39;absence &quot;</span>
+                          <span class="s2">&quot;de la liste consolidée des publications du corpus :&quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">missing_pub_file_year</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_launch_update_pub_if_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Update of IFs in consolidated lists of publications launched&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">if_db_update_status</span><span class="p">:</span>
+            <span class="n">_missing_pub_file_year_check</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Confirmation du lancement de la fonction de MAJ des IFs</span>
+            <span class="c1"># dans les listes consolidées sans MAJ de la base de données des IFs</span>
+            <span class="n">ask_title</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;- Confirmation de la mise à jour des IFs &quot;</span>
+                         <span class="s2">&quot;dans les listes consolidées des publications -&quot;</span><span class="p">)</span>
+            <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La base de données des IFs n&#39;a pas été préalablement mise à jour.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">La mise à jour des IFs dans les listes consolidées &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;des corpus des années </span><span class="se">\n\n</span><span class="s2">  </span><span class="si">{</span><span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="si">}</span><span class="s2"> &quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">va être effectuée avec la version de la base de données &quot;</span>
+                         <span class="s2">&quot;des IFs qui est disponible.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Cette opération peut prendre quelques secondes.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dans l&#39;attente, ne pas fermer &#39;BiblioMeter&#39;.&quot;</span>
+                         <span class="s2">&quot; </span><span class="se">\n\n</span><span class="s2">Effectuer la mise à jour ?&quot;</span><span class="p">)</span>
+            <span class="n">answer</span>    <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+                <span class="n">_missing_pub_file_year_check</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;IFs update in consolidated lists of publications dropped&quot;</span><span class="p">)</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s1">&#39;- Information -&#39;</span>
+                <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour des listes consolidées &quot;</span>
+                              <span class="s2">&quot;des publications est abandonnée.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="c1"># Re-initializing status of IFs database update</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;if_db_update_status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">place_forget</span><span class="p">()</span>               
+
+    <span class="k">def</span> <span class="nf">_update_progress</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">update_idletasks</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="n">enable_buttons</span><span class="p">(</span><span class="n">update_if_buttons_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_except_hook</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">enable_buttons</span><span class="p">(</span><span class="n">update_if_buttons_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_start_launch_update_if_db_try</span><span class="p">():</span>
+        <span class="n">disable_buttons</span><span class="p">(</span><span class="n">update_if_buttons_list</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="n">if_db_update_launch_button</span><span class="p">,</span>
+                    <span class="n">progress_bar</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">progress_bar_dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_launch_update_if_db_try</span><span class="p">,</span>
+                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">_update_progress</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_start_launch_update_pub_if_try</span><span class="p">():</span>
+        <span class="n">disable_buttons</span><span class="p">(</span><span class="n">update_if_buttons_list</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="n">pub_if_update_launch_button</span><span class="p">,</span>
+                    <span class="n">progress_bar</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">progress_bar_dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_launch_update_pub_if_try</span><span class="p">,</span>
+                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">_update_progress</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+
+    <span class="c1"># Setting effective font sizes and positions (numbers are reference values in mm)</span>
+    <span class="n">eff_etape_font_size</span>   <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>           <span class="c1">#14</span>
+    <span class="n">eff_launch_font_size</span>  <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+    <span class="n">eff_help_font_size</span>    <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+
+    <span class="n">if_db_update_x_pos_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>  <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">if_db_update_y_pos_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="mi">35</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">update_if_label_dx_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>  <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">update_if_label_dy_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="mi">15</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">launch_dx_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>  <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">launch_dy_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>    
+    <span class="n">progress_bar_length_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="mi">75</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">progress_bar_dx</span> <span class="o">=</span> <span class="mi">40</span>
+
+    <span class="c1"># Setting common attributs</span>
+    <span class="n">etape_label_format</span> <span class="o">=</span> <span class="s1">&#39;left&#39;</span>
+    <span class="n">etape_underline</span>    <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">bdd_multi_annuelle_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_BDD_MULTI_ANNUELLE</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_folder_alias</span>           <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list folder&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_file_base_alias</span>        <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list file name base&quot;</span><span class="p">]</span>
+    <span class="n">backup_folder_name_alias</span>        <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_BACKUP</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">if_root_path_alias</span>              <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">if_file_name_alias</span>              <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;all IF&quot;</span><span class="p">]</span>
+    <span class="n">missing_if_base_alias</span>           <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;missing_if_base&quot;</span><span class="p">]</span>
+    <span class="n">missing_issn_base_alias</span>         <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;missing_issn_base&quot;</span><span class="p">]</span>
+    <span class="n">inst_if_file_name_alias</span>         <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;institute_if_all_years&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Gettting institute parameters</span>
+    <span class="n">org_tup</span> <span class="o">=</span> <span class="n">set_org_params</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">)</span>
+    <span class="n">if_db_status</span> <span class="o">=</span> <span class="n">org_tup</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">if_db_status</span><span class="p">:</span>
+        <span class="n">if_file_name_alias</span> <span class="o">=</span> <span class="n">institute</span> <span class="o">+</span> <span class="n">inst_if_file_name_alias</span>
+
+    <span class="c1"># Creating and setting widgets for page title and exit button</span>
+    <span class="n">set_page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+    <span class="n">set_exit_button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">)</span>
+    
+    <span class="c1"># Handling exception</span>
+    <span class="n">threading</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">_except_hook</span>
+
+    <span class="c1"># Initializing progress bar widget</span>
+    <span class="n">progress_var</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">IntVar</span><span class="p">()</span>  <span class="c1"># Variable to keep track of the progress bar value</span>
+    <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Progressbar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                   <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span>
+                                   <span class="n">length</span><span class="o">=</span><span class="n">progress_bar_length_px</span><span class="p">,</span>
+                                   <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;determinate&quot;</span><span class="p">,</span>
+                                   <span class="n">variable</span><span class="o">=</span><span class="n">progress_var</span><span class="p">)</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">if_root_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">if_root_path_alias</span><span class="p">)</span>
+    <span class="n">if_db_path</span>   <span class="o">=</span> <span class="n">if_root_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">if_file_name_alias</span><span class="p">)</span>
+    <span class="n">backup_if_folder_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">backup_folder_name_alias</span><span class="p">)</span>
+
+    <span class="c1"># Initializing status of IFs database update</span>
+    <span class="n">if_db_update_status</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># **************** Mise à jour de la base de données des IFs</span>
+
+    <span class="c1"># ** Titre</span>
+    <span class="n">if_db_update_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                 <span class="n">size</span> <span class="o">=</span> <span class="n">eff_etape_font_size</span><span class="p">,</span>
+                                 <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">if_db_update_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_ETAPE_5</span><span class="p">,</span>
+                                  <span class="n">justify</span> <span class="o">=</span> <span class="n">etape_label_format</span><span class="p">,</span>
+                                  <span class="n">font</span> <span class="o">=</span> <span class="n">if_db_update_font</span><span class="p">,</span>
+                                  <span class="n">underline</span> <span class="o">=</span> <span class="n">etape_underline</span><span class="p">)</span>
+
+    <span class="n">if_db_update_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">if_db_update_x_pos_px</span><span class="p">,</span>
+                             <span class="n">y</span> <span class="o">=</span> <span class="n">if_db_update_y_pos_px</span><span class="p">)</span>
+
+    <span class="c1"># ** Explication</span>
+    <span class="n">help_label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                  <span class="n">size</span> <span class="o">=</span> <span class="n">eff_help_font_size</span><span class="p">)</span>
+    <span class="n">help_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">HELP_ETAPE_5</span><span class="p">,</span>
+                          <span class="n">justify</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                          <span class="n">font</span> <span class="o">=</span> <span class="n">help_label_font</span><span class="p">)</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">if_db_update_label</span><span class="p">,</span>
+                 <span class="n">help_label</span><span class="p">)</span>
+
+    <span class="c1"># ** Bouton pour lancer l&#39;étape</span>
+    <span class="n">if_db_update_launch_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                           <span class="n">size</span> <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">)</span>
+    <span class="n">if_db_update_launch_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                           <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_MAJ_BDD_IF</span><span class="p">,</span>
+                                           <span class="n">font</span> <span class="o">=</span> <span class="n">if_db_update_launch_font</span><span class="p">,</span>
+                                           <span class="n">command</span> <span class="o">=</span> <span class="n">_start_launch_update_if_db_try</span><span class="p">)</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">help_label</span><span class="p">,</span>
+                 <span class="n">if_db_update_launch_button</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">launch_dx_px</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">launch_dy_px</span><span class="p">)</span>
+
+    <span class="c1"># **************** Mise à jour des Ifs dans les listes consolidées</span>
+
+    <span class="c1"># ** Titre</span>
+    <span class="n">update_if_label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                       <span class="n">size</span> <span class="o">=</span> <span class="n">eff_etape_font_size</span><span class="p">,</span>
+                                       <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">update_if_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_ETAPE_6</span><span class="p">,</span>
+                               <span class="n">justify</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                               <span class="n">font</span> <span class="o">=</span> <span class="n">update_if_label_font</span><span class="p">)</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">if_db_update_launch_button</span><span class="p">,</span>
+                 <span class="n">update_if_label</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">update_if_label_dx_px</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">update_if_label_dy_px</span><span class="p">)</span>
+
+    <span class="c1"># ** Explication de l&#39;étape</span>
+    <span class="n">help_label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                  <span class="n">size</span> <span class="o">=</span> <span class="n">eff_help_font_size</span><span class="p">)</span>
+    <span class="n">help_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">HELP_ETAPE_6</span><span class="p">,</span>
+                          <span class="n">justify</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                          <span class="n">font</span> <span class="o">=</span> <span class="n">help_label_font</span><span class="p">)</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">update_if_label</span><span class="p">,</span>
+                 <span class="n">help_label</span><span class="p">)</span>
+
+    <span class="c1"># ** Bouton pour lancer la mise à jour des IFs dans les listes consolidées existantes</span>
+    <span class="n">pub_if_update_launch_button_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                                   <span class="n">size</span> <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">)</span>
+    <span class="n">pub_if_update_launch_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_MAJ_PUB_IF</span><span class="p">,</span>
+                                 <span class="n">font</span> <span class="o">=</span> <span class="n">pub_if_update_launch_button_font</span><span class="p">,</span>
+                                 <span class="n">command</span> <span class="o">=</span> <span class="n">_start_launch_update_pub_if_try</span><span class="p">)</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">help_label</span><span class="p">,</span>
+                 <span class="n">pub_if_update_launch_button</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">launch_dx_px</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">launch_dy_px</span><span class="p">)</span>
+    
+    <span class="c1"># Setting buttons list for status change</span>
+    <span class="n">update_if_buttons_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">if_db_update_launch_button</span><span class="p">,</span>
+                              <span class="n">pub_if_update_launch_button</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1198 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmgui.consolidate_corpus_page &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmgui.consolidate_corpus_page</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmgui.consolidate_corpus_page</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The `consolidate_corpus_page` module allows to built consolidated publication lists </span>
+<span class="sd">for the Institute selected and the data type selected. It performs the merge </span>
+<span class="sd">of the publications list with the employees database of the Institute. </span>
+<span class="sd">Then it provides xlsx files to the user for :</span>
+<span class="sd">- Authors metadata correction when not found in the employees database;</span>
+<span class="sd">- Homonymies resolution;</span>
+<span class="sd">- Publications OTPs setting;</span>
+<span class="sd">- Completion of impact-factors database.</span>
+<span class="sd">Finally it saves the consolidated publications list in a dedicated directory.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;create_consolidate_corpus&#39;</span><span class="p">]</span>
+
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">font</span> <span class="k">as</span> <span class="n">tkFont</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">messagebox</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">ttk</span>
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.employees_globals</span> <span class="k">as</span> <span class="nn">eg</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">import</span> <span class="nn">bmgui.gui_globals</span> <span class="k">as</span> <span class="nn">gg</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.config_utils</span> <span class="kn">import</span> <span class="n">set_org_params</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">add_otp</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">built_final_pub_list</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">concatenate_pub_lists</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.consolidate_pub_list</span> <span class="kn">import</span> <span class="n">solving_homonyms</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.merge_pub_employees</span> <span class="kn">import</span> <span class="n">recursive_year_search</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.update_employees</span> <span class="kn">import</span> <span class="n">update_employees</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.use_pub_attributes</span> <span class="kn">import</span> <span class="n">save_homonyms</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.use_pub_attributes</span> <span class="kn">import</span> <span class="n">set_saved_homonyms</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.use_pub_attributes</span> <span class="kn">import</span> <span class="n">set_saved_otps</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.useful_functs</span> <span class="kn">import</span> <span class="n">check_dedup_parsing_available</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">disable_buttons</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">enable_buttons</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">font_size</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">mm_to_px</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">place_after</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">place_bellow</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">set_exit_button</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">set_page_title</span>
+
+
+<span class="k">def</span> <span class="nf">_set_employees_data</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">,</span> <span class="n">all_effectifs_path</span><span class="p">,</span> <span class="n">search_depth</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets Intitute employees data   </span>
+<span class="sd">    through `update_employees` function imported from </span>
+<span class="sd">    `bmfuncts.update_employees` module after check </span>
+<span class="sd">    of available files for update (should be single) </span>
+<span class="sd">    and check of Institute employees database file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        all_effectifs_path (path): Full path to file of Institute employees database.</span>
+<span class="sd">        corpus_year (str): Corpus year defined by 4 digits.</span>
+<span class="sd">        search_depth (int): Initial search depth.</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (employees data (df), adapted search depth (int), </span>
+<span class="sd">                        list of available years of employees data).    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Getting employees df</span>
+    <span class="n">useful_col_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_USEFUL_COLS</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ADD_COLS</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">all_effectifs_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">all_effectifs_path</span><span class="p">,</span>
+                                     <span class="n">sheet_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                     <span class="n">dtype</span> <span class="o">=</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_COL_TYPES</span><span class="p">,</span>
+                                     <span class="n">usecols</span> <span class="o">=</span> <span class="n">useful_col_list</span><span class="p">)</span>
+
+    <span class="c1"># Identifying available years in employees df</span>
+    <span class="n">annees_dispo</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_effectifs_df</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+    <span class="n">annees_a_verifier</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">search_depth</span><span class="p">)</span>
+                         <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">search_depth</span><span class="p">))]</span>
+    <span class="n">annees_verifiees</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">annees_a_verifier</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">annees_dispo</span><span class="p">:</span>
+            <span class="n">annees_verifiees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">annees_verifiees</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">search_depth</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">search_depth</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">annees_verifiees</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">search_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! Attention !!!&quot;</span>
+        <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le nombre d&#39;années disponibles est insuffisant &quot;</span>
+                         <span class="s2">&quot;dans le fichier des effectifs de l&#39;Institut.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Le croisement auteurs-effectifs ne peut être effectué !&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Complétez le fichier des effectifs de l&#39;Institut ;&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Puis relancer le croisement auteurs-effectifs.&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">all_effectifs_df</span><span class="p">,</span> <span class="n">search_depth</span><span class="p">,</span> <span class="n">annees_verifiees</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_launch_update_employees</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                             <span class="n">paths_tup</span><span class="p">,</span>
+                             <span class="n">effectifs_file_name</span><span class="p">,</span>
+                             <span class="n">year_select</span><span class="p">,</span>
+                             <span class="n">check_effectif_status</span><span class="p">,</span>
+                             <span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches update of Intitute employees database   </span>
+<span class="sd">    through `update_employees` function imported from </span>
+<span class="sd">    `bmfuncts.update_employees` module after check </span>
+<span class="sd">    of available files for update (should be single) </span>
+<span class="sd">    and check of Institute employees database file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        paths_tup (tup): Tuple = (full path to folder where file for update </span>
+<span class="sd">                                  of Institute employeees database,</span>
+<span class="sd">                                  full path to file of Institute employees database).</span>
+<span class="sd">        effectifs_file_name (str): Name of file of Institute employees database.</span>
+<span class="sd">        year_select (str): Corpus year defined by 4 digits.</span>
+<span class="sd">        check_effectif_status (int): Value for updating </span>
+<span class="sd">                                     Institute employees database &#39;0: no update; 1: update&#39;.</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status.   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">maj_effectifs_folder_path</span><span class="p">,</span> <span class="n">effectifs_folder_path</span> <span class="o">=</span> <span class="n">paths_tup</span>
+
+    <span class="c1"># Setting dialogs and checking answers</span>
+    <span class="c1"># for ad-hoc use of &#39;update_employees&#39; function    </span>
+    <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">check_effectif_status</span><span class="p">:</span>
+        <span class="c1"># Launch employees database update</span>
+        <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Confirmation de la mise à jour des effectifs -&quot;</span>
+        <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier des effectifs de l&#39;Institut va être mis à jour &quot;</span>
+                     <span class="s2">&quot;avec les nouvelles données disponibles dans le dossier :&quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">maj_effectifs_folder_path</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Cette opération peut prendre quelques minutes.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dans l&#39;attente, ne pas fermer &#39;BiblioMeter&#39;.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Avant de poursuivre le croisement auteurs-effectifs, &quot;</span>
+                     <span class="s2">&quot;confirmez la mise à jour ?&quot;</span><span class="p">)</span>
+        <span class="n">answer_1</span>  <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">answer_1</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">employees_year</span><span class="p">,</span>
+             <span class="n">files_number_error</span><span class="p">,</span>
+             <span class="n">sheet_name_error</span><span class="p">,</span>
+             <span class="n">column_error</span><span class="p">,</span>
+             <span class="n">years2add_error</span><span class="p">,</span>
+             <span class="n">all_years_file_error</span><span class="p">)</span> <span class="o">=</span> <span class="n">update_employees</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">files_number_error</span><span class="p">,</span> <span class="n">sheet_name_error</span><span class="p">,</span> <span class="n">column_error</span><span class="p">,</span>
+                        <span class="n">years2add_error</span><span class="p">,</span> <span class="n">all_years_file_error</span><span class="p">]):</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour des effectifs a été effectuée &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;pour l&#39;année </span><span class="si">{</span><span class="n">employees_year</span><span class="si">}</span><span class="s2">.&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Le croisement pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> &quot;</span>
+                              <span class="s2">&quot;va être poursuivi.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+                <span class="n">update_status</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">all_years_file_error</span><span class="p">:</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour des effectifs a été effectuée &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;pour l&#39;année </span><span class="si">{</span><span class="n">employees_year</span><span class="si">}</span><span class="s2">.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Mais le fichier des effectifs consolidés &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">effectifs_file_name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="s2">&quot;non disponible a été créé dans le dossier :&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">effectifs_folder_path</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Erreur précise retournée :</span><span class="se">\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">all_years_file_error</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Le croisement pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> &quot;</span>
+                              <span class="s2">&quot;va être poursuivi.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+                <span class="n">update_status</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!&quot;</span>
+                <span class="k">if</span> <span class="n">files_number_error</span><span class="p">:</span>
+                    <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Absence de fichier ou plus d&#39;un fichier &quot;</span>
+                                     <span class="s2">&quot;présent dans le dossier :&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">maj_effectifs_folder_path</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Ne conservez que le fichier utile &quot;</span>
+                                     <span class="s2">&quot;et relancez la mise à jour,&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">ou bien relancez le traitement &quot;</span>
+                                     <span class="s2">&quot;sans mise à jour des effectifs.&quot;</span><span class="p">)</span>
+                    <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+                    <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">sheet_name_error</span><span class="p">:</span>
+                    <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Un nom de feuille est de format incorrect &quot;</span>
+                                     <span class="s2">&quot;dans le fichier des effectifs additionnels du dossier :&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">maj_effectifs_folder_path</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Erreur précise retournée :</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">sheet_name_error</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 1- Ouvrez le fichier;&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 2- Vérifiez et corrigez les noms des feuilles &quot;</span>
+                                     <span class="s2">&quot;dans ce fichier;&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 3- Sauvegardez le ficher;&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 4- Relancez la mise à jour des effectifs &quot;</span>
+                                     <span class="s2">&quot;(via le croisement auteurs-effectifs).&quot;</span><span class="p">)</span>
+                    <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+                    <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">column_error</span><span class="p">:</span>
+                    <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Une colonne est manquante ou mal nommée dans une feuille &quot;</span>
+                                     <span class="s2">&quot;dans le fichier des effectifs additionnels du dossier :&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">maj_effectifs_folder_path</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Erreur précise retournée :</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">column_error</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 1- Ouvrez le fichier;&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 2- Vérifiez et corrigez les noms des colonnes &quot;</span>
+                                     <span class="s2">&quot;des feuilles dans ce fichier;&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 3- Sauvegardez le ficher.&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 4- Relancez la mise à jour des effectifs &quot;</span>
+                                     <span class="s2">&quot;(via le croisement auteurs-effectifs).&quot;</span><span class="p">)</span>
+                    <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+                    <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">years2add_error</span><span class="p">:</span>
+                    <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier des effectifs additionnels &quot;</span>
+                                     <span class="s2">&quot;couvre plusieurs années &quot;</span>
+                                     <span class="s2">&quot;dans le fichier des effectifs additionnels du dossier :&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">maj_effectifs_folder_path</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 1- Séparez les feuilles d&#39;années différentes &quot;</span>
+                                     <span class="s2">&quot;en fichiers d&#39;effectifs additionnels différents;&quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> 2- Relancer la mise à jour des effectifs &quot;</span>
+                                     <span class="s2">&quot;(via le croisement auteurs-effectifs) &quot;</span>
+                                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    pour chacun des fichiers créés en les positionant seul &quot;</span>
+                                     <span class="s2">&quot;dans le dossier successivement.&quot;</span><span class="p">)</span>
+                    <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+                    <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Cancel employees database update</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+            <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La mise à jour des effectifs est abandonnée.&quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Si le croisement auteurs-effectifs pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> &quot;</span>
+                             <span class="s2">&quot;est confirmé, il se fera sans cette mise à jour.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+            <span class="n">update_status</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">update_status</span>
+
+
+<span class="k">def</span> <span class="nf">_launch_recursive_year_search_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                      <span class="n">bibliometer_path</span><span class="p">,</span>
+                                      <span class="n">paths_tup</span><span class="p">,</span>
+                                      <span class="n">files_tup</span><span class="p">,</span>
+                                      <span class="n">year_select</span><span class="p">,</span>
+                                      <span class="n">search_depth_init</span><span class="p">,</span>
+                                      <span class="n">employees_update_status</span><span class="p">,</span>
+                                      <span class="n">progress_callback</span><span class="p">,</span>
+                                      <span class="n">progress_bar_state</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches merge of publications list with Institute employees  </span>
+<span class="sd">    through `recursive_year_search` function imported from </span>
+<span class="sd">    `bmfuncts.merge_pub_employees` module after setting employees data </span>
+<span class="sd">    through `_set_employees_data` function and check of status of parsing step </span>
+<span class="sd">    through `check_dedup_parsing_available` function imported from </span>
+<span class="sd">    `bmfuncts.useful_functs` module.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        paths_tup (tup): Tuple = (full path to folder where publications  </span>
+<span class="sd">                         merged with Institute employees and associated </span>
+<span class="sd">                         files are saved, full path to file of Institute </span>
+<span class="sd">                         employees database).</span>
+<span class="sd">        files_tup (tup): Tuple = (name of file of publications merged </span>
+<span class="sd">                         with Institut employees, name of file of publications</span>
+<span class="sd">                         with authors not found in Institute employees database).</span>
+<span class="sd">        year_select (str): Corpus year defined by 4 digits.</span>
+<span class="sd">        search_depth_init (int): Initial search depth that will be adapted depending </span>
+<span class="sd">                                 on available years in Institute employees database.</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status.</span>
+<span class="sd">        progress_bar_state (int): Initial status of ProgressBar tkinter widget.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_recursive_year_search_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="n">dedup_parsing_status</span> <span class="o">=</span> <span class="n">check_dedup_parsing_available</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">year_select</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dedup_parsing_status</span><span class="p">:</span>
+            <span class="n">end_message</span><span class="p">,</span> <span class="n">orphan_status</span> <span class="o">=</span> <span class="n">recursive_year_search</span><span class="p">(</span><span class="n">bdd_mensuelle_path</span><span class="p">,</span>
+                                                               <span class="n">all_effectifs_df</span><span class="p">,</span>
+                                                               <span class="n">institute</span><span class="p">,</span>
+                                                               <span class="n">org_tup</span><span class="p">,</span>
+                                                               <span class="n">bibliometer_path</span><span class="p">,</span>
+                                                               <span class="n">year_select</span><span class="p">,</span>
+                                                               <span class="n">search_depth</span><span class="p">,</span>
+                                                               <span class="n">progress_callback</span><span class="p">,</span>
+                                                               <span class="n">progress_bar_state</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s1">&#39;- Information -&#39;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Le croisement auteurs-effectifs de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> a été effectué.&quot;</span>
+            <span class="k">if</span> <span class="n">orphan_status</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Tous les auteurs de l&#39;Institut ont été &quot;</span>
+                              <span class="s2">&quot;identifiés dans les effectifs.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">La résolution des homonymes peut être lancée.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Mais, des auteurs affiiés à l&#39;Institut &quot;</span>
+                              <span class="s2">&quot;n&#39;ont pas été identifiés dans les effectifs.&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Ouvrez le fichier </span><span class="si">{</span><span class="n">orphan_file</span><span class="si">}</span><span class="s2"> &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;du dossier :</span><span class="se">\n</span><span class="s2">  </span><span class="si">{</span><span class="n">bdd_mensuelle_path</span><span class="si">}</span><span class="s2"> ;&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">2- Suivez le mode opératoire disponible pour son utilisation ;&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3- Puis relancez le croisement pour cette année.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Néanmoins, la résolution des homonymes &quot;</span>
+                              <span class="s2">&quot;peut être lancée sans cette opération, &quot;</span>
+                              <span class="s2">&quot;mais la liste consolidée des publications sera incomplète.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : fichier manquant !!!&quot;</span>
+            <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;La synthèse de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> n&#39;est pas disponible.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Revenez à l&#39;onglet &#39;Analyse élémentaire des corpus&#39; ;&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Effectuez la synthèse pour cette année ;&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3- Puis relancez le croisement pour cette année.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">bdd_mensuelle_path</span><span class="p">,</span> <span class="n">all_effectifs_path</span> <span class="o">=</span> <span class="n">paths_tup</span>
+    <span class="n">submit_file</span><span class="p">,</span> <span class="n">orphan_file</span> <span class="o">=</span> <span class="n">files_tup</span>
+    <span class="n">submit_path</span> <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">submit_file</span><span class="p">)</span>
+
+    <span class="c1"># Setting dialogs and checking answers</span>
+    <span class="c1"># for ad-hoc use of &#39;_recursive_year_search_try&#39; internal function    </span>
+    <span class="c1"># after adapting search depth to available years for search</span>
+    <span class="n">tup</span> <span class="o">=</span> <span class="n">_set_employees_data</span><span class="p">(</span><span class="n">year_select</span><span class="p">,</span> <span class="n">all_effectifs_path</span><span class="p">,</span> <span class="n">search_depth_init</span><span class="p">)</span>
+    <span class="n">all_effectifs_df</span><span class="p">,</span> <span class="n">search_depth</span><span class="p">,</span> <span class="n">annees_disponibles</span> <span class="o">=</span> <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">annees_disponibles</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;sans&quot;</span>
+        <span class="k">if</span> <span class="n">employees_update_status</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;avec&quot;</span>
+        <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Confirmation du croisement auteurs-effectifs -&quot;</span>
+        <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le croisement avec les effectifs des années &quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">annees_disponibles</span><span class="p">])</span><span class="si">}</span><span class="s2"> &quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;a été lancé pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2">.&quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Ce croisement se fera </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> la mise à jour &quot;</span>
+                     <span class="s2">&quot;du fichier des effectifs.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Cette opération peut prendre quelques minutes.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dans l&#39;attente, ne pas fermer &#39;BiblioMeter&#39;.&quot;</span>
+                     <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Continuer ?&quot;</span><span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="n">submit_status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">submit_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">submit_status</span><span class="p">:</span>
+                <span class="n">_recursive_year_search_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Reconstruction du croisement auteurs-effectifs -&quot;</span>
+                <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Le croisement pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> est déjà disponible.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Reconstruire le croisement ?&quot;</span><span class="p">)</span>
+                <span class="n">answer_4</span>  <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">answer_4</span><span class="p">:</span>
+                    <span class="n">_recursive_year_search_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+                    <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                    <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Le croisement auteurs-effectifs de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                  <span class="s2">&quot;dejà disponible est conservé.&quot;</span><span class="p">)</span>
+                    <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Le croisement auteurs-effectifs de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> &quot;</span>
+                          <span class="s2">&quot;est annulé.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_launch_resolution_homonymies_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                      <span class="n">bibliometer_path</span><span class="p">,</span>
+                                      <span class="n">paths_tup</span><span class="p">,</span>
+                                      <span class="n">homonymes_file</span><span class="p">,</span>
+                                      <span class="n">year_select</span><span class="p">,</span>
+                                      <span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches file creation for resolving homonyms </span>
+<span class="sd">    through `solving_homonyms` function imported from </span>
+<span class="sd">    `bmfuncts.consolidate_pub_list` module after check </span>
+<span class="sd">    of status of publications-employees merge step.</span>
+<span class="sd">    Created file is filled with previously resolved homonyms </span>
+<span class="sd">    through `set_saved_homonyms` function imported from </span>
+<span class="sd">    `bmfuncts.use_pub_attributes` module. </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases.</span>
+<span class="sd">        paths_tup (tup): Tuple = (full path to file where publications  </span>
+<span class="sd">                         have been merged with Institute employees,  </span>
+<span class="sd">                         full path to folder where file for resolving </span>
+<span class="sd">                         homonyms is saved).</span>
+<span class="sd">        homonymes_file (str): Name of file created for resolving homonyms.</span>
+<span class="sd">        year_select (str): Corpus year defined by 4 digits.</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status.   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_resolution_homonymies_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">submit_path</span><span class="p">):</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+            <span class="n">return_tup</span> <span class="o">=</span> <span class="n">solving_homonyms</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                          <span class="n">submit_path</span><span class="p">,</span> <span class="n">homonymes_file_path</span><span class="p">)</span>
+            <span class="n">end_message</span><span class="p">,</span> <span class="n">actual_homonym_status</span> <span class="o">=</span> <span class="n">return_tup</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Actual homonyms status before setting saved homonyms:&#39;</span><span class="p">,</span>
+                  <span class="n">actual_homonym_status</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">80</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">actual_homonym_status</span><span class="p">:</span>
+                <span class="n">end_message</span><span class="p">,</span> <span class="n">actual_homonym_status</span> <span class="o">=</span> <span class="n">set_saved_homonyms</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                                                        <span class="n">bibliometer_path</span><span class="p">,</span>
+                                                                        <span class="n">year_select</span><span class="p">,</span>
+                                                                        <span class="n">actual_homonym_status</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Actual homonyms status after setting saved homonyms:&#39;</span><span class="p">,</span>
+                  <span class="n">actual_homonym_status</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier pour la résolution des homonymies &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> a été créé &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;dans le dossier :</span><span class="se">\n\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">homonymes_path</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">sous le nom :  &#39;</span><span class="si">{</span><span class="n">homonymes_file</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">actual_homonym_status</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Des homonymes existent parmi &quot;</span>
+                              <span class="s2">&quot;les auteurs dans les effectifs.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">1- Ouvrez ce fichier, &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Supprimez manuellement les lignes &quot;</span>
+                              <span class="s2">&quot;des homonymes non-auteurs, &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3- Puis sauvegardez le fichier sous le même nom.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Dès que le fichier est traité, &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">l&#39;affectation des OTPs peut être lancée.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Aucun homonyme n&#39;est trouvé parmi &quot;</span>
+                              <span class="s2">&quot;les auteurs dans les effectifs.&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">L&#39;affectation des OTPs peut être lancée.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : fichier manquant !!!&quot;</span>
+            <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier contenant le croisement auteurs-effectifs &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> n&#39;est pas disponible.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Effectuez d&#39;abord le croisement pour cette année.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Puis relancez la résolution des homonymies pour cette année.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">submit_path</span><span class="p">,</span> <span class="n">homonymes_path</span> <span class="o">=</span> <span class="n">paths_tup</span>
+    <span class="n">homonymes_file_path</span> <span class="o">=</span> <span class="n">homonymes_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonymes_file</span><span class="p">)</span>
+
+    <span class="c1"># Setting dialogs and checking answers</span>
+    <span class="c1"># for ad-hoc use of &#39;_resolution_homonymies_try&#39; internal function</span>
+    <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Confirmation de l&#39;étape de résolution des homonymies -&quot;</span>
+    <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La création du fichier pour cette résolution &quot;</span>
+                 <span class="sa">f</span><span class="s2">&quot;a été lancée pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2">.&quot;</span>
+                 <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Continuer ?&quot;</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">homonymes_status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">homonymes_file_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">homonymes_status</span><span class="p">:</span>
+            <span class="n">_resolution_homonymies_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Reconstruction de la résolution des homonymes -&quot;</span>
+            <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier pour la résolution des homonymies &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> est déjà disponible.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Reconstruire ce fichier ?&quot;</span><span class="p">)</span>
+            <span class="n">answer_1</span>  <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">answer_1</span><span class="p">:</span>
+                <span class="n">_resolution_homonymies_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier pour la résolution des homonymies &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> dejà disponible est conservé.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+        <span class="n">info_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La création du fichier pour la résolution &quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;des homonymies de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> est annulée.&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_launch_add_otp_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                        <span class="n">bibliometer_path</span><span class="p">,</span>
+                        <span class="n">paths_tup</span><span class="p">,</span>
+                        <span class="n">files_tup</span><span class="p">,</span>
+                        <span class="n">year_select</span><span class="p">,</span>
+                        <span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches files creation for adding OTP attribute to publications </span>
+<span class="sd">    through `add_otp` function imported from `bmfuncts.consolidate_pub_list` </span>
+<span class="sd">    module after check of status of homonyms resolution step </span>
+<span class="sd">    and saving the resolved homonyms through `save_homonyms` function </span>
+<span class="sd">    imported from `bmfuncts.use_pub_attributes` module.</span>
+<span class="sd">    Created files are filled with previously set OTPs through `set_saved_otps` </span>
+<span class="sd">    function imported from `bmfuncts.use_pub_attributes` module. </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        homonymes_file_path (path): Full path to file where homonyms </span>
+<span class="sd">                                    have been resolved.</span>
+<span class="sd">        otp_path (path): Full path to folder where created files are saved.</span>
+<span class="sd">        otp_file_base (str): Base for building created-files names.</span>
+<span class="sd">        year_select (str): Corpus year defined by 4 digits.</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status.   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_add_otp_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">homonymes_file_path</span><span class="p">):</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+            <span class="n">end_message</span> <span class="o">=</span> <span class="n">save_homonyms</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">year_select</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+            <span class="n">end_message</span> <span class="o">=</span> <span class="n">add_otp</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">homonymes_file_path</span><span class="p">,</span>
+                                  <span class="n">otp_path</span><span class="p">,</span> <span class="n">otp_file_base</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">80</span><span class="p">)</span>
+            <span class="n">end_message</span> <span class="o">=</span> <span class="n">set_saved_otps</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">year_select</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Les fichiers de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> pour l&#39;attribution des OTPs &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;ont été créés dans le dossier : </span><span class="se">\n\n</span><span class="s2">&#39;</span><span class="si">{</span><span class="n">otp_path</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">1- Ouvrez le fichier du département ad-hoc, &quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Attribuez manuellement à chacune des publications un OTP, &quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3- Sauvegardez le fichier en ajoutant à son nom &#39;_ok&#39;.&quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Dès que les fichiers de tous les départements &quot;</span>
+                          <span class="s2">&quot;sont traités, la liste consolidée des publications &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> peut être créée.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : fichier manquant !!!&quot;</span>
+            <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier contenant la résolution des homonymies &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> n&#39;est pas disponible.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Effectuez la résolution des homonymies pour cette année.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Relancez l&#39;attribution des OTPs pour cette année.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">homonymes_path</span><span class="p">,</span> <span class="n">otp_path</span> <span class="o">=</span> <span class="n">paths_tup</span>
+    <span class="n">homonymes_file</span><span class="p">,</span> <span class="n">otp_file_base</span> <span class="o">=</span> <span class="n">files_tup</span>
+    <span class="n">homonymes_file_path</span> <span class="o">=</span> <span class="n">homonymes_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonymes_file</span><span class="p">)</span>
+
+    <span class="c1"># Getting institute parameters</span>
+    <span class="n">dpt_label_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">org_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="c1"># Setting dialogs and checking answers</span>
+    <span class="c1"># for ad-hoc use of &#39;_add_otp_try&#39; internal function</span>
+    <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Confirmation de l&#39;étape d&#39;attribution des OTPs -&quot;</span>
+    <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La création des fichiers pour cette attribution &quot;</span>
+                 <span class="sa">f</span><span class="s2">&quot;a été lancée pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2">.&quot;</span>
+                 <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Continuer ?&quot;</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">otp_path_status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">otp_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">otp_path_status</span><span class="p">:</span>
+            <span class="n">otp_files_status_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dpt_label</span> <span class="ow">in</span> <span class="n">dpt_label_list</span><span class="p">:</span>
+                <span class="n">dpt_otp_file_name</span> <span class="o">=</span> <span class="n">otp_file_base</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">dpt_label</span> <span class="o">+</span> <span class="s1">&#39;.xlsx&#39;</span>
+                <span class="n">dpt_otp_file_path</span> <span class="o">=</span> <span class="n">otp_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">dpt_otp_file_name</span><span class="p">)</span>
+                <span class="n">otp_files_status_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="ow">not</span> <span class="n">dpt_otp_file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">otp_files_status_list</span><span class="p">):</span>
+                <span class="n">_add_otp_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Reconstruction de l&#39;attribution des OTPs -&quot;</span>
+                <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Les fichiers pour l&#39;attribution des OTPs &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> sont déjà disponibles.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Reconstruire ces fichiers ?&quot;</span><span class="p">)</span>
+                <span class="n">answer_1</span>  <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">answer_1</span><span class="p">:</span>
+                    <span class="n">_add_otp_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+                    <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                    <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Les fichiers pour l&#39;attribution des OTPs &quot;</span>
+                                  <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> dejà disponibles sont conservés.&quot;</span><span class="p">)</span>
+                    <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">otp_path</span><span class="p">)</span>
+            <span class="n">_add_otp_try</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+        <span class="n">info_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La création des fichiers pour l&#39;attribution des OTPs &quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> est annulée.&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_launch_pub_list_conso_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                               <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+                               <span class="n">paths_tup</span><span class="p">,</span> <span class="n">aliases_tup</span><span class="p">,</span>
+                               <span class="n">year_select</span><span class="p">,</span> <span class="n">years_list</span><span class="p">,</span>
+                               <span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launches building of publications final list through `built_final_pub_list` </span>
+<span class="sd">    function imported from `bmfuncts.consolidate_pub_list` module </span>
+<span class="sd">    after check of status of OTPs adding step.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases.</span>
+<span class="sd">        paths_tup (tup): Tuple = (full path to folder of files where OTPs </span>
+<span class="sd">                         have been attributed, full path to folder where </span>
+<span class="sd">                         file of publications final list and associated files are saved).</span>
+<span class="sd">        aliases_tup (tup): Tuple = (base for building names of OTPs files, </span>
+<span class="sd">                           publications-list file name,</span>
+<span class="sd">                           [name of missing-IFs file, name of missing-ISSNs file], </span>
+<span class="sd">                           name of folder where concatenated list of available </span>
+<span class="sd">                           publications lists are saved).</span>
+<span class="sd">        year_select (str): Corpus year defined by 4 digits.</span>
+<span class="sd">        years_list (list): List of available corpus years </span>
+<span class="sd">                           (each item defined by a string of 4 digits).</span>
+<span class="sd">        progress_callback (function): Function for updating </span>
+<span class="sd">                                      ProgressBar tkinter widget status.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_consolidate_pub_list</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">otp_path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">otp_path</span><span class="p">):</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+            <span class="n">conso_tup</span> <span class="o">=</span> <span class="n">built_final_pub_list</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                             <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+                                             <span class="n">otp_path</span><span class="p">,</span> <span class="n">pub_list_path</span><span class="p">,</span>
+                                             <span class="n">otp_file_base</span><span class="p">,</span> <span class="n">year_select</span><span class="p">)</span>
+            <span class="n">end_message</span><span class="p">,</span> <span class="n">split_ratio</span><span class="p">,</span> <span class="n">if_database_complete</span> <span class="o">=</span> <span class="p">(</span><span class="n">conso_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">conso_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                              <span class="n">conso_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+            <span class="n">end_message</span> <span class="o">=</span> <span class="n">concatenate_pub_lists</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">years_list</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">end_message</span><span class="p">)</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+            <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;La liste consolidée des publications de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;a été créée dans le dossier :</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">pub_list_path</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">sous le nom :   &#39;</span><span class="si">{</span><span class="n">pub_list_file</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Les IFs disponibles ont été automatiquement attribués.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">if_database_complete</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">La base de données des facteurs d&#39;impact étant complète, &quot;</span>
+                              <span class="s2">&quot;les listes des journaux avec IFs ou ISSNs inconnus sont vides.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Attention, les listes des journaux avec IFs ou ISSNs inconnus &quot;</span>
+                              <span class="s2">&quot;ont été créées dans le même dossier sous les noms :&quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">year_missing_aliases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">year_missing_aliases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> Ces fichiers peuvent être modifiés pour compléter &quot;</span>
+                              <span class="s2">&quot;la base de donnée des IFs :&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">1- Ouvrez chacun de ces fichiers ;&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Complétez manuellement les IFs inconnus ou les ISSNs &quot;</span>
+                              <span class="s2">&quot;et IFs inconnus, selon le fichier - &quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">       Attention : VIRGULE pour le séparateur décimal des IFS ;&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3- Puis sauvegardez les fichiers sous le même nom ;&quot;</span>
+                              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">4- Pour prendre en compte ces compléments, allez à la page &quot;</span>
+                              <span class="s2">&quot;de mise à jour des IFs.&quot;</span><span class="p">)</span>
+            <span class="n">info_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Par ailleurs, la liste consolidée des publications &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;a été décomposée à </span><span class="si">{</span><span class="n">split_ratio</span><span class="si">}</span><span class="s2"> % &quot;</span>
+                          <span class="s2">&quot;en trois fichiers disponibles dans le même dossier &quot;</span>
+                          <span class="s2">&quot;correspondant aux différentes &quot;</span>
+                          <span class="s2">&quot;classes de documents (les classes n&#39;étant pas exhaustives, &quot;</span>
+                          <span class="s2">&quot;la décomposition peut être partielle).&quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">La liste des publications invalides a été créée dans le même dossier.&quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Enfin, la concaténation des listes consolidées des publications &quot;</span>
+                          <span class="s2">&quot;disponibles, a été créée dans le dossier :&quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">bdd_multi_annuelle_folder</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                          <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">sous un nom vous identifiant ainsi que la liste des années &quot;</span>
+                          <span class="s2">&quot;prises en compte et caractérisé par la date et l&#39;heure de la création.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : fichiers manquants !!!&quot;</span>
+            <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Les fichiers d&#39;attribution des OTPs &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> ne sont pas disponibles.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1- Effectuez l&#39;attribution des OTPs pour cette année.&quot;</span>
+                             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2- Relancez la consolidation de la liste des publications &quot;</span>
+                             <span class="s2">&quot;pour cette année.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">otp_path</span><span class="p">,</span> <span class="n">pub_list_path</span> <span class="o">=</span> <span class="n">paths_tup</span>
+    <span class="p">(</span><span class="n">otp_file_base</span><span class="p">,</span> <span class="n">pub_list_file</span><span class="p">,</span>
+     <span class="n">year_missing_aliases</span><span class="p">,</span> <span class="n">bdd_multi_annuelle_folder</span><span class="p">)</span> <span class="o">=</span> <span class="n">aliases_tup</span>
+    <span class="n">pub_list_file_path</span> <span class="o">=</span> <span class="n">pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_file</span><span class="p">)</span>
+    
+    <span class="c1"># Setting dialogs and checking answers</span>
+    <span class="c1"># for ad-hoc use of &#39;_consolidate_pub_list&#39; internal function</span>
+    <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Confirmation de l&#39;étape de consolidation de la liste des publications -&quot;</span>
+    <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La création du fichier de la liste consolidée des publications &quot;</span>
+                 <span class="sa">f</span><span class="s2">&quot;a été lancée pour l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2">.&quot;</span>
+                 <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Continuer ?&quot;</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">pub_list_status</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pub_list_file_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pub_list_status</span><span class="p">:</span>
+            <span class="n">_consolidate_pub_list</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ask_title</span> <span class="o">=</span> <span class="s2">&quot;- Reconstruction de la liste consolidée des publications -&quot;</span>
+            <span class="n">ask_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier de la liste consolidée des publications &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> est déjà disponible.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Reconstruire ce fichier ?&quot;</span><span class="p">)</span>
+            <span class="n">answer_1</span> <span class="o">=</span> <span class="n">messagebox</span><span class="o">.</span><span class="n">askokcancel</span><span class="p">(</span><span class="n">ask_title</span><span class="p">,</span> <span class="n">ask_text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">answer_1</span><span class="p">:</span>
+                <span class="n">_consolidate_pub_list</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                <span class="n">info_text</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le fichier de la liste consolidée des publications &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> dejà disponible est conservé.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+        <span class="n">info_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;La création du fichier de la liste consolidée des publications &quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;de l&#39;année </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s2"> est annulée.&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_consolidate_corpus">
+<a class="viewcode-back" href="../../gui.html#bmgui.consolidate_corpus_page.create_consolidate_corpus">[docs]</a>
+<span class="k">def</span> <span class="nf">create_consolidate_corpus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manages creation and use of widgets for corpus consolidation </span>
+<span class="sd">    through merge with Institute employees database.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        self (instense): Instense where consolidation page will be created.</span>
+<span class="sd">        master (class): `bmgui.main_page.AppMain` class.</span>
+<span class="sd">        page_name (str): Name of consolidation page.</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        datatype (str): Data combination type from corpuses databases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Internal functions</span>
+    <span class="k">def</span> <span class="nf">_etape_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;The local function `_etape_frame` sets the &#39;etape&#39; and place in the page</span>
+<span class="sd">        using the global &#39;ETAPE_LABEL_TEXT_LIST&#39; and the local variables &#39;etape_label_format&#39;,</span>
+<span class="sd">        &#39;etape_label_font&#39;, &#39;etape_underline&#39;, &#39;etape_label_pos_x&#39; and &#39;etape_label_pos_y_list&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num (int): The order of the &#39;etape&#39; in &#39;ETAPE_LABEL_TEXT_LIST&#39;.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">etape</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">text</span>      <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">ETAPE_LABEL_TEXT_LIST</span><span class="p">[</span><span class="n">num</span><span class="p">],</span>
+                         <span class="n">justify</span>   <span class="o">=</span> <span class="n">etape_label_format</span><span class="p">,</span>
+                         <span class="n">font</span>      <span class="o">=</span> <span class="n">etape_label_font</span><span class="p">,</span>
+                         <span class="n">underline</span> <span class="o">=</span> <span class="n">etape_underline</span><span class="p">)</span>
+        <span class="n">etape</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">etape_label_pos_x</span><span class="p">,</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="n">etape_label_pos_y_list</span><span class="p">[</span><span class="n">num</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">etape</span>
+
+    <span class="k">def</span> <span class="nf">_update_progress</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">update_idletasks</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="n">enable_buttons</span><span class="p">(</span><span class="n">consolidate_corpus_buttons_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_except_hook</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">enable_buttons</span><span class="p">(</span><span class="n">consolidate_corpus_buttons_list</span><span class="p">)</span>
+
+    <span class="c1"># ********************* Function start</span>
+
+    <span class="c1"># Setting useful local variables for positions modification</span>
+    <span class="c1"># numbers are reference values in mm for reference screen</span>
+    <span class="n">eff_etape_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+    <span class="n">eff_launch_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+    <span class="n">eff_select_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+    <span class="n">eff_buttons_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_FONT_SIZE</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>    
+    <span class="n">progress_bar_length_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">progress_bar_dx</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">etape_label_pos_x</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_POS_X_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>
+                                 <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">etape_label_pos_y_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mm_to_px</span><span class="p">(</span> <span class="n">y</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_POS_Y_MM_LIST</span><span class="p">]</span>
+    <span class="n">etape_button_dx</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_BUT_DX_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>
+                               <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">etape_button_dy</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ETAPE_BUT_DY_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span>
+                               <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">year_button_x_pos</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_YEAR_BUT_POS_X_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>
+                                 <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">year_button_y_pos</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_YEAR_BUT_POS_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span>
+                                 <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+    <span class="n">dy_year</span> <span class="o">=</span> <span class="o">-</span><span class="mi">6</span>
+
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">bdd_multi_annuelle_folder_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_BDD_MULTI_ANNUELLE</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">bdd_mensuelle_alias</span>             <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;bdd mensuelle&quot;</span><span class="p">]</span>
+    <span class="n">homonymes_path_alias</span>            <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;homonymes folder&quot;</span><span class="p">]</span>
+    <span class="n">homonymes_file_base_alias</span>       <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;homonymes file name base&quot;</span><span class="p">]</span>
+    <span class="n">otp_path_alias</span>                  <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;OTP folder&quot;</span><span class="p">]</span>
+    <span class="n">otp_file_base_alias</span>             <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;OTP file name base&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_path_alias</span>             <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list folder&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_file_base_alias</span>        <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list file name base&quot;</span><span class="p">]</span>
+    <span class="n">submit_alias</span>                    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;submit file name&quot;</span><span class="p">]</span>
+    <span class="n">orphan_alias</span>                    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;orphan file name&quot;</span><span class="p">]</span>
+    <span class="n">year_missing_if_base_alias</span>      <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;missing_if_base&quot;</span><span class="p">]</span>
+    <span class="n">year_missing_issn_base_alias</span>    <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;missing_issn_base&quot;</span><span class="p">]</span>
+    <span class="n">listing_alias</span>                   <span class="o">=</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ARCHI</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">effectifs_folder_name_alias</span>     <span class="o">=</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ARCHI</span><span class="p">[</span><span class="s2">&quot;all_years_employees&quot;</span><span class="p">]</span>
+    <span class="n">effectifs_file_name_alias</span>       <span class="o">=</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ARCHI</span><span class="p">[</span><span class="s2">&quot;employees_file_name&quot;</span><span class="p">]</span>
+    <span class="n">maj_effectifs_folder_name_alias</span> <span class="o">=</span> <span class="n">eg</span><span class="o">.</span><span class="n">EMPLOYEES_ARCHI</span><span class="p">[</span><span class="s2">&quot;complementary_employees&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful paths independent from corpus year</span>
+    <span class="n">effectifs_root_path</span>       <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">listing_alias</span><span class="p">)</span>
+    <span class="n">effectifs_folder_path</span>     <span class="o">=</span> <span class="n">effectifs_root_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">effectifs_folder_name_alias</span><span class="p">)</span>
+    <span class="n">maj_effectifs_folder_path</span> <span class="o">=</span> <span class="n">effectifs_root_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">maj_effectifs_folder_name_alias</span><span class="p">)</span>
+    <span class="n">all_effectifs_path</span>        <span class="o">=</span> <span class="n">effectifs_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">effectifs_file_name_alias</span><span class="p">)</span>
+
+    <span class="c1"># Getting institute parameters</span>
+    <span class="n">org_tup</span> <span class="o">=</span> <span class="n">set_org_params</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">)</span>
+
+    <span class="c1"># Creating and setting widgets for page title and exit button</span>
+    <span class="n">set_page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+    <span class="n">set_exit_button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">)</span>
+
+    <span class="c1"># - Etapes labels</span>
+    <span class="n">etape_label_font</span>   <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                     <span class="n">size</span> <span class="o">=</span> <span class="n">eff_etape_font_size</span><span class="p">,</span>
+                                     <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">etapes_number</span>      <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">ETAPE_LABEL_TEXT_LIST</span><span class="p">)</span>
+    <span class="n">etape_label_format</span> <span class="o">=</span> <span class="s1">&#39;left&#39;</span>
+    <span class="n">etape_underline</span>    <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">etapes</span>             <span class="o">=</span> <span class="p">[</span><span class="n">_etape_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etape_num</span><span class="p">)</span> <span class="k">for</span> <span class="n">etape_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">etapes_number</span><span class="p">)]</span>
+
+    <span class="c1">### Choix de l&#39;année</span>
+    <span class="n">default_year</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">variable_years</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">variable_years</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">default_year</span><span class="p">)</span>
+
+        <span class="c1"># Création de l&#39;option button des années</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">font_OptionButton_years</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                               <span class="n">size</span> <span class="o">=</span> <span class="n">eff_buttons_font_size</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">OptionButton_years</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">OptionMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                            <span class="n">variable_years</span><span class="p">,</span>
+                                            <span class="o">*</span><span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">OptionButton_years</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font_OptionButton_years</span><span class="p">)</span>
+
+        <span class="c1"># Création du label</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">font_Label_years</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                        <span class="n">size</span> <span class="o">=</span> <span class="n">eff_select_font_size</span><span class="p">,</span>
+                                        <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Label_years</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_YEAR_PI</span><span class="p">,</span>
+                                <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font_Label_years</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Label_years</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">year_button_x_pos</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">year_button_y_pos</span><span class="p">)</span>
+
+    <span class="n">place_after</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Label_years</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OptionButton_years</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">dy_year</span><span class="p">)</span>
+    
+    <span class="c1"># Handling exception</span>
+    <span class="n">threading</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">_except_hook</span>
+
+    <span class="c1"># Initializing progress bar widget</span>
+    <span class="n">progress_var</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">IntVar</span><span class="p">()</span>  <span class="c1"># Variable to keep track of the progress bar value</span>
+    <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Progressbar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                   <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span>
+                                   <span class="n">length</span><span class="o">=</span><span class="n">progress_bar_length_px</span><span class="p">,</span>
+                                   <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;determinate&quot;</span><span class="p">,</span>
+                                   <span class="n">variable</span><span class="o">=</span><span class="n">progress_var</span><span class="p">)</span>
+
+    <span class="c1"># *********************** Etape 1 : Croisement auteurs-effectifs</span>
+    <span class="k">def</span> <span class="nf">_launch_recursive_year_search</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Fonction executée par le bouton &#39;merge_button&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Getting year selection</span>
+        <span class="n">year_select</span> <span class="o">=</span> <span class="n">variable_years</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="c1"># Setting paths dependent on year_select</span>
+        <span class="n">corpus_year_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">year_select</span><span class="p">)</span>
+        <span class="n">bdd_mensuelle_path</span> <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">bdd_mensuelle_alias</span><span class="p">)</span>
+        <span class="n">submit_path</span> <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">submit_alias</span><span class="p">)</span>
+
+        <span class="c1"># Getting check_effectif_status</span>
+        <span class="n">check_effectif_status</span> <span class="o">=</span> <span class="n">check_effectif_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="c1"># Updating employees file</span>
+        <span class="n">paths_tup</span> <span class="o">=</span> <span class="n">maj_effectifs_folder_path</span><span class="p">,</span> <span class="n">effectifs_folder_path</span>
+        <span class="n">employees_update_status</span> <span class="o">=</span> <span class="n">_launch_update_employees</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                                                           <span class="n">paths_tup</span><span class="p">,</span>
+                                                           <span class="n">effectifs_file_name_alias</span><span class="p">,</span>
+                                                           <span class="n">year_select</span><span class="p">,</span>
+                                                           <span class="n">check_effectif_status</span><span class="p">,</span>
+                                                           <span class="n">progress_callback</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">employees_update_status</span><span class="p">:</span>
+            <span class="n">check_effectif_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">check_effectif_status</span> <span class="o">=</span> <span class="n">check_effectif_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+        <span class="n">progress_bar_state</span> <span class="o">=</span> <span class="mi">30</span>
+
+        <span class="c1"># Trying launch of recursive search for authors in employees file</span>
+        <span class="n">paths_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">bdd_mensuelle_path</span><span class="p">,</span> <span class="n">all_effectifs_path</span><span class="p">)</span>
+        <span class="n">files_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">submit_alias</span><span class="p">,</span> <span class="n">orphan_alias</span><span class="p">)</span>
+        <span class="n">_launch_recursive_year_search_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                          <span class="n">bibliometer_path</span><span class="p">,</span>
+                                          <span class="n">paths_tup</span><span class="p">,</span>
+                                          <span class="n">files_tup</span><span class="p">,</span>
+                                          <span class="n">year_select</span><span class="p">,</span>
+                                          <span class="n">eg</span><span class="o">.</span><span class="n">SEARCH_DEPTH</span><span class="p">,</span>
+                                          <span class="n">employees_update_status</span><span class="p">,</span>
+                                          <span class="n">progress_callback</span><span class="p">,</span>
+                                          <span class="n">progress_bar_state</span><span class="p">)</span>
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">place_forget</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_start_launch_recursive_year_search</span><span class="p">():</span>
+        <span class="n">disable_buttons</span><span class="p">(</span><span class="n">consolidate_corpus_buttons_list</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="n">merge_button</span><span class="p">,</span>
+                    <span class="n">progress_bar</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">progress_bar_dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_launch_recursive_year_search</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">_update_progress</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1">### Définition du bouton &#39;merge_button&#39;</span>
+    <span class="n">merge_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                             <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">)</span>
+    <span class="n">merge_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                             <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_CROISEMENT</span><span class="p">,</span>
+                             <span class="n">font</span> <span class="o">=</span> <span class="n">merge_font</span><span class="p">,</span>
+                             <span class="n">command</span> <span class="o">=</span> <span class="n">_start_launch_recursive_year_search</span><span class="p">)</span>
+
+    <span class="n">check_effectif_var</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">IntVar</span><span class="p">()</span>
+    <span class="n">check_effectif_box</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Checkbutton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                        <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_MAJ_EFFECTIFS</span><span class="p">,</span>
+                                        <span class="n">variable</span> <span class="o">=</span> <span class="n">check_effectif_var</span><span class="p">,</span>
+                                        <span class="n">onvalue</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                                        <span class="n">offvalue</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">etape_1</span> <span class="o">=</span> <span class="n">etapes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">etape_1</span><span class="p">,</span>
+                 <span class="n">check_effectif_box</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">etape_button_dx</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">etape_button_dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">check_effectif_box</span><span class="p">,</span>
+                 <span class="n">merge_button</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">etape_button_dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># ******************* Etape 2 : Résolution des homonymies</span>
+    <span class="k">def</span> <span class="nf">_launch_resolution_homonymies</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fonction executée par le bouton &#39;button_homonymes&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Renewing year selection</span>
+        <span class="n">year_select</span> <span class="o">=</span> <span class="n">variable_years</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="c1"># Setting paths and aliases dependent pn year_select</span>
+        <span class="n">homonymes_file_alias</span> <span class="o">=</span>  <span class="n">homonymes_file_base_alias</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s1">.xlsx&#39;</span>
+        <span class="n">corpus_year_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">year_select</span><span class="p">)</span>
+        <span class="n">bdd_mensuelle_path</span> <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">bdd_mensuelle_alias</span><span class="p">)</span>
+        <span class="n">submit_path</span> <span class="o">=</span> <span class="n">bdd_mensuelle_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">submit_alias</span><span class="p">)</span>
+        <span class="n">homonymes_path</span> <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonymes_path_alias</span><span class="p">)</span>
+        <span class="n">homonymes_file_path</span> <span class="o">=</span> <span class="n">homonymes_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonymes_file_alias</span><span class="p">)</span>
+
+        <span class="c1"># Trying launch creation of file for homonymies resolution</span>
+        <span class="n">paths_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">submit_path</span><span class="p">,</span> <span class="n">homonymes_path</span><span class="p">)</span>
+        <span class="n">_launch_resolution_homonymies_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span>
+                                          <span class="n">org_tup</span><span class="p">,</span>
+                                          <span class="n">bibliometer_path</span><span class="p">,</span>
+                                          <span class="n">paths_tup</span><span class="p">,</span>
+                                          <span class="n">homonymes_file_alias</span><span class="p">,</span>
+                                          <span class="n">year_select</span><span class="p">,</span>
+                                          <span class="n">progress_callback</span><span class="p">)</span>        
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">place_forget</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_start_launch_resolution_homonymies</span><span class="p">():</span>
+        <span class="n">disable_buttons</span><span class="p">(</span><span class="n">consolidate_corpus_buttons_list</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="n">homonyms_button</span><span class="p">,</span>
+                    <span class="n">progress_bar</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">progress_bar_dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_launch_resolution_homonymies</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">_update_progress</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1">### Définition du bouton &quot;homonyms_button&quot;</span>
+    <span class="n">homonyms_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">)</span>
+    <span class="n">homonyms_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_HOMONYMES</span><span class="p">,</span>
+                                <span class="n">font</span> <span class="o">=</span> <span class="n">homonyms_font</span><span class="p">,</span>
+                                <span class="n">command</span> <span class="o">=</span> <span class="n">_start_launch_resolution_homonymies</span><span class="p">)</span>
+    <span class="n">etape_2</span> <span class="o">=</span> <span class="n">etapes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">etape_2</span><span class="p">,</span>
+                 <span class="n">homonyms_button</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">etape_button_dx</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">etape_button_dy</span><span class="p">)</span>
+
+    <span class="c1"># ******************* Etape 3 : Attribution des OTPs</span>
+    <span class="k">def</span> <span class="nf">_launch_add_otp</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fonction executée par le bouton &#39;otp_button&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Renewing year selection</span>
+        <span class="n">year_select</span> <span class="o">=</span> <span class="n">variable_years</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="c1"># Setting paths and aliases dependent on year_select</span>
+        <span class="n">homonymes_file_alias</span> <span class="o">=</span> <span class="n">homonymes_file_base_alias</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s1">.xlsx&#39;</span>
+        <span class="n">corpus_year_path</span>     <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">year_select</span><span class="p">)</span>
+        <span class="n">homonymes_path</span>       <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonymes_path_alias</span><span class="p">)</span>
+        <span class="n">homonymes_file_path</span>  <span class="o">=</span> <span class="n">homonymes_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">homonymes_file_alias</span><span class="p">)</span>
+        <span class="n">otp_path</span>             <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">otp_path_alias</span><span class="p">)</span>
+
+        <span class="c1"># Trying launch creation of files for OTP attribution</span>
+        <span class="n">paths_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">homonymes_path</span><span class="p">,</span> <span class="n">otp_path</span><span class="p">)</span>
+        <span class="n">files_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">homonymes_file_alias</span><span class="p">,</span> <span class="n">otp_file_base_alias</span><span class="p">)</span>
+        <span class="n">_launch_add_otp_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                            <span class="n">bibliometer_path</span><span class="p">,</span>
+                            <span class="n">paths_tup</span><span class="p">,</span>
+                            <span class="n">files_tup</span><span class="p">,</span>
+                            <span class="n">year_select</span><span class="p">,</span>
+                            <span class="n">progress_callback</span><span class="p">)</span>        
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">place_forget</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_start_launch_add_otp</span><span class="p">():</span>
+        <span class="n">disable_buttons</span><span class="p">(</span><span class="n">consolidate_corpus_buttons_list</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="n">otp_button</span><span class="p">,</span>
+                    <span class="n">progress_bar</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">progress_bar_dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_launch_add_otp</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">_update_progress</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1">### Définition du bouton &quot;otp_button&quot;</span>
+    <span class="n">otp_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                           <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">)</span>
+    <span class="n">otp_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_OTP</span><span class="p">,</span>
+                           <span class="n">font</span> <span class="o">=</span> <span class="n">otp_font</span><span class="p">,</span>
+                           <span class="n">command</span> <span class="o">=</span> <span class="n">_start_launch_add_otp</span><span class="p">)</span>
+    <span class="n">etape_3</span> <span class="o">=</span> <span class="n">etapes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">etape_3</span><span class="p">,</span>
+                 <span class="n">otp_button</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">etape_button_dx</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">etape_button_dy</span><span class="p">)</span>
+
+    <span class="c1"># ****************** Etape 4 : Liste consolidée des publications</span>
+    <span class="k">def</span> <span class="nf">_launch_pub_list_conso</span><span class="p">(</span><span class="n">progress_callback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fonction executée par le bouton &#39;final_button&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Renewing year selection and years</span>
+        <span class="n">year_select</span> <span class="o">=</span> <span class="n">variable_years</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="c1"># Setting year_select dependent paths and aliases</span>
+        <span class="n">year_missing_if_alias</span>   <span class="o">=</span> <span class="n">year_select</span> <span class="o">+</span> <span class="n">year_missing_if_base_alias</span>
+        <span class="n">year_missing_issn_alias</span> <span class="o">=</span> <span class="n">year_select</span> <span class="o">+</span> <span class="n">year_missing_issn_base_alias</span>
+        <span class="n">year_missing_aliases</span>    <span class="o">=</span> <span class="p">(</span><span class="n">year_missing_if_alias</span><span class="p">,</span> <span class="n">year_missing_issn_alias</span><span class="p">)</span>
+        <span class="n">pub_list_file_alias</span>     <span class="o">=</span> <span class="n">pub_list_file_base_alias</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">year_select</span><span class="si">}</span><span class="s1">.xlsx&#39;</span>
+        <span class="n">corpus_year_path</span>        <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">year_select</span><span class="p">)</span>
+        <span class="n">otp_path</span>                <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">otp_path_alias</span><span class="p">)</span>
+        <span class="n">pub_list_path</span>           <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_path_alias</span><span class="p">)</span>
+        <span class="n">pub_list_file_path</span>      <span class="o">=</span> <span class="n">pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_file_alias</span><span class="p">)</span>
+
+        <span class="c1"># Trying launch creation of consolidated publications lists</span>
+        <span class="n">paths_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">otp_path</span><span class="p">,</span> <span class="n">pub_list_path</span><span class="p">)</span>
+        <span class="n">aliases_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">otp_file_base_alias</span><span class="p">,</span>
+                       <span class="n">pub_list_file_alias</span><span class="p">,</span>
+                       <span class="n">year_missing_aliases</span><span class="p">,</span>
+                       <span class="n">bdd_multi_annuelle_folder_alias</span><span class="p">)</span>
+        <span class="n">_launch_pub_list_conso_try</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                   <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+                                   <span class="n">paths_tup</span><span class="p">,</span> <span class="n">aliases_tup</span><span class="p">,</span>
+                                   <span class="n">year_select</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">,</span>
+                                   <span class="n">progress_callback</span><span class="p">)</span>        
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">place_forget</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_start_launch_pub_list_conso</span><span class="p">():</span>
+        <span class="n">disable_buttons</span><span class="p">(</span><span class="n">consolidate_corpus_buttons_list</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="n">conso_button</span><span class="p">,</span>
+                    <span class="n">progress_bar</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">progress_bar_dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">progress_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_launch_pub_list_conso</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">_update_progress</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1"># Définition du bouton de création de la liste consolidée des publications</span>
+    <span class="n">conso_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                             <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">)</span>
+    <span class="n">conso_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                             <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_PUB_CONSO</span><span class="p">,</span>
+                             <span class="n">font</span> <span class="o">=</span> <span class="n">conso_font</span><span class="p">,</span>
+                             <span class="n">command</span> <span class="o">=</span> <span class="n">_start_launch_pub_list_conso</span><span class="p">)</span>
+
+    <span class="n">etape_4</span> <span class="o">=</span> <span class="n">etapes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="n">place_bellow</span><span class="p">(</span><span class="n">etape_4</span><span class="p">,</span>
+                 <span class="n">conso_button</span><span class="p">,</span>
+                 <span class="n">dx</span> <span class="o">=</span> <span class="n">etape_button_dx</span><span class="p">,</span>
+                 <span class="n">dy</span> <span class="o">=</span> <span class="n">etape_button_dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    
+    <span class="c1"># Setting buttons list for status change</span>
+    <span class="n">consolidate_corpus_buttons_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">OptionButton_years</span><span class="p">,</span>
+                                       <span class="n">merge_button</span><span class="p">,</span>
+                                       <span class="n">homonyms_button</span><span class="p">,</span>
+                                       <span class="n">otp_button</span><span class="p">,</span>
+                                       <span class="n">conso_button</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

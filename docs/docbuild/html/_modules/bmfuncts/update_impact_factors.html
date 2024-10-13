@@ -1,0 +1,584 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmfuncts.update_impact_factors &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmfuncts.update_impact_factors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmfuncts.update_impact_factors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module of functions for updating impact factors in database</span>
+<span class="sd">and in publications lists&quot;&quot;&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;update_inst_if_database&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;journal_capwords&#39;</span><span class="p">,</span>
+          <span class="p">]</span>
+
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">import</span> <span class="nn">BiblioParsing</span> <span class="k">as</span> <span class="nn">bp</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">openpyxl</span> <span class="kn">import</span> <span class="n">Workbook</span>
+
+<span class="c1"># local imports</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.rename_cols</span> <span class="kn">import</span> <span class="n">set_final_col_names</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.useful_functs</span> <span class="kn">import</span> <span class="n">mise_en_page</span>
+
+<div class="viewcode-block" id="journal_capwords">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.update_impact_factors.journal_capwords">[docs]</a>
+<span class="k">def</span> <span class="nf">journal_capwords</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Capitalizes words in journal names except those given </span>
+<span class="sd">    by the &#39;BM_LOW_WORDS_LIST&#39; global import from globals </span>
+<span class="sd">    module imported as pg.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): Journal name to be capitalized by words.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (str): Journal name capitalized by main words.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">text_split_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">pg</span><span class="o">.</span><span class="n">BM_LOW_WORDS_LIST</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+        <span class="n">text_split_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_split_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_capwords_journal_col</span><span class="p">(</span><span class="n">journal_col</span><span class="p">):</span>
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">journal_capwords</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">journal_col</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_formatting_wb_sheet</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">if_sheet_name</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Formats impact-factors (IFs) sheet in the &#39;wb&#39; Openpyxl workbook through the `mise_en_page` function </span>
+<span class="sd">    imported from the `bmfuncts.useful_functs` module as first sheet of the workbook if first is True.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        if_sheet_name (str): 4-digits IFs sheet-name.</span>
+<span class="sd">        df (dataframe): IFs database of a  year.</span>
+<span class="sd">        wb (Openpyxl workbook): Workbook to be updated with the &#39;if_sheet_name&#39; sheet.</span>
+<span class="sd">        first (bool): True if the sheet to add is the first of the workbook.</span>
+<span class="sd">        if_database (bool) : True if impact-factors database is concerned. </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (Openpyxl workbook): The updated workbook with the &#39;if_sheet_name&#39; sheet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+        <span class="n">wb</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">mise_en_page</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">wb</span><span class="p">,</span> <span class="n">if_database</span><span class="p">)</span>
+        <span class="n">ws</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">if_sheet_name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">create_sheet</span><span class="p">(</span><span class="n">if_sheet_name</span><span class="p">)</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="n">if_sheet_name</span><span class="p">]</span>
+        <span class="n">wb</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mise_en_page</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">wb</span><span class="p">,</span> <span class="n">if_database</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wb</span>
+
+
+<span class="k">def</span> <span class="nf">_get_if</span><span class="p">(</span><span class="n">if_updated_file_path</span><span class="p">,</span> <span class="n">useful_col_list</span><span class="p">,</span>
+            <span class="n">journal_col</span><span class="p">,</span> <span class="n">year_if_col_alias</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the impact-factors (IFs) dataframe from the file updated with IFs values which full path </span>
+<span class="sd">    is given by &#39;if_updated_file_path&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        if_updated_file_path (path): Full path to the file updated with IFs values.</span>
+<span class="sd">        useful_col_list (list): List of column names (str) to be used for IFs dataframe.</span>
+<span class="sd">        journal_col (str): Column name of journal names to capitalized.</span>
+<span class="sd">        year_if_col_alias (str): Column name of year IFs.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dataframe): Dataframe of IFs which columns are given by &#39;useful_col_list&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">most_recent_year_if_col_base_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s2">&quot;IF en cours&quot;</span><span class="p">]</span>
+
+    <span class="n">if_updated_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">if_updated_file_path</span><span class="p">)</span>
+    
+    <span class="c1"># Replacing by &#39;year_if_col_alias&#39; the column name containing &#39;most_recent_year_if_col_base_alias&#39;</span>
+    <span class="k">if</span> <span class="n">year_if_col_alias</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">if_updated_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">if_updated_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">most_recent_year_if_col_base_alias</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+                <span class="n">if_updated_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">year_if_col_alias</span><span class="p">},</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Selecting useful columns</span>
+    <span class="n">if_updated_df</span> <span class="o">=</span> <span class="n">if_updated_df</span><span class="p">[</span><span class="n">useful_col_list</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">if_updated_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">if_updated_df</span><span class="p">[</span><span class="n">journal_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">if_updated_df</span><span class="o">.</span>\
+            <span class="n">apply</span><span class="p">(</span><span class="n">_capwords_journal_col</span><span class="p">(</span><span class="n">journal_col</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">if_updated_df</span>
+
+
+<span class="k">def</span> <span class="nf">_append_df</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">col_alias</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allows to avoid warnings when using pandas concat of two dataframes </span>
+<span class="sd">    and drops duplicates on col_alias in the concatenated dataframe.&quot;&quot;&quot;</span>
+    <span class="n">concat_df</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">df1</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">concat_df</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">df2</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">concat_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">])</span>
+    <span class="n">concat_df</span> <span class="o">=</span> <span class="n">concat_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span> <span class="o">=</span> <span class="n">col_alias</span><span class="p">,</span>
+                                          <span class="n">keep</span> <span class="o">=</span> <span class="s1">&#39;last&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">concat_df</span>
+
+
+<span class="k">def</span> <span class="nf">_update_year_if_database</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                             <span class="n">corpus_year</span><span class="p">,</span> <span class="n">year_if_db_df</span><span class="p">,</span>
+                             <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">files_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the dataframe of impact_factors (IFs) database of a year with the IFs dataframes </span>
+<span class="sd">    extracted, through the `_get_if` internal function, from the files which full paths</span>
+<span class="sd">    are given by &#39;year_missing_if_path&#39; and &#39;year_missing_issn_path&#39;.</span>
+<span class="sd">    Then, initializes the dataframe of IFs database of the most recent year.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        corpus_year (str): 4-digits year of the corpus.</span>
+<span class="sd">        year_if_db_df (dataframe): IFs database of a given year to be updated.</span>
+<span class="sd">        most_recent_year (str): 4-digits most-recent year in IFs database. </span>
+<span class="sd">        files_tup (tup): Tuple = (publications-list folder name (str), </span>
+<span class="sd">                         base for building missing-IFs file name (str),  </span>
+<span class="sd">                         base for building missing-ISSNs file name (str)).        </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (fully updated IFs database of the given year (dataframe), </span>
+<span class="sd">                        partial IFs database of most-recent-year limited to the </span>
+<span class="sd">                        corpus journals data (dataframe))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">pub_list_folder</span><span class="p">,</span> <span class="n">missing_if_filename_base</span><span class="p">,</span> <span class="n">missing_issn_filename_base</span> <span class="o">=</span> <span class="n">files_tup</span>
+    
+    <span class="c1"># Setting aliases of useful columns</span>
+    <span class="n">final_col_dic</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">set_final_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">journal_col_alias</span> <span class="o">=</span> <span class="n">final_col_dic</span><span class="p">[</span><span class="s1">&#39;journal&#39;</span><span class="p">]</span>
+    <span class="n">issn_col_alias</span> <span class="o">=</span> <span class="n">final_col_dic</span><span class="p">[</span><span class="s1">&#39;issn&#39;</span><span class="p">]</span>
+    <span class="n">eissn_col_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s1">&#39;e-ISSN&#39;</span><span class="p">]</span>
+    <span class="n">database_if_col_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s2">&quot;IF clarivate&quot;</span><span class="p">]</span>
+    <span class="n">most_recent_year_if_col_base_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">COL_NAMES_BONUS</span><span class="p">[</span><span class="s2">&quot;IF en cours&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting specific column names</span>
+    <span class="n">corpus_year_if_col</span> <span class="o">=</span> <span class="n">database_if_col_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">corpus_year</span>
+    <span class="n">most_recent_year_if_col_alias</span> <span class="o">=</span> <span class="n">most_recent_year_if_col_base_alias</span> <span class="o">+</span> \
+                                    <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">most_recent_year</span>
+    <span class="n">new_most_recent_year_if_col_alias</span> <span class="o">=</span> <span class="n">database_if_col_alias</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">most_recent_year</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">corpus_year_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span><span class="p">)</span>
+    <span class="n">pub_list_path</span> <span class="o">=</span> <span class="n">corpus_year_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pub_list_folder</span><span class="p">)</span>
+    <span class="n">year_missing_if_path</span> <span class="o">=</span> <span class="n">pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span> <span class="o">+</span> <span class="n">missing_if_filename_base</span><span class="p">)</span>
+    <span class="n">year_missing_issn_path</span> <span class="o">=</span> <span class="n">pub_list_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">corpus_year</span> <span class="o">+</span> <span class="n">missing_issn_filename_base</span><span class="p">)</span>
+
+    <span class="c1"># Setting useful columns list for the year files with IFs of corpus year</span>
+    <span class="n">corpus_year_useful_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">journal_col_alias</span><span class="p">,</span> <span class="n">issn_col_alias</span><span class="p">,</span>
+                                   <span class="n">eissn_col_alias</span><span class="p">,</span> <span class="n">corpus_year_if_col</span><span class="p">]</span>
+
+    <span class="c1"># Getting the IFs of the year for the ISSN or e-ISSN already present in the IF database</span>
+    <span class="n">missing_if_corpus_year_if_df</span> <span class="o">=</span> <span class="n">_get_if</span><span class="p">(</span><span class="n">year_missing_if_path</span><span class="p">,</span>
+                                           <span class="n">corpus_year_useful_col_list</span><span class="p">,</span>
+                                           <span class="n">journal_col_alias</span><span class="p">,</span>
+                                           <span class="n">corpus_year_if_col</span><span class="p">)</span>
+
+    <span class="c1"># Getting the IFs of the year for the ISSN or e-ISSN not yet present in the IF database</span>
+    <span class="n">missing_issn_corpus_year_if_df</span> <span class="o">=</span> <span class="n">_get_if</span><span class="p">(</span><span class="n">year_missing_issn_path</span><span class="p">,</span>
+                                             <span class="n">corpus_year_useful_col_list</span><span class="p">,</span>
+                                             <span class="n">journal_col_alias</span><span class="p">,</span>
+                                             <span class="n">corpus_year_if_col</span><span class="p">)</span>
+
+    <span class="c1"># Appending &#39;missing_if_corpus_year_if_df&#39; to  &#39;year_if_db_df&#39;</span>
+    <span class="n">if_updated_year_if_db_df</span> <span class="o">=</span> <span class="n">_append_df</span><span class="p">(</span><span class="n">year_if_db_df</span><span class="p">,</span>
+                                          <span class="n">missing_if_corpus_year_if_df</span><span class="p">,</span>
+                                          <span class="n">journal_col_alias</span><span class="p">)</span>
+
+    <span class="c1"># Appending &#39;missing_issn_corpus_year_if_df&#39; to  &#39;updated_year_if_db_df&#39;</span>
+    <span class="n">fully_updated_year_if_db_df</span> <span class="o">=</span> <span class="n">_append_df</span><span class="p">(</span><span class="n">if_updated_year_if_db_df</span><span class="p">,</span>
+                                             <span class="n">missing_issn_corpus_year_if_df</span><span class="p">,</span>
+                                             <span class="n">journal_col_alias</span><span class="p">)</span>
+
+    <span class="c1"># Sorting &#39;updated_year_if_db_df&#39; by journal column</span>
+    <span class="n">fully_updated_year_if_db_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span> <span class="o">=</span> <span class="p">[</span><span class="n">journal_col_alias</span><span class="p">],</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Setting useful columns list for the year files</span>
+    <span class="c1"># with IFs of most recent year</span>
+    <span class="n">most_recent_year_useful_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">journal_col_alias</span><span class="p">,</span> <span class="n">issn_col_alias</span><span class="p">,</span>
+                                        <span class="n">eissn_col_alias</span><span class="p">,</span> <span class="n">most_recent_year_if_col_alias</span><span class="p">]</span>
+
+    <span class="c1"># Getting the IFs of the most recent year for the ISSN or e-ISSN</span>
+    <span class="c1"># already present in the IF database</span>
+    <span class="n">missing_if_most_recent_year_if_df</span> <span class="o">=</span> <span class="n">_get_if</span><span class="p">(</span><span class="n">year_missing_if_path</span><span class="p">,</span>
+                                                <span class="n">most_recent_year_useful_col_list</span><span class="p">,</span>
+                                                <span class="n">journal_col_alias</span><span class="p">,</span>
+                                                <span class="n">most_recent_year_if_col_alias</span><span class="p">)</span>
+
+    <span class="c1"># Getting the IFs of the most recent year for the ISSN or e-ISSN</span>
+    <span class="c1"># not yet present in the IF database</span>
+    <span class="n">missing_issn_most_recent_year_if_df</span> <span class="o">=</span> <span class="n">_get_if</span><span class="p">(</span><span class="n">year_missing_issn_path</span><span class="p">,</span>
+                                                  <span class="n">most_recent_year_useful_col_list</span><span class="p">,</span>
+                                                  <span class="n">journal_col_alias</span><span class="p">,</span>
+                                                  <span class="n">most_recent_year_if_col_alias</span><span class="p">)</span>
+
+    <span class="c1"># Initializing the dataframe of IFs of most recent year</span>
+    <span class="c1"># that will be returned for completion of the most recent year IF database</span>
+    <span class="n">corpus_year_most_recent_year_if_df</span> <span class="o">=</span> <span class="n">_append_df</span><span class="p">(</span><span class="n">missing_if_most_recent_year_if_df</span><span class="p">,</span>
+                                                    <span class="n">missing_issn_most_recent_year_if_df</span><span class="p">,</span>
+                                                    <span class="n">journal_col_alias</span><span class="p">)</span>
+    <span class="n">corpus_year_most_recent_year_if_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="n">most_recent_year_if_col_alias</span><span class="p">:</span>
+                                                         <span class="n">new_most_recent_year_if_col_alias</span><span class="p">,},</span>
+                                              <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fully_updated_year_if_db_df</span><span class="p">,</span> <span class="n">corpus_year_most_recent_year_if_df</span>
+
+
+<span class="k">def</span> <span class="nf">_build_previous_years_if_df</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                <span class="n">if_db_df</span><span class="p">,</span> <span class="n">if_db_years_list</span><span class="p">,</span>
+                                <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">journal_col</span><span class="p">,</span>
+                                <span class="n">files_tup</span><span class="p">,</span> <span class="n">save_params_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the IFs database for the years in the &#39;previous_years_list&#39; years list.</span>
+<span class="sd">    First, initializes the dataframe to add for building the IFs database of the most-recent year.</span>
+<span class="sd">    Then, for each IFs-year, the steps are as follows:</span>
+<span class="sd">        - Gets the initial database of the IFs-year from the all-years database </span>
+<span class="sd">        and capitalizes the journal-names main words through the `_capwords_journal_col` </span>
+<span class="sd">        internal function.</span>
+<span class="sd">        - Builds the fully updated dataframes of IFs database for the IFs-year and  </span>
+<span class="sd">        the partial dataframe of most-recent-year IFs limited to the corpus journals data </span>
+<span class="sd">        through the `_update_year_if_database` internal function, with corpus year set to IFs-year; </span>
+<span class="sd">        - Appends the partial dataframe of most-recent-year IFs to the dataframe to add </span>
+<span class="sd">        for building the IFs database of the most-recent year.</span>
+<span class="sd">        - Formats IFs sheet in the &#39;wb&#39; Openpyxl workbookthrough the `_formatting_wb_sheet` </span>
+<span class="sd">        internal function with sheet name set to IFs-year given by &#39;if_db_year&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        if_db_df (dataframe): IFs database of all years.</span>
+<span class="sd">        most_recent_year (str): 4-digits most-recent year in IFs database.</span>
+<span class="sd">        journal_col (str): Column name of journals.</span>
+<span class="sd">        files_tup (tup): Files parameters used by `_update_year_if_database` </span>
+<span class="sd">                         internal function.</span>
+<span class="sd">        save_params_tup (tup): Tuple = (workbook to be updated (Openpyxl workbook), </span>
+<span class="sd">                               sheets status, True no sheet yet added to the workbook (bool),</span>
+<span class="sd">                               IFs-database status, True if IFs database concerned).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (updated workbook (Openpyxl workbook), </span>
+<span class="sd">                        updated sheets status (bool),</span>
+<span class="sd">                        the dataframe to add for building the IFs database </span>
+<span class="sd">                        of the most-recent year (dataframe)).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span> <span class="o">=</span> <span class="n">save_params_tup</span>
+
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">unknown_alias</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">UNKNOWN</span>
+
+    <span class="c1"># Building fully updated IFs database for years</span>
+    <span class="c1"># before the most recent year available for IFs</span>
+    <span class="n">most_recent_year_if_df_to_add</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="n">if_db_df</span><span class="p">[</span><span class="n">most_recent_year</span><span class="p">]</span><span class="o">.</span>\
+                                                 <span class="n">columns</span><span class="p">)</span>
+    <span class="n">previous_years_list</span> <span class="o">=</span> <span class="n">if_db_years_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">if_db_year</span> <span class="ow">in</span> <span class="n">previous_years_list</span><span class="p">:</span>
+        <span class="n">year_if_db_df</span> <span class="o">=</span> <span class="n">if_db_df</span><span class="p">[</span><span class="n">if_db_year</span><span class="p">]</span>
+        <span class="n">year_if_db_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">unknown_alias</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">year_if_db_df</span><span class="p">[</span><span class="n">journal_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">year_if_db_df</span><span class="o">.</span>\
+            <span class="n">apply</span><span class="p">(</span><span class="n">_capwords_journal_col</span><span class="p">(</span><span class="n">journal_col</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">corpus_year</span> <span class="o">=</span> <span class="n">if_db_year</span>
+        <span class="n">dfs_tup</span> <span class="o">=</span> <span class="n">_update_year_if_database</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                           <span class="n">corpus_year</span><span class="p">,</span> <span class="n">year_if_db_df</span><span class="p">,</span>
+                                           <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">files_tup</span><span class="p">)</span>
+        <span class="n">corpus_year_most_recent_year_if_df_to_add</span> <span class="o">=</span> <span class="n">dfs_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">most_recent_year_if_df_to_add</span> <span class="o">=</span> <span class="n">_append_df</span><span class="p">(</span><span class="n">most_recent_year_if_df_to_add</span><span class="p">,</span>
+                                                   <span class="n">corpus_year_most_recent_year_if_df_to_add</span><span class="p">,</span>
+                                                   <span class="n">journal_col</span><span class="p">)</span>
+        <span class="n">fully_updated_year_if_db_df</span> <span class="o">=</span> <span class="n">dfs_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">if_sheet_name</span> <span class="o">=</span> <span class="n">if_db_year</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">_formatting_wb_sheet</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span>
+                                  <span class="n">if_sheet_name</span><span class="p">,</span> <span class="n">fully_updated_year_if_db_df</span><span class="p">,</span>
+                                  <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">most_recent_year_if_df_to_add</span>
+
+
+<span class="k">def</span> <span class="nf">_build_recent_year_if_df</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                             <span class="n">if_db_df</span><span class="p">,</span> <span class="n">off_if_db_years_list</span><span class="p">,</span>
+                             <span class="n">most_recent_year_if_df_to_add</span><span class="p">,</span>
+                             <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">journal_col</span><span class="p">,</span>
+                             <span class="n">files_tup</span><span class="p">,</span> <span class="n">save_params_tup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the IFs database for the most-recent year.</span>
+<span class="sd">    First, initializes the dataframe of the IFs database of the most-recent year </span>
+<span class="sd">    from the all-years database and capitalizes the journal-names main words </span>
+<span class="sd">    through the `_capwords_journal_col` internal function.</span>
+<span class="sd">    For each corpus year in the &#39;off_if_db_years_list&#39; years list, the steps are as follows:</span>
+<span class="sd">        - Builds the partial dataframe of most-recent-year IFs limited to the journals data </span>
+<span class="sd">        of the corpus through the `_update_year_if_database` internal function.</span>
+<span class="sd">        - Appends the partial dataframe of most-recent-year IFs to the dataframe to add </span>
+<span class="sd">        for building the IFs database of the most-recent year and drops duplicates.</span>
+<span class="sd">    Then, appends the resulting dataframe of the loop to the initial dataframe of the IFs database </span>
+<span class="sd">    of the most-recent year .</span>
+<span class="sd">    Finally, formats IFs-most-recent-year sheet in the &#39;wb&#39; Openpyxl workbook through  </span>
+<span class="sd">    the `_formatting_wb_sheet` internal function with sheet name set to the first </span>
+<span class="sd">    corpus-year in the &#39;off_if_db_years_list&#39; years list given by &#39;off_if_db_years_list[0]&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        if_db_df (dataframe): IFs database of all years.</span>
+<span class="sd">        most_recent_year (str): 4-digits most-recent year in IFs database.</span>
+<span class="sd">        journal_col (str): Column name of journals.</span>
+<span class="sd">        files_tup (tup): Files parameters used by `_update_year_if_database` </span>
+<span class="sd">                         internal function.</span>
+<span class="sd">        save_params_tup (tup): Tuple = (workbook to be updated (Openpyxl workbook), </span>
+<span class="sd">                               sheets status, True no sheet yet added to the workbook (bool),</span>
+<span class="sd">                               IFs-database status, True if IFs database concerned).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (Openpyxl workbook): The fully updated workbook of the IFs database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting parameters from args</span>
+    <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span> <span class="o">=</span> <span class="n">save_params_tup</span>
+
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">unknown_alias</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">UNKNOWN</span>
+
+    <span class="c1"># Initializing &#39;most_recent_year_if_db_df&#39; dataframe </span>
+    <span class="n">most_recent_year_if_db_df</span> <span class="o">=</span> <span class="n">if_db_df</span><span class="p">[</span><span class="n">most_recent_year</span><span class="p">]</span>
+    <span class="n">most_recent_year_if_db_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">unknown_alias</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">most_recent_year_if_db_df</span><span class="p">[</span><span class="n">journal_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">most_recent_year_if_db_df</span><span class="o">.</span>\
+        <span class="n">apply</span><span class="p">(</span><span class="n">_capwords_journal_col</span><span class="p">(</span><span class="n">journal_col</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Building fully updated Ifs database for years beginning</span>
+    <span class="c1"># from the most recent year available for IFs    </span>
+    <span class="k">for</span> <span class="n">corpus_year</span> <span class="ow">in</span> <span class="n">off_if_db_years_list</span><span class="p">:</span>
+        <span class="n">tup</span> <span class="o">=</span> <span class="n">_update_year_if_database</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                       <span class="n">corpus_year</span><span class="p">,</span> <span class="n">most_recent_year_if_db_df</span><span class="p">,</span>
+                                       <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">files_tup</span><span class="p">)</span>
+        <span class="n">corpus_year_most_recent_year_if_df_to_add</span> <span class="o">=</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">most_recent_year_if_df_to_add</span> <span class="o">=</span> <span class="n">_append_df</span><span class="p">(</span><span class="n">most_recent_year_if_df_to_add</span><span class="p">,</span>
+                                                   <span class="n">corpus_year_most_recent_year_if_df_to_add</span><span class="p">,</span>
+                                                   <span class="n">journal_col</span><span class="p">)</span>
+
+        <span class="n">most_recent_year_if_df_to_add</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">most_recent_year_if_db_df</span> <span class="o">=</span> <span class="n">_append_df</span><span class="p">(</span><span class="n">most_recent_year_if_db_df</span><span class="p">,</span>
+                                           <span class="n">most_recent_year_if_df_to_add</span><span class="p">,</span>
+                                           <span class="n">journal_col</span><span class="p">)</span>
+    <span class="n">if_sheet_name</span> <span class="o">=</span> <span class="n">off_if_db_years_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">wb</span> <span class="o">=</span> <span class="n">_formatting_wb_sheet</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">if_sheet_name</span><span class="p">,</span>
+                              <span class="n">most_recent_year_if_db_df</span><span class="p">,</span>
+                              <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wb</span>
+
+
+<div class="viewcode-block" id="update_inst_if_database">
+<a class="viewcode-back" href="../../functions.html#bmfuncts.update_impact_factors.update_inst_if_database">[docs]</a>
+<span class="k">def</span> <span class="nf">update_inst_if_database</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                            <span class="n">corpi_years_list</span><span class="p">,</span> <span class="n">progress_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the impact-factors (IFs) database of the Institute using the files </span>
+<span class="sd">    where IFs have been added by the user for each existing corpuses. </span>
+<span class="sd">    To do that:</span>
+<span class="sd">        - First, Gets the initial all-years database which full path is given by </span>
+<span class="sd">        &#39;inst_all_if_path&#39;.</span>
+<span class="sd">        - Then, sets useful parameters for using `_build_previous_years_if_df` and </span>
+<span class="sd">        `_build_recent_year_if_df` internal functions, including &#39;wb&#39; workbook for </span>
+<span class="sd">        saving updated IFs database as multisheet workbook.</span>
+<span class="sd">        - Then, updates &#39;wb&#39; workbook through the `_build_previous_years_if_df` </span>
+<span class="sd">        internal function to build fully updated IFs database for years before </span>
+<span class="sd">        the most recent year available for IFs.</span>
+<span class="sd">        - Then, updates &#39;wb&#39; workbook through the `_build_recent_year_if_df` </span>
+<span class="sd">        internal function to build fully updated IFs database for years beginning</span>
+<span class="sd">        from the most recent year available for IFs.</span>
+<span class="sd">        - Finally, saves the &#39;wb&#39; workbook using the &#39;inst_all_if_path&#39; full path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        institute (str): Institute name.</span>
+<span class="sd">        org_tup (tup): Contains Institute parameters.</span>
+<span class="sd">        bibliometer_path (path): Full path to working folder.</span>
+<span class="sd">        progress_callback (function): Function for updating ProgressBar </span>
+<span class="sd">                                      tkinter widget status (default = None).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tup): Tuple = (end message recalling the full path to the saved file </span>
+<span class="sd">               of the IFs database (str), List of IFs-database years (4-digits strings)).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Setting aliases of useful columns</span>
+    <span class="n">final_col_dic</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">set_final_col_names</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">)</span>
+    <span class="n">journal_col_alias</span> <span class="o">=</span> <span class="n">final_col_dic</span><span class="p">[</span><span class="s1">&#39;journal&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful aliases</span>
+    <span class="n">if_root_folder_alias</span>             <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
+    <span class="n">missing_if_filename_base_alias</span>   <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;missing_if_base&quot;</span><span class="p">]</span>
+    <span class="n">missing_issn_filename_base_alias</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;missing_issn_base&quot;</span><span class="p">]</span>
+    <span class="n">inst_all_if_filename_alias</span>       <span class="o">=</span> <span class="n">institute</span> <span class="o">+</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_IF</span><span class="p">[</span><span class="s2">&quot;institute_if_all_years&quot;</span><span class="p">]</span>
+    <span class="n">pub_list_folder_alias</span>            <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ARCHI_YEAR</span><span class="p">[</span><span class="s2">&quot;pub list folder&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Setting useful paths</span>
+    <span class="n">if_root_folder_path</span> <span class="o">=</span> <span class="n">bibliometer_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">if_root_folder_alias</span><span class="p">)</span>
+    <span class="n">inst_all_if_path</span>    <span class="o">=</span> <span class="n">if_root_folder_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">inst_all_if_filename_alias</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="c1"># Getting the IFs database content and its IFSs available years list</span>
+    <span class="n">if_db_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">inst_all_if_path</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">if_db_years_list</span>     <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">if_db_df</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="c1"># Setting useful parameters for the update of the IFs database</span>
+    <span class="n">most_recent_year</span> <span class="o">=</span> <span class="n">if_db_years_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">off_if_db_years_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">corpi_years_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">if_db_years_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+    <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+
+    <span class="c1"># Initialize parameters for saving results as multisheet workbook</span>
+    <span class="n">if_database</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">wb</span> <span class="o">=</span> <span class="n">Workbook</span><span class="p">()</span>
+    
+    <span class="c1"># Setting args tuples</span>
+    <span class="n">files_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">pub_list_folder_alias</span><span class="p">,</span> <span class="n">missing_if_filename_base_alias</span><span class="p">,</span>
+                 <span class="n">missing_issn_filename_base_alias</span><span class="p">)</span>
+
+    <span class="c1"># Building fully updated IFs database for years</span>
+    <span class="c1"># before the most recent year available for IFs</span>
+    <span class="n">save_params_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span><span class="p">)</span>
+    <span class="n">return_tup</span> <span class="o">=</span> <span class="n">_build_previous_years_if_df</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                             <span class="n">if_db_df</span><span class="p">,</span> <span class="n">if_db_years_list</span><span class="p">,</span>
+                                             <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">journal_col_alias</span><span class="p">,</span>
+                                             <span class="n">files_tup</span><span class="p">,</span> <span class="n">save_params_tup</span><span class="p">)</span>
+    <span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">most_recent_year_if_df_to_add</span> <span class="o">=</span> <span class="n">return_tup</span>
+    <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+    <span class="c1"># Building fully updated Ifs database for years beginning</span>
+    <span class="c1"># from the most recent year available for IFs</span>
+    <span class="n">save_params_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">wb</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">if_database</span><span class="p">)</span>
+    <span class="n">wb</span> <span class="o">=</span> <span class="n">_build_recent_year_if_df</span><span class="p">(</span><span class="n">institute</span><span class="p">,</span> <span class="n">org_tup</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span>
+                                  <span class="n">if_db_df</span><span class="p">,</span> <span class="n">off_if_db_years_list</span><span class="p">,</span>
+                                  <span class="n">most_recent_year_if_df_to_add</span><span class="p">,</span>
+                                  <span class="n">most_recent_year</span><span class="p">,</span> <span class="n">journal_col_alias</span><span class="p">,</span>
+                                  <span class="n">files_tup</span><span class="p">,</span> <span class="n">save_params_tup</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+
+    <span class="c1"># Saving workbook</span>
+    <span class="n">wb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">inst_all_if_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span>
+        <span class="n">progress_callback</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">end_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;IFs database updated in file : </span><span class="se">\n</span><span class="s2">  &#39;</span><span class="si">{</span><span class="n">inst_all_if_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+    <span class="k">return</span> <span class="n">end_message</span><span class="p">,</span> <span class="n">if_db_years_list</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

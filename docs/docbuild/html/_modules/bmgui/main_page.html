@@ -1,0 +1,724 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmgui.main_page &mdash; BiblioMeter 5.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ce74c6a2"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BiblioMeter
+              <img src="../../_static/BM-logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Description</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../description.html">BiblioMeter description</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">BiblioMeter <cite>bmgui</cite> package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">BiblioMeter <cite>bmfuncts</cite> package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BiblioMeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bmgui.main_page</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bmgui.main_page</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; The `main_page` module sets the `AppMain` class, its attributes and related secondary classes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AppMain&#39;</span><span class="p">]</span>
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">messagebox</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="kn">import</span> <span class="n">font</span> <span class="k">as</span> <span class="n">tkFont</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># 3rd party imports</span>
+<span class="kn">from</span> <span class="nn">screeninfo</span> <span class="kn">import</span> <span class="n">get_monitors</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">import</span> <span class="nn">bmgui.gui_globals</span> <span class="k">as</span> <span class="nn">gg</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.institute_globals</span> <span class="k">as</span> <span class="nn">ig</span>
+<span class="kn">import</span> <span class="nn">bmfuncts.pub_globals</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">bmgui.analyze_corpus_page</span> <span class="kn">import</span> <span class="n">create_analysis</span>
+<span class="kn">from</span> <span class="nn">bmgui.consolidate_corpus_page</span> <span class="kn">import</span> <span class="n">create_consolidate_corpus</span>
+<span class="kn">from</span> <span class="nn">bmgui.parse_corpus_page</span> <span class="kn">import</span> <span class="n">create_parsing_concat</span>
+<span class="kn">from</span> <span class="nn">bmgui.update_if_page</span> <span class="kn">import</span> <span class="n">create_update_ifs</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">existing_corpuses</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">font_size</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">general_properties</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">last_available_years</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">mm_to_px</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">place_after</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">show_frame</span>
+<span class="kn">from</span> <span class="nn">bmgui.gui_utils</span> <span class="kn">import</span> <span class="n">str_size_mm</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.useful_functs</span> <span class="kn">import</span> <span class="n">create_archi</span>
+<span class="kn">from</span> <span class="nn">bmfuncts.useful_functs</span> <span class="kn">import</span> <span class="n">set_rawdata</span>
+
+<div class="viewcode-block" id="AppMain">
+<a class="viewcode-back" href="../../gui.html#bmgui.main_page.AppMain">[docs]</a>
+<span class="k">class</span> <span class="nc">AppMain</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main class of the BiblioMeter application.</span>
+<span class="sd">    Trace change in institute selection to update page parameters.</span>
+<span class="sd">    &#39;bmf&#39; stands for BiblioMeter_Files usual working directory name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># Internal functions</span>
+        <span class="k">def</span> <span class="nf">_set_datatype_widgets_param</span><span class="p">(</span><span class="n">datatype_val</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Sets widget parameters for datatype selection through &#39;tk.OptionMenu&#39;.&quot;&quot;&quot;</span>
+            <span class="c1"># Setting widgets parameters for datatype selection</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_optionbutton_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                                          <span class="n">size</span> <span class="o">=</span> <span class="n">eff_buttons_font_size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_optionbutton</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">OptionMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                       <span class="n">datatype_val</span><span class="p">,</span>
+                                                       <span class="o">*</span><span class="n">datatype_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_optionbutton</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype_optionbutton_font</span><span class="p">,</span>
+                                              <span class="n">width</span> <span class="o">=</span> <span class="n">eff_menu_width</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                                   <span class="n">size</span> <span class="o">=</span> <span class="n">eff_select_font_size</span><span class="p">,</span>
+                                                   <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                           <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_DATATYPE</span><span class="p">,</span>
+                                           <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype_label_font</span><span class="p">)</span>
+
+            <span class="c1"># Placing widgets for datatype selection</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">datatype_button_x_pos</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">datatype_button_y_pos</span><span class="p">)</span>
+            <span class="n">place_after</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype_optionbutton</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">dy_datatype</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_display_path</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Shortens bmf path for easy display.&quot;&quot;&quot;</span>
+
+            <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">p_disp</span> <span class="o">=</span> <span class="n">p</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">part_start</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">part_end</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+                <span class="n">p_disp</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">part_start</span><span class="p">))</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">part_end</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">p_disp</span>
+
+        <span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span><span class="n">institute_select</span><span class="p">,</span> <span class="n">datatype_select</span><span class="p">):</span> 
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Gets full path of working folder through &#39;tk.filedialog.askdirectory&#39;.</span>
+<span class="sd">            Updates &#39;bmf&#39; widgets parameters and values accordingly to the working </span>
+<span class="sd">            folder got and sets launch button of corpuses analysis.&quot;&quot;&quot;</span>
+
+            <span class="c1"># Getting new working directory</span>
+            <span class="n">dialog_title</span> <span class="o">=</span> <span class="s2">&quot;Choisir un nouveau dossier de travail&quot;</span>
+            <span class="n">bmf_str</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">filedialog</span><span class="o">.</span><span class="n">askdirectory</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="n">dialog_title</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bmf_str</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! Attention !!!&quot;</span>
+                <span class="n">warning_text</span> <span class="o">=</span> <span class="s2">&quot;Chemin non renseigné.&quot;</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+
+            <span class="c1"># Updating bmf values using new working directory</span>
+            <span class="n">_set_bmf_widget_param</span><span class="p">(</span><span class="n">institute_select</span><span class="p">,</span> <span class="n">bmf_str</span><span class="p">,</span> <span class="n">datatype_select</span><span class="p">)</span>
+            <span class="n">_update_corpi</span><span class="p">(</span><span class="n">bmf_str</span><span class="p">)</span>
+            <span class="n">SetLaunchButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">institute_select</span><span class="p">,</span> <span class="n">bmf_str</span><span class="p">,</span> <span class="n">datatype_select</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_set_bmf_widget_param</span><span class="p">(</span><span class="n">institute_select</span><span class="p">,</span> <span class="n">inst_bmf</span><span class="p">,</span> <span class="n">datatype_select</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Sets &#39;bmf&#39; widgets parameters and values </span>
+<span class="sd">            according to the selected Institute.&quot;&quot;&quot;</span>
+
+            <span class="c1"># Setting bmf widgets parameters</span>
+            <span class="n">bmf_font</span>        <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                          <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_bmf_font_size</span><span class="p">,</span>
+                                          <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+            <span class="n">bmf_label</span>       <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                       <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_BMF</span><span class="p">,</span>
+                                       <span class="n">font</span> <span class="o">=</span> <span class="n">bmf_font</span><span class="p">,)</span>
+            <span class="n">bmf_val</span>         <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">bmf_val2</span>        <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">bmf_entree2</span>     <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">textvariable</span> <span class="o">=</span> <span class="n">bmf_val2</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">eff_bmf_width</span><span class="p">)</span>
+            <span class="n">bmf_button_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                          <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_buttons_font_size</span><span class="p">)</span>
+            <span class="n">bmf_button</span>      <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                        <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_BMF_CHANGE</span><span class="p">,</span>
+                                        <span class="n">font</span> <span class="o">=</span> <span class="n">bmf_button_font</span><span class="p">,</span>
+                                        <span class="n">command</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_get_file</span><span class="p">(</span><span class="n">institute_select</span><span class="p">,</span>
+                                                                    <span class="n">datatype_select</span><span class="p">))</span>
+            <span class="c1"># Placing bmf widgets</span>
+            <span class="n">bmf_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_bmf_pos_x_px</span><span class="p">,</span>
+                            <span class="n">y</span> <span class="o">=</span> <span class="n">eff_bmf_pos_y_px</span><span class="p">,)</span>
+
+            <span class="n">text_width_mm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">str_size_mm</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">TEXT_BMF</span><span class="p">,</span> <span class="n">bmf_font</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+            <span class="n">eff_path_pos_x_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">text_width_mm</span> <span class="o">+</span> <span class="n">add_space_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+            <span class="n">bmf_entree2</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_path_pos_x_px</span><span class="p">,</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="n">eff_bmf_pos_y_px</span><span class="p">,)</span>
+
+            <span class="n">bmf_button</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_path_pos_x_px</span><span class="p">,</span>
+                             <span class="n">y</span> <span class="o">=</span> <span class="n">eff_bmf_pos_y_px</span> <span class="o">+</span> <span class="n">eff_button_dy_px</span><span class="p">,)</span>
+            <span class="n">bmf_val</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">)</span>
+            <span class="n">bmf_val2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">_display_path</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">))</span>
+            
+        <span class="k">def</span> <span class="nf">_try_bmf_access</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Returns status of the default working folder as boolean: True, if exists </span>
+<span class="sd">            and access is authorized to the user; False, otherwise.&quot;&quot;&quot;</span>
+
+            <span class="n">bmf_access_status</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">F_OK</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">W_OK</span><span class="p">):</span>
+                <span class="n">bmf_access_status</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! ATTENTION : Accés au dossier impossible !!!&quot;</span>
+                <span class="n">warning_text</span>  <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accès non autorisé ou absence du dossier </span><span class="se">\n</span><span class="s2">   </span><span class="si">{</span><span class="n">bmf_path</span><span class="si">}</span><span class="s2">.&quot;</span>
+                                 <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Choisissez un autre dossier de travail.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">bmf_access_status</span>
+
+        <span class="k">def</span> <span class="nf">_create_corpus</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Creates a new corpus folder in the working folder through `create_archi` </span>
+<span class="sd">            function imported from `bmfuncts.useful_functs` module.</span>
+<span class="sd">            Then, updates &#39;corpi&#39; widget value with new list of available corpuses.&quot;&quot;&quot;</span>
+
+            <span class="n">corpi_val</span> <span class="o">=</span> <span class="n">_set_corpi_widgets_param</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">)</span>
+            <span class="n">corpi_val_to_set</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">bmf_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">)</span>
+            <span class="n">bmf_access_status</span> <span class="o">=</span> <span class="n">_try_bmf_access</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bmf_access_status</span><span class="p">:</span>
+                <span class="c1"># Setting new corpus year folder name</span>
+                <span class="n">corpuses_list</span>    <span class="o">=</span> <span class="n">last_available_years</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">CORPUSES_NUMBER</span><span class="p">)</span>
+                <span class="n">last_corpus_year</span> <span class="o">=</span> <span class="n">corpuses_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">new_corpus_year_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">last_corpus_year</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># Creating required folders for new corpus year</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">create_archi</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">,</span> <span class="n">new_corpus_year_folder</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+
+                <span class="c1"># Getting updated corpuses list</span>
+                <span class="n">corpuses_list</span> <span class="o">=</span> <span class="n">last_available_years</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">CORPUSES_NUMBER</span><span class="p">)</span>
+
+                <span class="c1"># Setting corpi_val value to corpuses list</span>
+                <span class="n">corpi_val_to_set</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">corpuses_list</span><span class="p">)</span>
+            <span class="n">corpi_val</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">corpi_val_to_set</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_set_corpi_widgets_param</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Sets &#39;corpi&#39; widgets parameters and values accordingly </span>
+<span class="sd">            to the working folder and returns tkinter &#39;corpi&#39; parameter </span>
+<span class="sd">            that is used to set for display the available corpuses list.&quot;&quot;&quot;</span>
+
+            <span class="c1"># Setting corpuses widgets parameters</span>
+            <span class="n">corpi_font</span>   <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                       <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_corpi_font_size</span><span class="p">,</span>
+                                       <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+            <span class="n">corpi_val</span>    <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">corpi_entry</span>  <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">textvariable</span> <span class="o">=</span> <span class="n">corpi_val</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">eff_list_width</span><span class="p">)</span>
+            <span class="n">corpi_button_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                            <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_buttons_font_size</span><span class="p">)</span>
+            <span class="n">corpi_label</span>  <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_CORPUSES</span><span class="p">,</span>
+                                    <span class="n">font</span> <span class="o">=</span> <span class="n">corpi_font</span><span class="p">,)</span>
+            <span class="n">corpi_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                     <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_BOUTON_CREATION_CORPUS</span><span class="p">,</span>
+                                     <span class="n">font</span> <span class="o">=</span> <span class="n">corpi_button_font</span><span class="p">,</span>
+                                     <span class="n">command</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_create_corpus</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">))</span>
+
+            <span class="c1"># Placing corpuses widgets</span>
+            <span class="n">corpi_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_corpi_pos_x_px</span><span class="p">,</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="n">eff_corpi_pos_y_px</span><span class="p">,)</span>
+
+            <span class="n">text_width_mm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">str_size_mm</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">TEXT_CORPUSES</span><span class="p">,</span> <span class="n">corpi_font</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+            <span class="n">eff_list_pos_x_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">text_width_mm</span> <span class="o">+</span> <span class="n">add_space_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+            <span class="n">corpi_entry</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_list_pos_x_px</span><span class="p">,</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="n">eff_corpi_pos_y_px</span><span class="p">,)</span>
+
+            <span class="n">corpi_button</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_list_pos_x_px</span><span class="p">,</span>
+                               <span class="n">y</span> <span class="o">=</span> <span class="n">eff_corpi_pos_y_px</span> <span class="o">+</span> <span class="n">eff_button_dy_px</span><span class="p">,)</span>
+            <span class="k">return</span> <span class="n">corpi_val</span>
+
+        <span class="k">def</span> <span class="nf">_update_corpi</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Updates tkinter &#39;corpi&#39; parameter with the available corpuses list </span>
+<span class="sd">            accordingly to working folder.&quot;&quot;&quot;</span>
+
+            <span class="n">corpi_val</span> <span class="o">=</span> <span class="n">_set_corpi_widgets_param</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">)</span>
+            <span class="n">corpi_val_to_set</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">bmf_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">inst_bmf</span><span class="p">)</span>
+            <span class="n">bmf_access_status</span> <span class="o">=</span> <span class="n">_try_bmf_access</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bmf_access_status</span><span class="p">:</span>
+                <span class="c1"># Getting updated corpuses list</span>
+                <span class="n">corpuses_list</span> <span class="o">=</span> <span class="n">last_available_years</span><span class="p">(</span><span class="n">bmf_path</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">CORPUSES_NUMBER</span><span class="p">)</span>
+
+                <span class="c1"># Setting corpi_val value to corpuses list</span>
+                <span class="n">corpi_val_to_set</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">corpuses_list</span><span class="p">)</span>
+            <span class="n">corpi_val</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">corpi_val_to_set</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_update_datatype</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">datatype_widget</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Gets selected data-type and sets, accordingly, &#39;bmf&#39; widgets parameters, </span>
+<span class="sd">            &#39;corpi&#39; widgets parameters and sets launch button of corpuses analysis.&quot;&quot;&quot;</span>
+
+            <span class="n">datatype_select</span> <span class="o">=</span> <span class="n">datatype_widget</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype_optionbutton</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;disabled&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Managing working folder (bmf stands for &quot;BiblioMeter_Files&quot;)</span>
+            <span class="n">institute_select</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">inst_default_bmf</span> <span class="o">=</span> <span class="n">ig</span><span class="o">.</span><span class="n">WORKING_FOLDERS_DICT</span><span class="p">[</span><span class="n">institute_select</span><span class="p">]</span>
+            <span class="n">_set_bmf_widget_param</span><span class="p">(</span><span class="n">institute_select</span><span class="p">,</span> <span class="n">inst_default_bmf</span><span class="p">,</span> <span class="n">datatype_select</span><span class="p">)</span>
+
+            <span class="c1"># Managing corpus list</span>
+            <span class="n">corpi_val</span> <span class="o">=</span> <span class="n">_set_corpi_widgets_param</span><span class="p">(</span><span class="n">inst_default_bmf</span><span class="p">)</span>
+
+            <span class="c1"># Setting and displaying corpuses list initial values</span>
+            <span class="n">corpi_val_to_set</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">default_bmf_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">inst_default_bmf</span><span class="p">)</span>
+            <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+            <span class="n">info_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Le test de l&#39;accès au dossier de travail défini &quot;</span>
+                         <span class="s2">&quot;par défaut peut prendre un peu de temps.&quot;</span>
+                         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Merci de patienter.&quot;</span><span class="p">)</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+            <span class="n">bmf_access_status</span> <span class="o">=</span> <span class="n">_try_bmf_access</span><span class="p">(</span><span class="n">default_bmf_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bmf_access_status</span><span class="p">:</span>
+                <span class="n">info_title</span> <span class="o">=</span> <span class="s2">&quot;- Information -&quot;</span>
+                <span class="n">info_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;L&#39;accès au dossier de travail défini &quot;</span>
+                             <span class="s2">&quot;par défaut est autorisé mais vous pouvez &quot;</span>
+                             <span class="s2">&quot;en choisir un autre.&quot;</span><span class="p">)</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">info_title</span><span class="p">,</span> <span class="n">info_text</span><span class="p">)</span>
+                <span class="n">init_corpuses_list</span> <span class="o">=</span> <span class="n">last_available_years</span><span class="p">(</span><span class="n">default_bmf_path</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">CORPUSES_NUMBER</span><span class="p">)</span>
+                <span class="n">corpi_val_to_set</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">init_corpuses_list</span><span class="p">)</span>
+            <span class="n">corpi_val</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">corpi_val_to_set</span><span class="p">)</span>
+
+            <span class="c1"># Managing analysis launch button</span>
+            <span class="n">SetLaunchButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">institute_select</span><span class="p">,</span> <span class="n">inst_default_bmf</span><span class="p">,</span> <span class="n">datatype_select</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_update_page</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">institute_widget</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Gets the selected Institute and &#39;datatype&#39; widgets parameters.</span>
+<span class="sd">            Then, trace change in datatype selection to update page parameters.&quot;&quot;&quot;</span>
+
+            <span class="n">_</span> <span class="o">=</span> <span class="n">args</span>
+            <span class="n">institute_select</span> <span class="o">=</span> <span class="n">institute_widget</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+            <span class="c1"># Setting default values for datatype selection</span>
+            <span class="n">datatype_list</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">DATATYPE_LIST</span>
+            <span class="n">default_datatype</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
+            <span class="n">datatype_val</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">datatype_val</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">default_datatype</span><span class="p">)</span>
+
+            <span class="c1"># Creating widgets for datatype selection</span>
+            <span class="n">_set_datatype_widgets_param</span><span class="p">(</span><span class="n">datatype_val</span><span class="p">,</span> <span class="n">datatype_list</span><span class="p">)</span>
+
+            <span class="c1"># Tracing data type selection</span>
+            <span class="n">datatype_val</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                               <span class="n">partial</span><span class="p">(</span><span class="n">_update_datatype</span><span class="p">,</span> <span class="n">institute_select</span><span class="p">,</span>
+                                       <span class="n">datatype_widget</span> <span class="o">=</span> <span class="n">datatype_val</span><span class="p">))</span>
+
+        <span class="c1"># Setting the link between &quot;self&quot; and &quot;tk.Tk&quot;</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Setting class attributes and methods</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">get_monitors</span><span class="p">()</span> <span class="c1"># Mandatory</span>
+        <span class="c1">#self.lift()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">(</span><span class="s2">&quot;-topmost&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after_idle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">,</span><span class="s1">&#39;-topmost&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">icon_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;bmfuncts&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">CONFIG_FOLDER</span><span class="p">)</span>
+        <span class="n">icon_path</span> <span class="o">=</span> <span class="n">icon_path</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;BM-logo.ico&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iconbitmap</span><span class="p">(</span><span class="n">icon_path</span><span class="p">)</span>
+        <span class="c1">#self.REP = list()</span>
+
+        <span class="c1"># Initializing AppMain attributes set after working folder definition</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">years_list</span>          <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">list_corpus_year</span>    <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">list_wos_rawdata</span>    <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">list_wos_parsing</span>    <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">list_scopus_rawdata</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">list_scopus_parsing</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">list_dedup</span>          <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Setting pages classes and pages list</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">pages</span> <span class="o">=</span> <span class="p">(</span><span class="n">AnalyzeCorpusPage</span><span class="p">,</span>
+                         <span class="n">UpdateIfPage</span><span class="p">,</span>
+                         <span class="n">ConsolidateCorpusPage</span><span class="p">,</span>
+                         <span class="n">ParseCorpusPage</span><span class="p">,)</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">pages_ordered_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">pages</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Getting useful screen sizes and scale factors depending on displays properties</span>
+        <span class="n">sizes_tuple</span> <span class="o">=</span> <span class="n">general_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">win_width_px</span>  <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">win_height_px</span> <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_px</span>   <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_px</span>  <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_mm</span>   <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span>  <span class="o">=</span> <span class="n">sizes_tuple</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span>  <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_px</span><span class="p">)</span>
+
+        <span class="c1"># Setting common parameters for widgets</span>
+        <span class="n">add_space_mm</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">ADD_SPACE_MM</span>
+        <span class="n">eff_buttons_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_BUTTON_FONT_SIZE</span><span class="p">,</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+
+        <span class="c1"># Setting widgets parameters for institute selection</span>
+        <span class="n">eff_select_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_SUB_TITLE_FONT_SIZE</span><span class="p">,</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">inst_button_x_pos</span>    <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_INST_POS_X_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span>  <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">inst_button_y_pos</span>    <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_INST_POS_Y_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">dy_inst</span>              <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+
+        <span class="c1"># Setting widgets parameters for Working-folder selection</span>
+        <span class="n">eff_bmf_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ENTRY_NB_CHAR</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_bmf_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_SUB_TITLE_FONT_SIZE</span><span class="p">,</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_bmf_pos_x_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_BMF_POS_X_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">eff_bmf_pos_y_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_BMF_POS_Y_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">eff_button_dy_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_BUTTON_DY_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+
+        <span class="c1"># Setting widgets parameters for corpuses display</span>
+        <span class="n">eff_list_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_ENTRY_NB_CHAR</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_corpi_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_SUB_TITLE_FONT_SIZE</span><span class="p">,</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_corpi_pos_x_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_CORPI_POS_X_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">eff_corpi_pos_y_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_CORPI_POS_Y_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+
+        <span class="c1"># Setting widgets parameters for datatype selection</span>
+        <span class="n">eff_menu_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">30</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>     <span class="c1"># gg.REF_MENU_NB_CHAR</span>
+        <span class="n">eff_select_font_size</span>  <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_SUB_TITLE_FONT_SIZE</span><span class="p">,</span>
+                                          <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">datatype_button_x_pos</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_DATATYPE_POS_X_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">datatype_button_y_pos</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_DATATYPE_POS_Y_MM</span> <span class="o">*</span> <span class="n">AppMain</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">dy_datatype</span>           <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+
+        <span class="c1"># Setting and placing widgets for title and copyright</span>
+        <span class="n">SetMasterTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">SetAuthorCopyright</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Setting default values for Institute selection</span>
+        <span class="n">institutes_list</span> <span class="o">=</span> <span class="n">ig</span><span class="o">.</span><span class="n">INSTITUTES_LIST</span>
+        <span class="n">default_institute</span> <span class="o">=</span> <span class="s2">&quot;   &quot;</span>
+        <span class="n">institute_val</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">institute_val</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">default_institute</span><span class="p">)</span>
+
+        <span class="c1"># Creating widgets for Institute selection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inst_optionbutton_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                                  <span class="n">size</span> <span class="o">=</span> <span class="n">eff_buttons_font_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inst_optionbutton</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">OptionMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                               <span class="n">institute_val</span><span class="p">,</span>
+                                               <span class="o">*</span><span class="n">institutes_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inst_optionbutton</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inst_optionbutton_font</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inst_label_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                           <span class="n">size</span> <span class="o">=</span> <span class="n">eff_select_font_size</span><span class="p">,</span>
+                                           <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inst_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                   <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_INSTITUTE</span><span class="p">,</span>
+                                   <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inst_label_font</span><span class="p">)</span>
+
+        <span class="c1"># Placing widgets for Institute selection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inst_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">inst_button_x_pos</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">inst_button_y_pos</span><span class="p">)</span>
+        <span class="n">place_after</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inst_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inst_optionbutton</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">dy_inst</span><span class="p">)</span>
+
+        <span class="c1"># Tracing Institute selection</span>
+        <span class="n">institute_val</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">_update_page</span><span class="p">,</span> <span class="n">institute_widget</span> <span class="o">=</span> <span class="n">institute_val</span><span class="p">))</span></div>
+
+
+<span class="k">class</span> <span class="nc">SetMasterTitle</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays title in main window.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">):</span>
+
+        <span class="c1"># Setting widget parameters for page title</span>
+        <span class="n">eff_page_title_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_PAGE_TITLE_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_page_title_pos_y_px</span>  <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_PAGE_TITLE_POS_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span>
+                                            <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">mid_page_pos_x_px</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">win_width_px</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+        <span class="c1"># Creating widget for page title</span>
+        <span class="n">page_title</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">master</span><span class="p">,</span>
+                              <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_TITLE</span><span class="p">,</span>
+                              <span class="n">font</span> <span class="o">=</span> <span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">eff_page_title_font_size</span><span class="p">),</span>
+                              <span class="n">justify</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Placing widget for page title</span>
+        <span class="n">page_title</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">mid_page_pos_x_px</span><span class="p">,</span>
+                         <span class="n">y</span> <span class="o">=</span> <span class="n">eff_page_title_pos_y_px</span><span class="p">,</span>
+                         <span class="n">anchor</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SetAuthorCopyright</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays authors and copyright in main window.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">):</span>
+
+        <span class="c1"># Setting widgets parameters for copyright</span>
+        <span class="n">eff_copyright_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_COPYRIGHT_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_version_font_size</span>   <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_VERSION_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+        <span class="n">eff_copyright_x_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_COPYRIGHT_X_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">eff_copyright_y_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_COPYRIGHT_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">eff_version_x_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_VERSION_X_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+        <span class="n">eff_version_y_px</span> <span class="o">=</span> <span class="n">mm_to_px</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_COPYRIGHT_Y_MM</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">height_sf_mm</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">PPI</span><span class="p">)</span>
+
+        <span class="c1"># Creating widgets for copyright</span>
+        <span class="n">auteurs_font_label</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                         <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_copyright_font_size</span><span class="p">,)</span>
+        <span class="n">auteurs_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">master</span><span class="p">,</span>
+                                 <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_COPYRIGHT</span><span class="p">,</span>
+                                 <span class="n">font</span> <span class="o">=</span> <span class="n">auteurs_font_label</span><span class="p">,</span>
+                                 <span class="n">justify</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="n">version_font_label</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                         <span class="n">size</span> <span class="o">=</span> <span class="n">eff_version_font_size</span><span class="p">,</span>
+                                         <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="n">version_label</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">master</span><span class="p">,</span>
+                                 <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_VERSION</span><span class="p">,</span>
+                                 <span class="n">font</span> <span class="o">=</span> <span class="n">version_font_label</span><span class="p">,</span>
+                                 <span class="n">justify</span> <span class="o">=</span> <span class="s2">&quot;right&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Placing widgets for copyright</span>
+        <span class="n">auteurs_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_copyright_x_px</span><span class="p">,</span>
+                            <span class="n">y</span> <span class="o">=</span> <span class="n">eff_copyright_y_px</span><span class="p">,</span>
+                            <span class="n">anchor</span> <span class="o">=</span> <span class="s2">&quot;sw&quot;</span><span class="p">)</span>
+        <span class="n">version_label</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">eff_version_x_px</span><span class="p">,</span>
+                            <span class="n">y</span> <span class="o">=</span> <span class="n">eff_version_y_px</span><span class="p">,</span>
+                            <span class="n">anchor</span> <span class="o">=</span> <span class="s2">&quot;sw&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SetLaunchButton</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays corpuses analysis launch button in main window.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+
+        <span class="c1"># Setting font size for launch button</span>
+        <span class="n">eff_launch_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_LAUNCH_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+
+        <span class="c1"># Setting x and y position in pixels for launch button</span>
+        <span class="n">launch_but_pos_x_px</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">win_width_px</span>  <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="n">launch_but_pos_y_px</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">win_height_px</span> <span class="o">*</span> <span class="mf">0.8</span>
+
+        <span class="c1"># Setting launch button</span>
+        <span class="n">launch_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                  <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_launch_font_size</span><span class="p">,</span>
+                                  <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="n">launch_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">master</span><span class="p">,</span>
+                                  <span class="n">text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">TEXT_BOUTON_LANCEMENT</span><span class="p">,</span>
+                                  <span class="n">font</span> <span class="o">=</span> <span class="n">launch_font</span><span class="p">,</span>
+                                  <span class="n">command</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_pages</span><span class="p">(</span><span class="n">master</span><span class="p">,</span>
+                                                                         <span class="n">institute</span><span class="p">,</span>
+                                                                         <span class="n">bibliometer_path</span><span class="p">,</span>
+                                                                         <span class="n">datatype</span><span class="p">))</span>
+        <span class="c1"># Placing launch button</span>
+        <span class="n">launch_button</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">launch_but_pos_x_px</span><span class="p">,</span>
+                            <span class="n">y</span> <span class="o">=</span> <span class="n">launch_but_pos_y_px</span><span class="p">,</span>
+                            <span class="n">anchor</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate_pages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates pages after working folder setting.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">bibliometer_path</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">warning_title</span> <span class="o">=</span> <span class="s2">&quot;!!! Attention !!!&quot;</span>
+            <span class="n">warning_text</span> <span class="o">=</span>  <span class="s2">&quot;Chemin non renseigné.&quot;</span>
+            <span class="n">warning_text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">L&#39;application ne peut pas être lancée.&quot;</span>
+            <span class="n">warning_text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Veuillez le définir.&quot;</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showwarning</span><span class="p">(</span><span class="n">warning_title</span><span class="p">,</span> <span class="n">warning_text</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Setting years list</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">years_list</span> <span class="o">=</span> <span class="n">last_available_years</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span>
+                                                       <span class="n">gg</span><span class="o">.</span><span class="n">CORPUSES_NUMBER</span><span class="p">)</span>
+
+            <span class="c1"># Setting rawdata for datatype</span>
+            <span class="k">for</span> <span class="n">database</span> <span class="ow">in</span> <span class="n">pg</span><span class="o">.</span><span class="n">BDD_LIST</span><span class="p">:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">set_rawdata</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+                                <span class="n">master</span><span class="o">.</span><span class="n">years_list</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
+
+            <span class="c1"># Setting existing corpuses status</span>
+            <span class="n">files_status</span> <span class="o">=</span> <span class="n">existing_corpuses</span><span class="p">(</span><span class="n">bibliometer_path</span><span class="p">)</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">list_corpus_year</span>    <span class="o">=</span> <span class="n">files_status</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">list_wos_rawdata</span>    <span class="o">=</span> <span class="n">files_status</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">list_wos_parsing</span>    <span class="o">=</span> <span class="n">files_status</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">list_scopus_rawdata</span> <span class="o">=</span> <span class="n">files_status</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">list_scopus_parsing</span> <span class="o">=</span> <span class="n">files_status</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">list_dedup</span>          <span class="o">=</span> <span class="n">files_status</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+
+            <span class="c1"># Creating two frames in the tk window</span>
+            <span class="n">pagebutton_frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">bg</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span>
+                                        <span class="n">height</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">PAGEBUTTON_HEIGHT_PX</span><span class="p">)</span>
+            <span class="n">pagebutton_frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span> <span class="o">=</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">fill</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">expand</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+            <span class="n">page_frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">master</span><span class="p">)</span>
+            <span class="n">page_frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span> <span class="o">=</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">fill</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">expand</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">page_frame</span><span class="o">.</span><span class="n">grid_rowconfigure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">page_frame</span><span class="o">.</span><span class="n">grid_columnconfigure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">frames</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">master</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+                <span class="n">page_name</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="vm">__name__</span>
+                <span class="n">frame</span> <span class="o">=</span> <span class="n">page</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">,</span> <span class="n">page_frame</span><span class="p">,</span>
+                             <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">page_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span>
+
+                <span class="c1"># Putting all of the pages in the same location</span>
+                <span class="c1"># The one visible is the one on the top of the stacking order</span>
+                <span class="n">frame</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">column</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span> <span class="o">=</span> <span class="s2">&quot;nsew&quot;</span><span class="p">)</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames</span>
+
+<span class="k">class</span> <span class="nc">PageButton</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets button of &#39;page_name&#39; page.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">):</span>
+
+        <span class="c1"># Setting page num</span>
+        <span class="n">label_text</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">PAGES_LABELS</span><span class="p">[</span><span class="n">page_name</span><span class="p">]</span>
+        <span class="n">page_num</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">pages_ordered_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">page_name</span><span class="p">)</span>
+
+        <span class="c1"># Setting widgets parameters for page button</span>
+        <span class="n">eff_button_font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">REF_BUTTON_FONT_SIZE</span><span class="p">,</span> <span class="n">master</span><span class="o">.</span><span class="n">width_sf_min</span><span class="p">)</span>
+
+        <span class="c1"># Creating widgets for page button</span>
+        <span class="n">button_font</span> <span class="o">=</span> <span class="n">tkFont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span> <span class="o">=</span> <span class="n">gg</span><span class="o">.</span><span class="n">FONT_NAME</span><span class="p">,</span>
+                                  <span class="n">size</span>   <span class="o">=</span> <span class="n">eff_button_font_size</span><span class="p">)</span>
+        <span class="n">button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">pagebutton_frame</span><span class="p">,</span>
+                           <span class="n">text</span> <span class="o">=</span> <span class="n">label_text</span><span class="p">,</span>
+                           <span class="n">font</span> <span class="o">=</span> <span class="n">button_font</span><span class="p">,</span>
+                           <span class="n">command</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">show_frame</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">))</span>
+
+        <span class="c1"># Placing widgets for page button</span>
+        <span class="n">button</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">column</span> <span class="o">=</span> <span class="n">page_num</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ParseCorpusPage</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets parsing page widgets through `create_parsing_concat` function </span>
+<span class="sd">    imported from `bmgui.parse_corpus_page` module.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">,</span> <span class="n">page_frame</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">page_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">master</span>
+
+        <span class="c1"># Setting page name</span>
+        <span class="n">page_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="c1"># Creating and setting widgets for page button</span>
+        <span class="n">PageButton</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">)</span>
+
+        <span class="c1"># Creating and setting widgets for page frame</span>
+        <span class="n">create_parsing_concat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+
+        
+<span class="k">class</span> <span class="nc">ConsolidateCorpusPage</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function </span>
+<span class="sd">    imported from `bmgui.consolidate_corpus_page` module.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">,</span> <span class="n">page_frame</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">page_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">master</span>
+
+        <span class="c1"># Setting page name</span>
+        <span class="n">page_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="c1"># Creating and setting widgets for page button</span>
+        <span class="n">PageButton</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">)</span>
+
+        <span class="c1"># Creating and setting widgets for page frame</span>
+        <span class="n">create_consolidate_corpus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">UpdateIfPage</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets impact-factors-update page widgets through `create_update_ifs` function </span>
+<span class="sd">    imported from `bmgui.update_if_page` module.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">,</span> <span class="n">page_frame</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">page_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">master</span>
+
+        <span class="c1"># Setting page name</span>
+        <span class="n">page_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="c1"># Creating and setting widgets for page button</span>
+        <span class="n">PageButton</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">)</span>
+
+        <span class="c1"># Creating and setting widgets for page frame</span>
+        <span class="n">create_update_ifs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">AnalyzeCorpusPage</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets corpuses-analysis page widgets through `create_analysis` function </span>
+<span class="sd">    imported from `bmgui.analyze_corpus_page` module.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">,</span> <span class="n">page_frame</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">page_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">master</span>
+
+        <span class="c1"># Setting page name</span>
+        <span class="n">page_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="c1"># Creating and setting widgets for page button</span>
+        <span class="n">PageButton</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">pagebutton_frame</span><span class="p">)</span>
+
+        <span class="c1"># Creating and setting widgets for page frame</span>
+        <span class="n">create_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">page_name</span><span class="p">,</span> <span class="n">institute</span><span class="p">,</span> <span class="n">bibliometer_path</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, BiblioMeter team, Liten, Leti, CEA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
