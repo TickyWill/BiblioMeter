@@ -9,14 +9,32 @@ More specifically:<br />
 - Take care of the authors affiliated to the Institute but not found in the employees database;
 - Computes key performance indicators (impact factors, collaborations and keywords occurrences...).
 
-## Documentation
-[BiblioMeter sphinx-documentation](https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/docs/docbuild/html/index.html)
-
 ## Installation
-Run the following command to get a repository clone:
+Run the following command to get a repository clone of the sphinx_doc_enhancement branch:
 ```
-git clone https://github.com/TickyWill/BiblioMeter.git
+git clone https://github.com/TickyWill/BiblioMeter.git@sphinx_doc_enhancement
 ```
+
+## Requirements
+Ensure that your environment complies with the requirements given in the following file:
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/requirements.txt>BiblioMeter requirements file
+</a></p>
+
+## Documentation building
+Run the following commands to build the sphinx documentation:
+- Only in case of a previous building
+```
+docs\make.bat clean
+```
+- Then
+```
+docs\make.bat html
+```
+
+## Documentation edition
+Open the following file:
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/docs/docbuild/html/index.html>BiblioMeter sphinx-documentation html file
+</a></p>
 
 ## Building executable
 Either run the following batch file:
