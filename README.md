@@ -32,16 +32,15 @@ docs\make.bat html
 ```
 
 ## Documentation edition
-Open the following file:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/docs/docbuild/html/index.html>BiblioMeter sphinx-documentation html file
-</a></p>
+Open the following BiblioMeter sphinx-documentation html file:
+<span style="color:blue"> docs/docbuild/html/index.html </span>
 
 ## Building executable
 Either run the following batch file:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
 </a></p>
 Or refer to the following manual:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual
 </a></p>
 <span style="color:red">BEWARE:</span> Some security softwares (eg. McAfee) could place the .exe file in quarantine. If so you have to manually authorized the .exe file.
 
@@ -55,7 +54,7 @@ app.mainloop()
 ```
 
 **for more details on application usage refer to the user manual:** 
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/master/BiblioMeterUserManual-Fr.pdf>BiblioMeter user manual
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/sphinx_doc_enhancement/BiblioMeterUserManual-Fr.pdf>BiblioMeter user manual
 </a></p>
 
 # Release History
