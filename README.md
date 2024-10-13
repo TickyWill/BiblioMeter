@@ -33,7 +33,7 @@ docs\make.bat html
 
 ## Documentation edition
 Open the following BiblioMeter sphinx-documentation html file:
-<span style="color:blue"> docs/docbuild/html/index.html </span>
+>docs/docbuild/html/index.html
 
 ## Building executable
 Either run the following batch file:
