@@ -1,5 +1,6 @@
 """The `config_utils.py` module gathers the useful functions 
 for setting the configuration parameters for the use of the BiblioMeter application.
+
 """
 __all__ = ['set_org_params',
            'set_user_config', ]
@@ -16,8 +17,9 @@ import bmfuncts.pub_globals as pg
 
 
 def _get_bm_parsing_config():
-    """ The `_get_bm_parsing_config` function reads the json file giving 
-    the architecture of the parsing folder and the names of the parsing files.
+    """Reads the json file giving he architecture of the parsing folder 
+    and the names of the parsing files.
+
     The name of this json file is given by the global 'PARSING_CONFIG_FILE' and 
     it is located in the folder of the `bmfuncts` package which name is given 
     by the global 'CONFIG_FOLDER'.
@@ -26,7 +28,6 @@ def _get_bm_parsing_config():
 
     Args:
         None.
-
     Returns:
         (dict): The dict resulting from the parsing of the json file.
     """
@@ -42,18 +43,16 @@ def _get_bm_parsing_config():
 
 
 def _build_effective_config(db_list, parsing_folder_dict_init):
-    """The `_build_effective_config` function sets the parsing-folder architecture 
-    common to all the corpus folders taking into account the list of databases 'db_list'.
+    """Sets the parsing-folder architecture common to all the corpus folders 
+    taking into account the list of databases 'db_list'.
 
     Args:
         db_list (list): The list of the database string names.
-        parsing_folder_dict_init (hierarchical dict): The architecture of the parsing folder 
-                                                      to be used for each database 
-                                                      of the database list 'db_list'.
-
+        parsing_folder_dict_init (hierarchical dict): The architecture of the parsing \ 
+        folder to be used for each database of the database list 'db_list'.
     Returns:
-        (hierarchical dict): The hierachical dict giving the architecture 
-                             of the parsing folder for each database.
+        (hierarchical dict): The hierachical dict giving the architecture \
+        of the parsing folder for each database.
     """
     parsing_folder_dict = {}
     parsing_folder_dict['folder_root'] = parsing_folder_dict_init['folder_root']
@@ -73,23 +72,23 @@ def _build_effective_config(db_list, parsing_folder_dict_init):
 
 
 def _build_files_paths(bibliometer_path, year, db_list, parsing_folder_dict):
-    """The `_build_files_paths` function sets the full paths to the rawdata folders 
-    and to the parsing folders for the working folder selected by the user, 
+    """Sets the full paths to the rawdata folders and to the parsing folders.
+
+    This is done for the working folder selected by the user, 
     the corpus year 'year' and for each database in the list 'db_list'.
     For that, it uses the `_build_effective_config` function of the same module.
 
     Args:
         bibliometer_path (path): The full path to the working folder.
-        year (str): The name of the corpus folder defined by 4 digits 
-                    corresponding to the corpus year.
+        year (str): The name of the corpus folder defined by 4 digits \
+        corresponding to the corpus year.
         db_list (list): The list of the database string names.
-        parsing_folder_dict (hierachical dict): The architecture of the parsing folder 
-                                                used to set the full paths.
-
+        parsing_folder_dict (hierachical dict): The architecture of the parsing folder \
+        used to set the full paths.
     Returns:
-        (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata 
-                        full paths for each database and the second, the parsing full 
-                        paths for each parsing step and for each database.
+        (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata \
+        full paths for each database and the second, the parsing full \ 
+        paths for each parsing step and for each database.
     """
 
     # Internal functions
@@ -158,26 +157,27 @@ def _build_files_paths(bibliometer_path, year, db_list, parsing_folder_dict):
 
 
 def set_user_config(bibliometer_path, year, db_list):
-    """The `set_user_config` function sets the full paths to the rawdata folders 
-    and to the parsing folders for the working folder selected by the user, 
+    """Sets the full paths to the rawdata folders and to the parsing folders.
+
+    This is done for the working folder selected by the user, 
     the corpus year 'year' and for each database in the list 'db_list'.
     It also sets the names of the parsing file for each parsed item. 
     For that, it uses the configuration dict returned by the `_get_bm_parsing_config` 
     function and the `_build_files_paths` function of the same module.
-    The parameters set are returned in a tuple as follows:
-    - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database;
-    - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step 
-                and for each database;
+    The set parameters are returned in a tuple as follows:
+
+    - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database.
+    - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step \
+    and for each database.
     - index 3 = the dict giving the name of the parsing file for each parsed item.            
 
     Args:
         bibliometer_path (path): The full path to the working folder.
-        year (str): The name of the corpus folder defined by 4 digits 
-                    corresponding to the corpus year.
+        year (str): The name of the corpus folder defined by 4 digits \ 
+        corresponding to the corpus year.
         db_list (list): The list of the database string names.
-
     Returns:
-        (tup of dicts): A tuple of the 3 parameters set.
+        (tup of dicts): A tuple of the 3 set parameters.
     """
     # Getting the configuration dict
     config_dict = _get_bm_parsing_config()
@@ -196,20 +196,20 @@ def set_user_config(bibliometer_path, year, db_list):
 
 
 def _get_insitute_config(institute, bibliometer_path):
-    """ The `_get_insitute_config` function reads the json file giving 
-    the parameters of the organization structure for the Institute.
-    The name of this json file is given by the global 'CONFIG_JSON_FILES_DICT' and 
-    it is located in the folder of the working folder which name is given 
+    """Reads the json file giving the parameters of the organization 
+    structure for the Institute.
+
+    The name of this json file is given by the global 'CONFIG_JSON_FILES_DICT' 
+    and it is located in the folder of the working folder which name is given 
     by the global 'EMPLOYEES_ARCHI' at key "root".
-    The global 'CONFIG_JSON_FILES_DICT' is defined in the `institute_globals.py` module 
-    of the `bmfuncts` package.
+    The global 'CONFIG_JSON_FILES_DICT' is defined in the `institute_globals.py` 
+    module of the `bmfuncts` package.
     The global 'EMPLOYEES_ARCHI' is defined in the `employees_globals.py` module 
     of the `bmfuncts` package.
 
-    Args:
+Args:
         institute (str): The Intitute name.
         bibliometer_path (path): The full path to the working folder.
-
     Returns:
         (dict): The dict resulting from the parsing of the json file.
     """
@@ -223,35 +223,34 @@ def _get_insitute_config(institute, bibliometer_path):
 
 
 def set_org_params(institute, bibliometer_path):
-    """The `set_org_params` function sets the parameters of the organization 
-    structure for the Institute and the working folder.
+    """Sets the parameters of the organization structure for the Institute.
+
     For that, it uses the configuration dict returned by the `_get_insitute_config` 
-    function of the same module.
-    The parameters set are returned in a tuple as follows:
-    - index 0 = the dict giving the column name (str) for each department (str);
-    - index 1 = the dict giving the list of historical labels (str) for each department (str);
-    - index 2 = the dict giving the list of attributes (OTPs, str) for each department (str);
-    - index 3 = the list of tuples giving the potential labels (str) of the Institute 
-    in the authors affiliations associated with the country (str) that will be used 
-    to filter the authors affiliated to the Institute;
-        ex: [("LITEN","France"), ("INES","France")]
-    - index 4 = the list of columns names (str) that will be used for each of the potential labels 
-    of the Institute filtering the authors affiliated to the Institute;
-    - index 5 = the status (bool) of the impact factors database 
-        - True, if the database specific to the Institute will be used;
-        - False, if a general database will be used;
+    function of the same module. The set parameters are returned in a tuple as follows:
+
+    - index 0 = the dict giving the column name (str) for each department (str).
+    - index 1 = the dict giving the list of historical labels (str) for each department (str).
+    - index 2 = the dict giving the list of attributes (OTPs, str) for each department (str).
+    - index 3 = the list of tuples giving the potential labels (str) of the Institute \
+    in the authors affiliations associated with the country (str) that will be used to filter \
+    the authors affiliated to the Institute:
+        ex: [("LITEN","France"), ("INES","France")].
+    - index 4 = the list of columns names (str) that will be used for each of the potential labels \
+    of the Institute filtering the authors affiliated to the Institute.
+    - index 5 = the status (bool) of the impact factors database:
+        - True, if the database specific to the Institute will be used; 
+        - False, if a general database will be used.
     - index 6 = the list of document types (str) for which the impact factors will not be analysed.
-    - index 7 = the index of the main institution among the tuples at index 3;
-    - index 8 = the status of the combination of the tuples at index 3;
-    - index 9 = the status of splitting the file of list of publication with one row per author 
+    - index 7 = the index of the main institution among the tuples at index 3.
+    - index 8 = the status of the combination of the tuples at index 3.
+    - index 9 = the status of splitting the file of list of publication with one row per author \
     that has not been identified as Institute employee.
 
     Args:
         institute (str): The Intitute name.
         bibliometer_path (path): The full path to the working folder.
-
     Returns:
-        (tup): A tuple of the 9 set parameters.
+        (tup): A tuple of the 9 set parameters. 
     """
 
     config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])

@@ -1,4 +1,6 @@
-"""Module setting globals specific to Institutes."""
+"""Module setting globals specific to Institutes.
+
+"""
 
 __all__ = ['CONFIG_JSON_FILES_DICT',
            'DPT_LABEL_KEY',

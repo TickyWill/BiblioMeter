@@ -1,10 +1,12 @@
 """Module of functions for the consolidation of the publications-list 
 in terms of:
+
 - effective affiliation of the authors to the Institute;
 - attributing department affiliation to the Institute authors;
 - reduction of homonyms among the Institute authors;
 - attributing OTPs to each publication;
 - attributing impact factor (IF) to each publication.
+
 """
 
 __all__ = ['add_if',
@@ -46,28 +48,28 @@ from bmfuncts.use_pub_attributes import save_shaped_homonyms_file
 
 
 def solving_homonyms(institute, org_tup, in_path, out_path):
-    """Creates the file for homonyms solving by the user. 
+    """Creates the file for homonyms solving by the user.
+
     First, a dataframe is built from specific columns 
     of the list of publications merged with employees database 
-    given by the file pointed by 'in_path' path.
+    given by the file pointed by 'in_path' path. 
     In this dataframe the homonyms are tagged by 'HOMONYM_FLAG' 
-    global imported from `bmfuncts.pub_globals` module.
+    global imported from `bmfuncts.pub_globals` module. 
     Then this dataframe is saved as Excel file pointed 
     by 'out_path' path through `save_shaped_homonyms_file` 
     function imported from `bmfuncts.use_pub_attributes` module.
 
     Args:
         institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure of the Institute 
-                       used here to set column names for homonyms.
-        in_path (path): The full path to the input file of list of publications 
-                        merged with employees database.
-        out_path (path): The full path to the output file of homonyms solving 
-                         by the user.
-
+        org_tup (tup): The tuple of the organization structure of the Institute \
+        used here to set column names for homonyms.
+        in_path (path): The full path to the input file of list of publications \
+        merged with employees database.
+        out_path (path): The full path to the output file of homonyms solving \
+        by the user.
     Returns:
-        (tup): The tuple composed of end message (str) 
-               and homonyms status (bool; True if homonyms are found).
+        (tup): The tuple composed of end message (str) \
+        and homonyms status (bool; True if homonyms are found).
     """
 
     # Setting useful column names
@@ -94,24 +96,24 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
 
 
 def _add_authors_name_list(institute, org_tup, in_path, out_path):
-    """ The function `_add_authors_name_list` adds two columns to the dataframe got
-    from the Excel file pointed by 'in_path'.
-    The columns contain respectively the full name of each author as "NAME, Firstname"
-    and the institute co-authors list with attributes of each author as follows:
-    "NAME1, Firstame1 (matricule,job type,department affiliation,
-                       service affiliation,laboratoire affiliation);
-     NAME2, Firstame2 (matricule,job type,department affiliation,
-                       service affiliation,laboratoire affiliation);
-     ...".
+    """Adds two columns to the dataframe got from the Excel file pointed by 'in_path'.
+
+    The columns contain respectively the full name of each author as "NAME, Firstname" 
+    and the institute co-authors list with attributes of each author in a string as follows:
+
+        - "NAME1, Firstame1 (matricule,job type,department affiliation, \
+        service affiliation,laboratoire affiliation);
+        - NAME2, Firstame2 (matricule,job type,department affiliation, \
+        service affiliation,laboratoire affiliation);
+        - ...".
 
     Args:
         institute (str): The Intitute name.
         org_tup (tup): Contains Institute parameters.
-        in_path (path): Fullpath of the excel file of the publications list
-                        with a row per Institute author and their attributes columns.
-        out_path (path): Fullpath of the processed dataframe as an Excel file
-                         saved after going through its treatment.
-
+        in_path (path): Fullpath of the excel file of the publications list \
+        with a row per Institute author and their attributes columns.
+        out_path (path): Fullpath of the processed dataframe as an Excel file \
+        saved after going through its treatment.
     Returns:
         (str): End message recalling out_path.
     """
@@ -180,12 +182,13 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
 def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
                        otp_alias, excel_dpt_path, otp_col_list):
     """Creates the file for setting OTP attribute of publications by the user 
-    for the Institute department labelled 'dpt'.     
-    A new column named 'otp_alias' is added to the dataframe 'dpt_df'.
-    A list data validation rules is added to each cells of the column
+    for the Institute department labelled 'dpt'.
+
+    A new column named 'otp_alias' is added to the dataframe 'dpt_df'. 
+    A list data validation rules is added to each cells of the column 
     'otp_alias' based on the list of OTPs of the department given 
-    by 'dpt_otp_list' list.
-    The dataframe columns are renamed using 'otp_col_list'.
+    by 'dpt_otp_list' list. 
+    The dataframe columns are renamed using 'otp_col_list'. 
     Then the dataframe is saved as a formatted Excel file pointed 
     by 'excel_dpt_path' path through the `mise_en_page` function 
     imported from `bmfuncts.useful_functs` module.
@@ -198,8 +201,8 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
         dpt_otp_list (list): List of Institute departments (str).
         otp_alias (str): OTPs column name.
         excel_dpt_path (path): Full path to the file for setting publication OTP.  
-        otp_col_list (list): Column names for rename of columns of the file created 
-                             for setting publications OTP.
+        otp_col_list (list): Column names for rename of columns of the file created \
+        for setting publications OTP.
     """
 
     # Building validation list of OTPs for 'dpt' department
@@ -241,11 +244,12 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
 def add_otp(institute, org_tup, in_path, out_path, out_file_base):
     """Creates the files for setting OTP attribute of publications by the user 
     for the Institute departments.
+
     First, useful columns are added to the dataframe got from the Excel file 
     where homonyms have been solved by the user and pointed by 'in_path' path 
-    through the `_add_authors_name_list` internal function.
-    Then, for each department, a sub_dataframe is extracted selecting rows  
-    of publications where at least one author is affiliated to the department.
+    through the `_add_authors_name_list` internal function. 
+    Then, for each department, a sub_dataframe is extracted selecting rows 
+    of publications where at least one author is affiliated to the department. 
     Each sub-dataframe is saved through the `_save_dpt_otp_file` internal function.
 
     Args:
@@ -254,7 +258,6 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
         in_path (path): Full path to the file where homonyms have been solved.
         out_path (path): Full path to the files for setting OTPs attributes by the user.
         out_file_base (str): Base for building created-files names.
-
     Returns:
         (str): end message recalling out_path.
     """
@@ -333,21 +336,22 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
 
 
 def _create_if_column(issn_column, if_dict, if_empty_word):
-    """The function `_create_if_column` builds a dataframe column 'if_column'
-    using the column 'issn_column' of this dataframe and the dict 'if_dict'
-    that make the link between ISSNs ('if_dict' keys) and IFs ('if_dict' values).
+    """Builds a dataframe column 'if_column' using the column 'issn_column' 
+    of this dataframe and the dict 'if_dict'.
+
+    The dict 'if_dict' make the link between ISSNs ('if_dict' keys) and 
+    IFs ('if_dict' values). 
     The 'nan' values in the column 'if_column' are replaced by 'empty_word'.
 
     Args:
-        issn_column (pandas serie): The column of the dataframe of interest
-                                    that contains the ISSNs values.
+        issn_column (pandas serie): The column of the dataframe of interest \
+        that contains the ISSNs values.
         if_dict (dict): The dict which keys are ISSNs and values are IFs.
-        if_empty_word (str): The word that will replace nan values in 
-                             the returned column.
-
+        if_empty_word (str): The word that will replace nan values in \
+        the returned column.
     Returns:
-        (pandas serie): The column of the dataframe of interest
-                        that contains the IFs values.
+        (pandas serie): The column of the dataframe of interest \
+        that contains the IFs values.
     """
     if_column = issn_column.map(if_dict)
     if_column = if_column.fillna(if_empty_word)
@@ -355,20 +359,20 @@ def _create_if_column(issn_column, if_dict, if_empty_word):
 
 
 def _build_inst_issn_df(if_db_df, use_col_list):
-    """The function `_build_inst_issn_df` builds a dataframe of 'use_col_list' columns 
-    composed of journal name, ISSN and eISSN.
-    First, a subset dataframe is built from the hierarchical dataframe 'if_db_df'
-    using 'use_col_list' columns for each year (key of 'if_db_df').
-    Then, a single dataframe results from concatenation of these dataframes.
+    """Builds a dataframe of 'use_col_list' columns composed of journal name, 
+    ISSN and eISSN.
+
+    First, a subset dataframe is built from the hierarchical dataframe 'if_db_df' 
+    using 'use_col_list' columns for each year (key of 'if_db_df'). 
+    Then, a single dataframe results from concatenation of these dataframes. 
     Finally, duplicates are dropped after setting unique ISSN and eISSN values 
     for each journal name.
 
     Args:
-        if_db_df (dataframe): Hierarchical dataframe of impact-factors database 
-                              keyyed by years.
-        use_col_list (list): List of subset columns names 
-                             of 'if_db_df[<year>]' dataframes.
-
+        if_db_df (dataframe): Hierarchical dataframe of impact-factors database \
+        keyyed by years.
+        use_col_list (list): List of subset columns names \ 
+        of 'if_db_df[<year>]' dataframes.
     Returns:
         (dataframe): Dataframe with 'use_col_list' columns.
     """
@@ -412,16 +416,16 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
 
 def _fullfill_issn(corpus_df, issn_df, unknown, col_tup):
-    """The function `_fullfill_issn` fills the unknown values 
-    in the 'issn_col' column in the 'corpus_df' dataframe, 
-    using the ISSN or eISSN' available in the 'issn_df' dataframe.
+    """Fills the unknown values in the 'issn_col' column 
+    in the 'corpus_df' dataframe.
+
+    For that it uses the ISSN or eISSN' available in the 'issn_df' dataframe.
 
     Args:
         corpus_df (dataframe): Corpus of publications to be updated.
         issn_df (dataframe): Data of journals with their ISSN and eISSN.
         unknown (str): Value of unknown ISSN or eISSN.
         col_tup (tup): Tuple of columns names = (journal name, ISSN, eISSN).
-
     Returns:
         (dataframe): Updated dataframe.
     """
@@ -447,19 +451,18 @@ def _fullfill_issn(corpus_df, issn_df, unknown, col_tup):
 
 
 def _build_if_dict(if_df, if_year, args_tup):
-    """The function `_build_if_dict` builds a dict keyyed by ISSN or eISSN values
-    and valued by impact factors.
+    """Builds a dict keyyed by ISSN or eISSN values and valued 
+    by impact factors.
 
     Args:
         if_df (dataframe): Database of impact-factors.
-        if_year (str): 4 digits-year key for using values from the database 
-                       of impact-factors.
-        args_tup (tup): Tuple = (value of unknown ISSN or eISSN,
-                        ISSN-column name, eISSN-column name, impact-factors-column name).
-
+        if_year (str): 4 digits-year key for using values from the database \
+        of impact-factors.
+        args_tup (tup): Tuple = (value of unknown ISSN or eISSN, \
+        ISSN-column name, eISSN-column name, impact-factors-column name).
     Returns:
-        (dict): dict keyyed by ISSN (str) or eISSN (str) values 
-                and valued by impact factors (float).
+        (dict): dict keyyed by ISSN (str) or eISSN (str) values \
+        and valued by impact factors (float).
     """
 
     # Setting parameters from args
@@ -480,15 +483,14 @@ def _build_if_dict(if_df, if_year, args_tup):
 
 
 def _get_id(issn_df, journal_name, journal_col, id_col, unknown):
-    """The function `_get_id` sets a unique journal name 
-    for the ISSN value at 'journal_name' key in 'issn_df' dataframe.
+    """Sets a unique journal name for the ISSN value at 'journal_name' 
+    key in 'issn_df' dataframe.
 
     Args:
         issn_df (dataframe): Data of journals with their ISSN and eISSN.
         journal_name (str): Name of journal for which the unique name will be defined.
         journal_col (str): Name of the journal-names column in the 'issn_df' dataframe.
         id_col (str): Name of the ISSN or eISSN column to be used in the 'issn_df' dataframe.
-
     Returns:
         (str): Unified journal name.
     """
@@ -507,19 +509,17 @@ def _get_id(issn_df, journal_name, journal_col, id_col, unknown):
 
 
 def _format_missing_df(results_df, common_args_tup, unknown, add_cols):
-    """The function `_format_missing_df` formats the 'results_df' dataframe 
-    with final column names.
+    """Formats the 'results_df' dataframe with final column names.
 
     Args:
         results_df (dataframe): Corpus of publications to be updated.
-        common_args_tup (tup): Tuple of columns name (str) = (year (4 digits),
-                               corpus-year impact-factor, impact-factors most-recent year,
-                               journal-name, ISSN, eISNN, number of publications, 
-                               impact-factors year, ISSN in 'result_df' dataframe).
+        common_args_tup (tup): Tuple of columns name (str) = (year (4 digits), \
+        corpus-year impact-factor, impact-factors most-recent year, journal-name, \
+        ISSN, eISNN, number of publications, impact-factors year, ISSN in \
+        'result_df' dataframe).
         unknown (str): Value of unknown ISSN or eISSN in 'results_df' dataframe.
-        add_cols (bool): True if suplementary columns for ISSN and eISSN 
-                         are to be filled with unknown values.
-
+        add_cols (bool): True if suplementary columns for ISSN and eISSN are to be \
+        filled with unknown values.
     Returns:
         (dataframe): Formatted dataframe.
     """
@@ -559,18 +559,16 @@ def _format_missing_df(results_df, common_args_tup, unknown, add_cols):
 
 
 def get_if_db(institute, org_tup, bibliometer_path):
-    """The function `get_if_db` builds a dataframe of impact-factors
-    of the Institute.
+    """Builds a dataframe of impact-factors of the Institute.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-
     Returns:
-        (tup): Tuple = (impact-factors (dataframe), 
-                        available-years of impact-factors in the dataframe (list),
-                        most-recent year of available impact-factors (4-digits str)).
+        (tup): (impact-factors (dataframe), \
+        available-years of impact-factors in the dataframe (list), \
+        most-recent year of available impact-factors (4-digits str)).
     """
 
     ## Setting institute parameters
@@ -602,18 +600,18 @@ def get_if_db(institute, org_tup, bibliometer_path):
 
 def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
 
-    """ The function `add_if` adds two new columns containing impact factors 
-    to the corpus dataframe 'corpus_df' got from a file which full path 
-    is 'in_file_path'.
+    """Adds two new columns containing impact factors to the corpus 
+    dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
+
     The two columns are named through 'corpus_year_if_col_alias' 
-    and 'most_recent_year_if_col'.
+    and 'most_recent_year_if_col'. 
     The impact factors are got using `get_if_db` function that returns 
-    in particular the dataframe 'if_df' of impact-factors database.
+    in particular the dataframe 'if_df' of impact-factors database. 
     The column 'corpus_year_if_col_alias' is filled with the impact-factors 
     values of the corpus year 'corpus_year' if available in the dataframe 'if_df', 
-    otherwise the values are set to 'not_available_if_alias' value.
+    otherwise the values are set to 'not_available_if_alias' value. 
     The column 'most_recent_year_if_col' is filled with the impact-factors 
-    values of the most recent year available in the dataframe 'if_df'.
+    values of the most recent year available in the dataframe 'if_df'. 
     In these columns, the NaN values of impact-factors are replaced 
     by 'unknown_if_fill_alias'.
 
@@ -621,15 +619,14 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        paths_tup (tup): Tuple = (full path to get the corpus dataframe 'corpus_df', 
-                         full path to save the missing impact-factors information, 
-                         full path to save the missing ISSNs information, 
-                         year (4 digits str) of the corpus to be appended with the two 
-                         new impact-factors columns).
-
+        paths_tup (tup): Tuple = (full path to get the corpus dataframe 'corpus_df', \
+        full path to save the missing impact-factors information, \
+        full path to save the missing ISSNs information, \
+        year (4 digits str) of the corpus to be appended with the two \
+        new impact-factors columns).
     Returns:
-        (tup): Tuple = (message indicating which file has been mofified and how,
-                        completion status of the impact-factors database).
+        (tup): (message indicating which file has been mofified and how, \
+        completion status of the impact-factors database).
     """
 
     #Setting parameters from args
@@ -842,10 +839,11 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
 
 
 def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year):
-    """The function `split_pub_list_by_doc_type` splits the dataframe 
-    of the publications final list of the 'corpus_year' corpus into 
-    separated dataframes corresponding to different documents types.
-    Then these dataframes are saved through the `mise_en_page` function 
+    """Splits the dataframe of the publications final list into dataframes 
+    corresponding to different documents types.
+
+    This is done for the 'corpus_year' corpus. 
+    These dataframes are saved through the `mise_en_page` function 
     imported from `bmfuncts.useful_functs` module. 
 
     Args:
@@ -853,7 +851,6 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-
     Returns:
         (int): Split ratio in % of the publications final list.
     """
@@ -909,27 +906,30 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
 
 def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                          in_path, out_path, in_file_base, corpus_year):
-    """The function `built_final_pub_list` builds the dataframe 
-    of the publications final list of the 'corpus_year' corpus.
-    First, a 'consolidate_pub_list_df' dataframe is built through 
-    the concatenation of the dataframes got from the files of  
-    OTPs attribution to publications of each of the Institute 
+    """Builds the dataframe of the publications final list 
+    of the 'corpus_year' corpus.
+
+    This is done through the following steps:
+
+    1. A 'consolidate_pub_list_df' dataframe is built through \
+    the concatenation of the dataframes got from the files of \
+    OTPs attribution to publications of each of the Institute \
     departments.
-    Meanwhile, the set OTPS are saved through the `save_otps` 
-    function imported from `bmfuncts.use_pub_attributes` module.
-    The publications attributed with 'INVALIDE' OTP value, 
-    (imported from globals module, imported as gg) are dropped 
-    in the 'consolidate_pub_list_df' dataframe and kept in 
+    2. Meanwhile, the set OTPS are saved through the `save_otps` \
+    function imported from `bmfuncts.use_pub_attributes` module. 
+    3. The publications attributed with 'INVALIDE' OTP value, \
+    (imported from globals module, imported as gg) are dropped \
+    in the 'consolidate_pub_list_df' dataframe and kept in \
     the 'invalid_pub_list_df' dedicated dataframe.
-    These two dataframes are then saved as Excel file.
-    The file saved from the 'consolidate_pub_list_df' dataframe 
-    is added with impact factors values through the `add_if` function 
+    4. These two dataframes are then saved as Excel file.
+    5. The file saved from the 'consolidate_pub_list_df' dataframe \
+    is added with impact factors values through the `add_if` function \
     of the present module.
-    Finally, it is split by documents type through the 
+    6. This dataframe is split by documents type through the \
     `split_pub_list_by_doc_type` function of the present module.
-    A copy of all the created files is made in a folder specific to 
-    the combination type of data specified by 'datatype' arg 
-    through the `save_final_results` function imported from 
+    7. A copy of all the created files is made in a folder specific to \
+    the combination type of data specified by 'datatype' arg \
+    through the `save_final_results` function imported from \
     the `bmfuncts.save_final_results` module.
 
     Args:
@@ -937,19 +937,16 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        in_path (path): Full path to folder of files where OTPs 
-                        have been attributed.
-        out_path (path): Full path to folder where file of 
-                         publications final list and associated files 
-                         are saved.
+        in_path (path): Full path to folder of files where OTPs \
+        have been attributed.
+        out_path (path): Full path to folder where file of publications \
+        final list and associated files are saved.
         in_file_base (str): Base of OTPs files names.
         corpus_year (str): 4 digits year of the corpus.
-
     Returns :
-        (tup): Tuple = (end message recalling the full path to the saved file 
-                        of the publication final list, 
-                        split ratio in % of the publications final list, 
-                        completion status of the impact-factors database).
+        (tup): (end message recalling the full path to the saved file \
+        of the publication final list, split ratio in % of the publications \
+        final list, completion status of the impact-factors database).
     """
 
     # internal functions
@@ -1057,18 +1054,18 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
 
 def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
-    """The function `concatenate_pub_lists` builds the concatenated dataframe 
-    of the publications lists of the corpuses listed in 'years_list'.
-    Then, the dataframe is saved through the `mise_en_page` function 
+    """Builds the concatenated dataframe of the publications lists 
+    of the corpuses listed in 'years_list'.
+
+    The dataframe is saved through the `mise_en_page` function 
     imported from `bmfuncts.useful_functs` module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        years_list (list): List of 4 digits years of the available 
-                           publications lists.
-
+        years_list (list): List of 4 digits years of the available \
+        publications lists.
     Returns :
         (str): End message recalling folder and file name where file is saved.
     """

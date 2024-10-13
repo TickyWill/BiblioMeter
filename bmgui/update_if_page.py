@@ -33,20 +33,19 @@ from bmfuncts.update_impact_factors import update_inst_if_database
 def _launch_update_if_db(institute, org_tup, bibliometer_path,
                          pub_list_folder_alias, corpus_years_list,
                          progress_callback):
-    """Launches updating impact-factors database of the Institute 
-    through `update_inst_if_database` function imported from 
-    `bmfuncts.update_impact_factors` module.
+    """Launches updating impact-factors database of the Institute.
+
+    This is done through the `update_inst_if_database` function 
+    imported from `bmfuncts.update_impact_factors` module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         pub_list_folder_alias (str): Publications-lists folder name.
-        corpus_years_list (list): List of available corpus years 
-                                  (each item defined by a string of 4 digits).
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status. 
-
+        corpus_years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        progress_callback (function): Function for updating \ProgressBar tkinter widget status. 
     Returns:
         (bool): Status of impact-factors database.    
     """
@@ -89,28 +88,29 @@ def _launch_update_if_db(institute, org_tup, bibliometer_path,
 
 def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
                           aliases_tup, corpus_years_list, progress_callback):
-    """Launches updating impact factors of publications final list of the year 
-    through `add_if` function imported from `bmfuncts.consolidate_pub_list` module 
-    after check of availability of the corresponding file of the publications list.
+    """Launches updating impact factors of publications final list of the year.
+
+    This is done through the `add_if` function imported from 
+    `bmfuncts.consolidate_pub_list` module after check of availability 
+    of the corresponding file of the publications list.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        aliases_tup (tup): Tuple = (publications-lists folder name, 
-                           base for building names of publications-list files, 
-                           base for building names of missing-IFs files, 
-                           name for building names of missing-ISSNs files).
-        corpus_years_list (list): List of available corpus years 
-                                  (each item defined by a string of 4 digits).
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status. 
-
+        aliases_tup (tup): (publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files).
+        corpus_years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status. 
     Returns:
-        (tup): Tuple = (year of missing publications file (string of 4 digits), 
-                        completion status of impact-factors database (bool), 
-                        progress-bar status (int)).    
+        (tup): (year of missing publications file (string of 4 digits), \
+        completion status of impact-factors database (bool), \
+        progress-bar status (int)).    
     """
 
     # Setting parameters from args
@@ -191,8 +191,10 @@ def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
 
 
 def create_update_ifs(self, master, page_name, institute, bibliometer_path, datatype):
-    """Manages creation and use of widgets for impact factors update 
-    through internal functions  `_launch_update_if_db` and `_launch_update_pub_if`.
+    """Manages creation and use of widgets for impact factors update.
+
+    This is done through the internal functions `_launch_update_if_db` 
+    and `_launch_update_pub_if`.
 
     Args:
         self (instense): Instense where consolidation page will be created.

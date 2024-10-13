@@ -1,4 +1,6 @@
-"""Module setting globals specific to employees database management."""
+"""Module setting globals specific to employees database management.
+
+"""
 
 __all__ = [
            'CATEGORIES_DIC',

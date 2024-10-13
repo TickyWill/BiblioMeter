@@ -1,11 +1,14 @@
 """Module of functions for the merge of employees information with the publications list 
 of the Institute taking care of:
+
 - Potential discrepancy between author-name spelling and employee-name spelling;
-- Complementary database to the Institute employees database 
+- Complementary database to the Institute employees database \
 with young researchers affiliated to the Institute;
 - Inappropriate affiliation to the Institute of external collaborators;
 - Creation of list of Institute authors with selected attributes;
-- Creation of full reference for each publication."""
+- Creation of full reference for each publication.
+
+"""
 
 __all__ = ['recursive_year_search']
 
@@ -27,21 +30,21 @@ from bmfuncts.rename_cols import build_col_conversion_dic
 
 
 def _check_names_spelling(bibliometer_path, init_df, cols_tup):
-    """Replace author names in 'init_df' dataframe by the employee name 
-    when a name-spelling discrepency is given in the dedicated Excel file 
-    named 'orthograph_file_name' and located in the 'orphan_treat_root' 
+    """Replace author names in 'init_df' dataframe by the employee name.
+
+    This is done when a name-spelling discrepency is given in the dedicated 
+    Excel file named 'orthograph_file_name' and located in the 'orphan_treat_root' 
     folder of the working folder.
 
     Args:
         bibliometer_path (path): Full path to working folder.
-        init_df (dataframe): Publications list with one row per author 
-                             where author names should be corrected.
-        cols_tup (tup): Tuple of useful column names in 'init_df' dataframe
-                        = (full name, last name, first name).
-
+        init_df (dataframe): Publications list with one row per author \
+        where author names should be corrected.
+        cols_tup (tup): Tuple of useful column names in 'init_df' dataframe \
+        = (full name, last name, first name).
     Returns:
-        (dataframe): Publications list with one row per author where 
-                     spelling of author names have been corrected.
+        (dataframe): Publications list with one row per author where \
+        spelling of author names have been corrected.
     """
 
     # Setting parameters from args
@@ -82,22 +85,22 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
 
 
 def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
-    """Replace author names in 'init_df' dataframe by the correct author name 
-    when metadata error is reported in the dedicated Excel file named 
+    """Replace author names in 'init_df' dataframe by the correct author name.
+
+    This is done when metadata error is reported in the dedicated Excel file named 
     'complements_file_name' at sheet 'compl_to_replace_sheet' and located 
     in the 'orphan_treat_root' folder of the working folder.
 
     Args:
         bibliometer_path (path): Full path to working folder.
         year (str): Corpus year of publications list.
-        init_df (dataframe): Publications list with one row per author 
-                             where author names should be corrected.
-        cols_tup (tup): Tuple of useful column names in 'init_df' dataframe
-                        = (full name, last name, first name).
-
+        init_df (dataframe): Publications list with one row per author \
+        where author names should be corrected.
+        cols_tup (tup): Tuple of useful column names in 'init_df' dataframe \
+        = (full name, last name, first name).
     Returns:
-        (dataframe): Publications list with one row per author where 
-                     author names have been corrected.
+        (dataframe): Publications list with one row per author where \
+        author names have been corrected.
     """
 
     # Setting parameters from args
@@ -143,22 +146,22 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
 
 
 def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
-    """Drops rows of authors to be removed in the 'pub-df' dataframe. 
+    """Drops rows of authors to be removed in the 'pub-df' dataframe.
+
     The authors to remove are reported in the dedicated Excel 
-    file named 'outliers_file_name' at sheet 'outliers_sheet'  
+    file named 'outliers_file_name' at sheet 'outliers_sheet' 
     and located in the 'orphan_treat_root' folder of the working folder.
 
     Args:
         institute (str): Institute name.
         bibliometer_path (path): Full path to working folder.
-        pub_df (dataframe): Publications list with one row per author  
-                            where rows should be dropped.
-        cols_tup (tup): Tuple of useful column names in 'pub_df' dataframe
-                        = (last name, first name).
-
+        pub_df (dataframe): Publications list with one row per author \
+        where rows should be dropped.
+        cols_tup (tup): Tuple of useful column names in 'pub_df' dataframe \
+        = (last name, first name).
     Returns:
-        (dataframe): Publications list with one row per author where 
-                     rows of authors to be removed have been dropped.
+        (dataframe): Publications list with one row per author where \
+        rows of authors to be removed have been dropped.
     """
 
     # Setting parameters from args
@@ -206,18 +209,20 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
 def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     """Builds the publications list dataframe with one row per Institute author 
     for each publication from the results of the corpus parsing.
+
     First, the parsing results are got through the `read_parsing_dict` function 
-    imported from `bmfuncts.useful_functs` module.
+    imported from `bmfuncts.useful_functs` module. 
     After that, a publications list dataframe with one row per author affiliated 
-    to the Institute is built using the 'filt_authors_inst_' filter.
+    to the Institute is built using the 'filt_authors_inst_' filter. 
     Then, the dataframe is complemented with useful new columns 
-    of full name, last name and first name of authors.
+    of full name, last name and first name of authors. 
     Finally, the dataframe is cleaned as follows:
-    - Author-name spelling is corrected through the `_check_names_spelling` 
+
+    - Author-name spelling is corrected through the `_check_names_spelling` \
     internal function;
-    - Errors on author names resulting from publication metadata errors 
+    - Errors on author names resulting from publication metadata errors \
     are corrected through the `_check_names_to_replace` internal function.
-    - The row of authors mistakenly affiliated to the Institute are dropped 
+    - The row of authors mistakenly affiliated to the Institute are dropped \
     through the `_check_authors_to_remove` internal function.
 
     Args:
@@ -225,11 +230,10 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         year (str): Contains the corpus year defined by 4 digits.
-
     Returns:
-        (dataframe): Publications list with one row per author with correction 
-                     of author-names and drop of authors with inappropriate 
-                     affiliation to the Institute.
+        (dataframe): Publications list with one row per author with correction \
+        of author-names and drop of authors with inappropriate affiliation \
+        to the Institute.
 
     """
 
@@ -256,24 +260,23 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
         return (last_name, first_name_initials)
 
     def _build_filt_authors_inst(inst_col_list, main_status, main_inst_idx):
-        """The function `_build_filt_authors_inst` builds the `filt_authors_inst_` filter
-        to select the authors by their institution.
+        """Builds the `filt_authors_inst_` filter to select the authors by their institution.
 
         Args:
-            inst_col_list (list): List of column names (str) that contains 
-                                  affiliation status to the Institute.
-            main_status (bool): Status of the combination of 'inst_col_list' columns 
-                                to identify affiliation to the Institute. 
-            main_inst_idx (int): Index of the unique column name in 'inst_col_list' list 
-                                 to be used for the Institute affiliation status 
-                                 for 'main_status' set to False.                    
-
+            inst_col_list (list): List of column names (str) that contains \
+            affiliation status to the Institute.
+            main_status (bool): Status of the combination of 'inst_col_list' columns \
+            to identify affiliation to the Institute. 
+            main_inst_idx (int): Index of the unique column name in 'inst_col_list' list \
+            to be used for the Institute affiliation status for 'main_status' set to False.                    
         Returns:
-            (Pandas Series): A filter on specified columns depending on the status 
-                             of the combination of 'inst_col_list' columns 
-                             of the 'authorsinst_authors_df' dataframe that sets: 
-                                 - True if any in these columns is equal to 1 for the author;
-                                 - False otherwise.
+            (Pandas Series): A filter on specified columns depending on the status \
+            of the combination of 'inst_col_list' columns of the 'authorsinst_authors_df' \
+            dataframe that sets:
+            
+            - True if any in these columns is equal to 1 for the author;
+            - False otherwise.
+       
         """
         main_inst_col = inst_col_list[main_inst_idx]
         if main_status:
@@ -389,8 +392,9 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
 def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', verbose = False):
     """Builds a dataframe of the merged employees information with the publication 
     list with one row per author.
+
     The merge is based on test of similarities between last names and first names 
-    of employees and authors.
+    of employees and authors. 
     Found homonyms are tagged by 'HOMONYM_FLAG' global imported from globals 
     module imported as pg.
 
@@ -400,13 +404,11 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
         bibliometer_path (path): Full path to working folder.
         test_case (str): Optional test case for testing the function (default = 'No test').
         verbose (bool): Optional status of prints (default = False).
-
     Returns:
-        (tup): Tuple = (dataframe of merged employees information with 
-                        the publications list with one row per Institute author 
-                        with identified homonyms, 
-                        dataframe of publications list with one row per author 
-                        that has not been identified as Institute employee).
+        (tup): (dataframe of merged employees information with \
+        the publications list with one row per Institute author with \
+        identified homonyms, dataframe of publications list with \
+        one row per author that has not been identified as Institute employee).
     """
 
     def _orphan_reduction(orphan_lastname, eff_lastname):
@@ -647,23 +649,22 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
 
 
 def _add_author_job_type(in_path, out_path):
-    """The function `_add_author_job_type` adds a new column 
-    containing the job type for each author of the publications 
-    list with one row per author and saves it as Excel file.
+    """Adds a new column containing the job type for each author 
+    of the publications list with one row per author.
+
     The job type is got from the employee information available 
     in 3 columns which names are given by 'category_col_alias', 
-    'status_col_alias' and 'qualification_col_alias'.
-    The name of the new column is given by 'author_type_col_alias'.
+    'status_col_alias' and 'qualification_col_alias'. 
+    The name of the new column is given by 'author_type_col_alias'. 
+    The updated publications list is saved as Excel file.
 
     Args:
-        in_path (path):  Full path to the Excel file of the publications list 
-                         with one row per author with attributes as Institute 
-                         employee.
+        in_path (path):  Full path to the Excel file of the publications list \
+        with one row per author with attributes as Institute employee.
         out_path (path): Full path for saving the modified publications list.
-
     Returns:
-        (str): End message recalling the full path to the saved file 
-               of the modified publications list.
+        (str): End message recalling the full path to the saved file of \
+        the modified publications list.
     """
 
     # internal functions:
@@ -698,20 +699,17 @@ def _add_author_job_type(in_path, out_path):
 
 
 def _set_full_ref(title, first_author, journal_name, pub_year, doi):
-    """The function `_set_full_ref` builds the full reference of a publication.
+    """Builds the full reference of a publication.
 
     Args:
         title (str): Title of the publication.
-        first_author (str): First author of the publication formated as 'NAME IJ'
-                            with 'NAME' the lastname and 'IJ' the initials
-                            of the firstname of the author.
+        first_author (str): First author of the publication formated as 'NAME IJ' \
+        with 'NAME' the lastname and 'IJ' the initials of the firstname of the author.
         journal_name (str): Name of the journal where the publication is published.
         pub_year (str): Publication year defined by 4 digits.
         doi (str): Digital identification of the publication.
-
     Returns:
         (str): Full reference of the publication.
-
     """
     full_ref  = f'{title}, '                     # add the reference's title
     full_ref += f'{first_author}. et al., '      # add the reference's first author
@@ -722,23 +720,23 @@ def _set_full_ref(title, first_author, journal_name, pub_year, doi):
 
 
 def _add_biblio_list(in_path, out_path):
-    """The function `_add_biblio_list` adds a new column 
-    containing the full reference of each publication 
-    of the publications list with one row per author and saves it as Excel file.
-    The full reference is built by concatenating the folowing items:
-    title, first author, year, journal, DOI.
+    """Adds a new column containing the full reference of each publication 
+    of the publications list with one row per author.
+
+    The full reference is built by concatenating the folowing items: 
+    title, first author, year, journal, DOI. 
     These items are got from the columns which names are given by 
     'pub_title_alias', 'pub_first_author_alias', 'pub_year_alias', 
-    'pub_journal_alias' and 'pub_doi_alias', respectively.
-    The name of the new column is given by 'pub_full_ref_alias'.
+    'pub_journal_alias' and 'pub_doi_alias', respectively. 
+    The name of the new column is given by 'pub_full_ref_alias'. 
+    The updated publications list is saved as Excel file.
 
     Args:
         in_path (path): Full path to the Excel file of the publications list.
         out_path (path): Full path for saving the modified publications list.
-
     Returns:
-        (str): End message recalling the full path to the saved file 
-               of the modified publications list.
+        (str): End message recalling the full path to the saved file \
+        of the modified publications list.
     """
 
     # Setting useful aliases
@@ -774,31 +772,29 @@ def _add_biblio_list(in_path, out_path):
 
 
 def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
-    """The function `_add_ext_docs` adds to the publications-list dataframe 
-    with one row per author new rows containing the information of authors 
-    that are PhD students at the Institute but not as employees of it.
-    The list of these PhD students with the required information is got from
+    """Adds to the publications-list dataframe with one row per author 
+    new rows containing the information of specific authors.
+
+    The specific authors are PhD students at the Institute but not as employees of it. 
+    The list of these PhD students with the required information is got from 
     the excel file which full path is given by 'ext_docs_path' in sheet which 
-    name is given by 'ext_docs_sheet_name_alias'.
+    name is given by 'ext_docs_sheet_name_alias'. 
     The row of the added PhD students is dropped in the publications list 
-    with one row per author that has not been identified as Institute employee.
+    with one row per author that has not been identified as Institute employee. 
     The new publications lists are saved as Excel files.
 
     Args:
-        submit_path (path): Full path to the Excel file of the publications list 
-                            with one row per author with attributes as Institute 
-                            employee.
-        orphan_path (path): Full path to the Excel file of the publications list 
-                            with one row per author that has not been identified 
-                            as Institute employee.
-        ext_docs_path (path): Full path to the Excel file giving the PhD students 
-                              at the Institute but not employees of it.
-
+        submit_path (path): Full path to the Excel file of the publications list \
+        with one row per author with attributes as Institute employee.
+        orphan_path (path): Full path to the Excel file of the publications list \
+        with one row per author that has not been identified as Institute employee.
+        ext_docs_path (path): Full path to the Excel file giving the PhD students \
+        at the Institute but not employees of it.
     Returns:
-        (tup): Tuple = (updated dataframe of the publications list with one row 
-                        per Institute author including external PhD students,  
-                        updated dataframe of publications list with one row per author 
-                        that has not been identified as Institute employee).
+        (tup): (updated dataframe of the publications list with one row \
+        per Institute author including external PhD students, updated dataframe \ 
+        of publications list with one row per author that has not been identified \
+        as Institute employee).
     """
 
     # Setting aliases for useful column names
@@ -911,32 +907,29 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
 
 
 def _add_other_ext(submit_path, orphan_path, others_path):
-    """The function `_add_other_ext` adds to the publications-list dataframe 
-    with one row per author new rows containing the information of authors 
-    that are under external hiring contract at the Institute.
-    The list of these employees with the required information is got from
+    """Adds to the publications-list dataframe with one row per author 
+    new rows containing the information of specific authors.
+
+    The specific authors are under external hiring contract at the Institute. 
+    The list of these employees with the required information is got from 
     the excel file which full path is given by 'others_path' in sheet which 
-    name is given by 'others_sheet_name_alias'.
+    name is given by 'others_sheet_name_alias'. 
     The row of the added employees is dropped in the publications list 
-    with one row per author that has not been identified as Institute employee.
+    with one row per author that has not been identified as Institute employee. 
     The new publications lists are saved as Excel files.
 
     Args:
-        submit_path (path): Full path to the Excel file of the publications list 
-                            with one row per author with attributes as Institute 
-                            employee.
-        orphan_path (path): Full path to the Excel file of the publications list 
-                            with one row per author that has not been identified 
-                            as Institute employee.
-        ext_docs_path (path): Full path to the Excel file giving the employees 
-                              under external hiring contract at the Institute.
-
+        submit_path (path): Full path to the Excel file of the publications list \
+        with one row per author with attributes as Institute employee.
+        orphan_path (path): Full path to the Excel file of the publications list \
+        with one row per author that has not been identified as Institute employee.
+        ext_docs_path (path): Full path to the Excel file giving the employees \
+        under external hiring contract at the Institute.
     Returns:
-        (tup): Tuple = (updated dataframe of the publications list with one row 
-                        per Institute author including employees under external 
-                        hiring contract at the Institute, 
-                        updated dataframe of publications list with one row per author 
-                        that has not been identified as Institute employee).
+        (tup): (updated dataframe of the publications list with one row \
+        per Institute author including employees under external hiring contract \
+        at the Institute, updated dataframe of publications list with one row \
+        per author that has not been identified as Institute employee).
     """
 
     # Setting aliases for useful column names
@@ -1049,18 +1042,18 @@ def _add_other_ext(submit_path, orphan_path, others_path):
 
 def _change_col_names(institute, org_tup, submit_path, orphan_path):
     """Sets new column names to the files pointed by 'submit_path' 
-    and 'orphan_path' paths through the `build_col_conversion_dic` 
-    function imported from `bmfuncts.rename_cols` module.
+    and 'orphan_path' paths.
+
+    For that it uses the `build_col_conversion_dic` function 
+    imported from `bmfuncts.rename_cols` module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        submit_path (path): Full path to the Excel file of the publications list 
-                            with one row per author with attributes as Institute employee.
-        orphan_path (path): Full path to the Excel file of the publications list 
-                            with one row per author that has not been identified 
-                            as Institute employee.
-
+        submit_path (path): Full path to the Excel file of the publications list \
+        with one row per author with attributes as Institute employee.
+        orphan_path (path): Full path to the Excel file of the publications list \
+        with one row per author that has not been identified as Institute employee.
     Returns:
         (str): End message recalling the full paths to the modified files.        
     """
@@ -1090,7 +1083,9 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
 
 def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=False):
     """Splits the publications list with one row per author that has not been identified 
-    as Institute employee in separate lists of publications depending on values in columns 
+    as Institute employees.
+
+    The split is in separate lists of publications depending on values in columns 
     given by 'inst_col_list' list that is specific to the Institute. 
     These lists are then saved as Excel files in the folder which full path 
     is given by 'orphan_path'.
@@ -1153,12 +1148,15 @@ def _my_hash(text:str):
 
 
 def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
-    """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias':
-        - the 'hash_id_col_alias' column contains the unique hash ID built for each publication 
-    through the `_my_hash` internal function on the basis of the values of
-    'year_alias', 'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias'
-    columns. 
-        - the 'pub_id_alias' column contains the publication order number in the publications list.
+    """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias'.
+
+    The containt of these columns is as follows:
+
+    - The 'hash_id_col_alias' column contains the unique hash ID built for each publication \
+    through the `_my_hash` internal function on the basis of the values of 'year_alias', \
+    'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns.
+    - The 'pub_id_alias' column contains the publication order number in the publications list.
+
     The dataframe is saved as Excel file which full path is given by 'hash_id_file_path'.
 
     Args:
@@ -1166,7 +1164,6 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): Contains the corpus year defined by 4 digits.
-
     Returns:
         (str): End message recalling path to the saved file.        
     """
@@ -1230,36 +1227,38 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
 def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_path,
                           corpus_year, search_depth, progress_callback=None, progress_bar_state=None):
     """Searches in the employees database of the Institute the information for the authors 
-    of the publications of a corpus through the following steps:
-        - First, the publications list dataframe with one row per Institute author for each 
-        publication is built from the results of the corpus parsing through 
-        the `_build_institute_pubs_authors` internal function.
-        - After that, the 'submit_df' dataframe of the publications list containing all matches 
-        between Institute authors and employee names is initialized using the most recent year 
-        of the employees database through the `_build_submit_df` internal function; 
-        this is done together with the initialization of 'orphan_df' dataframe of the publications 
-        list with authors not found in the employees database; these two dataframes contains 
-        one row per author of each publication.
-        - Then, new rows containing the information of authors that are PhD students 
-        at the Institute but not as employees of it are added through the `_add_ext_docs` 
-        internal function updating 'submit_df' and 'orphan_df' dataframes.
-        - Then, new rows containing the information of authors that are under external hiring 
-        contract at the Institute are added through the `_add_other_ext` internal function 
-        updating 'submit_df' and 'orphan_df' dataframes.
-        - Then, 'submit_df' and 'orphan_df' dataframes are updated by search in the employees 
-        database through the `_build_submit_df` internal function using recusively items from
-        'years' list for the search year; the dataframes are saved as Excel files which full 
-        paths are given by 'submit_path' and 'orphan_path', respectively.
-        - Then, a new column containing the job type for each author is added in the file which 
-        full path is given by 'submit_path' through the `_add_author_job_type` internal function.
-        - Then, a new column containing the full reference of each publication is added 
-        in the file which full path is given by 'submit_path' through the `_add_biblio_list` 
-        internal function.
-        - Then, column names are changed in the two files which full path are given by 
-        respectively, 'submit_path' and 'orphan_path' through the `_change_col_names` internal 
-        function.
-        - Finally, an Excel file containing the unique hash ID built for each publication 
-        is created through the `_creating_hash_id` internal function.
+    of the publications of a corpus.
+
+    This is done through the following steps:
+
+    1. The publications list dataframe with one row per Institute author for each \
+    publication is built from the results of the corpus parsing through \
+    the `_build_institute_pubs_authors` internal function.
+    2. The 'submit_df' dataframe of the publications list containing all matches \
+    between Institute authors and employee names is initialized using the most recent year \
+    of the employees database through the `_build_submit_df` internal function; \
+    this is done together with the initialization of 'orphan_df' dataframe of the publications \
+    list with authors not found in the employees database; these two dataframes contains \
+    one row per author of each publication.
+    3. New rows containing the information of authors that are PhD students \
+    at the Institute but not as employees of it are added through the `_add_ext_docs` \
+    internal function updating 'submit_df' and 'orphan_df' dataframes.
+    4. New rows containing the information of authors that are under external hiring \
+    contract at the Institute are added through the `_add_other_ext` internal function \
+    updating 'submit_df' and 'orphan_df' dataframes.
+    5. The 'submit_df' and 'orphan_df' dataframes are updated by search in the employees \
+    database through the `_build_submit_df` internal function using recusively items from \
+    'years' list for the search year; the dataframes are saved as Excel files which full \
+    paths are given by 'submit_path' and 'orphan_path', respectively.
+    6. A new column containing the job type for each author is added in the file which \
+    full path is given by 'submit_path' through the `_add_author_job_type` internal function.
+    7. A new column containing the full reference of each publication is added \
+    in the file which full path is given by 'submit_path' through the `_add_biblio_list` \
+    internal function.
+    8. Column names are changed in the two files which full path are given by respectively, \
+    'submit_path' and 'orphan_path' through the `_change_col_names` internal function.    
+    9. An Excel file containing the unique hash ID built for each publication \
+    is created through the `_creating_hash_id` internal function.
 
     Args:
         out_path (path): Full path to the folder for saving built dataframes. 
@@ -1269,25 +1268,22 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): Contains the corpus year defined by 4 digits.
         search_depth (int): Depth for search in 'empl_df' using 'years' list.
-        progress_callback (function): Function for updating ProgressBar 
-                                      tkinter widget status (default = None).
-        progress_bar_state (int): Initial status of ProgressBar tkinter widget 
-                                  (default = None).
-        
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (default = None).
+        progress_bar_state (int): Initial status of ProgressBar tkinter widget \
+        (default = None).        
     Returns:
-        (tup): Tuple = (end_message (str), empty status (bool) of the publications 
-                        list with authors not found in the employees database)
-
+        (tup): (end_message (str), empty status (bool) of the publications \
+        list with authors not found in the employees database)
     """
 
     # Internal functions
     def _unique_pub_id(df):
-        """Transforms the column 'Pub_id' of df
-        by adding "yyyy_" (year in 4 digits) to the values.
+        """Transforms the column 'Pub_id' of df y adding "yyyy_" 
+        (year in 4 digits) to the values.
 
         Args:
             df (pandas.DataFrame): data that we want to modify.
-
         Returns:
             (pandas.DataFrame): df with its changed column.
         """

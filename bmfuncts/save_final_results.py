@@ -1,4 +1,6 @@
-""" Module of functions for saving final results."""
+""" Module of functions for saving final results.
+
+"""
 
 __all__ = ['save_final_countries',
            'save_final_continents',
@@ -29,12 +31,11 @@ def save_final_pub_lists(bibliometer_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        results_folder_path (path): Full path to the folder where final 
-                                    results have to be saved.
-
-    returns:
-        (str): End message recalling corpus year and full path to 
-               the folder where final results have been saved.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
     """
 
 
@@ -97,14 +98,13 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        results_folder_path (path): Full path to the folder where final 
-                                    results have to be saved.
-        if_analysis_name (str): Base for building file names for saving 
-                                impact-factors results.
-
-    returns:
-        (str): End message recalling corpus year and full path to 
-               the folder where final results have been saved.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+        if_analysis_name (str): Base for building file names for saving \
+        impact-factors results.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
     """
 
     # Setting useful column names aliases
@@ -152,12 +152,11 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        results_folder_path (path): Full path to the folder where final 
-                                    results have to be saved.
-
-    returns:
-        (str): End message recalling corpus year and full path to 
-               the folder where final results have been saved.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
     """
 
     # Setting useful column names aliases
@@ -215,12 +214,11 @@ def save_final_countries(bibliometer_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        results_folder_path (path): Full path to the folder where final 
-                                    results have to be saved.
-
-    returns:
-        (str): End message recalling corpus year and full path to 
-               the folder where final results have been saved.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
     """
 
     # Setting aliases for saving results
@@ -265,12 +263,11 @@ def save_final_continents(bibliometer_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        results_folder_path (path): Full path to the folder where final 
-                                    results have to be saved.
-
-    returns:
-        (str): End message recalling corpus year and full path to 
-               the folder where final results have been saved.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
     """
 
     # Setting aliases for saving results
@@ -311,9 +308,12 @@ def save_final_continents(bibliometer_path,
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                        if_analysis_name, results_to_save_dict, verbose = False):
     """Saves final results of given datatype and corpus year according 
-    to the saving status of the following types of results: publications lists, 
+    to the saving status of the results.
+
+    The results types arethe following: publications lists, \
     impact factors, keywords countries and continents.
-    To do: Saving the results of co-publication with other institutions 
+
+    To do: Saving the results of co-publication with other institutions \
     and publications per OTPs.
 
     Args:
@@ -322,17 +322,15 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
-        if_analysis_name (str): Base for building file names for saving 
-                                impact-factors type of results.
-        results_to_save_dict (dict): Dict keyyed by the type of results 
-                                     to save and valued by saving status 
-                                     (bool; True if the type of results 
-                                     should be saved).
+        if_analysis_name (str): Base for building file names for saving \
+        impact-factors type of results.
+        results_to_save_dict (dict): Dict keyyed by the type of results \
+        to save and valued by saving status (bool; True if the type of \
+        results should be saved).
         verbose (bool): Status of prints (default = False).
-
-    returns:
-        (str): End message recalling corpus year and full path to 
-               the folder where final results have been saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
     """
 
     # Setting aliases for saving results

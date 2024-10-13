@@ -34,7 +34,8 @@ from bmfuncts.useful_functs import set_rawdata
 
 class AppMain(tk.Tk):
     """Main class of the BiblioMeter application.
-    Trace change in institute selection to update page parameters.
+
+    Traces changes in institute selection to update page parameters. 
     'bmf' stands for BiblioMeter_Files usual working directory name.
     """
     def __init__(self):
@@ -74,7 +75,7 @@ class AppMain(tk.Tk):
             return p_disp
 
         def _get_file(institute_select, datatype_select): 
-            """Gets full path of working folder through 'tk.filedialog.askdirectory'.
+            """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
             Updates 'bmf' widgets parameters and values accordingly to the working 
             folder got and sets launch button of corpuses analysis."""
 
@@ -142,7 +143,7 @@ class AppMain(tk.Tk):
 
         def _create_corpus(inst_bmf):
             """Creates a new corpus folder in the working folder through `create_archi` 
-            function imported from `bmfuncts.useful_functs` module.
+            function imported from `bmfuncts.useful_functs` module.             
             Then, updates 'corpi' widget value with new list of available corpuses."""
 
             corpi_val = _set_corpi_widgets_param(inst_bmf)
@@ -376,8 +377,7 @@ class AppMain(tk.Tk):
         institute_val.trace('w', partial(_update_page, institute_widget = institute_val))
 
 class SetMasterTitle():
-    """Displays title in main window.
-    """
+    """Displays title in main window."""
 
     def __init__(self, master):
 
@@ -399,8 +399,7 @@ class SetMasterTitle():
                          anchor = "center")
 
 class SetAuthorCopyright():
-    """Displays authors and copyright in main window.
-    """
+    """Displays authors and copyright in main window."""
 
     def __init__(self, master):
 

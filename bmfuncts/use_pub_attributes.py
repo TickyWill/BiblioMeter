@@ -1,5 +1,7 @@
 """Module of functions for using publications attributes
-such as homonyms and OTPs."""
+such as homonyms and OTPs.
+
+"""
 
 __all__ = ['save_homonyms',
            'save_otps',
@@ -73,17 +75,19 @@ def save_shaped_homonyms_file(homonyms_df, out_path):
 
 def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     """Saves the history of the resolved homonyms by the user.
-    First, builds the dataframe to save with following columns:
-        - hash-ID of the publication for which homonyms have been solved;
-        - the personal number of the kept author among the homonyms.
-    Then, saves the dataframe as Excel file.
+
+    First, builds the dataframe to save with the following columns:
+
+        - Hash-ID of the publication for which homonyms have been solved.
+        - The personal number of the kept author among the homonyms.
+
+    Finally, saves the dataframe as Excel file.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-
     Returns:
         (str): End message.
     """
@@ -160,9 +164,11 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
                        corpus_year, actual_homonym_status):
     """Resolves the homonyms from the history of the resolved homonyms 
     before submiting the file for resolving remaining homonyms to the user.
-    First, builds the dataframe with solved homonyms and homonyms remaining 
-    to be solved. 
-    Then, saves the dataframe through the `save_shaped_homonyms_file` 
+
+    First, builds the dataframe with solved homonyms and homonyms remaining \
+    to be solved.
+
+    Finally, saves the dataframe through the `save_shaped_homonyms_file` \
     internal function.
 
     Args:
@@ -171,10 +177,9 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         actual_homonym_status (bool): True if homonyms exists.
-
     Returns:
-        (tup): Tuple = (End message (str), actualized homonyms 
-               status (bool).
+        (tup): Tuple = (End message (str), actualized homonyms \
+        status (bool).
     """
 
     #  Setting useful col names
@@ -254,25 +259,30 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
 
 def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     """Saves the history of the attributed OTPs by the user.
+
     First, builds the dataframe to save with 2 sheets:
-        - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'hash_OTP' 
-        with the following columns:
-            - hash-ID of the publication for which OTPs have been attributed; 
-            - the OTPs value attributed.
-        - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'doi_OTP' 
-        with the following columns:
-            - Full name (last name + first name initials) of the first author 
-            of the publication for which OTPs have been attributed;
-            - DOI of the publication for which OTPs have been attributed;
-            - the OTPs value attributed.
-    Then, saves the dataframe as Excel file.
+
+    - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'hash_OTP' \
+    with the following columns:
+
+        - Hash-ID of the publication for which OTPs have been attributed. 
+        - The OTPs value attributed.
+
+    - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'doi_OTP' \
+    with the following columns:
+
+        - Full name (last name + first name initials) of the first author \
+        of the publication for which OTPs have been attributed.
+        - DOI of the publication for which OTPs have been attributed.
+        - The OTPs value attributed.
+
+    Finally, saves the dataframe as Excel file.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-
     Returns:
         (str): End message.
     """
@@ -369,11 +379,14 @@ def _re_save_dpt_otp_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
                           dpt_otp_list, excel_dpt_path, otp_list_col, columns_list):
 
     """Rebuilds and saves the openpyxl workbook for the department labelled 'dpt'.
+
     A data validation list is added to the cells 'otp_cell_alias' only when 
     the OTP in not already attributed.
+
     The openpyxl workbook is created through the `mise_en_page` function imported from 
     the `bmfuncts.useful_functs` module and is re-configured in the same way as in this 
     function after being modified and before being saved.
+
     The columns attributes for formatting the workbook are defined through the `set_col_attr` 
     function imported from `bmfuncts.rename_cols` module.
 
@@ -467,11 +480,13 @@ def _re_save_dpt_otp_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
 def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     """Attributes the OTPs from the history of the attributed OTPs 
     before submiting to the user the file for attributing the not yet 
-    attributed OTPs. 
+    attributed OTPs.
+
     Loops on department to:
-        - First, builds the dataframe with already attributed OTPs 
+
+        1. Build the dataframe with already attributed OTPs \
     and OTPs remaining to be attributed. 
-        - Then, saves the file to be submitted to the user through the 
+        2. Save the file to be submitted to the user through the \
     `_re_save_dpt_otp_file` internal function.
 
     Args:
@@ -479,7 +494,6 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-
     Returns:
         (str): End message giving the status of the OTPs attribution.
     """

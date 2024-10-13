@@ -1,7 +1,9 @@
 """Module of functions for publications-list analysis
 in terms of impact factors, key words and geographical collaborations.
+
 To do: Analysis of co-publication with other institutions and 
-publications per OTPs."""
+publications per OTPs.
+"""
 
 __all__ = ['if_analysis',
            'keywords_analysis',
@@ -31,7 +33,8 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
     """Updates database of the key performance indicators (KPIs) with values of 'kpi_dict' 
     hierarchical dict for the Institute and each of the its departments with the KPIs data 
     of 'corpus_year' corpus.
-    Then, these updated databases are saved as Excel workbooks using the `format_df_for_excel` 
+
+    These updated databases are saved as Excel workbooks using the `format_df_for_excel` 
     function imported from the `bmfuncts.useful_functs` module.
 
     Args:
@@ -40,12 +43,11 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
-        kpi_dict (dict): Hierarchical dict keyyed by departments of the Institute 
-                         including itself and valued with KPIs dict of these keys.
-        if_key (str): Column name of the analyzed impact factors (either those of 
-                      the publication year or the most available ones).
+        kpi_dict (dict): Hierarchical dict keyyed by departments of the Institute \
+        including itself and valued with KPIs dict of these keys.
+        if_key (str): Column name of the analyzed impact factors (either those of \
+        the publication year or the most available ones).
         verbose (bool): Status of prints (default = False).
-
     Returns:
         (dataframe): Institute KPIs database.
     """
@@ -150,13 +152,11 @@ def _build_analysis_books_kpi(books_df, params_tup):
 
     Args:
         books_df (dataframe): Publications list of books document-type. 
-        params_tup (tup): Tuple = (Institute name (str), 
-                          list of departments (list), 
-                          column name of journals (str)).
-
+        params_tup (tup): Tuple = (Institute name (str), \
+        list of departments (list), column name of journals (str)).
     Returns:
-        (dict): Hierarchical dict keyyed by departments and valued 
-                at each key by KPIs of the department.
+        (dict): Hierarchical dict keyyed by departments and valued \
+        at each key by KPIs of the department.
     """
 
     # Setting useful parameters from args
@@ -212,28 +212,28 @@ def _build_analysis_books_kpi(books_df, params_tup):
 
 def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
     """Computes the key performance indicators (KPIs) of all document types 
-    for each department of the Institute including itself. 
-    To do that:
-        - First, adds a column with number of articles per journal to the 
-        'dept_analysis_df' dataframe then drops duplicate rows on journal ISSN values; 
-        - Then, builds the 'dept_articles_df' dataframe by keeping only articles 
-        of journal (not proceedings) and drops 'doctype_col' column; 
-        - Then, computes the basic KPIs independent of specific analysis 
-        (such as impact factors, coupling anf keywords analysis);
-        - Finally, builds the KPIs dict.
+    for each department of the Institute including itself.
+
+    This is done through the following steps:
+
+    1. Adds a column with number of articles per journal to the \
+    'dept_analysis_df' dataframe then drops duplicate rows on journal ISSN values;
+    2. Builds the 'dept_articles_df' dataframe by keeping only articles \
+    of journal (not proceedings) and drops 'doctype_col' column;
+    3. Computes the basic KPIs independent of specific analysis \
+    (such as impact factors, coupling anf keywords analysis);
+    4. Builds the KPIs dict.
 
     Args:
         dept_analysis_df (dataframe): 
         dept_books_kpi_dict (dept_books_kpi_dict): KPIs of books document-type. 
-        params_tup (tup): Tuple = (Institute name (str), 
-                          list of departments (list), 
-                          column name of journals (str)).
-
+        params_tup (tup): (Institute name (str), \
+        list of departments (list), column name of journals (str)).
     Returns:
-        (tup): Tuple = (the built articles dataframe for the department, 
-               KPIs dict keyyed by KPI_KEYS_ORDER_DICT global -imported from 
-               the globals module imported as pg- and valued by KPIs values 
-               of the department.
+        (tup): (the built articles dataframe for the department, \
+        KPIs dict keyyed by KPI_KEYS_ORDER_DICT global -imported from \
+        the globals module imported as pg- and valued by KPIs values \
+        of the department).
     """
 
     # Setting useful parameters from args
@@ -306,52 +306,44 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
                             if_analysis_folder_path, books_list_file_path,
                             verbose=False):
     """Builds the data of each department of the Institute including itself 
-    for impact-factors (IFs) analysis. 
-    To do that:
-        - First, builds the 'dept_analysis_df' dataframe of publications list of the department 
-        selected from the 'analysis_df' dataframe.
-  
-        - Then, initializes the 'dept_kpi_dict' dict with the basic key performance indicators (KPIs) 
-        of the department using the 'dept_analysis_df' through the `_build_basic_kpi_dict` 
-        internal function which returns also 'dept_articles_df' dataframe with only articles 
-        as document types.
-  
-        - Then, builds the 'dept_if_df' dataframe from 'dept_articles_df' dataframe selecting 
-        useful columns for IF-KPIs computation and cleans it.
-  
-        - Then, computes the IF-KPIs of the department using the data of the 'dept_if_df' dataframe.
-  
-        - Then, builds the 'dept_if_kpi_dict' dict using the IF_KPIs computed.
-  
-        _ Then, sets the value of the 'dept_kpi_dict' dict at key given by 'if_analysis_col_new' 
-        aqual to 'dept_if_kpi_dict' dict; by that the 'dept_kpi_dict' dict becomes a hierarchical dict.
-  
-        - Then, sets the value of the 'kpi_dict' hierarchical dict at key 'dept' (name of the department) 
-        equal to the 'dept_kpi_dict' hierarchical dict.
-  
-        - Finally, saves the 'dept_if_df' dataframe as Excel workbook using the `format_df_for_excel` 
-        function imported from the `bmfuncts.useful_functs` module.
+    for impact-factors (IFs) analysis.
+
+    This is done through the following steps:
+
+    1. Builds the 'dept_analysis_df' dataframe of publications list of the department \
+    selected from the 'analysis_df' dataframe.
+    2. Initializes the 'dept_kpi_dict' dict with the basic key performance indicators (KPIs) \
+    of the department using the 'dept_analysis_df' through the `_build_basic_kpi_dict` internal \
+    function which returns also 'dept_articles_df' dataframe with only articles as document types.
+    3. Builds the 'dept_if_df' dataframe from 'dept_articles_df' dataframe selecting \
+    useful columns for IF-KPIs computation and cleans it.
+    4. Computes the IF-KPIs of the department using the data of the 'dept_if_df' dataframe.
+    5. Builds the 'dept_if_kpi_dict' dict using the IF_KPIs computed.
+    6. Sets the value of the 'dept_kpi_dict' dict at key given by 'if_analysis_col_new' \
+    aqual to 'dept_if_kpi_dict' dict; by that the 'dept_kpi_dict' dict becomes a hierarchical dict.  
+    7. Sets the value of the 'kpi_dict' hierarchical dict at key 'dept' (name of the department) \
+    equal to the 'dept_kpi_dict' hierarchical dict.
+    8. Saves the 'dept_if_df' dataframe as Excel workbook using the `format_df_for_excel` \
+    function imported from the `bmfuncts.useful_functs` module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         analysis_df (dataframe): Publications list to be analyzed.
-        if_analysis_col (str): Column name of the IFs values to be used for 
-                               the analysis in the 'analysis_df' dataframe.
+        if_analysis_col (str): Column name of the IFs values to be used for \
+        the analysis in the 'analysis_df' dataframe.
         if_analysis_year (str): 4 digits year of the IFs values used for the analysis.
         if_analysis_folder_path (path): Full path to the folder for saving results.
         books_list_file_path (path): Full path to the file of book list to be analyzed.
-        kpi_dict (dict): Dict keyyed by departments of the Institute including itself 
-                         and valued with KPIs of the 'corpus_year' corpus.
-        if_key (str): Column name of the analyzed impact factors (either those of 
-                      the publication year or the most available ones).
+        kpi_dict (dict): Dict keyyed by departments of the Institute including itself \
+        and valued with KPIs of the 'corpus_year' corpus.
+        if_key (str): Column name of the analyzed impact factors (either those of \
+        the publication year or the most available ones).
         verbose (bool): Status of prints (default = False).
-
     Returns:
-        (tup): Tuple = (hierarchical dict keyyed by departments of the Institute including itself 
-               and valued with KPIs dict of each department, 
-               key of IF-KPIs in the hierarchical dict of each department 
-               and also column name of IFs values in the saved files).
+        (tup): (hierarchical dict keyyed by departments of the Institute including \
+        itself and valued with KPIs dict of each department, key of IF-KPIs in the \
+        hierarchical dict of each department and also column name of IFs values in the saved files).
     """
 
     # Setting useful aliases
@@ -451,23 +443,21 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
 def if_analysis(institute, org_tup, bibliometer_path, datatype,
                 corpus_year, if_most_recent_year,
                 progress_callback=None, verbose=False):
-    """ Performs the analysis of journal impact_factors (IFs) of the 'corpus_year' corpus. 
-    To do that:
-        - First, gets deduplication results of the parsing step trough the `read_parsing_dict` 
-        function imported from `bmfuncts.useful_functs` module.
+    """ Performs the analysis of journal impact_factors (IFs) of the 'corpus_year' corpus.
 
-        - Then, builds the dataframe of publications list to be analyzed using 
-        normalized journal names available in the deduplicated list of publications 
-        resulting from the parsing step.
- 
-        - Then, builds the IFs data resulting from IFs analysis of this dataframe 
-         through the `_build_analysis_if_data` internal function and saves them as xlsx files.
-  
-        - Then, updates database of key performance indicators (KPIs) of the Institute 
-        with the results of this analysis through the `_update_kpi_database` internal function.
-  
-        - Finally, saves the results of this analysis for the 'datatype' case through the 
-        `save_final_results` function imported from `bmfuncts.save_final_results` module.
+    This is done through the following steps:
+
+    1. Gets deduplication results of the parsing step trough the `read_parsing_dict` \
+    function imported from `bmfuncts.useful_functs` module.
+    2. Builds the dataframe of publications list to be analyzed using \
+    normalized journal names available in the deduplicated list of publications \
+    resulting from the parsing step. 
+    3. Builds the IFs data resulting from IFs analysis of this dataframe \
+     through the `_build_analysis_if_data` internal function and saves them as xlsx files.
+    4. Updates database of key performance indicators (KPIs) of the Institute \
+    with the results of this analysis through the `_update_kpi_database` internal function.
+    5. Saves the results of this analysis for the 'datatype' case through the \
+    `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
         institute (str): Institute name.
@@ -476,15 +466,12 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         if_most_recent_year (str): Most recent year of impact factors.
-        progress_callback (function): Function for updating ProgressBar 
-                                      tkinter widget status (default = None).
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (default = None).
         verbose (bool): Status of prints (default = False).
-
     Returns:
-        (tup): Tuple = (full path to the folder where results 
-                        of impact-factors analysis are saved, 
-                        dataframe of Institute KPIs database,
-                        dict of Institute KPIs).
+        (tup): (full path to the folder where results of impact-factors \
+        analysis are saved, dataframe of Institute KPIs database, dict of Institute KPIs).
     """
 
     # internal functions
@@ -657,18 +644,20 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
 def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_tup,
                              kw_analysis_folder_path, verbose=False):
     """Creates publications-keywords (KW) data for the 'kw_type' KW type 
-    for each department of the Institute including itself. 
-    To do that:
-        - First, builds the list of publication IDs of the department 
-        extracted from the 'analysis_df' dataframe;
-        - Then, builds the list of KWs for the 'kw_type' KW type extracted 
-        from the 'kw_df' dataframe using the built list of publication IDs 
-        of the department;
-        - Then, builds the 'dept_kw_df' dataframe by computing the number 
-        of occurences of each KW in the built list of KWs;
-        - Finally, saves the 'dept_kw_df' dataframe as Excel workbook using the 
-        `format_df_for_excel` function imported from the `bmfuncts.useful_functs` 
-        module.
+    for each department of the Institute including itself.
+
+    This is done through the following steps:
+
+    1. Builds the list of publication IDs of the department \
+    extracted from the 'analysis_df' dataframe;
+    2. Builds the list of KWs for the 'kw_type' KW type extracted \
+    from the 'kw_df' dataframe using the built list of publication IDs \
+    of the department;
+    3. Builds the 'dept_kw_df' dataframe by computing the number \
+    of occurences of each KW in the built list of KWs;
+    4. Saves the 'dept_kw_df' dataframe as Excel workbook using the \
+    `format_df_for_excel` function imported from the `bmfuncts.useful_functs` \
+    module.
 
     Args:
         institute (str): Institute name.
@@ -676,10 +665,10 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
         analysis_df (dataframe): Publications list to be analyzed.
         kw_type (str): Type of keyword to be analyzed.
         kw_df (dataframe): Keywords list of 'kw_type' type to be analyzed.
-        cols_tup (tup): Tuple = (list of column name for each department of the Institute, 
-                                 publication-IDs column name in 'analysis_df' dataframe, 
-                                 publication-IDs column name in 'kw_df' dataframe, 
-                                 keywords column name, keyword-weight column name).
+        cols_tup (tup): Tuple = (list of column name for each department of the Institute, \
+        publication-IDs column name in 'analysis_df' dataframe, \
+        publication-IDs column name in 'kw_df' dataframe, \
+        keywords column name, keyword-weight column name).
         kw_analysis_folder_path (path): Full path to the folder for saving results.
         verbose (bool): Status of prints (default = False).
     """
@@ -737,18 +726,22 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
 
 def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
                       year, progress_callback=None, verbose=False):
-    """ Performs the analysis of publications keywords (KWs) of the 'year' corpus. 
-    To do that:
-        - First, gets deduplication results of the parsing step trough the 
-        `read_parsing_dict` function imported from `bmfuncts.useful_functs` module.
-        - Then, builds the dataframe of publications list to be analyzed specifying 
-        the useful columns;
-        - Then, loops on KW type among author KW (AK), indexed KW (IK) and title KW (TK) for:
-            - building the dataframe of KW list to be analyzed given by the deduplication 
-            results of the parsing step;
-            - creating KW analysis data through the `_create_kw_analysis_data` internal function;
-        - Finally, saves the results of this analysis for the 'datatype' case through the 
-        `save_final_results` function imported from `bmfuncts.save_final_results` module.
+    """ Performs the analysis of publications keywords (KWs) of the 'year' corpus.
+
+    This is done through the following steps:
+
+    1. Gets deduplication results of the parsing step trough the \
+    `read_parsing_dict` function imported from `bmfuncts.useful_functs` module.
+    2. Builds the dataframe of publications list to be analyzed specifying \
+    the useful columns;
+    3. Loops on KW type among author KW (AK), indexed KW (IK) and title KW (TK) for:
+
+        1. building the dataframe of KW list to be analyzed given by the deduplication \
+        results of the parsing step;
+        2. creating KW analysis data through the `_create_kw_analysis_data` internal function;
+
+    4. Saves the results of this analysis for the 'datatype' case through the \
+    `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
         institute (str): Institute name.
@@ -756,10 +749,9 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year (str): 4 digits year of the corpus.
-        progress_callback (function): Function for updating ProgressBar 
-                                      tkinter widget status (default = None).
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (default = None).
         verbose (bool): Status of prints (default = False).
-
     Returns:
         (path): Full path to the folder where results of keywords analysis are saved.
     """
@@ -879,18 +871,20 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
 
 def _build_countries_stat(countries_df):
     """Builds the statistics of publications per country from the analysis 
-    of the dataframe of countries where each row contains:
-        - a publication IDs; 
-        - the index of an address of the publication addresses; 
-        - the country of the given address.
+    of the dataframe of countries.
+
+    Each row of this dataframe contains:
+
+    - A publication IDs; 
+    - The index of an address of the publication addresses; 
+    - The country of the given address.
 
     Args:
         countries_df (dataframe): Data of countries per publications.
-
     Returns:
-        (dataframe): Countries statistics where each row gives the country name, 
-                     the Institute-publications number with address from the country 
-                     and a string listing the concerned publications IDs separated by semicolon.
+        (dataframe): Countries statistics where each row gives the country name, \
+        the Institute-publications number with address from the country \
+        and a string listing the concerned publications IDs separated by semicolon.
     """
 
     # Setting useful local aliases
@@ -920,18 +914,20 @@ def _build_countries_stat(countries_df):
 
 def _build_continents_stat(countries_df):
     """Builds the statistics of publications per continents from the analysis 
-    of the dataframe of countries where each row contains:
-        - a publication IDs; 
-        - the index of an address of the publication addresses; 
-        - the country of the given address.
+    of the dataframe of countries.
+
+    Each row of this dataframe contains:
+
+    - A publication IDs; 
+    - The index of an address of the publication addresses; 
+    - The country of the given address.
 
     Args:
         countries_df (dataframe): Data of countries per publications.
-
     Returns:
-        (dataframe): Continents statistics where each row gives the continent name, 
-                     the Institute-publications number with address from the continent 
-                     and a string listing the concerned publications IDs separated by semicolon.
+        (dataframe): Continents statistics where each row gives the continent name, \ 
+        the Institute-publications number with address from the continent \
+        and a string listing the concerned publications IDs separated by semicolon.
     """
 
     # Setting useful local aliases
@@ -972,41 +968,37 @@ def _build_continents_stat(countries_df):
 def coupling_analysis(institute, org_tup, bibliometer_path,
                       datatype, year, progress_callback=None, verbose=False):
     """ Performs the analysis of countries and authors affiliations of Institute publications 
-    of the 'year' corpus. 
-    To do that:
-        - First, gets the 'all_address_df' dataframe of authors addresses from the file which full path 
-        is given by 'addresses_item_path' and that is a deduplication results of the parsing step
-        of the corpus.
+    of the 'year' corpus.
 
-        - Then, builds the 'inst_pub_addresses_df' dataframe by selecting in 'all_address_df' dataframe 
-        only addresses related to publications of the Institute.
+    This is done through the following steps:
 
-        - Then, builds the dataframes of countries, normalized institutions and raw institutions 
-        through the `build_norm_raw_institutions` function imported from the package imported as bp, 
-        using 'inst_pub_addresses_df' dataframe and specific files for this function; in these datraframes,  
-        each row contains:
-            - a publication IDs
-            - the index of an address of the publication addresses 
-            - the country of the given address
-            - and for the institutions dataframes, the list of normalized institutions or the list of raw 
-            institutions for the given address.  
+    1. Gets the 'all_address_df' dataframe of authors addresses from the file which full path \
+    is given by 'addresses_item_path' and that is a deduplication results of the parsing step \
+    of the corpus.
+    2. Builds the 'inst_pub_addresses_df' dataframe by selecting in 'all_address_df' dataframe \
+    only addresses related to publications of the Institute.
+    3. Builds the dataframes of countries, normalized institutions and raw institutions \
+    through the `build_norm_raw_institutions` function imported from the package imported as bp, \
+    using 'inst_pub_addresses_df' dataframe and specific files for this function; in these datraframes, \
+    each row contains:
 
-        - Then, completes the normalized institutions and raw institutions dataframes with country 
-        information by `_copy_dg_col_to_df` local function.
+        - A publication IDs
+        - The index of an address of the publication addresses 
+        - The country of the given address
+        - For the institutions dataframes, the list of normalized institutions or the list of raw \
+        institutions for the given address.  
 
-        - Then, modifyes the publication_IDs by `_year_pub_id` local function in the 3 dataframes.
-
-        - Then, saves the normalized institutions and raw institutions dataframes through the 
-        `_save_formatted_df_to_xlsx` local function.
-
-        - Then, builds the publications statistics dataframes per country and per continent using 
-        the `_build_countries_stat` and `_build_continents_stat` internal functions.
-
-        - Then, saves the statistics dataframes through the `_save_formatted_df_to_xlsx` 
-        local function.
-
-        - Finally, saves the results of this analysis for the 'datatype' case through the 
-        `save_final_results` function imported from `bmfuncts.save_final_results` module.
+    4. Completes the normalized institutions and raw institutions dataframes with country \
+    information by `_copy_dg_col_to_df` local function.
+    5. Modifyes the publication_IDs by `_year_pub_id` local function in the 3 dataframes.
+    6. Saves the normalized institutions and raw institutions dataframes through the \
+    `_save_formatted_df_to_xlsx` local function.
+    7. Builds the publications statistics dataframes per country and per continent using \
+    the `_build_countries_stat` and `_build_continents_stat` internal functions.
+    8. Saves the statistics dataframes through the `_save_formatted_df_to_xlsx` \
+    local function.
+    9. Saves the results of this analysis for the 'datatype' case through the \
+    `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
         institute (str): Institute name.
@@ -1014,10 +1006,9 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year (str): 4 digits year of the corpus.
-        progress_callback (function): Function for updating ProgressBar 
-                                      tkinter widget status (default = None).
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (default = None).
         verbose (bool): Status of prints (default = False).
-
     Returns:
         (path): Full path to the folder where results of keywords analysis are saved.
     """
@@ -1031,16 +1022,15 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         return df
 
     def _year_pub_id(df, year, pub_id_alias):
-        '''The local function `_unique_pub_id` transforms the column 'Pub_id' of the df
+        """The local function `_unique_pub_id` transforms the column 'Pub_id' of the df
         by adding "yyyy_" to the value of the row.
 
         Args:
             df (pandas.DataFrame()): pandas.DataFrame() that we want to modify.
-            year (str):
-
+            year (str): 4 digits year of the corpus.
         Returns:
-            (pandas.DataFrame()): the df with its changed column.
-        '''
+            (dataframe): the df with its changed column.
+        """
 
         def _rename_pub_id(old_pub_id, year):
             pub_id_str = str(int(old_pub_id))
@@ -1054,7 +1044,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     def _save_formatted_df_to_xlsx(results_path, item_filename, item_df,
                                    sheet_name, year, first_col_width, last_col_width):
         """Formats the 'item_df' dataframe through `format_df_for_excel` function 
-        imported from `bmfuncts.useful_functs import` module and saves it as Excel workbook."""
+        imported from `bmfuncts.useful_functs import` module and saves it as Excel workbook.
+        """
         item_xlsx_file = item_filename + xlsx_extent_alias
         item_xlsx_path = results_path / Path(item_xlsx_file)
         wb, ws = format_df_for_excel(item_df, first_col_width, last_col_width)

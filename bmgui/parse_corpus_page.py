@@ -94,22 +94,20 @@ class CheckBoxCorpuses:
 
 
 def _create_table(self, master, pos_x_init):
-    """The internal function `_create_table` creates the column names
-    of the table displaying which files of the parsing step are available 
-    in the working folder.
+    """Creates the column names of the table displaying which files 
+    of the parsing step are available in the working folder.
+
     The positions of the table items are set using the argument 'pos_x_init', 
     and the general properties of tkinter window as 'master' class variables.
 
     Args:
-        pos_x_init (int): The initial horizontal position in pixels to be used 
-                          for widgets location on the parsing page.
-
+        pos_x_init (int): The initial horizontal position in pixels to be used \
+        for widgets location on the parsing page.
     Note:
-        The functions 'font_size' and 'mm_to_px' are imported
-        from the module 'gui_utils' of the package 'bmgui'.
+        The functions 'font_size' and 'mm_to_px' are imported 
+        from the module 'gui_utils' of the package 'bmgui'.        
         The globals 'FONT_NAME' and 'PPI' are imported from the module 'gui_globals'
         of the package 'bmgui'.
-
     """
 
     # Internal functions
@@ -156,17 +154,16 @@ def _create_table(self, master, pos_x_init):
 
 
 def _update(self, master, bibliometer_path, pos_tup):
-    """The internal function `_update` refreshes the current state
-    of the files in the working folder using the `_create_table` 
-    internal function.
+    """Refreshes the current state of the files in the 
+    working folder using the `_create_table` internal function.
+
     It also updates the OptionMenu buttons used to select the year.
 
     Args:
         bibliometer_path (path): The path leading to the working folder.
-        pos_tup (tup): Tuple = (x position (int) for widgets location, 
-                                y position (int) for widgets location, 
-                                space value (int) for widgets spacing).
-
+        pos_tup (tup): (x position (int) for widgets location, \
+        y position (int) for widgets location, space value (int) \
+        for widgets spacing).
     Note:
         The function 'mm_to_px' is imported from the module 'gui_utils'
         of the package 'bmgui'.
@@ -174,7 +171,6 @@ def _update(self, master, bibliometer_path, pos_tup):
         are imported from the module 'gui_utils' of the package 'bmgui'.
         The globals FONT_NAME and PPI are imported from the module 'gui_globals'
         of the package 'bmgui'.
-
     """
     # Setting parameters from args
     pos_x, pos_y, esp_ligne = pos_tup
@@ -219,25 +215,29 @@ def _update(self, master, bibliometer_path, pos_tup):
 
 def _launch_parsing(self, master, corpus_year, database_type,
                     paths_tup, pos_tup, progress_callback):    
-    """Launches parsing of raw-data of 'database_type' database 
-    through `biblio_parser` function imported from 3rd party package 
-    imported as bp after check of database name and database raw-data 
-    availability.
+    """Launches parsing of raw-data of 'database_type' database.
+
+    This is done through `biblio_parser` function imported from 
+    3rd party package imported as bp after check of database name 
+    and database raw-data availability.
+
     It saves the resulting parsing files using paths set through 
-    `set_user_config` function imported from `bmfuncts.config_utils` module.
+    `set_user_config` function imported from `bmfuncts.config_utils` 
+    module.
+
     It updates the files status using the internal function `_update`.
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
         database_type (str): Database name (ex: 'wos' or 'scopus').
-        paths_tup (tup): Tuple = (full path to working folder, 
-                         full path to institute-affiliations file, 
-                         full path to institutions-types file).
-        pos_tup (tup): Tuple = (x position (int) for widgets location, 
-                                y position (int) for widgets location, 
-                                space value (int) for widgets spacing).
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.
+        paths_tup (tup): (full path to working folder, 
+        full path to institute-affiliations file, \
+        full path to institutions-types file).
+        pos_tup (tup): (x position (int) for widgets location, \
+        y position (int) for widgets location, \
+        space value (int) for widgets spacing).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
     """
 
     # Internal functions
@@ -352,26 +352,32 @@ def _launch_parsing(self, master, corpus_year, database_type,
 
 def _launch_synthese(self, master, corpus_year, org_tup, datatype,
                      paths_tup, pos_tup, progress_callback):
-    """The internal function `_launch_synthese` concatenates and deduplicates 
-    the parsing from wos or scopus databases using the functions `concatenate_parsing` 
-    and `deduplicate_parsing` imported from 3rd party package imported as bp.
+    """Concatenates and deduplicates the parsing from wos or scopus databases.
+
+    This is done through the functions `concatenate_parsing` 
+    and `deduplicate_parsing` imported from 3rd party package 
+    imported as bp.
+
     It checks if all useful files are available in the working folder.
-    It saves the resulting parsing files using paths set through `set_user_config` 
-    function imported from `bmfuncts.config_utils` module.
+
+    It saves the resulting parsing files using paths set through 
+    `set_user_config` function imported from `bmfuncts.config_utils` 
+    module.
+
     It updates the files status using the internal function `_update`.
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
         org_tup (tup): Contains Institute parameters.
         datatype (str): Data combination type from corpuses databases.
-        paths_tup (tup): Tuple = (full path to working folder, 
-                         full path to institute-affiliations file, 
-                         full path to institutions-types file).
-        pos_tup (tup): Tuple = (x position (int) for widgets location, 
-                                y position (int) for widgets location, 
-                                space value (int) for widgets spacing).
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.
+        paths_tup (tup): (full path to working folder, \
+        full path to institute-affiliations file, \
+        full path to institutions-types file).
+        pos_tup (tup): (x position (int) for widgets location, \
+        y position (int) for widgets location, \
+        space value (int) for widgets spacing).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
     """
 
     # Internal functions
@@ -495,8 +501,10 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
 
 
 def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
-    """Manages creation and use of widgets for corpus parsing through 
-    internal functions  `_launch_parsing`, `_launch_synthese` and `_update`.
+    """Manages creation and use of widgets for corpus parsing.
+
+    This is done through the internal functions  `_launch_parsing`, 
+    `_launch_synthese` and `_update`.
 
     Args:
         page_name (str): Name of parsing page.

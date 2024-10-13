@@ -141,7 +141,6 @@ def last_available_years(bibliometer_path, year_number):
     Args:
         bibliometer_path (path): Full path to working folder.
         year_number (int): Data combination type from corpuses databases.
-
     Returns:
         (list): List of 'year_number' length of available corpuses as strings of 4 digits.    
     """
@@ -178,28 +177,25 @@ def last_available_years(bibliometer_path, year_number):
 def existing_corpuses(bibliometer_path, corpuses_number = None):
     """Returns a list of lists of booleans displaying True
     if rawdata and parsing results are available, and False otherwise.
-    This is done for each of the available corpuses.
-    ex:
-    If only 2023 files are not present, the returned tuple of lists is the following:
-    (["2018", "2019", "2020", "2021", "2022", "2023"],   # Years
-     [True,True,True,True,True,False],                   # WoS raw-data
-     [True,True,True,True,True,False],                   # Scopus raw-data
-     [True,True,True,True,True,False],                   # WoS parsing
-     [True,True,True,True,True,False],                   # Scopus parsing
-     [True,True,True,True,True,False])                   # Deduplication parsing.
+
+    This is done for each of the available corpuses.        
+        ex: If only 2023 files are not present, the returned tuple of lists contains
+
+        - Years list                          = ["2018", "2019", "2020", "2021", "2022", "2023"]
+        - WoS raw-data boolean list           = [ True,   True,   True,   True,   True,   False]
+        - WoS parsing boolean list            = [ True,   True,   True,   True,   True,   False]
+        - Scopus raw-data boolean list        = [ True,   True,   True,   True,   True,   False]
+        - Scopus parsing boolean list         = [ True,   True,   True,   True,   True,   False]
+        - Deduplication parsing boolean list  = [ True,   True,   True,   True,   True,   False]
 
     Args:
         bibliometer_path (path):  Full path to working folder.
-        corpuses_number (int): The number of corpuses to be checked 
-                               (default: CORPUSES_NUMBER global).
-
+        corpuses_number (int): The number of corpuses to be checked \
+        (default: CORPUSES_NUMBER global).
     Returns:
-        (tup of lists): Tuple = (years list, 
-                                 WoS raw-data boolean list,
-                                 WoS parsing boolean list,
-                                 Scopus raw-data boolean list,
-                                 Scopus parsing boolean list,
-                                 Deduplication parsing boolean list).
+        (tup of lists): (Years list, WoS raw-data boolean list, \
+        WoS parsing boolean list, Scopus raw-data boolean list, \
+        Scopus parsing boolean list, Deduplication parsing boolean list).
     """
 
     # internal functions
@@ -306,7 +302,8 @@ def place_bellow(haut, bas, dx = 0, dy = 5):
 
 def font_size(size, scale_factor):
     """Sets the font-size based on scale_factor.
-    If the font-size is less than minimum_size,
+    
+    If the font-size is less than minimum_size, 
     it is set to the minimum size.
     """
     fontsize = int(size * scale_factor)
@@ -322,10 +319,8 @@ def str_size_mm(text, font, ppi):
         text (str): The text of which we compute the size in mm.
         font (tk.font): The font for displaying the string 'text'.
         ppi (int): The display resolution in pixels per inch.
-
     Returns:
-        (tup): Tuple = (width in mm (float), height in mm (float)).
-
+        (tup): (width in mm (float), height in mm (float)).
     Note:
         The use of this function requires a tkinter window availability
         since it is based on a tkinter font definition.
@@ -344,7 +339,6 @@ def mm_to_px(size_mm, ppi, fact = 1.0):
         size_mm (float): The value in mm to be converted.
         ppi (float): The display resolution in pixels per inch.
         fact (float): Adjusting factor (default= 1).
-
     Returns:
         (int): Upper integer value of the conversion to pixels.
     """
@@ -360,14 +354,13 @@ def _window_properties(screen_width_px, screen_height_px):
     Args:
         screen_width_px (int): The display screen width in pixel.
         screen_height_px (int): The display screen height in pixel.
-
     Returns:
-        (tup): Tuple = (width of reference window converted to px,
-                        height of reference window converted to px,
-                        scale factor on width in px,
-                        scale factor on height in px,
-                        scale factor on width in mm,
-                        scale factor on height in mm).
+        (tup): (width of reference window converted to px, \
+        height of reference window converted to px, \
+        scale factor on width in px, \
+        scale factor on height in px, \
+        scale factor on width in mm, \
+        scale factor on height in mm).
     """
 
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
@@ -409,19 +402,19 @@ def general_properties(self):
     """The function `general_properties` calculate the window sizes
     and useful scale factors for the application launch window through
     `_window_properties` internal function.
-    The window title is set through the global "APPLICATION_TITLE".
+
+    The window title is set through the global "APPLICATION_TITLE". 
     These globals are defined locally in the module imported as gg.
 
     Args:
         self (instense): Instense where application launch window is created.
-
     Returns:
-        (tup): Tuple = (width of reference window converted to px,
-                        height of reference window converted to px,
-                        scale factor on width in px,
-                        scale factor on height in px,
-                        scale factor on width in mm,
-                        scale factor on height in mm).
+        (tup): (width of reference window converted to px, \
+        height of reference window converted to px, \
+        scale factor on width in px, \
+        scale factor on height in px, \
+        scale factor on width in mm, \
+        scale factor on height in mm).
     """
 
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)

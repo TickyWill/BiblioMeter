@@ -64,19 +64,19 @@ Interfaces
 Input Data
 ==========
 
+**La position de ces fichiers est prédéterminée dans l’arborescence du dossier de travail**
+
 - Les variables globales spécifiques à chaque groupe de fonctions
     - Actuellement modifiables par intervention dans les modules dédiés du programme
     - En cours de basculement dans des fichiers « texte » structurés (yaml ou json)
-- Fichiers annuels d’extraction des bases de données (Scopus, WoS...)
-  spécifiques de l’Institut
+- Fichiers annuels d’extraction des bases de données (Scopus, WoS...) spécifiques de l’Institut
     - Fichiers annuels sur 10 ans des effectifs spécifiques de l’Institut
-    - Fichiers annuels sur 6 ans des facteurs d’impact pour les journaux
-  spécifiques de l’Institut
-
-**La position de ces fichiers est prédéterminée dans l’arborescence du dossier de travail**
+    - Fichiers annuels sur 6 ans des facteurs d’impact pour les journaux spécifiques de l’Institut
 
 Output Data
 ===========
+
+**La position de ces fichiers est prédéterminée dans l’arborescence du dossier de travail**
 
 - Les fichiers issus de l’analyse élémentaire des extractions
     - Fichiers « texte » structurés (dat) pour chaque type d’information
@@ -91,6 +91,4 @@ Output Data
         - Nombre de publications par continent
         - Liste des institutions normalisées par publication
         - Liste des institutions non encore normalisées par publication
-     - 1 fichier « xlsx » rassemblant les indicateurs de l’ensemble des années disponibles
-
-**La position de ces fichiers est prédéterminée dans l’arborescence du dossier de travail**
+    - Fichier « xlsx » rassemblant les indicateurs de l’ensemble des années disponibles

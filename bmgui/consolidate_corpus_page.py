@@ -1,12 +1,16 @@
 """The `consolidate_corpus_page` module allows to built consolidated publication lists 
-for the Institute selected and the data type selected. It performs the merge 
-of the publications list with the employees database of the Institute. 
-Then it provides xlsx files to the user for :
+for the Institute selected and the data type selected.
+
+It performs the merge of the publications list with the employees database of the Institute. 
+Then it provides xlsx files to the user for:
+
 - Authors metadata correction when not found in the employees database;
 - Homonymies resolution;
 - Publications OTPs setting;
 - Completion of impact-factors database.
+
 Finally it saves the consolidated publications list in a dedicated directory.
+
 """
 __all__ = ['create_consolidate_corpus']
 
@@ -49,22 +53,22 @@ from bmgui.gui_utils import set_page_title
 
 
 def _set_employees_data(corpus_year, all_effectifs_path, search_depth):
-    """Sets Intitute employees data   
-    through `update_employees` function imported from 
-    `bmfuncts.update_employees` module after check 
-    of available files for update (should be single) 
-    and check of Institute employees database file.
+    """Sets Intitute employees data.
+
+    This is done through the `update_employees` function imported from 
+    `bmfuncts.update_employees` module after check of available 
+    files for update (should be single) and check of Institute employees 
+    database file.
 
     Args:
         all_effectifs_path (path): Full path to file of Institute employees database.
         corpus_year (str): Corpus year defined by 4 digits.
         search_depth (int): Initial search depth.
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.
-
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
     Returns:
-        (tup): Tuple = (employees data (df), adapted search depth (int), 
-                        list of available years of employees data).    
+        (tup): (employees data (df), adapted search depth (int), \
+        list of available years of employees data).    
     """
 
     # Getting employees df
@@ -103,23 +107,25 @@ def _launch_update_employees(bibliometer_path,
                              year_select,
                              check_effectif_status,
                              progress_callback):
-    """Launches update of Intitute employees database   
-    through `update_employees` function imported from 
-    `bmfuncts.update_employees` module after check 
-    of available files for update (should be single) 
-    and check of Institute employees database file.
+    """Launches update of Intitute employees database.
+
+    This is done through the `update_employees` function imported from 
+    `bmfuncts.update_employees` module after check of available 
+    files for update (should be single) and check of Institute 
+    employees database file.
 
     Args:
         bibliometer_path (path): Full path to working folder.
-        paths_tup (tup): Tuple = (full path to folder where file for update 
-                                  of Institute employeees database,
-                                  full path to file of Institute employees database).
-        effectifs_file_name (str): Name of file of Institute employees database.
+        paths_tup (tup): (full path to folder where file \
+        for update of Institute employeees database, \
+        full path to file of Institute employees database).
+        effectifs_file_name (str): Name of file of Institute \
+        employees database.
         year_select (str): Corpus year defined by 4 digits.
-        check_effectif_status (int): Value for updating 
-                                     Institute employees database '0: no update; 1: update'.
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.   
+        check_effectif_status (int): Value for updating \
+        Institute employees database '0: no update; 1: update'.
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
     """
 
     # Setting parameters from args
@@ -241,29 +247,30 @@ def _launch_recursive_year_search_try(institute, org_tup,
                                       employees_update_status,
                                       progress_callback,
                                       progress_bar_state):
-    """Launches merge of publications list with Institute employees  
-    through `recursive_year_search` function imported from 
-    `bmfuncts.merge_pub_employees` module after setting employees data 
-    through `_set_employees_data` function and check of status of parsing step 
-    through `check_dedup_parsing_available` function imported from 
-    `bmfuncts.useful_functs` module.
+    """Launches merge of publications list with Institute employees.
+
+    This is done through the `recursive_year_search` function imported from 
+    `bmfuncts.merge_pub_employees` module after:
+
+    - setting employees data through `_set_employees_data` function 
+    - check of status of parsing step through `check_dedup_parsing_available` \
+    function imported from `bmfuncts.useful_functs` module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        paths_tup (tup): Tuple = (full path to folder where publications  
-                         merged with Institute employees and associated 
-                         files are saved, full path to file of Institute 
-                         employees database).
-        files_tup (tup): Tuple = (name of file of publications merged 
-                         with Institut employees, name of file of publications
-                         with authors not found in Institute employees database).
+        paths_tup (tup): (full path to folder where publications merged with \
+        Institute employees and associated files are saved, full path to file \ 
+        of Institute employees database).
+        files_tup (tup): (name of file of publications merged with Institut \
+        employees, name of file of publications with authors not found in \
+        Institute employees database).
         year_select (str): Corpus year defined by 4 digits.
-        search_depth_init (int): Initial search depth that will be adapted depending 
-                                 on available years in Institute employees database.
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.
+        search_depth_init (int): Initial search depth that will be adapted \
+        depending on available years in Institute employees database.
+        progress_callback (function): Function for updating ProgressBar tkinter \
+        widget status.
         progress_bar_state (int): Initial status of ProgressBar tkinter widget.  
     """
 
@@ -362,13 +369,14 @@ def _launch_resolution_homonymies_try(institute, org_tup,
                                       homonymes_file,
                                       year_select,
                                       progress_callback):
-    """Launches file creation for resolving homonyms 
-    through `solving_homonyms` function imported from 
-    `bmfuncts.consolidate_pub_list` module after check 
-    of status of publications-employees merge step.
-    Created file is filled with previously resolved homonyms 
+    """Launches file creation for resolving homonyms. 
+
+    This is done through the `solving_homonyms` function imported from 
+    `bmfuncts.consolidate_pub_list` module after check of status of 
+    publications-employees merge step. 
+    The Created file is filled with previously resolved homonyms 
     through `set_saved_homonyms` function imported from 
-    `bmfuncts.use_pub_attributes` module. 
+    `bmfuncts.use_pub_attributes` module.
 
     Args:
         institute (str): Institute name.
@@ -476,25 +484,30 @@ def _launch_add_otp_try(institute, org_tup,
                         files_tup,
                         year_select,
                         progress_callback):
-    """Launches files creation for adding OTP attribute to publications 
-    through `add_otp` function imported from `bmfuncts.consolidate_pub_list` 
-    module after check of status of homonyms resolution step 
-    and saving the resolved homonyms through `save_homonyms` function 
+    """Launches files creation for adding OTP attribute to publications.
+
+    This is done through the `add_otp` function imported from 
+    `bmfuncts.consolidate_pub_list` module after:
+
+    - check of status of homonyms resolution step 
+    - saving the resolved homonyms through `save_homonyms` function \
     imported from `bmfuncts.use_pub_attributes` module.
-    Created files are filled with previously set OTPs through `set_saved_otps` 
-    function imported from `bmfuncts.use_pub_attributes` module. 
+
+    The created files are filled with previously set OTPs through 
+    `set_saved_otps` function imported from `bmfuncts.use_pub_attributes` 
+    module. 
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        homonymes_file_path (path): Full path to file where homonyms 
-                                    have been resolved.
+        homonymes_file_path (path): Full path to file where homonyms \
+        have been resolved.
         otp_path (path): Full path to folder where created files are saved.
         otp_file_base (str): Base for building created-files names.
         year_select (str): Corpus year defined by 4 digits.
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.   
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.   
     """
 
     def _add_otp_try(progress_callback):
@@ -585,28 +598,30 @@ def _launch_pub_list_conso_try(institute, org_tup,
                                paths_tup, aliases_tup,
                                year_select, years_list,
                                progress_callback):
-    """Launches building of publications final list through `built_final_pub_list` 
-    function imported from `bmfuncts.consolidate_pub_list` module 
-    after check of status of OTPs adding step.
+    """Launches building of publications final list.
+
+    This is done through the `built_final_pub_list` 
+    function imported from `bmfuncts.consolidate_pub_list` 
+    module after check of status of OTPs adding step.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        paths_tup (tup): Tuple = (full path to folder of files where OTPs 
-                         have been attributed, full path to folder where 
-                         file of publications final list and associated files are saved).
-        aliases_tup (tup): Tuple = (base for building names of OTPs files, 
-                           publications-list file name,
-                           [name of missing-IFs file, name of missing-ISSNs file], 
-                           name of folder where concatenated list of available 
-                           publications lists are saved).
+        paths_tup (tup): (full path to folder of files where OTPs \
+        have been attributed, full path to folder where file of \
+        publications final list and associated files are saved).
+        aliases_tup (tup): (base for building names of OTPs files, \
+        publications-list file name, \
+        [name of missing-IFs file, name of missing-ISSNs file], \
+        name of folder where concatenated list of available \
+        publications lists are saved).
         year_select (str): Corpus year defined by 4 digits.
-        years_list (list): List of available corpus years 
-                           (each item defined by a string of 4 digits).
-        progress_callback (function): Function for updating 
-                                      ProgressBar tkinter widget status.  
+        years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.  
     """
 
     def _consolidate_pub_list(progress_callback):
@@ -724,13 +739,11 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
     # Internal functions
     def _etape_frame(self, num):
-        '''The local function `_etape_frame` sets the 'etape' and place in the page
-        using the global 'ETAPE_LABEL_TEXT_LIST' and the local variables 'etape_label_format',
-        'etape_label_font', 'etape_underline', 'etape_label_pos_x' and 'etape_label_pos_y_list'.
+        """Sets the frame and place of 'etape' widgets in the page.
 
         Args:
             num (int): The order of the 'etape' in 'ETAPE_LABEL_TEXT_LIST'.
-        '''
+        """
         etape = tk.Label(self,
                          text      = gg.ETAPE_LABEL_TEXT_LIST[num],
                          justify   = etape_label_format,
@@ -852,7 +865,8 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
     # *********************** Etape 1 : Croisement auteurs-effectifs
     def _launch_recursive_year_search(progress_callback):
-        """ Fonction executée par le bouton 'merge_button'.
+        """Command of the 'merge_button' button.
+        
         """
 
         # Getting year selection
@@ -929,7 +943,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
     # ******************* Etape 2 : Résolution des homonymies
     def _launch_resolution_homonymies(progress_callback):
-        """Fonction executée par le bouton 'button_homonymes'.
+        """Command of the 'homonyms_button' button.
         """
 
         # Renewing year selection
@@ -977,7 +991,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
     # ******************* Etape 3 : Attribution des OTPs
     def _launch_add_otp(progress_callback):
-        """Fonction executée par le bouton 'otp_button'.
+        """Command of the 'otp_button' button.        
         """
 
         # Renewing year selection
@@ -1024,7 +1038,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
     # ****************** Etape 4 : Liste consolidée des publications
     def _launch_pub_list_conso(progress_callback):
-        """Fonction executée par le bouton 'final_button'.
+        """Command of the 'conso_button' button.
         """
 
         # Renewing year selection and years
