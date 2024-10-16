@@ -1099,10 +1099,13 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
     """
 
     # Internal function
-    def _save_inst_col_df(inst_col, inst_col_df):
-        inst_col_file_name = inst_col + "_" + orphan_file_name_alias
-        inst_col_file_path = bdd_mensuelle_path / Path(inst_col_file_name)
-        inst_col_df.to_excel(inst_col_file_path, index=False)
+    def _save_inst_col_df(inst_col, df_to_save):
+        if inst_col=="all_undrop":
+            file_path = orphan_path
+        else:
+            file_name = inst_col + "_" + orphan_file_name_alias
+            file_path = bdd_mensuelle_path / Path(file_name)
+        df_to_save.to_excel(file_path, index=False)
         message = f"Excel file of orphan authors created for Institute subdivision: {inst_col}"
         if verbose: print(message)
 
@@ -1111,11 +1114,9 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
     bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
     orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
 
-    # Setting useful column names list
+    # Setting useful column names list and droping status
     inst_col_list = org_tup[4]
-
-    # Setting spliting status
-    orphan_split_status = org_tup[9]
+    orphan_drop_dict = org_tup[10]
 
     # Setting useful paths
     corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -1128,11 +1129,15 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
 
     # Creating, and saving as Excel file, orphan authors for each Institute subdivision
     institute_df = orphan_df.copy()
+    new_orphan_df = orphan_df.copy()
     for inst_col in inst_col_list[1:]:
         inst_col_df = orphan_df[orphan_df[inst_col]==1]
         _save_inst_col_df(inst_col, inst_col_df)
         institute_df = institute_df.drop(inst_col_df.index)
+        if orphan_drop_dict[inst_col]:
+            new_orphan_df = new_orphan_df.drop(inst_col_df.index)        
     _save_inst_col_df(inst_col_list[0], institute_df)
+    _save_inst_col_df("all_undrop", new_orphan_df) 
 
 
 def _my_hash(text:str):
@@ -1308,6 +1313,9 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     orphan_treat_alias     = pg.ARCHI_ORPHAN["root"]
     adds_file_name_alias   = pg.ARCHI_ORPHAN["employees adds file"]
 
+    # Setting local parameters
+    orphan_split_status = org_tup[9]
+
     # Setting useful paths
     submit_path   = out_path / Path(submit_file_name_alias)
     orphan_path   = out_path / Path(orphan_file_name_alias)
@@ -1431,7 +1439,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identification of articles independent of database extraction
-    _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
+    if orphan_split_status:
+        _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
     if progress_callback:
         progress_callback(100)
 

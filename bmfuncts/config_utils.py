@@ -243,8 +243,10 @@ def set_org_params(institute, bibliometer_path):
     - index 6 = the list of document types (str) for which the impact factors will not be analysed.
     - index 7 = the index of the main institution among the tuples at index 3.
     - index 8 = the status of the combination of the tuples at index 3.
-    - index 9 = the status of splitting the file of list of publication with one row per author \
+    - index 9 = the status of splitting the file of list of publications with one row per author \
     that has not been identified as Institute employee.
+    - index 10 = the status of droping particular affiliation authors in the file of list of \
+    publications with one row per author that has not been identified as Institute employee.
 
     Args:
         institute (str): The Intitute name.
@@ -284,9 +286,12 @@ def set_org_params(institute, bibliometer_path):
     if_db_status = inst_org_dict["IF_DB_STATUS"]
     no_if_doctype_keys_list = inst_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]
     orphan_split_status = inst_org_dict["ORPHAN_SPLIT_STATUS"]
+    affil_drop_dict = inst_org_dict["AFFIL_DROP_DICT"]
+    orphan_drop_dict = dict(zip(inst_col_list, affil_drop_dict.values()))
 
     return_tup = (col_names_dpt, dpt_label_dict, dpt_attributes_dict,
                   institutions_filter_list, inst_col_list,
                   if_db_status, no_if_doctype_keys_list,
-                  main_inst_idx, and_inst_status, orphan_split_status)
+                  main_inst_idx, and_inst_status, orphan_split_status,
+                  orphan_drop_dict)
     return return_tup
