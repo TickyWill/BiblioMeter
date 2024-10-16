@@ -48,6 +48,6 @@ exclude_patterns = ['.ipynb_checkpoints']
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-html_logo = 'BM-logo.ico'
+html_logo = 'BM-logo_doc.ico'
 
 show_authors = True
