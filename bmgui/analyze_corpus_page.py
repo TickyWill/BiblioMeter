@@ -7,6 +7,7 @@ __all__ = ['create_analysis']
 # Standard library imports
 import threading
 import tkinter as tk
+from functools import partial
 from pathlib import Path
 from tkinter import font as tkFont
 from tkinter import messagebox
@@ -17,6 +18,7 @@ import bmfuncts.pub_globals as pg
 import bmgui.gui_globals as gg
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import get_if_db
+from bmfuncts.authors_analysis import authors_analysis
 from bmfuncts.pub_analysis import coupling_analysis
 from bmfuncts.pub_analysis import if_analysis
 from bmfuncts.pub_analysis import keywords_analysis
@@ -28,6 +30,36 @@ from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
 from bmgui.gui_utils import set_page_title
+
+
+def _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
+                        year_select, progress_callback):
+    """Launches authors production analysis through `authors_analysis` 
+    function imported from `bmfuncts.authors_analysis` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        year_select (str): Corpus year defined by 4 digits.
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.   
+    """
+    auth_analysis_folder_path = authors_analysis(institute,
+                                                 org_tup,
+                                                 bibliometer_path,
+                                                 datatype,
+                                                 year_select,
+                                                 progress_callback,
+                                                 verbose=False)
+
+    info_title = "- Information -"
+    info_text = (f"L'analyse de la production par auteur a été effectuée pour l'année {year_select}."
+                 "\nLes fichiers obtenus ont été créés dans le dossier :"
+                 f"\n\n'{auth_analysis_folder_path}' ")
+    messagebox.showinfo(info_title, info_text)
+
 
 def _launch_kw_analysis(institute, org_tup, bibliometer_path,
                         datatype, year_select, progress_callback):
@@ -147,7 +179,8 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
 
 def create_analysis(self, master, page_name, institute, bibliometer_path, datatype):
     """Manages creation and use of widgets for corpus analysis through internal 
-    functions  `_launch_if_analysis`, `_launch_coupling_analysis` and `_launch_kw_analysis`.
+    functions  `_launch_if_analysis`, `_launch_au_analysis`, `_launch_coupling_analysis` 
+    and `_launch_kw_analysis`.
 
     Args:
         self (instense): Instense where analysis page will be created.
@@ -167,6 +200,15 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         print(f"\nIFs analysis launched for year {year_select}")
         _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
                             year_select, results_folder_path, progress_callback)
+        progress_bar.place_forget()
+
+    def _launch_au_analysis_try(progress_callback):
+        # Getting year selection
+        year_select = variable_years.get()
+
+        print(f"\nAuthors analysis launched for year {year_select}")
+        _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
+                            year_select, progress_callback)
         progress_bar.place_forget()
 
     def _launch_coupling_analysis_try(progress_callback):
@@ -218,6 +260,13 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         progress_var.set(0)
         threading.Thread(target=_launch_if_analysis_try, args=(_update_progress,)).start()
 
+    def _start_launch_au_analysis_try():
+        disable_buttons(analysis_buttons_list)
+        place_after(au_analysis_launch_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_au_analysis_try, args=(_update_progress,)).start()
+
     def _start_launch_coupling_analysis_try():
         disable_buttons(analysis_buttons_list)   
         place_after(co_analysis_launch_button,
@@ -232,6 +281,13 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         progress_var.set(0)
         threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
 
+    def _edit_help(help_text):
+        disable_buttons(analysis_buttons_list)
+        info_title = "- DESCRIPTION -"
+        info_text = help_text
+        messagebox.showinfo(info_title, info_text)        
+        enable_buttons(analysis_buttons_list)  
+        
 
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           # 14
@@ -243,15 +299,21 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     progress_bar_dx = 50
     if_analysis_x_pos_px = mm_to_px(10 * master.width_sf_mm, gg.PPI)
     if_analysis_y_pos_px = mm_to_px(40 * master.height_sf_mm, gg.PPI)
+    title_dy = 20
+    au_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
+    au_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, gg.PPI)
     co_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
-    co_analysis_label_dy_px = mm_to_px(10 * master.height_sf_mm, gg.PPI)
+    co_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, gg.PPI)
     kw_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
-    kw_analysis_label_dy_px = mm_to_px(10 * master.height_sf_mm, gg.PPI)
-    launch_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
-    launch_dy_px = mm_to_px(3 * master.height_sf_mm, gg.PPI)
+    kw_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, gg.PPI)
+
+    launch_dx_px = mm_to_px(10 * master.width_sf_mm, gg.PPI)
+    launch_dy_px = mm_to_px(2 * master.height_sf_mm, gg.PPI)
     year_button_x_pos = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm, gg.PPI)     # 10
     year_button_y_pos = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)    # 26
-    dy_year = -6
+    year_dy = -6
+    help_dx = mm_to_px(100 * master.width_sf_mm, gg.PPI)
+    help_dy = mm_to_px(0 * master.width_sf_mm, gg.PPI)
 
     # Setting common attributes
     etape_label_format = 'left'
@@ -294,8 +356,22 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                 font=self.font_Label_years)
     self.Label_years.place(x=year_button_x_pos, y=year_button_y_pos)
 
-    place_after(self.Label_years, self.OptionButton_years, dy=dy_year)
-    
+    place_after(self.Label_years, self.OptionButton_years, dy=year_dy)
+
+    # Creating help button
+    help_text = (f" - {gg.ANALYSIS_TEXT_DICT['if'][1]}\n\n"
+                 f" - {gg.ANALYSIS_TEXT_DICT['au'][1]}\n\n"
+                 f" - {gg.ANALYSIS_TEXT_DICT['co'][1]}\n\n"
+                 f" - {gg.ANALYSIS_TEXT_DICT['kw'][1]}\n\n"
+                )
+    help_label_font = tkFont.Font(family=gg.FONT_NAME,
+                                  size=eff_help_font_size)
+    help_button = tk.Button(self,
+                            text='Description',
+                            font=help_label_font,
+                            command=partial(_edit_help, help_text))
+    place_after(self.OptionButton_years, help_button, dx=help_dx, dy = help_dy)    
+
     # Handling exception
     threading.excepthook = _except_hook
 
@@ -308,13 +384,15 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                    variable=progress_var)
 
     # Creating and setting impact-factors analysis widgets
+    title = gg.ANALYSIS_TEXT_DICT["if"][0]
+    launch_text = gg.ANALYSIS_TEXT_DICT["if"][2]
 
     # - Setting title
     if_analysis_font = tkFont.Font(family=gg.FONT_NAME,
                                    size=eff_etape_font_size,
                                    weight='bold')
     if_analysis_label = tk.Label(self,
-                                 text=gg.TEXT_ETAPE_7,
+                                 text=title,
                                  justify=etape_label_format,
                                  font=if_analysis_font,
                                  underline=etape_underline)
@@ -322,98 +400,103 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     if_analysis_label.place(x=if_analysis_x_pos_px,
                             y=if_analysis_y_pos_px)
 
-    # - Setting help text
-    help_label_font = tkFont.Font(family=gg.FONT_NAME,
-                                  size=eff_help_font_size)
-    help_label = tk.Label(self,
-                          text=gg.HELP_ETAPE_7,
-                          justify="left",
-                          font=help_label_font)
-    place_bellow(if_analysis_label,
-                 help_label)
-
     # - Setting launch button
     if_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     if_analysis_launch_button = tk.Button(self,
-                                          text=gg.TEXT_IF_ANALYSIS,
+                                          text=launch_text,
                                           font=if_analysis_launch_font,
                                           command= _start_launch_if_analysis_try)
-    place_bellow(help_label,
+    place_bellow(if_analysis_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
+                 dy=launch_dy_px)
+
+    # Creating and setting authors analysis widgets
+    title = gg.ANALYSIS_TEXT_DICT["au"][0]
+    launch_text = gg.ANALYSIS_TEXT_DICT["au"][2]
+
+    # - Setting title
+    au_analysis_font = tkFont.Font(family=gg.FONT_NAME,
+                                   size=eff_etape_font_size,
+                                   weight='bold')
+    au_analysis_label = tk.Label(self,
+                                 text=title,
+                                 justify=etape_label_format,
+                                 font=au_analysis_font,
+                                 underline=etape_underline)
+    place_bellow(if_analysis_label,
+                 au_analysis_label,
+                 dx=au_analysis_label_dx_px,
+                 dy=au_analysis_label_dy_px)
+
+    # - Setting launch button
+    au_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
+                                          size=eff_launch_font_size)
+    au_analysis_launch_button = tk.Button(self,
+                                          text=launch_text,
+                                          font=au_analysis_launch_font,
+                                          command= _start_launch_au_analysis_try)
+    place_bellow(au_analysis_label,
+                 au_analysis_launch_button,
+                 dx=launch_dx_px,
                  dy=launch_dy_px)        
+       
 
     # Creating and setting coupling analysis widgets
+    title = gg.ANALYSIS_TEXT_DICT["co"][0]
+    launch_text = gg.ANALYSIS_TEXT_DICT["co"][2]
 
     # - Setting title
     co_analysis_label_font = tkFont.Font(family=gg.FONT_NAME,
                                          size=eff_etape_font_size,
                                          weight='bold')
     co_analysis_label = tk.Label(self,
-                                 text=gg.TEXT_ETAPE_8,
+                                 text=title,
                                  justify="left",
                                  font=co_analysis_label_font)
-    place_bellow(if_analysis_launch_button,
+    place_bellow(au_analysis_label,
                  co_analysis_label,
                  dx=co_analysis_label_dx_px,
                  dy=co_analysis_label_dy_px)
-
-    # - Setting help text
-    help_label_font = tkFont.Font(family=gg.FONT_NAME,
-                                  size=eff_help_font_size)
-    help_label = tk.Label(self,
-                          text=gg.HELP_ETAPE_8,
-                          justify="left",
-                          font=help_label_font)
-    place_bellow(co_analysis_label,
-                 help_label)
 
     # - Setting launch button
     co_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     co_analysis_launch_button = tk.Button(self,
-                                          text = gg.TEXT_CO_ANALYSIS,
+                                          text = launch_text,
                                           font = co_analysis_launch_font,
                                           command = _start_launch_coupling_analysis_try)
-    place_bellow(help_label,
+    place_bellow(co_analysis_label,
                  co_analysis_launch_button,
-                 dx = launch_dx_px,
-                 dy = launch_dy_px)
+                 dx=launch_dx_px,
+                 dy=launch_dy_px)
 
     # Creating and setting keywords analysis widgets
+    title = gg.ANALYSIS_TEXT_DICT["kw"][0]
+    launch_text = gg.ANALYSIS_TEXT_DICT["kw"][2]
 
     # - Setting title
     kw_analysis_label_font = tkFont.Font(family = gg.FONT_NAME,
                                          size = eff_etape_font_size,
                                          weight = 'bold')
     kw_analysis_label = tk.Label(self,
-                                 text=gg.TEXT_ETAPE_9,
+                                 text=title,
                                  justify="left",
                                  font=kw_analysis_label_font)
-    place_bellow(co_analysis_launch_button,
+    place_bellow(co_analysis_label,
                  kw_analysis_label,
                  dx=kw_analysis_label_dx_px,
                  dy=kw_analysis_label_dy_px)
-
-    # - Setting help text
-    help_label_font = tkFont.Font(family=gg.FONT_NAME,
-                                  size=eff_help_font_size)
-    help_label = tk.Label(self,
-                          text=gg.HELP_ETAPE_9,
-                          justify="left",
-                          font=help_label_font)
-    place_bellow(kw_analysis_label,
-                 help_label)
 
     # - Setting launch button
     kw_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_launch_font_size)
     kw_analysis_launch_button = tk.Button(self,
-                                          text=gg.TEXT_KW_ANALYSIS,
+                                          text=launch_text,
                                           font=kw_analysis_launch_font,
                                           command= _start_launch_kw_analysis_try)
-    place_bellow(help_label,
+    place_bellow(kw_analysis_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,
                  dy=launch_dy_px)
@@ -421,5 +504,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     # Setting buttons list for status change
     analysis_buttons_list = [self.OptionButton_years,
                              if_analysis_launch_button,
+                             au_analysis_launch_button,
                              co_analysis_launch_button,
                              kw_analysis_launch_button]

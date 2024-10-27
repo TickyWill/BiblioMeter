@@ -308,14 +308,17 @@ def mise_en_page(institute, org_tup, df,
     return wb, ws
 
 
-def format_df_for_excel(df, first_col_width, last_col_width = None):
+def format_df_for_excel(df, col_attr_dict = None, first_col_width = None, last_col_width = None):
     """Generates a well formatted openpyxl workbook from 
     the 'df' dataframe for sake of lisibilty when saved 
     as Excel file.
 
     Args:
         df (dataframe): Data to be formatted in an openpyxl workbook.
-        first_col_width (int): Width of first column of the workbook.
+        col_attr_dict (dict): Optional attributes data of all columns 
+        of the workbook (default = None).
+        first_col_width (int): Optional width of first column of 
+        the workbook (default = None).
         last_col_width (int): Optional width of the last column of \
         the workbook (default = None).
     Returns:
@@ -332,13 +335,15 @@ def format_df_for_excel(df, first_col_width, last_col_width = None):
     # Setting useful column attributes
     columns_list = list(df.columns)
     col_attr = {}
-    col_attr[columns_list[0]] = [first_col_width, "left"]
-    if last_col_width:
-        col_attr[columns_list[-1]] = [last_col_width, "left"]
+    if col_attr_dict:
+        col_attr = col_attr_dict
     else:
-        col_attr[columns_list[-1]] = [15, "center"]
-    for col in columns_list[1:-1]:
-        col_attr[col] = [15, "center"]
+        for col in columns_list:
+            col_attr[col] = [15, "center"]
+        if first_col_width:
+            col_attr[columns_list[0]] = [first_col_width, "left"]
+            if last_col_width:
+                col_attr[columns_list[-1]] = [last_col_width, "left"]
 
     # Initializing wb as a workbook and ws its active worksheet
     wb = Workbook()

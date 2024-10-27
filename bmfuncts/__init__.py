@@ -16,4 +16,5 @@ from bmfuncts.merge_pub_employees import *
 from bmfuncts.consolidate_pub_list import *
 from bmfuncts.update_impact_factors import *
 from bmfuncts.pub_analysis import *
+from bmfuncts.authors_analysis import *
 from bmfuncts.save_final_results import *

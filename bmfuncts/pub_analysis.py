@@ -127,7 +127,7 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
 
         # Saving after formatting the updated dataframe
         first_col_width = 35
-        wb, ws = format_df_for_excel(db_dept_kpi_df, first_col_width)
+        wb, ws = format_df_for_excel(db_dept_kpi_df, first_col_width=first_col_width)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
 
@@ -426,7 +426,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
         file_name = f'{if_analysis_col_new}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
         first_col_width = 50
-        wb, ws = format_df_for_excel(dept_if_df, first_col_width)
+        wb, ws = format_df_for_excel(dept_if_df, first_col_width=first_col_width)
         ws.title = dept + ' IFs '
         wb.save(dept_xlsx_file_path)
 
@@ -714,7 +714,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
         # Saving the keywords dataframe as EXCEL file
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
         first_col_width = 50
-        wb, ws = format_df_for_excel(dept_kw_df, first_col_width)
+        wb, ws = format_df_for_excel(dept_kw_df, first_col_width=first_col_width)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
 
@@ -1048,7 +1048,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         """
         item_xlsx_file = item_filename + xlsx_extent_alias
         item_xlsx_path = results_path / Path(item_xlsx_file)
-        wb, ws = format_df_for_excel(item_df, first_col_width, last_col_width)
+        wb, ws = format_df_for_excel(item_df, first_col_width=first_col_width,
+                                     last_col_width=last_col_width)
         ws.title = sheet_name + year
         wb.save(item_xlsx_path)
 
