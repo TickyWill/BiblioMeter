@@ -4,7 +4,9 @@ __all__ = ['AppMain']
 
 # Standard library imports
 import os
+import threading
 import tkinter as tk
+import traceback
 from tkinter import messagebox
 from tkinter import font as tkFont
 from functools import partial
@@ -21,7 +23,7 @@ from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
 from bmgui.update_if_page import create_update_ifs
-from bmgui.gui_utils import existing_corpuses
+from bmgui.gui_utils import existing_corpuses, enable_buttons
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import general_properties
 from bmgui.gui_utils import last_available_years
@@ -39,6 +41,10 @@ class AppMain(tk.Tk):
     'bmf' stands for BiblioMeter_Files usual working directory name.
     """
     def __init__(self):
+        self.datatype_optionbutton_font = None
+        self.datatype_optionbutton = None
+        self.datatype_label_font = None
+        self.datatype_label = None
 
         # Internal functions
         def _set_datatype_widgets_param(datatype_val, datatype_list):
@@ -74,7 +80,7 @@ class AppMain(tk.Tk):
                 p_disp = ('/'.join(part_start)) / Path("...") / ('/'.join(part_end))
             return p_disp
 
-        def _get_file(institute_select, datatype_select): 
+        def _get_file(institute_select, datatype_select):
             """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
             Updates 'bmf' widgets parameters and values accordingly to the working 
             folder got and sets launch button of corpuses analysis."""
@@ -126,7 +132,7 @@ class AppMain(tk.Tk):
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)
             bmf_val.set(inst_bmf)
             bmf_val2.set(_display_path(inst_bmf))
-            
+
         def _try_bmf_access(bmf_path):
             """Returns status of the default working folder as boolean: True, if exists 
             and access is authorized to the user; False, otherwise."""
@@ -275,6 +281,11 @@ class AppMain(tk.Tk):
                                partial(_update_datatype, institute_select,
                                        datatype_widget = datatype_val))
 
+        def _except_hook(args):
+            messagebox.showerror("Error", args)
+            messagebox.showerror("Exception", traceback.format_exc())
+            enable_buttons(gg.GUI_BUTTONS)
+
         # Setting the link between "self" and "tk.Tk"
         tk.Tk.__init__(self)
 
@@ -375,6 +386,9 @@ class AppMain(tk.Tk):
 
         # Tracing Institute selection
         institute_val.trace('w', partial(_update_page, institute_widget = institute_val))
+
+        # Handling exception
+        threading.excepthook = _except_hook
 
 class SetMasterTitle():
     """Displays title in main window."""
@@ -540,7 +554,7 @@ class PageButton(tk.Frame):
 class ParseCorpusPage(tk.Frame):
     """Sets parsing page widgets through `create_parsing_concat` function 
     imported from `bmgui.parse_corpus_page` module."""
-    
+
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
@@ -554,7 +568,7 @@ class ParseCorpusPage(tk.Frame):
         # Creating and setting widgets for page frame
         create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype)
 
-        
+
 class ConsolidateCorpusPage(tk.Frame):
     """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function 
     imported from `bmgui.consolidate_corpus_page` module."""

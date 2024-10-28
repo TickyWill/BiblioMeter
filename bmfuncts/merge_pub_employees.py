@@ -18,8 +18,8 @@ import warnings
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as eg
@@ -784,16 +784,16 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     The new publications lists are saved as Excel files.
 
     Args:
-        submit_path (path): Full path to the Excel file of the publications list \
+        submit_path (path): Full path to the Excel file of the publications list
         with one row per author with attributes as Institute employee.
-        orphan_path (path): Full path to the Excel file of the publications list \
+        orphan_path (path): Full path to the Excel file of the publications list
         with one row per author that has not been identified as Institute employee.
-        ext_docs_path (path): Full path to the Excel file giving the PhD students \
+        ext_docs_path (path): Full path to the Excel file giving the PhD students
         at the Institute but not employees of it.
     Returns:
-        (tup): (updated dataframe of the publications list with one row \
-        per Institute author including external PhD students, updated dataframe \ 
-        of publications list with one row per author that has not been identified \
+        (tup): (updated dataframe of the publications list with one row
+        per Institute author including external PhD students, updated dataframe
+        of publications list with one row per author that has not been identified
         as Institute employee).
     """
 
@@ -1104,7 +1104,8 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
         inst_col_file_path = bdd_mensuelle_path / Path(inst_col_file_name)
         inst_col_df.to_excel(inst_col_file_path, index=False)
         message = f"Excel file of orphan authors created for Institute subdivision: {inst_col}"
-        if verbose: print(message)
+        if verbose:
+            print(message)
 
     # Setting useful aliases
     converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
@@ -1115,7 +1116,7 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
     inst_col_list = org_tup[4]
 
     # Setting spliting status
-    orphan_split_status = org_tup[9]
+    # orphan_split_status = org_tup[9]
 
     # Setting useful paths
     corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -1376,7 +1377,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         new_progress_bar_state = progress_bar_state + step * 30
         progress_callback(new_progress_bar_state)
         progress_bar_loop_progression = step * 50 // len(years)
-    
+
     for _, year in enumerate(years):
         # Updating the dataframes submit_df_add and orphan_df
         submit_df_add, orphan_df = _build_submit_df(empl_df[year],

@@ -24,15 +24,15 @@ def build_col_conversion_dic(institute, org_tup):
 
     Args:
         institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure \  
+        org_tup (tup): The tuple of the organization structure
         of the Institute.
     Returns:
-        (tup): (dict for renaming the specific columns of the dataframe \
-               of publications list with one row per author that has not been \
-               identified as Institute employee, \
-               dict for renaming the specific columns of the dataframe of merged \
-               employees information with the publications list with one \
-               row per Institute author, \
+        (tup): (dict for renaming the specific columns of the dataframe
+               of publications list with one row per author that has not been
+               identified as Institute employee,
+               dict for renaming the specific columns of the dataframe of merged
+               employees information with the publications list with one
+               row per Institute author,
                dict for renaming the columns of all the results dataframes).
     """
 
@@ -131,10 +131,10 @@ def set_homonym_col_names(institute, org_tup):
 
     Args:
         institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure \  
+        org_tup (tup): The tuple of the organization structure
         of the Institute.
     Returns:
-        (dict): To be used for setting the final column names \
+        (dict): To be used for setting the final column names
         of the dataframe built for homonyms solving by the user.
     """
     #  Setting useful col names
@@ -175,14 +175,14 @@ def set_otp_col_names(institute, org_tup):
 
     Args:
         institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure \  
+        org_tup (tup): The tuple of the organization structure
         of the Institute.
     Returns:
-        (dict): To be used for setting the final column names of the \
+        (dict): To be used for setting the final column names of the
         dataframes built for OTPs attribution by the user.
     """
     # Setting institute parameters
-    dpt_col_names = org_tup[0] 
+    dpt_col_names = org_tup[0]
 
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
@@ -223,11 +223,11 @@ def set_final_col_names(institute, org_tup):
 
     Args:
         institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure \ 
+        org_tup (tup): The tuple of the organization structure
         of the Institute.
     Returns:
-        (tup): (dict to be used for setting the final \
-        column names of the final publications-list dataframe, \
+        (tup): (dict to be used for setting the final
+        column names of the final publications-list dataframe,
                list of the final column names of the departments).
     """
     # Setting institute parameters
@@ -255,13 +255,13 @@ def set_final_col_names(institute, org_tup):
     for _,dpt_col_name in dpt_col_names.items():
         final_col_dic[dpt_col_name] = dpt_col_names[dpt_col_name]
     final_col_dic['otp'] = pg.COL_NAMES_BONUS['list OTP']
-    
+
     # Setting the final dept column names in case of getting changed
     # in this function from initial 'dpt_col_names' list
     final_depts_col_list = [final_col_dic[dpt_col_name]
                             for dpt_col_name in dpt_col_names]
 
-    return final_col_dic, final_depts_col_list 
+    return final_col_dic, final_depts_col_list
 
 
 def set_if_col_names(institute, org_tup):
@@ -297,11 +297,11 @@ def set_col_attr(institute, org_tup):
 
     Args:
         institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure \ 
+        org_tup (tup): The tuple of the organization structure
         of the Institute.
     Returns:
-        (tup): (dict to be used for setting the final column \
-        attributes for formating datarames before openpyxl save, \
+        (tup): (dict to be used for setting the final column
+        attributes for formating datarames before openpyxl save,
         list of the final column names that have attributes).
     """
 

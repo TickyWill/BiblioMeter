@@ -14,9 +14,9 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import numpy as np
 import pandas as pd
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as pg
@@ -241,7 +241,7 @@ def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
 
     # Setting useful aliases
     doctype_article_alias = pg.DOC_TYPE_DICT['Articles']
-    
+
     # Adding a column with number of articles per journal then droping duplicate rows
     count_journal_df = dept_analysis_df[issn_col].value_counts().to_frame()
     count_journal_df.rename(columns={'count': articles_nb_col}, inplace=True)
@@ -347,7 +347,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
     """
 
     # Setting useful aliases
-    doctype_article_alias = pg.DOC_TYPE_DICT['Articles']
+    # doctype_article_alias = pg.DOC_TYPE_DICT['Articles']
 
     # Setting useful column names aliases
     final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
@@ -360,7 +360,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
     params_tup = (institute, depts_col_list, journal_col_alias)
     cols_tup = (doctype_col_alias, issn_col_alias, articles_nb_col_alias)
 
-    # Building the dataframe of the books list 
+    # Building the dataframe of the books list
     usecols = [journal_col_alias, doctype_col_alias] + depts_col_list
     books_df = pd.read_excel(books_list_file_path,
                              usecols=usecols)
@@ -925,8 +925,8 @@ def _build_continents_stat(countries_df):
     Args:
         countries_df (dataframe): Data of countries per publications.
     Returns:
-        (dataframe): Continents statistics where each row gives the continent name, \ 
-        the Institute-publications number with address from the continent \
+        (dataframe): Continents statistics where each row gives the continent name,
+        the Institute-publications number with address from the continent
         and a string listing the concerned publications IDs separated by semicolon.
     """
 

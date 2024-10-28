@@ -48,7 +48,7 @@ def _build_effective_config(db_list, parsing_folder_dict_init):
 
     Args:
         db_list (list): The list of the database string names.
-        parsing_folder_dict_init (hierarchical dict): The architecture of the parsing \ 
+        parsing_folder_dict_init (hierarchical dict): The architecture of the parsing
         folder to be used for each database of the database list 'db_list'.
     Returns:
         (hierarchical dict): The hierachical dict giving the architecture \
@@ -80,14 +80,14 @@ def _build_files_paths(bibliometer_path, year, db_list, parsing_folder_dict):
 
     Args:
         bibliometer_path (path): The full path to the working folder.
-        year (str): The name of the corpus folder defined by 4 digits \
+        year (str): The name of the corpus folder defined by 4 digits
         corresponding to the corpus year.
         db_list (list): The list of the database string names.
-        parsing_folder_dict (hierachical dict): The architecture of the parsing folder \
+        parsing_folder_dict (hierachical dict): The architecture of the parsing folder
         used to set the full paths.
     Returns:
-        (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata \
-        full paths for each database and the second, the parsing full \ 
+        (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata
+        full paths for each database and the second, the parsing full
         paths for each parsing step and for each database.
     """
 
@@ -167,13 +167,13 @@ def set_user_config(bibliometer_path, year, db_list):
     The set parameters are returned in a tuple as follows:
 
     - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database.
-    - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step \
+    - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step
     and for each database.
-    - index 3 = the dict giving the name of the parsing file for each parsed item.            
+    - index 3 = the dict giving the name of the parsing file for each parsed item.
 
     Args:
         bibliometer_path (path): The full path to the working folder.
-        year (str): The name of the corpus folder defined by 4 digits \ 
+        year (str): The name of the corpus folder defined by 4 digits
         corresponding to the corpus year.
         db_list (list): The list of the database string names.
     Returns:

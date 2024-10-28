@@ -42,6 +42,7 @@ from bmfuncts.use_pub_attributes import save_homonyms
 from bmfuncts.use_pub_attributes import set_saved_homonyms
 from bmfuncts.use_pub_attributes import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
+from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import font_size
@@ -132,7 +133,7 @@ def _launch_update_employees(bibliometer_path,
     maj_effectifs_folder_path, effectifs_folder_path = paths_tup
 
     # Setting dialogs and checking answers
-    # for ad-hoc use of 'update_employees' function    
+    # for ad-hoc use of 'update_employees' function
     update_status = False
     if check_effectif_status:
         # Launch employees database update
@@ -260,16 +261,16 @@ def _launch_recursive_year_search_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        paths_tup (tup): (full path to folder where publications merged with \
-        Institute employees and associated files are saved, full path to file \ 
+        paths_tup (tup): (full path to folder where publications merged with
+        Institute employees and associated files are saved, full path to file
         of Institute employees database).
-        files_tup (tup): (name of file of publications merged with Institut \
-        employees, name of file of publications with authors not found in \
+        files_tup (tup): (name of file of publications merged with Institut
+        employees, name of file of publications with authors not found in
         Institute employees database).
         year_select (str): Corpus year defined by 4 digits.
-        search_depth_init (int): Initial search depth that will be adapted \
+        search_depth_init (int): Initial search depth that will be adapted
         depending on available years in Institute employees database.
-        progress_callback (function): Function for updating ProgressBar tkinter \
+        progress_callback (function): Function for updating ProgressBar tkinter
         widget status.
         progress_bar_state (int): Initial status of ProgressBar tkinter widget.  
     """
@@ -320,7 +321,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
     submit_path = bdd_mensuelle_path / Path(submit_file)
 
     # Setting dialogs and checking answers
-    # for ad-hoc use of '_recursive_year_search_try' internal function    
+    # for ad-hoc use of '_recursive_year_search_try' internal function
     # after adapting search depth to available years for search
     tup = _set_employees_data(year_select, all_effectifs_path, search_depth_init)
     all_effectifs_df, search_depth, annees_disponibles = tup[0], tup[1], tup[2]
@@ -689,7 +690,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
     (otp_file_base, pub_list_file,
      year_missing_aliases, bdd_multi_annuelle_folder) = aliases_tup
     pub_list_file_path = pub_list_path / Path(pub_list_file)
-    
+
     # Setting dialogs and checking answers
     # for ad-hoc use of '_consolidate_pub_list' internal function
     ask_title = "- Confirmation de l'étape de consolidation de la liste des publications -"
@@ -759,11 +760,6 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         if value >= 100:
             enable_buttons(consolidate_corpus_buttons_list)
 
-    def _except_hook(args):
-        messagebox.showwarning("Error", args)
-        progress_var.set(0)
-        enable_buttons(consolidate_corpus_buttons_list)
-
     # ********************* Function start
 
     # Setting useful local variables for positions modification
@@ -771,7 +767,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
     eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
     eff_select_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
-    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)    
+    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
     progress_bar_length_px = mm_to_px(100 * master.width_sf_mm, gg.PPI)
     progress_bar_dx = 40
     etape_label_pos_x = mm_to_px(gg.REF_ETAPE_POS_X_MM * master.width_sf_mm,
@@ -840,6 +836,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                             variable_years,
                                             *master.years_list)
     self.OptionButton_years.config(font = self.font_OptionButton_years)
+    GUI_BUTTONS.append(self.OptionButton_years)
 
         # Création du label
     self.font_Label_years = tkFont.Font(family = gg.FONT_NAME,
@@ -851,9 +848,6 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
 
     place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
-    
-    # Handling exception
-    threading.excepthook = _except_hook
 
     # Initializing progress bar widget
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
@@ -875,7 +869,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         # Setting paths dependent on year_select
         corpus_year_path = bibliometer_path / Path(year_select)
         bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
-        submit_path = bdd_mensuelle_path / Path(submit_alias)
+        # submit_path = bdd_mensuelle_path / Path(submit_alias)
 
         # Getting check_effectif_status
         check_effectif_status = check_effectif_var.get()
@@ -924,7 +918,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                              text = gg.TEXT_CROISEMENT,
                              font = merge_font,
                              command = _start_launch_recursive_year_search)
-
+    GUI_BUTTONS.append(merge_button)
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self,
                                         text = gg.TEXT_MAJ_EFFECTIFS,
@@ -955,7 +949,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = bdd_mensuelle_path / Path(submit_alias)
         homonymes_path = corpus_year_path / Path(homonymes_path_alias)
-        homonymes_file_path = homonymes_path / Path(homonymes_file_alias)
+        # homonymes_file_path = homonymes_path / Path(homonymes_file_alias)
 
         # Trying launch creation of file for homonymies resolution
         paths_tup = (submit_path, homonymes_path)
@@ -965,7 +959,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                           paths_tup,
                                           homonymes_file_alias,
                                           year_select,
-                                          progress_callback)        
+                                          progress_callback)
         progress_bar.place_forget()
 
 
@@ -983,6 +977,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                 text = gg.TEXT_HOMONYMES,
                                 font = homonyms_font,
                                 command = _start_launch_resolution_homonymies)
+    GUI_BUTTONS.append(homonyms_button)
     etape_2 = etapes[1]
     place_bellow(etape_2,
                  homonyms_button,
@@ -1001,7 +996,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         homonymes_file_alias = homonymes_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path     = bibliometer_path / Path(year_select)
         homonymes_path       = corpus_year_path / Path(homonymes_path_alias)
-        homonymes_file_path  = homonymes_path / Path(homonymes_file_alias)
+        # homonymes_file_path  = homonymes_path / Path(homonymes_file_alias)
         otp_path             = corpus_year_path / Path(otp_path_alias)
 
         # Trying launch creation of files for OTP attribution
@@ -1012,7 +1007,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                             paths_tup,
                             files_tup,
                             year_select,
-                            progress_callback)        
+                            progress_callback)
         progress_bar.place_forget()
 
 
@@ -1030,6 +1025,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                            text = gg.TEXT_OTP,
                            font = otp_font,
                            command = _start_launch_add_otp)
+    GUI_BUTTONS.append(otp_button)
     etape_3 = etapes[2]
     place_bellow(etape_3,
                  otp_button,
@@ -1052,7 +1048,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         corpus_year_path        = bibliometer_path / Path(year_select)
         otp_path                = corpus_year_path / Path(otp_path_alias)
         pub_list_path           = corpus_year_path / Path(pub_list_path_alias)
-        pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)
+        # pub_list_file_path      = pub_list_path / Path(pub_list_file_alias)
 
         # Trying launch creation of consolidated publications lists
         paths_tup = (otp_path, pub_list_path)
@@ -1064,7 +1060,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                    bibliometer_path, datatype,
                                    paths_tup, aliases_tup,
                                    year_select, master.years_list,
-                                   progress_callback)        
+                                   progress_callback)
         progress_bar.place_forget()
 
 
@@ -1082,14 +1078,14 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                              text = gg.TEXT_PUB_CONSO,
                              font = conso_font,
                              command = _start_launch_pub_list_conso)
-
+    GUI_BUTTONS.append(conso_button)
     etape_4 = etapes[3]
 
     place_bellow(etape_4,
                  conso_button,
                  dx = etape_button_dx,
                  dy = etape_button_dy / 2)
-    
+
     # Setting buttons list for status change
     consolidate_corpus_buttons_list = [self.OptionButton_years,
                                        merge_button,
