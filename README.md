@@ -60,6 +60,9 @@ app.mainloop()
 # Release History
 - 1.0.0 first release
 - 1.1.0 code refactoring release
+- 4.0.0 Extension to different institutes
+- 5.0.0 Introduction of progress bars, pylint refactoring of code and Sphynx documentation
+- 5.1.0 Enhanced orphan authors treatment
 
 # Meta
 	- authors : BiblioAnalysis team
