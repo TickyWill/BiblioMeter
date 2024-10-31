@@ -25,9 +25,9 @@ import pandas as pd
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
-from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.rename_cols import build_col_conversion_dic
-
+from bmfuncts.useful_functs import read_parsing_dict
+from bmfuncts.useful_functs import standardize_txt
 
 def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     """Replace author names in 'init_df' dataframe by the employee name.
@@ -35,6 +35,8 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     This is done when a name-spelling discrepency is given in the dedicated 
     Excel file named 'orthograph_file_name' and located in the 'orphan_treat_root' 
     folder of the working folder.
+    Beforehand, the full name given by this file is standardized through the 
+    `standardize_txt` function imported from `bmfuncts.useful_functs` module.
 
     Args:
         bibliometer_path (path): Full path to working folder.
@@ -49,6 +51,9 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
 
     # Setting parameters from args
     col0, col1, col2 = cols_tup
+    pub_fullname_col = col0  
+    pub_last_name_col = col1
+    pub_first_name_col = col2 
 
     # Setting useful aliases
     orphan_treat_root    = pg.ARCHI_ORPHAN["root"]
@@ -65,21 +70,24 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     ortho_col_list = list(pg.COL_NAMES_ORTHO.values())
     warnings.simplefilter(action = 'ignore', category = UserWarning)
     ortho_df = pd.read_excel(ortho_path, usecols = ortho_col_list)
+    ortho_df[ortho_lastname_init] = ortho_df[ortho_lastname_init].apply(lambda x: standardize_txt(x))
+    ortho_df[ortho_lastname_new] = ortho_df[ortho_lastname_new].apply(lambda x: standardize_txt(x))
 
     new_df = init_df.copy()
-    for pub_row_num in range(len(init_df)):
-        lastname_init = init_df[col1][pub_row_num]
-        initials_init = init_df[col2][pub_row_num]
-        for ortho_row_num in range(len(ortho_df)):
-            lastname_pub_ortho = ortho_df[ortho_lastname_init ][ortho_row_num]
-            initials_pub_ortho = ortho_df[ortho_initials_init][ortho_row_num]
+    new_df.reset_index(drop=True, inplace=True)
+    for pub_row_num, _ in new_df.iterrows():
+        lastname_init = init_df.loc[pub_row_num, pub_last_name_col]
+        initials_init = init_df.loc[pub_row_num, pub_first_name_col]
+        for ortho_row_num, _ in ortho_df.iterrows():
+            lastname_pub_ortho = ortho_df.loc[ortho_row_num, ortho_lastname_init]
+            initials_pub_ortho = ortho_df.loc[ortho_row_num, ortho_initials_init]
 
             if lastname_init == lastname_pub_ortho and initials_init == initials_pub_ortho:
-                lastname_eff_ortho = ortho_df[ortho_lastname_new][ortho_row_num]
-                initials_eff_ortho = ortho_df[ortho_initials_new][ortho_row_num]
-                new_df .loc[pub_row_num,col1] = lastname_eff_ortho
-                new_df .loc[pub_row_num,col2] = initials_eff_ortho
-                new_df .loc[pub_row_num,col0] = lastname_eff_ortho + ' ' + initials_eff_ortho
+                lastname_eff_ortho = ortho_df.loc[ortho_row_num, ortho_lastname_new]
+                initials_eff_ortho = ortho_df.loc[ortho_row_num, ortho_initials_new]
+                new_df.loc[pub_row_num, pub_last_name_col] = lastname_eff_ortho
+                new_df.loc[pub_row_num, pub_first_name_col] = initials_eff_ortho
+                new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + ' ' + initials_eff_ortho
 
     return new_df
 
@@ -138,9 +146,9 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
 
                 lastname_eff_compl = year_compl_df[compl_lastname_new][compl_row_num]
                 initials_eff_compl = year_compl_df[compl_initials_new][compl_row_num]
-                new_df .loc[pub_row_num,col1] = lastname_eff_compl
-                new_df .loc[pub_row_num,col2] = initials_eff_compl
-                new_df .loc[pub_row_num,col0] = lastname_eff_compl + ' ' + initials_eff_compl
+                new_df.loc[pub_row_num,col1] = lastname_eff_compl
+                new_df.loc[pub_row_num,col2] = initials_eff_compl
+                new_df.loc[pub_row_num,col0] = lastname_eff_compl + ' ' + initials_eff_compl
 
     return new_df
 
@@ -189,7 +197,7 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
 
     # Searching for the outliers in the dataframe to update by lastname and initials
     for pub_row_num in range(len(pub_df)):
-        pub_lastname  = pub_df[pub_last_col][pub_row_num]
+        pub_lastname = pub_df[pub_last_col][pub_row_num]
         pub_initials = pub_df[pub_initials_col][pub_row_num]
         for outliers_row_num in range(len(outliers_df)):
             outliers_lastname = outliers_df[outliers_lastname_col][outliers_row_num]
@@ -215,7 +223,9 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     After that, a publications list dataframe with one row per author affiliated 
     to the Institute is built using the 'filt_authors_inst_' filter. 
     Then, the dataframe is complemented with useful new columns 
-    of full name, last name and first name of authors. 
+    of full name, last name and first name of authors after standardization of 
+    last name through the `standardize_txt` function. imported from 
+    `bmfuncts.useful_functs` module. 
     Finally, the dataframe is cleaned as follows:
 
     - Author-name spelling is corrected through the `_check_names_spelling` \
@@ -247,8 +257,8 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     def _split_lastname_firstname(row, digits_min = 4):
         names_list = row.split()
         first_names_list = names_list[-1:]
-        last_names_list  = names_list[:-1]
-        for name_idx,name in enumerate(last_names_list):
+        last_names_list = names_list[:-1]
+        for name_idx, name in enumerate(last_names_list):
 
             if len(name)<digits_min and ('-' in name):
                 first_names_list.append(name)
@@ -256,7 +266,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                 last_names_list  = last_names_list[:name_idx] + last_names_list[(name_idx + 1):]
 
         first_name_initials = _retain_firstname_initials((' ').join(first_names_list))
-        last_name = (' ').join(last_names_list)
+        last_name = standardize_txt((' ').join(last_names_list))            
         return (last_name, first_name_initials)
 
     def _build_filt_authors_inst(inst_col_list, main_status, main_inst_idx):
@@ -372,6 +382,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = bm_colnames_alias['Full_name'] # Last_name + firstname initials
     inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
+
 
     # Checking author name spelling and correct it then replacing author names
     # resulting from publication metadata errors
@@ -1434,13 +1445,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     _change_col_names(institute, org_tup, submit_path, orphan_path)
 
     # Splitting orphan file in subdivisions of Institute
-    _split_orphan(institute, bibliometer_path, org_tup, corpus_year)
+    if orphan_split_status:
+        _split_orphan(institute, bibliometer_path, org_tup, corpus_year)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identification of articles independent of database extraction
-    if orphan_split_status:
-        _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
+    _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
     if progress_callback:
         progress_callback(100)
 

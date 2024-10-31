@@ -37,6 +37,7 @@ from bmfuncts.consolidate_pub_list import built_final_pub_list
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.consolidate_pub_list import solving_homonyms
 from bmfuncts.merge_pub_employees import recursive_year_search
+from bmfuncts.update_employees import set_employees_data
 from bmfuncts.update_employees import update_employees
 from bmfuncts.use_pub_attributes import save_homonyms
 from bmfuncts.use_pub_attributes import set_saved_homonyms
@@ -50,55 +51,6 @@ from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
 from bmgui.gui_utils import set_page_title
-
-
-def _set_employees_data(corpus_year, all_effectifs_path, search_depth):
-    """Sets Intitute employees data.
-
-    This is done through the `update_employees` function imported from 
-    `bmfuncts.update_employees` module after check of available 
-    files for update (should be single) and check of Institute employees 
-    database file.
-
-    Args:
-        all_effectifs_path (path): Full path to file of Institute employees database.
-        corpus_year (str): Corpus year defined by 4 digits.
-        search_depth (int): Initial search depth.
-        progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.
-    Returns:
-        (tup): (employees data (df), adapted search depth (int), \
-        list of available years of employees data).    
-    """
-
-    # Getting employees df
-    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values()) + list(eg.EMPLOYEES_ADD_COLS.values())
-    all_effectifs_df = pd.read_excel(all_effectifs_path,
-                                     sheet_name = None,
-                                     dtype = eg.EMPLOYEES_COL_TYPES,
-                                     usecols = useful_col_list)
-
-    # Identifying available years in employees df
-    annees_dispo = [int(x) for x in list(all_effectifs_df.keys())]
-    annees_a_verifier = [int(corpus_year) - int(search_depth)
-                         + (i+1) for i in range(int(search_depth))]
-    annees_verifiees = []
-    for i in annees_a_verifier:
-        if i in annees_dispo:
-            annees_verifiees.append(i)
-
-    if len(annees_verifiees) > 0:
-        search_depth = min(int(search_depth), len(annees_verifiees))
-    else:
-        search_depth = 0
-        warning_title = "!!! Attention !!!"
-        warning_text  = ("Le nombre d'années disponibles est insuffisant "
-                         "dans le fichier des effectifs de l'Institut."
-                         "\nLe croisement auteurs-effectifs ne peut être effectué !"
-                         "\n1- Complétez le fichier des effectifs de l'Institut ;"
-                         "\n2- Puis relancer le croisement auteurs-effectifs.")
-        messagebox.showwarning(warning_title, warning_text)
-    return (all_effectifs_df, search_depth, annees_verifiees)
 
 
 def _launch_update_employees(bibliometer_path,
@@ -322,7 +274,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
     # Setting dialogs and checking answers
     # for ad-hoc use of '_recursive_year_search_try' internal function    
     # after adapting search depth to available years for search
-    tup = _set_employees_data(year_select, all_effectifs_path, search_depth_init)
+    tup = set_employees_data(year_select, all_effectifs_path, search_depth_init)
     all_effectifs_df, search_depth, annees_disponibles = tup[0], tup[1], tup[2]
     if annees_disponibles:
         status = "sans"

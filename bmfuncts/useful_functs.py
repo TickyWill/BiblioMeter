@@ -11,6 +11,7 @@ __all__ = ['check_dedup_parsing_available',
            'save_fails_dict',
            'save_parsing_dict',
            'set_rawdata',
+           'standardize_txt',
           ]
 
 
@@ -38,6 +39,15 @@ from openpyxl.styles import Side as openpyxl_Side
 import bmfuncts.pub_globals as pg
 from bmfuncts.rename_cols import set_col_attr
 from bmfuncts.config_utils import set_user_config
+
+
+def standardize_txt(text):
+    # Removing accentuated characters
+    new_text = bp.remove_special_symbol(text, only_ascii=True, strip=True)
+
+    # Remove minus
+    new_text = new_text.replace("-", " ")
+    return new_text
 
 
 def check_dedup_parsing_available(bibliometer_path, year):
