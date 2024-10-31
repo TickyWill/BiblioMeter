@@ -1,8 +1,15 @@
 :: Creation: F. Bertin 2024-05-26
-:: Refactoring: A. Chabli 2024-06-17
+:: Refactoring: A. Chabli 2024-10-31
 
 @echo off 
 Title BiblioMeter.exe making
+
+:: Setting development branches
+echo:
+set /p "bp_branch=Enter BiblioParsing branch to import: "
+echo:
+set /p "bm_branch=Enter BiblioMeter branch to import: "
+echo:
 
 :: Setting useful editing parameters
 set "TAB=   "
@@ -74,7 +81,7 @@ if exist %working_dir%\venv (
 :: Installing packages
 echo Installing BiblioParsing package
 echo:
-pip install git+https://github.com/TickyWill/BiblioParsing.git@amal_dev
+pip install git+https://github.com/TickyWill/BiblioParsing.git@%bp_branch%
 cls
 echo The package BiblioParsing successfully installed >> %LOG%
 echo:
@@ -82,7 +89,7 @@ echo The package BiblioParsing successfully installed
 echo:
 echo Installing BiblioMeter packages
 echo:
-pip install git+https://github.com/TickyWill/BiblioMeter.git@amal_dev
+pip install git+https://github.com/TickyWill/BiblioMeter.git@%bm_branch%
 cls
 echo The package BiblioMeter successfully installed >> %LOG%
 echo:
