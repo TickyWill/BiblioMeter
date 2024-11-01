@@ -4,19 +4,19 @@
 @echo off 
 Title BiblioMeter.exe making
 
-:: Setting exe version
-echo:
-set /p "exe_version=Enter BiblioMeter version (#.#.#): "
-
-:: Setting name of python program to launch the application
-echo:
-set /p "app_py=Enter name of program to launch application (case sensitive, ex: app.py or App.py): "
-
 :: Setting development branches
 echo:
 set /p "bp_branch=Enter BiblioParsing branch to import: "
 echo:
 set /p "bm_branch=Enter BiblioMeter branch to import: "
+
+:: Setting name of python program to launch the application
+echo:
+set /p "app_py=Enter name of program to launch application (case sensitive, ex: app.py or App.py): "
+
+:: Setting exe version
+echo:
+set /p "exe_version=Enter BiblioMeter version (#.#.#): "
 echo:
 
 :: Setting useful editing parameters

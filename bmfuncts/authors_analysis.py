@@ -21,6 +21,31 @@ from bmfuncts.useful_functs import format_df_for_excel
 from bmfuncts.useful_functs import read_parsing_dict
 
 
+def name_capwords(text):
+    """Capitalizes words in full names of authors getting 
+    rid of particular separators and keeping firstname initiales.
+
+    Args:
+        text (str): Full name to be capitalized by words.
+    Returns:
+        (str): Full name capitalized by words.
+    """
+    sep_list = ["-", "'"]
+    sub_text_list = text.split()[:-1]
+    text_split_list = []
+    for sub_text in sub_text_list:
+        for sep in sep_list:
+            if sep in sub_text:
+                words_list = [x.capitalize() for x in sub_text.split(sep)]
+                sub_text = sep.join(words_list)
+            else:
+                sub_text = sub_text.capitalize()
+        text_split_list.append(sub_text)
+    text_split_list.append(text.split()[-1])    
+    text = " ".join(text_split_list)
+    return text
+
+
 def _read_authors_df(parsing_path_dict, item_filename_dict):
     """Reads authors data resulting from the parsing step.
 
@@ -205,6 +230,13 @@ def _build_author_employee_df(bibliometer_path, in_path, corpus_year, all_cols_t
     cols_order = [pub_id_col, nb_auth_col, author_idx_col, inst_author_col, first_author_col,
                   employee_col, is_first_col, is_last_col]
     author_employee_df = author_employee_df[cols_order]
+    
+    # Capitalize names
+    author_employee_df[inst_author_col] = author_employee_df[inst_author_col].\
+    apply(lambda x: name_capwords(x))
+    
+    author_employee_df[employee_col] = author_employee_df[employee_col].\
+    apply(lambda x: name_capwords(x))
 
     return author_employee_df
 
@@ -250,6 +282,9 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         empl_df.drop_duplicates()
         pub_nb_per_auth_df = pd.concat([pub_nb_per_auth_df, empl_df])
     pub_nb_per_auth_df.drop_duplicates(inplace=True)
+
+#    print("pub_nb_per_auth_df change")
+#    pub_nb_per_auth_df[employee_col] = pub_nb_per_auth_df[employee_col].apply(lambda x: name_capwords(x))
     return pub_nb_per_auth_df
 
 
@@ -323,7 +358,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     if progress_callback:
         progress_callback(60)
 
-    # Saving the keywords dataframe as EXCEL file
+    # Saving the author-employee dataframe as EXCEL file
     author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
     col_names = list(author_employee_df.columns)
     col_attr_dict = {col_names[0]: [12, "center"],
@@ -341,11 +376,11 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     if progress_callback:
         progress_callback(70)
 
-    # Saving the keywords dataframe as EXCEL file
+    # Saving the author-statistics dataframe as EXCEL file
     author_stat_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_stat_file + ".xlsx")
     col_names = list(pub_nb_per_author_df.columns)
     col_attr_dict = {col_names[0]: [30, "left"],
-                     col_names[1]: [30, "left"],
+                     col_names[1]: [50, "left"],
                      col_names[2]: [15, "center"],
                      col_names[3]: [95, "left"],
                     }
