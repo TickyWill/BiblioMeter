@@ -13,6 +13,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
+import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.rename_cols import build_col_conversion_dic
@@ -93,23 +94,28 @@ def _set_useful_cols(institute, org_tup):
         (tup): (list of useful cols returned by 'build_col_conversion_dic' function \
         at seconde position of the returned tuple, list of cols to be added).
     """
-    _, submit_col_rename_dic, _ = build_col_conversion_dic(institute, org_tup)
-    submit_col_list = list(submit_col_rename_dic.values())
-    pub_id_col_alias = submit_col_list[0]
-    author_idx_col_alias = submit_col_list[1]
-    inst_author_col_alias = submit_col_list[7]
-    first_author_col_alias = submit_col_list[8]
-    employee_col_alias = submit_col_list[44]
+
+    #  Setting useful col names alias
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
+    submit_col_rename_dic = col_rename_tup[1]
+    pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
+    inst_author_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][2]]
+    first_author_col_alias = submit_col_rename_dic[bp.COL_NAMES["articles"][1]]
+    employee_col_alias = submit_col_rename_dic[eg.EMPLOYEES_ADD_COLS['employee_full_name']]
     nb_auth_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb']
     is_first_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author']
     is_last_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author']
     nb_pub_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb']
     pub_list_col_alias = pg.COL_NAMES_BONUS['pub_ids list']
+
+    # Building cols lists
     submit_useful_cols = [pub_id_col_alias, author_idx_col_alias,
                           inst_author_col_alias, first_author_col_alias,
                           employee_col_alias]
     add_cols = [nb_auth_col_alias, is_first_col_alias, is_last_col_alias,
                 nb_pub_col_alias, pub_list_col_alias]
+
     return submit_useful_cols, add_cols
 
 

@@ -83,7 +83,7 @@ employees_useful_cols_keys_list = ['matricule',
                                    'birth_date',
                                    'age_range',]
 
-EMPLOYEES_USEFUL_COLS ={}
+EMPLOYEES_USEFUL_COLS = {}
 for key in employees_useful_cols_keys_list:
     EMPLOYEES_USEFUL_COLS[key] = EMPLOYEES_FULL_COLS[key]
 

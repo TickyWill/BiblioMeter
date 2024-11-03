@@ -1075,14 +1075,15 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     submit_col_rename_dic = col_rename_tup[1]
 
     # Read of the 'submit' file with dates convertion through EMPLOYEES_CONVERTERS_DIC
-    submit_df = pd.read_excel(submit_path, converters = eg.EMPLOYEES_CONVERTERS_DIC)
+    submit_df = pd.read_excel(submit_path, converters=eg.EMPLOYEES_CONVERTERS_DIC,
+                              keep_default_na=False)
     submit_df.rename(columns = submit_col_rename_dic, inplace = True)
 
     # Resaving submit_df
     submit_df.to_excel(submit_path, index = False)
 
     # Read of the 'orphan' file
-    orphan_df = pd.read_excel(orphan_path)
+    orphan_df = pd.read_excel(orphan_path, keep_default_na=False)
     orphan_df.rename(columns = orphan_col_rename_dic, inplace = True)
 
     # Resaving orphan_df
@@ -1092,7 +1093,7 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     return end_message
 
 
-def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=False):
+def _split_orphan(institute, org_tup, working_folder_path, orphan_file_name, verbose=False):
     """Splits the publications list with one row per author that has not been identified 
     as Institute employees.
 
@@ -1104,8 +1105,9 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
-        corpus_year (str): Contains the corpus year defined by 4 digits.
+        working_folder_path (path): Full path to working folder.
+        orphan_file_name (str): File name of the Excel file of the publications list \
+        with one row per author that has not been identified as Institute employee.
         verbose (bool): Status of prints (default = False).       
     """
 
@@ -1114,41 +1116,38 @@ def _split_orphan(institute, bibliometer_path, org_tup, corpus_year, verbose=Fal
         if inst_col=="all_undrop":
             file_path = orphan_path
         else:
-            file_name = inst_col + "_" + orphan_file_name_alias
-            file_path = bdd_mensuelle_path / Path(file_name)
+            file_name = inst_col + "_" + orphan_file_name
+            file_path = working_folder_path / Path(file_name)
         df_to_save.to_excel(file_path, index=False)
         message = f"Excel file of orphan authors created for Institute subdivision: {inst_col}"
         if verbose: print(message)
 
     # Setting useful aliases
     converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
-    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
 
     # Setting useful column names list and droping status
     inst_col_list = org_tup[4]
     orphan_drop_dict = org_tup[10]
 
-    # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
-    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
-
     # Reading of the existing orphan excel file
     # with dates conversion through converters_alias
-    orphan_path = bdd_mensuelle_path / Path(orphan_file_name_alias)
-    orphan_df = pd.read_excel(orphan_path, converters = converters_alias)
+    orphan_path = working_folder_path / Path(orphan_file_name)
+    orphan_df = pd.read_excel(orphan_path, converters=converters_alias, keep_default_na=False)
 
     # Creating, and saving as Excel file, orphan authors for each Institute subdivision
     institute_df = orphan_df.copy()
     new_orphan_df = orphan_df.copy()
+    droped_indexes = set()
     for inst_col in inst_col_list[1:]:
         inst_col_df = orphan_df[orphan_df[inst_col]==1]
         _save_inst_col_df(inst_col, inst_col_df)
-        institute_df = institute_df.drop(inst_col_df.index)
+        indexes_to_drop = list(set(inst_col_df.index) - droped_indexes)
+        institute_df = institute_df.drop(indexes_to_drop)
+        droped_indexes = set(inst_col_df.index)
         if orphan_drop_dict[inst_col]:
             new_orphan_df = new_orphan_df.drop(inst_col_df.index)        
     _save_inst_col_df(inst_col_list[0], institute_df)
-    _save_inst_col_df("all_undrop", new_orphan_df) 
+    _save_inst_col_df("all_undrop", new_orphan_df)
 
 
 def _my_hash(text:str):
@@ -1163,7 +1162,7 @@ def _my_hash(text:str):
     return my_hash
 
 
-def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
+def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name, orphan_file_name):
     """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias'.
 
     The containt of these columns is as follows:
@@ -1178,8 +1177,12 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
-        corpus_year (str): Contains the corpus year defined by 4 digits.
+        working_folder_path (path): Full path to working folder.
+        submit_file_name (str): File name of the Excel file of the publications list \
+        with one row per Institute author with one row per author \
+        that has been identified as Institute employee.
+        orphan_file_name (str): File name of the Excel file of the publications list \
+        with one row per author that has not been identified as Institute employee.
     Returns:
         (str): End message recalling path to the saved file.        
     """
@@ -1189,32 +1192,27 @@ def _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year):
     submit_col_rename_dic = col_rename_tup[1]
 
     # Setting useful aliases
-    bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
-    submit_file_alias    = pg.ARCHI_YEAR["submit file name"]
-    orphan_file_alias    = pg.ARCHI_YEAR["orphan file name"]
-    hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"]
-    hash_id_col_alias    = pg.COL_HASH['hash_id']
-    pub_id_alias         = submit_col_rename_dic['Pub_id']
-    year_alias           = submit_col_rename_dic['Year']
-    first_auth_alias     = submit_col_rename_dic['Authors']
-    title_alias          = submit_col_rename_dic['Title']
-    issn_alias           = submit_col_rename_dic['ISSN']
-    doi_alias            = submit_col_rename_dic['DOI']
+    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
+    hash_id_col_alias = pg.COL_HASH['hash_id']
+    pub_id_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    year_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
+    first_auth_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]
+    doi_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][6]]
+    title_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][9]]
+    issn_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][10]]
 
     # Setting useful paths
-    corpus_year_path   = bibliometer_path / Path(corpus_year)
-    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
-    submit_file_path   = bdd_mensuelle_path / Path(submit_file_alias)
-    orphan_file_path   = bdd_mensuelle_path / Path(orphan_file_alias)
-    hash_id_file_path  = bdd_mensuelle_path / Path(hash_id_file_alias)
+    submit_file_path = working_folder_path / Path(submit_file_name)
+    orphan_file_path = working_folder_path / Path(orphan_file_name)
+    hash_id_file_path = working_folder_path / Path(hash_id_file_alias)
 
     # Setting useful columns list
     useful_cols = [pub_id_alias, year_alias, first_auth_alias,
                    title_alias, issn_alias, doi_alias]
 
     # Getting dataframes to hash
-    submit_to_hash = pd.read_excel(submit_file_path, usecols = useful_cols)
-    orphan_to_hash = pd.read_excel(orphan_file_path, usecols = useful_cols)
+    submit_to_hash = pd.read_excel(submit_file_path, usecols=useful_cols)
+    orphan_to_hash = pd.read_excel(orphan_file_path, usecols=useful_cols)
 
     # Concatenate de dataframes to hash
     dg_to_hash = pd.concat([submit_to_hash, orphan_to_hash])
@@ -1294,6 +1292,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     """
 
     # Internal functions
+    def _set_unknown(df, cols, initials_cols):
+        fill_na_cols = list(set(cols) - set(initials_cols))
+        for col in fill_na_cols:
+            df[col].fillna(unknown_alias, inplace=True)
+        for col in initials_cols:
+            df[col].fillna("NA", inplace=True)
+
     def _unique_pub_id(df):
         """Transforms the column 'Pub_id' of df y adding "yyyy_" 
         (year in 4 digits) to the values.
@@ -1319,6 +1324,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     unknown_alias          = bp.UNKNOWN
     year_col_alias         = bp.COL_NAMES['articles'][2]
     pub_id_alias           = bp.COL_NAMES['pub_id']
+    initials_col_alias     = eg.EMPLOYEES_ADD_COLS['first_name_initials']
     submit_file_name_alias = pg.ARCHI_YEAR["submit file name"]
     orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
     orphan_treat_alias     = pg.ARCHI_ORPHAN["root"]
@@ -1414,10 +1420,14 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     # *************************************************************************************
     # * Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file *
     # *************************************************************************************
-
-    # Replace NaN values by UNKNOWN string
-    submit_df.fillna(unknown_alias, inplace=True)
-    orphan_df.fillna(unknown_alias, inplace=True)
+            
+    # Replace NaN values by UNKNOWN string except in first name initials
+    submit_cols = list(submit_df.columns)
+    submit_initials_cols = [x for x in list(submit_df.columns) if initials_col_alias in x]
+    _set_unknown(submit_df, submit_cols, submit_initials_cols)
+    orphan_cols = list(orphan_df.columns)
+    orphan_initials_cols = [initials_col_alias]
+    _set_unknown(orphan_df, orphan_cols, orphan_initials_cols)
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
@@ -1426,10 +1436,10 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         orphan_df = _unique_pub_id(orphan_df)
 
     # Saving orphan_df
-    orphan_df.to_excel(orphan_path, index = False)
+    orphan_df.to_excel(orphan_path, index=False)
 
     # Saving submit_df
-    submit_df.to_excel(submit_path, index = False)
+    submit_df.to_excel(submit_path, index=False)
 
     # Adding author job type and saving new submit_df
     _add_author_job_type(submit_path, submit_path)
@@ -1446,12 +1456,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
 
     # Splitting orphan file in subdivisions of Institute
     if orphan_split_status:
-        _split_orphan(institute, bibliometer_path, org_tup, corpus_year)
+        _split_orphan(institute, org_tup, out_path, orphan_file_name_alias)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identification of articles independent of database extraction
-    _creating_hash_id(institute, org_tup, bibliometer_path, corpus_year)
+    _creating_hash_id(institute, org_tup, out_path,
+                      submit_file_name_alias, orphan_file_name_alias)
     if progress_callback:
         progress_callback(100)
 

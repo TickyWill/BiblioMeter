@@ -901,7 +901,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         # Renewing year selection
         year_select = variable_years.get()
 
-        # Setting paths and aliases dependent pn year_select
+        # Setting paths and aliases dependent on year_select
         homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path = bibliometer_path / Path(year_select)
         bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
