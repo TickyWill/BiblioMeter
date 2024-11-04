@@ -41,12 +41,12 @@ from bmfuncts.rename_cols import set_col_attr
 from bmfuncts.config_utils import set_user_config
 
 
-def standardize_txt(text):
+def standardize_txt(text):    
     # Removing accentuated characters
     new_text = bp.remove_special_symbol(text, only_ascii=True, strip=True)
 
     # Remove minus
-    new_text = new_text.replace("-", " ")
+    new_text = new_text.replace("-", " ").strip()
     return new_text
 
 

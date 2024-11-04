@@ -310,6 +310,9 @@ def add_otp(institute, org_tup, in_path, out_path, out_file_base):
             dg[dpt] = x
         df_out = pd.concat([df_out, dg.iloc[:1]])
 
+    # Removing possible spaces in dept name
+    df_out[dpt_alias] = df_out[dpt_alias].apply(lambda x: x.strip())
+
     # Configuring an Excel file per department with the list of OTPs
     for dpt in sorted(dpt_list):
         # Setting df_dpt with only pub_ids for which the first author

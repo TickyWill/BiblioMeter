@@ -51,9 +51,9 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
 
     # Setting parameters from args
     col0, col1, col2 = cols_tup
-    pub_fullname_col = col0  
+    pub_fullname_col = col0
     pub_last_name_col = col1
-    pub_first_name_col = col2 
+    pub_first_name_col = col2
 
     # Setting useful aliases
     orphan_treat_root    = pg.ARCHI_ORPHAN["root"]
@@ -89,6 +89,7 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
                 new_df.loc[pub_row_num, pub_first_name_col] = initials_eff_ortho
                 new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + ' ' + initials_eff_ortho
 
+    print("Mispelling of author names corrected")
     return new_df
 
 
@@ -113,6 +114,9 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
 
     # Setting parameters from args
     col0, col1, col2 = cols_tup
+    pub_fullname_col = col0
+    pub_last_name_col = col1
+    pub_first_name_col = col2
 
     # Setting useful aliases
     orphan_treat_root      = pg.ARCHI_ORPHAN["root"]
@@ -132,24 +136,28 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
     warnings.simplefilter(action = 'ignore', category = UserWarning)
     compl_df = pd.read_excel(complements_path, sheet_name = compl_to_replace_sheet,
                              usecols = compl_col_list)
+    compl_df[compl_lastname_init] = compl_df[compl_lastname_init].apply(lambda x: standardize_txt(x))
+    compl_df[compl_lastname_new] = compl_df[compl_lastname_new].apply(lambda x: standardize_txt(x))
     year_compl_df = compl_df[compl_df[compl_year_pub] == int(year)]
     year_compl_df.reset_index(inplace = True)
 
     new_df = init_df.copy()
-    for pub_row_num in range(len(init_df)):
-        lastname_init = init_df[col1][pub_row_num]
-        initials_init = init_df[col2][pub_row_num]
-        for compl_row_num in range(len(year_compl_df)):
-            lastname_pub_compl = year_compl_df[compl_lastname_init][compl_row_num]
-            initials_pub_compl = year_compl_df[compl_initials_init][compl_row_num]
-            if lastname_init == lastname_pub_compl and initials_init == initials_pub_compl:
+    for pub_row_num, _ in new_df.iterrows():
+        lastname_init = init_df.loc[pub_row_num, pub_last_name_col]
+        initials_init = init_df.loc[pub_row_num, pub_first_name_col]
+        for compl_row_num, _ in year_compl_df.iterrows():
+            lastname_pub_compl = year_compl_df.loc[compl_row_num, compl_lastname_init]
+            initials_pub_compl = year_compl_df.loc[compl_row_num, compl_initials_init]
+            if lastname_init==lastname_pub_compl and initials_init==initials_pub_compl:
 
-                lastname_eff_compl = year_compl_df[compl_lastname_new][compl_row_num]
-                initials_eff_compl = year_compl_df[compl_initials_new][compl_row_num]
-                new_df.loc[pub_row_num,col1] = lastname_eff_compl
-                new_df.loc[pub_row_num,col2] = initials_eff_compl
-                new_df.loc[pub_row_num,col0] = lastname_eff_compl + ' ' + initials_eff_compl
+                lastname_eff_compl = year_compl_df.loc[compl_row_num, compl_lastname_new]
+                initials_eff_compl = year_compl_df.loc[compl_row_num, compl_initials_new]
+                new_df.loc[pub_row_num, pub_last_name_col] = lastname_eff_compl
+                new_df.loc[pub_row_num, pub_first_name_col] = initials_eff_compl
+                new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_compl \
+                + ' ' + initials_eff_compl
 
+    print("False author names replaced")
     return new_df
 
 
@@ -191,18 +199,19 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
                                 sheet_name = outliers_sheet,
                                 usecols = [outliers_lastname_col,
                                            outliers_initials_col])
+    
     # Initializing the dataframe that will contain the rows to drop
     # with the same columns names as the dataframe to update
     drop_df = pd.DataFrame(columns = list(pub_df.columns))
 
     # Searching for the outliers in the dataframe to update by lastname and initials
-    for pub_row_num in range(len(pub_df)):
-        pub_lastname = pub_df[pub_last_col][pub_row_num]
-        pub_initials = pub_df[pub_initials_col][pub_row_num]
-        for outliers_row_num in range(len(outliers_df)):
-            outliers_lastname = outliers_df[outliers_lastname_col][outliers_row_num]
-            outliers_initials = outliers_df[outliers_initials_col][outliers_row_num]
-            if pub_lastname == outliers_lastname and pub_initials == outliers_initials:
+    for pub_row_num, _ in pub_df.iterrows():
+        pub_lastname = pub_df.loc[pub_row_num, pub_last_col]
+        pub_initials = pub_df.loc[pub_row_num, pub_initials_col]
+        for outliers_row_num, _ in outliers_df.iterrows():
+            outliers_lastname = outliers_df.loc[outliers_row_num, outliers_lastname_col]
+            outliers_initials = outliers_df.loc[outliers_row_num, outliers_initials_col]
+            if pub_lastname==outliers_lastname and pub_initials==outliers_initials:
                 # Setting the row to drop as a dataframe
                 row_to_drop_df = pub_df.loc[pub_row_num].to_frame().T
                 # Appending the row to drop to the dataframe that will contain all the rows to drop
@@ -211,6 +220,7 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
     # Removing the rows to drop from the dataframe to update
     new_pub_df = pd.concat([pub_df, drop_df]).drop_duplicates(keep = False)
 
+    print("External authors removed")
     return new_pub_df
 
 
@@ -861,18 +871,18 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                                 sheet_name = ext_docs_sheet_name_alias,
                                 usecols    = ext_docs_usecols,
                                 converters = converters_alias)
-    ext_docs_df.dropna(how ='all', inplace = True)
+    ext_docs_df.dropna(how ='any', inplace = True)
 
     # Searching for last names of init_orphan_df in ext_docs_df
     # to update submit and orphan files using new_submit_adds_df and new_orphan_drop_df
-    for orphan_row_num in range(len(init_orphan_df)):
-        author_last_name = init_orphan_df[orphan_last_name_alias][orphan_row_num]
-        author_initials  = init_orphan_df[orphan_initials_alias][orphan_row_num]
-        for ext_docs_row_num in range(len(ext_docs_df)):
-            ext_docs_pub_last_name = ext_docs_df[ext_docs_pub_last_name_alias][ext_docs_row_num]
-            ext_docs_pub_initials  = ext_docs_df[ext_docs_pub_initials_alias][ext_docs_row_num]
-            if (ext_docs_pub_last_name == author_last_name
-                    and ext_docs_pub_initials == author_initials):
+    for orphan_row_num, _ in init_orphan_df.iterrows():
+        author_last_name = standardize_txt(init_orphan_df.loc[orphan_row_num, orphan_last_name_alias])
+        author_initials  = init_orphan_df.loc[orphan_row_num, orphan_initials_alias]
+        for ext_docs_row_num, _ in ext_docs_df.iterrows():
+            ext_docs_pub_last_name = standardize_txt(ext_docs_df.loc[ext_docs_row_num, ext_docs_pub_last_name_alias])
+            ext_docs_pub_initials  = ext_docs_df.loc[ext_docs_row_num, ext_docs_pub_initials_alias]
+            if (ext_docs_pub_last_name==author_last_name
+                    and ext_docs_pub_initials==author_initials):
                 # Setting the row to move from init_orphan_df as a dataframe
                 row_to_move_df = init_orphan_df.loc[orphan_row_num].to_frame().T
 
@@ -914,6 +924,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     new_submit_df.to_excel(submit_path, index = False)
     new_orphan_df.to_excel(orphan_path, index = False)
 
+    print("External PhD students added")
     return (new_submit_df, new_orphan_df)
 
 
@@ -987,25 +998,25 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     # using the same useful columns as init_submit_df defined by EXT_DOCS_USEFUL_COL_LIST
     # with dates conversion through converters_alias
     # and drop of empty rows
-    others_usecols   = sum([[others_pub_last_name_alias, others_pub_initials_alias],
-                            ext_docs_col_adds_list_alias,
-                            ext_docs_useful_col_list_alias,],
-                           [])
+    others_usecols = sum([[others_pub_last_name_alias, others_pub_initials_alias],
+                          ext_docs_col_adds_list_alias,
+                          ext_docs_useful_col_list_alias,],
+                         [])
     warnings.simplefilter(action='ignore', category=UserWarning)
-    others_df   = pd.read_excel(others_path,
-                                sheet_name = others_sheet_name_alias,
-                                usecols   = others_usecols,
-                                converters = converters_alias)
-    others_df.dropna(how='all', inplace=True)
+    others_df = pd.read_excel(others_path,
+                              sheet_name = others_sheet_name_alias,
+                              usecols = others_usecols,
+                              converters = converters_alias)
+    others_df.dropna(how='any', inplace=True)
 
     # Searching for last names of init_orphan_df in others_df
     # to update submit and orphan files using new_submit_adds_df and new_orphan_drop_df
-    for orphan_row_num in range(len(init_orphan_df)):
-        author_last_name = init_orphan_df[orphan_last_name_alias][orphan_row_num]
-        author_initials  = init_orphan_df[orphan_initials_alias][orphan_row_num]
-        for others_row_num in range(len(others_df)):
-            others_pub_last_name = others_df[others_pub_last_name_alias][others_row_num]
-            others_pub_initials  = others_df[others_pub_initials_alias][others_row_num]
+    for orphan_row_num, _ in init_orphan_df.iterrows():
+        author_last_name = standardize_txt(init_orphan_df.loc[orphan_row_num, orphan_last_name_alias])
+        author_initials  = init_orphan_df.loc[orphan_row_num, orphan_initials_alias]
+        for others_row_num, _ in others_df.iterrows():
+            others_pub_last_name = standardize_txt(others_df.loc[others_row_num, others_pub_last_name_alias])
+            others_pub_initials  = others_df.loc[others_row_num, others_pub_initials_alias]
             if others_pub_last_name == author_last_name and others_pub_initials == author_initials:
                 # Setting the row to move from init_orphan_df as a dataframe
                 row_to_move_df = init_orphan_df.loc[orphan_row_num].to_frame().T
@@ -1048,6 +1059,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     new_submit_df.to_excel(submit_path, index = False)
     new_orphan_df.to_excel(orphan_path, index = False)
 
+    print("Other external collaborators added")
     return (new_submit_df, new_orphan_df)
 
 
