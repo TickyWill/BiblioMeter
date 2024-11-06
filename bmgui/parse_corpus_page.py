@@ -408,12 +408,15 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
                                                     norm_inst_status = False,
                                                     inst_types_file_path = inst_types_file_path,
                                                     country_affiliations_file_path = institute_affil_file_path)
+        
+        synthese_articles_nb = len(dedup_parsing_dict["articles"])
         progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
                           item_filename_dict, parsing_save_extent,
                           dedup_infos = (bibliometer_path, datatype, corpus_year))
         
         progress_callback(100)
+        return synthese_articles_nb
         
     # Setting parameters from args
     bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
@@ -479,9 +482,10 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
                              "\n\nReconstruire la synthèse ?")
                 answer_2 = messagebox.askokcancel(ask_title, ask_text)
                 if answer_2:
-                    _deduplicate_corpus_parsing(progress_callback)
+                    synthese_articles_nb = _deduplicate_corpus_parsing(progress_callback)
                     info_title = "Information"
                     info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."
+                    info_text += f"\n\n  Nombre d'articles de synthèse : {synthese_articles_nb}."
                     messagebox.showinfo(info_title, info_text)
                 else:
                     progress_callback(100)
