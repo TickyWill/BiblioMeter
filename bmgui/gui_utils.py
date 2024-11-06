@@ -147,7 +147,7 @@ def last_available_years(bibliometer_path, year_number):
 
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
     try:
-        list_dir = os.listdir(bibliometer_path)
+        list_dir = sorted(os.listdir(bibliometer_path))
         years_full_list = []
 
         for year in list_dir:
