@@ -4,7 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6c16b13c-ea32-4e92-8987-00b9d0f444fb" name="Changes" comment="" />
+    <list default="true" id="6c16b13c-ea32-4e92-8987-00b9d0f444fb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/config_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/config_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/consolidate_pub_list.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/consolidate_pub_list.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/merge_pub_employees.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/merge_pub_employees.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/pub_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/pub_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/pub_globals.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/pub_globals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/rename_cols.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/rename_cols.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/save_final_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/save_final_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/update_employees.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/update_employees.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/update_impact_factors.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/update_impact_factors.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/use_pub_attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/use_pub_attributes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmfuncts/useful_functs.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmfuncts/useful_functs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmgui/analyze_corpus_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmgui/analyze_corpus_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmgui/consolidate_corpus_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmgui/consolidate_corpus_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmgui/main_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmgui/main_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmgui/parse_corpus_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmgui/parse_corpus_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bmgui/update_if_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/bmgui/update_if_page.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,17 +42,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.Page_Analysis.executor": "Run",
-    "Python.__init__.executor": "Run",
-    "Python.app.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "orphan__treatment__enhancement",
-    "last_opened_file_path": "C:/Users/AC265100/PyVenv/BiblioMeter",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.Page_Analysis.executor&quot;: &quot;Run&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;orphan__treatment__enhancement&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/AC265100/PyVenv/BiblioMeter&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

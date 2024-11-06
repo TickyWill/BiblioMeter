@@ -1,6 +1,5 @@
 """Module for setting globals specific to publications
 management and analysis.
-
 """
 
 __all__ = ['ANALYSIS_IF',

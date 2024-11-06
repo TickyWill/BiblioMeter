@@ -374,7 +374,7 @@ def _build_inst_issn_df(if_db_df, use_col_list):
     Args:
         if_db_df (dataframe): Hierarchical dataframe of impact-factors database \
         keyyed by years.
-        use_col_list (list): List of subset columns names \ 
+        use_col_list (list): List of subset columns names \
         of 'if_db_df[<year>]' dataframes.
     Returns:
         (dataframe): Dataframe with 'use_col_list' columns.
@@ -635,7 +635,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     #Setting parameters from args
     (in_file_path, out_file_path,
      missing_if_path, missing_issn_path) = paths_tup
-    
+
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     base_col_list    = list(final_col_dic.values())
@@ -662,7 +662,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     unknown_if_fill_alias     = pg.FILL_EMPTY_KEY_WORD
     unknown_alias             = pg.FILL_EMPTY_KEY_WORD
     outside_if_analysis_alias = pg.OUTSIDE_ANALYSIS
-    
+
     # Setting tuples for passing args
     col_tup = (journal_col_alias, issn_col_alias, eissn_col_alias)
     aliases_tup = (unknown_alias, issn_col_alias, eissn_col_alias, database_if_col_alias)
@@ -976,7 +976,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     otp_alias                        = final_col_dic['otp']   # Choix de l'OTP
 
     # Setting useful paths
-    pub_list_file_path = out_path / Path(pub_list_filename_base_alias 
+    pub_list_file_path = out_path / Path(pub_list_filename_base_alias
                                          + " " + corpus_year + ".xlsx" )
     missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
     missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)

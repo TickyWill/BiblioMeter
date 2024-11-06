@@ -127,7 +127,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     # Building dataframe of pub_id and kept personal numbers for solved homonyms
     temp_df = pub_df[pub_df[homonyms_col_alias]==pg.HOMONYM_FLAG]
     homonyms_df = pd.DataFrame(columns=temp_df.columns)
-    for pub_id, pub_id_df in temp_df.groupby(pub_id_col_alias):
+    for _, pub_id_df in temp_df.groupby(pub_id_col_alias):
         for _, author_df in pub_id_df.groupby(author_idx_col_alias):
             if len(author_df)==1:
                 homonyms_df = pd.concat([homonyms_df, author_df])
@@ -228,20 +228,23 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
         homonyms_df_new = pd.DataFrame(columns=homonyms_df.columns)
 
         for pub_id, pub_id_homonyms_df in homonyms_df.groupby(pub_id_col_alias):
-            for author_idx, author_df in pub_id_homonyms_df.groupby(author_idx_col_alias):
+            for _, author_df in pub_id_homonyms_df.groupby(author_idx_col_alias):
                 if len(author_df)==1:
-                    # Keeping row of authors whithout homonyms
+                    # Keeping row of authors without homonyms
                     homonyms_df_new = pd.concat([homonyms_df_new, author_df])
                 else:
-                    pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col_alias]==pub_id]
+                    pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col_alias]\
+                                                             ==pub_id]
                     pub_id_mats_to_keep_list = list(pub_id_mats_to_keep_df[matricule_col_alias])
                     mats_to_check_list = list(author_df[matricule_col_alias])
-                    mats_to_keep_list = [x for x in mats_to_check_list if x in pub_id_mats_to_keep_list]
+                    mats_to_keep_list = [x for x in mats_to_check_list\
+                                         if x in pub_id_mats_to_keep_list]
 
                     if mats_to_keep_list:
                         # Keeping only row of matricule to keep when homonymies have been resolved
                         mat_to_keep = mats_to_keep_list[0]
-                        new_author_df = author_df[author_df[matricule_col_alias]==mat_to_keep].copy()
+                        new_author_df = author_df[author_df[matricule_col_alias]\
+                                                  ==mat_to_keep].copy()
                         new_author_df[homonyms_col_alias] = "_"
                         homonyms_df_new = pd.concat([homonyms_df_new, new_author_df])
                     else:

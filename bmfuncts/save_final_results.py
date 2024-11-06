@@ -1,5 +1,4 @@
 """ Module of functions for saving final results.
-
 """
 
 __all__ = ['save_final_countries',
@@ -77,7 +76,7 @@ def save_final_pub_lists(bibliometer_path,
     other_pub_list_file_alias = year_pub_list_file_alias + "_Others.xlsx"
     origin_paths_dict["Others"] = origin_pub_list_path / Path(other_pub_list_file_alias)
     target_paths_dict["Others"] = target_pub_list_path / Path(other_pub_list_file_alias)
-    
+
     invalid_pub_list_file_alias = year_invalid_pub_file_alias + ".xlsx"
     origin_paths_dict["Invalid"] = origin_pub_list_path / Path(invalid_pub_list_file_alias)
     target_paths_dict["Invalid"] = target_pub_list_path / Path(invalid_pub_list_file_alias)
@@ -166,7 +165,7 @@ def save_final_authors(bibliometer_path, corpus_year,
         origin_file_path  = origin_authors_path / Path(origin_file)
         target_file_path  = target_authors_path / Path(target_file)
         shutil.copy2(origin_file_path, target_file_path)
-        
+
     # Setting aliases for saving results
     results_sub_folder_alias = pg.ARCHI_RESULTS["authors_prod"]
 

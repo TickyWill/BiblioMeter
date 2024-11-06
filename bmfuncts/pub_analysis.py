@@ -241,7 +241,7 @@ def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
 
     # Setting useful aliases
     doctype_article_alias = pg.DOC_TYPE_DICT['Articles']
-    
+
     # Adding a column with number of articles per journal then droping duplicate rows
     count_journal_df = dept_analysis_df[issn_col].value_counts().to_frame()
     count_journal_df.rename(columns={'count': articles_nb_col}, inplace=True)
@@ -346,9 +346,6 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
         hierarchical dict of each department and also column name of IFs values in the saved files).
     """
 
-    # Setting useful aliases
-    doctype_article_alias = pg.DOC_TYPE_DICT['Articles']
-
     # Setting useful column names aliases
     final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
     journal_col_alias = final_col_dic['journal']
@@ -360,7 +357,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
     params_tup = (institute, depts_col_list, journal_col_alias)
     cols_tup = (doctype_col_alias, issn_col_alias, articles_nb_col_alias)
 
-    # Building the dataframe of the books list 
+    # Building the dataframe of the books list
     usecols = [journal_col_alias, doctype_col_alias] + depts_col_list
     books_df = pd.read_excel(books_list_file_path,
                              usecols=usecols)
@@ -606,7 +603,8 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     if progress_callback:
         progress_callback(60)
 
-    # Building the data resulting from IFs analysis of the final dataframe and saving them as xlsx files
+    # Building the data resulting from IFs analysis of the final dataframe
+    # and saving them as xlsx files
     kpi_dict, if_analysis_col_new = _build_analysis_if_data(institute, org_tup,
                                                             analysis_df, if_analysis_col,
                                                             if_analysis_year,
@@ -925,7 +923,7 @@ def _build_continents_stat(countries_df):
     Args:
         countries_df (dataframe): Data of countries per publications.
     Returns:
-        (dataframe): Continents statistics where each row gives the continent name, \ 
+        (dataframe): Continents statistics where each row gives the continent name, \
         the Institute-publications number with address from the continent \
         and a string listing the concerned publications IDs separated by semicolon.
     """
@@ -979,8 +977,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     only addresses related to publications of the Institute.
     3. Builds the dataframes of countries, normalized institutions and raw institutions \
     through the `build_norm_raw_institutions` function imported from the package imported as bp, \
-    using 'inst_pub_addresses_df' dataframe and specific files for this function; in these datraframes, \
-    each row contains:
+    using 'inst_pub_addresses_df' dataframe and specific files for this function; in these \
+    datraframes, each row contains:
 
         - A publication IDs
         - The index of an address of the publication addresses 
@@ -1132,12 +1130,16 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     if progress_callback:
         progress_callback(20)
 
-    # Building countries, normalized institutions and still unormalized ones
+    # Building countries, normalized institutions and still not normalized ones
+    file_path_0 = inst_types_file_path
+    file_path_1 = country_affil_file_path
+    file_path_2 = country_towns_file_alias
+    file_path_3 = institutions_folder_path
     return_tup = bp.build_norm_raw_institutions(inst_pub_addresses_df,
-                                                inst_types_file_path = inst_types_file_path,
-                                                country_affiliations_file_path = country_affil_file_path,
-                                                country_towns_file = country_towns_file_alias,
-                                                country_towns_folder_path = institutions_folder_path,
+                                                inst_types_file_path=file_path_0,
+                                                country_affiliations_file_path=file_path_1,
+                                                country_towns_file=file_path_2,
+                                                country_towns_folder_path=file_path_3,
                                                 verbose=verbose)
     countries_df, norm_institutions_df, raw_institutions_df = return_tup
     if progress_callback:

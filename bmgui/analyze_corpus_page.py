@@ -55,7 +55,8 @@ def _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
                                                  verbose=False)
 
     info_title = "- Information -"
-    info_text = (f"L'analyse de la production par auteur a été effectuée pour l'année {year_select}."
+    info_text = (f"L'analyse de la production par auteur a été effectuée "
+                 "pour l'année {year_select}."
                  "\nLes fichiers obtenus ont été créés dans le dossier :"
                  f"\n\n'{auth_analysis_folder_path}' ")
     messagebox.showinfo(info_title, info_text)
@@ -268,14 +269,14 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         threading.Thread(target=_launch_au_analysis_try, args=(_update_progress,)).start()
 
     def _start_launch_coupling_analysis_try():
-        disable_buttons(analysis_buttons_list)   
+        disable_buttons(analysis_buttons_list)
         place_after(co_analysis_launch_button,
                     progress_bar, dx = progress_bar_dx, dy = 0)
         progress_var.set(0)
         threading.Thread(target=_launch_coupling_analysis_try, args=(_update_progress,)).start()
 
     def _start_launch_kw_analysis_try():
-        disable_buttons(analysis_buttons_list)  
+        disable_buttons(analysis_buttons_list)
         place_after(kw_analysis_launch_button,
                     progress_bar, dx = progress_bar_dx, dy = 0)
         progress_var.set(0)
@@ -285,16 +286,16 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         disable_buttons(analysis_buttons_list)
         info_title = "- DESCRIPTION -"
         info_text = help_text
-        messagebox.showinfo(info_title, info_text)        
-        enable_buttons(analysis_buttons_list)  
-        
+        messagebox.showinfo(info_title, info_text)
+        enable_buttons(analysis_buttons_list)
+
 
     # Setting effective font sizes and positions (numbers are reference values)
     eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           # 14
     eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
     eff_help_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-2, master.width_sf_min)
     eff_select_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
-    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)    
+    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
     progress_bar_length_px = mm_to_px(100 * master.width_sf_mm, gg.PPI)
     progress_bar_dx = 50
     if_analysis_x_pos_px = mm_to_px(10 * master.width_sf_mm, gg.PPI)
@@ -370,7 +371,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                             text='Description',
                             font=help_label_font,
                             command=partial(_edit_help, help_text))
-    place_after(self.OptionButton_years, help_button, dx=help_dx, dy = help_dy)    
+    place_after(self.OptionButton_years, help_button, dx=help_dx, dy = help_dy)
 
     # Handling exception
     threading.excepthook = _except_hook
@@ -440,8 +441,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     place_bellow(au_analysis_label,
                  au_analysis_launch_button,
                  dx=launch_dx_px,
-                 dy=launch_dy_px)        
-       
+                 dy=launch_dy_px)
 
     # Creating and setting coupling analysis widgets
     title = gg.ANALYSIS_TEXT_DICT["co"][0]
@@ -500,7 +500,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  kw_analysis_launch_button,
                  dx=launch_dx_px,
                  dy=launch_dy_px)
-    
+
     # Setting buttons list for status change
     analysis_buttons_list = [self.OptionButton_years,
                              if_analysis_launch_button,

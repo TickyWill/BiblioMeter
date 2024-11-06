@@ -70,8 +70,10 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     ortho_col_list = list(pg.COL_NAMES_ORTHO.values())
     warnings.simplefilter(action = 'ignore', category = UserWarning)
     ortho_df = pd.read_excel(ortho_path, usecols = ortho_col_list)
-    ortho_df[ortho_lastname_init] = ortho_df[ortho_lastname_init].apply(lambda x: standardize_txt(x))
-    ortho_df[ortho_lastname_new] = ortho_df[ortho_lastname_new].apply(lambda x: standardize_txt(x))
+    ortho_df[ortho_lastname_init] = ortho_df[ortho_lastname_init].\
+        apply(lambda x: standardize_txt(x))  # pylint: disable=unnecessary-lambda
+    ortho_df[ortho_lastname_new] = ortho_df[ortho_lastname_new].\
+        apply(lambda x: standardize_txt(x))  # pylint: disable=unnecessary-lambda
 
     new_df = init_df.copy()
     new_df.reset_index(drop=True, inplace=True)
@@ -87,7 +89,8 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
                 initials_eff_ortho = ortho_df.loc[ortho_row_num, ortho_initials_new]
                 new_df.loc[pub_row_num, pub_last_name_col] = lastname_eff_ortho
                 new_df.loc[pub_row_num, pub_first_name_col] = initials_eff_ortho
-                new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + ' ' + initials_eff_ortho
+                new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + \
+                                                            ' ' + initials_eff_ortho
 
     print("Mispelling of author names corrected")
     return new_df
@@ -136,8 +139,10 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
     warnings.simplefilter(action = 'ignore', category = UserWarning)
     compl_df = pd.read_excel(complements_path, sheet_name = compl_to_replace_sheet,
                              usecols = compl_col_list)
-    compl_df[compl_lastname_init] = compl_df[compl_lastname_init].apply(lambda x: standardize_txt(x))
-    compl_df[compl_lastname_new] = compl_df[compl_lastname_new].apply(lambda x: standardize_txt(x))
+    compl_df[compl_lastname_init] = compl_df[compl_lastname_init].\
+        apply(lambda x: standardize_txt(x))  # pylint: disable=unnecessary-lambda
+    compl_df[compl_lastname_new] = compl_df[compl_lastname_new].\
+        apply(lambda x: standardize_txt(x))  # pylint: disable=unnecessary-lambda
     year_compl_df = compl_df[compl_df[compl_year_pub] == int(year)]
     year_compl_df.reset_index(inplace = True)
 
@@ -199,7 +204,7 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
                                 sheet_name = outliers_sheet,
                                 usecols = [outliers_lastname_col,
                                            outliers_initials_col])
-    
+
     # Initializing the dataframe that will contain the rows to drop
     # with the same columns names as the dataframe to update
     drop_df = pd.DataFrame(columns = list(pub_df.columns))
@@ -276,7 +281,7 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
                 last_names_list  = last_names_list[:name_idx] + last_names_list[(name_idx + 1):]
 
         first_name_initials = _retain_firstname_initials((' ').join(first_names_list))
-        last_name = standardize_txt((' ').join(last_names_list))            
+        last_name = standardize_txt((' ').join(last_names_list))
         return (last_name, first_name_initials)
 
     def _build_filt_authors_inst(inst_col_list, main_status, main_inst_idx):
@@ -306,7 +311,8 @@ def _build_institute_pubs_authors(institute, org_tup, bibliometer_path, year):
             filt_authors_inst_ = authorsinst_authors_df[first_inst_col] == 1
             for inst_idx, inst_col in enumerate(inst_col_list):
                 if inst_idx != 0:
-                    filt_authors_inst_ = filt_authors_inst_ | (authorsinst_authors_df[inst_col] == 1)
+                    filt_authors_inst_ = filt_authors_inst_ | \
+                                         (authorsinst_authors_df[inst_col] == 1)
         return filt_authors_inst_
 
     # Setting useful col list
@@ -531,6 +537,7 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
     test_nb     = len(test_dict[test_case])-1
     test_name   = test_dict[test_case][test_nb]
     test_states = test_dict[test_case][0:test_nb]
+    checks_path = Path(bibliometer_path) / Path('Temp_checks')
 
     # Building submit_df and orphan_df dataframes
     for _, pub_df_row in pub_df.iterrows():
@@ -567,7 +574,8 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
                 # corresponding to each of the found similarities by orphan reduction
                 frames = []
                 for lastname_match in lastname_match_list:
-                    temp_df = empl_df[empl_df[emp_useful_cols_alias['name']] == lastname_match].copy()
+                    temp_df = empl_df[empl_df[emp_useful_cols_alias['name']]\
+                                      ==lastname_match].copy()
                     # Replacing the employee last name by the publication last name
                     # for 'pub_emp_join_df' building
                     temp_df[emp_add_cols_alias['employee_full_name']] = \
@@ -639,7 +647,6 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
                 # Saving specific dataframes 'temp_df' and 'empl_pub_match_df' for function testing
                 if pub_lastname == test_name and test_states[4]:
                     # Creating path for saving test files
-                    checks_path = Path(bibliometer_path) / Path('Temp_checks')
                     if not os.path.isdir(checks_path):
                         os.makedirs(checks_path)
                     _save_spec_dfs(temp_df)
@@ -813,7 +820,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
         at the Institute but not employees of it.
     Returns:
         (tup): (updated dataframe of the publications list with one row \
-        per Institute author including external PhD students, updated dataframe \ 
+        per Institute author including external PhD students, updated dataframe \
         of publications list with one row per author that has not been identified \
         as Institute employee).
     """
@@ -876,10 +883,12 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     # Searching for last names of init_orphan_df in ext_docs_df
     # to update submit and orphan files using new_submit_adds_df and new_orphan_drop_df
     for orphan_row_num, _ in init_orphan_df.iterrows():
-        author_last_name = standardize_txt(init_orphan_df.loc[orphan_row_num, orphan_last_name_alias])
-        author_initials  = init_orphan_df.loc[orphan_row_num, orphan_initials_alias]
+        author_last_name = init_orphan_df.loc[orphan_row_num, orphan_last_name_alias]
+        author_last_name = standardize_txt(author_last_name)
+        author_initials = init_orphan_df.loc[orphan_row_num, orphan_initials_alias]
         for ext_docs_row_num, _ in ext_docs_df.iterrows():
-            ext_docs_pub_last_name = standardize_txt(ext_docs_df.loc[ext_docs_row_num, ext_docs_pub_last_name_alias])
+            ext_docs_pub_last_name = ext_docs_df.loc[ext_docs_row_num, ext_docs_pub_last_name_alias]
+            ext_docs_pub_last_name = standardize_txt(ext_docs_pub_last_name)
             ext_docs_pub_initials  = ext_docs_df.loc[ext_docs_row_num, ext_docs_pub_initials_alias]
             if (ext_docs_pub_last_name==author_last_name
                     and ext_docs_pub_initials==author_initials):
@@ -1012,10 +1021,12 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     # Searching for last names of init_orphan_df in others_df
     # to update submit and orphan files using new_submit_adds_df and new_orphan_drop_df
     for orphan_row_num, _ in init_orphan_df.iterrows():
-        author_last_name = standardize_txt(init_orphan_df.loc[orphan_row_num, orphan_last_name_alias])
+        author_last_name = init_orphan_df.loc[orphan_row_num, orphan_last_name_alias]
+        author_last_name = standardize_txt(author_last_name)
         author_initials  = init_orphan_df.loc[orphan_row_num, orphan_initials_alias]
         for others_row_num, _ in others_df.iterrows():
-            others_pub_last_name = standardize_txt(others_df.loc[others_row_num, others_pub_last_name_alias])
+            others_pub_last_name = others_df.loc[others_row_num, others_pub_last_name_alias]
+            others_pub_last_name = standardize_txt(others_pub_last_name)
             others_pub_initials  = others_df.loc[others_row_num, others_pub_initials_alias]
             if others_pub_last_name == author_last_name and others_pub_initials == author_initials:
                 # Setting the row to move from init_orphan_df as a dataframe
@@ -1105,7 +1116,7 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     return end_message
 
 
-def _split_orphan(institute, org_tup, working_folder_path, orphan_file_name, verbose=False):
+def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False):
     """Splits the publications list with one row per author that has not been identified 
     as Institute employees.
 
@@ -1132,7 +1143,8 @@ def _split_orphan(institute, org_tup, working_folder_path, orphan_file_name, ver
             file_path = working_folder_path / Path(file_name)
         df_to_save.to_excel(file_path, index=False)
         message = f"Excel file of orphan authors created for Institute subdivision: {inst_col}"
-        if verbose: print(message)
+        if verbose:
+            print(message)
 
     # Setting useful aliases
     converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
@@ -1157,7 +1169,7 @@ def _split_orphan(institute, org_tup, working_folder_path, orphan_file_name, ver
         institute_df = institute_df.drop(indexes_to_drop)
         droped_indexes = set(inst_col_df.index)
         if orphan_drop_dict[inst_col]:
-            new_orphan_df = new_orphan_df.drop(inst_col_df.index)        
+            new_orphan_df = new_orphan_df.drop(inst_col_df.index)
     _save_inst_col_df(inst_col_list[0], institute_df)
     _save_inst_col_df("all_undrop", new_orphan_df)
 
@@ -1250,8 +1262,9 @@ def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name,
     return message
 
 
-def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_path,
-                          corpus_year, search_depth, progress_callback=None, progress_bar_state=None):
+def recursive_year_search(out_path, empl_df, institute, org_tup,
+                          bibliometer_path, corpus_year, search_depth,
+                          progress_callback=None, progress_bar_state=None):
     """Searches in the employees database of the Institute the information for the authors 
     of the publications of a corpus.
 
@@ -1413,7 +1426,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
         new_progress_bar_state = progress_bar_state + step * 30
         progress_callback(new_progress_bar_state)
         progress_bar_loop_progression = step * 50 // len(years)
-    
+
     for _, year in enumerate(years):
         # Updating the dataframes submit_df_add and orphan_df
         submit_df_add, orphan_df = _build_submit_df(empl_df[year],
@@ -1432,7 +1445,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
     # *************************************************************************************
     # * Saving results in 'submit_file_name_alias' file and 'orphan_file_name_alias' file *
     # *************************************************************************************
-            
+
     # Replace NaN values by UNKNOWN string except in first name initials
     submit_cols = list(submit_df.columns)
     submit_initials_cols = [x for x in list(submit_df.columns) if initials_col_alias in x]
@@ -1468,7 +1481,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup, bibliometer_pat
 
     # Splitting orphan file in subdivisions of Institute
     if orphan_split_status:
-        _split_orphan(institute, org_tup, out_path, orphan_file_name_alias)
+        _split_orphan(org_tup, out_path, orphan_file_name_alias)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 

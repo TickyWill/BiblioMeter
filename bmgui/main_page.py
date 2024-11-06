@@ -74,7 +74,7 @@ class AppMain(tk.Tk):
                 p_disp = ('/'.join(part_start)) / Path("...") / ('/'.join(part_end))
             return p_disp
 
-        def _get_file(institute_select, datatype_select): 
+        def _get_file(institute_select, datatype_select):
             """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
             Updates 'bmf' widgets parameters and values accordingly to the working 
             folder got and sets launch button of corpuses analysis."""
@@ -126,7 +126,7 @@ class AppMain(tk.Tk):
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)
             bmf_val.set(inst_bmf)
             bmf_val2.set(_display_path(inst_bmf))
-            
+
         def _try_bmf_access(bmf_path):
             """Returns status of the default working folder as boolean: True, if exists 
             and access is authorized to the user; False, otherwise."""
@@ -540,7 +540,7 @@ class PageButton(tk.Frame):
 class ParseCorpusPage(tk.Frame):
     """Sets parsing page widgets through `create_parsing_concat` function 
     imported from `bmgui.parse_corpus_page` module."""
-    
+
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
@@ -554,7 +554,7 @@ class ParseCorpusPage(tk.Frame):
         # Creating and setting widgets for page frame
         create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype)
 
-        
+
 class ConsolidateCorpusPage(tk.Frame):
     """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function 
     imported from `bmgui.consolidate_corpus_page` module."""

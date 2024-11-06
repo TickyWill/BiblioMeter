@@ -45,7 +45,8 @@ def _launch_update_if_db(institute, org_tup, bibliometer_path,
         pub_list_folder_alias (str): Publications-lists folder name.
         corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
-        progress_callback (function): Function for updating \ProgressBar tkinter widget status. 
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
     Returns:
         (bool): Status of impact-factors database.    
     """
@@ -118,10 +119,10 @@ def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
      pub_list_file_base_alias,
      missing_if_base_alias,
      missing_issn_base_alias) = aliases_tup
-    
+
     progress_callback(5)
     progress_bar_state = 5
-    progress_bar_loop_progression = 70 // len(corpus_years_list)    
+    progress_bar_loop_progression = 70 // len(corpus_years_list)
     if_database_complete = None
     missing_pub_file_year = None
     for corpus_year in corpus_years_list:
@@ -241,10 +242,10 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
 
     def _missing_pub_file_year_check(progress_callback):
         aliases_tup = (pub_list_folder_alias, pub_list_file_base_alias,
-                       missing_if_base_alias, missing_issn_base_alias)                                       
+                       missing_if_base_alias, missing_issn_base_alias)
         if_tup = _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
                                        aliases_tup, master.years_list, progress_callback)
-        missing_pub_file_year, if_database_complete, progress_bar_state = if_tup
+        missing_pub_file_year, if_database_complete, _ = if_tup
         if not missing_pub_file_year:
             print("IFs updated in all consolidated lists of publications")
             concatenate_pub_lists(institute, org_tup, bibliometer_path, master.years_list)
@@ -313,7 +314,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                 messagebox.showinfo(info_title, info_text)
         # Re-initializing status of IFs database update
         globals()['if_db_update_status'] = False
-        progress_bar.place_forget()               
+        progress_bar.place_forget()
 
     def _update_progress(value):
         progress_var.set(value)
@@ -353,7 +354,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     update_if_label_dx_px = mm_to_px( 0 * master.width_sf_mm,  gg.PPI)
     update_if_label_dy_px = mm_to_px(15 * master.height_sf_mm, gg.PPI)
     launch_dx_px = mm_to_px( 0 * master.width_sf_mm,  gg.PPI)
-    launch_dy_px = mm_to_px( 5 * master.height_sf_mm, gg.PPI)    
+    launch_dy_px = mm_to_px( 5 * master.height_sf_mm, gg.PPI)
     progress_bar_length_px = mm_to_px(75 * master.width_sf_mm, gg.PPI)
     progress_bar_dx = 40
 
@@ -381,7 +382,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     # Creating and setting widgets for page title and exit button
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
-    
+
     # Handling exception
     threading.excepthook = _except_hook
 
@@ -474,7 +475,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                  pub_if_update_launch_button,
                  dx = launch_dx_px,
                  dy = launch_dy_px)
-    
+
     # Setting buttons list for status change
     update_if_buttons_list = [if_db_update_launch_button,
                               pub_if_update_launch_button]
