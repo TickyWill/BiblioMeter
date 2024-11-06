@@ -925,8 +925,8 @@ def _build_continents_stat(countries_df):
     Args:
         countries_df (dataframe): Data of countries per publications.
     Returns:
-        (dataframe): Continents statistics where each row gives the continent name,
-        the Institute-publications number with address from the continent
+        (dataframe): Continents statistics where each row gives the continent name, \
+        the Institute-publications number with address from the continent \
         and a string listing the concerned publications IDs separated by semicolon.
     """
 

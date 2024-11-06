@@ -261,16 +261,16 @@ def _launch_recursive_year_search_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        paths_tup (tup): (full path to folder where publications merged with
-        Institute employees and associated files are saved, full path to file
+        paths_tup (tup): (full path to folder where publications merged with \
+        Institute employees and associated files are saved, full path to file \
         of Institute employees database).
-        files_tup (tup): (name of file of publications merged with Institut
-        employees, name of file of publications with authors not found in
+        files_tup (tup): (name of file of publications merged with Institut \
+        employees, name of file of publications with authors not found in \
         Institute employees database).
         year_select (str): Corpus year defined by 4 digits.
-        search_depth_init (int): Initial search depth that will be adapted
+        search_depth_init (int): Initial search depth that will be adapted \
         depending on available years in Institute employees database.
-        progress_callback (function): Function for updating ProgressBar tkinter
+        progress_callback (function): Function for updating ProgressBar tkinter \
         widget status.
         progress_bar_state (int): Initial status of ProgressBar tkinter widget.  
     """

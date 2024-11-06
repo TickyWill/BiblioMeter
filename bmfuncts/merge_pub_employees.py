@@ -784,16 +784,16 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     The new publications lists are saved as Excel files.
 
     Args:
-        submit_path (path): Full path to the Excel file of the publications list
+        submit_path (path): Full path to the Excel file of the publications list \
         with one row per author with attributes as Institute employee.
-        orphan_path (path): Full path to the Excel file of the publications list
+        orphan_path (path): Full path to the Excel file of the publications list \
         with one row per author that has not been identified as Institute employee.
-        ext_docs_path (path): Full path to the Excel file giving the PhD students
+        ext_docs_path (path): Full path to the Excel file giving the PhD students \
         at the Institute but not employees of it.
     Returns:
-        (tup): (updated dataframe of the publications list with one row
-        per Institute author including external PhD students, updated dataframe
-        of publications list with one row per author that has not been identified
+        (tup): (updated dataframe of the publications list with one row \
+        per Institute author including external PhD students, updated dataframe \
+        of publications list with one row per author that has not been identified \
         as Institute employee).
     """
 

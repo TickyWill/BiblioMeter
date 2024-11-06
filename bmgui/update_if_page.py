@@ -44,7 +44,7 @@ def _launch_update_if_db(institute, org_tup, bibliometer_path,
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         pub_list_folder_alias (str): Publications-lists folder name.
-        corpus_years_list (list): List of available corpus years
+        corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
         progress_callback (function): Function for updating ProgressBar tkinter widget status.
     Returns:

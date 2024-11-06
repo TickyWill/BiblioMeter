@@ -369,9 +369,9 @@ def _build_inst_issn_df(if_db_df, use_col_list):
     for each journal name.
 
     Args:
-        if_db_df (dataframe): Hierarchical dataframe of impact-factors database
+        if_db_df (dataframe): Hierarchical dataframe of impact-factors database \
         keyyed by years.
-        use_col_list (list): List of subset columns names
+        use_col_list (list): List of subset columns names \
         of 'if_db_df[<year>]' dataframes.
     Returns:
         (dataframe): Dataframe with 'use_col_list' columns.
