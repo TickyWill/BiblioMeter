@@ -96,6 +96,7 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_VERSION',
            'TEXT_YEAR_PC',
            'TEXT_YEAR_PI',
+           'GUI_BUTTONS'
            ]
 
 # Standard library imports
@@ -381,3 +382,6 @@ TEXT_ETAPE_9 = "Analyse des mots clefs"
 HELP_ETAPE_9 = " L'analyse des mots clefs est effectuée à partir des fichiers"
 HELP_ETAPE_9 += " issus de l'étape de parsing des corpus."
 TEXT_KW_ANALYSIS = "Lancer l'analyse des mots clefs"
+
+# List of all the buttons
+GUI_BUTTONS = []

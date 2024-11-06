@@ -21,7 +21,6 @@ import shutil
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows \
@@ -33,6 +32,7 @@ from openpyxl.styles import PatternFill as openpyxl_PatternFill
 from openpyxl.styles import Alignment as openpyxl_Alignment
 from openpyxl.styles import Border as openpyxl_Border
 from openpyxl.styles import Side as openpyxl_Side
+import BiblioParsing as bp
 
 # local imports
 import bmfuncts.pub_globals as pg
@@ -50,7 +50,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
         (bool): Status of the deduplication parsing folder \
         (False if folder does'nt exist or is empty).
     """
-    # To Do:  Checks if a specific parsing file is available not only if folder is empty    
+    # To Do:  Checks if a specific parsing file is available not only if folder is empty
 
     # Setting default returned status
     dedup_parsing_status = False
@@ -281,8 +281,8 @@ def mise_en_page(institute, org_tup, df,
         cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center",
                                             vertical="center")
 
-    # Setting, if if_database = False, de columns width using dict 
-    # of column attributes 'col_attr' 
+    # Setting, if if_database = False, de columns width using dict
+    # of column attributes 'col_attr'
     if if_database:
         col_width_list = [60,15,15,15]
         for idx_col, col in enumerate(columns_list):
@@ -456,8 +456,8 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
 
     message = f"Architecture created for {corpus_year_folder} folder"
     return message
-        
-        
+
+
 def save_parsing_dict(parsing_dict, parsing_path,
                       item_filename_dict, save_extent,
                       dedup_infos=None):
@@ -491,7 +491,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
     # Setting parameters for the specific case of deduplication results
     if dedup_infos:
         bibliometer_path, datatype, corpus_year = dedup_infos
-        
+
         # Setting aliases for final saving deduplication results
         results_root_alias       = pg.ARCHI_RESULTS["root"]
         results_folder_alias     = pg.ARCHI_RESULTS[datatype]
@@ -502,7 +502,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
         results_folder_path = results_root_path / Path(results_folder_alias)
         year_target_folder_path    = results_folder_path / Path(corpus_year)
         target_parsing_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
-        
+
         # Checking availability of required final results folders
         if not os.path.exists(year_target_folder_path):
             os.makedirs(year_target_folder_path)
@@ -531,7 +531,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
                     item_df.to_csv(item_final_path, index=False, sep=',')
         else:
             pass
-    
+
     if dedup_infos:
         end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
                        f"\n  '{target_parsing_folder_path}'")

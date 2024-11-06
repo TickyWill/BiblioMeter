@@ -12,9 +12,9 @@ import re
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook
+import BiblioParsing as bp
 
 # local imports
 import bmfuncts.pub_globals as pg
@@ -92,7 +92,7 @@ def _get_if(if_updated_file_path, useful_col_list,
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
 
     if_updated_df = pd.read_excel(if_updated_file_path)
-    
+
     # Replacing by 'year_if_col_alias' the column name containing 'most_recent_year_if_col_base_alias'
     if year_if_col_alias not in if_updated_df.columns:
         for col in if_updated_df.columns:
@@ -159,7 +159,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
 
     # Setting parameters from args
     pub_list_folder, missing_if_filename_base, missing_issn_filename_base = files_tup
-    
+
     # Setting aliases of useful columns
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     journal_col_alias = final_col_dic['journal']
@@ -358,14 +358,14 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
     # Setting useful aliases
     unknown_alias = bp.UNKNOWN
 
-    # Initializing 'most_recent_year_if_db_df' dataframe 
+    # Initializing 'most_recent_year_if_db_df' dataframe
     most_recent_year_if_db_df = if_db_df[most_recent_year]
     most_recent_year_if_db_df.fillna(unknown_alias, inplace = True)
     most_recent_year_if_db_df[journal_col] = most_recent_year_if_db_df.\
         apply(_capwords_journal_col(journal_col), axis = 1)
 
     # Building fully updated Ifs database for years beginning
-    # from the most recent year available for IFs    
+    # from the most recent year available for IFs
     for corpus_year in off_if_db_years_list:
         tup = _update_year_if_database(institute, org_tup, bibliometer_path,
                                        corpus_year, most_recent_year_if_db_df,
@@ -447,7 +447,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     if_database = True
     first = True
     wb = Workbook()
-    
+
     # Setting args tuples
     files_tup = (pub_list_folder_alias, missing_if_filename_base_alias,
                  missing_issn_filename_base_alias)

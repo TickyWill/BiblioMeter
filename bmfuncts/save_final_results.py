@@ -77,7 +77,7 @@ def save_final_pub_lists(bibliometer_path,
     other_pub_list_file_alias = year_pub_list_file_alias + "_Others.xlsx"
     origin_paths_dict["Others"] = origin_pub_list_path / Path(other_pub_list_file_alias)
     target_paths_dict["Others"] = target_pub_list_path / Path(other_pub_list_file_alias)
-    
+
     invalid_pub_list_file_alias = year_invalid_pub_file_alias + ".xlsx"
     origin_paths_dict["Invalid"] = origin_pub_list_path / Path(invalid_pub_list_file_alias)
     target_paths_dict["Invalid"] = target_pub_list_path / Path(invalid_pub_list_file_alias)
