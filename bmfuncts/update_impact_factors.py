@@ -11,9 +11,9 @@ import re
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook
+import BiblioParsing as bp
 
 # local imports
 import bmfuncts.pub_globals as pg
@@ -92,8 +92,7 @@ def _get_if(if_updated_file_path, useful_col_list,
 
     if_updated_df = pd.read_excel(if_updated_file_path)
 
-    # Replacing by 'year_if_col_alias' the column name
-    # containing 'most_recent_year_if_col_base_alias'
+    # Replacing by 'year_if_col_alias' the column name containing 'most_recent_year_if_col_base_alias'
     if year_if_col_alias not in if_updated_df.columns:
         for col in if_updated_df.columns:
             if re.findall(most_recent_year_if_col_base_alias, col):

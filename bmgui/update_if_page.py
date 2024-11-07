@@ -15,6 +15,7 @@ from pathlib import Path
 # Local imports
 import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
+from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons, enable_buttons
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import mm_to_px
@@ -45,8 +46,8 @@ def _launch_update_if_db(institute, org_tup, bibliometer_path,
         pub_list_folder_alias (str): Publications-lists folder name.
         corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
-        progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.
+        progress_callback (function): Function for updating ProgressBar tkinter widget status.
+
     Returns:
         (bool): Status of impact-factors database.    
     """
@@ -322,11 +323,6 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
         if value >= 100:
             enable_buttons(update_if_buttons_list)
 
-    def _except_hook(args):
-        messagebox.showwarning("Error", args)
-        progress_var.set(0)
-        enable_buttons(update_if_buttons_list)
-
     def _start_launch_update_if_db_try():
         disable_buttons(update_if_buttons_list)
         place_after(if_db_update_launch_button,
@@ -383,9 +379,6 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
 
-    # Handling exception
-    threading.excepthook = _except_hook
-
     # Initializing progress bar widget
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
     progress_bar = ttk.Progressbar(self,
@@ -434,6 +427,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                            text = gg.TEXT_MAJ_BDD_IF,
                                            font = if_db_update_launch_font,
                                            command = _start_launch_update_if_db_try)
+    GUI_BUTTONS.append(if_db_update_launch_button)
     place_bellow(help_label,
                  if_db_update_launch_button,
                  dx = launch_dx_px,
@@ -471,6 +465,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                  text = gg.TEXT_MAJ_PUB_IF,
                                  font = pub_if_update_launch_button_font,
                                  command = _start_launch_update_pub_if_try)
+    GUI_BUTTONS.append(pub_if_update_launch_button)
     place_bellow(help_label,
                  pub_if_update_launch_button,
                  dx = launch_dx_px,

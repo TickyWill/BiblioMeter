@@ -289,18 +289,18 @@ def set_if_col_names(institute, org_tup):
 def set_col_attr(institute, org_tup):
     """Sets the dict for setting the final column attributes 
     in terms of width and alignment to be used for formating 
-    datarames before openpyxl save.
+    dataframes before openpyxl save.
 
     The final column names are got through the 
     `build_col_conversion_dic` internal function.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
         (tup): (dict to be used for setting the final column \
-        attributes for formating datarames before openpyxl save, \
+        attributes for formating dataframes before openpyxl save, \
         list of the final column names that have attributes).
     """
 

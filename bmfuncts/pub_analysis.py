@@ -14,9 +14,9 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import numpy as np
 import pandas as pd
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as pg

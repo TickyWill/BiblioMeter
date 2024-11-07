@@ -25,6 +25,7 @@ from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.useful_functs import save_fails_dict
 from bmfuncts.useful_functs import save_parsing_dict
+from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import existing_corpuses
@@ -526,11 +527,6 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         if value >= 100:
             enable_buttons(parse_buttons_list)
 
-    def _except_hook(args):
-        messagebox.showwarning("Error", args)
-        progress_var.set(0)
-        enable_buttons(parse_buttons_list)
-
     def _start_launch_parsing_try():
         disable_buttons(parse_buttons_list)
         place_bellow(parsing_launch_button,
@@ -608,9 +604,6 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
 
-    # Handling exception
-    threading.excepthook = _except_hook
-
     # Initializing progress bar widget
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
     progress_bar = ttk.Progressbar(self,
@@ -644,6 +637,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                                                        master,
                                                        bibliometer_path,
                                                        pos_tup))
+    GUI_BUTTONS.append(exist_button)
     exist_button.place(x = status_button_x_pos,
                        y = status_button_y_pos,
                        anchor = 'n')
@@ -676,6 +670,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     font_year_pc_1 = tkFont.Font(family = gg.FONT_NAME,
                                  size   = eff_buttons_font_size)
     self.om_year_pc_1.config(font = font_year_pc_1)
+    GUI_BUTTONS.append(self.om_year_pc_1)
     place_after(self.label_year_pc_1,
                 self.om_year_pc_1,
                 dx = + dx_year_select,
@@ -712,6 +707,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                                       text = gg.TEXT_LAUNCH_PARSING,
                                       font = parsing_launch_font,
                                       command = _start_launch_parsing_try)
+    GUI_BUTTONS.append(parsing_launch_button)
     place_after(om_bdd_pc_1,
                 parsing_launch_button,
                 dx = dx_launch,
@@ -746,6 +742,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     font_year_pc_2 = tkFont.Font(family = gg.FONT_NAME,
                                  size   = eff_buttons_font_size)
     self.om_year_pc_2.config(font = font_year_pc_2)
+    GUI_BUTTONS.append(self.om_year_pc_2)
     place_after(self.label_year_pc_2,
                 self.om_year_pc_2,
                 dx = + dx_year_select,
@@ -758,6 +755,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                                      text = gg.TEXT_LAUNCH_SYNTHESE,
                                      font = synthese_launch_font,
                                      command = _start_launch_synthese_try)
+    GUI_BUTTONS.append(synthese_launch_button)
     place_after(self.om_year_pc_2,
                 synthese_launch_button,
                 dx = dx_launch,

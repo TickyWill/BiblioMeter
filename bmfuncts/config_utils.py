@@ -169,7 +169,7 @@ def set_user_config(bibliometer_path, year, db_list):
     - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database.
     - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step \
     and for each database.
-    - index 3 = the dict giving the name of the parsing file for each parsed item.            
+    - index 3 = the dict giving the name of the parsing file for each parsed item.
 
     Args:
         bibliometer_path (path): The full path to the working folder.

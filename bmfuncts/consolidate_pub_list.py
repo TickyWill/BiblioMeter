@@ -25,12 +25,12 @@ from datetime import datetime
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl.worksheet.datavalidation import DataValidation \
     as openpyxl_DataValidation
 from openpyxl.utils import get_column_letter \
     as openpyxl_get_column_letter
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as eg
@@ -977,7 +977,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Setting useful paths
     pub_list_file_path = out_path / Path(pub_list_filename_base_alias
-                                         + " " + corpus_year + ".xlsx" )
+                                         + " " + corpus_year + ".xlsx")
     missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
     missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)
     invalid_file_path = out_path / Path(invalid_pub_filename_base_alias

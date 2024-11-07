@@ -22,6 +22,7 @@ from bmfuncts.authors_analysis import authors_analysis
 from bmfuncts.pub_analysis import coupling_analysis
 from bmfuncts.pub_analysis import if_analysis
 from bmfuncts.pub_analysis import keywords_analysis
+from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import font_size
@@ -249,11 +250,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         if value >= 100:
             enable_buttons(analysis_buttons_list)
 
-    def _except_hook(args):
-        messagebox.showwarning("Error", args)
-        progress_var.set(0)
-        enable_buttons(analysis_buttons_list)
-
     def _start_launch_if_analysis_try():
         disable_buttons(analysis_buttons_list)
         place_after(if_analysis_launch_button,
@@ -347,6 +343,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                             variable_years,
                                             *master.years_list)
     self.OptionButton_years.config(font=self.font_OptionButton_years)
+    GUI_BUTTONS.append(self.OptionButton_years)
 
     # - Creating year selection label
     self.font_Label_years = tkFont.Font(family=gg.FONT_NAME,
@@ -372,9 +369,6 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                             font=help_label_font,
                             command=partial(_edit_help, help_text))
     place_after(self.OptionButton_years, help_button, dx=help_dx, dy = help_dy)
-
-    # Handling exception
-    threading.excepthook = _except_hook
 
     # Initializing progress bar widget
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
@@ -408,6 +402,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                           text=launch_text,
                                           font=if_analysis_launch_font,
                                           command= _start_launch_if_analysis_try)
+    GUI_BUTTONS.append(if_analysis_launch_button)
     place_bellow(if_analysis_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
@@ -467,6 +462,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                           text = launch_text,
                                           font = co_analysis_launch_font,
                                           command = _start_launch_coupling_analysis_try)
+    GUI_BUTTONS.append(co_analysis_launch_button)
     place_bellow(co_analysis_label,
                  co_analysis_launch_button,
                  dx=launch_dx_px,
@@ -496,6 +492,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                           text=launch_text,
                                           font=kw_analysis_launch_font,
                                           command= _start_launch_kw_analysis_try)
+    GUI_BUTTONS.append(kw_analysis_launch_button)
     place_bellow(kw_analysis_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,

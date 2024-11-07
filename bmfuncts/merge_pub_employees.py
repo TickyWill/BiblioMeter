@@ -18,8 +18,8 @@ import warnings
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as eg

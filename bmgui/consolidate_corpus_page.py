@@ -40,6 +40,7 @@ from bmfuncts.use_pub_attributes import save_homonyms
 from bmfuncts.use_pub_attributes import set_saved_homonyms
 from bmfuncts.use_pub_attributes import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
+from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import font_size
@@ -709,11 +710,6 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         if value >= 100:
             enable_buttons(consolidate_corpus_buttons_list)
 
-    def _except_hook(args):
-        messagebox.showwarning("Error", args)
-        progress_var.set(0)
-        enable_buttons(consolidate_corpus_buttons_list)
-
     # ********************* Function start
 
     # Setting useful local variables for positions modification
@@ -790,6 +786,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                             variable_years,
                                             *master.years_list)
     self.OptionButton_years.config(font = self.font_OptionButton_years)
+    GUI_BUTTONS.append(self.OptionButton_years)
 
         # Création du label
     self.font_Label_years = tkFont.Font(family = gg.FONT_NAME,
@@ -801,9 +798,6 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     self.Label_years.place(x = year_button_x_pos, y = year_button_y_pos)
 
     place_after(self.Label_years, self.OptionButton_years, dy = dy_year)
-
-    # Handling exception
-    threading.excepthook = _except_hook
 
     # Initializing progress bar widget
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
@@ -873,7 +867,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                              text = gg.TEXT_CROISEMENT,
                              font = merge_font,
                              command = _start_launch_recursive_year_search)
-
+    GUI_BUTTONS.append(merge_button)
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self,
                                         text = gg.TEXT_MAJ_EFFECTIFS,
@@ -931,6 +925,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                 text = gg.TEXT_HOMONYMES,
                                 font = homonyms_font,
                                 command = _start_launch_resolution_homonymies)
+    GUI_BUTTONS.append(homonyms_button)
     etape_2 = etapes[1]
     place_bellow(etape_2,
                  homonyms_button,
@@ -977,6 +972,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                            text = gg.TEXT_OTP,
                            font = otp_font,
                            command = _start_launch_add_otp)
+    GUI_BUTTONS.append(otp_button)
     etape_3 = etapes[2]
     place_bellow(etape_3,
                  otp_button,
@@ -1028,7 +1024,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                              text = gg.TEXT_PUB_CONSO,
                              font = conso_font,
                              command = _start_launch_pub_list_conso)
-
+    GUI_BUTTONS.append(conso_button)
     etape_4 = etapes[3]
 
     place_bellow(etape_4,

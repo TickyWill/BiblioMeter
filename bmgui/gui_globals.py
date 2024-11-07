@@ -88,6 +88,7 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_VERSION',
            'TEXT_YEAR_PC',
            'TEXT_YEAR_PI',
+           'GUI_BUTTONS'
            ]
 
 # Standard library imports
@@ -385,3 +386,6 @@ ANALYSIS_TEXT_DICT = {"if": [if_analysis_title, if_analysis_help, if_analysis_la
                       "co": [co_analysis_title, co_analysis_help, co_analysis_launch],
                       "kw": [kw_analysis_title, kw_analysis_help, kw_analysis_launch],
                      }
+
+# List of all the buttons
+GUI_BUTTONS = []

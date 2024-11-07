@@ -15,7 +15,6 @@ __all__ = ['save_homonyms',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows \
@@ -28,6 +27,7 @@ from openpyxl.styles import PatternFill as openpyxl_PatternFill
 from openpyxl.styles import Alignment as openpyxl_Alignment
 from openpyxl.styles import Border as openpyxl_Border
 from openpyxl.styles import Side as openpyxl_Side
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as eg
