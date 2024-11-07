@@ -1,13 +1,14 @@
 """Module of functions for the update of the employees database.
-
 """
-__all__ = ['update_employees',]
+__all__ = ['set_employees_data',
+           'update_employees',]
 
 # Standard library imports
 import os
 import re
 import shutil
 from pathlib import Path
+from tkinter import messagebox
 
 # 3rd party imports
 import pandas as pd
@@ -15,6 +16,8 @@ import pandas as pd
 # local imports
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
+from bmfuncts.useful_functs import standardize_txt
+
 
 def _set_employees_paths(bibliometer_path):
     """Sets the full paths towards employees working folders.
@@ -556,3 +559,69 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
     shutil.copy(all_years_file_path, backup_folder_path)
 
     return employees_year, None, None, None, None, all_years_file_error
+
+
+def set_employees_data(corpus_year, all_effectifs_path, search_depth):
+    """Sets employees data through the reading of Institute employees database.
+
+    The employee last name is standardized through the `standardize_txt` 
+    function imported from `bmfuncts.useful_functs` module.
+
+    Args:
+        corpus_year (str): Corpus year defined by 4 digits.
+        all_effectifs_path (path): Full path to file of Institute employees database.
+        search_depth (int): Initial search depth.
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
+    Returns:
+        (tup): (employees data (df), adapted search depth (int), \
+        list of available years of employees data).    
+    """
+
+    # Setting useful columns aliases
+    last_name_col_alias = eg.EMPLOYEES_USEFUL_COLS['name']
+    full_name_col_alias = eg.EMPLOYEES_ADD_COLS['employee_full_name']
+    first_name_col_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
+
+    # Getting employees df
+    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values()) + list(eg.EMPLOYEES_ADD_COLS.values())
+    all_effectifs_df = pd.read_excel(all_effectifs_path,
+                                     sheet_name = None,
+                                     dtype = eg.EMPLOYEES_COL_TYPES,
+                                     usecols = useful_col_list,
+                                     keep_default_na=False)
+
+    # Standardizing employee last name and consequently updating employee full name
+    new_all_effectifs_df = {}
+    for year in all_effectifs_df.keys():
+        year_all_effectifs_df = all_effectifs_df[year].copy()
+        year_all_effectifs_df[last_name_col_alias] = year_all_effectifs_df[last_name_col_alias].\
+        apply(lambda x: standardize_txt(x))  # pylint: disable=unnecessary-lambda
+        for row_num, _ in year_all_effectifs_df.iterrows():
+            last_name = year_all_effectifs_df.loc[row_num, last_name_col_alias]
+            first_name = year_all_effectifs_df.loc[row_num, first_name_col_alias]
+            full_name = last_name + " " + first_name
+            year_all_effectifs_df.loc[row_num, full_name_col_alias] = full_name
+        new_all_effectifs_df[year] = year_all_effectifs_df
+
+    # Identifying available years in employees df
+    annees_dispo = [int(x) for x in list(all_effectifs_df.keys())]
+    annees_a_verifier = [int(corpus_year) - int(search_depth)
+                         + (i+1) for i in range(int(search_depth))]
+    annees_verifiees = []
+    for i in annees_a_verifier:
+        if i in annees_dispo:
+            annees_verifiees.append(i)
+
+    if len(annees_verifiees) > 0:
+        search_depth = min(int(search_depth), len(annees_verifiees))
+    else:
+        search_depth = 0
+        warning_title = "!!! Attention !!!"
+        warning_text  = ("Le nombre d'années disponibles est insuffisant "
+                         "dans le fichier des effectifs de l'Institut."
+                         "\nLe croisement auteurs-effectifs ne peut être effectué !"
+                         "\n1- Complétez le fichier des effectifs de l'Institut ;"
+                         "\n2- Puis relancer le croisement auteurs-effectifs.")
+        messagebox.showwarning(warning_title, warning_text)
+    return (new_all_effectifs_df, search_depth, annees_verifiees)

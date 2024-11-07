@@ -75,6 +75,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# intellij configs
+.idea/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 App_Ludo.ipynb

@@ -2,15 +2,13 @@
 """
 
 __all__ = ['ADD_SPACE_MM',
+           'ANALYSIS_TEXT_DICT',
            'BM_GUI_DISP',
            'CORPUSES_NUMBER',
            'ETAPE_LABEL_TEXT_LIST',
            'FONT_NAME',
            'HELP_ETAPE_5',
            'HELP_ETAPE_6',
-           'HELP_ETAPE_7',
-           'HELP_ETAPE_8',
-           'HELP_ETAPE_9',
            'IN_TO_MM',
            'PAGEBUTTON_HEIGHT_PX',
            'PAGES_LABELS',
@@ -72,13 +70,7 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_ETAPE_4',
            'TEXT_ETAPE_5',
            'TEXT_ETAPE_6',
-           'TEXT_ETAPE_7',
-           'TEXT_ETAPE_8',
-           'TEXT_ETAPE_9',
            'TEXT_HOMONYMES',
-           'TEXT_CO_ANALYSIS',
-           'TEXT_KW_ANALYSIS',
-           'TEXT_IF_ANALYSIS',
            'TEXT_INSTITUTE',
            'TEXT_LAUNCH_PARSING',
            'TEXT_LAUNCH_SYNTHESE',
@@ -110,7 +102,7 @@ from screeninfo import get_monitors
 # *****************************************
 
 # Setting BiblioMeter version value (internal)
-VERSION = '5.0.0'
+VERSION = '5.1.0'
 
 # Setting the number of corpuses to analyse
 CORPUSES_NUMBER = 6
@@ -257,7 +249,7 @@ PAGEBUTTON_HEIGHT_PX = 50
 PAGES_LABELS = {'ParseCorpusPage': "Analyse élémentaire des corpus",
                 'ConsolidateCorpusPage': "Consolidation annuelle des corpus",
                 'UpdateIfPage': "Mise à jour des facteurs d'impact",
-                'AnalyzeCorpusPage': "KPIs et graphes", }
+                'AnalyzeCorpusPage': "Analyse et KPIs", }
 
 # *************** MAIN PAGE ***************
 
@@ -365,23 +357,35 @@ TEXT_MAJ_PUB_IF = "Lancer la mise à jour des IFs dans les listes consolidées e
 
 # Analysis page
 
-# - Etape 7
-TEXT_ETAPE_7 = "Analyse des IFs et mise à jour des KPIs"
-HELP_ETAPE_7 = " L'analyse des IFS est effectuée à partir des fichiers"
-HELP_ETAPE_7 += " des listes consolidées des publications."
-TEXT_IF_ANALYSIS = "Lancer l'analyse des IFs"
+# - Etape IF
+if_analysis_title = "Analyse des IFs et mise à jour des KPIs"
+if_analysis_help = " L'analyse des IFS est effectuée à partir des fichiers"
+if_analysis_help += " des listes consolidées des publications."
+if_analysis_launch = "Lancer l'analyse des IFs"
 
-# - Etape 8
-TEXT_ETAPE_8 = "Analyse des collaborations"
-HELP_ETAPE_8 = " L'analyse des collaborations est effectuée à partir des fichiers"
-HELP_ETAPE_8 += " issus de l'étape de parsing des corpus."
-TEXT_CO_ANALYSIS = "Lancer l'analyse des collaborations"
+# - Etape AU
+au_analysis_title = "Analyse des auteurs"
+au_analysis_help = " L'analyse des auteurs est effectuée à partir des fichiers"
+au_analysis_help += " issus de l'étape de croisement avec les effectifs."
+au_analysis_launch = "Lancer l'analyse des auteurs"
 
-# - Etape 9
-TEXT_ETAPE_9 = "Analyse des mots clefs"
-HELP_ETAPE_9 = " L'analyse des mots clefs est effectuée à partir des fichiers"
-HELP_ETAPE_9 += " issus de l'étape de parsing des corpus."
-TEXT_KW_ANALYSIS = "Lancer l'analyse des mots clefs"
+# - Etape CO
+co_analysis_title = "Analyse des collaborations"
+co_analysis_help = " L'analyse des collaborations est effectuée à partir des fichiers"
+co_analysis_help += " issus de l'étape de parsing des corpus."
+co_analysis_launch = "Lancer l'analyse des collaborations"
+
+# - Etape KW
+kw_analysis_title = "Analyse des mots clefs"
+kw_analysis_help = " L'analyse des mots clefs est effectuée à partir des fichiers"
+kw_analysis_help += " issus de l'étape de parsing des corpus."
+kw_analysis_launch = "Lancer l'analyse des mots clefs"
+
+ANALYSIS_TEXT_DICT = {"if": [if_analysis_title, if_analysis_help, if_analysis_launch],
+                      "au": [au_analysis_title, au_analysis_help, au_analysis_launch],
+                      "co": [co_analysis_title, co_analysis_help, co_analysis_launch],
+                      "kw": [kw_analysis_title, kw_analysis_help, kw_analysis_launch],
+                     }
 
 # List of all the buttons
 GUI_BUTTONS = []

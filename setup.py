@@ -19,14 +19,10 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
     install_requires = f.read().strip().split('\n')
 
-# Copying the 'app.py' python program to launch the application
-shutil.copy(path.join(this_directory, 'app.py'),
-            path.join(config_dir, 'app.py'))
-
 # This setup is suitable for "python setup.py develop".
 
 setup(name='BiblioMeter',
-      version='5.0.0',
+      version='5.1.0',
       description='An application for bibliometry',
       long_description=long_description,
       long_description_content_type='text/markdown',

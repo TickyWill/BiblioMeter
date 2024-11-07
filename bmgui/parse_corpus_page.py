@@ -176,12 +176,6 @@ def _update(self, master, bibliometer_path, pos_tup):
     # Setting parameters from args
     pos_x, pos_y, esp_ligne = pos_tup
 
-    # Setting useful local variables for positions modification (globals to create ??)
-    # numbers are reference values in mm for reference screen
-    # eff_font_size = font_size(11, master.width_sf_min)
-    # eff_dx        = mm_to_px(1 * master.width_sf_mm,  gg.PPI)
-    # eff_dy        = mm_to_px(1 * master.height_sf_mm, gg.PPI)
-
     # Setting existing corpuses status
     files_status = existing_corpuses(bibliometer_path)
     master.list_corpus_year    = files_status[0]
@@ -190,9 +184,6 @@ def _update(self, master, bibliometer_path, pos_tup):
     master.list_scopus_rawdata = files_status[3]
     master.list_scopus_parsing = files_status[4]
     master.list_dedup          = files_status[5]
-
-    # Setting useful local variables for default selection items in selection lists
-    # default_year = master.list_corpus_year[-1]
 
     # ????
     for i, check in enumerate(self.CHECK):
@@ -214,8 +205,8 @@ def _update(self, master, bibliometer_path, pos_tup):
     _create_table(self, master, pos_x)
 
 
-def _launch_parsing(self, master, corpus_year, database_type,
-                    paths_tup, pos_tup, progress_callback):
+def _launch_parsing(master, corpus_year, database_type,
+                    paths_tup, progress_callback):
     """Launches parsing of raw-data of 'database_type' database.
 
     This is done through `biblio_parser` function imported from 
@@ -234,9 +225,6 @@ def _launch_parsing(self, master, corpus_year, database_type,
         paths_tup (tup): (full path to working folder, 
         full path to institute-affiliations file, \
         full path to institutions-types file).
-        pos_tup (tup): (x position (int) for widgets location, \
-        y position (int) for widgets location, \
-        space value (int) for widgets spacing).
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
@@ -267,7 +255,6 @@ def _launch_parsing(self, master, corpus_year, database_type,
 
     # Setting parameters from args
     bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
-    # pos_x, pos_y, esp_ligne = pos_tup
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
@@ -351,8 +338,8 @@ def _launch_parsing(self, master, corpus_year, database_type,
         messagebox.showwarning(warning_title, warning_text)
 
 
-def _launch_synthese(self, master, corpus_year, org_tup, datatype,
-                     paths_tup, pos_tup, progress_callback):
+def _launch_synthese(master, corpus_year, org_tup, datatype,
+                     paths_tup, progress_callback):
     """Concatenates and deduplicates the parsing from wos or scopus databases.
 
     This is done through the functions `concatenate_parsing` 
@@ -374,9 +361,6 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
         paths_tup (tup): (full path to working folder, \
         full path to institute-affiliations file, \
         full path to institutions-types file).
-        pos_tup (tup): (x position (int) for widgets location, \
-        y position (int) for widgets location, \
-        space value (int) for widgets spacing).
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
@@ -405,20 +389,24 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
         save_parsing_dict(concat_parsing_dict, concat_parsing_path,
                           item_filename_dict, parsing_save_extent)
         progress_callback(60)
+        file_path_0 = inst_types_file_path
+        file_path_1 = institute_affil_file_path
         dedup_parsing_dict = bp.deduplicate_parsing(concat_parsing_dict,
                                                     norm_inst_status = False,
-                                                    inst_types_file_path = inst_types_file_path,
-                                                    country_affiliations_file_path = institute_affil_file_path)
+                                                    inst_types_file_path = file_path_0,
+                                                    country_affiliations_file_path = file_path_1)
+
+        synthese_articles_nb = len(dedup_parsing_dict["articles"])
         progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
                           item_filename_dict, parsing_save_extent,
                           dedup_infos = (bibliometer_path, datatype, corpus_year))
 
         progress_callback(100)
+        return synthese_articles_nb
 
     # Setting parameters from args
     bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
-    # pos_x, pos_y, esp_ligne = pos_tup
 
     # Setting Institute parameters
     institutions_filter_list = org_tup[3]
@@ -480,9 +468,10 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
                              "\n\nReconstruire la synthèse ?")
                 answer_2 = messagebox.askokcancel(ask_title, ask_text)
                 if answer_2:
-                    _deduplicate_corpus_parsing(progress_callback)
+                    synthese_articles_nb = _deduplicate_corpus_parsing(progress_callback)
                     info_title = "Information"
-                    info_text = f"La synthèse pour l'année {corpus_year} a été reconstruite."
+                    info_text = (f"La synthèse pour l'année {corpus_year} a été reconstruite."
+                                 f"\n\nNombre d'articles de synthèse : {synthese_articles_nb}.")
                     messagebox.showinfo(info_title, info_text)
                 else:
                     progress_callback(100)
@@ -492,7 +481,8 @@ def _launch_synthese(self, master, corpus_year, org_tup, datatype,
             else:
                 _deduplicate_corpus_parsing(progress_callback)
                 info_title = "Information"
-                info_text = f"La construction de la synthèse pour l'année {corpus_year} est terminée."
+                info_text = ("La construction de la synthèse pour "
+                             f"l'année {corpus_year} est terminée.")
                 messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)
@@ -520,16 +510,15 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                      inst_types_file_path)
         parsing_year = self.var_year_pc_1.get()
         parsing_bdd = var_bdd_pc_1.get()
-        _launch_parsing(self, master, parsing_year, parsing_bdd,
-                        paths_tup, pos_tup, progress_callback)
+        _launch_parsing(master, parsing_year, parsing_bdd,
+                        paths_tup, progress_callback)
         progress_bar.place_forget()
 
     def _launch_synthese_try(progress_callback):
         synthese_year = self.var_year_pc_2.get()
-        _launch_synthese(self, master, synthese_year,
+        _launch_synthese(master, synthese_year,
                          org_tup, datatype,
-                         paths_tup, pos_tup,
-                         progress_callback)
+                         paths_tup, progress_callback)
         progress_bar.place_forget()
 
     def _update_progress(value):

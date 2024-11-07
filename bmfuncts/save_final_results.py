@@ -1,5 +1,4 @@
 """ Module of functions for saving final results.
-
 """
 
 __all__ = ['save_final_countries',
@@ -90,6 +89,7 @@ def save_final_pub_lists(bibliometer_path,
                    f"\n  '{target_pub_list_path}'")
     return end_message
 
+
 def save_final_ifs(institute, org_tup, bibliometer_path,
                    corpus_year, results_folder_path, if_analysis_name):
     """Saves final results of number of publications per journal 
@@ -144,6 +144,68 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     end_message = (f"Final impact factors for year {corpus_year} saved in folder: "
                    f"\n  '{target_dept_file_path}'")
     return end_message
+
+
+def save_final_authors(bibliometer_path, corpus_year,
+                       results_folder_path):
+    """Saves final results of publications per author for the corpus year.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
+    """
+
+    # Internal function
+    def _copy_file(origin_file, target_file):
+        origin_file_path  = origin_authors_path / Path(origin_file)
+        target_file_path  = target_authors_path / Path(target_file)
+        shutil.copy2(origin_file_path, target_file_path)
+
+    # Setting aliases for saving results
+    results_sub_folder_alias = pg.ARCHI_RESULTS["authors_prod"]
+
+    # Setting aliases of common parts of file names
+    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
+    origin_authors_folder_alias = pg.ARCHI_YEAR["authors analysis"]
+    authors_file_alias = pg.ARCHI_YEAR["authors file name"]
+    authors_stat_file_alias = pg.ARCHI_YEAR["authors weight file name"]
+    year_authors_file = authors_file_alias + " " + corpus_year
+    year_authors_stat_file = authors_stat_file_alias + " " + corpus_year
+
+    # Setting common paths
+    origin_corpus_year_path     = bibliometer_path / Path(corpus_year)
+    origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
+    origin_authors_path         = origin_analysis_folder_path / Path(origin_authors_folder_alias)
+    year_target_folder_path     = results_folder_path / Path(corpus_year)
+    target_authors_path         = year_target_folder_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required results folders
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_authors_path):
+        os.makedirs(target_authors_path)
+
+    # Setting full path 'origin_authors_file_path' and 'target_authors_file_path'
+    # and copying file from origin path to target path for 'year_authors_file' file
+    origin_authors_file = year_authors_file + ".xlsx"
+    target_authors_file = year_authors_file + ".xlsx"
+    _copy_file(origin_authors_file, target_authors_file)
+
+    # Setting full path 'origin_authors_file_path' and 'target_authors_file_path'
+    # and copying file from origin path to target path for 'year_authors_stat_file' file
+    origin_authors_file = year_authors_stat_file + ".xlsx"
+    target_authors_file = year_authors_stat_file + ".xlsx"
+    _copy_file(origin_authors_file, target_authors_file)
+
+    end_message = (f"Final authors for year {corpus_year} saved in folder: "
+                   f"\n  '{target_authors_path}'")
+    return end_message
+
 
 def save_final_kws(institute, org_tup, bibliometer_path,
                    corpus_year, results_folder_path):
@@ -207,6 +269,7 @@ def save_final_kws(institute, org_tup, bibliometer_path,
                    f"\n  '{target_kws_folder_path}'")
     return end_message
 
+
 def save_final_countries(bibliometer_path,
                          corpus_year, results_folder_path):
     """Saves final results of publications per country for the corpus year.
@@ -255,6 +318,7 @@ def save_final_countries(bibliometer_path,
     end_message = (f"Final countries for year {corpus_year} saved in folder: "
                    f"\n  '{target_countries_file_path}'")
     return end_message
+
 
 def save_final_continents(bibliometer_path,
                           corpus_year, results_folder_path):
@@ -305,13 +369,14 @@ def save_final_continents(bibliometer_path,
                    f"\n  '{target_continents_file_path}'")
     return end_message
 
+
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                        if_analysis_name, results_to_save_dict, verbose = False):
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
 
     The results types arethe following: publications lists, \
-    impact factors, keywords countries and continents.
+    impact factors, authors, keywords, countries and continents.
 
     To do: Saving the results of co-publication with other institutions \
     and publications per OTPs.
@@ -356,6 +421,12 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     if results_to_save_dict["ifs"]:
         message = save_final_ifs(institute, org_tup, bibliometer_path,
                                  corpus_year, results_folder_path, if_analysis_name)
+        if verbose:
+            print("\n",message)
+
+    if results_to_save_dict["authors"]:
+        message = save_final_authors(bibliometer_path,
+                                     corpus_year, results_folder_path)
         if verbose:
             print("\n",message)
 

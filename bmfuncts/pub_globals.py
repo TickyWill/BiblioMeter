@@ -1,6 +1,5 @@
 """Module for setting globals specific to publications
 management and analysis.
-
 """
 
 __all__ = ['ANALYSIS_IF',
@@ -15,6 +14,7 @@ __all__ = ['ANALYSIS_IF',
            'BDD_LIST',
            'BM_LOW_WORDS_LIST',
            'COL_HASH',
+           'COL_NAMES_AUTHOR_ANALYSIS',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
            'COL_NAMES_COMPL',
@@ -110,6 +110,7 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "dedup_parsing"       : "Synthèse des extractions",
                  "pub-lists"           : "Listes consolidées des publications",
                  "impact-factors"      : "Analyse des facteurs d'impact",
+                 "authors_prod"        : "Analyse par auteurs",
                  "keywords"            : "Analyse des mots clefs",
                  "countries"           : "Analyse géographique",
                  "institutions"        : "Analyse des collaborations",
@@ -124,11 +125,14 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
 
 ARCHI_YEAR = {
               "analyses"                  : "5 - Analyses",
+              "authors analysis"          : "Auteurs",
               "if analysis"               : "IFs",
               "keywords analysis"         : "Mots clefs",
               "subjects analysis"         : "Thématique",
               "countries analysis"        : "Géographique",
               "institutions analysis"     : "Collaborations",
+              "authors file name"         : "Informations auteur par publication",
+              "authors weight file name"  : "Statistiques par auteurs",
               "countries file name"       : "Pays par publication",
               "country weight file name"  : "Statistiques par pays",
               "continent weight file name": "Statistiques par continent",
@@ -158,7 +162,7 @@ ARCHI_YEAR = {
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries", "continents"]
+RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries", "continents", "authors"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -282,6 +286,12 @@ COL_NAMES_IF_ANALYSIS = {'corpus_year'   : "Corpus year",
                          'articles_nb'   : "Number",
                          'analysis_if'   : "Analysis IF",
                         }
+
+COL_NAMES_AUTHOR_ANALYSIS = {'author_nb'       : "Nombre d'auteurs",
+                             'is_first_author' : "Status premier auteur",
+                             'is_last_author'  : "Status dernier auteur",
+                             'pub_nb'          : "Nombre de publications",
+                            }
 
 KPI_KEYS_ORDER_DICT = {0  : "Année de publication",
                        1  : "Nombre de publications",

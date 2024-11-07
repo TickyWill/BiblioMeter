@@ -47,6 +47,7 @@ def _launch_update_if_db(institute, org_tup, bibliometer_path,
         corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
         progress_callback (function): Function for updating ProgressBar tkinter widget status.
+
     Returns:
         (bool): Status of impact-factors database.    
     """

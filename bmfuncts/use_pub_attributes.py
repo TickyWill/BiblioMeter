@@ -95,6 +95,10 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
+    pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
+    homonyms_col_alias = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -104,11 +108,6 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
     hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"]
     homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
-
-    # Setting useful column name aliases
-    pub_id_alias        = submit_col_rename_dic[bp.COL_NAMES['pub_id']]
-    homonyms_col_alias  = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)
@@ -126,34 +125,30 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     pub_df = pd.read_excel(homonyms_file_path)
 
     # Building dataframe of pub_id and kept personal numbers for solved homonyms
-    temp_df = pub_df[pub_df[homonyms_col_alias] == pg.HOMONYM_FLAG]
-    not_solved_homonyms_pub_id = [pub_id for idx,pub_id \
-                                  in enumerate(temp_df[pub_id_alias])
-                                  if len(temp_df[temp_df[pub_id_alias] == \
-                                                 pub_id][pub_id_alias]) > 1]
-    homonyms_df = temp_df.copy().reset_index()
-    for idx, pub_id in enumerate(temp_df[pub_id_alias]):
-        if pub_id in not_solved_homonyms_pub_id:
-            homonyms_df = homonyms_df.drop(idx)
-
-    kept_matricules_df = homonyms_df[[pub_id_alias, matricule_col_alias]]
+    temp_df = pub_df[pub_df[homonyms_col_alias]==pg.HOMONYM_FLAG]
+    homonyms_df = pd.DataFrame(columns=temp_df.columns)
+    for _, pub_id_df in temp_df.groupby(pub_id_col_alias):
+        for _, author_df in pub_id_df.groupby(author_idx_col_alias):
+            if len(author_df)==1:
+                homonyms_df = pd.concat([homonyms_df, author_df])
+    kept_matricules_df = homonyms_df[[pub_id_col_alias, matricule_col_alias]]
 
     # Building hash_id and kept matricules df
     homonyms_history_df = pd.merge(hash_id_df,
                                    kept_matricules_df,
                                    how = 'inner',
-                                   on = pub_id_alias)
-    homonyms_history_df.drop(columns = [pub_id_alias], inplace = True)
+                                   on = pub_id_col_alias)
+    homonyms_history_df.drop(columns = [pub_id_col_alias], inplace = True)
     homonyms_history_df = homonyms_history_df.astype(str)
 
     # Concatenating with the dataframe of already saved solved homonyms
     if kept_homonyms_file_path.is_file():
         existing_homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
-        homonyms_history_df = pd.concat([existing_homonyms_history_df,homonyms_history_df])
+        homonyms_history_df = pd.concat([existing_homonyms_history_df, homonyms_history_df])
     homonyms_history_df = homonyms_history_df.astype('str')
     homonyms_history_df.drop_duplicates(inplace = True)
 
-    # Saving the dataframe concatenated
+    # Saving the concatenated dataframe
     homonyms_history_df.to_excel(kept_homonyms_file_path, index = False)
 
     message = "History of homonyms resolution saved"
@@ -185,6 +180,11 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
+    pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
+    homonyms_col_alias = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    hash_id_col_alias   = pg.COL_HASH['hash_id']
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -194,12 +194,6 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
     hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"]
     homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
-
-    # Setting useful column name aliases
-    hash_id_col_alias   = pg.COL_HASH['hash_id']
-    pub_id_alias        = submit_col_rename_dic[bp.COL_NAMES['pub_id']]
-    homonyms_col_alias  = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)
@@ -216,40 +210,52 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
         homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
 
         # Getting the hash_id dataframe
-        hash_id_df  = pd.read_excel(hash_id_file_path)
+        hash_id_df = pd.read_excel(hash_id_file_path)
 
         # Building dataframe of pub_id and personal number to keep related to hash_id
-        pub_id_row_to_keep_df = pd.merge(hash_id_df,
-                                         homonyms_history_df,
-                                         how = 'inner',
-                                         on  = hash_id_col_alias,)
-        pub_id_row_to_keep_df = pub_id_row_to_keep_df.astype(str)
-        pub_id_row_to_keep_df.drop(columns = [hash_id_col_alias], inplace = True)
+        mats_to_keep_df = pd.merge(hash_id_df,
+                                   homonyms_history_df,
+                                   how='inner',
+                                   on=hash_id_col_alias,)
+        mats_to_keep_df = mats_to_keep_df.astype(str)
+        mats_to_keep_df.drop(columns=[hash_id_col_alias], inplace=True)
 
         # Getting the resolved homonyms dataframe to be updated
         homonyms_df = pd.read_excel(homonyms_file_path)
+        homonyms_df[matricule_col_alias] = homonyms_df[matricule_col_alias].astype(str)
 
-        # Droping row of unkept personal numbers in homonyms_df
-        homonyms_df_new = homonyms_df.copy()
-        for _,row in pub_id_row_to_keep_df.iterrows():
-            pub_id_to_check   = str(row[pub_id_alias])
-            matricule_to_keep = str(row[matricule_col_alias])
-            for idx in range(len(homonyms_df)):
-                pub_id         = str(homonyms_df.loc[idx,pub_id_alias])
-                matricule      = str(homonyms_df.loc[idx,matricule_col_alias])
-                homonym_status = str(homonyms_df.loc[idx,homonyms_col_alias])
-                if pub_id == pub_id_to_check and homonym_status == pg.HOMONYM_FLAG:
-                    if matricule == matricule_to_keep:
-                        homonyms_df_new.loc[idx,homonyms_col_alias] = None
+        # Building the updated homonyms dataframe
+        homonyms_df_new = pd.DataFrame(columns=homonyms_df.columns)
+
+        for pub_id, pub_id_homonyms_df in homonyms_df.groupby(pub_id_col_alias):
+            for _, author_df in pub_id_homonyms_df.groupby(author_idx_col_alias):
+                if len(author_df)==1:
+                    # Keeping row of authors without homonyms
+                    homonyms_df_new = pd.concat([homonyms_df_new, author_df])
+                else:
+                    pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col_alias]\
+                                                             ==pub_id]
+                    pub_id_mats_to_keep_list = list(pub_id_mats_to_keep_df[matricule_col_alias])
+                    mats_to_check_list = list(author_df[matricule_col_alias])
+                    mats_to_keep_list = [x for x in mats_to_check_list\
+                                         if x in pub_id_mats_to_keep_list]
+
+                    if mats_to_keep_list:
+                        # Keeping only row of matricule to keep when homonymies have been resolved
+                        mat_to_keep = mats_to_keep_list[0]
+                        new_author_df = author_df[author_df[matricule_col_alias]\
+                                                  ==mat_to_keep].copy()
+                        new_author_df[homonyms_col_alias] = "_"
+                        homonyms_df_new = pd.concat([homonyms_df_new, new_author_df])
                     else:
-                        homonyms_df_new = homonyms_df_new.drop(idx)
+                        # Keeping all rows when homonymies have not been resolved
+                        homonyms_df_new = pd.concat([homonyms_df_new, author_df])
 
         # Setting actual homonyms status
         actual_homonym_status = False
         if pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list():
             actual_homonym_status = True
-
-        # Saving updated homonyms_df
+       # Saving updated homonyms_df
         save_shaped_homonyms_file(homonyms_df_new, homonyms_file_path)
         message = "Already resolved homonyms used"
     else:

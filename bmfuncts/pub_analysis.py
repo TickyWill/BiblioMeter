@@ -127,7 +127,7 @@ def _update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_
 
         # Saving after formatting the updated dataframe
         first_col_width = 35
-        wb, ws = format_df_for_excel(db_dept_kpi_df, first_col_width)
+        wb, ws = format_df_for_excel(db_dept_kpi_df, first_col_width=first_col_width)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
 
@@ -346,9 +346,6 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
         hierarchical dict of each department and also column name of IFs values in the saved files).
     """
 
-    # Setting useful aliases
-    # doctype_article_alias = pg.DOC_TYPE_DICT['Articles']
-
     # Setting useful column names aliases
     final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
     journal_col_alias = final_col_dic['journal']
@@ -426,7 +423,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
         file_name = f'{if_analysis_col_new}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
         first_col_width = 50
-        wb, ws = format_df_for_excel(dept_if_df, first_col_width)
+        wb, ws = format_df_for_excel(dept_if_df, first_col_width=first_col_width)
         ws.title = dept + ' IFs '
         wb.save(dept_xlsx_file_path)
 
@@ -606,7 +603,8 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     if progress_callback:
         progress_callback(60)
 
-    # Building the data resulting from IFs analysis of the final dataframe and saving them as xlsx files
+    # Building the data resulting from IFs analysis of the final dataframe
+    # and saving them as xlsx files
     kpi_dict, if_analysis_col_new = _build_analysis_if_data(institute, org_tup,
                                                             analysis_df, if_analysis_col,
                                                             if_analysis_year,
@@ -714,7 +712,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
         # Saving the keywords dataframe as EXCEL file
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
         first_col_width = 50
-        wb, ws = format_df_for_excel(dept_kw_df, first_col_width)
+        wb, ws = format_df_for_excel(dept_kw_df, first_col_width=first_col_width)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
 
@@ -979,8 +977,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     only addresses related to publications of the Institute.
     3. Builds the dataframes of countries, normalized institutions and raw institutions \
     through the `build_norm_raw_institutions` function imported from the package imported as bp, \
-    using 'inst_pub_addresses_df' dataframe and specific files for this function; in these datraframes, \
-    each row contains:
+    using 'inst_pub_addresses_df' dataframe and specific files for this function; in these \
+    datraframes, each row contains:
 
         - A publication IDs
         - The index of an address of the publication addresses 
@@ -1048,7 +1046,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         """
         item_xlsx_file = item_filename + xlsx_extent_alias
         item_xlsx_path = results_path / Path(item_xlsx_file)
-        wb, ws = format_df_for_excel(item_df, first_col_width, last_col_width)
+        wb, ws = format_df_for_excel(item_df, first_col_width=first_col_width,
+                                     last_col_width=last_col_width)
         ws.title = sheet_name + year
         wb.save(item_xlsx_path)
 
@@ -1131,12 +1130,16 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     if progress_callback:
         progress_callback(20)
 
-    # Building countries, normalized institutions and still unormalized ones
+    # Building countries, normalized institutions and still not normalized ones
+    file_path_0 = inst_types_file_path
+    file_path_1 = country_affil_file_path
+    file_path_2 = country_towns_file_alias
+    file_path_3 = institutions_folder_path
     return_tup = bp.build_norm_raw_institutions(inst_pub_addresses_df,
-                                                inst_types_file_path = inst_types_file_path,
-                                                country_affiliations_file_path = country_affil_file_path,
-                                                country_towns_file = country_towns_file_alias,
-                                                country_towns_folder_path = institutions_folder_path,
+                                                inst_types_file_path=file_path_0,
+                                                country_affiliations_file_path=file_path_1,
+                                                country_towns_file=file_path_2,
+                                                country_towns_folder_path=file_path_3,
                                                 verbose=verbose)
     countries_df, norm_institutions_df, raw_institutions_df = return_tup
     if progress_callback:

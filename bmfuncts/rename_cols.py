@@ -1,5 +1,4 @@
 """Module of useful functions for setting columns names of dataframes.
-
 """
 
 __all__ = ['build_col_conversion_dic',

@@ -1,6 +1,5 @@
 """Module of functions for updating impact factors in database
 and in publications lists.
-
 """
 __all__ = ['update_inst_if_database',
            'journal_capwords',
@@ -435,7 +434,8 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
 
     # Getting the IFs database content and its IFSs available years list
     if_db_df = pd.read_excel(inst_all_if_path, sheet_name = None)
-    if_db_years_list     = list(if_db_df.keys())
+    full_if_db_years_list = list(if_db_df.keys())
+    if_db_years_list = sorted(list(set(full_if_db_years_list).intersection(set(corpi_years_list))))
 
     # Setting useful parameters for the update of the IFs database
     most_recent_year = if_db_years_list[-1]
