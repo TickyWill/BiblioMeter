@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmgui"))
 project = 'BiblioMeter'
 copyright = '2021, BiblioMeter team, Liten, Leti, CEA'
 author = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
-release = '5.0.0'
+release = '5.1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

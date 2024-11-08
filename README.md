@@ -12,12 +12,12 @@ More specifically:<br />
 ## Installation
 Run the following command to get a repository clone of the orphan_treatment_enhancement branch:
 ```
-git clone https://github.com/TickyWill/BiblioMeter.git@orphan_treatment_enhancement
+git clone https://github.com/TickyWill/BiblioMeter.git@v5.0.0
 ```
 
 ## Requirements
 Ensure that your environment complies with the requirements given in the following file:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/orphan_treatment_enhancement/requirements.txt>BiblioMeter requirements file
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/v5.0.0/requirements.txt>BiblioMeter requirements file
 </a></p>
 
 ## Documentation building
@@ -37,10 +37,10 @@ Open the following BiblioMeter sphinx-documentation html file:
 
 ## Building executable
 Either run the following batch file:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/orphan_treatment_enhancement/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/v5.0.0/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
 </a></p>
 Or refer to the following manual:
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/orphan_treatment_enhancement/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/v5.0.0/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual
 </a></p>
 <span style="color:red">BEWARE:</span> Some security softwares (eg. McAfee) could place the .exe file in quarantine. If so you have to manually authorized the .exe file.
 
@@ -54,7 +54,7 @@ app.mainloop()
 ```
 
 **for more details on application usage refer to the user manual:** 
-<p><a href=https://github.com/TickyWill/BiblioMeter/blob/orphan_treatment_enhancement/BiblioMeterUserManual-Fr.pdf>BiblioMeter user manual
+<p><a href=https://github.com/TickyWill/BiblioMeter/blob/v5.0.0/BiblioMeterUserManual-Fr.pdf>BiblioMeter user manual
 </a></p>
 
 # Release History

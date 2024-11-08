@@ -1,21 +1,23 @@
 # Application Release Backlog
 
-## Release 5.0.0 - 2024/11/12
+## Release 5.1.0 - 2024/11/12
 * **Summary**: This release corresponds to the deep update of the code allowing an enhanced analysis of the authors affiliations and attributes. In addition, it allows to display progress bars within the GUI and to edit infos on the code through docstrings and Sphinx documentation.
 * **Features**:
-  - Feature 1: Use of progress bars displaying data processing tasks in progress.
-  - Feature 2: Complementary authors attributes to the Institute authors list.
-  - Feature 3: Use of 'Insitute_Country_towns.xlsx' file to parse affiliations for the coupling analysis according to the selected Institute.
-  - Feature 4: Set of ad_hoc rawdata in the working folder using an updated folder architecture based on 3 combination types of data.
+  - Feature 1: Addition of scientifique production by authors.
+  - Feature 2: Use of progress bars displaying data processing tasks in progress.
+  - Feature 3: Complementary authors attributes to the Institute authors list.
+  - Feature 4: Use of 'Insitute_Country_towns.xlsx' file to parse affiliations for the coupling analysis according to the selected Institute.
+  - Feature 5: Set of ad_hoc rawdata in the working folder using an updated folder architecture based on 3 combination types of data.
 * **Improvements**:
-  - Improvement 1: Addition of tools for building Sphinx documentation.
-  - Improvement 2: Code docstrings added.
-  - Improvement 3: Enhancement by saving invalid-publications list.
-  - Improvement 4: Final save of deduplication-parsing results for each combination of data type.
-  - Improvement 5: Removed production of graphical representations of analysis results.
-  - Improvement 6: Deep modification of Institute authors identification based on new parsing of authors with institutions in BiblioParsing package.
+  - Improvement 1: Introduction of standardization of last names of authors and employees for better efficiency in similarity tests for merge of employees information in publications list and therfore get more efficient automatic reduction of orphan authors list.
+  - Improvement 2: Addition of tools for building Sphinx documentation.
+  - Improvement 3: Code docstrings added.
+  - Improvement 4: Enhancement by saving invalid-publications list.
+  - Improvement 5: Final save of deduplication-parsing results for each combination of data type.
+  - Improvement 6: Removed production of graphical representations of analysis results.
+  - Improvement 7: Deep modification of Institute authors identification based on new parsing of authors with institutions in BiblioParsing package.
 * **Bug Fixes**:
-  - None.
+  - Fixed a bug in homonyms management when several authors of the same publication have homonyms and refactoring of `recursive_year_search`  function in `merge_pub_employees module`.
 * **Known Issues**:
   - Issue 1: Displaying Sphinx documentation correctly on GitHub repository.
 * **API Changes**:

@@ -52,6 +52,14 @@ bmfuncts.pub\_analysis
    :undoc-members:
    :show-inheritance:
 
+bmfuncts.authors\_analysis
+----------------------
+
+.. automodule:: bmfuncts.authors_analysis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bmfuncts.pub\_globals
 ---------------------
 
