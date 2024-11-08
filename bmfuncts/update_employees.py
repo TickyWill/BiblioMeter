@@ -596,7 +596,7 @@ def set_employees_data(corpus_year, all_effectifs_path, search_depth):
     for year in all_effectifs_df.keys():
         year_all_effectifs_df = all_effectifs_df[year].copy()
         year_all_effectifs_df[last_name_col_alias] = year_all_effectifs_df[last_name_col_alias].\
-        apply(lambda x: standardize_txt(x))  # pylint: disable=unnecessary-lambda
+        apply(standardize_txt)  # pylint: disable=unnecessary-lambda
         for row_num, _ in year_all_effectifs_df.iterrows():
             last_name = year_all_effectifs_df.loc[row_num, last_name_col_alias]
             first_name = year_all_effectifs_df.loc[row_num, first_name_col_alias]
