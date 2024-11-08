@@ -42,7 +42,7 @@ def name_capwords(text):
             else:
                 sub_text = sub_text.capitalize()
         text_split_list.append(sub_text)
-    text_split_list.append(text.split()[-1])    
+    text_split_list.append(text.split()[-1])
     text = " ".join(text_split_list)
     return text
 
@@ -167,7 +167,7 @@ def _build_auth_nb_per_pub(bibliometer_path, corpus_year, cols_tup):
 
     # Creating a dataframe with a column with number of authors per pub-ID
     count_auth_df = pd.DataFrame()
-    for pub_id, pub_df in authors_df.groupby(pub_id_col):
+    for _, pub_df in authors_df.groupby(pub_id_col):
         pub_count_auth_df = pub_df[pub_id_col].value_counts().to_frame()
         pub_count_auth_df.rename(columns={"count": nb_auth_col}, inplace=True)
         pub_count_auth_df.reset_index(inplace=True)
@@ -236,13 +236,13 @@ def _build_author_employee_df(bibliometer_path, in_path, corpus_year, all_cols_t
     cols_order = [pub_id_col, nb_auth_col, author_idx_col, inst_author_col, first_author_col,
                   employee_col, is_first_col, is_last_col]
     author_employee_df = author_employee_df[cols_order]
-    
+
     # Capitalize names
     author_employee_df[inst_author_col] = author_employee_df[inst_author_col].\
-    apply(lambda x: name_capwords(x))
-    
+    apply(name_capwords)
+
     author_employee_df[employee_col] = author_employee_df[employee_col].\
-    apply(lambda x: name_capwords(x))
+    apply(name_capwords)
 
     return author_employee_df
 
@@ -275,7 +275,7 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
     pub_nb_per_auth_df = pd.DataFrame(columns = useful_cols_list)
 
     # Building the targetted dataframe
-    for empl, empl_df in sub_author_employee_df.groupby(employee_col):
+    for _, empl_df in sub_author_employee_df.groupby(employee_col):
         pub_id_list = list(empl_df[pub_id_col])
         author_names_list = list(set(list(empl_df[inst_author_col])))
         author_names = author_names_list[0]

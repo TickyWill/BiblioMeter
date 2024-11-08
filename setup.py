@@ -1,7 +1,10 @@
+"""
+Setup file
+"""
+
 #!/usr/bin/env python
 
 # Standard library imports
-import shutil
 from os import path
 from pathlib import Path
 
