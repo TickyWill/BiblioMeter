@@ -17,7 +17,7 @@ import bmfuncts.pub_globals as pg
 
 
 def _get_bm_parsing_config():
-    """Reads the json file giving he architecture of the parsing folder 
+    """Reads the json file giving the architecture of the parsing folder 
     and the names of the parsing files.
 
     The name of this json file is given by the global 'PARSING_CONFIG_FILE' and 

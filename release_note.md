@@ -7,7 +7,7 @@
   - Feature 2: Use of progress bars displaying data processing tasks in progress.
   - Feature 3: Complementary authors attributes to the Institute authors list.
   - Feature 4: Use of 'Insitute_Country_towns.xlsx' file to parse affiliations for the coupling analysis according to the selected Institute.
-  - Feature 5: Set of ad_hoc rawdata in the working folder using an updated folder architecture based on 3 combination types of data.
+  - Feature 5: Set of ad-hoc rawdata in the working folder using an updated folder architecture based on 3 combination types of data.
 * **Improvements**:
   - Improvement 1: Introduction of standardization of last names of authors and employees for better efficiency in similarity tests for merge of employees information in publications list and therfore get more efficient automatic reduction of orphan authors list.
   - Improvement 2: Addition of tools for building Sphinx documentation.
@@ -17,13 +17,13 @@
   - Improvement 6: Removed production of graphical representations of analysis results.
   - Improvement 7: Deep modification of Institute authors identification based on new parsing of authors with institutions in BiblioParsing package.
 * **Bug Fixes**:
-  - Fixed a bug in homonyms management when several authors of the same publication have homonyms and refactoring of `recursive_year_search`  function in `merge_pub_employees module`.
+  - Bug 1: Fixed a bug in homonyms management when several authors of the same publication have homonyms through refactoring of `set_saved_homonyms`  function in `use_pub_attributes` module.
 * **Known Issues**:
   - Issue 1: Displaying Sphinx documentation correctly on GitHub repository.
 * **API Changes**:
   - None.
 * **Deprecated Features**:
-  - None.
+  - Feature 1: Creation of html-plots files and wordcloud-plots files in `pub_analysis` module.
 * **Contributors**: Amal Chabli, Baptiste Refalo and François Bertin.
 * **Acknowledgments**: Thanks to Ludovic Desmeuzes for the initial developpement of the GUI package.
 
