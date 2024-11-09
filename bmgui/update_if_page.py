@@ -1,20 +1,25 @@
 """`update_if_page` module allows to update the impact-factors database 
-and the consolidated publications lists. """
+and the publications final lists."""
 
 __all__ = ['create_update_ifs']
 
 # Standard library imports
 import os
+import threading
 import tkinter as tk
 from tkinter import font as tkFont
 from tkinter import messagebox
+from tkinter import ttk
 from pathlib import Path
 
 # Local imports
 import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
+from bmgui.gui_globals import GUI_BUTTONS
+from bmgui.gui_utils import disable_buttons, enable_buttons
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import mm_to_px
+from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
 from bmgui.gui_utils import set_page_title
@@ -26,28 +31,44 @@ from bmfuncts.save_final_results import save_final_results
 from bmfuncts.update_impact_factors import update_inst_if_database
 
 
-def _launch_update_if_db(institute,
-                         org_tup,
-                         bibliometer_path,
-                         corpus_years_list,
-                         pub_list_folder_path):
-    """
+def _launch_update_if_db(institute, org_tup, bibliometer_path,
+                         pub_list_folder_alias, corpus_years_list,
+                         progress_callback):
+    """Launches updating impact-factors database of the Institute.
+
+    This is done through the `update_inst_if_database` function 
+    imported from `bmfuncts.update_impact_factors` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        pub_list_folder_alias (str): Publications-lists folder name.
+        corpus_years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        progress_callback (function): Function for updating ProgressBar tkinter widget status.
+
+    Returns:
+        (bool): Status of impact-factors database.    
     """
 
     # Lancement de la fonction de MAJ base de données des IFs
     ask_title = "- Confirmation de la mise à jour de la base de données des IFs -"
     ask_text  = ("La base de données des IFs va être mise à jour "
                  "avec les nouvelles données disponibles dans les dossiers :"
-                 f"\n\n '{pub_list_folder_path}' "
+                 f"\n\n '{pub_list_folder_alias}' "
                  f"\n\n des corpus des années \n\n  {corpus_years_list} ."
                  "\n\nCette opération peut prendre quelques secondes."
                  "\nDans l'attente, ne pas fermer 'BiblioMeter'."
                  " \n\nEffectuer la mise à jour ?")
-    answer    = messagebox.askokcancel(ask_title, ask_text)
+    answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
+        progress_callback(15)
         # Mise à jour de la base de données des IFs
         _, if_years_list = update_inst_if_database(institute, org_tup,
-                                                   bibliometer_path, corpus_years_list)
+                                                   bibliometer_path,
+                                                   corpus_years_list,
+                                                   progress_callback)
         print("IFs database updated")
         info_title = "- Information -"
         info_text  = ("La mise à jour de la base de données des IFs a été effectuée "
@@ -58,6 +79,7 @@ def _launch_update_if_db(institute,
         messagebox.showinfo(info_title, info_text)
         update_status = True
     else:
+        progress_callback(100)
         print("IFs database update dropped")
         # Arrêt de la procédure
         info_title = "- Information -"
@@ -66,21 +88,46 @@ def _launch_update_if_db(institute,
         update_status = False
     return update_status
 
-def _launch_update_pub_if(institute,
-                          org_tup,
-                          bibliometer_path,
-                          datatype,
-                          corpus_years_list,
-                          pub_list_folder_alias,
-                          pub_list_file_base_alias,
-                          missing_if_base_alias,
-                          missing_issn_base_alias):
-    """
+def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
+                          aliases_tup, corpus_years_list, progress_callback):
+    """Launches updating impact factors of publications final list of the year.
+
+    This is done through the `add_if` function imported from 
+    `bmfuncts.consolidate_pub_list` module after check of availability 
+    of the corresponding file of the publications list.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        aliases_tup (tup): (publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files).
+        corpus_years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status. 
+    Returns:
+        (tup): (year of missing publications file (string of 4 digits), \
+        completion status of impact-factors database (bool), \
+        progress-bar status (int)).    
     """
 
+    # Setting parameters from args
+    (pub_list_folder_alias,
+     pub_list_file_base_alias,
+     missing_if_base_alias,
+     missing_issn_base_alias) = aliases_tup
+
+    progress_callback(5)
+    progress_bar_state = 5
+    progress_bar_loop_progression = 70 // len(corpus_years_list)
     if_database_complete = None
     missing_pub_file_year = None
     for corpus_year in corpus_years_list:
+
         # Setting corpus dependant paths
         pub_list_file = pub_list_file_base_alias + " " + corpus_year + ".xlsx"
         year_pub_list_folder_path = bibliometer_path / Path(corpus_year) / pub_list_folder_alias
@@ -88,19 +135,16 @@ def _launch_update_pub_if(institute,
         missing_if_path   = year_pub_list_folder_path / Path(corpus_year + missing_if_base_alias)
         missing_issn_path = year_pub_list_folder_path / Path(corpus_year + missing_issn_base_alias)
 
-        # Checking availability of pub_list file of the year
+        # Checking availability of publications-list file of the year
         out_file_status = os.path.exists(out_file_path)
         if out_file_status:
+
             # Updating Impact Factors and saving new consolidated list of publications
             # this also for saving results files to complete IFs database
-            _, if_database_complete = add_if(institute,
-                                             org_tup,
-                                             bibliometer_path,
-                                             out_file_path,
-                                             out_file_path,
-                                             missing_if_path,
-                                             missing_issn_path,
-                                             corpus_year)
+            paths_tup = (out_file_path, out_file_path,
+                         missing_if_path, missing_issn_path)
+            _, if_database_complete = add_if(institute, org_tup, bibliometer_path,
+                                             paths_tup, corpus_year)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
             split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
@@ -112,7 +156,8 @@ def _launch_update_pub_if(institute,
             if_analysis_name = None
             _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                                    if_analysis_name, results_to_save_dict, verbose = False)
-
+            # Updating progress bar state
+            progress_bar_state += progress_bar_loop_progression
             if not if_database_complete:
                 info_title = "- Information -"
                 info_text  = ("La base de données des facteurs d'impact étant incomplète, "
@@ -134,6 +179,7 @@ def _launch_update_pub_if(institute,
                               "de données des IFs incomplète.")
                 messagebox.showinfo(info_title, info_text)
         else:
+            progress_bar_state = 100
             warning_title = "!!! ATTENTION : fichier absent !!!"
             warning_text  = ("La liste consolidée des publications du corpus "
                              f"de l'année {corpus_year} "
@@ -142,42 +188,42 @@ def _launch_update_pub_if(institute,
                              "\n2- Puis relancez la mise à jour des IFs des listes consolidées.")
             messagebox.showwarning(warning_title, warning_text)
             missing_pub_file_year = corpus_year
-            return missing_pub_file_year, if_database_complete
-    return missing_pub_file_year, if_database_complete
+        progress_callback(progress_bar_state)
+    return missing_pub_file_year, if_database_complete, progress_bar_state
 
 
 def create_update_ifs(self, master, page_name, institute, bibliometer_path, datatype):
+    """Manages creation and use of widgets for impact factors update.
 
-    """
-    Description : function working as a bridge between the BiblioMeter
-    App and the functionalities needed for the use of the app
+    This is done through the internal functions `_launch_update_if_db` 
+    and `_launch_update_pub_if`.
 
-    Uses the following globals :
-    - DIC_OUT_PARSING
-    - FOLDER_NAMES
-
-    Args : takes only self and bibliometer_path as arguments.
-    self is the intense in which PageThree will be created
-    bibliometer_path is a type Path, and is the path to where the folders
-    organised in a very specific way are stored
-
-    Returns : nothing, it create the page in self
+    Args:
+        self (instense): Instense where consolidation page will be created.
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Name of consolidation page.
+        institute (str): Institute name.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
     """
 
     # Internal functions
-    def _launch_update_if_db_try():
+    def _launch_update_if_db_try(progress_callback):
         print("\nUpdate of IFs database launched")
         new_if_db_update_status = if_db_update_status
         if not if_db_update_status:
             # Checking availability of IFs database file
             if_db_file_status = os.path.exists(if_db_path)
             if if_db_file_status:
+                progress_callback(10)
                 new_if_db_update_status = _launch_update_if_db(institute,
                                                                org_tup,
                                                                bibliometer_path,
+                                                               pub_list_folder_alias,
                                                                master.years_list,
-                                                               pub_list_folder_path)
+                                                               progress_callback)
             else:
+                progress_callback(100)
                 warning_title = "!!! ATTENTION : fichier absent !!!"
                 warning_text  = (f"Le fichier {if_file_name_alias} de la base de données des IFs "
                                  "\nn'est pas disponible à l'emplacement attendu. "
@@ -193,22 +239,19 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
 
         # Setting status of IFs database update
         globals()['if_db_update_status'] = new_if_db_update_status
+        progress_bar.place_forget()
 
-    def _missing_pub_file_year_check():
-        if_tup = _launch_update_pub_if(institute,
-                                       org_tup,
-                                       bibliometer_path,
-                                       datatype,
-                                       master.years_list,
-                                       pub_list_folder_alias,
-                                       pub_list_file_base_alias,
-                                       missing_if_base_alias,
-                                       missing_issn_base_alias)
-        missing_pub_file_year, if_database_complete = if_tup[0], if_tup[1]
+    def _missing_pub_file_year_check(progress_callback):
+        aliases_tup = (pub_list_folder_alias, pub_list_file_base_alias,
+                       missing_if_base_alias, missing_issn_base_alias)
+        if_tup = _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
+                                       aliases_tup, master.years_list, progress_callback)
+        missing_pub_file_year, if_database_complete, _ = if_tup
         if not missing_pub_file_year:
             print("IFs updated in all consolidated lists of publications")
             concatenate_pub_lists(institute, org_tup, bibliometer_path, master.years_list)
             print("Consolidated lists of publications concatenated after IFs update")
+            progress_callback(100)
             info_title = '- Information -'
             info_text  = ("La mise à jour des IFs dans les listes consolidées "
                           "des publications des corpus :"
@@ -233,6 +276,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             messagebox.showinfo(info_title, info_text)
 
         else:
+            progress_callback(100)
             print("IFs updated in some consolidated lists of publications"
                   "but interrupted because of missing of a consolidated list file")
             info_title = '- Information -'
@@ -242,10 +286,10 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                           f" {missing_pub_file_year}")
             messagebox.showinfo(info_title, info_text)
 
-    def _launch_update_pub_if_try():
+    def _launch_update_pub_if_try(progress_callback):
         print("\nUpdate of IFs in consolidated lists of publications launched")
         if if_db_update_status:
-            _missing_pub_file_year_check()
+            _missing_pub_file_year_check(progress_callback)
         else:
             # Confirmation du lancement de la fonction de MAJ des IFs
             # dans les listes consolidées sans MAJ de la base de données des IFs
@@ -261,8 +305,9 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                          " \n\nEffectuer la mise à jour ?")
             answer    = messagebox.askokcancel(ask_title, ask_text)
             if answer:
-                _missing_pub_file_year_check()
+                _missing_pub_file_year_check(progress_callback)
             else:
+                progress_callback(100)
                 print("IFs update in consolidated lists of publications dropped")
                 info_title = '- Information -'
                 info_text  = ("La mise à jour des listes consolidées "
@@ -270,6 +315,30 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                 messagebox.showinfo(info_title, info_text)
         # Re-initializing status of IFs database update
         globals()['if_db_update_status'] = False
+        progress_bar.place_forget()
+
+    def _update_progress(value):
+        progress_var.set(value)
+        progress_bar.update_idletasks()
+        if value >= 100:
+            enable_buttons(update_if_buttons_list)
+
+    def _start_launch_update_if_db_try():
+        disable_buttons(update_if_buttons_list)
+        place_after(if_db_update_launch_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_update_if_db_try,
+                         args=(_update_progress,)).start()
+
+    def _start_launch_update_pub_if_try():
+        disable_buttons(update_if_buttons_list)
+        place_after(pub_if_update_launch_button,
+                    progress_bar, dx = progress_bar_dx, dy = 0)
+        progress_var.set(0)
+        threading.Thread(target=_launch_update_pub_if_try,
+                         args=(_update_progress,)).start()
+
 
     # Setting effective font sizes and positions (numbers are reference values in mm)
     eff_etape_font_size   = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)           #14
@@ -280,8 +349,10 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     if_db_update_y_pos_px = mm_to_px(35 * master.height_sf_mm, gg.PPI)
     update_if_label_dx_px = mm_to_px( 0 * master.width_sf_mm,  gg.PPI)
     update_if_label_dy_px = mm_to_px(15 * master.height_sf_mm, gg.PPI)
-    launch_dx_px          = mm_to_px( 0 * master.width_sf_mm,  gg.PPI)
-    launch_dy_px          = mm_to_px( 5 * master.height_sf_mm, gg.PPI)
+    launch_dx_px = mm_to_px( 0 * master.width_sf_mm,  gg.PPI)
+    launch_dy_px = mm_to_px( 5 * master.height_sf_mm, gg.PPI)
+    progress_bar_length_px = mm_to_px(75 * master.width_sf_mm, gg.PPI)
+    progress_bar_dx = 40
 
     # Setting common attributs
     etape_label_format = 'left'
@@ -308,11 +379,18 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
 
+    # Initializing progress bar widget
+    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
+    progress_bar = ttk.Progressbar(self,
+                                   orient="horizontal",
+                                   length=progress_bar_length_px,
+                                   mode="determinate",
+                                   variable=progress_var)
+
     # Setting useful paths
     if_root_path = bibliometer_path / Path(if_root_path_alias)
     if_db_path   = if_root_path / Path(if_file_name_alias)
     backup_if_folder_path = bibliometer_path / Path(backup_folder_name_alias)
-    pub_list_folder_path  =  bibliometer_path / Path(pub_list_folder_alias)
 
     # Initializing status of IFs database update
     if_db_update_status = False
@@ -348,7 +426,8 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     if_db_update_launch_button = tk.Button(self,
                                            text = gg.TEXT_MAJ_BDD_IF,
                                            font = if_db_update_launch_font,
-                                           command = _launch_update_if_db_try)
+                                           command = _start_launch_update_if_db_try)
+    GUI_BUTTONS.append(if_db_update_launch_button)
     place_bellow(help_label,
                  if_db_update_launch_button,
                  dx = launch_dx_px,
@@ -380,13 +459,18 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                  help_label)
 
     # ** Bouton pour lancer la mise à jour des IFs dans les listes consolidées existantes
-    button_update_if_font = tkFont.Font(family = gg.FONT_NAME,
-                                        size = eff_launch_font_size)
-    button_update_if = tk.Button(self,
+    pub_if_update_launch_button_font = tkFont.Font(family = gg.FONT_NAME,
+                                                   size = eff_launch_font_size)
+    pub_if_update_launch_button = tk.Button(self,
                                  text = gg.TEXT_MAJ_PUB_IF,
-                                 font = button_update_if_font,
-                                 command = _launch_update_pub_if_try)
+                                 font = pub_if_update_launch_button_font,
+                                 command = _start_launch_update_pub_if_try)
+    GUI_BUTTONS.append(pub_if_update_launch_button)
     place_bellow(help_label,
-                 button_update_if,
+                 pub_if_update_launch_button,
                  dx = launch_dx_px,
                  dy = launch_dy_px)
+
+    # Setting buttons list for status change
+    update_if_buttons_list = [if_db_update_launch_button,
+                              pub_if_update_launch_button]

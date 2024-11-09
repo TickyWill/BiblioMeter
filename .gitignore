@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.idea/*
 build/
 develop-eggs/
 dist/
@@ -74,11 +75,15 @@ docs/_build/
 # PyBuilder
 target/
 
+# intellij configs
+.idea/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 App_Ludo.ipynb
 App_Amal.ipynb
 App_Francois.ipynb
+hal_app.ipynb
 
 # IPython
 profile_default/

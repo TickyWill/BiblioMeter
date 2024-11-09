@@ -1,8 +1,23 @@
 :: Creation: F. Bertin 2024-05-26
-:: Refactoring: A. Chabli 2024-06-17
+:: Refactoring: A. Chabli 2024-10-31
 
 @echo off 
 Title BiblioMeter.exe making
+
+:: Setting development branches
+echo:
+set /p "bp_branch=Enter BiblioParsing branch to import: "
+echo:
+set /p "bm_branch=Enter BiblioMeter branch to import: "
+
+:: Setting name of python program to launch the application
+echo:
+set /p "app_py=Enter name of program to launch application (case sensitive, ex: app.py or App.py): "
+
+:: Setting exe version
+echo:
+set /p "exe_version=Enter BiblioMeter version (#.#.#): "
+echo:
 
 :: Setting useful editing parameters
 set "TAB=   "
@@ -74,7 +89,7 @@ if exist %working_dir%\venv (
 :: Installing packages
 echo Installing BiblioParsing package
 echo:
-pip install git+https://github.com/TickyWill/BiblioParsing.git#egg=BiblioParsing
+pip install git+https://github.com/TickyWill/BiblioParsing.git@%bp_branch%
 cls
 echo The package BiblioParsing successfully installed >> %LOG%
 echo:
@@ -82,7 +97,7 @@ echo The package BiblioParsing successfully installed
 echo:
 echo Installing BiblioMeter packages
 echo:
-pip install git+https://github.com/TickyWill/BiblioMeter.git#egg=BiblioMeter
+pip install git+https://github.com/TickyWill/BiblioMeter.git@%bm_branch%
 cls
 echo The package BiblioMeter successfully installed >> %LOG%
 echo:
@@ -99,7 +114,14 @@ echo:
 
 :: Getting the python program to launch the application
 echo Getting the python program to launch the application
-set "PGM=%working_dir%\venv\Lib\site-packages\bmfuncts\ConfigFiles\app.py"
+set "PGM=%working_dir%\%app_py%"
+set "prefixe=https://raw.githubusercontent.com/TickyWill/BiblioMeter/"
+if %bm_branch%==main (
+    set "pgm_origin=%prefixe%%bm_branch%/%app_py%"
+) else (
+    set "pgm_origin=%prefixe%refs/heads/%bm_branch%/%app_py%"
+)
+curl.exe  -o %PGM% %pgm_origin%
 if exist %PGM% (
     echo The python program %PGM% successfully found >> %LOG%
     echo %TAB%The python program %PGM% successfully found
@@ -143,7 +165,7 @@ for /f "skip=1" %%x in ('wmic os get localdatetime') do if not defined MyDate se
 for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
 set fmonth=00%Month%
 set fday=00%Day%
-set dir_name="%Year%-%fmonth:~-2%-%fday:~-2% BiblioMeter"
+set dir_name="%Year%-%fmonth:~-2%-%fday:~-2% BiblioMeter %exe_version%"
 rename %working_dir%\dist %dir_name%
 if not exist %working_dir%\dist (
     echo The executable directory successfully renamed to %dir_name% >> %LOG%

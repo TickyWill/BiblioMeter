@@ -1,6 +1,8 @@
 """ `gui_functions` module contains useful functions for gui management."""
 
-__all__ = ['existing_corpuses',
+__all__ = ['disable_buttons',
+           'enable_buttons',
+           'existing_corpuses',
            'font_size',
            'general_properties',
            'last_available_years',
@@ -18,27 +20,45 @@ __all__ = ['existing_corpuses',
 import os
 import math
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import font as tkFont
 from pathlib import Path
+from tkinter import font as tkFont
+from tkinter import messagebox
 
 # 3rd party imports
 import BiblioParsing as bp
 
 # Local imports
-import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
+import bmgui.gui_globals as gg
 from bmfuncts.config_utils import set_user_config
 
 
+def disable_buttons(buttons_list):
+    """Disables use of tkinter widgets listed in 'buttons_list'."""
+    for button in buttons_list:
+        button.config(state=tk.DISABLED)
+
+def enable_buttons(buttons_list):
+    """Enables use of tkinter widgets listed in 'buttons_list'."""
+    for button in buttons_list:
+        button.config(state=tk.NORMAL)
+
+
 def show_frame(self, page_name):
-    """Show a frame for the given page name"""
+    """Show a frame for the 'page_name' page."""
     frame = self.frames[page_name]
     frame.tkraise()
 
 
 def set_page_title(self, master, page_name, institute, datatype = None):
-    """
+    """Sets the page title of the 'page_name' page.
+
+    Args:
+        self (instense): Instense where is located 'page_name' page.
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Name of 'page_name' page.
+        institute (str): Institute name.
+        datatype (str): Data combination type from corpuses databases (default = None).        
     """
 
     # Setting page title
@@ -76,7 +96,12 @@ def set_page_title(self, master, page_name, institute, datatype = None):
 
 
 def set_exit_button(self, master):
-    """ """
+    """Sets exit button on any page of 'master'.
+
+    Args:
+        self (instense): Instense where is located 'master'.
+        master (class): `bmgui.main_page.AppMain` class.
+    """
     # Internal functions
     def _launch_exit():
         ask_title = 'Arrêt de BiblioMeter'
@@ -109,46 +134,68 @@ def set_exit_button(self, master):
 
 
 def last_available_years(bibliometer_path, year_number):
-    """Returns a list of the five last years
-    of available corpuses.
+    """Returns a list of up to 'year_number' number 
+    of the most-recent years of available corpuses 
+    in the working folder targetted by 'bibliometer_path'.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        year_number (int): Data combination type from corpuses databases.
+    Returns:
+        (list): List of 'year_number' length of available corpuses as strings of 4 digits.    
     """
+
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
     try:
-        list_dir = os.listdir(bibliometer_path)
+        list_dir = sorted(os.listdir(bibliometer_path))
         years_full_list = []
+
         for year in list_dir:
             if len(year) == 4:
                 years_full_list.append(year)
+
         years_list = years_full_list[-year_number:]
+
     except FileNotFoundError:
         warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
         warning_text  = (f"L'accès au dossier {bibliometer_path} est impossible."
                          "\nChoisissez un autre dossier de travail.")
         messagebox.showwarning(warning_title, warning_text)
         years_list = []
+
+    except OSError:
+        warning_title = "!!! ATTENTION : Erreur lors de l'accès au dossier de travail !!!"
+        warning_text = (f"L'accès au dossier {bibliometer_path} a échoué (erreur interne)"
+                        "\nVeuillez réessayer d'accéder à votre répertoire de travail avec "
+                        "l'option \"Changer de dossier de travail\"")
+        messagebox.showwarning(warning_title, warning_text)
+        years_list = []
+
     return years_list
 
 
 def existing_corpuses(bibliometer_path, corpuses_number = None):
     """Returns a list of lists of booleans displaying True
     if rawdata and parsing results are available, and False otherwise.
-    This is done for each of the available corpuses.
-    ex:
-    If only 2023 files are not present, the returned list of lists is the following:
-    [[2018, 2019, 2020, 2021, 2022, 2023],   #Years
-     [True,True,True,True,True,False],       #Wos Rawdata
-     [True,True,True,True,True,False],       #Scopus Rawdata
-     [True,True,True,True,True,False],       #Wos Parsing
-     [True,True,True,True,True,False],       #Scopus Parsing
-     [True,True,True,True,True,False]]       #Concatenation & Deduplication.
+
+    This is done for each of the available corpuses.        
+        ex: If only 2023 files are not present, the returned tuple of lists contains
+
+        - Years list                          = ["2018", "2019", "2020", "2021", "2022", "2023"]
+        - WoS raw-data boolean list           = [ True,   True,   True,   True,   True,   False]
+        - WoS parsing boolean list            = [ True,   True,   True,   True,   True,   False]
+        - Scopus raw-data boolean list        = [ True,   True,   True,   True,   True,   False]
+        - Scopus parsing boolean list         = [ True,   True,   True,   True,   True,   False]
+        - Deduplication parsing boolean list  = [ True,   True,   True,   True,   True,   False]
 
     Args:
-        bibliometer_path (path):  The working folder path.
-        corpuses_number (int): The number of corpuses to be checked
+        bibliometer_path (path):  Full path to working folder.
+        corpuses_number (int): The number of corpuses to be checked \
         (default: CORPUSES_NUMBER global).
-
     Returns:
-        (list of lists).
+        (tup of lists): (Years list, WoS raw-data boolean list, \
+        WoS parsing boolean list, Scopus raw-data boolean list, \
+        Scopus parsing boolean list, Deduplication parsing boolean list).
     """
 
     # internal functions
@@ -165,7 +212,9 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
         return rawdata_path / Path(filenames_list[0])
 
     def _get_parsing_file_paths(parsing_path):
-        """
+        """Returns the full path to the file named 'articles_item_alias' 
+        given the full path to the parsing folder 'parsing_path' 
+        and the extension 'parsing_save_extent' of the file.
         """
         file_name = articles_item_alias + "." + parsing_save_extent
         parsing_file_path = parsing_path / Path(file_name)
@@ -232,7 +281,9 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
 
 
 def place_after(gauche, droite, dx = 5, dy = 0):
-    """ """
+    """Places widget 'droite' after widget 'gauche' 
+    by dx shift in pixels on x axis without shift on y axis.
+    """
     gauche_info = gauche.place_info()
     x = int(gauche_info['x']) + gauche.winfo_reqwidth() + dx
     y = int(gauche_info['y']) + dy
@@ -240,7 +291,9 @@ def place_after(gauche, droite, dx = 5, dy = 0):
 
 
 def place_bellow(haut, bas, dx = 0, dy = 5):
-    """ """
+    """Places widget 'bas' after widget 'haut' 
+    by dy shift in pixels on y axis without shift on x axis.
+    """
     haut_info = haut.place_info()
     x = int(haut_info['x']) + dx
     y = int(haut_info['y']) + haut.winfo_reqheight() + dy
@@ -248,8 +301,9 @@ def place_bellow(haut, bas, dx = 0, dy = 5):
 
 
 def font_size(size, scale_factor):
-    """Set the fontsize based on scale_factor.
-    If the fontsize is less than minimum_size,
+    """Sets the font-size based on scale_factor.
+    
+    If the font-size is less than minimum_size, 
     it is set to the minimum size.
     """
     fontsize = int(size * scale_factor)
@@ -258,16 +312,15 @@ def font_size(size, scale_factor):
 
 
 def str_size_mm(text, font, ppi):
-    """The function `str_size_mm` computes the sizes in mm of a string.
+    """The function `str_size_mm` computes the sizes in mm of a string
+    given the font name and the resolution of the display.
 
     Args:
-        text (str): the text of which we compute the size in mm.
-        font (tk.font): the font of the text.
-        ppi (int): pixels per inch of the display.
-
+        text (str): The text of which we compute the size in mm.
+        font (tk.font): The font for displaying the string 'text'.
+        ppi (int): The display resolution in pixels per inch.
     Returns:
-        `(tuple)`: width in mm `(float)`, height in mm `(float)`.
-
+        (tup): (width in mm (float), height in mm (float)).
     Note:
         The use of this function requires a tkinter window availability
         since it is based on a tkinter font definition.
@@ -280,13 +333,12 @@ def str_size_mm(text, font, ppi):
 
 def mm_to_px(size_mm, ppi, fact = 1.0):
     """The `mm_to_px` function converts a value in mm to a value in pixels
-    using the ppi of the used display and a factor fact.
+    using the display resolution and a factor fact to adjust the result if needed.
 
     Args:
-        size_mm (float): Value in mm to be converted.
-        ppi (float): Pixels per inch of the display.
-        fact (float): Factor (default= 1).
-
+        size_mm (float): The value in mm to be converted.
+        ppi (float): The display resolution in pixels per inch.
+        fact (float): Adjusting factor (default= 1).
     Returns:
         (int): Upper integer value of the conversion to pixels.
     """
@@ -295,7 +347,21 @@ def mm_to_px(size_mm, ppi, fact = 1.0):
 
 
 def _window_properties(screen_width_px, screen_height_px):
-    """ """
+    """Computes useful values for adapting tkinter windows 
+    and widgets positions to the display resolution using reference 
+    values given as globals in module imported as gg.
+
+    Args:
+        screen_width_px (int): The display screen width in pixel.
+        screen_height_px (int): The display screen height in pixel.
+    Returns:
+        (tup): (width of reference window converted to px, \
+        height of reference window converted to px, \
+        scale factor on width in px, \
+        scale factor on height in px, \
+        scale factor on width in mm, \
+        scale factor on height in mm).
+    """
 
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
     ppi = gg.DISPLAYS[gg.BM_GUI_DISP]["ppi"]
@@ -334,23 +400,21 @@ def _window_properties(screen_width_px, screen_height_px):
 
 def general_properties(self):
     """The function `general_properties` calculate the window sizes
-    and useful scale factors for the application launch window.
-    For that, it uses reference values for the display sizes in pixels
-    and mm through the globals:
-    - "REF_SCREEN_WIDTH_PX" and "REF_SCREEN_HEIGHT_PX";
-    - "REF_SCREEN_WIDTH_MM" and "REF_SCREEN_HEIGHT_MM".
-    The secondary window sizes in mm are set through the globals:
-    - "REF_WINDOW_WIDTH_MM" and "REF_WINDOW_HEIGHT_MM".
-    The window title is set through the global "APPLICATION_TITLE".
-    These globals are defined locally in the module "gui_globals.py"
-    of the package "bmgui".
+    and useful scale factors for the application launch window through
+    `_window_properties` internal function.
+
+    The window title is set through the global "APPLICATION_TITLE". 
+    These globals are defined locally in the module imported as gg.
 
     Args:
-        None.
-
+        self (instense): Instense where application launch window is created.
     Returns:
-        (tuple): self, 2 window sizes in pixels, 2 scale factors for sizes in mm
-                 and 2 scale factors for sizes in pixels.
+        (tup): (width of reference window converted to px, \
+        height of reference window converted to px, \
+        scale factor on width in px, \
+        scale factor on height in px, \
+        scale factor on width in mm, \
+        scale factor on height in mm).
     """
 
     # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)

@@ -1,10 +1,12 @@
-""" The `...` module sets the `AppMain` class, its attributes and related secondary classes.
+""" The `main_page` module sets the `AppMain` class, its attributes and related secondary classes.
 """
 __all__ = ['AppMain']
 
 # Standard library imports
 import os
+import threading
 import tkinter as tk
+import traceback
 from tkinter import messagebox
 from tkinter import font as tkFont
 from functools import partial
@@ -21,7 +23,7 @@ from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
 from bmgui.update_if_page import create_update_ifs
-from bmgui.gui_utils import existing_corpuses
+from bmgui.gui_utils import existing_corpuses, enable_buttons
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import general_properties
 from bmgui.gui_utils import last_available_years
@@ -33,13 +35,20 @@ from bmfuncts.useful_functs import create_archi
 from bmfuncts.useful_functs import set_rawdata
 
 class AppMain(tk.Tk):
-    """The class AppMain inherit the attributes and methods of tk.Tk.
+    """Main class of the BiblioMeter application.
+
+    Traces changes in institute selection to update page parameters. 
     'bmf' stands for BiblioMeter_Files usual working directory name.
     """
     def __init__(self):
+        self.datatype_optionbutton_font = None
+        self.datatype_optionbutton = None
+        self.datatype_label_font = None
+        self.datatype_label = None
 
         # Internal functions
         def _set_datatype_widgets_param(datatype_val, datatype_list):
+            """Sets widget parameters for datatype selection through 'tk.OptionMenu'."""
             # Setting widgets parameters for datatype selection
             self.datatype_optionbutton_font = tkFont.Font(family = gg.FONT_NAME,
                                                           size = eff_buttons_font_size)
@@ -60,7 +69,8 @@ class AppMain(tk.Tk):
             place_after(self.datatype_label, self.datatype_optionbutton, dy = dy_datatype)
 
         def _display_path(inst_bmf):
-            """Shortening bmf path for easy display"""
+            """Shortens bmf path for easy display."""
+
             p = Path(inst_bmf)
             if len(p.parts) <= 4:
                 p_disp = p
@@ -71,6 +81,10 @@ class AppMain(tk.Tk):
             return p_disp
 
         def _get_file(institute_select, datatype_select):
+            """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
+            Updates 'bmf' widgets parameters and values accordingly to the working 
+            folder got and sets launch button of corpuses analysis."""
+
             # Getting new working directory
             dialog_title = "Choisir un nouveau dossier de travail"
             bmf_str = tk.filedialog.askdirectory(title = dialog_title)
@@ -85,6 +99,9 @@ class AppMain(tk.Tk):
             SetLaunchButton(self, institute_select, bmf_str, datatype_select)
 
         def _set_bmf_widget_param(institute_select, inst_bmf, datatype_select):
+            """Sets 'bmf' widgets parameters and values 
+            according to the selected Institute."""
+
             # Setting bmf widgets parameters
             bmf_font        = tkFont.Font(family = gg.FONT_NAME,
                                           size   = eff_bmf_font_size,
@@ -94,7 +111,6 @@ class AppMain(tk.Tk):
                                        font = bmf_font,)
             bmf_val         = tk.StringVar(self)
             bmf_val2        = tk.StringVar(self)
-            #bmf_entree      = tk.Entry(self, textvariable = bmf_val)
             bmf_entree2     = tk.Entry(self, textvariable = bmf_val2, width = eff_bmf_width)
             bmf_button_font = tkFont.Font(family = gg.FONT_NAME,
                                           size   = eff_buttons_font_size)
@@ -116,7 +132,11 @@ class AppMain(tk.Tk):
                              y = eff_bmf_pos_y_px + eff_button_dy_px,)
             bmf_val.set(inst_bmf)
             bmf_val2.set(_display_path(inst_bmf))
+
         def _try_bmf_access(bmf_path):
+            """Returns status of the default working folder as boolean: True, if exists 
+            and access is authorized to the user; False, otherwise."""
+
             bmf_access_status = False
             if os.access(bmf_path, os.F_OK | os.R_OK | os.W_OK):
                 bmf_access_status = True
@@ -128,6 +148,10 @@ class AppMain(tk.Tk):
             return bmf_access_status
 
         def _create_corpus(inst_bmf):
+            """Creates a new corpus folder in the working folder through `create_archi` 
+            function imported from `bmfuncts.useful_functs` module.             
+            Then, updates 'corpi' widget value with new list of available corpuses."""
+
             corpi_val = _set_corpi_widgets_param(inst_bmf)
             corpi_val_to_set = ""
             bmf_path = Path(inst_bmf)
@@ -150,6 +174,10 @@ class AppMain(tk.Tk):
             corpi_val.set(corpi_val_to_set)
 
         def _set_corpi_widgets_param(inst_bmf):
+            """Sets 'corpi' widgets parameters and values accordingly 
+            to the working folder and returns tkinter 'corpi' parameter 
+            that is used to set for display the available corpuses list."""
+
             # Setting corpuses widgets parameters
             corpi_font   = tkFont.Font(family = gg.FONT_NAME,
                                        size   = eff_corpi_font_size,
@@ -180,6 +208,9 @@ class AppMain(tk.Tk):
             return corpi_val
 
         def _update_corpi(inst_bmf):
+            """Updates tkinter 'corpi' parameter with the available corpuses list 
+            accordingly to working folder."""
+
             corpi_val = _set_corpi_widgets_param(inst_bmf)
             corpi_val_to_set = ""
             bmf_path = Path(inst_bmf)
@@ -193,6 +224,9 @@ class AppMain(tk.Tk):
             corpi_val.set(corpi_val_to_set)
 
         def _update_datatype(*args, datatype_widget = None):
+            """Gets selected data-type and sets, accordingly, 'bmf' widgets parameters, 
+            'corpi' widgets parameters and sets launch button of corpuses analysis."""
+
             datatype_select = datatype_widget.get()
             self.datatype_optionbutton.configure(state = 'disabled')
 
@@ -227,6 +261,9 @@ class AppMain(tk.Tk):
             SetLaunchButton(self, institute_select, inst_default_bmf, datatype_select)
 
         def _update_page(*args, institute_widget = None):
+            """Gets the selected Institute and 'datatype' widgets parameters.
+            Then, trace change in datatype selection to update page parameters."""
+
             _ = args
             institute_select = institute_widget.get()
 
@@ -243,6 +280,11 @@ class AppMain(tk.Tk):
             datatype_val.trace('w',
                                partial(_update_datatype, institute_select,
                                        datatype_widget = datatype_val))
+
+        def _except_hook(args):
+            messagebox.showerror("Error", args)
+            messagebox.showerror("Exception", traceback.format_exc())
+            enable_buttons(gg.GUI_BUTTONS)
 
         # Setting the link between "self" and "tk.Tk"
         tk.Tk.__init__(self)
@@ -345,10 +387,12 @@ class AppMain(tk.Tk):
         # Tracing Institute selection
         institute_val.trace('w', partial(_update_page, institute_widget = institute_val))
 
-class SetMasterTitle():
-    """
+        # Handling exception
+        threading.excepthook = _except_hook
 
-    """
+class SetMasterTitle():
+    """Displays title in main window."""
+
     def __init__(self, master):
 
         # Setting widget parameters for page title
@@ -369,9 +413,8 @@ class SetMasterTitle():
                          anchor = "center")
 
 class SetAuthorCopyright():
-    """
+    """Displays authors and copyright in main window."""
 
-    """
     def __init__(self, master):
 
         # Setting widgets parameters for copyright
@@ -406,9 +449,8 @@ class SetAuthorCopyright():
                             anchor = "sw")
 
 class SetLaunchButton(tk.Tk):
-    """
+    """Displays corpuses analysis launch button in main window."""
 
-    """
     def __init__(self, master, institute, bibliometer_path, datatype):
 
         # Setting font size for launch button
@@ -435,11 +477,7 @@ class SetLaunchButton(tk.Tk):
                             anchor = "s")
 
     def _generate_pages(self, master, institute, bibliometer_path, datatype):
-        """Permet la génération des pages après spécification du chemin
-        vers la zone de stockage.
-        Vérifie qu'un chemin a été renseigné et continue le cas échant,
-        sinon redemande de renseigner un chemin.
-        """
+        """Generates pages after working folder setting."""
 
         if bibliometer_path == '':
             warning_title = "!!! Attention !!!"
@@ -490,8 +528,8 @@ class SetLaunchButton(tk.Tk):
             master.frames = self.frames
 
 class PageButton(tk.Frame):
-    """
-    """
+    """Sets button of 'page_name' page."""
+
     def __init__(self, master, page_name, pagebutton_frame):
 
         # Setting page num
@@ -514,8 +552,9 @@ class PageButton(tk.Frame):
 
 
 class ParseCorpusPage(tk.Frame):
-    """PAGE 1 'Analyse élémentaire des corpus'.
-    """
+    """Sets parsing page widgets through `create_parsing_concat` function 
+    imported from `bmgui.parse_corpus_page` module."""
+
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
@@ -529,10 +568,11 @@ class ParseCorpusPage(tk.Frame):
         # Creating and setting widgets for page frame
         create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype)
 
-        
+
 class ConsolidateCorpusPage(tk.Frame):
-    """PAGE 2 'Consolidation annuelle des corpus'.
-    """
+    """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function 
+    imported from `bmgui.consolidate_corpus_page` module."""
+
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
@@ -548,8 +588,9 @@ class ConsolidateCorpusPage(tk.Frame):
 
 
 class UpdateIfPage(tk.Frame):
-    """PAGE 3 'Mise à jour des IF'.
-    """
+    """Sets impact-factors-update page widgets through `create_update_ifs` function 
+    imported from `bmgui.update_if_page` module."""
+
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master
@@ -565,8 +606,9 @@ class UpdateIfPage(tk.Frame):
 
 
 class AnalyzeCorpusPage(tk.Frame):
-    """PAGE 4 'Analyse des corpus'.
-    """
+    """Sets corpuses-analysis page widgets through `create_analysis` function 
+    imported from `bmgui.analyze_corpus_page` module."""
+
     def __init__(self, master, pagebutton_frame, page_frame, institute, bibliometer_path, datatype):
         super().__init__(page_frame)
         self.controller = master

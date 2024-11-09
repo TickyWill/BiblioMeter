@@ -1,14 +1,17 @@
-"""Module of useful functions used by several modules of package `bmfuncts`."""
+"""Module of useful functions used by several modules of package `bmfuncts`.
+
+"""
 
 __all__ = ['check_dedup_parsing_available',
            'create_archi',
            'create_folder',
-           'format_df_4_excel',
+           'format_df_for_excel',
            'mise_en_page',
            'read_parsing_dict',
            'save_fails_dict',
            'save_parsing_dict',
            'set_rawdata',
+           'standardize_txt',
           ]
 
 
@@ -19,7 +22,6 @@ import shutil
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows \
@@ -31,6 +33,7 @@ from openpyxl.styles import PatternFill as openpyxl_PatternFill
 from openpyxl.styles import Alignment as openpyxl_Alignment
 from openpyxl.styles import Border as openpyxl_Border
 from openpyxl.styles import Side as openpyxl_Side
+import BiblioParsing as bp
 
 # local imports
 import bmfuncts.pub_globals as pg
@@ -38,9 +41,34 @@ from bmfuncts.rename_cols import set_col_attr
 from bmfuncts.config_utils import set_user_config
 
 
+def standardize_txt(text):
+    """Standardize text by keeping only ASCII characters
+    and replacing minus symbol between words by space.
+
+    Args:
+        text (str): String to be standardized.
+    Returns:
+        (str): The standardized string."""
+    # Removing accentuated characters
+    new_text = bp.remove_special_symbol(text, only_ascii=True, strip=True)
+
+    # Remove minus
+    new_text = new_text.replace("-", " ").strip()
+    return new_text
+
+
 def check_dedup_parsing_available(bibliometer_path, year):
+    """Checks if deduplication parsing folder exist and not empty.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        year (str): 4 digits year of the corpus.
+    Returns:
+        (bool): Status of the deduplication parsing folder \
+        (False if folder does'nt exist or is empty).
     """
-    """
+    # To Do:  Checks if a specific parsing file is available not only if folder is empty
+
     # Setting default returned status
     dedup_parsing_status = False
 
@@ -64,15 +92,20 @@ def check_dedup_parsing_available(bibliometer_path, year):
 
 
 def _get_database_file_path(database_folder_path, database_file_end):
-    """The function lists the files ending with "database_file_end"
-    present in the folder targeted by "database_folder_path".
-    Then it selects the most recent one.
+    """Selects the most recent file ending with 'database_file_end'.
+
+    This done through the following steps:
+
+    1. Lists all the files with this ending present in the \
+    folder targeted by "database_folder_path".
+    2. Selects the most recent one in this list using date \
+    of last modification.
 
     Args:
-        database_folder_path (path): The path to the folder where files
-                                     with names ending with 'database_file_end'
-                                     will be searched.
-        database_file_end (str): Ending of the names of the files to be searched.
+        database_folder_path (path): The path to the folder where files \
+        with names ending with 'database_file_end' will be searched.
+        database_file_end (str): Ending of the names of the files \
+        to be searched.
     Returns:
         (path): Path targeting the file found and selected.
     """
@@ -93,21 +126,24 @@ def _get_database_file_path(database_folder_path, database_file_end):
 
 
 def _set_database_extract_info(bibliometer_path, datatype, database):
-    """The function builds the path to database extractions and
-    the file names ending that are specific to the data type 'datatype'.
-    It also sets the folder name of the empty files.
-    To do that it uses the global 'ARCHI_EXTRACT' defined
-    in 'pub_globals' module.
+    """Builds the path to database extractions and the file 
+    names ending that are specific to the data type 'datatype'.
+
+    It also sets the folder name of the empty files required for 
+    specific data types (ex: using only "WoS" datatype requires 
+    empty files for Scopus extractions). 
+    To do that, it uses the global 'ARCHI_EXTRACT' defined 
+    in the module imported as pg.
 
     Args:
         bibliometer_path (path): The path to the working folder.
-        datatype (str): The data type selected for the analysis.
+        datatype (str): The data type of data combination type \
+        from databases.
         database (str): The database selected for the analysis.
-
     Returns:
-        (path, str, path): (Path to database extractions,
-                            File name ending ,
-                            Path to the folder of empty files).
+        (tup): Tuple = (path to database extractions (path), \
+        file name ending (str), \
+        path to the folder of empty files (path)).
     """
 
     # Setting useful aliases
@@ -127,11 +163,22 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
 
 def set_rawdata(bibliometer_path, datatype, years_list, database):
     """The function sets the rawdata to be used for the data type 'datatype' analysis.
-    It copies the files ending with 'database_file_end' from database folder
-    targeted by the path 'database_folder_path' to the rawdata folder
-    targeted by the path 'rawdata_path'.
-    When the database is Scopus and the data type to be analysed is restricted to WoS,
+
+    It copies the files ending with 'database_file_end' from database folder 
+    targeted by the path 'database_folder_path' to the rawdata folder 
+    targeted by the path 'rawdata_path'. 
+    To do that it uses the `_set_database_extract_info` internal function. 
+    When the database is Scopus and the data type to be analysed is restricted to WoS, 
     empty files ending with 'database_file_end' are used as Scopus rawdata.
+
+    Args:
+        bibliometer_path (path): The path to the working folder.
+        datatype (str): The data type of data combination type \
+        from databases.
+        years_list (list): List of corpus years (4 digits str).
+        database (str): The database selected for the analysis.
+    Returns:
+        (str): End message recalling the database and data type used.
     """
 
     # Getting database extractions info
@@ -169,10 +216,28 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
 
 
 def mise_en_page(institute, org_tup, df,
-                 wb = None, if_database = None):
-    """When the workbook wb is not None, this is applied
-    to the active worksheet of the passed workbook.
+                 wb = None, if_database = False):
+    """Formats a worksheet of an openpyxl workbook using 
+    columns attributes got through the `set_col_attr` function 
+    imported from the `bmfuncts.rename_cols` module.
+
+    When the workbook wb is not None, this is applied 
+    to the active worksheet of the passed workbook. 
     If the workbook wb is None, then the workbook is created.
+
+    Args:
+        institute (str): The Intitute name.
+        org_tup (tup): The tuple of the organization structure \
+        of the Institute.
+        df (dataframe): The dataframe to be formatted.
+        wb (openpyxl workbook): Worbook of the worksheet \
+        to be formatted (default = None).
+        if_database (bool): Status of the kind of data to be formatted \
+        for setting columns attributes (True if impact-factors database, \
+        default = False).
+    Returns:
+        (tup): (worbook of the formatted worksheet (openpyxl workbook), \
+        formatted active sheet).
     """
 
     # Setting useful column sizes
@@ -233,7 +298,8 @@ def mise_en_page(institute, org_tup, df,
         cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center",
                                             vertical="center")
 
-    # Setting de columns width using dict of column attributes col_attr if if_database = None
+    # Setting, if if_database = False, de columns width using dict
+    # of column attributes 'col_attr'
     if if_database:
         col_width_list = [60,15,15,15]
         for idx_col, col in enumerate(columns_list):
@@ -259,24 +325,42 @@ def mise_en_page(institute, org_tup, df,
     return wb, ws
 
 
-def format_df_4_excel(df, first_col_width, last_col_width = None):
-    """
+def format_df_for_excel(df, col_attr_dict = None, first_col_width = None, last_col_width = None):
+    """Generates a well formatted openpyxl workbook from 
+    the 'df' dataframe for sake of lisibilty when saved 
+    as Excel file.
+
+    Args:
+        df (dataframe): Data to be formatted in an openpyxl workbook.
+        col_attr_dict (dict): Optional attributes data of all columns 
+        of the workbook (default = None).
+        first_col_width (int): Optional width of first column of 
+        the workbook (default = None).
+        last_col_width (int): Optional width of the last column of \
+        the workbook (default = None).
+    Returns:
+        (tup): (the created workbook (openpyxl workbook), \
+        a formatted sheet of the workbook (openpyxl sheet)).
     """
 
     # Setting list of cell colors
-    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'], fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'], fill_type = "solid")]
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'],
+                                        fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'],
+                                        fill_type = "solid")]
 
     # Setting useful column attributes
     columns_list = list(df.columns)
     col_attr = {}
-    col_attr[columns_list[0]] = [first_col_width, "left"]
-    if last_col_width:
-        col_attr[columns_list[-1]] = [last_col_width, "left"]
+    if col_attr_dict:
+        col_attr = col_attr_dict
     else:
-        col_attr[columns_list[-1]] = [15, "center"]
-    for col in columns_list[1:-1]:
-        col_attr[col] = [15, "center"]
+        for col in columns_list:
+            col_attr[col] = [15, "center"]
+        if first_col_width:
+            col_attr[columns_list[0]] = [first_col_width, "left"]
+            if last_col_width:
+                col_attr[columns_list[-1]] = [last_col_width, "left"]
 
     # Initializing wb as a workbook and ws its active worksheet
     wb = Workbook()
@@ -323,7 +407,16 @@ def format_df_4_excel(df, first_col_width, last_col_width = None):
 
 
 def create_folder(root_path, folder, verbose = False):
-    """ """
+    """Creates a folder checking first if it already exists.
+
+    Args:
+        root_path (path): Full path to the folder where \
+        the new folder is created.
+        folder (str): Name of the folder to be created.
+        verbose (bool): Optional status of prints (default = False).
+    Returns:
+        (path): Full path to the created folder.
+    """
 
     folder_path = root_path / Path(folder)
     if not os.path.exists(folder_path):
@@ -338,16 +431,16 @@ def create_folder(root_path, folder, verbose = False):
 
 
 def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
-    """The `create_archi` function creates a corpus folder with the required architecture.
+    """Creates a corpus folder with the required architecture.
+
     It uses the global "ARCHI_YEAR" for the names of the sub_folders.
 
     Args:
         bibliometer_path (path): The full path of the working folder.
         corpus_year_folder (str): The name of the folder of the corpus.
-
+        verbose (bool): Optional status of prints (default = False).
     Returns:
-        (str): The message giving the folder creation status.
-
+        (str): End message recalling the folder created.
     """
     # Setting useful alias
     archi_alias = pg.ARCHI_YEAR
@@ -388,32 +481,99 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
 
 
 def save_parsing_dict(parsing_dict, parsing_path,
-                      item_filename_dict, save_extent):
+                      item_filename_dict, save_extent,
+                      dedup_infos=None):
+    """Saves the dataframes passed through the dict of parsing results 
+    as files of a specifyed type.
+
+    It may manage the final saving of the deduplication results.
+
+    Args:
+        parsing_dict (dict): Parsing results keyyed by parsing items \
+        given by 'PARSING_ITEMS_LIST' global imported from the package \
+        imported as bp and valued by the dataframes of parsing results.
+        parsing_path (path): Full path to the folder for saving \
+        the parsing results.
+        item_filename_dict (dict): Dict keyyed by the parsing items \
+        and valued by the file names for saving the parsing results.
+        save_extent (str): File type given by file extension without \
+        the dot seprator (ex: "xlsx" for Excel file type).
+        dedup_infos (tup): Optional tuple for final saving of deduplication results \
+        = (Full path to working folder (path), \
+        Data combination type from corpuses databases (str), \
+        4 digits year of the corpus (str)) (default = None).
     """
-    """
+
+    # Internal functions
+    def _set_item_path(item, parsing_path):
+        item_file = item_filename_dict[item] + "." + save_extent
+        item_path = parsing_path / Path(item_file)
+        return item_path
+
+    # Setting parameters for the specific case of deduplication results
+    if dedup_infos:
+        bibliometer_path, datatype, corpus_year = dedup_infos
+
+        # Setting aliases for final saving deduplication results
+        results_root_alias       = pg.ARCHI_RESULTS["root"]
+        results_folder_alias     = pg.ARCHI_RESULTS[datatype]
+        results_sub_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+
+        # Setting path for final saving deduplication results
+        results_root_path   = bibliometer_path / Path(results_root_alias)
+        results_folder_path = results_root_path / Path(results_folder_alias)
+        year_target_folder_path    = results_folder_path / Path(corpus_year)
+        target_parsing_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
+
+        # Checking availability of required final results folders
+        if not os.path.exists(year_target_folder_path):
+            os.makedirs(year_target_folder_path)
+        if not os.path.exists(target_parsing_folder_path):
+            os.makedirs(target_parsing_folder_path)
 
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
         if item in parsing_dict.keys():
             item_df = parsing_dict[item]
+            item_working_path = _set_item_path(item, parsing_path)
             if save_extent == "xlsx":
-                item_xlsx_file = item_filename_dict[item] + ".xlsx"
-                item_xlsx_path = parsing_path / Path(item_xlsx_file)
-                item_df.to_excel(item_xlsx_path, index = False)
+                item_df.to_excel(item_working_path, index=False)
+                if dedup_infos:
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
+                    item_df.to_excel(item_final_path, index=False)
             elif save_extent == "dat":
-                item_tsv_file = item_filename_dict[item] + ".dat"
-                item_tsv_path = parsing_path / Path(item_tsv_file)
-                item_df.to_csv(item_tsv_path, index = False, sep = '\t')
+                item_df.to_csv(item_working_path, index=False, sep='\t')
+                if dedup_infos:
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
+                    item_df.to_csv(item_final_path, index=False, sep='\t')
             else:
-                item_tsv_file = item_filename_dict[item] + ".csv"
-                item_tsv_path = parsing_path / Path(item_tsv_file)
-                item_df.to_csv(item_tsv_path, index = False, sep = ',')
+                item_df.to_csv(item_working_path, index=False, sep=',')
+                if dedup_infos:
+                    item_final_path = _set_item_path(item, target_parsing_folder_path)
+                    item_df.to_csv(item_final_path, index=False, sep=',')
         else:
             pass
 
+    if dedup_infos:
+        end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
+                       f"\n  '{target_parsing_folder_path}'")
+        print(end_message)
 
 def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
-    """
+    """Reads the dataframes of the parsing results from files of a specifyed type.
+
+    Args:
+        parsing_path (path): Full path to the folder where the the parsing \
+        results are located.
+        item_filename_dict (dict): Dict keyyed by the parsing items and valued \
+        by the file names of the parsing results.
+        save_extent (str): File type given by file extension without the dot \
+        seprator (ex: "xlsx" for Excel file type).
+    Returns:
+        (dict): Parsing results keyyed by parsing items \
+        given by 'PARSING_ITEMS_LIST' global imported from \
+        the package imported as bp and valued by the dataframes \
+        of parsing results.
     """
 
     parsing_dict = {}
@@ -445,17 +605,13 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
 
 
 def save_fails_dict(fails_dict, parsing_path):
-    """The function `save_fails_dict` saves parsing fails in a json file
-    named by the global PARSING_PERF.
+    """The function `save_fails_dict` saves parsing fails in a json file 
+    named by the global PARSING_PERF imported from the module imported as pg.
 
     Args:
         fails_dict (dict): The dict of parsing fails.
-        parsing_path (path): The full path of the parsing results folder
-        where the json file is being saved.
-
-    Returns:
-        None
-
+        parsing_path (path): The full path to the parsing results folder \
+        where the json file is saved.
     """
     parsing_perf_path = parsing_path / Path(pg.PARSING_PERF)
     with open(parsing_perf_path, 'w', encoding = "utf-8") as write_json:

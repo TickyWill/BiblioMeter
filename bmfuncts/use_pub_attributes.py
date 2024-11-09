@@ -1,5 +1,7 @@
 """Module of functions for using publications attributes
-such as homonyms and OTPs."""
+such as homonyms and OTPs.
+
+"""
 
 __all__ = ['save_homonyms',
            'save_otps',
@@ -13,7 +15,6 @@ __all__ = ['save_homonyms',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows \
@@ -26,6 +27,7 @@ from openpyxl.styles import PatternFill as openpyxl_PatternFill
 from openpyxl.styles import Alignment as openpyxl_Alignment
 from openpyxl.styles import Border as openpyxl_Border
 from openpyxl.styles import Side as openpyxl_Side
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as eg
@@ -36,12 +38,16 @@ from bmfuncts.rename_cols import set_col_attr
 from bmfuncts.useful_functs import mise_en_page
 
 
-def save_shaped_homonyms_file(df_homonyms, out_path):
-    """
+def save_shaped_homonyms_file(homonyms_df, out_path):
+    """Saves as openpyxl workbook the dataframe for resolving 
+    homonymies by the user.
 
+    Args:
+        homonyms_df (dtaframe): Data for resolving homonymies.
+        out_path (path): Full path for saving the created workbook.
     """
     # Setting useful column names
-    col_homonyms = list(df_homonyms.columns)
+    col_homonyms = list(homonyms_df.columns)
 
     # Useful aliases of renamed columns names
     name_alias      = col_homonyms[12]
@@ -54,7 +60,7 @@ def save_shaped_homonyms_file(df_homonyms, out_path):
     yellow_ft = openpyxl_PatternFill(fgColor = pg.ROW_COLORS['highlight'],
                                      fill_type = "solid")
 
-    for indice, r in enumerate(openpyxl_dataframe_to_rows(df_homonyms,
+    for indice, r in enumerate(openpyxl_dataframe_to_rows(homonyms_df,
                                                           index = False, header = True)):
         ws.append(r)
         last_row = ws[ws.max_row]
@@ -68,12 +74,31 @@ def save_shaped_homonyms_file(df_homonyms, out_path):
 
 
 def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
-    """
+    """Saves the history of the resolved homonyms by the user.
+
+    First, builds the dataframe to save with the following columns:
+
+        - Hash-ID of the publication for which homonyms have been solved.
+        - The personal number of the kept author among the homonyms.
+
+    Finally, saves the dataframe as Excel file.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (str): End message.
     """
 
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
+    pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
+    homonyms_col_alias = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -83,11 +108,6 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
     hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"]
     homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
-
-    # Setting useful column name aliases
-    pub_id_alias        = submit_col_rename_dic[bp.COL_NAMES['pub_id']]
-    homonyms_col_alias  = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)
@@ -104,35 +124,31 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     # Getting the dataframe of homonyms to solve
     pub_df = pd.read_excel(homonyms_file_path)
 
-    # Building pub_id and kept matriculates df for solved homonyms
-    temp_df = pub_df[pub_df[homonyms_col_alias] == pg.HOMONYM_FLAG]
-    not_solved_homonyms_pub_id = [pub_id for idx,pub_id \
-                                  in enumerate(temp_df[pub_id_alias])
-                                  if len(temp_df[temp_df[pub_id_alias] == \
-                                                 pub_id][pub_id_alias]) > 1]
-    homonyms_df = temp_df.copy().reset_index()
-    for idx, pub_id in enumerate(temp_df[pub_id_alias]):
-        if pub_id in not_solved_homonyms_pub_id:
-            homonyms_df = homonyms_df.drop(idx)
-
-    kept_matricules_df = homonyms_df[[pub_id_alias, matricule_col_alias]]
+    # Building dataframe of pub_id and kept personal numbers for solved homonyms
+    temp_df = pub_df[pub_df[homonyms_col_alias]==pg.HOMONYM_FLAG]
+    homonyms_df = pd.DataFrame(columns=temp_df.columns)
+    for _, pub_id_df in temp_df.groupby(pub_id_col_alias):
+        for _, author_df in pub_id_df.groupby(author_idx_col_alias):
+            if len(author_df)==1:
+                homonyms_df = pd.concat([homonyms_df, author_df])
+    kept_matricules_df = homonyms_df[[pub_id_col_alias, matricule_col_alias]]
 
     # Building hash_id and kept matricules df
     homonyms_history_df = pd.merge(hash_id_df,
                                    kept_matricules_df,
                                    how = 'inner',
-                                   on = pub_id_alias)
-    homonyms_history_df.drop(columns = [pub_id_alias], inplace = True)
+                                   on = pub_id_col_alias)
+    homonyms_history_df.drop(columns = [pub_id_col_alias], inplace = True)
     homonyms_history_df = homonyms_history_df.astype(str)
 
     # Concatenating with the dataframe of already saved solved homonyms
     if kept_homonyms_file_path.is_file():
         existing_homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
-        homonyms_history_df = pd.concat([existing_homonyms_history_df,homonyms_history_df])
+        homonyms_history_df = pd.concat([existing_homonyms_history_df, homonyms_history_df])
     homonyms_history_df = homonyms_history_df.astype('str')
     homonyms_history_df.drop_duplicates(inplace = True)
 
-    # Saving the dataframe concatenated
+    # Saving the concatenated dataframe
     homonyms_history_df.to_excel(kept_homonyms_file_path, index = False)
 
     message = "History of homonyms resolution saved"
@@ -141,12 +157,34 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
 
 def set_saved_homonyms(institute, org_tup, bibliometer_path,
                        corpus_year, actual_homonym_status):
-    """
+    """Resolves the homonyms from the history of the resolved homonyms 
+    before submiting the file for resolving remaining homonyms to the user.
+
+    First, builds the dataframe with solved homonyms and homonyms remaining \
+    to be solved.
+
+    Finally, saves the dataframe through the `save_shaped_homonyms_file` \
+    internal function.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        actual_homonym_status (bool): True if homonyms exists.
+    Returns:
+        (tup): Tuple = (End message (str), actualized homonyms \
+        status (bool).
     """
 
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
+    pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
+    homonyms_col_alias = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    hash_id_col_alias   = pg.COL_HASH['hash_id']
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias      = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -156,12 +194,6 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
     hash_id_file_alias       = pg.ARCHI_YEAR["hash_id file name"]
     homonyms_file_alias      = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
-
-    # Setting useful column name aliases
-    hash_id_col_alias   = pg.COL_HASH['hash_id']
-    pub_id_alias        = submit_col_rename_dic[bp.COL_NAMES['pub_id']]
-    homonyms_col_alias  = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful paths
     corpus_year_path        = bibliometer_path / Path(corpus_year)
@@ -178,40 +210,52 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
         homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
 
         # Getting the hash_id dataframe
-        hash_id_df  = pd.read_excel(hash_id_file_path)
+        hash_id_df = pd.read_excel(hash_id_file_path)
 
-        # Building df of pub_id and matricule to keep related to hash_id
-        pub_id_row_to_keep_df = pd.merge(hash_id_df,
-                                         homonyms_history_df,
-                                         how = 'inner',
-                                         on  = hash_id_col_alias,)
-        pub_id_row_to_keep_df = pub_id_row_to_keep_df.astype(str)
-        pub_id_row_to_keep_df.drop(columns = [hash_id_col_alias], inplace = True)
+        # Building dataframe of pub_id and personal number to keep related to hash_id
+        mats_to_keep_df = pd.merge(hash_id_df,
+                                   homonyms_history_df,
+                                   how='inner',
+                                   on=hash_id_col_alias,)
+        mats_to_keep_df = mats_to_keep_df.astype(str)
+        mats_to_keep_df.drop(columns=[hash_id_col_alias], inplace=True)
 
         # Getting the resolved homonyms dataframe to be updated
         homonyms_df = pd.read_excel(homonyms_file_path)
+        homonyms_df[matricule_col_alias] = homonyms_df[matricule_col_alias].astype(str)
 
-        # Droping row of unkept matricules in homonyms_df
-        homonyms_df_new = homonyms_df.copy()
-        for _,row in pub_id_row_to_keep_df.iterrows():
-            pub_id_to_check   = str(row[pub_id_alias])
-            matricule_to_keep = str(row[matricule_col_alias])
-            for idx in range(len(homonyms_df)):
-                pub_id         = str(homonyms_df.loc[idx,pub_id_alias])
-                matricule      = str(homonyms_df.loc[idx,matricule_col_alias])
-                homonym_status = str(homonyms_df.loc[idx,homonyms_col_alias])
-                if pub_id == pub_id_to_check and homonym_status == pg.HOMONYM_FLAG:
-                    if matricule == matricule_to_keep:
-                        homonyms_df_new.loc[idx,homonyms_col_alias] = None
+        # Building the updated homonyms dataframe
+        homonyms_df_new = pd.DataFrame(columns=homonyms_df.columns)
+
+        for pub_id, pub_id_homonyms_df in homonyms_df.groupby(pub_id_col_alias):
+            for _, author_df in pub_id_homonyms_df.groupby(author_idx_col_alias):
+                if len(author_df)==1:
+                    # Keeping row of authors without homonyms
+                    homonyms_df_new = pd.concat([homonyms_df_new, author_df])
+                else:
+                    pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col_alias]\
+                                                             ==pub_id]
+                    pub_id_mats_to_keep_list = list(pub_id_mats_to_keep_df[matricule_col_alias])
+                    mats_to_check_list = list(author_df[matricule_col_alias])
+                    mats_to_keep_list = [x for x in mats_to_check_list\
+                                         if x in pub_id_mats_to_keep_list]
+
+                    if mats_to_keep_list:
+                        # Keeping only row of matricule to keep when homonymies have been resolved
+                        mat_to_keep = mats_to_keep_list[0]
+                        new_author_df = author_df[author_df[matricule_col_alias]\
+                                                  ==mat_to_keep].copy()
+                        new_author_df[homonyms_col_alias] = "_"
+                        homonyms_df_new = pd.concat([homonyms_df_new, new_author_df])
                     else:
-                        homonyms_df_new = homonyms_df_new.drop(idx)
+                        # Keeping all rows when homonymies have not been resolved
+                        homonyms_df_new = pd.concat([homonyms_df_new, author_df])
 
         # Setting actual homonyms status
         actual_homonym_status = False
         if pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list():
             actual_homonym_status = True
-
-        # Saving updated homonyms_df
+       # Saving updated homonyms_df
         save_shaped_homonyms_file(homonyms_df_new, homonyms_file_path)
         message = "Already resolved homonyms used"
     else:
@@ -220,7 +264,33 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
 
 
 def save_otps(institute, org_tup, bibliometer_path, corpus_year):
-    """
+    """Saves the history of the attributed OTPs by the user.
+
+    First, builds the dataframe to save with 2 sheets:
+
+    - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'hash_OTP' \
+    with the following columns:
+
+        - Hash-ID of the publication for which OTPs have been attributed. 
+        - The OTPs value attributed.
+
+    - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'doi_OTP' \
+    with the following columns:
+
+        - Full name (last name + first name initials) of the first author \
+        of the publication for which OTPs have been attributed.
+        - DOI of the publication for which OTPs have been attributed.
+        - The OTPs value attributed.
+
+    Finally, saves the dataframe as Excel file.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (str): End message.
     """
 
     #  Setting useful col names
@@ -312,13 +382,30 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     return message
 
 def _re_save_dpt_otp_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dpt_df,
-                          dpt_otp_list, excel_dpt_path, otp_list_col_alias, columns_list):
+                          dpt_otp_list, excel_dpt_path, otp_list_col, columns_list):
 
-    """Rebuilds and saves the Excel file under 'excel_dpt_path' for the department
-    labelled 'dpt'.
-    A data validation list is added to the cells 'otp_cell_alias' 
-    only when the OTP in not already set.
-    The Excel frame is configured in the same way as in the `mise_en_page` function.
+    """Rebuilds and saves the openpyxl workbook for the department labelled 'dpt'.
+
+    A data validation list is added to the cells 'otp_cell_alias' only when 
+    the OTP in not already attributed.
+
+    The openpyxl workbook is created through the `mise_en_page` function imported from 
+    the `bmfuncts.useful_functs` module and is re-configured in the same way as in this 
+    function after being modified and before being saved.
+
+    The columns attributes for formatting the workbook are defined through the `set_col_attr` 
+    function imported from `bmfuncts.rename_cols` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        dpt (str): Department of the Institute.
+        otp_set_dpt_df (dataframe): Data of the already attributed OTPs for the department.
+        otp_to_set_dpt_df (dataframe): Data of the OTPs still to be attributed for the department.
+        dpt_otp_list (list): String containing the OTPs of the department seperated by semicolons.
+        excel_dpt_path (path): Full path to where the workbook is saved. 
+        otp_list_col (str): Name of the column that contains the OTPs list.
+        columns_list (list): Columns to be formatted.
     """
 
     # Setting useful column sizes and cell colors
@@ -338,9 +425,9 @@ def _re_save_dpt_otp_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
     df_dpt_new = otp_to_set_dpt_df.copy()
 
     # Adding a column containing OTPs of 'dpt' department
-    df_dpt_new[otp_list_col_alias] = validation_list
+    df_dpt_new[otp_list_col] = validation_list
 
-    # Formatting the EXCEL file
+    # Creating and formatting the openpyxl workbook
     wb, ws = mise_en_page(institute, org_tup, df_dpt_new)
 
     # Setting num of first col and first row in EXCEL files
@@ -348,7 +435,7 @@ def _re_save_dpt_otp_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
     excel_first_row_num = 2
 
     # Getting the column letter for the OTPs column
-    otp_alias_df_index = list(df_dpt_new.columns).index(otp_list_col_alias)
+    otp_alias_df_index = list(df_dpt_new.columns).index(otp_list_col)
     otp_alias_excel_index = otp_alias_df_index + excel_first_col_num
     otp_alias_column_letter = openpyxl_get_column_letter(otp_alias_excel_index)
 
@@ -397,9 +484,24 @@ def _re_save_dpt_otp_file(institute, org_tup, dpt, otp_set_dpt_df, otp_to_set_dp
 
 
 def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
-    """
-    The OPTs of the each department are added in a new column
-    named 'otp_col_alias' defined after the global "COL_NAMES_BONUS['list OTP']".
+    """Attributes the OTPs from the history of the attributed OTPs 
+    before submiting to the user the file for attributing the not yet 
+    attributed OTPs.
+
+    Loops on department to:
+
+        1. Build the dataframe with already attributed OTPs \
+    and OTPs remaining to be attributed. 
+        2. Save the file to be submitted to the user through the \
+    `_re_save_dpt_otp_file` internal function.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (str): End message giving the status of the OTPs attribution.
     """
 
     # Setting institute parameters
@@ -466,7 +568,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
         # Setting departments list
         dpt_list = list(dpt_attributs_dict.keys())
 
-        # Setting the known OTPs
+        # Setting the already attributed OTPs for each department
         for dpt in sorted(dpt_list):
             # Setting the full path of the EXCEl file for the 'dpt' department
             otp_file_name_dpt = f'{otp_file_base_alias}_{dpt}.xlsx'
