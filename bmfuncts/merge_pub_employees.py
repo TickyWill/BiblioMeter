@@ -71,9 +71,9 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     warnings.simplefilter(action = 'ignore', category = UserWarning)
     ortho_df = pd.read_excel(ortho_path, usecols = ortho_col_list)
     ortho_df[ortho_lastname_init] = ortho_df[ortho_lastname_init].\
-        apply(standardize_txt)  # pylint: disable=unnecessary-lambda
+        apply(standardize_txt)
     ortho_df[ortho_lastname_new] = ortho_df[ortho_lastname_new].\
-        apply(standardize_txt)  # pylint: disable=unnecessary-lambda
+        apply(standardize_txt)
 
     new_df = init_df.copy()
     new_df.reset_index(drop=True, inplace=True)
@@ -140,9 +140,9 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
     compl_df = pd.read_excel(complements_path, sheet_name = compl_to_replace_sheet,
                              usecols = compl_col_list)
     compl_df[compl_lastname_init] = compl_df[compl_lastname_init].\
-        apply(standardize_txt)  # pylint: disable=unnecessary-lambda
+        apply(standardize_txt)
     compl_df[compl_lastname_new] = compl_df[compl_lastname_new].\
-        apply(standardize_txt)  # pylint: disable=unnecessary-lambda
+        apply(standardize_txt)
     year_compl_df = compl_df[compl_df[compl_year_pub] == int(year)]
     year_compl_df.reset_index(inplace = True)
 
