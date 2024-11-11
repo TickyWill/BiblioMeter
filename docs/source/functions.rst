@@ -53,7 +53,7 @@ bmfuncts.pub\_analysis
    :show-inheritance:
 
 bmfuncts.authors\_analysis
-----------------------
+--------------------------
 
 .. automodule:: bmfuncts.authors_analysis
    :members:
