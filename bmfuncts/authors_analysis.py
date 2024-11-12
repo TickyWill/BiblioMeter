@@ -289,14 +289,12 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         pub_nb_per_auth_df = pd.concat([pub_nb_per_auth_df, empl_df])
     pub_nb_per_auth_df.drop_duplicates(inplace=True)
 
-#    print("pub_nb_per_auth_df change")
-#    pub_nb_per_auth_df[employee_col] = pub_nb_per_auth_df[employee_col].apply(lambda x: name_capwords(x))
     return pub_nb_per_auth_df
 
 
 def authors_analysis(institute, org_tup, bibliometer_path, datatype,
                      corpus_year, progress_callback=None, verbose=False):
-    """ Performs the analysis of authors data of the 'corpus_year' corpus.
+    """Performs the analysis of authors data of the 'corpus_year' corpus.
 
     This is done through the following steps:
 
