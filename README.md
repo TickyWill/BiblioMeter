@@ -63,6 +63,7 @@ app.mainloop()
 - 4.0.0 Extension to different institutes
 - 5.0.0 Introduction of progress bars, pylint refactoring of code and Sphynx documentation
 - 5.1.0 Enhanced orphan authors treatment
+- 6.0.0 Enhanced OTPs treatment
 
 # Meta
 	- authors: BiblioAnalysis team
