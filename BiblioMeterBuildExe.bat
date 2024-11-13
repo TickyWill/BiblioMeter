@@ -1,5 +1,5 @@
 :: Creation: F. Bertin 2024-05-26
-:: Refactoring: A. Chabli 2024-10-31
+:: Refactoring: A. Chabli 2024-11-13
 
 @echo off 
 Title BiblioMeter.exe making
@@ -23,8 +23,9 @@ echo:
 set "TAB=   "
 
 :: Setting useful directories
-set "working_dir=%TEMP%\BIBLIO_exe"
-set "save_dir=C:\Program"
+set "working_dir=%TEMP%\BiblioMeter_exe"
+:: set "save_dir=C:\Program"
+set "save_dir=%USERPROFILE%\BiblioMeter_exe"
 
 :: Setting the name of the log file to debbug the executable making
 set "LOG=%working_dir%\log.txt"
@@ -165,7 +166,7 @@ for /f "skip=1" %%x in ('wmic os get localdatetime') do if not defined MyDate se
 for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
 set fmonth=00%Month%
 set fday=00%Day%
-set dir_name="%Year%-%fmonth:~-2%-%fday:~-2% BiblioMeter %exe_version%"
+set dir_name="%Year%-%fmonth:~-2%-%fday:~-2% BiblioMeter"
 rename %working_dir%\dist %dir_name%
 if not exist %working_dir%\dist (
     echo The executable directory successfully renamed to %dir_name% >> %LOG%
@@ -187,14 +188,14 @@ echo %working_dir% cleaned successfully >> %LOG%
 echo %TAB%%working_dir% cleaned successfully 
 echo:
 
-:: Renaming the built exe
+:: Renaming the built exe to BiblioMeter-#.#.#
 echo Renaming the built exe
-set "new_file_name=%dir_name%.exe"
-ren %dir_name%\app.exe %new_file_name%
-if exist %dir_name%\%new_file_name% (
-    echo The executable is renamed to %new_file_name% >> %LOG%
+set "exe_file_name=BiblioMeter-%exe_version%.exe"
+ren %dir_name%\app.exe %exe_file_name%
+if exist %dir_name%\%exe_file_name% (
+    echo The executable is renamed to %exe_file_name% >> %LOG%
     echo The executable is located in the directory: %working_dir%\%dir_name% >> %LOG%
-    echo %TAB%The executable is renamed to %new_file_name%    
+    echo %TAB%The executable is renamed to %exe_file_name%    
     echo %TAB%The executable is located in the directory:
     echo %TAB%%TAB%%working_dir%\%dir_name%
 ) else (
@@ -237,12 +238,12 @@ if exist %output_dir% (
     goto RETRY)
 :COPY_FILE
 echo %TAB%Please wait while copying the built exe...
-set "input_file=%working_dir%\%dir_name%\%new_file_name%"
-set "output_file=%output_dir%\%new_file_name%"
+set "input_file=%working_dir%\%dir_name%\%exe_file_name%"
+set "output_file=%output_dir%\%exe_file_name%"
 copy %input_file% %output_file%
 if %ERRORLEVEL% == 0 (
-    echo %new_file_name% file successfully saved in %output_dir% directory >> %LOG%
-    echo %TAB%%new_file_name% file successfully saved in %output_dir% directory
+    echo %exe_file_name% file successfully saved in %output_dir% directory >> %LOG%
+    echo %TAB%%exe_file_name% file successfully saved in %output_dir% directory
     goto FIN
 ) else (
     echo %TAB%Errors encountered during copy of exe file.  Copy canceled with status: %errorlevel%
