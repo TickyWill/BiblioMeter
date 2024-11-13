@@ -88,7 +88,8 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_VERSION',
            'TEXT_YEAR_PC',
            'TEXT_YEAR_PI',
-           'GUI_BUTTONS'
+           'GUI_BUTTONS',
+           'VERSION',
            ]
 
 # Standard library imports
@@ -102,7 +103,7 @@ from screeninfo import get_monitors
 # *****************************************
 
 # Setting BiblioMeter version value (internal)
-VERSION = '5.1.0'
+VERSION = '6.0.0'
 
 # Setting the number of corpuses to analyse
 CORPUSES_NUMBER = 6
@@ -182,7 +183,7 @@ FONT_NAME = "Helvetica"
 # **** REFERENCE COORDINATES FOR PAGES ****
 
 # Number of characters reference for editing the entered files-folder path
-REF_ENTRY_NB_CHAR = 100
+REF_ENTRY_NB_CHAR = 110
 
 # Font size references for page label and button
 REF_SUB_TITLE_FONT_SIZE = 15

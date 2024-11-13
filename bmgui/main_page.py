@@ -232,7 +232,7 @@ class AppMain(tk.Tk):
 
             # Managing working folder (bmf stands for "BiblioMeter_Files")
             institute_select = args[0]
-            inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select]
+            inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select] + "-" + gg.VERSION
             _set_bmf_widget_param(institute_select, inst_default_bmf, datatype_select)
 
             # Managing corpus list
@@ -291,13 +291,11 @@ class AppMain(tk.Tk):
 
         # Setting class attributes and methods
         _ = get_monitors() # Mandatory
-        #self.lift()
         self.attributes("-topmost", True)
         self.after_idle(self.attributes,'-topmost', False)
         icon_path = Path(__file__).parent.parent / Path('bmfuncts') / Path(pg.CONFIG_FOLDER)
         icon_path = icon_path / Path('BM-logo.ico')
         self.iconbitmap(icon_path)
-        #self.REP = list()
 
         # Initializing AppMain attributes set after working folder definition
         AppMain.years_list          = []
