@@ -11,14 +11,14 @@ import re
 from pathlib import Path
 
 # 3rd party imports
-import pandas as pd
-from openpyxl import Workbook
 import BiblioParsing as bp
+import pandas as pd
+from openpyxl import Workbook as openpyxl_Workbook
 
 # local imports
 import bmfuncts.pub_globals as pg
+from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.rename_cols import set_final_col_names
-from bmfuncts.useful_functs import mise_en_page
 
 def journal_capwords(text):
     """Capitalizes words in journal names except those given 
@@ -45,35 +45,6 @@ def _capwords_journal_col(journal_col):
     return lambda row: journal_capwords(row[journal_col])
 
 
-def _formatting_wb_sheet(institute, org_tup, if_sheet_name, df,
-                         wb, first, if_database):
-    """Formats impact-factors (IFs) sheet in the 'wb' Openpyxl workbook 
-    as first sheet of the workbook if first is True.
-
-    This done through the `mise_en_page` function 
-    imported from the `bmfuncts.useful_functs` module.
-
-    Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        if_sheet_name (str): 4-digits IFs sheet-name.
-        df (dataframe): IFs database of a  year.
-        wb (Openpyxl workbook): Workbook to be updated with the 'if_sheet_name' sheet.
-        first (bool): True if the sheet to add is the first of the workbook.
-        if_database (bool) : True if impact-factors database is concerned. 
-    Returns:
-        (Openpyxl workbook): The updated workbook with the 'if_sheet_name' sheet.
-    """
-    if first:
-        wb, ws = mise_en_page(institute, org_tup, df, wb, if_database)
-        ws.title = if_sheet_name
-    else:
-        wb.create_sheet(if_sheet_name)
-        wb.active = wb[if_sheet_name]
-        wb, _ = mise_en_page(institute, org_tup, df, wb, if_database)
-    return wb
-
-
 def _get_if(if_updated_file_path, useful_col_list,
             journal_col, year_if_col_alias):
     """Gets the impact-factors (IFs) dataframe from the file 
@@ -96,13 +67,13 @@ def _get_if(if_updated_file_path, useful_col_list,
     if year_if_col_alias not in if_updated_df.columns:
         for col in if_updated_df.columns:
             if re.findall(most_recent_year_if_col_base_alias, col):
-                if_updated_df.rename(columns = {col: year_if_col_alias}, inplace = True)
+                if_updated_df.rename(columns={col: year_if_col_alias}, inplace=True)
 
     # Selecting useful columns
     if_updated_df = if_updated_df[useful_col_list]
     if not if_updated_df.empty:
         if_updated_df[journal_col] = if_updated_df.\
-            apply(_capwords_journal_col(journal_col), axis = 1)
+            apply(_capwords_journal_col(journal_col), axis=1)
 
     return if_updated_df
 
@@ -125,8 +96,8 @@ def _append_df(df1, df2, col_alias):
     else:
         if not df2.empty:
             concat_df = pd.concat([df1, df2])
-    concat_df = concat_df.drop_duplicates(subset = col_alias,
-                                          keep = 'last')
+    concat_df = concat_df.drop_duplicates(subset=col_alias,
+                                          keep='last')
     return concat_df
 
 
@@ -206,7 +177,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
                                              journal_col_alias)
 
     # Sorting 'updated_year_if_db_df' by journal column
-    fully_updated_year_if_db_df.sort_values(by = [journal_col_alias], inplace = True)
+    fully_updated_year_if_db_df.sort_values(by=[journal_col_alias], inplace=True)
 
     # Setting useful columns list for the year files
     # with IFs of most recent year
@@ -232,9 +203,9 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     corpus_year_most_recent_year_if_df = _append_df(missing_if_most_recent_year_if_df,
                                                     missing_issn_most_recent_year_if_df,
                                                     journal_col_alias)
-    corpus_year_most_recent_year_if_df.rename(columns = {most_recent_year_if_col_alias:
+    corpus_year_most_recent_year_if_df.rename(columns={most_recent_year_if_col_alias:
                                                          new_most_recent_year_if_col_alias,},
-                                              inplace = True)
+                                              inplace=True)
 
     return fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df
 
@@ -256,8 +227,9 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
         through the `_update_year_if_database` internal function, with corpus year set to IFs-year.
         3. Appends the partial dataframe of most-recent-year IFs to the dataframe to add \
         for building the IFs database of the most-recent year.
-        4. Formats IFs sheet in the 'wb' Openpyxl workbookthrough the `_formatting_wb_sheet` \
-        internal function with sheet name set to IFs-year given by 'if_db_year'.        
+        4. Formats IFs sheet in the 'wb' Openpyxl workbook with sheet name set to IFs-year \
+        given by 'if_db_year' through the `formatting_wb_sheet` function imported from \
+        `bmfuncts.format_files` module.        
 
     Args:
         institute (str): Institute name.
@@ -279,21 +251,21 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
     """
 
     # Setting parameters from args
-    wb, first, if_database = save_params_tup
+    wb, first = save_params_tup
 
     # Setting useful aliases
     unknown_alias = bp.UNKNOWN
 
     # Building fully updated IFs database for years
     # before the most recent year available for IFs
-    most_recent_year_if_df_to_add = pd.DataFrame(columns = if_db_df[most_recent_year].\
+    most_recent_year_if_df_to_add = pd.DataFrame(columns=if_db_df[most_recent_year].\
                                                  columns)
     previous_years_list = if_db_years_list[:-1]
     for if_db_year in previous_years_list:
         year_if_db_df = if_db_df[if_db_year]
-        year_if_db_df.fillna(unknown_alias, inplace = True)
+        year_if_db_df.fillna(unknown_alias, inplace=True)
         year_if_db_df[journal_col] = year_if_db_df.\
-            apply(_capwords_journal_col(journal_col), axis = 1)
+            apply(_capwords_journal_col(journal_col), axis =1)
         corpus_year = if_db_year
         dfs_tup = _update_year_if_database(institute, org_tup, bibliometer_path,
                                            corpus_year, year_if_db_df,
@@ -304,9 +276,9 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
                                                    journal_col)
         fully_updated_year_if_db_df = dfs_tup[0]
         if_sheet_name = if_db_year
-        wb = _formatting_wb_sheet(institute, org_tup,
-                                  if_sheet_name, fully_updated_year_if_db_df,
-                                  wb, first, if_database)
+        if_db_df_title = pg.DF_TITLES_LIST[3]
+        wb = format_wb_sheet(if_sheet_name, fully_updated_year_if_db_df,
+                             if_db_df_title, wb, first)
         first = False
     return wb, first, most_recent_year_if_df_to_add
 
@@ -331,9 +303,10 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
 
     3. Appends the resulting dataframe of the loop to the initial dataframe of the IFs \
     database of the most-recent year.
-    4. Formats IFs-most-recent-year sheet in the 'wb' Openpyxl workbook through \
-    the `_formatting_wb_sheet` internal function with sheet name set to the first \
-    corpus-year in the 'off_if_db_years_list' years list given by 'off_if_db_years_list[0]'.
+    4. Formats IFs-most-recent-year sheet in the 'wb' Openpyxl workbook with sheet name \
+    set to the first corpus-year in the 'off_if_db_years_list' years list given by \
+    'off_if_db_years_list[0]' through the `formatting_wb_sheet` function imported from \
+    `bmfuncts.format_files` module.
 
     Args:
         institute (str): Institute name.
@@ -352,16 +325,16 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
     """
 
     # Setting parameters from args
-    wb, first, if_database = save_params_tup
+    wb, first = save_params_tup
 
     # Setting useful aliases
     unknown_alias = bp.UNKNOWN
 
     # Initializing 'most_recent_year_if_db_df' dataframe
     most_recent_year_if_db_df = if_db_df[most_recent_year]
-    most_recent_year_if_db_df.fillna(unknown_alias, inplace = True)
+    most_recent_year_if_db_df.fillna(unknown_alias, inplace=True)
     most_recent_year_if_db_df[journal_col] = most_recent_year_if_db_df.\
-        apply(_capwords_journal_col(journal_col), axis = 1)
+        apply(_capwords_journal_col(journal_col), axis=1)
 
     # Building fully updated Ifs database for years beginning
     # from the most recent year available for IFs
@@ -380,9 +353,9 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
                                            most_recent_year_if_df_to_add,
                                            journal_col)
     if_sheet_name = off_if_db_years_list[0]
-    wb = _formatting_wb_sheet(institute, org_tup, if_sheet_name,
-                              most_recent_year_if_db_df,
-                              wb, first, if_database)
+    if_db_df_title = pg.DF_TITLES_LIST[3]
+    wb = format_wb_sheet(if_sheet_name, most_recent_year_if_db_df,
+                         if_db_df_title, wb, first)
     return wb
 
 
@@ -420,20 +393,20 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     journal_col_alias = final_col_dic['journal']
 
     # Setting useful aliases
-    if_root_folder_alias             = pg.ARCHI_IF["root"]
-    missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
+    if_root_folder_alias = pg.ARCHI_IF["root"]
+    missing_if_filename_base_alias = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    inst_all_if_filename_alias       = institute + pg.ARCHI_IF["institute_if_all_years"]
-    pub_list_folder_alias            = pg.ARCHI_YEAR["pub list folder"]
+    inst_all_if_filename_alias = institute + pg.ARCHI_IF["institute_if_all_years"]
+    pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
 
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
-    inst_all_if_path    = if_root_folder_path / Path(inst_all_if_filename_alias)
+    inst_all_if_path = if_root_folder_path / Path(inst_all_if_filename_alias)
     if progress_callback:
         progress_callback(20)
 
     # Getting the IFs database content and its IFSs available years list
-    if_db_df = pd.read_excel(inst_all_if_path, sheet_name = None)
+    if_db_df = pd.read_excel(inst_all_if_path, sheet_name=None)
     full_if_db_years_list = list(if_db_df.keys())
     if_db_years_list = sorted(list(set(full_if_db_years_list).intersection(set(corpi_years_list))))
 
@@ -444,9 +417,18 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
         progress_callback(30)
 
     # Initialize parameters for saving results as multisheet workbook
-    if_database = True
     first = True
-    wb = Workbook()
+    wb = openpyxl_Workbook()
+    
+    # Setting the IFs-years sheets not to be updated (not part of corpus years)
+    kept_if_db_years_list = sorted(list(set(full_if_db_years_list) - set(if_db_years_list)))
+    if kept_if_db_years_list:
+        for if_year in kept_if_db_years_list:
+            if_sheet_name = if_year
+            if_db_df_title = pg.DF_TITLES_LIST[3]
+            wb = format_wb_sheet(if_sheet_name, if_db_df[if_year],
+                                 if_db_df_title, wb, first)
+            first = False
 
     # Setting args tuples
     files_tup = (pub_list_folder_alias, missing_if_filename_base_alias,
@@ -454,7 +436,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
 
     # Building fully updated IFs database for years
     # before the most recent year available for IFs
-    save_params_tup = (wb, first, if_database)
+    save_params_tup = (wb, first)
     return_tup = _build_previous_years_if_df(institute, org_tup, bibliometer_path,
                                              if_db_df, if_db_years_list,
                                              most_recent_year, journal_col_alias,
@@ -465,7 +447,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
 
     # Building fully updated Ifs database for years beginning
     # from the most recent year available for IFs
-    save_params_tup = (wb, first, if_database)
+    save_params_tup = (wb, first)
     wb = _build_recent_year_if_df(institute, org_tup, bibliometer_path,
                                   if_db_df, off_if_db_years_list,
                                   most_recent_year_if_df_to_add,

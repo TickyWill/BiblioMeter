@@ -10,7 +10,6 @@ in terms of:
 """
 
 __all__ = ['add_if',
-           'add_otp',
            'concatenate_pub_lists',
            'built_final_pub_list',
            'get_if_db',
@@ -36,306 +35,16 @@ import BiblioParsing as bp
 import bmfuncts.employees_globals as eg
 import bmfuncts.institute_globals as ig
 import bmfuncts.pub_globals as pg
-from bmfuncts.rename_cols import set_homonym_col_names
-from bmfuncts.rename_cols import set_otp_col_names
+from bmfuncts.format_files import format_page
+from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.rename_cols import set_final_col_names
+from bmfuncts.rename_cols import set_homonym_col_names
+from bmfuncts.rename_cols import set_otp_col_names
 from bmfuncts.rename_cols import set_if_col_names
+from bmfuncts.use_homonyms import solving_homonyms
+from bmfuncts.use_otps import save_otps
 from bmfuncts.save_final_results import save_final_results
-from bmfuncts.useful_functs import mise_en_page
-from bmfuncts.use_pub_attributes import save_otps
-from bmfuncts.use_pub_attributes import save_shaped_homonyms_file
-
-
-def solving_homonyms(institute, org_tup, in_path, out_path):
-    """Creates the file for homonyms solving by the user.
-
-    First, a dataframe is built from specific columns 
-    of the list of publications merged with employees database 
-    given by the file pointed by 'in_path' path. 
-    In this dataframe the homonyms are tagged by 'HOMONYM_FLAG' 
-    global imported from `bmfuncts.pub_globals` module. 
-    Then this dataframe is saved as Excel file pointed 
-    by 'out_path' path through `save_shaped_homonyms_file` 
-    function imported from `bmfuncts.use_pub_attributes` module.
-
-    Args:
-        institute (str): The Intitute name.
-        org_tup (tup): The tuple of the organization structure of the Institute \
-        used here to set column names for homonyms.
-        in_path (path): The full path to the input file of list of publications \
-        merged with employees database.
-        out_path (path): The full path to the output file of homonyms solving \
-        by the user.
-    Returns:
-        (tup): The tuple composed of end message (str) \
-        and homonyms status (bool; True if homonyms are found).
-    """
-
-    # Setting useful column names
-    homonyms_col_dic = set_homonym_col_names(institute, org_tup)
-    homonyms_col_list = list(homonyms_col_dic.values())
-    homonym_col_alias = homonyms_col_dic['homonym']
-
-    # Reading the submit file #
-    df_submit = pd.read_excel(in_path)
-
-    # Getting rid of the columns we don't want #
-    df_homonyms = df_submit[homonyms_col_list].copy()
-
-    # Setting homonyms status
-    homonyms_status = False
-    if pg.HOMONYM_FLAG in df_homonyms[homonym_col_alias].to_list():
-        homonyms_status = True
-
-    # Saving shaped df_homonyms
-    save_shaped_homonyms_file(df_homonyms, out_path)
-
-    end_message = f"File for solving homonymies saved in folder: \n  '{out_path}'"
-    return (end_message, homonyms_status)
-
-
-def _add_authors_name_list(institute, org_tup, in_path, out_path):
-    """Adds two columns to the dataframe got from the Excel file pointed by 'in_path'.
-
-    The columns contain respectively the full name of each author as "NAME, Firstname" 
-    and the institute co-authors list with attributes of each author in a string as follows:
-
-        - "NAME1, Firstame1 (matricule,job type,department affiliation, \
-        service affiliation,laboratoire affiliation);
-        - NAME2, Firstame2 (matricule,job type,department affiliation, \
-        service affiliation,laboratoire affiliation);
-        - ...".
-
-    Args:
-        institute (str): The Intitute name.
-        org_tup (tup): Contains Institute parameters.
-        in_path (path): Fullpath of the excel file of the publications list \
-        with a row per Institute author and their attributes columns.
-        out_path (path): Fullpath of the processed dataframe as an Excel file \
-        saved after going through its treatment.
-    Returns:
-        (str): End message recalling out_path.
-    """
-
-    # Internal functions
-    def _get_dpt_key(dpt_raw):
-        return_key = None
-        for key, values in dpt_label_dict.items():
-            if dpt_raw in values:
-                return_key = key
-        return return_key
-
-
-    # Setting institute parameters
-    dpt_label_dict = org_tup[1]
-
-    # Setting useful column names
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    bm_col_rename_dic = col_rename_tup[2]
-
-    # Setting useful aliases
-    pub_id_alias         = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
-    idx_authors_alias    = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]
-    nom_alias            = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['name']]
-    prenom_alias         = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['first_name']]
-    matricule_alias      = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
-    full_name_alias      = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
-    author_type_alias    = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
-    full_name_list_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste'] + institute]
-    dept_alias           = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
-    serv_alias           = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['serv']]
-    lab_alias            = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['lab']]
-
-    # Reading the excel file
-    df_in = pd.read_excel(in_path)
-
-    # Adding the column 'full_name_alias' that will be used to create the authors fullname list
-    df_in[prenom_alias]    = df_in[prenom_alias].apply(lambda x: x.capitalize())
-    df_in[full_name_alias] = df_in[nom_alias] + ', ' + df_in[prenom_alias]
-
-    df_out = pd.DataFrame()
-    for _, pub_id_df in df_in.groupby(pub_id_alias):
-
-        authors_tup_list = sorted(list(set(zip(pub_id_df[idx_authors_alias],
-                                               pub_id_df[full_name_alias],
-                                               pub_id_df[matricule_alias],
-                                               pub_id_df[author_type_alias],
-                                               pub_id_df[dept_alias],
-                                               pub_id_df[serv_alias],
-                                               pub_id_df[lab_alias]))))
-
-        authors_str_list = [(f'{x[1]} ({x[2]},'
-                             f'{x[3]},{_get_dpt_key(x[4])},{x[5]},{x[6]})')
-                            for x in authors_tup_list]
-        authors_full_str = "; ".join(authors_str_list)
-        pub_id_df[full_name_list_alias] = authors_full_str
-        df_out = pd.concat([df_out, pub_id_df])
-
-    # Saving 'df_out' in an excel file 'out_path'
-    df_out.to_excel(out_path, index = False)
-
-    end_message = f"Column with co-authors list is added to the file: \n  '{out_path}'"
-    return end_message
-
-
-def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
-                       otp_alias, excel_dpt_path, otp_col_list):
-    """Creates the file for setting OTP attribute of publications by the user 
-    for the Institute department labelled 'dpt'.
-
-    A new column named 'otp_alias' is added to the dataframe 'dpt_df'. 
-    A list data validation rules is added to each cells of the column 
-    'otp_alias' based on the list of OTPs of the department given 
-    by 'dpt_otp_list' list. 
-    The dataframe columns are renamed using 'otp_col_list'. 
-    Then the dataframe is saved as a formatted Excel file pointed 
-    by 'excel_dpt_path' path through the `mise_en_page` function 
-    imported from `bmfuncts.useful_functs` module.
-
-    Arg:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        dpt (str): Institute department.
-        dpt_df (dataframe): The publications-list dataframe of the 'dpt' department.
-        dpt_otp_list (list): List of Institute departments (str).
-        otp_alias (str): OTPs column name.
-        excel_dpt_path (path): Full path to the file for setting publication OTP.  
-        otp_col_list (list): Column names for rename of columns of the file created \
-        for setting publications OTP.
-    """
-
-    # Building validation list of OTPs for 'dpt' department
-    validation_list = '"'+','.join(dpt_otp_list) + '"'
-    data_val = openpyxl_DataValidation(type = "list",
-                                       formula1 = validation_list,
-                                       showErrorMessage = False)
-
-    # Adding a column containing OTPs of 'dpt' department
-    dpt_df[otp_alias] = validation_list
-
-    # Renaming the columns
-    dpt_df = dpt_df.reindex(columns = otp_col_list)
-
-    # Formatting the EXCEL file
-    wb, ws = mise_en_page(institute, org_tup, dpt_df)
-    ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt
-
-    # Setting num of first col and first row in EXCEL files
-    excel_first_col_num = 1
-    excel_first_row_num = 2
-
-    # Getting the column letter for the OTPs column
-    otp_alias_df_index = list(dpt_df.columns).index(otp_alias)
-    otp_alias_excel_index = otp_alias_df_index + excel_first_col_num
-    otp_alias_column_letter = openpyxl_get_column_letter(otp_alias_excel_index)
-
-    # Activating the validation data list in all cells of the OTPs column
-    if len(dpt_df):
-        # Adding a validation data list
-        ws.add_data_validation(data_val)
-        for df_index_row in range(len(dpt_df)):
-            otp_cell_alias = otp_alias_column_letter + str(df_index_row + excel_first_row_num)
-            data_val.add(ws[otp_cell_alias])
-
-    wb.save(excel_dpt_path)
-
-
-def add_otp(institute, org_tup, in_path, out_path, out_file_base):
-    """Creates the files for setting OTP attribute of publications by the user 
-    for the Institute departments.
-
-    First, useful columns are added to the dataframe got from the Excel file 
-    where homonyms have been solved by the user and pointed by 'in_path' path 
-    through the `_add_authors_name_list` internal function. 
-    Then, for each department, a sub_dataframe is extracted selecting rows 
-    of publications where at least one author is affiliated to the department. 
-    Each sub-dataframe is saved through the `_save_dpt_otp_file` internal function.
-
-    Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        in_path (path): Full path to the file where homonyms have been solved.
-        out_path (path): Full path to the files for setting OTPs attributes by the user.
-        out_file_base (str): Base for building created-files names.
-    Returns:
-        (str): end message recalling out_path.
-    """
-
-    # Internal functions
-    def _set_dpt(dpt_label_list):
-        return lambda x: 1 if x in dpt_label_list else 0
-
-    # Setting institute parameters
-    dpt_attributs_dict = org_tup[2]
-
-    # Setting useful column names
-    otp_col_dic = set_otp_col_names(institute, org_tup)
-    otp_col_list = list(otp_col_dic.values())
-
-    # Setting useful aliases
-    pub_id_alias     = otp_col_dic['pub_id']
-    idx_author_alias = otp_col_dic['author_id']
-    dpt_alias        = otp_col_dic['dpt']
-    otp_alias        = otp_col_dic['otp_list']
-    dpt_label_alias  = ig.DPT_LABEL_KEY
-    dpt_otp_alias    = ig.DPT_OTP_KEY
-
-    # Adding a column with a list of the authors in the file where homonymies
-    # have been solved and pointed by in_path
-    end_message = _add_authors_name_list(institute, org_tup, in_path, in_path)
-    print('\n ',end_message)
-
-    solved_homonymies_df = pd.read_excel(in_path)
-    solved_homonymies_df.fillna('', inplace = True)
-
-    dpt_list = list(dpt_attributs_dict.keys())
-
-    # For each department adding a column containing 1 or 0
-    # depending on if the author belongs or not to the department
-    for dpt in dpt_list:
-        dpt_label_list = dpt_attributs_dict[dpt][dpt_label_alias]
-        solved_homonymies_df[dpt] = solved_homonymies_df[dpt_alias]
-        solved_homonymies_df[dpt] = solved_homonymies_df[dpt].apply(_set_dpt(dpt_label_list))
-
-    # Building 'df_out' out of 'solved_homonymies_df' with a row per pub_id
-    # 1 or 0 is assigned to each department column depending
-    # on if at least one co-author is a member of this department,
-    # the detailed information is related to the first author only
-    df_out = pd.DataFrame()
-    for _, dg in solved_homonymies_df.groupby(pub_id_alias):
-        dg = dg.sort_values(by = [idx_author_alias])
-        for dpt in dpt_list:
-            x = dg[dpt].any().astype(int)
-            dg[dpt] = x
-        df_out = pd.concat([df_out, dg.iloc[:1]])
-
-    # Removing possible spaces in dept name
-    df_out[dpt_alias] = df_out[dpt_alias].apply(lambda x: x.strip())
-
-    # Configuring an Excel file per department with the list of OTPs
-    for dpt in sorted(dpt_list):
-        # Setting df_dpt with only pub_ids for which the first author
-        # is from the 'dpt' department
-        filtre_dpt = False
-        for dpt_value in dpt_attributs_dict[dpt][dpt_label_alias]:
-            filtre_dpt = filtre_dpt | (df_out[dpt_alias] == dpt_value)
-        df_dpt = df_out[filtre_dpt].copy()
-
-        # Setting the list of OTPs for the 'dpt' department
-        dpt_otp_list = dpt_attributs_dict[dpt][dpt_otp_alias]
-
-        # Setting the full path of the EXCEl file for the 'dpt' department
-        otp_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'
-        excel_dpt_path    = out_path / Path(otp_file_name_dpt)
-
-        # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
-                           otp_alias, excel_dpt_path, otp_col_list)
-
-    end_message  = ("Files for setting publication OTPs per department "
-                    f"saved in folder: \n  '{out_path}'")
-    return end_message
 
 
 def _create_if_column(issn_column, if_dict, if_empty_word):
@@ -382,20 +91,20 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
     # Setting useful aliases
     journal_col_alias = use_col_list[0]
-    issn_col_alias    = use_col_list[1]
-    eissn_col_alias   = use_col_list[2]
-    unknown_alias     = bp.UNKNOWN
+    issn_col_alias = use_col_list[1]
+    eissn_col_alias = use_col_list[2]
+    unknown_alias = bp.UNKNOWN
 
     years_list = list(if_db_df.keys())
 
-    init_inst_issn_df = pd.DataFrame(columns = use_col_list)
+    init_inst_issn_df = pd.DataFrame(columns=use_col_list)
 
     for year in years_list:
         year_sub_df = if_db_df[year][use_col_list].copy()
         init_inst_issn_df = pd.concat([init_inst_issn_df, year_sub_df])
     init_inst_issn_df[journal_col_alias] = init_inst_issn_df.apply(lambda row:
                                                                    (row[journal_col_alias].upper()),
-                                                                   axis = 1)
+                                                                    axis=1)
 
     inst_issn_df = pd.DataFrame()
     for _ , dg in init_inst_issn_df.groupby(journal_col_alias):
@@ -412,8 +121,8 @@ def _build_inst_issn_df(if_db_df, use_col_list):
 
         inst_issn_df = pd.concat([inst_issn_df,dg.iloc[:1]])
 
-    inst_issn_df.sort_values(by = [journal_col_alias], inplace = True)
-    inst_issn_df.drop_duplicates(inplace = True)
+    inst_issn_df.sort_values(by=[journal_col_alias], inplace=True)
+    inst_issn_df.drop_duplicates(inplace=True)
 
     return inst_issn_df
 
@@ -437,16 +146,16 @@ def _fullfill_issn(corpus_df, issn_df, unknown, col_tup):
     journal_col, issn_col, eissn_col = col_tup
 
     for corpus_idx, corpus_row in corpus_df.iterrows():
-        if corpus_row[issn_col] != unknown:
+        if corpus_row[issn_col]!=unknown:
             continue
         corpus_journal = corpus_row[journal_col].upper()
         for _, issn_row in issn_df.iterrows():
             issn_journal = issn_row[journal_col].upper()
-            if corpus_journal != issn_journal:
+            if corpus_journal!=issn_journal:
                 continue
-            if issn_row[issn_col] != unknown:
+            if issn_row[issn_col]!=unknown:
                 corpus_df.loc[corpus_idx, issn_col] = issn_row[issn_col]
-            elif issn_row[eissn_col] != unknown:
+            elif issn_row[eissn_col]!=unknown:
                 corpus_df.loc[corpus_idx, issn_col] = issn_row[eissn_col]
             else:
                 pass
@@ -499,11 +208,11 @@ def _get_id(issn_df, journal_name, journal_col, id_col, unknown):
     """
 
     # Setting parameters from args
-    id_lower_df = issn_df[issn_df[journal_col] == journal_name.lower()][id_col]
+    id_lower_df = issn_df[issn_df[journal_col]==journal_name.lower()][id_col]
     id_lower = unknown
     if not id_lower_df.empty:
         id_lower = id_lower_df.to_list()[0]
-    id_upper_df = issn_df[issn_df[journal_col] == journal_name.upper()][id_col]
+    id_upper_df = issn_df[issn_df[journal_col]==journal_name.upper()][id_col]
     id_upper = unknown
     if not id_upper_df.empty:
         id_upper = id_upper_df.to_list()[0]
@@ -544,12 +253,12 @@ def _format_missing_df(results_df, common_args_tup, unknown, add_cols):
                             corpus_issn_col]
 
     # Formatting 'results_df'
-    results_df.rename(columns = {year_col           : final_year_col,
-                                 corpus_year_if_col : year_db_if_col},
-                      inplace = True)
+    results_df.rename(columns={year_col: final_year_col,
+                               corpus_year_if_col: year_db_if_col},
+                      inplace=True)
     if add_cols:
-        results_df.rename(columns = {issn_col : corpus_issn_col},
-                          inplace = True)
+        results_df.rename(columns={issn_col: corpus_issn_col},
+                          inplace=True)
         results_df[issn_col]  = unknown
         results_df[eissn_col] = unknown
         results_df = results_df[final_order_col_list]
@@ -557,7 +266,7 @@ def _format_missing_df(results_df, common_args_tup, unknown, add_cols):
         if results_df.empty:
             results_df[eissn_col] = unknown
         results_df = results_df[final_order_col_list[:-1]]
-    sorted_results_df = results_df.sort_values(by = [journal_col])
+    sorted_results_df = results_df.sort_values(by=[journal_col])
     return sorted_results_df
 
 
@@ -578,8 +287,8 @@ def get_if_db(institute, org_tup, bibliometer_path):
     if_db_status = org_tup[5]
 
     # Setting useful aliases
-    if_root_folder_alias   = pg.ARCHI_IF["root"]
-    if_filename_alias      = pg.ARCHI_IF["all IF"]
+    if_root_folder_alias = pg.ARCHI_IF["root"]
+    if_filename_alias = pg.ARCHI_IF["all IF"]
     inst_if_filename_alias = institute + pg.ARCHI_IF["institute_if_all_years"]
 
     if if_db_status:
@@ -587,13 +296,13 @@ def get_if_db(institute, org_tup, bibliometer_path):
 
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
-    if_path             = if_root_folder_path / Path(if_filename_alias)
+    if_path = if_root_folder_path / Path(if_filename_alias)
 
     # Getting the df of the IFs database
-    if_df = pd.read_excel(if_path, sheet_name = None)
+    if_df = pd.read_excel(if_path, sheet_name=None)
 
     # Setting list of years for which IF are available
-    if_available_years_list  = list(if_df.keys())
+    if_available_years_list = list(if_df.keys())
 
     # Setting the most recent year for which IF are available
     if_most_recent_year = if_available_years_list[-1]
@@ -616,7 +325,11 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     The column 'most_recent_year_if_col' is filled with the impact-factors 
     values of the most recent year available in the dataframe 'if_df'. 
     In these columns, the NaN values of impact-factors are replaced 
-    by 'unknown_if_fill_alias'.
+    by 'unknown_if_fill_alias'. 
+    The results are saved as openpyxl workbook formatted through the `format_page`
+    function imported from the `bmfuncts.format_files` module after 
+    setting the attrubutes keys list through the `set_base_keys_list` function 
+    imported from the same module.
 
     Args:
         institute (str): Institute name.
@@ -638,29 +351,29 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
 
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
-    base_col_list    = list(final_col_dic.values())
-    if_maj_col_dic   = set_if_col_names(institute, org_tup)
+    base_col_list = list(final_col_dic.values())
+    if_maj_col_dic = set_if_col_names(institute, org_tup)
 
     # Setting useful column aliases
-    pub_id_col_alias         = final_col_dic['pub_id']
-    year_col_alias           = final_col_dic['corpus_year']
-    journal_col_alias        = final_col_dic['journal']
-    doctype_col_alias        = final_col_dic['doc_type']
-    issn_col_alias           = final_col_dic['issn']
-    otp_col_alias            = final_col_dic['otp']
-    current_if_col_alias     = if_maj_col_dic['current_if']
+    pub_id_col_alias = final_col_dic['pub_id']
+    year_col_alias = final_col_dic['corpus_year']
+    journal_col_alias = final_col_dic['journal']
+    doctype_col_alias = final_col_dic['doc_type']
+    issn_col_alias = final_col_dic['issn']
+    otp_col_alias = final_col_dic['otp']
+    current_if_col_alias = if_maj_col_dic['current_if']
     corpus_year_if_col_alias = if_maj_col_dic['pub_year_if']
-    corpus_issn_col_alias    = pg.COL_NAMES_BONUS["database ISSN"]
-    database_if_col_alias    = pg.COL_NAMES_BONUS['IF clarivate']
-    eissn_col_alias          = pg.COL_NAMES_BONUS['e-ISSN']
-    otp_col_new_alias        = pg.COL_NAMES_BONUS['final OTP']
-    pub_id_nb_col_alias      = pg.COL_NAMES_BONUS['pub number']
+    corpus_issn_col_alias = pg.COL_NAMES_BONUS["database ISSN"]
+    database_if_col_alias = pg.COL_NAMES_BONUS['IF clarivate']
+    eissn_col_alias = pg.COL_NAMES_BONUS['e-ISSN']
+    otp_col_new_alias = pg.COL_NAMES_BONUS['final OTP']
+    pub_id_nb_col_alias = pg.COL_NAMES_BONUS['pub number']
 
     # Setting globals aliases
-    doc_type_dict_alias       = pg.DOC_TYPE_DICT
-    not_available_if_alias    = pg.NOT_AVAILABLE_IF
-    unknown_if_fill_alias     = pg.FILL_EMPTY_KEY_WORD
-    unknown_alias             = pg.FILL_EMPTY_KEY_WORD
+    doc_type_dict_alias = pg.DOC_TYPE_DICT
+    not_available_if_alias = pg.NOT_AVAILABLE_IF
+    unknown_if_fill_alias = pg.FILL_EMPTY_KEY_WORD
+    unknown_alias = pg.FILL_EMPTY_KEY_WORD
     outside_if_analysis_alias = pg.OUTSIDE_ANALYSIS
 
     # Setting tuples for passing args
@@ -668,7 +381,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     aliases_tup = (unknown_alias, issn_col_alias, eissn_col_alias, database_if_col_alias)
 
     # Setting institute parameters
-    if_db_status            = org_tup[5]
+    if_db_status = org_tup[5]
     no_if_doctype_keys_list = org_tup[6]
 
     # Setting list of document types to drop
@@ -683,24 +396,23 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     if if_db_status:
         for year in if_available_years_list:
             year_database_if_col_alias = database_if_col_alias + " " + year
-            if_df[year].rename(columns = {year_database_if_col_alias: database_if_col_alias},
-                               inplace = True)
+            if_df[year].rename(columns={year_database_if_col_alias: database_if_col_alias},
+                               inplace=True)
 
     # Replacing NAN in if_df
-    values_dict = {issn_col_alias       : unknown_alias,
-                   eissn_col_alias      : unknown_alias,
+    values_dict = {issn_col_alias: unknown_alias,
+                   eissn_col_alias: unknown_alias,
                    database_if_col_alias: not_available_if_alias}
     for year in if_available_years_list:
-        if_df[year].fillna(value = values_dict, inplace = True)
+        if_df[year].fillna(value=values_dict, inplace=True)
 
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year
     most_recent_year_if_dict = _build_if_dict(if_df, if_most_recent_year, aliases_tup)
 
     # Setting local column names
     most_recent_year_if_col = current_if_col_alias + ', ' + if_most_recent_year
-    year_db_if_col          = database_if_col_alias + ' ' + corpus_year
-    #final_year_col          = year_col_alias[0:5]
-    journal_upper_col       = journal_col_alias + '_Upper'
+    year_db_if_col = database_if_col_alias + ' ' + corpus_year
+    journal_upper_col = journal_col_alias + '_Upper'
 
     # Getting the df where to add IFs
     corpus_df = pd.read_excel(in_file_path)
@@ -711,11 +423,11 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
             base_col_list)
     )
     if otp_col_alias in corpus_df.columns:
-        corpus_df.rename(columns = {otp_col_alias : otp_col_new_alias},
-                         inplace = True)
+        corpus_df.rename(columns={otp_col_alias : otp_col_new_alias},
+                         inplace =True)
 
     # Setting type of values in 'year_col_alias' as string
-    corpus_df = corpus_df.astype({year_col_alias : str})
+    corpus_df = corpus_df.astype({year_col_alias: str})
 
     # Initializing 'corpus_df_bis' as copy of 'corpus_df'
     corpus_df_bis = corpus_df[new_base_col_list].copy()
@@ -747,7 +459,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
         corpus_df_bis[corpus_year_if_col_alias] = not_available_if_alias
 
     # Sorting 'corpus_df_bis' pub_id values
-    corpus_df_bis.sort_values(by = [pub_id_col_alias], inplace = True)
+    corpus_df_bis.sort_values(by = [pub_id_col_alias], inplace=True)
 
     # Building 'year_pub_if_df' with subset of 'corpus_df_bis' columns
     subsetcols = [pub_id_col_alias,
@@ -761,47 +473,47 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
     # then droping the doc type column
-    year_article_if_df = pd.DataFrame(columns = year_pub_if_df.columns)
+    year_article_if_df = pd.DataFrame(columns=year_pub_if_df.columns)
     for doc_type, doc_type_df in year_pub_if_df.groupby(doctype_col_alias):
         if doc_type.upper() not in doctype_to_drop_list_alias:
             year_article_if_df = pd.concat([year_article_if_df, doc_type_df])
-    year_article_if_df.drop(doctype_col_alias, axis = 1, inplace = True)
+    year_article_if_df.drop(doctype_col_alias, axis=1, inplace=True)
 
     # Building 'year_if_df' by keeping one row for each issn
     # adding a column with number of related articles
     # then droping "Pub_id" column
-    year_if_df = pd.DataFrame(columns = year_article_if_df.columns.to_list() [1:] \
-                                        + [pub_id_nb_col_alias])
+    year_if_df = pd.DataFrame(columns=year_article_if_df.columns.to_list() [1:] \
+                                      + [pub_id_nb_col_alias])
     for _, issn_df in year_article_if_df.groupby(issn_col_alias):
         pub_id_nb = len(issn_df)
         issn_df[pub_id_nb_col_alias] = pub_id_nb
-        issn_df.drop(pub_id_col_alias, axis = 1, inplace = True)
+        issn_df.drop(pub_id_col_alias, axis=1, inplace=True)
         issn_df[journal_upper_col] = issn_df[journal_col_alias].astype(str).str.upper()
-        issn_df.drop_duplicates(subset=[journal_upper_col], keep='first', inplace = True)
-        issn_df.drop([journal_upper_col], axis = 1, inplace = True)
+        issn_df.drop_duplicates(subset=[journal_upper_col], keep='first', inplace=True)
+        issn_df.drop([journal_upper_col], axis=1, inplace=True)
         year_if_df = pd.concat([year_if_df, issn_df])
 
     # Removing from 'year_if_df' the rows which ISSN value is not in IF database
     # and keeping them in 'year_missing_issn_df'
     year_missing_issn_df = pd.DataFrame(columns = year_if_df.columns)
-    year_missing_if_df   = pd.DataFrame(columns = year_if_df.columns)
-    inst_issn_list  = inst_issn_df[issn_col_alias].to_list()
+    year_missing_if_df = pd.DataFrame(columns = year_if_df.columns)
+    inst_issn_list = inst_issn_df[issn_col_alias].to_list()
     inst_eissn_list = inst_issn_df[eissn_col_alias].to_list()
     for _, row in year_if_df.iterrows():
         row_issn = row[issn_col_alias]
         row_most_recent_year_if = row[most_recent_year_if_col]
-        row_corpus_year_if      = row[corpus_year_if_col_alias]
+        row_corpus_year_if = row[corpus_year_if_col_alias]
         if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
             year_missing_issn_df = pd.concat([year_missing_issn_df, row.to_frame().T])
         elif unknown_alias in [row_most_recent_year_if, row_corpus_year_if]:
             row_journal = row[journal_col_alias]
-            row[issn_col_alias]  = _get_id(inst_issn_df, row_journal,
-                                           journal_col_alias, issn_col_alias,
-                                           unknown_alias)
+            row[issn_col_alias] = _get_id(inst_issn_df, row_journal,
+                                          journal_col_alias, issn_col_alias,
+                                          unknown_alias)
             row[eissn_col_alias] = _get_id(inst_issn_df, row_journal,
                                            journal_col_alias, eissn_col_alias,
                                            unknown_alias)
-            year_missing_if_df   = pd.concat([year_missing_if_df, row.to_frame().T])
+            year_missing_if_df = pd.concat([year_missing_if_df, row.to_frame().T])
 
     if_database_complete = True
     if not year_missing_issn_df.empty or not year_missing_if_df.empty:
@@ -809,12 +521,8 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     else:
         # replace remaining unknown IF values by 'not_available_if_alias' value
         corpus_df_bis.replace({most_recent_year_if_col: unknown_if_fill_alias,
-                               corpus_year_if_col_alias    : unknown_if_fill_alias,
-                              }, outside_if_analysis_alias, inplace = True)
-
-    # Formatting and saving 'corpus_df_bis' as EXCEL file at full path 'out_file_path'
-    wb, _ = mise_en_page(institute, org_tup, corpus_df_bis)
-    wb.save(out_file_path)
+                               corpus_year_if_col_alias: unknown_if_fill_alias,
+                              }, outside_if_analysis_alias, inplace=True)
 
     # Setting common args list for '_format_missing_df' function
     common_args_tup = (year_col_alias, corpus_year_if_col_alias,
@@ -825,16 +533,27 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
 
     # Formatting 'year_missing_issn_df' and 'year_missing_if_df'
     sorted_year_missing_issn_df = _format_missing_df(
-        year_missing_issn_df, common_args_tup, unknown_alias, add_cols = True)
+        year_missing_issn_df, common_args_tup, unknown_alias, add_cols=True)
     sorted_year_missing_if_df   = _format_missing_df(
-        year_missing_if_df, common_args_tup, unknown_alias, add_cols = False)
+        year_missing_if_df, common_args_tup, unknown_alias, add_cols=False)
 
-    # Saving 'year_missing_issn_df' as EXCEL file at full path 'missing_issn_path'
-    wb, _ = mise_en_page(institute, org_tup, sorted_year_missing_issn_df)
+    # Setting useful parameters for use of 'format_page' function
+    common_df_title = pg.DF_TITLES_LIST[0]
+    format_cols_list = set_base_keys_list(institute, org_tup)
+    
+    # Formatting and saving 'corpus_df_bis' as openpyxl file at full path 'out_file_path'
+    wb, _ = format_page(corpus_df_bis, common_df_title,
+                        attr_keys_list=format_cols_list)    
+    wb.save(out_file_path)
+
+    # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
+    wb, _ = format_page(sorted_year_missing_issn_df, common_df_title,
+                        attr_keys_list=format_cols_list)   
     wb.save(missing_issn_path)
 
-    # Saving 'year_missing_if_df' as EXCEL file at full path 'missing_if_path'
-    wb, _ = mise_en_page(institute, org_tup, sorted_year_missing_if_df)
+    # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
+    wb, _ = format_page(sorted_year_missing_if_df, common_df_title,
+                        attr_keys_list=format_cols_list)  
     wb.save(missing_if_path)
 
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"
@@ -846,8 +565,10 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     corresponding to different documents types.
 
     This is done for the 'corpus_year' corpus. 
-    These dataframes are saved through the `mise_en_page` function 
-    imported from `bmfuncts.useful_functs` module. 
+    These dataframes are saved through the `format_page` function 
+    imported from `bmfuncts.format_files` module after setting 
+    the attrubutes keys list through the `set_base_keys_list` 
+    function imported from the same module.
 
     Args:
         institute (str): Institute name.
@@ -857,23 +578,25 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     Returns:
         (int): Split ratio in % of the publications final list.
     """
-
+    # Setting useful parameters for use of 'format_page' function
+    common_df_title = pg.DF_TITLES_LIST[0]
+    format_cols_list = set_base_keys_list(institute, org_tup)
 
     # Setting useful aliases
-    pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_path_alias = pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
     year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
-    pub_list_file_alias      = year_pub_list_file_alias + ".xlsx"
-    other_dg_file_alias      = year_pub_list_file_alias + "_" + pg.OTHER_DOCTYPE + ".xlsx"
-    corpus_year_path         = bibliometer_path / Path(corpus_year)
-    pub_list_path            = corpus_year_path / Path(pub_list_path_alias)
-    pub_list_file_path       = pub_list_path / Path(pub_list_file_alias)
-    other_dg_path            = pub_list_path / Path(other_dg_file_alias)
+    pub_list_file_alias = year_pub_list_file_alias + ".xlsx"
+    other_dg_file_alias = year_pub_list_file_alias + "_" + pg.OTHER_DOCTYPE + ".xlsx"
+    corpus_year_path = bibliometer_path / Path(corpus_year)
+    pub_list_path = corpus_year_path / Path(pub_list_path_alias)
+    pub_list_file_path = pub_list_path / Path(pub_list_file_alias)
+    other_dg_path = pub_list_path / Path(other_dg_file_alias)
 
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     pub_id_col_alias = final_col_dic['pub_id']
-    doc_type_alias   = final_col_dic['doc_type']
+    doc_type_alias = final_col_dic['doc_type']
 
     full_pub_list_df = pd.read_excel(pub_list_file_path)
     other_dg = full_pub_list_df.copy()
@@ -881,7 +604,7 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     key_pub_nb = 0
     for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
         doctype_list = [x.upper() for x in  doctype_list]
-        key_dg = pd.DataFrame(columns = full_pub_list_df.columns)
+        key_dg = pd.DataFrame(columns=full_pub_list_df.columns)
 
         for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
             if doc_type.upper() in doctype_list:
@@ -889,16 +612,17 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
                 other_dg = other_dg.drop(dg.index)
 
         key_pub_nb += len(key_dg)
-
         key_dg_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
         key_dg_path = pub_list_path / Path(key_dg_file_alias)
 
-        key_dg.sort_values(by=[pub_id_col_alias], inplace = True)
-        wb, _ = mise_en_page(institute, org_tup, key_dg)
+        key_dg.sort_values(by=[pub_id_col_alias], inplace=True)
+        wb, _ = format_page(key_dg, common_df_title,
+                            attr_keys_list=format_cols_list)
         wb.save(key_dg_path)
 
-    other_dg.sort_values(by = [pub_id_col_alias], inplace = True)
-    wb, _ = mise_en_page(institute, org_tup, other_dg)
+    other_dg.sort_values(by=[pub_id_col_alias], inplace=True)
+    wb, _ = format_page(other_dg, common_df_title,
+                        attr_keys_list=format_cols_list)
     wb.save(other_dg_path)
 
     split_ratio = 100
@@ -923,8 +647,12 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     3. The publications attributed with 'INVALIDE' OTP value, \
     (imported from globals module, imported as gg) are dropped \
     in the 'consolidate_pub_list_df' dataframe and kept in \
-    the 'invalid_pub_list_df' dedicated dataframe.
-    4. These two dataframes are then saved as Excel file.
+    the 'invalids_df' dedicated dataframe.
+    4. These two dataframes are then saved respectively as EXCEL file \
+    and openpyxl file through the `format_page` function imported \
+    from `bmfuncts.format_files` module after setting the attrubutes \
+    keys list through the `set_base_keys_list` function imported \
+    from the same module.
     5. The file saved from the 'consolidate_pub_list_df' dataframe \
     is added with impact factors values through the `add_if` function \
     of the present module.
@@ -965,22 +693,23 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
-    final_col_list   = list(final_col_dic.values())
+    final_col_list = list(final_col_dic.values())
 
     # Setting useful aliases
-    pub_list_filename_base_alias     = pg.ARCHI_YEAR["pub list file name base"]
-    missing_if_filename_base_alias   = pg.ARCHI_IF["missing_if_base"]
+    pub_list_filename_base_alias = pg.ARCHI_YEAR["pub list file name base"]
+    missing_if_filename_base_alias = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    invalid_pub_filename_base_alias  = pg.ARCHI_YEAR["invalid file name base"]
-    pub_id_alias                     = final_col_dic['pub_id']
-    otp_alias                        = final_col_dic['otp']   # Choix de l'OTP
+    invalid_pub_filename_base_alias = pg.ARCHI_YEAR["invalid file name base"]
+    pub_id_alias = final_col_dic['pub_id']
+    otp_alias = final_col_dic['otp'] # Choix de l'OTP
+    otp_col_new_alias = pg.COL_NAMES_BONUS['final OTP'] # OTP
 
     # Setting useful paths
     pub_list_file_path = out_path / Path(pub_list_filename_base_alias
                                          + " " + corpus_year + ".xlsx")
-    missing_if_path   = out_path / Path(corpus_year + missing_if_filename_base_alias)
+    missing_if_path = out_path / Path(corpus_year + missing_if_filename_base_alias)
     missing_issn_path = out_path / Path(corpus_year + missing_issn_filename_base_alias)
-    invalid_file_path = out_path / Path(invalid_pub_filename_base_alias
+    invalids_file_path = out_path / Path(invalid_pub_filename_base_alias
                                         + " " + corpus_year + ".xlsx")
 
     # Setting institute parameters
@@ -998,34 +727,43 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
         otp_df_init_status = False
 
     # Deduplicating rows on Pub_id
-    otp_df.drop_duplicates(subset = [pub_id_alias], inplace = True)
+    otp_df.drop_duplicates(subset=[pub_id_alias], inplace=True)
 
     # Selecting useful columns using final_col_list
     consolidate_pub_list_df = otp_df[final_col_list].copy()
 
     # Saving df to EXCEL file
-    consolidate_pub_list_df.to_excel(pub_list_file_path, index = False)
+    consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
 
     # Saving set OTPs
     otp_message = save_otps(institute, org_tup, bibliometer_path, corpus_year)
 
     # Setting pub ID as index for unique identification of rows
-    consolidate_pub_list_df.set_index(pub_id_alias, inplace = True)
+    consolidate_pub_list_df.set_index(pub_id_alias, inplace=True)
 
-    # Droping invalide publications by pub Id as index
-    invalid_pub_list_df = consolidate_pub_list_df.drop(
-        consolidate_pub_list_df[consolidate_pub_list_df[otp_alias] \
-                                != ig.INVALIDE].index)
-    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[otp_alias] \
-                                                         == ig.INVALIDE].index,
-                                 inplace = True)
+    # Droping invalid publications by pub Id as index
+    invalids_df = consolidate_pub_list_df.drop(
+        consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
+                                !=ig.INVALIDE].index)
+    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
+                                                         ==ig.INVALIDE].index,
+                                 inplace=True)
 
     # Resetting pub ID as a standard column
-    consolidate_pub_list_df.reset_index(inplace = True)
+    consolidate_pub_list_df.reset_index(inplace=True)
+    invalids_df.reset_index(inplace=True)
 
     # Re_saving df to EXCEL file
-    consolidate_pub_list_df.to_excel(pub_list_file_path, index = False)
-    invalid_pub_list_df.to_excel(invalid_file_path, index = False)
+    consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
+    
+    # Formatting and saving 'invalids_df' as openpyxl file
+    # at full path 'invalids_file_path'
+    invalids_df_title = pg.DF_TITLES_LIST[0]
+    format_cols_list = set_base_keys_list(institute, org_tup)
+    invalids_df.rename(columns={otp_alias: otp_col_new_alias}, inplace=True)
+    wb, _ = format_page(invalids_df, invalids_df_title,
+                        attr_keys_list=format_cols_list)
+    wb.save(invalids_file_path)
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
     # this also for saving results files to complete IFs database
@@ -1044,7 +782,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     if_analysis_name = None
     final_save_message = save_final_results(institute, org_tup, bibliometer_path,
                                             datatype, corpus_year, if_analysis_name,
-                                            results_to_save_dict, verbose = False)
+                                            results_to_save_dict, verbose=False)
 
     end_message  = (f"\n{otp_message}"
                     f"\nOTPs identification integrated in file: \n  '{pub_list_file_path}'"
@@ -1060,8 +798,8 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     """Builds the concatenated dataframe of the publications lists 
     of the corpuses listed in 'years_list'.
 
-    The dataframe is saved through the `mise_en_page` function 
-    imported from `bmfuncts.useful_functs` module.
+    The dataframe is saved through the `format_page` function 
+    imported from `bmfuncts.format_files` module.
 
     Args:
         institute (str): Institute name.
@@ -1074,13 +812,13 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     """
 
     # Setting useful aliases
-    pub_list_path_alias      = pg.ARCHI_YEAR["pub list folder"]
+    pub_list_path_alias = pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
     bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
-    bdd_multi_annuelle_file_alias   = pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
+    bdd_multi_annuelle_file_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
 
     # Building the concatenated dataframe of available publications lists
-    df_concat = pd.DataFrame()
+    concat_df = pd.DataFrame()
     available_liste_conso = ""
     for year in years_list:
         try:
@@ -1088,8 +826,8 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
             pub_list_folder_path = corpus_folder_path / Path(pub_list_path_alias)
             pub_list_file_name = f"{pub_list_file_base_alias} {year}.xlsx"
             pub_list_path = pub_list_folder_path / Path(pub_list_file_name)
-            df_inter  = pd.read_excel(pub_list_path)
-            df_concat = pd.concat([df_concat, df_inter])
+            inter_df  = pd.read_excel(pub_list_path)
+            concat_df = pd.concat([concat_df, inter_df])
             available_liste_conso += f" {year}"
 
         except FileNotFoundError:
@@ -1101,8 +839,10 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
                 f"{os.getlogin()}_{available_liste_conso}.xlsx")
     out_path = bibliometer_path / Path(bdd_multi_annuelle_folder_alias)
     out_file_path = out_path / Path(out_file)
-
-    wb, _ = mise_en_page(institute, org_tup, df_concat)
+    concat_df_title = pg.DF_TITLES_LIST[0]
+    format_cols_list = set_base_keys_list(institute, org_tup)
+    wb, _ = format_page(concat_df, concat_df_title,
+                        attr_keys_list=format_cols_list)
     wb.save(out_file_path)
 
     end_message  = f"Concatenation of consolidated pub lists saved in folder: \n  '{out_path}'"

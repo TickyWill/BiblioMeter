@@ -16,9 +16,9 @@ import pandas as pd
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.save_final_results import save_final_results
-from bmfuncts.useful_functs import format_df_for_excel
 from bmfuncts.useful_functs import read_parsing_dict
 
 
@@ -305,7 +305,9 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     `_build_author_employee_df` internal function.
     3. Builds the data of publications number per author trough the 
     `_build_pub_nb_per_author_df` internal function.
-    4. Saves the results of this analysis for the 'datatype' case through the \
+    4. Saves the results of this analysis as openpyxl workbooks through the \
+    `format_page` function imported from `bmfuncts.format_files` module.
+    5. Saves the results of this analysis for the 'datatype' case through the \
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     To Do: Updates database of key performance indicators (KPIs) of the Institute \
@@ -364,17 +366,8 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
 
     # Saving the author-employee dataframe as EXCEL file
     author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
-    col_names = list(author_employee_df.columns)
-    col_attr_dict = {col_names[0]: [12, "center"],
-                     col_names[1]: [12, "center"],
-                     col_names[2]: [12, "center"],
-                     col_names[3]: [30, "left"],
-                     col_names[4]: [30, "left"],
-                     col_names[5]: [30, "left"],
-                     col_names[6]: [15, "center"],
-                     col_names[7]: [15, "center"],
-                    }
-    wb, ws = format_df_for_excel(author_employee_df, col_attr_dict=col_attr_dict)
+    auth_df_title = pg.DF_TITLES_LIST[4]
+    wb, ws = format_page(author_employee_df, auth_df_title)
     ws.title = 'Auteurs' + corpus_year
     wb.save(author_employee_xlsx_file_path)
     if progress_callback:
@@ -382,13 +375,8 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
 
     # Saving the author-statistics dataframe as EXCEL file
     author_stat_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_stat_file + ".xlsx")
-    col_names = list(pub_nb_per_author_df.columns)
-    col_attr_dict = {col_names[0]: [30, "left"],
-                     col_names[1]: [50, "left"],
-                     col_names[2]: [15, "center"],
-                     col_names[3]: [95, "left"],
-                    }
-    wb, ws = format_df_for_excel(pub_nb_per_author_df, col_attr_dict=col_attr_dict)
+    auth_stat_df_title = pg.DF_TITLES_LIST[5]
+    wb, ws = format_page(pub_nb_per_author_df, auth_stat_df_title)
     ws.title = 'Auteurs' + corpus_year
     wb.save(author_stat_xlsx_file_path)
     if progress_callback:

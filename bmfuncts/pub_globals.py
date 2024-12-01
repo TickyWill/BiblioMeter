@@ -24,6 +24,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_PUB_NAMES',
            'CONFIG_FOLDER',
            'DATATYPE_LIST',
+           'DF_TITLES_LIST',
            'DOC_TYPE_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
@@ -53,6 +54,10 @@ BDD_LIST = [bp.SCOPUS, bp.WOS]
 
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
+
+DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
+                  "Authors_df", "Authors_stat_df", "KPI_df",
+                  "KW_df", "Geo_df", "Institutions_df", "IF_anal_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
