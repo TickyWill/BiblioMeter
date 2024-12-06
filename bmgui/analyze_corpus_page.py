@@ -19,9 +19,9 @@ import bmgui.gui_globals as gg
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import get_if_db
 from bmfuncts.authors_analysis import authors_analysis
-from bmfuncts.pub_analysis import coupling_analysis
-from bmfuncts.pub_analysis import if_analysis
-from bmfuncts.pub_analysis import keywords_analysis
+from bmfuncts.coupling_analysis import coupling_analysis
+from bmfuncts.impact_factors_analysis import if_analysis
+from bmfuncts.keywords_analysis import keywords_analysis
 from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
