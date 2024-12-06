@@ -40,7 +40,8 @@ __all__ = ['ANALYSIS_IF',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
-           'TSV_SAVE_EXTENT'
+           'TSV_SAVE_EXTENT',
+           'XL_INDEX_BASE'
           ]
 
 # 3rd party imports
@@ -66,6 +67,8 @@ PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
 
 TSV_SAVE_EXTENT = "dat"
+
+XL_INDEX_BASE = 1
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 

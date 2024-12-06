@@ -10,8 +10,8 @@ in terms of:
 """
 
 __all__ = ['add_if',
-           'concatenate_pub_lists',
            'built_final_pub_list',
+           'concatenate_pub_lists',
            'get_if_db',
            'solving_homonyms',
            'split_pub_list_by_doc_type',
@@ -24,12 +24,12 @@ from datetime import datetime
 from pathlib import Path
 
 # 3rd party imports
+import BiblioParsing as bp
 import pandas as pd
 from openpyxl.worksheet.datavalidation import DataValidation \
     as openpyxl_DataValidation
 from openpyxl.utils import get_column_letter \
     as openpyxl_get_column_letter
-import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as eg
@@ -631,6 +631,69 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     return split_ratio
 
 
+def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
+    """Gets the publications list of the a department 
+    from the EXCEL files where the user has set the OTPs.
+
+    The name of the file is build using the file-name base 
+    and the department label. This name is added '_ok' if 
+    this file exists in the folder of files. 
+    Then the file is read as a multisheet EXCEL file. 
+    The final publication list of the department results from 
+    the concatenation of the containt of all the existing sheets.  
+
+    Args:
+        dpt_label (str): Label of the department.
+        in_file_base (str): Base of OTPs files names.
+        in_path (path): Full path to folder of files where OTPs \
+        have been attributed.
+    Returns:
+        (dataframe): The concatenated publications list with OTPs.        
+    """
+    otp_file_name_dpt = in_file_base + '_' + dpt_label
+    otp_file_name_dpt_ok = otp_file_name_dpt + '_ok'
+    dpt_otp_path = in_path / Path(otp_file_name_dpt_ok + '.xlsx')
+    if not os.path.exists(dpt_otp_path):
+        dpt_otp_path = in_path / Path(otp_file_name_dpt + '.xlsx')
+    dpt_otp_dict = pd.read_excel(dpt_otp_path, sheet_name=None)
+    dpt_otp_df = pd.DataFrame()
+    for _, lab_df in dpt_otp_dict.items():
+        dpt_otp_df = pd.concat([dpt_otp_df, lab_df])    
+    return dpt_otp_df
+
+
+def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
+    """Concatenates the publications list of the Institute departments 
+    after getting them through the `_set_dpt_otp_df` internal function.
+
+    Args:
+        org_tup (tup): Contains Institute parameters.
+        in_file_base (str): Base of OTPs files names.
+        in_path (path): Full path to folder of files where OTPs \
+        have been attributed.
+    Returns:
+        (dataframe): The concatenated publications list with OTPs.        
+    """
+    # Setting institute parameters
+    dpt_label_dict = org_tup[1]
+    dpt_label_list = list(dpt_label_dict.keys())
+
+    # Concatenating publications list with OTPs of the Institute departments
+    otp_df_init_status = True
+    for dpt_label in dpt_label_list:
+        # Getting department publications list with OTPs
+        dpt_otp_df = _set_dpt_otp_df(dpt_label, in_file_base, in_path)
+
+        # Appending department publications list with OTPs
+        # to the full publication list to be returned   
+        if otp_df_init_status:
+            otp_df = dpt_otp_df.copy()
+            otp_df_init_status = False
+        else:
+            otp_df = pd.concat([otp_df, dpt_otp_df])
+    return otp_df
+
+
 def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                          in_path, out_path, in_file_base, corpus_year):
     """Builds the dataframe of the publications final list 
@@ -641,11 +704,11 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     1. A 'consolidate_pub_list_df' dataframe is built through \
     the concatenation of the dataframes got from the files of \
     OTPs attribution to publications of each of the Institute \
-    departments.
+    departments through the `_concat_dept_otps_dfs` internal function.
     2. Meanwhile, the set OTPS are saved through the `save_otps` \
     function imported from `bmfuncts.use_pub_attributes` module. 
     3. The publications attributed with 'INVALIDE' OTP value, \
-    (imported from globals module, imported as gg) are dropped \
+    (imported from `bmfuncts.institute_globals` module) are dropped \
     in the 'consolidate_pub_list_df' dataframe and kept in \
     the 'invalids_df' dedicated dataframe.
     4. These two dataframes are then saved respectively as EXCEL file \
@@ -680,17 +743,6 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
         final list, completion status of the impact-factors database).
     """
 
-    # internal functions
-    def _set_df_otp_dpt(dpt_label):
-        otp_file_name_dpt_ok = in_file_base + '_' + dpt_label + '_ok.xlsx'
-
-        dpt_path = in_path / Path(otp_file_name_dpt_ok)
-        if not os.path.exists(dpt_path):
-            otp_file_name_dpt = in_file_base + '_' + dpt_label + '.xlsx'
-            dpt_path = in_path / Path(otp_file_name_dpt)
-        dpt_df = pd.read_excel(dpt_path)
-        return dpt_df
-
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     final_col_list = list(final_col_dic.values())
@@ -712,19 +764,8 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     invalids_file_path = out_path / Path(invalid_pub_filename_base_alias
                                         + " " + corpus_year + ".xlsx")
 
-    # Setting institute parameters
-    dpt_label_dict = org_tup[1]
-
     # Getting dept OTPs df and concatenating them
-    dpt_label_list = list(dpt_label_dict.keys())
-    otp_df_init_status = True
-    for dpt_label in dpt_label_list:
-        dpt_df = _set_df_otp_dpt(dpt_label)
-        if otp_df_init_status:
-            otp_df = dpt_df.copy()
-        else:
-            otp_df = pd.concat([otp_df, dpt_df])
-        otp_df_init_status = False
+    otp_df = _concat_dept_otps_dfs(org_tup, in_file_base, in_path)
 
     # Deduplicating rows on Pub_id
     otp_df.drop_duplicates(subset=[pub_id_alias], inplace=True)
@@ -742,12 +783,12 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     consolidate_pub_list_df.set_index(pub_id_alias, inplace=True)
 
     # Droping invalid publications by pub Id as index
-    invalids_df = consolidate_pub_list_df.drop(
-        consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
-                                !=ig.INVALIDE].index)
-    consolidate_pub_list_df.drop(consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
-                                                         ==ig.INVALIDE].index,
-                                 inplace=True)
+    invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
+                                                !=ig.INVALIDE].index
+    invalids_df = consolidate_pub_list_df.drop(index=invalids_idx_list)
+    valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
+                                                         ==ig.INVALIDE].index
+    consolidate_pub_list_df.drop(index=valids_idx_list, inplace=True)
 
     # Resetting pub ID as a standard column
     consolidate_pub_list_df.reset_index(inplace=True)
@@ -773,7 +814,8 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                                      paths_tup, corpus_year)
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio = split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
+    split_ratio = split_pub_list_by_doc_type(institute, org_tup,
+                                             bibliometer_path, corpus_year)
 
     # Saving pub list as final result
     status_values = len(pg.RESULTS_TO_SAVE) * [False]

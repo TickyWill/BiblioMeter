@@ -10,6 +10,8 @@ from bmfuncts.useful_functs import *
 from bmfuncts.employees_globals import *
 from bmfuncts.pub_globals import *
 from bmfuncts.rename_cols import *
+from bmfuncts.build_otps_info import *
+from bmfuncts.add_otps_functs import *
 from bmfuncts.use_homonyms import *
 from bmfuncts.use_otps import *
 from bmfuncts.update_employees import *

@@ -6,10 +6,13 @@ used by several modules of package `bmfuncts`.
 # ToDo: Update of docstrings
 
 __all__ = ['align_cell',
+           'build_cell_fill_patterns',
+           'build_data_val',
            'color_row',           
            'format_heading',
            'format_page',
            'format_wb_sheet',
+           'get_col_letter',
            'set_base_keys_list',
            'set_col_width',
            'set_df_attributes',
@@ -18,22 +21,62 @@ __all__ = ['align_cell',
 
 # 3rd party imports
 import BiblioParsing as bp
-from openpyxl.utils.dataframe import dataframe_to_rows \
-    as openpyxl_dataframe_to_rows
-from openpyxl.utils import get_column_letter \
-    as openpyxl_get_column_letter
+from openpyxl import Workbook as openpyxl_Workbook
 from openpyxl.styles import Font as openpyxl_Font
 from openpyxl.styles import PatternFill as openpyxl_PatternFill
 from openpyxl.styles import Alignment as openpyxl_Alignment
 from openpyxl.styles import Border as openpyxl_Border
 from openpyxl.styles import Side as openpyxl_Side
-from openpyxl import Workbook as openpyxl_Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows \
+    as openpyxl_dataframe_to_rows
+from openpyxl.utils import get_column_letter \
+    as openpyxl_get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation \
+    as openpyxl_DataValidation
 
 # local imports
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.rename_cols import set_col_attr
 from bmfuncts.rename_cols import build_col_conversion_dic
+
+
+def get_col_letter(df, col, xl_idx_base):
+    """Gets the letter or couple of letters targetting 
+    a column index of a dataframe taking into account 
+    the base of the columns indexes in openpyxl objects.
+    
+    Args:
+        df (dataframe): Data of which column letter is got.
+        col (str): Name of column of which letter is got.
+        xl_idx_base (int): Base of columns indexes in openpyxl.
+    Returns:
+        (str): Letter (or couple of letters) targetting the column
+        in openpyxl.
+    """
+    df_col_index = list(df.columns).index(col)
+    xl_col_index = df_col_index + xl_idx_base
+    col_letter = openpyxl_get_column_letter(xl_col_index)
+    return col_letter
+
+
+def build_data_val(values_list):
+    """ """
+    validation_list = '"'+','.join(values_list) + '"'
+    data_val = openpyxl_DataValidation(type = "list",
+                                       formula1 = validation_list,
+                                       showErrorMessage = False)
+    return validation_list, data_val
+
+
+def build_cell_fill_patterns():
+    """Builds list of openpyxl patterns for filling cells using 'ROW_COLORS' global."""
+    # Setting cell colors
+    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'],
+                                        fill_type = "solid"),
+                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'],
+                                        fill_type = "solid")]
+    return cell_colors
 
 
 def color_row(ws, idx_row, cell_colors):
@@ -46,40 +89,43 @@ def color_row(ws, idx_row, cell_colors):
     return ws
 
 
-def align_cell(ws, columns_list, col_attr):
+def align_cell(ws, columns_list, col_attr, xl_idx_base):
     """Sets cell alignment and border using dict of column attributes 
     of an openpyxl sheet."""
+    borders = openpyxl_Border(left=openpyxl_Side(border_style='thick',
+                                                 color='FFFFFF'),
+                              right=openpyxl_Side(border_style='thick',
+                                                  color='FFFFFF'))
     for col_idx, col in enumerate(columns_list):
-        column_letter = openpyxl_get_column_letter(col_idx + 1)
+        column_letter = openpyxl_get_column_letter(col_idx + xl_idx_base)
         for cell in ws[column_letter]:
             cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1],
                                                 vertical="center")
-            cell.border = openpyxl_Border(left=openpyxl_Side(border_style='thick',
-                                                             color='FFFFFF'),
-                                          right=openpyxl_Side(border_style='thick',
-                                                              color='FFFFFF'))
+            cell.border = borders
     return ws
 
 
 def format_heading(ws, df_title):
     """Sets the format of the columns heading of an openpyxl sheet."""
+    head_font = openpyxl_Font(bold=True)
+    head_align = openpyxl_Alignment(wrap_text=True, horizontal="center",
+                                    vertical="center")
     pub_alias = pg.DF_TITLES_LIST[0]
     cells_list = ws['A'] + ws[1]   
     if df_title!=pub_alias:
         cells_list = ws[1]    
     for cell in cells_list:
-        cell.font = openpyxl_Font(bold=True)
-        cell.alignment = openpyxl_Alignment(wrap_text=True, horizontal="center",
-                                            vertical="center")
+        cell.font = head_font
+        cell.alignment = head_align
     return ws
 
 
-def set_col_width(ws, columns_list, col_attr, col_idx_init):
+def set_col_width(ws, columns_list, col_attr, col_idx_init, xl_idx_base):
     """Sets the columns width of an openpyxl sheet."""
 
     for col_idx, col in enumerate(columns_list):        
         if col_idx>=col_idx_init:
-            col_letter = openpyxl_get_column_letter(col_idx + 1)
+            col_letter = openpyxl_get_column_letter(col_idx + xl_idx_base)
             if col in col_attr.keys():
                 ws.column_dimensions[col_letter].width = col_attr[col][0]
             else:
@@ -363,12 +409,12 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
         (tup): (worbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).
     """
+    # Setting num of first col and first row in openpyxl objects
+    xl_idx_base = pg.XL_INDEX_BASE
+
     # Setting list of cell colors
-    if not cell_colors:
-        cell_colors = [openpyxl_PatternFill(fgColor=pg.ROW_COLORS['odd'],
-                                            fill_type="solid"),
-                       openpyxl_PatternFill(fgColor=pg.ROW_COLORS['even'],
-                                            fill_type="solid")]
+    if not cell_colors:        
+        cell_colors = build_cell_fill_patterns()
 
     # Setting useful df attributes
     df_cols_list = df.columns
@@ -390,13 +436,14 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
         ws = color_row(ws, idx_row, cell_colors)
 
     # Setting cell alignment and border in ws   
-    ws = align_cell(ws, df_cols_list, col_attr_dict)
+    ws = align_cell(ws, df_cols_list, col_attr_dict, xl_idx_base)
 
     # Setting the format of the columns heading
     ws = format_heading(ws, df_title)
 
     # Setting the columns width
-    ws = set_col_width(ws, df_cols_list, col_attr_dict, col_idx_init)
+    ws = set_col_width(ws, df_cols_list, col_attr_dict,
+                       col_idx_init, xl_idx_base)
 
     # Setting height of first row
     for idx_row in range(ws.max_row):
@@ -408,8 +455,8 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
     return wb, ws
 
 
-def format_wb_sheet(sheet_name, df,
-                    df_title, wb, first):
+def format_wb_sheet(sheet_name, df, df_title, wb, first,
+                    attr_keys_list=None):
     """Formats impact-factors (IFs) sheet in the 'wb' openpyxl workbook 
     as first sheet of the workbook if first is True.
 
@@ -430,10 +477,10 @@ def format_wb_sheet(sheet_name, df,
         (openpyxl workbook): The updated workbook with the 'if_sheet_name' sheet.
     """
     if first:
-        wb, ws = format_page(df, df_title, wb=wb)
+        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
         ws.title = sheet_name
     else:
         wb.create_sheet(sheet_name)
         wb.active = wb[sheet_name]
-        wb, ws = format_page(df, df_title, wb=wb)
+        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
     return wb

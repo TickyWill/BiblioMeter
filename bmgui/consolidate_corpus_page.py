@@ -28,6 +28,7 @@ from tkinter import ttk
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 import bmgui.gui_globals as gg
+from bmfuncts.add_otps_functs import add_otp
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import built_final_pub_list
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
@@ -37,7 +38,6 @@ from bmfuncts.update_employees import set_employees_data
 from bmfuncts.update_employees import update_employees
 from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.use_homonyms import set_saved_homonyms
-from bmfuncts.use_otps import add_otp
 from bmfuncts.use_otps import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
 from bmgui.gui_globals import GUI_BUTTONS
@@ -466,8 +466,8 @@ def _launch_add_otp_try(institute, org_tup,
             end_message = save_homonyms(institute, org_tup, bibliometer_path, year_select)
             print('\n',end_message)
             progress_callback(20)
-            end_message = add_otp(institute, org_tup, homonymes_file_path,
-                                  otp_path, otp_file_base)
+            end_message = add_otp(institute, org_tup, bibliometer_path,
+                                  homonymes_file_path, otp_path, otp_file_base)
             print(end_message)
             progress_callback(80)
             end_message = set_saved_otps(institute, org_tup, bibliometer_path, year_select)
