@@ -20,8 +20,8 @@ from openpyxl import Workbook as openpyxl_Workbook
 import bmfuncts.employees_globals as eg
 import bmfuncts.institute_globals as ig
 import bmfuncts.pub_globals as pg
+from bmfuncts.add_otps import add_data_val
 from bmfuncts.build_otps_info import set_lab_otps
-from bmfuncts.add_otps_functs import add_data_val
 from bmfuncts.format_files import align_cell
 from bmfuncts.format_files import build_data_val
 from bmfuncts.format_files import build_cell_fill_patterns

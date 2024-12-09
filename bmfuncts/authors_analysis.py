@@ -1,5 +1,6 @@
 """Module of functions for authors-list analysis
 in terms of author position in authors list and number of publications per authors.
+
 """
 __all__ = ['authors_analysis']
 
@@ -213,7 +214,7 @@ def _build_author_employee_df(bibliometer_path, in_path, corpus_year, all_cols_t
 
     # Initializing dataframe to build
     add_select_cols_list = [nb_auth_col, is_first_col, is_last_col]
-    author_employee_df = pd.DataFrame(columns = submit_select_cols + add_select_cols_list)
+    author_employee_df = pd.DataFrame(columns=submit_select_cols + add_select_cols_list)
     for col in submit_select_cols:
         author_employee_df[col] = submit_df[col].copy()
     author_employee_df[is_first_col] = 0

@@ -94,23 +94,23 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
     bm_col_rename_dic = col_rename_tup[2]
 
     # Setting useful aliases
-    pub_id_alias         = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
-    idx_authors_alias    = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]
-    nom_alias            = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['name']]
-    prenom_alias         = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['first_name']]
-    matricule_alias      = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
-    full_name_alias      = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
-    author_type_alias    = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
+    pub_id_alias = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
+    idx_authors_alias = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]
+    nom_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['name']]
+    prenom_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['first_name']]
+    matricule_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    full_name_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
+    author_type_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
     full_name_list_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste'] + institute]
-    dept_alias           = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
-    serv_alias           = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['serv']]
-    lab_alias            = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['lab']]
+    dept_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
+    serv_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['serv']]
+    lab_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['lab']]
 
     # Reading the excel file
     df_in = pd.read_excel(in_path)
 
     # Adding the column 'full_name_alias' that will be used to create the authors fullname list
-    df_in[prenom_alias]    = df_in[prenom_alias].apply(lambda x: x.capitalize())
+    df_in[prenom_alias] = df_in[prenom_alias].apply(lambda x: x.capitalize())
     df_in[full_name_alias] = df_in[nom_alias] + ', ' + df_in[prenom_alias]
 
     df_out = pd.DataFrame()
@@ -132,7 +132,7 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
         df_out = pd.concat([df_out, pub_id_df])
 
     # Saving 'df_out' in an excel file 'out_path'
-    df_out.to_excel(out_path, index = False)
+    df_out.to_excel(out_path, index=False)
 
     end_message = f"Column with co-authors list is added to the file: \n  '{out_path}'"
     return end_message
@@ -140,24 +140,26 @@ def _add_authors_name_list(institute, org_tup, in_path, out_path):
 
 def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
                        otp_alias, xl_dpt_path, otp_col_list):
-    """Creates the file for setting OTP attribute of publications by the user 
-    for the Institute department labelled 'dpt'.
+    """Creates an openpyxl file to allow the user to set the OTP attribute   
+    of the publications for the Institute department labelled 'dpt'.
 
     First, a validation list and a list-data-validation rule are defined 
     based on the list of OTPs of the department given by 'dpt_otp_list' list 
     and through the `build_data_val` function imported from the 
-    `bmfuncts.format_files` module.
+    `bmfuncts.format_files` module. 
     A new column named 'otp_alias' is added to the dataframe 'dpt_df' 
-    with values set to the validation list.
-    The dataframe columns are renamed using 'otp_col_list'.
-    Then the dataframe is formatted as a openpxl workbook through 
+    with values set to the validation list. 
+    The dataframe columns are renamed using 'otp_col_list'. 
+    Then the dataframe is formatted as an openpyxl workbook through 
     the `format_page` function imported from `bmfuncts.format_files` 
-    module.  
+    module. 
     The letter targetting the 'otp_alias' column in an openpyxl object 
     is got through the `get_col_letter` function imported from 
-    the `bmfuncts.format_files` module.
+    the `bmfuncts.format_files` module. 
     The list-data-validation rule is added to each cells of the column 
-    'otp_alias' through the `add_data_val` function of this module.
+    'otp_alias' through the `add_data_val` function of this module. 
+    Finally, the built openpyxl workbook is saved using the full path 
+    'xl_dpt_path'.
 
     Arg:
         institute (str): Institute name.
@@ -166,7 +168,7 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
         dpt_df (dataframe): The publications-list dataframe of the 'dpt' department.
         dpt_otp_list (list): List of Institute departments (str).
         otp_alias (str): OTPs column name.
-        xl_dpt_path (path): Full path to the file for setting publication OTP.  
+        xl_dpt_path (path): Full path to the file for setting publication OTP.
         otp_col_list (list): Column names for rename of columns of the file created \
         for setting publications OTP.
     """
@@ -181,7 +183,7 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
 
     # Renaming the columns
     dpt_df = dpt_df.reindex(columns=otp_col_list)
-    
+
     # Formatting 'dpt_df' as openpyxl workbook
     attr_keys_list = set_base_keys_list(institute, org_tup)
     dpt_df_title = pg.DF_TITLES_LIST[2]
@@ -218,7 +220,7 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
         out_path (path): Full path to the files for setting OTPs attributes by the user.
         out_file_base (str): Base for building created-files names.
     Returns:
-        (str): end message recalling out_path.
+        (str): End message recalling out_path.
     """
 
     # Internal functions
@@ -295,24 +297,26 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
 
 def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
                            xl_dpt_path, otp_col_dic, otp_lab_name_col):
-    """Creates the file for setting OTP attribute of publications by the user 
-    for each laboratory of a department of the Institute. 
+    """Creates an openpyxl file to allow the user to set the OTP attribute   
+    of the publications for each laboratory of a department of the Institute. 
 
     First, a validation list and a list-data-validation rule are defined 
     based on the list of OTPs of the laboratory given by 'lab_otp_list' list 
     and through the `build_data_val` function imported from the 
-    `bmfuncts.format_files` module.
+    `bmfuncts.format_files` module. 
     A new column named 'otp_alias' is added to the dataframe 'otp_lab_df' 
-    with values set to the validation list.
-    The dataframe columns are renamed using 'otp_col_list'.
+    with values set to the validation list. 
+    The dataframe columns are renamed using 'otp_col_list'. 
     Then the dataframe is formatted as a multisheet openpxl workbook through 
     the `format_wb_sheet` function imported from `bmfuncts.format_files` 
-    module.  
+    module. 
     The letter targetting the 'otp_alias' column in an openpyxl object 
     is got through the `get_col_letter` function imported from 
-    the `bmfuncts.format_files` module.
+    the `bmfuncts.format_files` module. 
     The list-data-validation rule is added to each cells of the column 
-    'otp_alias' through the `add_data_val` function of this module.
+    'otp_alias' through the `add_data_val` function of this module. 
+    Finally, the built openpyxl workbook is saved using the full path 
+    'xl_dpt_path'.
 
     Arg:
         institute (str): Institute name.
@@ -374,7 +378,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
 
 def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_dict):
     """Creates the files for setting OTP attribute of publications by the user 
-    for the Institute departments.
+    for each of the laboratories of the Institute departments.
 
     First, useful columns are added to the dataframe got from the Excel file 
     where homonyms have been solved by the user and pointed by 'in_path' path 
@@ -498,6 +502,7 @@ def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_ba
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
         in_path (path): Full path to the file where homonyms have been solved.
         out_path (path): Full path to the files for setting OTPs attributes by the user.
         out_file_base (str): Base for building created-files names.
@@ -506,7 +511,7 @@ def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_ba
     """
     # Setting institute parameters
     otp_level = org_tup[11]    
-    
+
     if otp_level=="LAB":
         lab_otps_dict = set_lab_otps(institute, org_tup, bibliometer_path)
         _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_dict)

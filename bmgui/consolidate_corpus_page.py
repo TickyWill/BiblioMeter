@@ -28,19 +28,18 @@ from tkinter import ttk
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 import bmgui.gui_globals as gg
-from bmfuncts.add_otps_functs import add_otp
+from bmfuncts.add_otps import add_otp
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import built_final_pub_list
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
-from bmfuncts.consolidate_pub_list import solving_homonyms
 from bmfuncts.merge_pub_employees import recursive_year_search
 from bmfuncts.update_employees import set_employees_data
 from bmfuncts.update_employees import update_employees
 from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.use_homonyms import set_saved_homonyms
+from bmfuncts.use_homonyms import solving_homonyms
 from bmfuncts.use_otps import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
-from bmgui.gui_globals import GUI_BUTTONS
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import font_size
@@ -437,7 +436,7 @@ def _launch_add_otp_try(institute, org_tup,
     """Launches files creation for adding OTP attribute to publications.
 
     This is done through the `add_otp` function imported from 
-    `bmfuncts.use_otps` module after:
+    `bmfuncts.add_otps` module after:
 
     - check of status of homonyms resolution step 
     - saving the resolved homonyms through `save_homonyms` function \
@@ -786,7 +785,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                             variable_years,
                                             *master.years_list)
     self.OptionButton_years.config(font = self.font_OptionButton_years)
-    GUI_BUTTONS.append(self.OptionButton_years)
+    gg.GUI_BUTTONS.append(self.OptionButton_years)
 
         # Création du label
     self.font_Label_years = tkFont.Font(family = gg.FONT_NAME,
@@ -867,7 +866,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                              text = gg.TEXT_CROISEMENT,
                              font = merge_font,
                              command = _start_launch_recursive_year_search)
-    GUI_BUTTONS.append(merge_button)
+    gg.GUI_BUTTONS.append(merge_button)
     check_effectif_var = tk.IntVar()
     check_effectif_box = tk.Checkbutton(self,
                                         text = gg.TEXT_MAJ_EFFECTIFS,
@@ -925,7 +924,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                                 text = gg.TEXT_HOMONYMES,
                                 font = homonyms_font,
                                 command = _start_launch_resolution_homonymies)
-    GUI_BUTTONS.append(homonyms_button)
+    gg.GUI_BUTTONS.append(homonyms_button)
     etape_2 = etapes[1]
     place_bellow(etape_2,
                  homonyms_button,
@@ -972,7 +971,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                            text = gg.TEXT_OTP,
                            font = otp_font,
                            command = _start_launch_add_otp)
-    GUI_BUTTONS.append(otp_button)
+    gg.GUI_BUTTONS.append(otp_button)
     etape_3 = etapes[2]
     place_bellow(etape_3,
                  otp_button,
@@ -1024,7 +1023,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
                              text = gg.TEXT_PUB_CONSO,
                              font = conso_font,
                              command = _start_launch_pub_list_conso)
-    GUI_BUTTONS.append(conso_button)
+    gg.GUI_BUTTONS.append(conso_button)
     etape_4 = etapes[3]
 
     place_bellow(etape_4,

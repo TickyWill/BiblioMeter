@@ -249,9 +249,9 @@ def set_org_params(institute, bibliometer_path):
     publications with one row per author that has not been identified as Institute employee.
     - index 11 = the level at which the OTPs are predefined before final set by the user.
     - index 12 = the name of the database file of OTPs per departement, service and labs.
-    - index 13 = the name of the sheet to be red in the database file of OTPs.
+    - index 13 = the name of the sheet to be read in the database file of OTPs.
     - index 14 = the lines number of the header in the database file of OTPs.
-    - index 15 = the columns name to be red in the database file of OTPs.
+    - index 15 = the column names to be read in the database file of OTPs.
     - index 16 = the list of departments that have not lab-OTPs available.
 
     Args:
