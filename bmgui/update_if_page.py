@@ -15,7 +15,12 @@ from pathlib import Path
 # Local imports
 import bmgui.gui_globals as gg
 import bmfuncts.pub_globals as pg
-from bmgui.gui_globals import GUI_BUTTONS
+from bmfuncts.add_ifs import add_if
+from bmfuncts.config_utils import set_org_params
+from bmfuncts.consolidate_pub_list import concatenate_pub_lists
+from bmfuncts.consolidate_pub_list import split_pub_list_by_doc_type
+from bmfuncts.save_final_results import save_final_results
+from bmfuncts.update_impact_factors import update_inst_if_database
 from bmgui.gui_utils import disable_buttons, enable_buttons
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import mm_to_px
@@ -23,12 +28,6 @@ from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
 from bmgui.gui_utils import set_page_title
-from bmfuncts.config_utils import set_org_params
-from bmfuncts.consolidate_pub_list import add_if
-from bmfuncts.consolidate_pub_list import concatenate_pub_lists
-from bmfuncts.consolidate_pub_list import split_pub_list_by_doc_type
-from bmfuncts.save_final_results import save_final_results
-from bmfuncts.update_impact_factors import update_inst_if_database
 
 
 def _launch_update_if_db(institute, org_tup, bibliometer_path,
@@ -427,7 +426,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                            text = gg.TEXT_MAJ_BDD_IF,
                                            font = if_db_update_launch_font,
                                            command = _start_launch_update_if_db_try)
-    GUI_BUTTONS.append(if_db_update_launch_button)
+    gg.GUI_BUTTONS.append(if_db_update_launch_button)
     place_bellow(help_label,
                  if_db_update_launch_button,
                  dx = launch_dx_px,
@@ -465,7 +464,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                                  text = gg.TEXT_MAJ_PUB_IF,
                                  font = pub_if_update_launch_button_font,
                                  command = _start_launch_update_pub_if_try)
-    GUI_BUTTONS.append(pub_if_update_launch_button)
+    gg.GUI_BUTTONS.append(pub_if_update_launch_button)
     place_bellow(help_label,
                  pub_if_update_launch_button,
                  dx = launch_dx_px,
