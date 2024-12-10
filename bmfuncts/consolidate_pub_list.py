@@ -192,10 +192,10 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     of the present module.
     6. This dataframe is split by documents type through the \
     `split_pub_list_by_doc_type` function of the present module.
-    7. A copy of all the created files is made in a folder specific to \
-    the combination type of data specified by 'datatype' arg \
-    through the `save_final_results` function imported from \
-    the `bmfuncts.save_final_results` module.
+    7. A copy of all the created files (including hash-IDs) is made \
+    in a folder specific to the combination type of data specified \
+    by 'datatype' arg through the `save_final_results` function \
+    imported from the `bmfuncts.save_final_results` module.
 
     Args:
         institute (str): Institute name.
@@ -288,10 +288,11 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     split_ratio = split_pub_list_by_doc_type(institute, org_tup,
                                              bibliometer_path, corpus_year)
 
-    # Saving pub list as final result
+    # Saving pub list and hash-IDs as final results
     status_values = len(pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["pub_lists"] = True
+    results_to_save_dict["hash_ids"] = True
     if_analysis_name = None
     final_save_message = save_final_results(institute, org_tup, bibliometer_path,
                                             datatype, corpus_year, if_analysis_name,
