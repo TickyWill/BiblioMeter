@@ -263,7 +263,6 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
     submit_select_cols, add_cols_list = all_cols_tup
     pub_id_col = submit_select_cols[0]
     inst_author_col = submit_select_cols[2]
-    first_author_col = submit_select_cols[3]
     employee_col = submit_select_cols[4]
     nb_pub_col = add_cols_list[3]
     pub_list_col = add_cols_list[4]
@@ -294,7 +293,7 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
 
 
 def authors_analysis(institute, org_tup, bibliometer_path, datatype,
-                     corpus_year, progress_callback=None, verbose=False):
+                     corpus_year, progress_callback=None):
     """Performs the analysis of authors data of the 'corpus_year' corpus.
 
     This is done through the following steps:
@@ -322,7 +321,6 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
         corpus_year (str): 4 digits year of the corpus.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
-        verbose (bool): Status of prints (default = False).
     Returns:
         (path): Full path to the folder where results of authors analysis \
         are saved.

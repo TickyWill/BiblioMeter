@@ -129,7 +129,7 @@ def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
     dpt_otp_dict = pd.read_excel(dpt_otp_path, sheet_name=None)
     dpt_otp_df = pd.DataFrame()
     for _, lab_df in dpt_otp_dict.items():
-        dpt_otp_df = pd.concat([dpt_otp_df, lab_df])    
+        dpt_otp_df = pd.concat([dpt_otp_df, lab_df])
     return dpt_otp_df
 
 
@@ -156,7 +156,7 @@ def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
         dpt_otp_df = _set_dpt_otp_df(dpt_label, in_file_base, in_path)
 
         # Appending department publications list with OTPs
-        # to the full publication list to be returned   
+        # to the full publication list to be returned
         if otp_df_init_status:
             otp_df = dpt_otp_df.copy()
             otp_df_init_status = False
@@ -167,7 +167,7 @@ def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
 
 def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                          in_path, out_path, in_file_base, corpus_year):
-    """Builds the dataframe of the publications final list 
+    """Builds the dataframe of the publications final list
     of the 'corpus_year' corpus.
 
     This is done through the following steps:
@@ -267,7 +267,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Re_saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
-    
+
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
     invalids_df_title = pg.DF_TITLES_LIST[0]

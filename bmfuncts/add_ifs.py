@@ -553,20 +553,20 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     # Setting useful parameters for use of 'format_page' function
     common_df_title = pg.DF_TITLES_LIST[0]
     format_cols_list = set_base_keys_list(institute, org_tup)
-    
+
     # Formatting and saving 'corpus_df_bis' as openpyxl file at full path 'out_file_path'
     wb, _ = format_page(corpus_df_bis, common_df_title,
-                        attr_keys_list=format_cols_list)    
+                        attr_keys_list=format_cols_list)
     wb.save(out_file_path)
 
     # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
     wb, _ = format_page(sorted_year_missing_issn_df, common_df_title,
-                        attr_keys_list=format_cols_list)   
+                        attr_keys_list=format_cols_list)
     wb.save(missing_issn_path)
 
     # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
     wb, _ = format_page(sorted_year_missing_if_df, common_df_title,
-                        attr_keys_list=format_cols_list)  
+                        attr_keys_list=format_cols_list)
     wb.save(missing_if_path)
 
     end_message = f"IFs added for year {year} in file : \n  '{out_file_path}'"

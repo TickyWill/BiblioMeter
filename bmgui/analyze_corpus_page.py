@@ -51,8 +51,7 @@ def _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
                                                  bibliometer_path,
                                                  datatype,
                                                  year_select,
-                                                 progress_callback,
-                                                 verbose=False)
+                                                 progress_callback)
 
     info_title = "- Information -"
     info_text = (f"L'analyse de la production par auteur a été effectuée "

@@ -628,5 +628,3 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(100)
 
     return if_analysis_folder_path, institute_kpi_df, kpi_dict
-
-

@@ -419,7 +419,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     # Initialize parameters for saving results as multisheet workbook
     first = True
     wb = openpyxl_Workbook()
-    
+
     # Setting the IFs-years sheets not to be updated (not part of corpus years)
     kept_if_db_years_list = sorted(list(set(full_if_db_years_list) - set(if_db_years_list)))
     if kept_if_db_years_list:

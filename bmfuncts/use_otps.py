@@ -17,7 +17,6 @@ import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
 # Local imports
-import bmfuncts.employees_globals as eg
 import bmfuncts.institute_globals as ig
 import bmfuncts.pub_globals as pg
 from bmfuncts.add_otps import add_data_val
@@ -33,7 +32,6 @@ from bmfuncts.format_files import get_col_letter
 from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.format_files import set_df_attributes
 from bmfuncts.rename_cols import build_col_conversion_dic
-from bmfuncts.rename_cols import set_otp_col_names
 
 
 def save_otps(institute, org_tup, bibliometer_path, corpus_year):
@@ -162,7 +160,7 @@ def _use_hash_id_set_otps(dpt_df, otps_history_tup):
     lists_tup, cols_tup, _ = otps_history_tup
     pub_id_to_check_list, otp_to_set_list = lists_tup[0], lists_tup[1]
     pub_id_col, otp_list_col = cols_tup[1], cols_tup[4]
-    
+
     # Setting columns list
     col_list = list(dpt_df.columns)
 
@@ -196,14 +194,13 @@ def _use_known_doi_otps(dfs_tup, cols_tup, dpt_df,
                         doi_to_check, doi_otp_to_set):
     """Manages case of known DOIs.
     """
-    # Setting parameters from args    
+    # Setting parameters from args
     otp_set_dpt_df, otp_to_set_dpt_df = dfs_tup
     doi_col = cols_tup[3]
     otp_list_col = cols_tup[4]
-    otp_col = cols_tup[5]
 
-    # Setting the DOI index in 'dpt_df' to fill with 'doi_otp_to_set' 
-    # at 'otp_list_col' col 
+    # Setting the DOI index in 'dpt_df' to fill with 'doi_otp_to_set'
+    # at 'otp_list_col' col
     dept_doi_list = dpt_df[doi_col].to_list()
     dpt_doi_idx_list = [i for i,e in enumerate(dept_doi_list)
                         if e==doi_to_check]
@@ -218,14 +215,14 @@ def _use_known_doi_otps(dfs_tup, cols_tup, dpt_df,
 
 
 def _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
-                      auth_to_check, auth_otp_to_set):
+                      auth_idx, auth_to_check, auth_otp_to_set):
     """
     """
     # Setting parameters from args
     otp_set_dpt_df, otp_to_set_dpt_df = dfs_tup
-    author_col = cols_tup[2]  
+    author_col = cols_tup[2]
     otp_list_col = cols_tup[4]
-    
+
     auth_idx_to_replace_list = []
     if auth_idx in otp_to_set_dpt_df.index:
         auth_idx_to_replace_list.append(auth_idx)
@@ -273,7 +270,7 @@ def _use_unknown_doi_otps(dfs_tup, otps_history_tup, dpt_df,
 
             for auth_idx in dpt_auth_idx_list:
                 dfs_tup = _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
-                                            auth_to_check, auth_otp_to_set)
+                                            auth_idx, auth_to_check, auth_otp_to_set)
         else:
             continue
     return dfs_tup
@@ -284,7 +281,7 @@ def _use_doi_set_otps(dpt_df, otps_history_tup, dfs_tup):
     """
     # Setting parameters from args
     lists_tup, cols_tup, _ = otps_history_tup
-    doi_to_check_list = lists_tup[3]    
+    doi_to_check_list = lists_tup[3]
     doi_otp_to_set_list = lists_tup[4]
     doi_col = cols_tup[3]
     otp_to_set_dpt_df = dfs_tup[1]
@@ -312,7 +309,7 @@ def _add_set_otp_rows(ws, otp_set_df, df_len, cell_colors):
     """ """
     # use of a continuously incremented index
     # because row index is not continuously incremented
-    idx = 1 
+    idx = 1
     for _, row in otp_set_df.iterrows():
         ws.append(row.values.flatten().tolist())
         row_color_idx = df_len + idx
@@ -321,7 +318,7 @@ def _add_set_otp_rows(ws, otp_set_df, df_len, cell_colors):
     return ws
 
 
-def _set_lab_otp_ws(lab_df, lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
+def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
     """
     """
     # Setting parameters from args
@@ -365,7 +362,7 @@ def _set_lab_otp_ws(lab_df, lab, dfs_tup, lab_otp_list, wb, first, common_args_t
 
     # Re-shaping header
     ws = format_heading(ws, new_lab_df_title)
-    
+
     return wb, ws
 
 def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
@@ -396,8 +393,8 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
     # Setting num of first col and first row in EXCEL files
     xl_idx_base = pg.XL_INDEX_BASE
 
-    # Setting cell colors    
-    cell_colors = build_cell_fill_patterns()  
+    # Setting cell colors
+    cell_colors = build_cell_fill_patterns()
 
     # Setting parameters from args
     cols_tup = otps_history_tup[1]
@@ -406,7 +403,8 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
     attr_keys_list = set_base_keys_list(institute, org_tup)
 
     # Setting parameters from args
-    otp_list_col = cols_tup[4]          
+    otp_list_col = cols_tup[4]
+    otp_col_letter = " "
 
     # Initialize parameters for saving results as multisheet workbook
     first = True
@@ -417,9 +415,9 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
             # Getting the column letter for the OTPs column
             otp_col_letter = get_col_letter(lab_df, otp_list_col, xl_idx_base)
 
-            # Setting common args
-            common_args_tup = (attr_keys_list, otp_list_col, cell_colors,
-                               xl_idx_base, otp_col_letter)
+        # Setting common args
+        common_args_tup = (attr_keys_list, otp_list_col, cell_colors,
+                           xl_idx_base, otp_col_letter)
 
         # Using set OTPs by Hash-ID
         dfs_tup = _use_hash_id_set_otps(lab_df, otps_history_tup)
@@ -428,13 +426,13 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
         # Using set OTPs by DOI
         if len(otp_to_set_lab_df):
             dfs_tup = _use_doi_set_otps(lab_df, otps_history_tup, dfs_tup)
-        
+
         # Setting otps list for "lab" lboratory
         lab_otp_list = dpt_lab_otps_dict[lab]
-        
+
         # Formatting the worksheet for "lab" lboratory of the department
-        wb, ws = _set_lab_otp_ws(lab_df, lab, dfs_tup, lab_otp_list, wb, first,
-                                 common_args_tup)
+        wb, _ = _set_lab_otp_ws(lab, dfs_tup, lab_otp_list,
+                                wb, first, common_args_tup)
         first = False
 
     # Saving the workbook
@@ -461,9 +459,7 @@ def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
         otp_folder_path (path): Full path to the OTP-files folder.
         otps_history_tup (tup): .
     """
-    # Setting parameters from args
-    cols_tup = otps_history_tup[1]
-    
+
     # Setting institute parameters
     dpt_attributs_dict = org_tup[2]
 
@@ -514,14 +510,14 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
     """
     # Setting num of first col and first row in EXCEL files
     xl_idx_base = pg.XL_INDEX_BASE
-    
-    # Setting cell colors    
+
+    # Setting cell colors
     cell_colors = build_cell_fill_patterns()
 
     # Setting parameters from args
     otp_set_dpt_df, otp_to_set_dpt_df = dfs_tup
     otp_list_col = cols_tup[4]
-    
+
     # Setting formatting attributes
     attr_keys_list = set_base_keys_list(institute, org_tup)
     dpt_df_title = pg.DF_TITLES_LIST[2]
@@ -559,7 +555,7 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
 
     # Re-shaping header
     ws = format_heading(ws, dpt_df_title)
-            
+
     # Setting the worksheet label
     ws.title = dpt_otp_sheet_name
 
@@ -679,9 +675,9 @@ def _get_otps_history(institute, org_tup,
     cols_tup = (hash_id_col_alias, pub_id_alias, author_col_alias,
                 doi_col_alias, otp_list_col_alias, otp_col_alias)
 
-    return lists_tup, cols_tup, doi_otp_history_df        
-        
-        
+    return lists_tup, cols_tup, doi_otp_history_df
+
+
 def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     """Attributes the OTPs from the history of the attributed OTPs 
     before submiting to the user the file for attributing the not yet 
@@ -703,7 +699,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
         (str): End message giving the status of the OTPs attribution.
     """
     # Setting institute parameters
-    otp_level = org_tup[11]  
+    otp_level = org_tup[11]
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -712,7 +708,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     history_folder_alias = pg.ARCHI_YEAR["history folder"]
     kept_otps_file_alias = pg.ARCHI_YEAR["kept OTPs file name"]
     hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"]
-    
+
     # Setting useful paths
     corpus_year_path    = bibliometer_path / Path(corpus_year)
     bdd_mensuelle_path  = corpus_year_path / Path(bdd_mensuelle_alias)

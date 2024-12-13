@@ -236,7 +236,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                                                                progress_callback,
                                                                progress_bar_state)
             print('\n',end_message)
-            
+
             info_title = '- Information -'
             info_text  = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
             if orphan_status:

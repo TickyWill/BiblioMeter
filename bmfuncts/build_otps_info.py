@@ -46,7 +46,7 @@ def _set_sorted_list1(lists):
     """
     init_list = sum(lists, [])
     sorted_list = sorted(list(set(init_list)))
-    return sorted_list    
+    return sorted_list
 
 
 def _set_sorted_list2(df, col):
@@ -105,7 +105,7 @@ def _add_invalide(new_lab_otps_dict):
     for dept, dept_dict in new_lab_otps_dict.items():
         final_lab_otps_dict[dept] = {}
         for k,v in dept_dict.items():
-            final_lab_otps_dict[dept][k] = v + [ig.INVALIDE]        
+            final_lab_otps_dict[dept][k] = v + [ig.INVALIDE]
     return final_lab_otps_dict
 
 
@@ -147,7 +147,7 @@ def _set_final_otps_dict(institute, lab_otps_dict):
             else:
                 new_lab_otps_dict[dept] = lab_otps_dict[dept]
         new_lab_otps_dict["DTIS"] = dict(zip(dtis_lab_list, dtis_otps_lists))
-        new_lab_otps_dict["DTIS"][_set_full("DTIS")] = _set_sorted_list1(dtis_otps_lists)                
+        new_lab_otps_dict["DTIS"][_set_full("DTIS")] = _set_sorted_list1(dtis_otps_lists)
         _fill_full_div("DACLE", "DSYS")
         _fill_full_div("DEXT", "DCOS")
     final_lab_otps_dict = _add_invalide(new_lab_otps_dict)
@@ -181,11 +181,11 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     def _set_otps_dict(lb, otps_list, srv=None, dpt=None):
         """Sets OTPs dict for 'lb' lab of 'srv' service 
         of 'dpt' department using `-try_init_dict` internal function.
-        """ 
+        """
         dpt = _try_init_dict(dept_otps_dict, dpt, dept)
         srv = _try_init_dict(dept_otps_dict[dpt], srv, serv)
         dept_otps_dict[dpt][srv][lb] = otps_list
-    
+
     # Seting useful aliases
     unknown_alias = bp.UNKNOWN
     config_root_alias = eg.EMPLOYEES_ARCHI["root"]
@@ -196,7 +196,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     otps_header = org_tup[14]
     otps_cols = org_tup[15]
     inst_dir = _set_dir(institute.upper())
-    
+
     # Setting useful col names of the OTPs source file
     dept_col = otps_cols[0]
     otp_col = otps_cols[1]
@@ -211,7 +211,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     otps_bdd_df = pd.read_excel(otps_bdd_path, sheet_name=otps_sheet,
                                 header=otps_header, usecols=otps_cols)
     otps_bdd_df.fillna(unknown_alias, inplace=True)
-    
+
     # Filling initial OTPs dict with infos provided by OTPs source file
     # The dict is a hierarchical dict keyyed by department, services and labs
     # as they are defined in the source file but not as defined in the Instiute config file.
@@ -221,7 +221,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
         if dept=="CLINATEC":
             serv = "SCLIN"
             lab = _set_dir(serv)
-            _set_otps_dict(lab, dept_otps_list, srv=serv, dpt=dept) 
+            _set_otps_dict(lab, dept_otps_list, srv=serv, dpt=dept)
         elif "DIR" in dept or dept==inst_dir:
             dir_dept = "DIR"
             serv = inst_dir

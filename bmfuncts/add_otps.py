@@ -339,12 +339,12 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
     # Setting col attributes keys
     attr_keys_list = set_base_keys_list(institute, org_tup)
 
-    # Setting useful-columns list of OTP df 
+    # Setting useful-columns list of OTP df
     otp_col_list = list(otp_col_dic.values())
 
     # Activating the validation data list in all cells of the OTPs column
     if len(dpt_df):
-        wb = openpyxl_Workbook()       
+        wb = openpyxl_Workbook()
         first = True
         for otp_lab, otp_lab_df in dpt_df.groupby(otp_lab_name_col):
             # Setting a validation list per lab
@@ -367,7 +367,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
 
             # Getting the column letter for the OTPs column
             otp_col_letter = get_col_letter(otp_lab_df, otp_alias, xl_idx_base)
-            
+
             # Adding a validation data list
             ws = add_data_val(ws, data_val, len(otp_lab_df), otp_col_letter,
                               xl_idx_base)
@@ -416,7 +416,7 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
     dpt_alias = otp_col_dic['dpt']
     lab_alias = otp_col_dic['lab']
     dpt_label_alias = ig.DPT_LABEL_KEY
-    
+
     # Setting otp-lab col name
     otp_lab_name_col = "otp_lab"
 
@@ -485,7 +485,7 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
 
         # Adding a column with validation list for OTPs and saving the file
         _save_dpt_lab_otp_file(institute, org_tup, otp_dpt_df, dpt_otp_dict,
-                               xl_dpt_path, otp_col_dic, otp_lab_name_col)    
+                               xl_dpt_path, otp_col_dic, otp_lab_name_col)
 
 
 def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_base):
@@ -510,7 +510,7 @@ def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_ba
         (str): end message recalling out_path.
     """
     # Setting institute parameters
-    otp_level = org_tup[11]    
+    otp_level = org_tup[11]
 
     if otp_level=="LAB":
         lab_otps_dict = set_lab_otps(institute, org_tup, bibliometer_path)
