@@ -352,6 +352,7 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
     most_recent_year_if_db_df = _append_df(most_recent_year_if_db_df,
                                            most_recent_year_if_df_to_add,
                                            journal_col)
+    most_recent_year_if_db_df.sort_values(by=journal_col, inplace=True)
     if_sheet_name = off_if_db_years_list[0]
     if_db_df_title = pg.DF_TITLES_LIST[3]
     wb = format_wb_sheet(if_sheet_name, most_recent_year_if_db_df,
