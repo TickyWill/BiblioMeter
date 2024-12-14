@@ -154,7 +154,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
 
 
 def _use_hash_id_set_otps(dpt_df, otps_history_tup):
-    """
+    """Uses set otps by Hash-IDs.
     """
     # Setting parameters from args
     lists_tup, cols_tup, _ = otps_history_tup
@@ -216,7 +216,7 @@ def _use_known_doi_otps(dfs_tup, cols_tup, dpt_df,
 
 def _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
                       auth_idx, auth_to_check, auth_otp_to_set):
-    """
+    """Uses set OTPs by first-author name of unknown DOIs.
     """
     # Setting parameters from args
     otp_set_dpt_df, otp_to_set_dpt_df = dfs_tup
@@ -244,7 +244,7 @@ def _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
 
 def _use_unknown_doi_otps(dfs_tup, otps_history_tup, dpt_df,
                           doi_to_check):
-    """Manages case of first author name of unknown DOIs.
+    """Manages case of unknown DOIs.
     """
     # Setting parameters from args
     otp_to_set_dpt_df = dfs_tup[1]
@@ -277,7 +277,7 @@ def _use_unknown_doi_otps(dfs_tup, otps_history_tup, dpt_df,
 
 
 def _use_doi_set_otps(dpt_df, otps_history_tup, dfs_tup):
-    """
+    """Uses set OTPs by DOI.
     """
     # Setting parameters from args
     lists_tup, cols_tup, _ = otps_history_tup
@@ -306,7 +306,9 @@ def _use_doi_set_otps(dpt_df, otps_history_tup, dfs_tup):
 
 
 def _add_set_otp_rows(ws, otp_set_df, df_len, cell_colors):
-    """ """
+    """Adds rows with set OTPs to the openpyxl sheet 
+    and colors them alternatively.
+    """
     # use of a continuously incremented index
     # because row index is not continuously incremented
     idx = 1
@@ -319,7 +321,9 @@ def _add_set_otp_rows(ws, otp_set_df, df_len, cell_colors):
 
 
 def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
-    """
+    """Builts the openpyxl sheet of a laboratory in the openpyxl workbook 
+    of the department it belongs, to using set OTPs and keeping validation 
+    rules for not set OTPs.
     """
     # Setting parameters from args
     otp_set_lab_df, otp_to_set_lab_df = dfs_tup
@@ -383,12 +387,13 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        dpt (str): Department of the Institute.
-        otp_set_dpt_df (dataframe): Data of the already attributed OTPs for the department.
-        otp_to_set_dpt_df (dataframe): Data of the OTPs still to be attributed for the department.
-        dpt_otp_file_name_path (path): Full path to where the workbook is saved. 
-        otp_list_col (str): Name of the column that contains the OTPs list.
-        otps_history_tup (tup): .
+        dpt_pub_dict (dict): The data of the department keyed by laboratory \
+        names (str) and valued by publications data (dataframe).
+        dpt_lab_otps_dict (dict): The data of the department keyed \
+        by laboratory names (str) and valued by OTPs lists (list). 
+        dpt_otp_file_name_path (path): Full path to where the workbook is saved.
+        otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
+        data of OTPs set by DOI (dataframe).
     """
     # Setting num of first col and first row in EXCEL files
     xl_idx_base = pg.XL_INDEX_BASE
@@ -427,7 +432,7 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
         if len(otp_to_set_lab_df):
             dfs_tup = _use_doi_set_otps(lab_df, otps_history_tup, dfs_tup)
 
-        # Setting otps list for "lab" lboratory
+        # Setting OTPs list for "lab" laboratory
         lab_otp_list = dpt_lab_otps_dict[lab]
 
         # Formatting the worksheet for "lab" lboratory of the department
@@ -440,7 +445,7 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
 
 
 def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
-                        otp_folder_path, otp_file_base_alias,
+                        otp_folder_path, otp_file_base,
                         lab_otps_dict):
     """Attributes the OTPs from the history of the attributed OTPs 
     before submiting to the user the file for attributing the not yet 
@@ -456,8 +461,12 @@ def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        otp_folder_path (path): Full path to the OTP-files folder.
-        otps_history_tup (tup): .
+        otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
+        data of OTPs set by DOI (dataframe).
+        otp_folder_path (path): The full path to the folder where the file is saved.
+        otp_file_base (str): The name base of the file to be saved.
+        lab_otps_dict (hierarchical dict): The data keyed by department names (str) \
+        and valued by OTPs data given by laboratory of each department (dict).
     """
 
     # Setting institute parameters
@@ -469,7 +478,7 @@ def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
     # Setting the already attributed OTPs for each department
     for dpt in sorted(dpt_list):
         # Setting the full path of the EXCEl file for the 'dpt' department
-        dpt_otp_file_name = f'{otp_file_base_alias}_{dpt}.xlsx'
+        dpt_otp_file_name = f'{otp_file_base}_{dpt}.xlsx'
         dpt_otp_file_name_path = otp_folder_path / Path(dpt_otp_file_name)
 
         # Setting the dict of list of OTPs per lab for the 'dpt' department
@@ -503,10 +512,10 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
         org_tup (tup): Contains Institute parameters.
         dfs_tup (tup): (Data of the already attributed OTPs for the department (dataframe), \
         Data of the OTPs still to be attributed for the department (dataframe)).
-        cols_tup (tup): .
-        dpt_otp_list (str): String containing the OTPs of the department seperated by semicolons.
+        cols_tup (tup): Useful column names (str).
+        dpt_otp_list (list): The OTPs list of the department.
         dpt_otp_file_name_path (path): Full path to where the workbook is saved. 
-        dpt_otp_sheet_name (str): Name .
+        dpt_otp_sheet_name (str): Name of the openpyxl sheet of the workbook.
     """
     # Setting num of first col and first row in EXCEL files
     xl_idx_base = pg.XL_INDEX_BASE
@@ -564,10 +573,10 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
 
 
 def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
-                         otp_folder_path, otp_file_base_alias):
+                         otp_folder_path, otp_file_base):
     """Attributes the OTPs from the history of the attributed OTPs 
-    before submiting to the user the file for attributing the not yet 
-    attributed OTPs.
+    at department level before submiting to the user the file 
+    for attributing the not-yet attributed OTPs.
 
     Loops on department to:
 
@@ -579,10 +588,10 @@ def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
-        corpus_year (str): 4 digits year of the corpus.
-    Returns:
-        (str): End message giving the status of the OTPs attribution.
+        otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
+        data of OTPs set by DOI (dataframe).
+        otp_folder_path (path): The full path to the folder where the file is saved.
+        otp_file_base (str): The name base of the file to be saved.
     """
 
     # Setting parameters from args
@@ -597,7 +606,7 @@ def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
     # Setting the already attributed OTPs for each department
     for dpt in sorted(dpt_list):
         # Setting the full path of the EXCEl file for the 'dpt' department
-        dpt_otp_file_name = f'{otp_file_base_alias}_{dpt}.xlsx'
+        dpt_otp_file_name = f'{otp_file_base}_{dpt}.xlsx'
         dpt_otp_file_name_path = otp_folder_path / Path(dpt_otp_file_name)
 
         # Setting the sheet name of the EXCEl file for the 'dpt' department

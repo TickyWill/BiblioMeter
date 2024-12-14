@@ -55,10 +55,10 @@ def _read_authors_df(parsing_path_dict, item_filename_dict):
     the `bmfuncts.useful_functs` module.
 
     Args:
-        parsing_path_dict (dict): The dict keyyed by the parsing steps \
+        parsing_path_dict (dict): The dict keyed by the parsing steps \
         and valued by the full path to the folder of the corresponding \
         parsing results.
-        item_filename_dict (dict): The dict keyyed by the parsing items \
+        item_filename_dict (dict): The dict keyed by the parsing items \
         and valued by the corresponding file name.
     Returns:
         (dataframe): The dataframe of the authors data.

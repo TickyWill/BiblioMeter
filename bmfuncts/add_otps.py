@@ -323,7 +323,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
         org_tup (tup): Contains Institute parameters.
         dpt_df (dataframe): The publications-list dataframe of a departmentof \
         the Institute.
-        dpt_otp_dict (dict): Dict keyyed by lab-names and valued by lab-OTPs lists.
+        dpt_otp_dict (dict): Dict keyed by lab-names and valued by lab-OTPs lists.
         xl_dpt_path (path): Full path to the file for setting publication OTP.  
         otp_col_dic (dict): Dict valued by the column names for rename of columns \
         of the file created for setting publications OTP.
@@ -395,8 +395,8 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
         in_path (path): Full path to the file where homonyms have been solved.
         out_path (path): Full path to the files for setting OTPs attributes by the user.
         out_file_base (str): Base for building created-files names.
-        lab_otps_dict (dict): OTPs hierarchical dict keyyed by departments \
-        and valued by dicts keyyed by labs and valued by OTPs lists.
+        lab_otps_dict (dict): OTPs hierarchical dict keyed by departments \
+        and valued by dicts keyed by labs and valued by OTPs lists.
     """
 
     # Internal functions

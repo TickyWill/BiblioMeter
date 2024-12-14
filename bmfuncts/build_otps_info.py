@@ -94,8 +94,8 @@ def _add_invalide(new_lab_otps_dict):
     of values of 'new_lab_otps_dict'.
 
     Args:
-        new_lab_otps_dict (hierarchical dict): Keyyed by departments \
-        and valued by dicts each one keyyed by lab of department 
+        new_lab_otps_dict (hierarchical dict): Keyed by departments \
+        and valued by dicts each one keyed by lab of department 
         and valued OTPs values list.
     Returns:
         (hierarchical dict): with same structure as 'new_lab_otps_dict' \
@@ -117,12 +117,12 @@ def _set_final_otps_dict(institute, lab_otps_dict):
     Args:
         institute (str): Institute name.
         lab_otps_dict (dict): OTPs hierarchical dict \
-        keyyed by departments and valued by dicts keyyed \
+        keyed by departments and valued by dicts keyed \
         by labs and valued by OTPs lists.
     Returns:
-        (dict): Final OTPs hierarchical dict keyyed by \
+        (dict): Final OTPs hierarchical dict keyed by \
         departments of effective Institute structure and \
-        valued by dicts keyyed by labs and valued \
+        valued by dicts keyed by labs and valued \
         by OTPs lists.
     """
     # Internal functions
@@ -174,11 +174,11 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
     Returns:
-        (dict): OTPs hierarchical dict keyyed by departments \
-        and valued by dicts keyyed by labs and valued by OTPs lists.    
+        (dict): OTPs hierarchical dict keyed by departments \
+        and valued by dicts keyed by labs and valued by OTPs lists.    
     """
     # Internal functions
-    def _set_otps_dict(lb, otps_list, srv=None, dpt=None):
+    def _set_otps_dict(dept, lb, otps_list, srv=None, dpt=None):
         """Sets OTPs dict for 'lb' lab of 'srv' service 
         of 'dpt' department using `-try_init_dict` internal function.
         """
@@ -213,7 +213,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     otps_bdd_df.fillna(unknown_alias, inplace=True)
 
     # Filling initial OTPs dict with infos provided by OTPs source file
-    # The dict is a hierarchical dict keyyed by department, services and labs
+    # The dict is a hierarchical dict keyed by department, services and labs
     # as they are defined in the source file but not as defined in the Instiute config file.
     dept_otps_dict = {}
     for dept, dept_df in otps_bdd_df.groupby(dept_col):
@@ -221,12 +221,12 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
         if dept=="CLINATEC":
             serv = "SCLIN"
             lab = _set_dir(serv)
-            _set_otps_dict(lab, dept_otps_list, srv=serv, dpt=dept)
+            _set_otps_dict(dept, lab, dept_otps_list, srv=serv, dpt=dept)
         elif "DIR" in dept or dept==inst_dir:
             dir_dept = "DIR"
             serv = inst_dir
             lab = serv
-            _set_otps_dict(lab, dept_otps_list, srv=serv, dpt=dir_dept)
+            _set_otps_dict(dept, lab, dept_otps_list, srv=serv, dpt=dir_dept)
         else:
             dept_otps_dict[dept] = {}
             for serv, serv_df in dept_df.groupby(serv_col):
@@ -234,25 +234,25 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
                 if "DIR" in serv:
                     serv = _set_dir(dept)
                     lab = serv
-                    _set_otps_dict(lab, serv_otps_list, srv=serv)
+                    _set_otps_dict(dept, lab, serv_otps_list, srv=serv)
                 elif serv==unknown_alias:
                     serv = _set_dir(dept)
                     lab = serv
                     otps_lists = [dept_otps_dict[dept][serv][lab], serv_otps_list]
                     new_serv_otps_list = _set_sorted_list1(otps_lists)
-                    _set_otps_dict(lab, new_serv_otps_list, srv=serv)
+                    _set_otps_dict(dept, lab, new_serv_otps_list, srv=serv)
                 else:
                     dept_otps_dict[dept][serv] = {}
                     labs_list = _set_sorted_list2(serv_df, lab_col)
                     if labs_list==[unknown_alias]:
                         lab = _set_dir(serv)
-                        _set_otps_dict(lab, serv_otps_list)
+                        _set_otps_dict(dept, lab, serv_otps_list)
                     else:
                         for lab, lab_df in serv_df.groupby(lab_col):
                             lab_otps_list = _set_sorted_list2(lab_df, otp_col)
                             if lab==unknown_alias or "DIR" in lab:
                                 lab = _set_dir(serv)
-                            _set_otps_dict(lab, lab_otps_list)
+                            _set_otps_dict(dept, lab, lab_otps_list)
 
     # Reorganizing dict of OTPs by removing services keys
     lab_otps_dict = {}

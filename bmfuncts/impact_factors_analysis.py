@@ -39,7 +39,7 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
-        kpi_dict (dict): Hierarchical dict keyyed by departments of the Institute \
+        kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
         including itself and valued with KPIs dict of these keys.
         if_key (str): Column name of the analyzed impact factors (either those of \
         the publication year or the most available ones).
@@ -151,7 +151,7 @@ def _build_analysis_books_kpi(books_df, params_tup):
         params_tup (tup): Tuple = (Institute name (str), \
         list of departments (list), column name of journals (str)).
     Returns:
-        (dict): Hierarchical dict keyyed by departments and valued \
+        (dict): Hierarchical dict keyed by departments and valued \
         at each key by KPIs of the department.
     """
 
@@ -208,7 +208,7 @@ def _build_analysis_books_kpi(books_df, params_tup):
 
 def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
     """Computes the key performance indicators (KPIs) of all document types 
-    for each department of the Institute including itself.
+    for a department of the Institute.
 
     This is done through the following steps:
 
@@ -221,13 +221,13 @@ def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
     4. Builds the KPIs dict.
 
     Args:
-        dept_analysis_df (dataframe): 
-        dept_books_kpi_dict (dept_books_kpi_dict): KPIs of books document-type. 
-        params_tup (tup): (Institute name (str), \
-        list of departments (list), column name of journals (str)).
+        dept_analysis_df (dataframe): Data of publications of the departement. 
+        dept_books_kpi_dict (dict): KPIs of books document types of the department. 
+        cols_tup (tup): (column name of document types (str), \
+        column name of ISSNs (str), column name of articles numbers (str)).
     Returns:
-        (tup): (the built articles dataframe for the department, \
-        KPIs dict keyyed by KPI_KEYS_ORDER_DICT global -imported from \
+        (tup): (the built articles data for the department (dataframe), \
+        KPIs dict keyed by KPI_KEYS_ORDER_DICT global -imported from \
         the globals module imported as pg- and valued by KPIs values \
         of the department).
     """
@@ -331,15 +331,12 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
         if_analysis_year (str): 4 digits year of the IFs values used for the analysis.
         if_analysis_folder_path (path): Full path to the folder for saving results.
         books_list_file_path (path): Full path to the file of book list to be analyzed.
-        kpi_dict (dict): Dict keyyed by departments of the Institute including itself \
-        and valued with KPIs of the 'corpus_year' corpus.
-        if_key (str): Column name of the analyzed impact factors (either those of \
-        the publication year or the most available ones).
         verbose (bool): Status of prints (default = False).
     Returns:
-        (tup): (hierarchical dict keyyed by departments of the Institute including \
+        (tup): (hierarchical dict keyed by departments of the Institute including \
         itself and valued with KPIs dict of each department, key of IF-KPIs in the \
-        hierarchical dict of each department and also column name of IFs values in the saved files).
+        hierarchical dict of each department and that is also column name of IFs values \
+        in the saved files).
     """
 
     # Setting useful column names aliases

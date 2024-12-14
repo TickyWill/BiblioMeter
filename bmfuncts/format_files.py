@@ -47,7 +47,8 @@ def get_col_letter(df, col, xl_idx_base):
     Args:
         df (dataframe): Data of which column letter is got.
         col (str): Name of column of which letter is got.
-        xl_idx_base (int): Base of columns indexes in openpyxl.
+        xl_idx_base (int): Base of columns and row indexes \
+        in openpyxl objects.
     Returns:
         (str): Letter (or couple of letters) targetting the column
         in openpyxl.
@@ -66,7 +67,7 @@ def build_data_val(values_list):
         as validation list.
     Returns:
         (tup): (Validation description (str), \
-        list-data-validation rule (openpyxl. datavalidation)).
+        list-data-validation rule (openpyxl.DataValidation)).
     """
     validation_list = '"'+','.join(values_list) + '"'
     data_val = openpyxl_DataValidation(type = "list",
@@ -93,7 +94,8 @@ def color_row(ws, idx_row, cell_colors):
         idx_row (int): Row index to be colored.
         cell_colors (list): List of openpyxl.PatternFill objects.
     Returns:
-        (openpyxl worksheet): The cells colored openpyxl worksheet.
+        (openpyxl worksheet): The openpyxl worksheet where cells \
+        have been colored.
     """
     last_row = ws[ws.max_row]
     if idx_row >= 1:
@@ -110,10 +112,13 @@ def align_cell(ws, columns_list, col_attr, xl_idx_base):
     Args:
         ws (openpyxl worksheet): The worksheet where columns are to be formatted.
         columns_list (list): List of columns names (str) to be formatted.
-        col_attr (dict): The columns attributes as dict keyed by column names \
-        and valued by list=[horizontal alignment, width].
+        col_attr (dict): The columns attributes as dict keyed by column names (str) \
+        and valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)].
+        xl_idx_base (int): Base of columns and row indexes in openpyxl objects.
     Returns:
-        (openpyxl worksheet): The cells colored openpyxl worksheet.
+        (openpyxl worksheet): The openpyxl worksheet where cells \
+        have been aligned.
     """
     borders = openpyxl_Border(left=openpyxl_Side(border_style='thick',
                                                  color='FFFFFF'),
@@ -136,7 +141,9 @@ def format_heading(ws, df_title):
         are to be formatted.
         df_title (str): Name of the data type to be formatted.
     Returns:
-        (openpyxl worksheet): The cells colored openpyxl worksheet."""
+        (openpyxl worksheet): The openpyxl worksheet where heading cells \
+        have been formatted.
+    """
     head_font = openpyxl_Font(bold=True)
     head_align = openpyxl_Alignment(wrap_text=True, horizontal="center",
                                     vertical="center")
@@ -156,10 +163,11 @@ def set_col_width(ws, columns_list, col_attr, col_idx_init, xl_idx_base):
     Args:
         ws (openpyxl worksheet): The worksheet where columns are to be formatted.
         columns_list (list): List of columns names (str) to be formatted.
-        col_attr (dict): The columns attributes as dict keyed by column names \
-        and valued by list=[horizontal alignment, width].
+        col_attr (dict): The columns attributes as dict keyed by column names (str) \
+        and valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)].
         col_idx_init (int): Num of first column to be formatted.
-        xl_idx_base (int): Num of first col and first row in openpyxl objects.
+        xl_idx_base (int): Base of columns and row indexes in openpyxl objects.
     Returns:
         (openpyxl worksheet): The cells colored openpyxl worksheet."""
 
@@ -184,11 +192,14 @@ def _set_base_attributes(df_cols_list, final_cols_list):
     Args:
         df_cols_list (list): List of columns names (str) for \
         which attributes are to be defined.
-        keys_list (dict): The columns attributes as dict keyed by column names \
-        and valued by list=[horizontal alignment, width].
+        final_cols_list (list): The list of columns names (str) \
+        that will be used as keys for building the dict \
+        valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)].
     Returns:
         (tup): (The columns attributes as dict keyed by column names (str) \
-        and valued by [horizontal alignment, width] (list), \
+        and valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)], \
         The rows attributes as dict keyed by "first_row" and "other_rows" \
         and valued by rows height (int), Num of first column to be formatted (int)).
     """
@@ -333,11 +344,14 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
         df_title (str): Name of the data type to be formatted.
         df_cols_list (list): List of columns names (str) for \
         which attributes are to be defined.
-        keys_list (dict): The columns attributes as dict keyed by column names \
-        and valued by list=[horizontal alignment, width].
+        keys_list (list): The list of columns names (str) \
+        that will be used as keys for building the dict \
+        valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)].
     Returns:
         (tup): (The columns attributes as dict keyed by column names (str) \
-        and valued by [horizontal alignment, width] (list), \
+        and valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)], \
         The rows attributes as dict keyed by "first_row" and "other_rows" \
         and valued by rows height (int), Num of first column to be formatted (int)).
     """
@@ -442,21 +456,26 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
     If the workbook wb is None, then the workbook is created.
 
     Args:
-        institute (str): The Institute name.
-        org_tup (tup): The tuple of the organization structure \
-        of the Institute.
         df (dataframe): The dataframe to be formatted.
         df_title (str): Name of data to be formatted for setting \
         columns attributes, to be specified using the 'DF_TITLES_LIST' \
         global defined in `bmfuncts.pub_globals` module.
+        attr_keys_list (list): The list of columns names (str) \
+        that will be used as keys for building the dict \
+        valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)] (default = None).
         wb (openpyxl workbook): Worbook of the worksheet \
         to be formatted (default = None).
-
+        header (bool): Value of the 'header' arg of the \
+        'openpyxl_dataframe_to_rows' function imported from \
+        the openpyxl package (default = True).
+        cell_colors (list): List of openpyxl.PatternFill objects \
+        (default = None).
     Returns:
         (tup): (worbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).
     """
-    # Setting num of first col and first row in openpyxl objects
+    # Setting base of columns and row indexes in openpyxl objects
     xl_idx_base = pg.XL_INDEX_BASE
 
     # Setting list of cell colors

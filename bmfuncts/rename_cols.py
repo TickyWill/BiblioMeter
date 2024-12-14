@@ -298,6 +298,8 @@ def set_col_attr(institute, org_tup, columns_list):
         institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
+        columns_list (): The full list of column names (str) \
+        to be used as keys in the dict to be returned.
     Returns:
         (tup): (dict to be used for setting the final column \
         attributes for formating dataframes before openpyxl save, \

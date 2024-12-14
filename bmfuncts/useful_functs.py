@@ -73,7 +73,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
         for path, _, files in os.walk(dedup_parsing_path):
             dedup_files_list.extend(Path(path) / Path(file) for file in files
                                     if file.endswith(parsing_save_extent))
-        if len(dedup_files_list) != 0:
+        if len(dedup_files_list)!=0:
             dedup_parsing_status = True
     return dedup_parsing_status
 
@@ -105,7 +105,7 @@ def _get_database_file_path(database_folder_path, database_file_end):
 
     if list_data_base:
         # Selecting the most recent file with raw_extent extension
-        list_data_base.sort(key = os.path.getmtime, reverse = True)
+        list_data_base.sort(key = os.path.getmtime, reverse=True)
         database_file_path = list_data_base[0]
     else:
         database_file_path = None
@@ -134,16 +134,16 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     """
 
     # Setting useful aliases
-    extraction_folder    = pg.ARCHI_EXTRACT["root"]
-    empty_file_folder    = pg.ARCHI_EXTRACT["empty-file folder"]
-    database_folder      = pg.ARCHI_EXTRACT[database]["root"]
-    database_file_base   = pg.ARCHI_EXTRACT[database][datatype]
+    extraction_folder = pg.ARCHI_EXTRACT["root"]
+    empty_file_folder = pg.ARCHI_EXTRACT["empty-file folder"]
+    database_folder = pg.ARCHI_EXTRACT[database]["root"]
+    database_file_base = pg.ARCHI_EXTRACT[database][datatype]
     database_file_extent = pg.ARCHI_EXTRACT[database]["file_extent"]
-    database_file_end    = database_file_base + database_file_extent
+    database_file_end = database_file_base + database_file_extent
 
     # Setting useful paths
     extraction_folder_path = bibliometer_path / Path(extraction_folder)
-    database_folder_path   = extraction_folder_path / Path(database_folder)
+    database_folder_path = extraction_folder_path / Path(database_folder)
 
     return database_folder_path, database_file_end, empty_file_folder
 
@@ -173,7 +173,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     database_folder_path, database_file_end, empty_file_folder = return_tup
 
     last_year_database_file_end = database_file_end
-    if datatype == pg.DATATYPE_LIST[1] and database == bp.SCOPUS:
+    if datatype==pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
         last_year_datatype = pg.DATATYPE_LIST[0]
         return_tup = _set_database_extract_info(bibliometer_path, last_year_datatype,
                                                 database)
@@ -181,11 +181,11 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
 
     # Cycling on year
     for year in years_list:
-        if database == bp.SCOPUS and datatype == pg.DATATYPE_LIST[2]:
+        if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[2]:
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
         else:
             year_database_folder_path = database_folder_path / Path(year)
-            if database == bp.SCOPUS and datatype == pg.DATATYPE_LIST[1] and year == years_list[-1]:
+            if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[1] and year==years_list[-1]:
                 database_file_end = last_year_database_file_end
 
         year_database_file_path = _get_database_file_path(year_database_folder_path,
@@ -276,6 +276,56 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
     return message
 
 
+def _set_item_path(item_filename_base, save_extent, parsing_path):
+    item_file_name = item_filename_base + "." + save_extent
+    item_path = parsing_path / Path(item_file_name)
+    return item_path
+
+
+def _save_item(item_df, item_filename_base, save_extent, parsing_path):
+    item_working_path = _set_item_path(item_filename_base, save_extent, parsing_path)
+    if save_extent == "xlsx":
+        item_df.to_excel(item_working_path, index=False)
+    elif save_extent == "dat":
+        item_df.to_csv(item_working_path, index=False, sep='\t')
+    else:
+        item_df.to_csv(item_working_path, index=False, sep=',')
+
+
+def _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
+    # Setting parameters from args
+    bibliometer_path, datatype, corpus_year = dedup_infos
+
+    # Setting aliases for final saving deduplication results
+    results_root_alias = pg.ARCHI_RESULTS["root"]
+    results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    results_sub_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+
+    # Setting path for final saving deduplication results
+    results_root_path   = bibliometer_path / Path(results_root_alias)
+    results_folder_path = results_root_path / Path(results_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_parsing_path = year_target_folder_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required final results folders
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_parsing_path):
+        os.makedirs(target_parsing_path)
+
+    item_final_path = _set_item_path(item_filename_base, save_extent, target_parsing_path)
+    if save_extent == "xlsx":
+        item_df.to_excel(item_final_path, index=False)
+    elif save_extent == "dat":
+        item_df.to_csv(item_final_path, index=False, sep='\t')
+    else:
+        item_df.to_csv(item_final_path, index=False, sep=',')
+
+    end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
+                   f"\n  '{target_parsing_path}'")
+    print(end_message)
+
+
 def save_parsing_dict(parsing_dict, parsing_path,
                       item_filename_dict, save_extent,
                       dedup_infos=None):
@@ -285,75 +335,30 @@ def save_parsing_dict(parsing_dict, parsing_path,
     It may manage the final saving of the deduplication results.
 
     Args:
-        parsing_dict (dict): Parsing results keyyed by parsing items \
+        parsing_dict (dict): Parsing results keyed by parsing items \
         given by 'PARSING_ITEMS_LIST' global imported from the package \
         imported as bp and valued by the dataframes of parsing results.
         parsing_path (path): Full path to the folder for saving \
         the parsing results.
-        item_filename_dict (dict): Dict keyyed by the parsing items \
+        item_filename_dict (dict): Dict keyed by the parsing items \
         and valued by the file names for saving the parsing results.
         save_extent (str): File type given by file extension without \
         the dot seprator (ex: "xlsx" for Excel file type).
-        dedup_infos (tup): Optional tuple for final saving of deduplication results \
-        = (Full path to working folder (path), \
+        dedup_infos (tup): Optional tuple for final saving of deduplication \
+        results = (Full path to working folder (path), \
         Data combination type from corpuses databases (str), \
         4 digits year of the corpus (str)) (default = None).
     """
-
-    # Internal functions
-    def _set_item_path(item, parsing_path):
-        item_file = item_filename_dict[item] + "." + save_extent
-        item_path = parsing_path / Path(item_file)
-        return item_path
-
-    # Setting parameters for the specific case of deduplication results
-    if dedup_infos:
-        bibliometer_path, datatype, corpus_year = dedup_infos
-
-        # Setting aliases for final saving deduplication results
-        results_root_alias       = pg.ARCHI_RESULTS["root"]
-        results_folder_alias     = pg.ARCHI_RESULTS[datatype]
-        results_sub_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
-
-        # Setting path for final saving deduplication results
-        results_root_path   = bibliometer_path / Path(results_root_alias)
-        results_folder_path = results_root_path / Path(results_folder_alias)
-        year_target_folder_path    = results_folder_path / Path(corpus_year)
-        target_parsing_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
-
-        # Checking availability of required final results folders
-        if not os.path.exists(year_target_folder_path):
-            os.makedirs(year_target_folder_path)
-        if not os.path.exists(target_parsing_folder_path):
-            os.makedirs(target_parsing_folder_path)
-
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
         if item in parsing_dict.keys():
             item_df = parsing_dict[item]
-            item_working_path = _set_item_path(item, parsing_path)
-            if save_extent == "xlsx":
-                item_df.to_excel(item_working_path, index=False)
-                if dedup_infos:
-                    item_final_path = _set_item_path(item, target_parsing_folder_path)
-                    item_df.to_excel(item_final_path, index=False)
-            elif save_extent == "dat":
-                item_df.to_csv(item_working_path, index=False, sep='\t')
-                if dedup_infos:
-                    item_final_path = _set_item_path(item, target_parsing_folder_path)
-                    item_df.to_csv(item_final_path, index=False, sep='\t')
-            else:
-                item_df.to_csv(item_working_path, index=False, sep=',')
-                if dedup_infos:
-                    item_final_path = _set_item_path(item, target_parsing_folder_path)
-                    item_df.to_csv(item_final_path, index=False, sep=',')
-        else:
-            pass
+            item_filename_base = item_filename_dict[item]
+            _save_item(item_df, item_filename_base, save_extent, parsing_path)
 
-    if dedup_infos:
-        end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
-                       f"\n  '{target_parsing_folder_path}'")
-        print(end_message)
+        if dedup_infos:
+            _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+
 
 def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     """Reads the dataframes of the parsing results from files of a specifyed type.
@@ -361,12 +366,12 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     Args:
         parsing_path (path): Full path to the folder where the the parsing \
         results are located.
-        item_filename_dict (dict): Dict keyyed by the parsing items and valued \
+        item_filename_dict (dict): Dict keyed by the parsing items and valued \
         by the file names of the parsing results.
         save_extent (str): File type given by file extension without the dot \
         seprator (ex: "xlsx" for Excel file type).
     Returns:
-        (dict): Parsing results keyyed by parsing items \
+        (dict): Parsing results keyed by parsing items \
         given by 'PARSING_ITEMS_LIST' global imported from \
         the package imported as bp and valued by the dataframes \
         of parsing results.

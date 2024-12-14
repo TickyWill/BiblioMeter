@@ -435,7 +435,7 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
         corpus_year (str): 4 digits year of the corpus.
         if_analysis_name (str): Base for building file names for saving \
         impact-factors type of results.
-        results_to_save_dict (dict): Dict keyyed by the type of results \
+        results_to_save_dict (dict): Dict keyed by the type of results \
         to save and valued by saving status (bool; True if the type of \
         results should be saved).
         verbose (bool): Status of prints (default = False).
