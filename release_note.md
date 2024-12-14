@@ -1,6 +1,6 @@
 # Application Release Backlog
 
-## Release 6.0.0 - 2024/12/10
+## Release 6.0.0 - 2024/12/16
 * **Summary**: This release corresponds to the deep update of the code allowing the attribution of the OTPs at either the laboratory level or the department level of the Institute. In addition, it corresponds to a code refactory distributing existing functions in different specific modules.
 * **Features**:
   - Feature 1: Creation of functions allowing attribution of OTPs at laboratory level with upgrade of the "<institute>Org_config.json" config file.
