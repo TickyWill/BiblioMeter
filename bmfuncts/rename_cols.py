@@ -286,7 +286,7 @@ def set_if_col_names(institute, org_tup):
     return if_maj_col_dic
 
 
-def set_col_attr(institute, org_tup):
+def set_col_attr(institute, org_tup, columns_list):
     """Sets the dict for setting the final column attributes 
     in terms of width and alignment to be used for formating 
     dataframes before openpyxl save.
@@ -298,6 +298,8 @@ def set_col_attr(institute, org_tup):
         institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
+        columns_list (): The full list of column names (str) \
+        to be used as keys in the dict to be returned.
     Returns:
         (tup): (dict to be used for setting the final column \
         attributes for formating dataframes before openpyxl save, \
@@ -337,9 +339,15 @@ def set_col_attr(institute, org_tup):
     for _,dpt_col_name in col_names_dpt.items():
         init_col_attr[col_names_dpt[dpt_col_name]] = [10, "center"]
 
-    final_col_list = [all_col_rename_dic[key] for key in list(init_col_attr.keys())]
+    set_col_list = [all_col_rename_dic[key] for key in list(init_col_attr.keys())]
     col_attr_list = list(init_col_attr.values())
+    final_col_attr_dict = dict(zip(set_col_list, col_attr_list))
 
-    final_col_attr = dict(zip(final_col_list,col_attr_list))
-    final_col_attr['else'] = [15, "center"]
-    return final_col_attr, final_col_list
+    # Managing not-yet set columns
+    for col in columns_list:
+        if col not in set_col_list:
+            final_col_attr_dict[col] = [15, "center"]
+        else:
+            continue
+
+    return final_col_attr_dict

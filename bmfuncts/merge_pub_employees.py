@@ -525,7 +525,7 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
     eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
 
     # Setting the useful info for testing the function if verbose = True
-    # Setting a dict keyyed by type of test with values for test states and
+    # Setting a dict keyed by type of test with values for test states and
     # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
     # for testing this function for year 2021
     test_dict   = {'Full match'            : [True, True, True,True,True,'SIMONATO'],
@@ -1301,7 +1301,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     Args:
         out_path (path): Full path to the folder for saving built dataframes. 
-        empl_df (dataframe): Hierarchical employees database keyyed by 'years' list.
+        empl_df (dataframe): Hierarchical employees database keyed by 'years' list.
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
