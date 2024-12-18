@@ -345,9 +345,9 @@ def set_col_attr(institute, org_tup, columns_list):
 
     # Managing not-yet set columns
     for col in columns_list:
-        if col not in set_col_list:
-            final_col_attr_dict[col] = [15, "center"]
-        else:
+        if col in set_col_list:
             continue
+        else:
+            final_col_attr_dict[col] = [15, "center"]
 
     return final_col_attr_dict

@@ -236,8 +236,6 @@ def _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
             otp_set_dpt_df = pd.concat([otp_set_dpt_df, new_dpt_df_to_add])
             otp_set_dpt_df.drop_duplicates(inplace=True)
             otp_to_set_dpt_df.drop(index=auth_idx_to_replace, inplace=True)
-    else:
-        pass
     dfs_tup = (otp_set_dpt_df, otp_to_set_dpt_df)
     return dfs_tup
 
@@ -249,7 +247,6 @@ def _use_unknown_doi_otps(dfs_tup, otps_history_tup, dpt_df,
     # Setting parameters from args
     otp_to_set_dpt_df = dfs_tup[1]
     lists_tup, cols_tup, doi_otp_history_df = otps_history_tup
-    author_to_check_list = lists_tup[2]
     author_col = cols_tup[2]
     doi_col = cols_tup[3]
     otp_col = cols_tup[5]
@@ -258,10 +255,10 @@ def _use_unknown_doi_otps(dfs_tup, otps_history_tup, dpt_df,
     otp_to_set_auth_list = new_otp_to_set_dpt_df[author_col].to_list()
 
     new_doi_otp_history_df = doi_otp_history_df[doi_otp_history_df[doi_col]==doi_to_check].copy()
-    author_to_check_list = new_doi_otp_history_df[author_col].to_list()
+    new_author_to_check_list = new_doi_otp_history_df[author_col].to_list()
     auth_otp_to_set_list = new_doi_otp_history_df[otp_col].to_list()
 
-    for auth_otp_idx, auth_to_check in enumerate(author_to_check_list):
+    for auth_otp_idx, auth_to_check in enumerate(new_author_to_check_list):
         if auth_to_check in otp_to_set_auth_list:
             auth_otp_to_set = auth_otp_to_set_list[auth_otp_idx]
             dpt_df_to_add = dpt_df[dpt_df[doi_col]==doi_to_check].copy()

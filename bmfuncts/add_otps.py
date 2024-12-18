@@ -372,8 +372,8 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
             ws = add_data_val(ws, data_val, len(otp_lab_df), otp_col_letter,
                               xl_idx_base)
             first = False
-    # Saving the workbook
-    wb.save(xl_dpt_path)
+        # Saving the workbook
+        wb.save(xl_dpt_path)
 
 
 def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_dict):

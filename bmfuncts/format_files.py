@@ -530,17 +530,19 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
     the `bmfuncts.useful_functs` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         sheet_name (str): 4-digits IFs sheet-name.
         df (dataframe): IFs database of a  year.
         df_title (str): Name of data to be formatted for setting \
         columns attributes, to be specified using the 'DF_TITLES_LIST' \
         global defined in `bmfuncts.pub_globals` module.
-        wb (openpyxl workbook): Workbook to be updated with the 'if_sheet_name' sheet.
+        wb (openpyxl workbook): Workbook to be updated with the 'sheet_name' sheet.
         first (bool): True if the sheet to add is the first of the workbook.
+        attr_keys_list (list): The optional list of columns names (str) \
+        that will be used as keys for building the dict \
+        valued by the attributes lists of each column composed \
+        by [horizontal alignment (str), width (int)] (default = None). 
     Returns:
-        (openpyxl workbook): The updated workbook with the 'if_sheet_name' sheet.
+        (openpyxl workbook): The updated workbook with the 'sheet_name' sheet.
     """
     if first:
         wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)

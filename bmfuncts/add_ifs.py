@@ -207,8 +207,6 @@ def _fullfill_issn(corpus_df, issn_df, empty_kw, col_tup):
                 corpus_df.loc[corpus_idx, issn_col] = issn_row[issn_col]
             elif issn_row[eissn_col]!=empty_kw:
                 corpus_df.loc[corpus_idx, issn_col] = issn_row[eissn_col]
-            else:
-                pass
     return corpus_df
 
 

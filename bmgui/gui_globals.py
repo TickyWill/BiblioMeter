@@ -282,6 +282,7 @@ TEXT_BOUTON_LANCEMENT = "Lancer l'analyse"
 TEXT_COPYRIGHT = "Contributeurs et contacts :"
 TEXT_COPYRIGHT += "\n- Amal Chabli : amal.chabli@orange.fr"
 TEXT_COPYRIGHT += "\n- François Bertin : francois.bertin7@wanadoo.fr"
+TEXT_COPYRIGHT += "\n- Baptiste Refalo : baptiste.refalo@cea.fr"
 TEXT_COPYRIGHT += "\n- Ludovic Desmeuzes"
 TEXT_VERSION = f"\nVersion {VERSION}"
 
