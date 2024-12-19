@@ -99,7 +99,7 @@ def _build_continents_stat(countries_df):
     continents_df[country_alias] = continents_df[country_alias].map(lambda x: country_conti_dict[x])
 
     # Renaming the column 'country_alias' to 'continent_alias'
-    continents_df.rename(columns={country_alias: continent_alias}, inplace=True)
+    continents_df = continents_df.rename(columns={country_alias: continent_alias})
 
     by_continent_df = pd.DataFrame(columns=[continent_alias, weight_alias, pub_ids_alias])
     idx_continent = 0

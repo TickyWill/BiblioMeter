@@ -120,29 +120,28 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
                                     set_otps_df,
                                     how = 'inner',
                                     on = pub_id_alias)
-    hash_otps_history_df.drop(columns = [pub_id_alias, author_col_alias, doi_col_alias],
-                              inplace = True)
-    hash_otps_history_df.rename(columns = {otp_col:otp_col_alias}, inplace = True)
+    hash_otps_history_df = hash_otps_history_df.drop(columns=[pub_id_alias, author_col_alias, doi_col_alias])
+    hash_otps_history_df = hash_otps_history_df.rename(columns={otp_col:otp_col_alias})
 
     # Building DOI and kept otp df
     doi_otps_history_df = set_otps_df[[author_col_alias, doi_col_alias, otp_col]].copy()
-    doi_otps_history_df.rename(columns={otp_col:otp_col_alias}, inplace=True)
+    doi_otps_history_df = doi_otps_history_df.rename(columns={otp_col:otp_col_alias})
 
     # Concatenating with the dataframes of already saved solved OTPs by hash_id and by DOI
     if kept_otps_file_path.is_file():
-        existing_otps_history_dict = pd.read_excel(kept_otps_file_path, sheet_name = None)
+        existing_otps_history_dict = pd.read_excel(kept_otps_file_path, sheet_name=None)
 
         existing_hash_otps_history_df = existing_otps_history_dict[hash_otp_sheet_alias]
         if len(existing_hash_otps_history_df)-1:
             hash_otps_history_df = pd.concat([existing_hash_otps_history_df, hash_otps_history_df])
         hash_otps_history_df = hash_otps_history_df.astype('str')
-        hash_otps_history_df.drop_duplicates(inplace=True)
+        hash_otps_history_df = hash_otps_history_df.drop_duplicates()
 
         existing_doi_otps_history_df = existing_otps_history_dict[doi_otp_sheet_alias]
         if len(existing_doi_otps_history_df)-1:
             doi_otps_history_df = pd.concat([existing_doi_otps_history_df, doi_otps_history_df])
         doi_otps_history_df = doi_otps_history_df.astype('str')
-        doi_otps_history_df.drop_duplicates(inplace=True)
+        doi_otps_history_df = doi_otps_history_df.drop_duplicates()
 
     with pd.ExcelWriter(kept_otps_file_path,  # https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
                         mode='a', if_sheet_exists='replace') as writer:
@@ -173,7 +172,7 @@ def _use_hash_id_set_otps(dpt_df, otps_history_tup):
     # Building the 'otp_to_set_dpt_df' dataframe of publication
     # with OTP still to be defined
     otp_to_set_dpt_df = dpt_df.copy()
-    otp_to_set_dpt_df.drop(columns=[otp_list_col], inplace=True)
+    otp_to_set_dpt_df = otp_to_set_dpt_df.drop(columns=[otp_list_col])
 
     for otp_idx, pub_id_to_check in enumerate(pub_id_to_check_list):
         if pub_id_to_check in dept_pub_id_list:
@@ -183,7 +182,7 @@ def _use_hash_id_set_otps(dpt_df, otps_history_tup):
             dpt_df.loc[pub_id_idx, otp_list_col] = otp_to_set
             dpt_pub_id_to_check_df = dpt_df[dpt_df[pub_id_col]==pub_id_to_check]
             otp_set_dpt_df = pd.concat([otp_set_dpt_df, dpt_pub_id_to_check_df])
-            otp_to_set_dpt_df.drop(index=pub_id_idx, inplace=True)
+            otp_to_set_dpt_df = otp_to_set_dpt_df.drop(index=pub_id_idx)
         else:
             continue
     dfs_tup = (otp_set_dpt_df, otp_to_set_dpt_df)
@@ -209,7 +208,7 @@ def _use_known_doi_otps(dfs_tup, cols_tup, dpt_df,
     dpt_df_to_add = dpt_df[dpt_df[doi_col]==doi_to_check].copy()
     dpt_df_to_add.loc[doi_idx, otp_list_col] = doi_otp_to_set
     otp_set_dpt_df = pd.concat([otp_set_dpt_df, dpt_df_to_add])
-    otp_to_set_dpt_df.drop(index=doi_idx, inplace=True)
+    otp_to_set_dpt_df = otp_to_set_dpt_df.drop(index=doi_idx)
     dfs_tup = (otp_set_dpt_df, otp_to_set_dpt_df)
     return dfs_tup
 
@@ -227,15 +226,15 @@ def _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
     if auth_idx in otp_to_set_dpt_df.index:
         auth_idx_to_replace_list.append(auth_idx)
         if auth_idx in otp_set_dpt_df.index:
-            otp_set_dpt_df.drop(index=auth_idx, inplace=True)
+            otp_set_dpt_df = otp_set_dpt_df.drop(index=auth_idx)
 
         for auth_idx_to_replace in auth_idx_to_replace_list:
             dpt_df_to_add.loc[auth_idx_to_replace, otp_list_col] = auth_otp_to_set
             new_dpt_df_to_add = dpt_df_to_add[dpt_df_to_add[author_col]==auth_to_check].copy()
             new_dpt_df_to_add.loc[auth_idx_to_replace, otp_list_col] = auth_otp_to_set
             otp_set_dpt_df = pd.concat([otp_set_dpt_df, new_dpt_df_to_add])
-            otp_set_dpt_df.drop_duplicates(inplace=True)
-            otp_to_set_dpt_df.drop(index=auth_idx_to_replace, inplace=True)
+            otp_set_dpt_df = otp_set_dpt_df.drop_duplicates()
+            otp_to_set_dpt_df = otp_to_set_dpt_df.drop(index=auth_idx_to_replace)
     dfs_tup = (otp_set_dpt_df, otp_to_set_dpt_df)
     return dfs_tup
 
@@ -661,7 +660,7 @@ def _get_otps_history(institute, org_tup,
                                     on=hash_id_col_alias)
 
     pub_id_otp_to_set_df = pub_id_otp_to_set_df.astype(str)
-    pub_id_otp_to_set_df.drop(columns=[hash_id_col_alias], inplace=True)
+    pub_id_otp_to_set_df = pub_id_otp_to_set_df.drop(columns=[hash_id_col_alias])
     pub_id_to_check_list = [str(row[pub_id_alias]) for _,row
                             in pub_id_otp_to_set_df.iterrows()]
     otp_to_set_list = [str(row[otp_col_alias]) for _,row
@@ -708,20 +707,20 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     otp_level = org_tup[11]
 
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias  = pg.ARCHI_YEAR["bdd mensuelle"]
-    otp_folder_alias     = pg.ARCHI_YEAR["OTP folder"]
-    otp_file_base_alias  = pg.ARCHI_YEAR["OTP file name base"]
+    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
+    otp_folder_alias = pg.ARCHI_YEAR["OTP folder"]
+    otp_file_base_alias = pg.ARCHI_YEAR["OTP file name base"]
     history_folder_alias = pg.ARCHI_YEAR["history folder"]
     kept_otps_file_alias = pg.ARCHI_YEAR["kept OTPs file name"]
-    hash_id_file_alias   = pg.ARCHI_YEAR["hash_id file name"]
+    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
 
     # Setting useful paths
-    corpus_year_path    = bibliometer_path / Path(corpus_year)
-    bdd_mensuelle_path  = corpus_year_path / Path(bdd_mensuelle_alias)
-    hash_id_file_path   = bdd_mensuelle_path / Path(hash_id_file_alias)
+    corpus_year_path = bibliometer_path / Path(corpus_year)
+    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
+    hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     history_folder_path = corpus_year_path / Path(history_folder_alias)
     kept_otps_file_path = history_folder_path / Path(kept_otps_file_alias)
-    otp_folder_path     = corpus_year_path / Path(otp_folder_alias)
+    otp_folder_path = corpus_year_path / Path(otp_folder_alias)
 
     if kept_otps_file_path.is_file():
         otps_history_tup = _get_otps_history(institute, org_tup,

@@ -248,7 +248,7 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
     print('\n ',end_message)
 
     solved_homonymies_df = pd.read_excel(in_path)
-    solved_homonymies_df.fillna('', inplace = True)
+    solved_homonymies_df = solved_homonymies_df.fillna('')
 
     dpt_list = list(dpt_attributs_dict.keys())
 
@@ -426,7 +426,7 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
     print('\n ',end_message)
 
     solved_homonymies_df = pd.read_excel(in_path)
-    solved_homonymies_df.fillna('', inplace = True)
+    solved_homonymies_df = solved_homonymies_df.fillna('')
 
     dpt_list = list(dpt_attributs_dict.keys())
 

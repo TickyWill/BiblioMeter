@@ -86,12 +86,12 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         key_dg_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
         key_dg_path = pub_list_path / Path(key_dg_file_alias)
 
-        key_dg.sort_values(by=[pub_id_col_alias], inplace=True)
+        key_dg = key_dg.sort_values(by=[pub_id_col_alias])
         wb, _ = format_page(key_dg, common_df_title,
                             attr_keys_list=format_cols_list)
         wb.save(key_dg_path)
 
-    other_dg.sort_values(by=[pub_id_col_alias], inplace=True)
+    other_dg = other_dg.sort_values(by=[pub_id_col_alias])
     wb, _ = format_page(other_dg, common_df_title,
                         attr_keys_list=format_cols_list)
     wb.save(other_dg_path)
@@ -239,7 +239,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     otp_df = _concat_dept_otps_dfs(org_tup, in_file_base, in_path)
 
     # Deduplicating rows on Pub_id
-    otp_df.drop_duplicates(subset=[pub_id_alias], inplace=True)
+    otp_df = otp_df.drop_duplicates(subset=[pub_id_alias])
 
     # Selecting useful columns using final_col_list
     consolidate_pub_list_df = otp_df[final_col_list].copy()
@@ -251,7 +251,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     otp_message = save_otps(institute, org_tup, bibliometer_path, corpus_year)
 
     # Setting pub ID as index for unique identification of rows
-    consolidate_pub_list_df.set_index(pub_id_alias, inplace=True)
+    consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_alias)
 
     # Droping invalid publications by pub Id as index
     invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
@@ -259,11 +259,11 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     invalids_df = consolidate_pub_list_df.drop(index=invalids_idx_list)
     valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
                                                          ==ig.INVALIDE].index
-    consolidate_pub_list_df.drop(index=valids_idx_list, inplace=True)
+    consolidate_pub_list_df = consolidate_pub_list_df.drop(index=valids_idx_list)
 
     # Resetting pub ID as a standard column
-    consolidate_pub_list_df.reset_index(inplace=True)
-    invalids_df.reset_index(inplace=True)
+    consolidate_pub_list_df = consolidate_pub_list_df.reset_index()
+    invalids_df = invalids_df.reset_index()
 
     # Re_saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
@@ -272,7 +272,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     # at full path 'invalids_file_path'
     invalids_df_title = pg.DF_TITLES_LIST[0]
     format_cols_list = set_base_keys_list(institute, org_tup)
-    invalids_df.rename(columns={otp_alias: otp_col_new_alias}, inplace=True)
+    invalids_df = invalids_df.rename(columns={otp_alias: otp_col_new_alias})
     wb, _ = format_page(invalids_df, invalids_df_title,
                         attr_keys_list=format_cols_list)
     wb.save(invalids_file_path)

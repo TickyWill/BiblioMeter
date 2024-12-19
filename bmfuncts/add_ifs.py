@@ -130,8 +130,8 @@ def _build_inst_issn_df(if_db_df, cols_tup):
 
         inst_issn_df = pd.concat([inst_issn_df,dg.iloc[:1]])
 
-    inst_issn_df.sort_values(by=[journal_col], inplace=True)
-    inst_issn_df.drop_duplicates(inplace=True)
+    inst_issn_df = inst_issn_df.sort_values(by=[journal_col])
+    inst_issn_df = inst_issn_df.drop_duplicates()
 
     return inst_issn_df
 
@@ -269,12 +269,10 @@ def _format_missing_df(results_df, common_args_tup, empty_kw, add_cols):
                             corpus_issn_col]
 
     # Formatting 'results_df'
-    results_df.rename(columns={year_col: final_year_col,
-                               corpus_year_if_col: year_db_if_col},
-                      inplace=True)
+    results_df = results_df.rename(columns={year_col: final_year_col,
+                                            corpus_year_if_col: year_db_if_col})
     if add_cols:
-        results_df.rename(columns={issn_col: corpus_issn_col},
-                          inplace=True)
+        results_df = results_df.rename(columns={issn_col: corpus_issn_col})
         results_df[issn_col] = empty_kw
         results_df[eissn_col] = empty_kw
         results_df = results_df[final_order_col_list]
@@ -305,7 +303,7 @@ def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
     for doc_type, doc_type_df in pub_df.groupby(doctype_col):
         if doc_type.upper() not in doctype_to_drop_list:
             articles_df = pd.concat([articles_df, doc_type_df])
-    articles_df.drop(doctype_col, axis=1, inplace=True)
+    articles_df = articles_df.drop(doctype_col, axis=1)
     return articles_df
 
 
@@ -319,10 +317,10 @@ def _build_issn_df(article_df, cols_tup):
     for _, issn_df in article_df.groupby(issn_col):
         pub_id_nb = len(issn_df)
         issn_df[pub_id_nb_col] = pub_id_nb
-        issn_df.drop(pub_id_col, axis=1, inplace=True)
+        issn_df = issn_df.drop(pub_id_col, axis=1)
         issn_df[journal_upper_col] = issn_df[journal_col].astype(str).str.upper()
-        issn_df.drop_duplicates(subset=[journal_upper_col], keep='first', inplace=True)
-        issn_df.drop([journal_upper_col], axis=1, inplace=True)
+        issn_df = issn_df.drop_duplicates(subset=[journal_upper_col], keep='first')
+        issn_df = issn_df.drop([journal_upper_col], axis=1)
         if_df = pd.concat([if_df, issn_df])
     return if_df
 
@@ -401,15 +399,14 @@ def _clean_if_dict(institute, org_tup, bibliometer_path, aliases_tup):
     if if_db_status:
         for year in if_available_years_list:
             year_database_if_col = database_if_col + " " + year
-            if_dict[year].rename(columns={year_database_if_col: database_if_col},
-                                 inplace=True)
+            if_dict[year] = if_dict[year].rename(columns={year_database_if_col: database_if_col})
 
     # Replacing NAN in if_dict
     values_dict = {issn_col: empty_kw,
                    eissn_col: empty_kw,
                    database_if_col: not_available_if}
     for year in if_available_years_list:
-        if_dict[year].fillna(value=values_dict, inplace=True)
+        if_dict[year] = if_dict[year].fillna(value=values_dict)
 
     return if_dict, if_available_years_list, if_most_recent_year
 
@@ -427,8 +424,7 @@ def _clean_corpus_df(in_file_path, if_dict, cols_tup, recast_cols_tup, empty_kw)
             base_col_list)
     )
     if otp_col in corpus_df.columns:
-        corpus_df.rename(columns={otp_col : otp_col_new},
-                         inplace =True)
+        corpus_df = corpus_df.rename(columns={otp_col : otp_col_new})
 
     # Setting type of values in 'year_col_alias' as string
     corpus_df = corpus_df.astype({year_col_alias: str})
@@ -570,7 +566,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
                              most_recent_year_if_dict, empty_kws_tup, years_tup)
 
     # Sorting 'corpus_df' pub_id values
-    corpus_df.sort_values(by = [pub_id_col_alias], inplace=True)
+    corpus_df = corpus_df.sort_values(by=[pub_id_col_alias])
 
     # Building 'year_pub_if_df' with subset of 'corpus_df' columns
     subsetcols = [pub_id_col_alias,
@@ -606,9 +602,9 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
         if_database_complete = False
     else:
         # replace remaining unknown IF values by 'not_available_if_alias' value
-        corpus_df.replace({most_recent_year_if_col: if_empty_kw_alias,
-                           corpus_year_if_col_alias: if_empty_kw_alias,
-                          }, outside_if_analysis_alias, inplace=True)
+        corpus_df = corpus_df.replace({most_recent_year_if_col: if_empty_kw_alias,
+                                       corpus_year_if_col_alias: if_empty_kw_alias},
+                                      outside_if_analysis_alias)
 
     # Setting args tups for '_format_and_save_add_if_dfs' function
     dfs_tup = (corpus_df, year_missing_issn_df, year_missing_if_df)

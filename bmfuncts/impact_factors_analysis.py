@@ -87,9 +87,9 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
                                              columns=[corpus_year])
 
         # Renaming the index column of 'dept_pub_df' as 'corpus_year_row_alias'
-        dept_pub_df.reset_index(inplace=True)
-        dept_pub_df.rename_axis("idx", axis=1, inplace=True)
-        dept_pub_df.rename(columns={"index": corpus_year_row_alias}, inplace=True)
+        dept_pub_df = dept_pub_df.reset_index()
+        dept_pub_df = dept_pub_df.rename_axis("idx", axis=1)
+        dept_pub_df = dept_pub_df.rename(columns={"index": corpus_year_row_alias})
 
         # Building sub dict of IFs KPIs of 'dept' in keys order specified by 'ordered_keys'
         part_dept_if_dict = dict(dept_kpi_dict[if_key].items())
@@ -100,10 +100,10 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
         dept_if_df = pd.DataFrame.from_dict(dept_if_dict, orient="index",
                                             columns=[corpus_year])
 
-        # Renaming the index column with 'corpus_year_row_alias'
-        dept_if_df.reset_index(inplace=True)
-        dept_if_df.rename_axis("idx", axis=1, inplace=True)
-        dept_if_df.rename(columns={"index": corpus_year_row_alias}, inplace=True)
+        # Renaming the index column of ''dept_if_df as 'corpus_year_row_alias'
+        dept_if_df = dept_if_df.reset_index()
+        dept_if_df = dept_if_df.rename_axis("idx", axis=1)
+        dept_if_df = dept_if_df.rename(columns={"index": corpus_year_row_alias})
 
         # Combining the two dataframes through rows concatenation
         dept_kpi_df = pd.concat([dept_pub_df, dept_if_df], axis=0)
@@ -173,8 +173,8 @@ def _build_analysis_books_kpi(books_df, params_tup):
 
         # Adding a column with number of articles per journal then droping duplicate rows
         count_books_df = dept_books_df[journal_col].value_counts().to_frame()
-        count_books_df.rename(columns={"count": chapters_nb_col_alias}, inplace=True)
-        count_books_df.reset_index(inplace=True)
+        count_books_df = count_books_df.rename(columns={"count": chapters_nb_col_alias})
+        count_books_df = count_books_df.reset_index()
         dept_books_df = dept_books_df.drop_duplicates([journal_col])
         dept_books_df = count_books_df.merge(dept_books_df, how="outer", on=journal_col)
 
@@ -240,8 +240,8 @@ def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
 
     # Adding a column with number of articles per journal then droping duplicate rows
     count_journal_df = dept_analysis_df[issn_col].value_counts().to_frame()
-    count_journal_df.rename(columns={'count': articles_nb_col}, inplace=True)
-    count_journal_df.reset_index(inplace=True)
+    count_journal_df = count_journal_df.rename(columns={'count': articles_nb_col})
+    count_journal_df = count_journal_df.reset_index()
     dept_analysis_df = dept_analysis_df.drop_duplicates([issn_col])
     dept_analysis_df = count_journal_df.merge(dept_analysis_df, how="outer",
                                               on=issn_col)
@@ -367,7 +367,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
             dept_analysis_df = analysis_df[analysis_df[dept] == 1].copy()
         else:
             dept_analysis_df = analysis_df.copy()
-        dept_analysis_df.drop(columns=depts_col_list, inplace=True)
+        dept_analysis_df = dept_analysis_df.drop(columns=depts_col_list)
 
         # Computing basic KPIs of department 'dept'
         dept_articles_df, dept_kpi_dict = _build_basic_kpi_dict(dept_analysis_df,
@@ -382,7 +382,7 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
         dept_if_df = dept_if_df.sort_values(by=[if_analysis_col, journal_col_alias],
                                             ascending=True)
         if_analysis_col_new = "IF " + if_analysis_year
-        dept_if_df.rename(columns={if_analysis_col: if_analysis_col_new}, inplace=True)
+        dept_if_df = dept_if_df.rename(columns={if_analysis_col: if_analysis_col_new})
         dept_if_df = dept_if_df.reset_index().drop(columns=["index"])
 
         # Computing IF KPIs values

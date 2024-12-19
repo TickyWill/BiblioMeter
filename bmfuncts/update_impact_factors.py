@@ -67,7 +67,7 @@ def _get_if(if_updated_file_path, useful_col_list,
     if year_if_col_alias not in if_updated_df.columns:
         for col in if_updated_df.columns:
             if re.findall(most_recent_year_if_col_base_alias, col):
-                if_updated_df.rename(columns={col: year_if_col_alias}, inplace=True)
+                if_updated_df = if_updated_df.rename(columns={col: year_if_col_alias})
 
     # Selecting useful columns
     if_updated_df = if_updated_df[useful_col_list]
@@ -177,7 +177,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
                                              journal_col_alias)
 
     # Sorting 'updated_year_if_db_df' by journal column
-    fully_updated_year_if_db_df.sort_values(by=[journal_col_alias], inplace=True)
+    fully_updated_year_if_db_df = fully_updated_year_if_db_df.sort_values(by=[journal_col_alias])
 
     # Setting useful columns list for the year files
     # with IFs of most recent year
@@ -203,9 +203,8 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     corpus_year_most_recent_year_if_df = _append_df(missing_if_most_recent_year_if_df,
                                                     missing_issn_most_recent_year_if_df,
                                                     journal_col_alias)
-    corpus_year_most_recent_year_if_df.rename(columns={most_recent_year_if_col_alias:
-                                                         new_most_recent_year_if_col_alias,},
-                                              inplace=True)
+    corpus_year_most_recent_year_if_df = corpus_year_most_recent_year_if_df.rename(
+        columns={most_recent_year_if_col_alias: new_most_recent_year_if_col_alias,})
 
     return fully_updated_year_if_db_df, corpus_year_most_recent_year_if_df
 
@@ -263,9 +262,9 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
     previous_years_list = if_db_years_list[:-1]
     for if_db_year in previous_years_list:
         year_if_db_df = if_db_df[if_db_year]
-        year_if_db_df.fillna(unknown_alias, inplace=True)
+        year_if_db_df = year_if_db_df.fillna(unknown_alias)
         year_if_db_df[journal_col] = year_if_db_df.\
-            apply(_capwords_journal_col(journal_col), axis =1)
+            apply(_capwords_journal_col(journal_col), axis=1)
         corpus_year = if_db_year
         dfs_tup = _update_year_if_database(institute, org_tup, bibliometer_path,
                                            corpus_year, year_if_db_df,
@@ -332,7 +331,7 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
 
     # Initializing 'most_recent_year_if_db_df' dataframe
     most_recent_year_if_db_df = if_db_df[most_recent_year]
-    most_recent_year_if_db_df.fillna(unknown_alias, inplace=True)
+    most_recent_year_if_db_df = most_recent_year_if_db_df.fillna(unknown_alias)
     most_recent_year_if_db_df[journal_col] = most_recent_year_if_db_df.\
         apply(_capwords_journal_col(journal_col), axis=1)
 
@@ -347,12 +346,12 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
                                                    corpus_year_most_recent_year_if_df_to_add,
                                                    journal_col)
 
-        most_recent_year_if_df_to_add.drop_duplicates(inplace = True)
+        most_recent_year_if_df_to_add = most_recent_year_if_df_to_add.drop_duplicates()
 
     most_recent_year_if_db_df = _append_df(most_recent_year_if_db_df,
                                            most_recent_year_if_df_to_add,
                                            journal_col)
-    most_recent_year_if_db_df.sort_values(by=journal_col, inplace=True)
+    most_recent_year_if_db_df = most_recent_year_if_db_df.sort_values(by=journal_col)
     if_sheet_name = off_if_db_years_list[0]
     if_db_df_title = pg.DF_TITLES_LIST[3]
     wb = format_wb_sheet(if_sheet_name, most_recent_year_if_db_df,

@@ -170,8 +170,8 @@ def _build_auth_nb_per_pub(bibliometer_path, corpus_year, cols_tup):
     count_auth_df = pd.DataFrame()
     for _, pub_df in authors_df.groupby(pub_id_col):
         pub_count_auth_df = pub_df[pub_id_col].value_counts().to_frame()
-        pub_count_auth_df.rename(columns={"count": nb_auth_col}, inplace=True)
-        pub_count_auth_df.reset_index(inplace=True)
+        pub_count_auth_df = pub_count_auth_df.rename(columns={"count": nb_auth_col})
+        pub_count_auth_df = pub_count_auth_df.reset_index()
         count_auth_df = pd.concat([count_auth_df, pub_count_auth_df], axis=0)
 
     _set_year_pub_id(count_auth_df, corpus_year, pub_id_col)
@@ -233,7 +233,7 @@ def _build_author_employee_df(bibliometer_path, in_path, corpus_year, all_cols_t
         if author_pos==authors_nb:
             author_employee_df.loc[idx, is_last_col] = 1
 
-    author_employee_df.sort_values(by=[pub_id_col, author_idx_col], axis=0, inplace=True)
+    author_employee_df = author_employee_df.sort_values(by=[pub_id_col, author_idx_col], axis=0)
     cols_order = [pub_id_col, nb_auth_col, author_idx_col, inst_author_col, first_author_col,
                   employee_col, is_first_col, is_last_col]
     author_employee_df = author_employee_df[cols_order]
@@ -287,7 +287,7 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         empl_df = empl_df[useful_cols_list]
         empl_df.drop_duplicates()
         pub_nb_per_auth_df = pd.concat([pub_nb_per_auth_df, empl_df])
-    pub_nb_per_auth_df.drop_duplicates(inplace=True)
+    pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
     return pub_nb_per_auth_df
 

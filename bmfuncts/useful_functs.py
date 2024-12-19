@@ -284,9 +284,9 @@ def _set_item_path(item_filename_base, save_extent, parsing_path):
 
 def _save_item(item_df, item_filename_base, save_extent, parsing_path):
     item_working_path = _set_item_path(item_filename_base, save_extent, parsing_path)
-    if save_extent == "xlsx":
+    if save_extent=="xlsx":
         item_df.to_excel(item_working_path, index=False)
-    elif save_extent == "dat":
+    elif save_extent=="dat":
         item_df.to_csv(item_working_path, index=False, sep='\t')
     else:
         item_df.to_csv(item_working_path, index=False, sep=',')
@@ -314,16 +314,13 @@ def _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         os.makedirs(target_parsing_path)
 
     item_final_path = _set_item_path(item_filename_base, save_extent, target_parsing_path)
-    if save_extent == "xlsx":
+    if save_extent=="xlsx":
         item_df.to_excel(item_final_path, index=False)
-    elif save_extent == "dat":
+    elif save_extent=="dat":
         item_df.to_csv(item_final_path, index=False, sep='\t')
     else:
         item_df.to_csv(item_final_path, index=False, sep=',')
-
-    end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
-                   f"\n  '{target_parsing_path}'")
-    print(end_message)
+    return corpus_year, target_parsing_path
 
 
 def save_parsing_dict(parsing_dict, parsing_path,
@@ -349,6 +346,8 @@ def save_parsing_dict(parsing_dict, parsing_path,
         Data combination type from corpuses databases (str), \
         4 digits year of the corpus (str)) (default = None).
     """
+    parsing_items_nb = len(parsing_dict.keys())
+    item_idx = 0
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
         if item in parsing_dict.keys():
@@ -356,8 +355,14 @@ def save_parsing_dict(parsing_dict, parsing_path,
             item_filename_base = item_filename_dict[item]
             _save_item(item_df, item_filename_base, save_extent, parsing_path)
 
-        if dedup_infos:
-            _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+            if dedup_infos:
+                item_idx += 1
+                return_tup = _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+                if item_idx==parsing_items_nb:
+                    corpus_year, final_dedup_path = return_tup
+                    end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
+                                   f"\n  '{final_dedup_path}'")
+                    print(end_message)
 
 
 def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
@@ -389,7 +394,7 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
                     item_df = pd.read_excel(item_xlsx_path)
                 except pd.errors.EmptyDataError:
                     item_df = pd.DataFrame()
-        elif save_extent == "dat":
+        elif save_extent=="dat":
             item_tsv_file = item_filename_dict[item] + ".dat"
             item_tsv_path = parsing_path / Path(item_tsv_file)
             if item_tsv_path.is_file():
@@ -415,5 +420,5 @@ def save_fails_dict(fails_dict, parsing_path):
         where the json file is saved.
     """
     parsing_perf_path = parsing_path / Path(pg.PARSING_PERF)
-    with open(parsing_perf_path, 'w', encoding = "utf-8") as write_json:
-        json.dump(fails_dict, write_json, indent = 4)
+    with open(parsing_perf_path, 'w', encoding="utf-8") as write_json:
+        json.dump(fails_dict, write_json, indent=4)

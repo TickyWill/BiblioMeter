@@ -210,7 +210,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     # Getting the OTPs infos from OTPs source file
     otps_bdd_df = pd.read_excel(otps_bdd_path, sheet_name=otps_sheet,
                                 header=otps_header, usecols=otps_cols)
-    otps_bdd_df.fillna(unknown_alias, inplace=True)
+    otps_bdd_df = otps_bdd_df.fillna(unknown_alias)
 
     # Filling initial OTPs dict with infos provided by OTPs source file
     # The dict is a hierarchical dict keyed by department, services and labs
