@@ -67,32 +67,32 @@ def set_page_title(self, master, page_name, institute, datatype = None):
 
     # Setting font size for page label and button
     eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
-    eff_label_pos_y_px  = mm_to_px(gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, gg.PPI)
-    eff_dy_px           = mm_to_px(gg.REF_LABEL_DX_Y_MM * master.height_sf_mm, gg.PPI)
-    mid_page_pos_x_px   = master.win_width_px * 0.5
+    eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    eff_dy_px = mm_to_px(gg.REF_LABEL_DX_Y_MM * master.height_sf_mm, gg.PPI)
+    mid_page_pos_x_px = master.win_width_px * 0.5
 
     # Creating title widget
-    label_font = tkFont.Font(family = gg.FONT_NAME,
-                             size   = eff_label_font_size)
+    label_font = tkFont.Font(family=gg.FONT_NAME,
+                             size=eff_label_font_size)
     self.label = tk.Label(self,
-                          text = page_title,
-                          font = label_font)
-    self.label.place(x = mid_page_pos_x_px,
-                     y = eff_label_pos_y_px,
-                     anchor = "center")
+                          text=page_title,
+                          font=label_font)
+    self.label.place(x=mid_page_pos_x_px,
+                     y=eff_label_pos_y_px,
+                     anchor="center")
 
     if datatype:
         page_sub_title = f"Données {datatype}"
 
         # Creating title widget
-        label_font = tkFont.Font(family = gg.FONT_NAME,
-                                 size   = int(eff_label_font_size * 0.7))
+        label_font = tkFont.Font(family=gg.FONT_NAME,
+                                 size=int(eff_label_font_size * 0.7))
         self.label = tk.Label(self,
-                              text = page_sub_title,
-                              font = label_font)
-        self.label.place(x = mid_page_pos_x_px,
-                         y = eff_label_pos_y_px + eff_dy_px,
-                         anchor = "center")
+                              text=page_sub_title,
+                              font=label_font)
+        self.label.place(x=mid_page_pos_x_px,
+                         y=eff_label_pos_y_px + eff_dy_px,
+                         anchor="center")
 
 
 def set_exit_button(self, master):
@@ -105,32 +105,32 @@ def set_exit_button(self, master):
     # Internal functions
     def _launch_exit():
         ask_title = 'Arrêt de BiblioMeter'
-        ask_text =  ("Après la fermeture des fenêtres, "
-                     "les traitements intermédiaires effectués sont sauvegardés."
-                     "\n\n     !!! Attention !!!"
-                     "\nSi le type de données est modifié à la reprise "
-                     "\ndu traitement, ces traitements seront écrasés."
-                     "\nConfirmez la mise en pause ?")
+        ask_text = ("Après la fermeture des fenêtres, "
+                    "les traitements intermédiaires effectués sont sauvegardés."
+                    "\n\n     !!! Attention !!!"
+                    "\nSi le type de données est modifié à la reprise "
+                    "\ndu traitement, ces traitements seront écrasés."
+                    "\nConfirmez la mise en pause ?")
         exit_answer = messagebox.askokcancel(ask_title, ask_text)
         if exit_answer:
             master.destroy()
 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
-    exit_button_x_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * master.width_sf_mm,  gg.PPI)
-    exit_button_y_pos     = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    exit_button_x_pos = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * master.width_sf_mm,  gg.PPI)
+    exit_button_y_pos = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)
     eff_buttons_font_size = font_size(11, master.width_sf_min)
 
     # Setting widget for exit button
-    font_button_quit = tkFont.Font(family = gg.FONT_NAME,
-                                   size   = eff_buttons_font_size)
+    font_button_quit = tkFont.Font(family=gg.FONT_NAME,
+                                   size=eff_buttons_font_size)
     button_quit = tk.Button(self,
-                            text = gg.TEXT_PAUSE,
-                            font = font_button_quit,
-                            command = _launch_exit)
-    button_quit.place(x = exit_button_x_pos,
-                      y = exit_button_y_pos,
-                      anchor = 'n')
+                            text=gg.TEXT_PAUSE,
+                            font=font_button_quit,
+                            command=_launch_exit)
+    button_quit.place(x=exit_button_x_pos,
+                      y=exit_button_y_pos,
+                      anchor='n')
 
 
 def last_available_years(bibliometer_path, year_number):
@@ -151,15 +151,15 @@ def last_available_years(bibliometer_path, year_number):
         years_full_list = []
 
         for year in list_dir:
-            if len(year) == 4:
+            if len(year)==4:
                 years_full_list.append(year)
 
         years_list = years_full_list[-year_number:]
 
     except FileNotFoundError:
         warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-        warning_text  = (f"L'accès au dossier {bibliometer_path} est impossible."
-                         "\nChoisissez un autre dossier de travail.")
+        warning_text = (f"L'accès au dossier {bibliometer_path} est impossible."
+                        "\nChoisissez un autre dossier de travail.")
         messagebox.showwarning(warning_title, warning_text)
         years_list = []
 
@@ -174,7 +174,7 @@ def last_available_years(bibliometer_path, year_number):
     return years_list
 
 
-def existing_corpuses(bibliometer_path, corpuses_number = None):
+def existing_corpuses(bibliometer_path, corpuses_number=None):
     """Returns a list of lists of booleans displaying True
     if rawdata and parsing results are available, and False otherwise.
 
@@ -226,20 +226,20 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
     years_folder_list = last_available_years(bibliometer_path, corpuses_number)
 
     # Setting the files type of raw data and saved parsing results
-    parsing_save_extent   = pg.TSV_SAVE_EXTENT
-    wos_rawdata_extent    = bp.WOS_RAWDATA_EXTENT
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    wos_rawdata_extent = bp.WOS_RAWDATA_EXTENT
     scopus_rawdata_extent = bp.SCOPUS_RAWDATA_EXTENT
 
     # Setting articles item alias for checking availability of parsing
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
 
     # Initialization of lists
-    years_list          = []
-    wos_rawdata_list    = []
-    wos_parsing_list    = []
+    years_list = []
+    wos_rawdata_list = []
+    wos_parsing_list = []
     scopus_rawdata_list = []
     scopus_parsing_list = []
-    dedup_parsing_list  = []
+    dedup_parsing_list = []
 
     for year in years_folder_list:
 
@@ -249,10 +249,10 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
 
         # Setting useful paths for database 'database_type'
         scopus_rawdata_path = rawdata_path_dict["scopus"]
-        wos_rawdata_path    = rawdata_path_dict["wos"]
+        wos_rawdata_path = rawdata_path_dict["wos"]
         scopus_parsing_path = parsing_path_dict["scopus"]
-        wos_parsing_path    = parsing_path_dict["wos"]
-        dedup_parsing_path  = parsing_path_dict["dedup"]
+        wos_parsing_path = parsing_path_dict["wos"]
+        dedup_parsing_path = parsing_path_dict["dedup"]
 
         years_list.append(year)
 
@@ -280,24 +280,24 @@ def existing_corpuses(bibliometer_path, corpuses_number = None):
             scopus_rawdata_list, scopus_parsing_list, dedup_parsing_list)
 
 
-def place_after(gauche, droite, dx = 5, dy = 0):
+def place_after(gauche, droite, dx=5, dy=0):
     """Places widget 'droite' after widget 'gauche' 
     by dx shift in pixels on x axis without shift on y axis.
     """
     gauche_info = gauche.place_info()
     x = int(gauche_info['x']) + gauche.winfo_reqwidth() + dx
     y = int(gauche_info['y']) + dy
-    droite.place(x = x, y = y)
+    droite.place(x=x, y=y)
 
 
-def place_bellow(haut, bas, dx = 0, dy = 5):
+def place_bellow(haut, bas, dx=0, dy=5):
     """Places widget 'bas' after widget 'haut' 
     by dy shift in pixels on y axis without shift on x axis.
     """
     haut_info = haut.place_info()
     x = int(haut_info['x']) + dx
     y = int(haut_info['y']) + haut.winfo_reqheight() + dy
-    bas.place(x = x, y = y)
+    bas.place(x=x, y=y)
 
 
 def font_size(size, scale_factor):
@@ -331,7 +331,7 @@ def str_size_mm(text, font, ppi):
     return w_mm, h_mm
 
 
-def mm_to_px(size_mm, ppi, fact = 1.0):
+def mm_to_px(size_mm, ppi, fact=1.0):
     """The `mm_to_px` function converts a value in mm to a value in pixels
     using the display resolution and a factor fact to adjust the result if needed.
 
@@ -367,17 +367,17 @@ def _window_properties(screen_width_px, screen_height_px):
     ppi = gg.DISPLAYS[gg.BM_GUI_DISP]["ppi"]
 
     # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm  = gg.DISPLAYS[gg.BM_GUI_DISP]["width_mm"]
+    screen_width_mm = gg.DISPLAYS[gg.BM_GUI_DISP]["width_mm"]
     screen_height_mm = gg.DISPLAYS[gg.BM_GUI_DISP]["height_mm"]
 
     # Setting screen reference sizes in pixels and mm
-    ref_width_px  = gg.REF_SCREEN_WIDTH_PX
+    ref_width_px = gg.REF_SCREEN_WIDTH_PX
     ref_height_px = gg.REF_SCREEN_HEIGHT_PX
-    ref_width_mm  = gg.REF_SCREEN_WIDTH_MM
+    ref_width_mm = gg.REF_SCREEN_WIDTH_MM
     ref_height_mm = gg.REF_SCREEN_HEIGHT_MM
 
     # Setting secondary window reference sizes in mm
-    ref_window_width_mm  = gg.REF_WINDOW_WIDTH_MM
+    ref_window_width_mm = gg.REF_WINDOW_WIDTH_MM
     ref_window_height_mm = gg.REF_WINDOW_HEIGHT_MM
 
     # Computing ratii of effective screen sizes to screen reference sizes in pixels
@@ -385,11 +385,11 @@ def _window_properties(screen_width_px, screen_height_px):
     scale_factor_height_px = screen_height_px / ref_height_px
 
     # Computing ratii of effective screen sizes to screen reference sizes in mm
-    scale_factor_width_mm  = screen_width_mm / ref_width_mm
+    scale_factor_width_mm = screen_width_mm / ref_width_mm
     scale_factor_height_mm = screen_height_mm / ref_height_mm
 
     # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px  = mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)
+    win_width_px = mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)
     win_height_px = mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
 
     sizes_tuple = (win_width_px, win_height_px,
@@ -422,7 +422,7 @@ def general_properties(self):
     screen_height_px = self.winfo_screenheight()
 
     sizes_tuple = _window_properties(screen_width_px, screen_height_px)
-    win_width_px  = sizes_tuple[0]
+    win_width_px = sizes_tuple[0]
     win_height_px = sizes_tuple[1]
 
     # Setting window size depending on scale factor

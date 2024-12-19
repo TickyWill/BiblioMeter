@@ -23,6 +23,52 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.rename_cols import set_final_col_names
 
 
+def save_final_hash_ids(bibliometer_path,
+                        corpus_year, results_folder_path):
+    """Saves final results of the hash-IDs of publications for the corpus year.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
+    """
+
+
+    # Setting aliases for saving results
+    results_sub_folder_alias = pg.ARCHI_RESULTS["hash_id"]
+
+    # Setting aliases of common parts of file names
+    origin_hash_id_folder_alias = pg.ARCHI_YEAR["bdd mensuelle"]
+    hash_id_file_base_alias = pg.ARCHI_YEAR["hash_id file name"]
+    year_hash_id_file_alias = corpus_year + " " + hash_id_file_base_alias
+
+    # Setting common paths
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_hash_id_path = origin_corpus_year_path / Path(origin_hash_id_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_hash_id_path = year_target_folder_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required results folders
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_hash_id_path):
+        os.makedirs(target_hash_id_path)
+
+    origin_path = origin_hash_id_path / Path(hash_id_file_base_alias)
+    target_path = target_hash_id_path / Path(year_hash_id_file_alias)
+
+    # Copying file from origin path to target path
+    shutil.copy2(origin_path, target_path)
+
+    end_message = (f"Hash-IDs for year {corpus_year} saved in folder: "
+                   f"\n  '{target_hash_id_path}'")
+    return end_message
+
+
 def save_final_pub_lists(bibliometer_path,
                          corpus_year, results_folder_path):
     """Saves final results of the publications lists for the corpus year.
@@ -43,16 +89,16 @@ def save_final_pub_lists(bibliometer_path,
 
     # Setting aliases of common parts of file names
     origin_pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias     = pg.ARCHI_YEAR["pub list file name base"]
-    invalid_pub_file_base_alias  = pg.ARCHI_YEAR["invalid file name base"]
-    year_pub_list_file_alias    = pub_list_file_base_alias + " " + corpus_year
+    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
+    invalid_pub_file_base_alias = pg.ARCHI_YEAR["invalid file name base"]
+    year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
     year_invalid_pub_file_alias = invalid_pub_file_base_alias + " " + corpus_year
 
     # Setting common paths
     origin_corpus_year_path = bibliometer_path / Path(corpus_year)
-    origin_pub_list_path    = origin_corpus_year_path / Path(origin_pub_list_folder_alias)
+    origin_pub_list_path = origin_corpus_year_path / Path(origin_pub_list_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
-    target_pub_list_path    = year_target_folder_path / Path(results_sub_folder_alias)
+    target_pub_list_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
@@ -64,7 +110,7 @@ def save_final_pub_lists(bibliometer_path,
     origin_paths_dict = {}
     target_paths_dict = {}
 
-    full_pub_list_file_alias =  year_pub_list_file_alias + ".xlsx"
+    full_pub_list_file_alias = year_pub_list_file_alias + ".xlsx"
     origin_paths_dict["Full"] = origin_pub_list_path / Path(full_pub_list_file_alias)
     target_paths_dict["Full"] = target_pub_list_path / Path(full_pub_list_file_alias)
 
@@ -115,15 +161,15 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
 
     # Setting aliases of common parts of file names
     origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_ifs_folder_alias      = pg.ARCHI_YEAR["if analysis"]
-    ifs_file_base_alias          = f'{if_analysis_name}'
+    origin_ifs_folder_alias = pg.ARCHI_YEAR["if analysis"]
+    ifs_file_base_alias = f'{if_analysis_name}'
 
     # Setting common paths
-    origin_corpus_year_path     = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
-    origin_ifs_folder_path      = origin_analysis_folder_path / Path(origin_ifs_folder_alias)
-    year_target_folder_path     = results_folder_path / Path(corpus_year)
-    target_ifs_folder_path      = year_target_folder_path / Path(results_sub_folder_alias)
+    origin_ifs_folder_path = origin_analysis_folder_path / Path(origin_ifs_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_ifs_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
@@ -162,8 +208,8 @@ def save_final_authors(bibliometer_path, corpus_year,
 
     # Internal function
     def _copy_file(origin_file, target_file):
-        origin_file_path  = origin_authors_path / Path(origin_file)
-        target_file_path  = target_authors_path / Path(target_file)
+        origin_file_path = origin_authors_path / Path(origin_file)
+        target_file_path = target_authors_path / Path(target_file)
         shutil.copy2(origin_file_path, target_file_path)
 
     # Setting aliases for saving results
@@ -178,11 +224,11 @@ def save_final_authors(bibliometer_path, corpus_year,
     year_authors_stat_file = authors_stat_file_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path     = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
-    origin_authors_path         = origin_analysis_folder_path / Path(origin_authors_folder_alias)
-    year_target_folder_path     = results_folder_path / Path(corpus_year)
-    target_authors_path         = year_target_folder_path / Path(results_sub_folder_alias)
+    origin_authors_path = origin_analysis_folder_path / Path(origin_authors_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_authors_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
@@ -225,7 +271,7 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
     # Setting useful aliases
-    auth_kw_item_alias  = bp.PARSING_ITEMS_LIST[6]
+    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
     index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
     title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
 
@@ -240,14 +286,14 @@ def save_final_kws(institute, org_tup, bibliometer_path,
 
     # Setting aliases of common parts of file names
     origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_kws_folder_alias      = pg.ARCHI_YEAR["keywords analysis"]
+    origin_kws_folder_alias = pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting common paths
-    origin_corpus_year_path     = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
-    origin_kws_folder_path      = origin_analysis_folder_path / Path(origin_kws_folder_alias)
-    year_target_folder_path     = results_folder_path / Path(corpus_year)
-    target_kws_folder_path      = year_target_folder_path / Path(results_sub_folder_alias)
+    origin_kws_folder_path = origin_analysis_folder_path / Path(origin_kws_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_kws_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
@@ -288,17 +334,17 @@ def save_final_countries(bibliometer_path,
     results_sub_folder_alias = pg.ARCHI_RESULTS["countries"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias  = pg.ARCHI_YEAR["analyses"]
+    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     origin_countries_folder_alias = pg.ARCHI_YEAR["countries analysis"]
-    countries_file_alias          = pg.ARCHI_YEAR["country weight file name"]
-    year_countries_file_alias     = countries_file_alias + " " + corpus_year
+    countries_file_alias = pg.ARCHI_YEAR["country weight file name"]
+    year_countries_file_alias = countries_file_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path     = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
-    origin_countries_path       = origin_analysis_folder_path / Path(origin_countries_folder_alias)
-    year_target_folder_path     = results_folder_path / Path(corpus_year)
-    target_countries_path       = year_target_folder_path / Path(results_sub_folder_alias)
+    origin_countries_path = origin_analysis_folder_path / Path(origin_countries_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_countries_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
@@ -308,9 +354,9 @@ def save_final_countries(bibliometer_path,
 
     # Setting full path 'origin_countries_file_path' and 'target_countries_file_path'
     origin_countries_file_alias = countries_file_alias + ".xlsx"
-    origin_countries_file_path  = origin_countries_path / Path(origin_countries_file_alias)
+    origin_countries_file_path = origin_countries_path / Path(origin_countries_file_alias)
     target_countries_file_alias = year_countries_file_alias + ".xlsx"
-    target_countries_file_path  = target_countries_path / Path(target_countries_file_alias)
+    target_countries_file_path = target_countries_path / Path(target_countries_file_alias)
 
     # Copying file from origin path to target path
     shutil.copy2(origin_countries_file_path, target_countries_file_path)
@@ -338,17 +384,17 @@ def save_final_continents(bibliometer_path,
     results_sub_folder_alias = pg.ARCHI_RESULTS["countries"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias  = pg.ARCHI_YEAR["analyses"]
+    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     origin_countries_folder_alias = pg.ARCHI_YEAR["countries analysis"]
-    continents_file_alias         = pg.ARCHI_YEAR["continent weight file name"]
-    year_continents_file_alias    = continents_file_alias + " " + corpus_year
+    continents_file_alias = pg.ARCHI_YEAR["continent weight file name"]
+    year_continents_file_alias = continents_file_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path     = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
-    origin_countries_path       = origin_analysis_folder_path / Path(origin_countries_folder_alias)
-    year_target_folder_path     = results_folder_path / Path(corpus_year)
-    target_countries_path       = year_target_folder_path / Path(results_sub_folder_alias)
+    origin_countries_path = origin_analysis_folder_path / Path(origin_countries_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_countries_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
@@ -358,9 +404,9 @@ def save_final_continents(bibliometer_path,
 
     # Setting full path 'origin_continents_file_path' and 'target_continents_file_path'
     origin_continents_file_alias = continents_file_alias + ".xlsx"
-    origin_continents_file_path  = origin_countries_path / Path(origin_continents_file_alias)
+    origin_continents_file_path = origin_countries_path / Path(origin_continents_file_alias)
     target_continents_file_alias = year_continents_file_alias + ".xlsx"
-    target_continents_file_path  = target_countries_path / Path(target_continents_file_alias)
+    target_continents_file_path = target_countries_path / Path(target_continents_file_alias)
 
     # Copying file from origin path to target path
     shutil.copy2(origin_continents_file_path, target_continents_file_path)
@@ -375,7 +421,7 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
 
-    The results types arethe following: publications lists, \
+    The results types are the following: publications lists, \
     impact factors, authors, keywords, countries and continents.
 
     To do: Saving the results of co-publication with other institutions \
@@ -389,7 +435,7 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
         corpus_year (str): 4 digits year of the corpus.
         if_analysis_name (str): Base for building file names for saving \
         impact-factors type of results.
-        results_to_save_dict (dict): Dict keyyed by the type of results \
+        results_to_save_dict (dict): Dict keyed by the type of results \
         to save and valued by saving status (bool; True if the type of \
         results should be saved).
         verbose (bool): Status of prints (default = False).
@@ -399,11 +445,11 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     """
 
     # Setting aliases for saving results
-    results_root_alias   = pg.ARCHI_RESULTS["root"]
+    results_root_alias = pg.ARCHI_RESULTS["root"]
     results_folder_alias = pg.ARCHI_RESULTS[datatype]
 
     # Setting paths for saving results
-    results_root_path   = bibliometer_path / Path(results_root_alias)
+    results_root_path = bibliometer_path / Path(results_root_alias)
     results_folder_path = results_root_path / Path(results_folder_alias)
 
     # Checking availability of required results folders
@@ -411,6 +457,12 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
         os.makedirs(results_root_path)
     if not os.path.exists(results_folder_path):
         os.makedirs(results_folder_path)
+
+    if results_to_save_dict["hash_ids"]:
+        message = save_final_hash_ids(bibliometer_path,
+                                      corpus_year, results_folder_path)
+        if verbose:
+            print(message)
 
     if results_to_save_dict["pub_lists"]:
         message = save_final_pub_lists(bibliometer_path,

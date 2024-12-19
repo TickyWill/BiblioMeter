@@ -24,6 +24,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_PUB_NAMES',
            'CONFIG_FOLDER',
            'DATATYPE_LIST',
+           'DF_TITLES_LIST',
            'DOC_TYPE_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
@@ -39,7 +40,8 @@ __all__ = ['ANALYSIS_IF',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
-           'TSV_SAVE_EXTENT'
+           'TSV_SAVE_EXTENT',
+           'XL_INDEX_BASE'
           ]
 
 # 3rd party imports
@@ -54,6 +56,10 @@ BDD_LIST = [bp.SCOPUS, bp.WOS]
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 
+DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
+                  "Authors_df", "Authors_stat_df", "KPI_df",
+                  "KW_df", "Geo_df", "Institutions_df", "IF_anal_df"]
+
 CONFIG_FOLDER = 'ConfigFiles'
 
 PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
@@ -61,6 +67,8 @@ PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
 
 TSV_SAVE_EXTENT = "dat"
+
+XL_INDEX_BASE = 1
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 
@@ -108,15 +116,16 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
 
 ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "dedup_parsing"       : "Synthèse des extractions",
+                 "hash_id"             : "Identifiants universels",
                  "pub-lists"           : "Listes consolidées des publications",
                  "impact-factors"      : "Analyse des facteurs d'impact",
                  "authors_prod"        : "Analyse par auteurs",
                  "keywords"            : "Analyse des mots clefs",
                  "countries"           : "Analyse géographique",
                  "institutions"        : "Analyse des collaborations",
+                 "subjects"            : "Analyse des thématiques",
                  "kpis"                : "Synthèse des indicateurs",
                  "kpis file name base" : "Synthèse des KPIs",
-                 "subjects"            : "Analyse des thématiques",
                  DATATYPE_LIST[0]      : "Scopus&Wos",
                  DATATYPE_LIST[1]      : "HalScopus&Wos",
                  DATATYPE_LIST[2]      : "Wos",
@@ -162,7 +171,7 @@ ARCHI_YEAR = {
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["pub_lists", "ifs", "kws", "countries", "continents", "authors"]
+RESULTS_TO_SAVE = ["hash_ids", "pub_lists", "ifs", "kws", "countries", "continents", "authors"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
