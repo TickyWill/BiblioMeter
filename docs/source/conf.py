@@ -23,9 +23,9 @@ sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmgui"))
 
 
 project = 'BiblioMeter'
-copyright = '2021, BiblioMeter team, Liten, Leti, CEA'
-author = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
 release = '6.0.0'
+authors = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
+copyright = '2021, BiblioMeter team, Liten, Leti, CEA'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -35,7 +35,6 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
-    #'myst_parser',
 ]
 source_suffix = [".rst", ".md"]
 
@@ -46,8 +45,29 @@ exclude_patterns = ['.ipynb_checkpoints']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
-html_logo = 'BM-logo_doc.ico'
-
-show_authors = True
+latex_elements = {
+    'preamble': r'''
+        \usepackage{titling}
+        \pretitle{\begin{center}\Huge\bfseries}
+        \posttitle{\par\end{center}\vskip 1em}
+        \preauthor{\begin{center}\Large}
+        \postauthor{\par\end{center}\vskip 1em}
+        \predate{\begin{center}\large}
+        \postdate{\par\end{center}\vskip 1em}
+        \usepackage{graphicx}
+        \usepackage{fancyhdr}
+    ''',
+    'maketitle': f'''
+        \\begin{{titlepage}}
+            \\begin{{center}}
+                {{\\Huge \\textbf{{{project}}}}} \\\\
+                \\vspace{{0.5cm}}
+                {{\\large Version: {release}}} \\\\
+                \\vspace{{1cm}}
+                {{\\Large \\textbf{{Author(s): {authors}}}}} \\\\
+                \\vspace{{0.5cm}}
+                {{\\small \\textcopyright\\ {copyright}}}
+            \\end{{center}}
+        \\end{{titlepage}}
+    '''
+}
