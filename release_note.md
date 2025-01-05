@@ -1,5 +1,22 @@
 # Application Release Backlog
 
+## Release 6.1.0 - 2025/xx/xx
+* **Summary**: This release corresponds to the update of the collaborations analysis.
+* **Features**:
+  - Feature 1: .
+* **Improvements**:
+  - Improvement 1: .
+* **Bug Fixes**:
+  - None.
+* **Known Issues**:
+  - Issue 1: .
+* **API Changes**:
+  - None.
+* **Deprecated Features**:
+  - None.
+* **Contributors**: Amal Chabli.
+* **Acknowledgments**: Thanks to Baptiste Refalo for pull requests review.
+    
 ## Release 6.0.0 - 2024/12/16
 * **Summary**: This release corresponds to the deep update of the code allowing the attribution of the OTPs at either the laboratory level or the department level of the Institute. In addition, it corresponds to a code refactory distributing existing functions in different specific modules.
 * **Features**:
