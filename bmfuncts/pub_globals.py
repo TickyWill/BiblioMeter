@@ -106,6 +106,7 @@ ARCHI_INSTITUTIONS = {"root"                 : "Traitement Institutions",
                       "inst_types_base"      : "Institutions_types.xlsx",
                       "affiliations_base"    : "Country_affiliations.xlsx",
                       "country_towns_base"   : "Country_towns.xlsx",
+                      "unkept_affil_base"    : "Unkept_affiliations.xlsx",
                      }
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",

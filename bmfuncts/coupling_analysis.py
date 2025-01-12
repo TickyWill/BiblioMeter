@@ -23,6 +23,32 @@ from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 
 
+def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, cols_tup):
+    """Removes the affiliation items given in the file pointed by 'country_unkept_affil_file_path' 
+    path from the raw-institutions data."""
+    countries_col, raw_affil_col, Institution_col = cols_tup
+    unkept_institutions_dict = pd.read_excel(country_unkept_affil_file_path, sheet_name=None)
+    unkept_country_list = list(unkept_institutions_dict.keys())
+
+    new_raw_institutions_df = pd.DataFrame()
+    for country, country_raw_inst_df in raw_institutions_df.groupby(countries_col):
+        if country in unkept_country_list:
+            unkept_institutions_list = unkept_institutions_dict[country][raw_affil_col].to_list()
+            for idx_row, inst_row in country_raw_inst_df.iterrows():
+                inst_row_list = [x.strip() for x in inst_row[Institution_col].split(";")]
+                for unkept_inst in unkept_institutions_list:
+                    if unkept_inst in inst_row_list:
+                        inst_row_list.remove(unkept_inst)
+                        if len(inst_row_list)>1:
+                            country_raw_inst_df.loc[idx_row, Institution_col] = "; ".join(inst_row_list)
+                        elif len(inst_row_list)==1:
+                            country_raw_inst_df.loc[idx_row, Institution_col] = inst_row_list[0]
+                        else:
+                            country_raw_inst_df.loc[idx_row, Institution_col] = bp.EMPTY
+        new_raw_institutions_df = pd.concat([new_raw_institutions_df, country_raw_inst_df])
+    return new_raw_institutions_df
+
+
 def _build_countries_stat(countries_df):
     """Builds the statistics of publications per country from the analysis 
     of the dataframe of countries.
@@ -176,7 +202,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         return df
 
     def _year_pub_id(df, year, pub_id_alias):
-        """The local function `_unique_pub_id` transforms the column 'Pub_id' of the df
+        """Transforms the column 'Pub_id' of the df
         by adding "yyyy_" to the value of the row.
 
         Args:
@@ -198,17 +224,17 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     def _save_formatted_df_to_xlsx(results_path, item_filename, item_df,
                                    item_df_title, sheet_name, year):
         """Formats the 'item_df' dataframe through `format_page` function imported 
-        from the `bmfuncts.format_files` module and saves it as Excel workbook.
+        from the `bmfuncts.format_files` module and saves it as xlsx workbook.
         """
-        item_xlsx_file = item_filename + xlsx_extent_alias
+        item_xlsx_file = item_filename + xlsx_extent
         item_xlsx_path = results_path / Path(item_xlsx_file)
         wb, ws = format_page(item_df, item_df_title)
         ws.title = sheet_name + year
         wb.save(item_xlsx_path)
 
     # Setting useful local aliases
-    dedup_folder_alias = "dedup"
-    xlsx_extent_alias = ".xlsx"
+    dedup_folder = "dedup"
+    xlsx_extent = ".xlsx"
 
     # Setting aliases from globals
     tsv_extent_alias = "." + pg.TSV_SAVE_EXTENT
@@ -226,12 +252,14 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
     country_affiliations_file_base_alias = pg.ARCHI_INSTITUTIONS["affiliations_base"]
     country_towns_file_base_alias = pg.ARCHI_INSTITUTIONS["country_towns_base"]
+    country_unkept_inst_file_base_alias = pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
 
     # Setting useful file names
-    pub_list_filename = pub_list_filename_base + " " + str(year) + xlsx_extent_alias
+    pub_list_filename = pub_list_filename_base + " " + str(year) + xlsx_extent
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
     country_affil_file_alias = institute + "_" + country_affiliations_file_base_alias
     country_towns_file_alias = institute + "_" + country_towns_file_base_alias
+    country_unkept_affil_file_alias = institute + "_" + country_unkept_inst_file_base_alias
 
     # Setting useful paths
     year_folder_path = bibliometer_path / Path(str(year))
@@ -243,6 +271,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
     country_affil_file_path = institutions_folder_path / Path(country_affil_file_alias)
+    country_unkept_affil_file_path = institutions_folder_path / Path(country_unkept_affil_file_alias)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
@@ -269,7 +298,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
 
     # Reading the full file of addresses
     addresses_item_file = item_filename_dict[addresses_item_alias] + tsv_extent_alias
-    addresses_item_path = parsing_path_dict[dedup_folder_alias] / Path(addresses_item_file)
+    addresses_item_path = parsing_path_dict[dedup_folder] / Path(addresses_item_file)
     all_address_df = pd.read_csv(addresses_item_path, sep='\t')
     if progress_callback:
         progress_callback(15)
@@ -315,12 +344,21 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     if progress_callback:
         progress_callback(70)
 
+    # Removing unkept institutions from 'raw_institutions_df'
+    raw_affil_col = 'Raw affiliations'
+    cols_tup = (countries_col_alias, raw_affil_col, institutions_alias)
+    raw_institutions_df = _clean_unkept_affil(raw_institutions_df,
+                                              country_unkept_affil_file_path,
+                                              cols_tup)
+    if progress_callback:
+        progress_callback(75)
+
     # Saving formatted df of normalized and raw institutions
     inst_df_title = pg.DF_TITLES_LIST[9]
     _save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_filename_alias,
-                               norm_institutions_df, inst_df_title, 'Norm Inst', year)
+                               norm_institutions_df, inst_df_title, 'Norm Inst ', year)
     _save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias,
-                               raw_institutions_df, inst_df_title, 'Raw Inst', year)
+                               raw_institutions_df, inst_df_title, 'Raw Inst ', year)
     if progress_callback:
         progress_callback(80)
 

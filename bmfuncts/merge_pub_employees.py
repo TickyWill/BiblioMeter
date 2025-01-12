@@ -874,7 +874,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                             ext_docs_col_adds_list_alias,
                             ext_docs_useful_col_list_alias,],
                            [])
-    warnings.simplefilter(action = 'ignore', category = UserWarning)
+    warnings.simplefilter(action='ignore', category=UserWarning)
     ext_docs_df = pd.read_excel(ext_docs_path,
                                 sheet_name=ext_docs_sheet_name_alias,
                                 usecols=ext_docs_usecols,
