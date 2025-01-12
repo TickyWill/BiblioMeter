@@ -185,11 +185,11 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
         else:
             year_database_folder_path = database_folder_path / Path(year)
-            if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[1] and year==years_list[-1]:
-                database_file_end = last_year_database_file_end
-
-        year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                          database_file_end)
+            year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                              database_file_end)
+            if not year_database_file_path:
+                year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                                  last_year_database_file_end)
 
         rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]

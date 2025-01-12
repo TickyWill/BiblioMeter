@@ -78,20 +78,22 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                  : "BDD multi annuelle",
                            }
 
 ARCHI_EXTRACT = {"root"             : "Extractions Institut",
-                 bp.SCOPUS          : {"root"          : "ScopusExtractions_Files",
-                                       DATATYPE_LIST[0]: "scopus",
-                                       DATATYPE_LIST[1]: "scopus_hal",
-                                       DATATYPE_LIST[2]: "scopus",
-                                       "file_extent"   : '.' + bp.SCOPUS_RAWDATA_EXTENT,
+                 bp.SCOPUS          : {"root"           : "ScopusExtractions_Files",
+                                       DATATYPE_LIST[0] : "scopus",
+                                       DATATYPE_LIST[1] : "scopus_hal",
+                                       DATATYPE_LIST[2] : "scopus",
+                                       "file_extent"    : '.' + bp.SCOPUS_RAWDATA_EXTENT,
+                                       "added_dois_file": " hal_added_dois.xlsx",
                                       },
-                 bp.WOS             : {"root"          : "WosExtractions_Files",
-                                       DATATYPE_LIST[0]: "wos",
-                                       DATATYPE_LIST[1]: "wos",
-                                       DATATYPE_LIST[2]: "wos",
-                                       "file_extent"   : '.' + bp.WOS_RAWDATA_EXTENT,
+                 bp.WOS             : {"root"           : "WosExtractions_Files",
+                                       DATATYPE_LIST[0] : "wos",
+                                       DATATYPE_LIST[1] : "wos",
+                                       DATATYPE_LIST[2] : "wos",
+                                       "file_extent"    : '.' + bp.WOS_RAWDATA_EXTENT,
                                       },
                  "empty-file folder": "Fichier vierge"
                 }
+
 
 ARCHI_IF = {"root"                   : "Impact Factor",
             "all IF"                 : "IF all years.xlsx",

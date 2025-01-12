@@ -189,6 +189,7 @@ def _launch_update_employees(bibliometer_path,
 
 def _launch_recursive_year_search_try(institute, org_tup,
                                       bibliometer_path,
+                                      datatype,
                                       paths_tup,
                                       files_tup,
                                       year_select,
@@ -209,6 +210,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
         paths_tup (tup): (full path to folder where publications merged with \
         Institute employees and associated files are saved, full path to file \
         of Institute employees database).
@@ -231,6 +233,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                                                                institute,
                                                                org_tup,
                                                                bibliometer_path,
+                                                               datatype,
                                                                year_select,
                                                                search_depth,
                                                                progress_callback,
@@ -843,6 +846,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         files_tup = (submit_alias, orphan_alias)
         _launch_recursive_year_search_try(institute, org_tup,
                                           bibliometer_path,
+                                          datatype,
                                           paths_tup,
                                           files_tup,
                                           year_select,
