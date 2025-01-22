@@ -57,7 +57,7 @@ def _get_doi_pub_id(articles_df, dois_list):
 def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, dfs_tup):
     """Checks if normalized affiliation attribution is correct 
     for the added DOIS from HAL database."""
-    articles_df, authorsinst_authors_df = dfs_tup    
+    articles_df, authorsinst_authors_df = dfs_tup
     pub_id_col = bp.COL_NAMES['auth_inst'][0]
     address_col = bp.COL_NAMES['auth_inst'][2]
     morm_inst_col = bp.COL_NAMES['auth_inst'][4]

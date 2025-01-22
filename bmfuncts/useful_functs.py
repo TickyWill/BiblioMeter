@@ -69,7 +69,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
         year (str): 4 digits year of the corpus.
     Returns:
         (bool): Status of the deduplication parsing folder \
-        (False if folder does'nt exist or is empty).
+        (False if folder didn't exist or is empty).
     """
     # To Do:  Checks if a specific parsing file is available not only if folder is empty
 

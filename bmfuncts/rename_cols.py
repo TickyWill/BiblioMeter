@@ -347,7 +347,6 @@ def set_col_attr(institute, org_tup, columns_list):
     for col in columns_list:
         if col in set_col_list:
             continue
-        else:
-            final_col_attr_dict[col] = [15, "center"]
+        final_col_attr_dict[col] = [15, "center"]
 
     return final_col_attr_dict

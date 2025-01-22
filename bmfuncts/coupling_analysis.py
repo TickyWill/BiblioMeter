@@ -26,7 +26,7 @@ from bmfuncts.save_final_results import save_final_results
 def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, cols_tup):
     """Removes the affiliation items given in the file pointed by 'country_unkept_affil_file_path' 
     path from the raw-institutions data."""
-    countries_col, raw_affil_col, Institution_col = cols_tup
+    countries_col, raw_affil_col, institution_col = cols_tup
     unkept_institutions_dict = pd.read_excel(country_unkept_affil_file_path, sheet_name=None)
     unkept_country_list = list(unkept_institutions_dict.keys())
 
@@ -35,16 +35,16 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
         if country in unkept_country_list:
             unkept_institutions_list = unkept_institutions_dict[country][raw_affil_col].to_list()
             for idx_row, inst_row in country_raw_inst_df.iterrows():
-                inst_row_list = [x.strip() for x in inst_row[Institution_col].split(";")]
+                inst_row_list = [x.strip() for x in inst_row[institution_col].split(";")]
                 for unkept_inst in unkept_institutions_list:
                     if unkept_inst in inst_row_list:
                         inst_row_list.remove(unkept_inst)
                         if len(inst_row_list)>1:
-                            country_raw_inst_df.loc[idx_row, Institution_col] = "; ".join(inst_row_list)
+                            country_raw_inst_df.loc[idx_row, institution_col] = "; ".join(inst_row_list)
                         elif len(inst_row_list)==1:
-                            country_raw_inst_df.loc[idx_row, Institution_col] = inst_row_list[0]
+                            country_raw_inst_df.loc[idx_row, institution_col] = inst_row_list[0]
                         else:
-                            country_raw_inst_df.loc[idx_row, Institution_col] = bp.EMPTY
+                            country_raw_inst_df.loc[idx_row, institution_col] = bp.EMPTY
         new_raw_institutions_df = pd.concat([new_raw_institutions_df, country_raw_inst_df])
     return new_raw_institutions_df
 

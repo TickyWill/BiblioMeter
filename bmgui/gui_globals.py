@@ -103,8 +103,7 @@ from screeninfo import get_monitors
 # *****************************************
 
 # Setting BiblioMeter version value (internal)
-#VERSION = '6.1.0'
-VERSION = '6.0.0'
+VERSION = '6.1.0'
 
 # Setting the number of corpuses to analyse
 CORPUSES_NUMBER = 6

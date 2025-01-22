@@ -34,7 +34,7 @@ def _try_init_dict(dic, init_key, set_key):
     if key:
         dic[key] = {}
     else:
-        key = set_key    
+        key = set_key
     return key, dic
 
 
@@ -186,7 +186,7 @@ def _set_lab_otps_dict(dept_otps_dict, inst_dir):
     for dept, dept_v in dept_otps_dict.items():
         dept_lab_list = []
         dept_otps_lists = []
-        for serv, serv_v in dept_v.items():
+        for _, serv_v in dept_v.items():
             dept_lab_list = dept_lab_list + list(serv_v.keys())
             dept_otps_lists = dept_otps_lists + list(serv_v.values())
         lab_otps_dict[dept] = dict(zip(dept_lab_list, dept_otps_lists))
@@ -203,7 +203,7 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None
     of 'dpt' department using `-try_init_dict` internal function.
     """
     dpt, dept_otps_dict = _try_init_dict(dept_otps_dict, dpt, dept)
-    srv, dept_otps_dict[dpt] = _try_init_dict(dept_otps_dict[dpt], srv, serv)    
+    srv, dept_otps_dict[dpt] = _try_init_dict(dept_otps_dict[dpt], srv, serv)
     dept_otps_dict[dpt][srv][lb] = otps_list
     return dept_otps_dict
 
@@ -263,7 +263,6 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     # as they are defined in the source file but not as defined in the Instiute config file.
     dept_otps_dict = {}
     for otps_dept, otps_dept_df in otps_bdd_df.groupby(otps_dept_col):
-        init_lists = [list(otps_dept_df[otps_otp_col])]
         dept_otps_list = _set_sorted_list2(otps_dept_df, otps_otp_col)
 
         if otps_dept=="CLINATEC":
@@ -318,7 +317,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
 
     # Reorganizing dict of OTPs by removing services keys
     lab_otps_dict = _set_lab_otps_dict(dept_otps_dict, inst_dir)
-    
-    # Setting final dict of OTPs 
+
+    # Setting final dict of OTPs
     final_lab_otps_dict = _set_final_otps_dict(institute, lab_otps_dict)
     return final_lab_otps_dict

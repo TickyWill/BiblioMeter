@@ -245,7 +245,7 @@ def _use_unknown_doi_otps(dfs_tup, otps_history_tup, dpt_df,
     """
     # Setting parameters from args
     otp_to_set_dpt_df = dfs_tup[1]
-    lists_tup, cols_tup, doi_otp_history_df = otps_history_tup
+    _, cols_tup, doi_otp_history_df = otps_history_tup
     author_col = cols_tup[2]
     doi_col = cols_tup[3]
     otp_col = cols_tup[5]

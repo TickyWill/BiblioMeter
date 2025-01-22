@@ -819,7 +819,7 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     new_hash_id_df = pd.DataFrame()
     new_submit_df = submit_df.copy()
     new_orphan_df = orphan_df.copy()
-    for hash_id, hash_id_dg in hash_id_df.groupby(hash_id_col):
+    for _, hash_id_dg in hash_id_df.groupby(hash_id_col):
         add_hash_id_dg = hash_id_dg.copy()
         if len(hash_id_dg)>1:
             pub_id_list = list(hash_id_dg[pub_id_col])
@@ -829,7 +829,7 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
                 if pub_id_to_drop in submit_pub_id_list:
                     new_submit_df = new_submit_df[new_submit_df[pub_id_col]!=pub_id_to_drop]
                 if pub_id_to_drop in orphan_pub_id_list:
-                    new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop] 
+                    new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop]
             add_hash_id_dg = hash_id_dg[hash_id_dg[pub_id_col]==pub_id_to_keep].copy()
         new_hash_id_df = pd.concat([new_hash_id_df, add_hash_id_dg])
     return new_submit_df, new_orphan_df, new_hash_id_df
@@ -891,7 +891,7 @@ def _creating_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     orphan_df = pd.read_excel(orphan_file_path)
 
     # Concatenate de dataframes to hash
-    submit_to_hash = submit_df[useful_cols].copy()    
+    submit_to_hash = submit_df[useful_cols].copy()
     orphan_to_hash = orphan_df[useful_cols].copy()
     dg_to_hash = pd.concat([submit_to_hash, orphan_to_hash])
 
