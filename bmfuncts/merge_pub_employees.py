@@ -731,8 +731,11 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     as Institute employees.
 
     The split is in separate lists of publications depending on values in columns 
-    given by 'inst_col_list' list that is specific to the Institute. 
-    These lists are then saved as Excel files in the folder which full path 
+    given by 'inst_col_list' list that is specific to the Institute. Some lists 
+    of publications identifyed by 'orphan_drop_dict' dict that is specific to 
+    the Institute, are droped from the initial publications list with one row 
+    per author that has not been identified as Institute employees. The lists 
+    resulting from the split are saved as Excel files in the folder which full path 
     is given by 'orphan_path'.
 
     Args:
@@ -741,7 +744,10 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
         working_folder_path (path): Full path to working folder.
         orphan_file_name (str): File name of the Excel file of the publications list \
         with one row per author that has not been identified as Institute employee.
-        verbose (bool): Status of prints (default = False).       
+        verbose (bool): Status of prints (default = False).
+    Returns:
+        (bool): The empty status of the publications list with authors \
+        not found in the employees database.
     """
 
     # Internal function
@@ -783,6 +789,10 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     _save_inst_col_df(inst_col_list[0], institute_df)
     _save_inst_col_df("all_undrop", new_orphan_df)
 
+    # Updating orphab status
+    orphan_status = new_orphan_df.empty
+    return orphan_status
+
 
 def _my_hash(text:str):
     """Builts hash given the string 'text' 
@@ -796,7 +806,36 @@ def _my_hash(text:str):
     return my_hash
 
 
-def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name, orphan_file_name):
+def _clean_hash_id_df(dfs_tup, cols_tup):
+    """Cleans data from publications with same hash ID."""
+    # Setting parameters from args
+    submit_df, orphan_df, hash_id_df = dfs_tup
+    pub_id_col, hash_id_col = cols_tup
+
+    # Setting publications IDs list
+    submit_pub_id_list = list(submit_df[pub_id_col])
+    orphan_pub_id_list = list(orphan_df[pub_id_col])
+
+    new_hash_id_df = pd.DataFrame()
+    new_submit_df = submit_df.copy()
+    new_orphan_df = orphan_df.copy()
+    for hash_id, hash_id_dg in hash_id_df.groupby(hash_id_col):
+        add_hash_id_dg = hash_id_dg.copy()
+        if len(hash_id_dg)>1:
+            pub_id_list = list(hash_id_dg[pub_id_col])
+            pub_id_to_keep = pub_id_list[0]
+            pub_id_to_drop_list = pub_id_list[1:]
+            for pub_id_to_drop in pub_id_to_drop_list:
+                if pub_id_to_drop in submit_pub_id_list:
+                    new_submit_df = new_submit_df[new_submit_df[pub_id_col]!=pub_id_to_drop]
+                if pub_id_to_drop in orphan_pub_id_list:
+                    new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop] 
+            add_hash_id_dg = hash_id_dg[hash_id_dg[pub_id_col]==pub_id_to_keep].copy()
+        new_hash_id_df = pd.concat([new_hash_id_df, add_hash_id_dg])
+    return new_submit_df, new_orphan_df, new_hash_id_df
+
+
+def _creating_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias'.
 
     The containt of these columns is as follows:
@@ -806,7 +845,8 @@ def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name,
     'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns.
     - The 'pub_id_alias' column contains the publication order number in the publications list.
 
-    The dataframe is saved as Excel file which full path is given by 'hash_id_file_path'.
+    Finally, the data are cleaned from the publications that have same hash ID through \
+    the `_clean_hash_id_df` internal function and the dataframes are saved as Excel files.
 
     Args:
         institute (str): Institute name.
@@ -820,6 +860,8 @@ def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name,
     Returns:
         (str): End message recalling path to the saved file.        
     """
+    # Setting parameters from args
+    submit_file_name, orphan_file_name = file_names_tup
 
     # Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
@@ -845,10 +887,12 @@ def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name,
                    title_alias, issn_alias, doi_alias]
 
     # Getting dataframes to hash
-    submit_to_hash = pd.read_excel(submit_file_path, usecols=useful_cols)
-    orphan_to_hash = pd.read_excel(orphan_file_path, usecols=useful_cols)
+    submit_df = pd.read_excel(submit_file_path)
+    orphan_df = pd.read_excel(orphan_file_path)
 
     # Concatenate de dataframes to hash
+    submit_to_hash = submit_df[useful_cols].copy()    
+    orphan_to_hash = orphan_df[useful_cols].copy()
     dg_to_hash = pd.concat([submit_to_hash, orphan_to_hash])
 
     # Dropping rows of same pub_id_alias and reindexing the rows using ignore_index
@@ -866,8 +910,16 @@ def _creating_hash_id(institute, org_tup, working_folder_path, submit_file_name,
         hash_id_df.loc[idx, hash_id_col_alias] = str(hash_id)
         hash_id_df.loc[idx, pub_id_alias] = pub_id
 
-    hash_id_df.to_excel(hash_id_file_path, index=False)
-    hash_id_nb = len(hash_id_df)
+    # Cleaning dataframe from publications with same hash ID
+    dfs_tup = (submit_df, orphan_df, hash_id_df)
+    cols_tup = (pub_id_alias, hash_id_col_alias)
+    new_submit_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
+
+    # Saving the data
+    new_submit_df.to_excel(submit_file_path, index=False)
+    new_orphan_df.to_excel(orphan_file_path, index=False)
+    new_hash_id_df.to_excel(hash_id_file_path, index=False)
+    hash_id_nb = len(new_hash_id_df)
     print(f"{hash_id_nb} hash IDs of publications created")
     message = f"{hash_id_nb} hash IDs of publications created and saved in file: \n  {hash_id_file_path}"
     return message
@@ -1095,13 +1147,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     # Splitting orphan file in subdivisions of Institute
     if orphan_split_status:
-        _split_orphan(org_tup, out_path, orphan_file_name_alias)
+        orphan_status = _split_orphan(org_tup, out_path, orphan_file_name_alias)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identification of articles independent of database extraction
-    _creating_hash_id(institute, org_tup, out_path,
-                      submit_file_name_alias, orphan_file_name_alias)
+    file_names_tup = (submit_file_name_alias, orphan_file_name_alias)
+    _creating_hash_id(institute, org_tup, out_path, file_names_tup)
     if progress_callback:
         progress_callback(100)
 

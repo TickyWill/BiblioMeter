@@ -22,6 +22,7 @@ import BiblioParsing as bp
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
+from bmfuncts.useful_functs import standardize_firstname_initials
 from bmfuncts.useful_functs import standardize_txt
 
 
@@ -178,11 +179,17 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     # Reading data file targeted by 'ortho_path'
     ortho_col_list = list(pg.COL_NAMES_ORTHO.values())
     warnings.simplefilter(action='ignore', category=UserWarning)
-    ortho_df = pd.read_excel(ortho_path, usecols = ortho_col_list)
+    ortho_df = pd.read_excel(ortho_path,
+                             usecols=ortho_col_list,
+                             keep_default_na=False)
     ortho_df[ortho_lastname_init] = ortho_df[ortho_lastname_init].\
         apply(standardize_txt)
     ortho_df[ortho_lastname_new] = ortho_df[ortho_lastname_new].\
         apply(standardize_txt)
+    ortho_df[ortho_initials_init] = ortho_df[ortho_initials_init].\
+        apply(standardize_firstname_initials)
+    ortho_df[ortho_initials_new] = ortho_df[ortho_initials_new].\
+        apply(standardize_firstname_initials)
 
     new_df = init_df.copy()
     new_df = new_df.reset_index(drop=True)
@@ -246,12 +253,18 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
     # Getting the information of the year in the complementary file
     compl_col_list = list(pg.COL_NAMES_COMPL.values())
     warnings.simplefilter(action='ignore', category=UserWarning)
-    compl_df = pd.read_excel(complements_path, sheet_name=compl_to_replace_sheet,
-                             usecols=compl_col_list)
+    compl_df = pd.read_excel(complements_path,
+                             sheet_name=compl_to_replace_sheet,
+                             usecols=compl_col_list,
+                             keep_default_na=False)
     compl_df[compl_lastname_init] = compl_df[compl_lastname_init].\
         apply(standardize_txt)
     compl_df[compl_lastname_new] = compl_df[compl_lastname_new].\
         apply(standardize_txt)
+    compl_df[compl_initials_init] = compl_df[compl_initials_init].\
+        apply(standardize_firstname_initials)
+    compl_df[compl_initials_new] = compl_df[compl_initials_new].\
+        apply(standardize_firstname_initials)
     year_compl_df = compl_df[compl_df[compl_year_pub]==int(year)]
     year_compl_df = year_compl_df.reset_index()
 
@@ -312,7 +325,12 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
     outliers_df = pd.read_excel(outliers_path,
                                 sheet_name=outliers_sheet,
                                 usecols=[outliers_lastname_col,
-                                         outliers_initials_col])
+                                         outliers_initials_col],
+                                keep_default_na=False)
+    outliers_df[outliers_lastname_col] = outliers_df[outliers_lastname_col].\
+        apply(standardize_txt)
+    outliers_df[outliers_initials_col] = outliers_df[outliers_initials_col].\
+        apply(standardize_firstname_initials)
 
     # Initializing the dataframe that will contain the rows to drop
     # with the same columns names as the dataframe to update

@@ -9,6 +9,7 @@ __all__ = ['check_dedup_parsing_available',
            'save_fails_dict',
            'save_parsing_dict',
            'set_rawdata',
+           'standardize_firstname_initials',
            'standardize_txt',
           ]
 
@@ -28,8 +29,24 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 
 
+def standardize_firstname_initials(initials_init):
+    """Standardizes the initials of a firstname by removing minus symbol 
+    between initials. 
+    
+    For example, changes "P-Y" into "PY"
+
+    Args:
+        initials_init (str): String containing raw firstname initials 
+        to be standardized.
+    Returns:
+        (str): The standardized string."""
+    initials_init = initials_init.replace('-',' ')
+    initials = ''.join(initials_init.split(' '))
+    return initials
+
+
 def standardize_txt(text):
-    """Standardize text by keeping only ASCII characters
+    """Standardizes text by keeping only ASCII characters
     and replacing minus symbol between words by space.
 
     Args:
