@@ -195,6 +195,7 @@ def _enhance_homonyms_file(institute, org_tup, in_path):
     """
     # Setting OTP df column names
     otp_col_dict = set_otp_col_names(institute, org_tup)
+    dpt_alias = otp_col_dict['dpt']
 
     # Setting useful alias
     dpt_label_alias = ig.DPT_LABEL_KEY
@@ -204,6 +205,9 @@ def _enhance_homonyms_file(institute, org_tup, in_path):
 
     solved_homonymies_df = pd.read_excel(in_path)
     solved_homonymies_df = solved_homonymies_df.fillna('')
+
+    # Removing possible spaces in dept name
+    solved_homonymies_df[dpt_alias] = solved_homonymies_df[dpt_alias].apply(lambda x: x.strip())
 
     # Setting the affiliation department for OTPs attribution in 'otp_dept_col' column
     end_message, new_solved_homonymies_df = _set_otps_dept_affil(org_tup, solved_homonymies_df,
