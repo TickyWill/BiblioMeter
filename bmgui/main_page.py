@@ -153,7 +153,6 @@ class AppMain(tk.Tk):
             Then, updates 'corpi' widget value with new list of available corpuses."""
 
             corpi_val = _set_corpi_widgets_param(inst_bmf)
-            corpi_val_to_set = ""
             bmf_path = Path(inst_bmf)
             bmf_access_status = _try_bmf_access(bmf_path)
             if bmf_access_status:
@@ -171,7 +170,19 @@ class AppMain(tk.Tk):
 
                 # Setting corpi_val value to corpuses list
                 corpi_val_to_set = str(corpuses_list)
-            corpi_val.set(corpi_val_to_set)
+                corpi_val.set(corpi_val_to_set)
+
+                # Dispaying info
+                extractions_folder_alias = pg.ARCHI_EXTRACT['root']
+                info_title = "- Information -"
+                info_text = (f"L'architecture du dossier pour l'année {new_corpus_year_folder} "
+                             "a été créée dans le dossier de travail."
+                             "\n\nAvant de lancer l'analyse, mettez les extractions "
+                             f"correspondantes dans le dossier :\n\n  '{extractions_folder_alias}'.")
+                messagebox.showinfo(info_title, info_text)
+            else:
+                corpi_val.set("")
+            
 
         def _set_corpi_widgets_param(inst_bmf):
             """Sets 'corpi' widgets parameters and values accordingly 
