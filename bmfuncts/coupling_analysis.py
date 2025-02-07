@@ -21,6 +21,7 @@ from bmfuncts.config_utils import set_user_config
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
+from bmfuncts.useful_functs import concat_dfs
 
 
 def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, cols_tup):
@@ -45,7 +46,8 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
                             country_raw_inst_df.loc[idx_row, institution_col] = inst_row_list[0]
                         else:
                             country_raw_inst_df.loc[idx_row, institution_col] = bp.EMPTY
-        new_raw_institutions_df = pd.concat([new_raw_institutions_df, country_raw_inst_df])
+        new_raw_institutions_df = concat_dfs([new_raw_institutions_df, country_raw_inst_df])
+#        new_raw_institutions_df = pd.concat([new_raw_institutions_df, country_raw_inst_df])
     return new_raw_institutions_df
 
 
@@ -310,7 +312,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_pub_addresses_df = pd.DataFrame()
     for pub_id, dg in all_address_df.groupby(parsing_pub_id_alias):
         if pub_id in pub_num_list:
-            inst_pub_addresses_df = pd.concat([inst_pub_addresses_df, dg])
+            inst_pub_addresses_df = concat_dfs([inst_pub_addresses_df, dg])
+#            inst_pub_addresses_df = pd.concat([inst_pub_addresses_df, dg])
     if progress_callback:
         progress_callback(20)
 

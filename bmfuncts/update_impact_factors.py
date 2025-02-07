@@ -19,6 +19,7 @@ from openpyxl import Workbook as openpyxl_Workbook
 import bmfuncts.pub_globals as pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.rename_cols import set_final_col_names
+from bmfuncts.useful_functs import concat_dfs
 
 def journal_capwords(text):
     """Capitalizes words in journal names except those given 
@@ -78,27 +79,27 @@ def _get_if(if_updated_file_path, useful_col_list,
     return if_updated_df
 
 
-def _append_df(df1, df2, col_alias):
-    """Allows to avoid warnings when using pandas concat of two dataframes 
-    and drops duplicates on col_alias in the concatenated dataframe.
-
-    Args:
-        df1 (dataframe): First data to concatenate.
-        df2 (dataframe): Second data to concatenate.
-        col_alias (str): Name of the column used for deduplication \
-        after concatenation.
-    Returns:
-        (dataframe): Result of the concatenation.    
-    """
-    concat_df = df1.copy()
-    if df1.empty:
-        concat_df = df2.copy()
-    else:
-        if not df2.empty:
-            concat_df = pd.concat([df1, df2])
-    concat_df = concat_df.drop_duplicates(subset=col_alias,
-                                          keep='last')
-    return concat_df
+#def _append_df(df1, df2, col_alias):
+#    """Allows to avoid warnings when using pandas concat of two dataframes 
+#    and drops duplicates on col_alias in the concatenated dataframe.
+#
+#    Args:
+#        df1 (dataframe): First data to concatenate.
+#        df2 (dataframe): Second data to concatenate.
+#        col_alias (str): Name of the column used for deduplication \
+#        after concatenation.
+#    Returns:
+#        (dataframe): Result of the concatenation.    
+#    """
+#    concat_df = df1.copy()
+#    if df1.empty:
+#        concat_df = df2.copy()
+#    else:
+#        if not df2.empty:
+#            concat_df = pd.concat([df1, df2])
+#    concat_df = concat_df.drop_duplicates(subset=col_alias,
+#                                          keep='last')
+#    return concat_df
 
 
 def _update_year_if_database(institute, org_tup, bibliometer_path,
@@ -167,14 +168,20 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
                                              corpus_year_if_col)
 
     # Appending 'missing_if_corpus_year_if_df' to  'year_if_db_df'
-    if_updated_year_if_db_df = _append_df(year_if_db_df,
-                                          missing_if_corpus_year_if_df,
-                                          journal_col_alias)
+    if_updated_year_if_db_df = concat_dfs([year_if_db_df,
+                                           missing_if_corpus_year_if_df],
+                                           dedup_cols=[journal_col_alias])
+#    if_updated_year_if_db_df = _append_df(year_if_db_df,
+#                                          missing_if_corpus_year_if_df,
+#                                          journal_col_alias)
 
     # Appending 'missing_issn_corpus_year_if_df' to  'updated_year_if_db_df'
-    fully_updated_year_if_db_df = _append_df(if_updated_year_if_db_df,
-                                             missing_issn_corpus_year_if_df,
-                                             journal_col_alias)
+    fully_updated_year_if_db_df = concat_dfs([if_updated_year_if_db_df,
+                                              missing_issn_corpus_year_if_df],
+                                              dedup_cols=[journal_col_alias])
+#    fully_updated_year_if_db_df = _append_df(if_updated_year_if_db_df,
+#                                             missing_issn_corpus_year_if_df,
+#                                             journal_col_alias)
 
     # Sorting 'updated_year_if_db_df' by journal column
     fully_updated_year_if_db_df = fully_updated_year_if_db_df.sort_values(by=[journal_col_alias])
@@ -200,9 +207,12 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
 
     # Initializing the dataframe of IFs of most recent year
     # that will be returned for completion of the most recent year IF database
-    corpus_year_most_recent_year_if_df = _append_df(missing_if_most_recent_year_if_df,
-                                                    missing_issn_most_recent_year_if_df,
-                                                    journal_col_alias)
+    corpus_year_most_recent_year_if_df = concat_dfs([missing_if_most_recent_year_if_df,
+                                                     missing_issn_most_recent_year_if_df],
+                                                     dedup_cols=[journal_col_alias])
+#    corpus_year_most_recent_year_if_df = _append_df(missing_if_most_recent_year_if_df,
+#                                                    missing_issn_most_recent_year_if_df,
+#                                                    journal_col_alias)
     corpus_year_most_recent_year_if_df = corpus_year_most_recent_year_if_df.rename(
         columns={most_recent_year_if_col_alias: new_most_recent_year_if_col_alias,})
 
@@ -270,9 +280,12 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
                                            corpus_year, year_if_db_df,
                                            most_recent_year, files_tup)
         corpus_year_most_recent_year_if_df_to_add = dfs_tup[1]
-        most_recent_year_if_df_to_add = _append_df(most_recent_year_if_df_to_add,
-                                                   corpus_year_most_recent_year_if_df_to_add,
-                                                   journal_col)
+        most_recent_year_if_df_to_add = concat_dfs([most_recent_year_if_df_to_add,
+                                                    corpus_year_most_recent_year_if_df_to_add],
+                                                    dedup_cols=[journal_col])
+#        most_recent_year_if_df_to_add = _append_df(most_recent_year_if_df_to_add,
+#                                                   corpus_year_most_recent_year_if_df_to_add,
+#                                                   journal_col)
         fully_updated_year_if_db_df = dfs_tup[0]
         if_sheet_name = if_db_year
         if_db_df_title = pg.DF_TITLES_LIST[3]
@@ -342,15 +355,21 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
                                        corpus_year, most_recent_year_if_db_df,
                                        most_recent_year, files_tup)
         corpus_year_most_recent_year_if_df_to_add = tup[1]
-        most_recent_year_if_df_to_add = _append_df(most_recent_year_if_df_to_add,
-                                                   corpus_year_most_recent_year_if_df_to_add,
-                                                   journal_col)
+        most_recent_year_if_df_to_add = concat_dfs([most_recent_year_if_df_to_add,
+                                                    corpus_year_most_recent_year_if_df_to_add],
+                                                    dedup_cols=[journal_col])
+#        most_recent_year_if_df_to_add = _append_df(most_recent_year_if_df_to_add,
+#                                                   corpus_year_most_recent_year_if_df_to_add,
+#                                                   journal_col)
 
         most_recent_year_if_df_to_add = most_recent_year_if_df_to_add.drop_duplicates()
 
-    most_recent_year_if_db_df = _append_df(most_recent_year_if_db_df,
-                                           most_recent_year_if_df_to_add,
-                                           journal_col)
+    most_recent_year_if_db_df = concat_dfs([most_recent_year_if_db_df,
+                                            most_recent_year_if_df_to_add],
+                                            dedup_cols=[journal_col])
+#    most_recent_year_if_db_df = _append_df(most_recent_year_if_db_df,
+#                                           most_recent_year_if_df_to_add,
+#                                           journal_col)
     most_recent_year_if_db_df = most_recent_year_if_db_df.sort_values(by=journal_col)
     if_sheet_name = off_if_db_years_list[0]
     if_db_df_title = pg.DF_TITLES_LIST[3]

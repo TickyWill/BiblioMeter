@@ -28,6 +28,7 @@ from bmfuncts.format_files import get_col_letter
 from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.rename_cols import set_otp_col_names
+from bmfuncts.useful_functs import concat_dfs
 
 
 def add_data_val(ws, data_val, df_len, col_letter, xl_idx_base):
@@ -74,7 +75,8 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict, otp_dept_col, dpt_label):
                     dg[otp_dept_col] = dpt
         else:
             dg[otp_dept_col] = dept
-        out_df = pd.concat([out_df, dg])
+        out_df = concat_dfs([out_df, dg])
+#                                                                out_df = pd.concat([out_df, dg])
 
     # For each department adding a column containing 1 or 0
     # depending on if the author belongs or not to the department
@@ -171,7 +173,8 @@ def _add_authors_name_list(institute, org_tup, in_df):
                             for x in authors_tup_list]
         authors_full_str = "; ".join(authors_str_list)
         pub_id_df[full_name_list_alias] = authors_full_str
-        out_df = pd.concat([out_df, pub_id_df])
+        out_df = concat_dfs([out_df, pub_id_df])
+#                                                     out_df = pd.concat([out_df, pub_id_df])
     out_df.fillna('')
 
     end_message = "Column with co-authors list added"
@@ -335,7 +338,8 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
         for dpt in dpt_list:
             x = dg[dpt].any().astype(int)
             dg[dpt] = x
-        out_df = pd.concat([out_df, dg.iloc[:1]])
+        out_df = concat_dfs([out_df, dg.iloc[:1]])
+#                                                        out_df = pd.concat([out_df, dg.iloc[:1]])
 
     # Removing possible spaces in dept name
     out_df[dpt_alias] = out_df[dpt_alias].apply(lambda x: x.strip())
@@ -511,7 +515,8 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
         for dpt in dpt_list:
             x = dg[dpt].any().astype(int)
             dg[dpt] = x
-        temp_df = pd.concat([temp_df, dg.iloc[:1]])
+        temp_df = concat_dfs([temp_df, dg.iloc[:1]])
+#        temp_df = pd.concat([temp_df, dg.iloc[:1]])
 
     # Removing possible spaces in dept name
     temp_df[dpt_alias] = temp_df[dpt_alias].apply(lambda x: x.strip())
@@ -544,7 +549,8 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
                 if otp_lab not in dpt_otp_dict.keys():
                     otp_lab = full_dept
                 lab_df[otp_lab_name_col] = otp_lab
-                otp_dpt_df = pd.concat([otp_dpt_df, lab_df])
+                otp_dpt_df = concat_dfs([otp_dpt_df, lab_df])
+#                otp_dpt_df = pd.concat([otp_dpt_df, lab_df])
 
         # Setting the full path of the EXCEl file for the 'dpt' department
         otp_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'

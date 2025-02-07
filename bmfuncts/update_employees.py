@@ -16,6 +16,7 @@ import pandas as pd
 # local imports
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
+from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import standardize_txt
 
 
@@ -431,7 +432,8 @@ def _build_year_month_dpt(year_months_file_path):
 
         list_df_eff_month.append(df_eff_month)
 
-    df_eff_year = pd.concat(list_df_eff_month, axis=0)
+    df_eff_year = concat_dfs(list_df_eff_month)
+#    df_eff_year = pd.concat(list_df_eff_month, axis=0)
 
     # Aggregating all the information related to one matriculate
     # as a list without duplicates, for each column (except 'Matricule')

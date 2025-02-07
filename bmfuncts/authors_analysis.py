@@ -20,6 +20,7 @@ from bmfuncts.config_utils import set_user_config
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.save_final_results import save_final_results
+from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import read_parsing_dict
 
 
@@ -172,7 +173,8 @@ def _build_auth_nb_per_pub(bibliometer_path, corpus_year, cols_tup):
         pub_count_auth_df = pub_df[pub_id_col].value_counts().to_frame()
         pub_count_auth_df = pub_count_auth_df.rename(columns={"count": nb_auth_col})
         pub_count_auth_df = pub_count_auth_df.reset_index()
-        count_auth_df = pd.concat([count_auth_df, pub_count_auth_df], axis=0)
+        count_auth_df = concat_dfs([count_auth_df, pub_count_auth_df])
+#        count_auth_df = pd.concat([count_auth_df, pub_count_auth_df], axis=0)
 
     _set_year_pub_id(count_auth_df, corpus_year, pub_id_col)
     return count_auth_df
@@ -286,7 +288,8 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         empl_df[pub_list_col] = "; ".join(pub_id_list)
         empl_df = empl_df[useful_cols_list]
         empl_df.drop_duplicates()
-        pub_nb_per_auth_df = pd.concat([pub_nb_per_auth_df, empl_df])
+        pub_nb_per_auth_df = concat_dfs([pub_nb_per_auth_df, empl_df])
+#        pub_nb_per_auth_df = pd.concat([pub_nb_per_auth_df, empl_df])
     pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
     return pub_nb_per_auth_df

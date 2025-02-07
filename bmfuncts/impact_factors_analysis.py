@@ -21,6 +21,7 @@ from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.update_impact_factors import journal_capwords
+from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import read_parsing_dict
 
 
@@ -106,7 +107,8 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
         dept_if_df = dept_if_df.rename(columns={"index": corpus_year_row_alias})
 
         # Combining the two dataframes through rows concatenation
-        dept_kpi_df = pd.concat([dept_pub_df, dept_if_df], axis=0)
+        dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df])
+#        dept_kpi_df = pd.concat([dept_pub_df, dept_if_df], axis=0)
 
         # Reading as the dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"
@@ -485,7 +487,8 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
                     journal_names_dict = dict(zip(journal_names_list, journal_issn_list))
                     issn_df[issn_col_alias] = issn_df[journal_col_alias].copy()
                     issn_df[issn_col_alias] = issn_df[issn_col_alias].map(journal_names_dict)
-            analysis_df = pd.concat([analysis_df, issn_df], ignore_index=True)
+            analysis_df = concat_dfs([analysis_df, issn_df], concat_ignore_index=True)
+#            analysis_df = pd.concat([analysis_df, issn_df], ignore_index=True)
         return analysis_df
 
     def _capwords_journal_col(journal_col):

@@ -5,7 +5,11 @@
 * **Features**:
   - Feature 1: .
 * **Improvements**:
-  - Improvement 1: .
+  - Improvement 1: Add of `_clean_hash_id_df` function dedicated to managing duplicates of publications with same Hash ID (cleans hash_id.xlsx, submit.xlsx and orphan.xlsx files).
+  - Improvement 2: Add of `_enhance_homonyms_file` and `_set_otps_dept_affil` functions dedicated to setting standardized department affiliation of authors before OTPs attribution.
+  - Improvement 3: Update of `create_archi` function to automatically create useful folders for saving corpus extractions.
+  - Improvement 4: Update of `save_otps` function to automatically create an empty file that will contain the OTPs attributed by the user if it not exists.
+  - Improvement 5: Replace `_append_df` function by `concat_dfs` function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:

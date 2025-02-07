@@ -3,6 +3,7 @@
 """
 
 __all__ = ['check_dedup_parsing_available',
+           'concat_dfs',
            'create_archi',
            'create_folder',
            'read_parsing_dict',
@@ -27,6 +28,55 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def concat_dfs(dfs_list, dedup_cols=None, keep='first', axis=0,
+               concat_ignore_index=False, drop_ignore_index=False):
+    """Allows to avoid warnings when using pandas concat of a list of dataframes 
+    with empty dataframe in it and drops duplicates in the concatenated dataframe.
+
+    Args:
+        dfs_list (list): The list of pandas dataframes to concatenate.
+        dedup_cols (list): Same as 'subset' parameter of 'drop_duplicates' method \
+        of 'pandas.DataFrame' method, optional, default None.
+        keep (str): Same as 'keep' parameter of 'drop_duplicates' method \
+        of 'pandas.DataFrame' method, optional, default 'first'.
+        axis (int): Same as 'axis' parameter of 'concat' method of 'pandas.DataFrame' \
+        method, optional, default 0.
+        concat_ignore_index (bool): Same as 'ignore_index' parameter of concat \
+        method of 'pandas.DataFrame' method, optional, default False.
+        drop_ignore_index (bool): Same as 'ignore_index' parameter of drop_duplicates \
+        method of 'pandas.DataFrame' method, optional, default False.
+    Returns:
+        (dataframe): Result of the concatenation.    
+    """
+
+    # Setting list of not empty dataframes
+    dfs_clean_list = []
+    for df in dfs_list:
+        if not df.empty:
+            dfs_clean_list.append(df)
+    dfs_clean_nb = len(dfs_clean_list)
+
+    # Concatenating dataframes
+    if dfs_clean_nb==0:
+        concat_df = dfs_list[0].copy()
+    elif dfs_clean_nb==1:
+        concat_df = dfs_clean_list[0].copy()
+    else:
+        concat_df = pd.concat(dfs_clean_list, axis=axis,
+                              ignore_index=concat_ignore_index)
+
+    # Removing duplicates
+    full_col_list = list(concat_df.columns)
+    if dedup_cols and all(i in full_col_list for i in dedup_cols):
+        concat_df = concat_df.drop_duplicates(subset=dedup_cols,
+                                              keep=keep,
+                                              ignore_index=drop_ignore_index)
+    else:
+        concat_df = concat_df.drop_duplicates(keep=keep,
+                                              ignore_index=drop_ignore_index)
+    return concat_df
 
 
 def standardize_firstname_initials(initials_init):
@@ -219,7 +269,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     return message
 
 
-def create_folder(root_path, folder, verbose = False):
+def create_folder(root_path, folder, verbose=False):
     """Creates a folder checking first if it already exists.
 
     Args:
@@ -243,7 +293,7 @@ def create_folder(root_path, folder, verbose = False):
     return folder_path
 
 
-def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
+def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
     """Creates a corpus folder with the required architecture.
 
     It uses the global "ARCHI_YEAR" for the names of the sub_folders.
@@ -253,41 +303,53 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
         corpus_year_folder (str): The name of the folder of the corpus.
         verbose (bool): Optional status of prints (default = False).
     Returns:
-        (str): End message recalling the folder created.
+        (str): End message recalling the corpus-year architecture created.
     """
     # Setting useful alias
     archi_alias = pg.ARCHI_YEAR
+    extract_folder_alias = pg.ARCHI_EXTRACT["root"]
+    archiv_folder_alias = pg.ARCHI_EXTRACT["archiv"]
 
-    corpus_year_folder_path = create_folder(bibliometer_path, corpus_year_folder, verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["history folder"], verbose = verbose)
+    # Creating folders for corpus extractions from databases for the corpus year
+    extract_folder_path = bibliometer_path / Path(extract_folder_alias)
+    for bdd in pg.BDD_LIST:
+        bdd_extract_folder_alias = pg.ARCHI_EXTRACT[bdd]["root"]
+        bdd_extract_folder_path = extract_folder_path / Path(bdd_extract_folder_alias)
+        year_bdd_extract_folder_path = create_folder(bdd_extract_folder_path,
+                                                     corpus_year_folder, verbose=verbose)
+        _ = create_folder(year_bdd_extract_folder_path, archiv_folder_alias, verbose=verbose)
+
+    # Creating architecture for corpus-year working-folder
+    corpus_year_folder_path = create_folder(bibliometer_path, corpus_year_folder, verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["history folder"], verbose=verbose)
 
     analysis_folder = create_folder(corpus_year_folder_path, archi_alias["analyses"],
-                                    verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["if analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["countries analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["institutions analysis"], verbose = verbose)
+                                    verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["if analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["countries analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["institutions analysis"], verbose=verbose)
 
-    corpus_folder = create_folder(corpus_year_folder_path, archi_alias["corpus"], verbose = verbose)
+    corpus_folder = create_folder(corpus_year_folder_path, archi_alias["corpus"], verbose=verbose)
 
-    concat_folder = create_folder(corpus_folder, archi_alias["concat"], verbose = verbose)
-    _ = create_folder(concat_folder, archi_alias["parsing"], verbose = verbose)
+    concat_folder = create_folder(corpus_folder, archi_alias["concat"], verbose=verbose)
+    _ = create_folder(concat_folder, archi_alias["parsing"], verbose=verbose)
 
-    dedup_folder = create_folder(corpus_folder, archi_alias["dedup"], verbose = verbose)
-    _ = create_folder(dedup_folder, archi_alias["parsing"], verbose = verbose)
+    dedup_folder = create_folder(corpus_folder, archi_alias["dedup"], verbose=verbose)
+    _ = create_folder(dedup_folder, archi_alias["parsing"], verbose=verbose)
 
-    scopus_folder = create_folder(corpus_folder, archi_alias["scopus"], verbose = verbose)
-    _ = create_folder(scopus_folder, archi_alias["parsing"], verbose = verbose)
-    _ = create_folder(scopus_folder, archi_alias["rawdata"], verbose = verbose)
+    scopus_folder = create_folder(corpus_folder, archi_alias["scopus"], verbose=verbose)
+    _ = create_folder(scopus_folder, archi_alias["parsing"], verbose=verbose)
+    _ = create_folder(scopus_folder, archi_alias["rawdata"], verbose=verbose)
 
-    wos_folder = create_folder(corpus_folder, archi_alias["wos"], verbose = verbose)
-    _ = create_folder(wos_folder, archi_alias["parsing"], verbose = verbose)
-    _ = create_folder(wos_folder, archi_alias["rawdata"], verbose = verbose)
+    wos_folder = create_folder(corpus_folder, archi_alias["wos"], verbose=verbose)
+    _ = create_folder(wos_folder, archi_alias["parsing"], verbose=verbose)
+    _ = create_folder(wos_folder, archi_alias["rawdata"], verbose=verbose)
 
     message = f"Architecture created for {corpus_year_folder} folder"
     return message

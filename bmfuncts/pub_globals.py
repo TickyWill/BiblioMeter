@@ -64,7 +64,7 @@ CONFIG_FOLDER = 'ConfigFiles'
 
 PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 
-PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
+PARSING_PERF = "Parsing_perf.json"
 
 TSV_SAVE_EXTENT = "dat"
 
@@ -91,9 +91,9 @@ ARCHI_EXTRACT = {"root"             : "Extractions Institut",
                                        DATATYPE_LIST[2] : "wos",
                                        "file_extent"    : '.' + bp.WOS_RAWDATA_EXTENT,
                                       },
-                 "empty-file folder": "Fichier vierge"
+                 "empty-file folder": "Fichier vierge",
+                 "archiv"           : "Archives",
                 }
-
 
 ARCHI_IF = {"root"                   : "Impact Factor",
             "all IF"                 : "IF all years.xlsx",
