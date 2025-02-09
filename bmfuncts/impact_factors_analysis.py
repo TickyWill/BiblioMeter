@@ -108,7 +108,6 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
 
         # Combining the two dataframes through rows concatenation
         dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df])
-#        dept_kpi_df = pd.concat([dept_pub_df, dept_if_df], axis=0)
 
         # Reading as the dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"
@@ -488,7 +487,6 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
                     issn_df[issn_col_alias] = issn_df[journal_col_alias].copy()
                     issn_df[issn_col_alias] = issn_df[issn_col_alias].map(journal_names_dict)
             analysis_df = concat_dfs([analysis_df, issn_df], concat_ignore_index=True)
-#            analysis_df = pd.concat([analysis_df, issn_df], ignore_index=True)
         return analysis_df
 
     def _capwords_journal_col(journal_col):

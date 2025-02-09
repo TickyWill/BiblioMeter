@@ -81,7 +81,6 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
             if doc_type.upper() in doctype_list:
                 key_dg = concat_dfs([key_dg, dg])
-#                key_dg = pd.concat([key_dg, dg])
                 other_dg = other_dg.drop(dg.index)
 
         key_pub_nb += len(key_dg)
@@ -132,7 +131,6 @@ def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
     dpt_otp_df = pd.DataFrame()
     for _, lab_df in dpt_otp_dict.items():
         dpt_otp_df = concat_dfs([dpt_otp_df, lab_df])
-#        dpt_otp_df = pd.concat([dpt_otp_df, lab_df])
     return dpt_otp_df
 
 
@@ -165,7 +163,6 @@ def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
             otp_df_init_status = False
         else:
             otp_df = concat_dfs([otp_df, dpt_otp_df])
-#            otp_df = pd.concat([otp_df, dpt_otp_df])
     return otp_df
 
 
@@ -346,7 +343,6 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
             pub_list_path = pub_list_folder_path / Path(pub_list_file_name)
             inter_df = pd.read_excel(pub_list_path)
             concat_df = concat_dfs([concat_df, inter_df])
-#            concat_df = pd.concat([concat_df, inter_df])
             available_liste_conso += f" {year}"
 
         except FileNotFoundError:

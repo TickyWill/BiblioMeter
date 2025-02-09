@@ -208,6 +208,74 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None
     return dept_otps_dict
 
 
+def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
+                         otps_cols, dept_otps_dict,
+                         serv_otps_list, unknown_alias):
+    """ Builds the OTPs dict for a known service of a department different 
+    from the department direction.
+    """
+    # Setting useful col names of the OTPs source file
+    otps_otp_col = otps_cols[1]
+    otps_lab_col = otps_cols[3]
+
+    dept_otps_dict[otps_dept][otps_serv] = {}
+    labs_list = _set_sorted_list2(otps_serv_df, otps_lab_col)
+    if labs_list==[unknown_alias]:
+        lab = _set_dir(otps_serv)
+        dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                        otps_serv, lab, serv_otps_list,
+                                        srv=None, dpt=None)
+    else:
+        for otps_lab, otps_lab_df in otps_serv_df.groupby(otps_lab_col):
+            lab_otps_list = _set_sorted_list2(otps_lab_df, otps_otp_col)
+            if otps_lab==unknown_alias or "DIR" in otps_lab:
+                lab = _set_dir(otps_serv)
+            else:
+                lab = otps_lab
+            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                            otps_serv, lab, lab_otps_list,
+                                            srv=None, dpt=None)
+    return dept_otps_dict
+
+
+def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
+                          dept_otps_dict, unknown_alias):
+    """ Builds the OTPs dict for a department different from the Institute direction, 
+    and different from 'CLINATEC'.
+    
+    It uses the `_build_lap_otps_dict` internal function for seek of clarity.
+    """
+    # Setting useful col names of the OTPs source file
+    otps_otp_col = otps_cols[1]
+    otps_serv_col = otps_cols[2]
+
+    dept_otps_dict[otps_dept] = {}
+    for otps_serv, otps_serv_df in otps_dept_df.groupby(otps_serv_col):
+        serv_otps_list = _set_sorted_list2(otps_serv_df, otps_otp_col)
+
+        if "DIR" in otps_serv:
+            serv = _set_dir(otps_dept)
+            lab = _set_dir(serv)
+            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                            serv, lab, serv_otps_list,
+                                            srv=serv, dpt=otps_dept)
+
+        elif otps_serv==unknown_alias:
+            serv = _set_dir(otps_dept)
+            lab = _set_dir(serv)
+            otps_lists = [dept_otps_dict[otps_dept][serv][lab], serv_otps_list]
+            new_serv_otps_list = _set_sorted_list1(otps_lists)
+            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                            serv, lab, new_serv_otps_list,
+                                            srv=serv, dpt=None)
+
+        else:
+            dept_otps_dict = _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
+                                                  otps_cols, dept_otps_dict,
+                                                  serv_otps_list, unknown_alias)
+    return dept_otps_dict
+
+
 def set_lab_otps(institute, org_tup, bibliometer_path):
     """Builds the dict that gives the OTPs list to be used for each lab 
     of each department of the Institute.
@@ -221,7 +289,8 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     the effective structure of the Institute through the \
     `_set_final_otps_dict` internal function. For seek of clarity, \
     it uses several other internal functions that are: `_try_init_dict`, \
-    `_set_sorted_list1`, `_set_sorted_list2`, `_set_dir` and `_set_full`.
+    `_set_sorted_list1`, `_set_sorted_list2`, `_set_dir`, `_set_full` \
+    and `_build_dept_otps_dict`.
 
     Args:
         institute (str): Institute name.
@@ -246,8 +315,6 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
     # Setting useful col names of the OTPs source file
     otps_dept_col = otps_cols[0]
     otps_otp_col = otps_cols[1]
-    otps_serv_col = otps_cols[2]
-    otps_lab_col = otps_cols[3]
 
     # Setting useful paths
     config_root_path = bibliometer_path / Path(config_root_alias)
@@ -260,7 +327,8 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
 
     # Filling initial OTPs dict with infos provided by OTPs source file
     # The dict is a hierarchical dict keyed by department, services and labs
-    # as they are defined in the source file but not as defined in the Instiute config file.
+    # as they are defined in the source file but not as defined
+    # in the Instiute config file.
     dept_otps_dict = {}
     for otps_dept, otps_dept_df in otps_bdd_df.groupby(otps_dept_col):
         dept_otps_list = _set_sorted_list2(otps_dept_df, otps_otp_col)
@@ -269,51 +337,22 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
             dept = otps_dept
             serv = "SCLIN"
             lab = _set_dir(serv)
-            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept, serv, lab, dept_otps_list,
+            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                            serv, lab, dept_otps_list,
                                             srv=serv, dpt=dept)
 
         elif "DIR" in otps_dept or otps_dept==inst_dir:
             dept = "DIR"
             serv = inst_dir
             lab = _set_dir(serv)
-            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept, serv, lab, dept_otps_list,
+            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                            serv, lab, dept_otps_list,
                                             srv=serv, dpt=dept)
 
         else:
-            dept_otps_dict[otps_dept] = {}
-            for otps_serv, otps_serv_df in otps_dept_df.groupby(otps_serv_col):
-                serv_otps_list = _set_sorted_list2(otps_serv_df, otps_otp_col)
-
-                if "DIR" in otps_serv:
-                    serv = _set_dir(otps_dept)
-                    lab = _set_dir(serv)
-                    dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept, serv, lab, serv_otps_list,
-                                                    srv=serv, dpt=otps_dept)
-
-                elif otps_serv==unknown_alias:
-                    serv = _set_dir(otps_dept)
-                    lab = _set_dir(serv)
-                    otps_lists = [dept_otps_dict[otps_dept][serv][lab], serv_otps_list]
-                    new_serv_otps_list = _set_sorted_list1(otps_lists)
-                    dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept, serv, lab, new_serv_otps_list,
-                                                    srv=serv, dpt=None)
-
-                else:
-                    dept_otps_dict[otps_dept][otps_serv] = {}
-                    labs_list = _set_sorted_list2(otps_serv_df, otps_lab_col)
-                    if labs_list==[unknown_alias]:
-                        lab = _set_dir(otps_serv)
-                        dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept, otps_serv, lab, serv_otps_list,
-                                                        srv=None, dpt=None)
-                    else:
-                        for otps_lab, otps_lab_df in otps_serv_df.groupby(otps_lab_col):
-                            lab_otps_list = _set_sorted_list2(otps_lab_df, otps_otp_col)
-                            if otps_lab==unknown_alias or "DIR" in otps_lab:
-                                lab = _set_dir(otps_serv)
-                            else:
-                                lab = otps_lab
-                            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept, otps_serv, lab, lab_otps_list,
-                                                            srv=None, dpt=None)
+            dept_otps_dict = _build_dept_otps_dict(otps_dept, otps_dept_df,
+                                                   otps_cols, dept_otps_dict,
+                                                   unknown_alias)
 
     # Reorganizing dict of OTPs by removing services keys
     lab_otps_dict = _set_lab_otps_dict(dept_otps_dict, inst_dir)

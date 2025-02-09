@@ -137,18 +137,16 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
         existing_hash_otps_history_df = pd.DataFrame(columns=hash_otps_history_df.columns)
         existing_doi_otps_history_df = pd.DataFrame(columns=doi_otps_history_df.columns)
         with pd.ExcelWriter(kept_otps_file_path) as writer: # https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
-            existing_hash_otps_history_df.to_excel(writer, sheet_name=hash_otp_sheet_alias, index=False)  
-            existing_doi_otps_history_df.to_excel(writer, sheet_name=doi_otp_sheet_alias, index=False)  
+            existing_hash_otps_history_df.to_excel(writer, sheet_name=hash_otp_sheet_alias, index=False)
+            existing_doi_otps_history_df.to_excel(writer, sheet_name=doi_otp_sheet_alias, index=False)
 
     if len(existing_hash_otps_history_df)-1:
         hash_otps_history_df = concat_dfs([existing_hash_otps_history_df, hash_otps_history_df])
-#        hash_otps_history_df = pd.concat([existing_hash_otps_history_df, hash_otps_history_df])
     hash_otps_history_df = hash_otps_history_df.astype('str')
     hash_otps_history_df = hash_otps_history_df.drop_duplicates()
 
     if len(existing_doi_otps_history_df)-1:
         doi_otps_history_df = concat_dfs([existing_doi_otps_history_df, doi_otps_history_df])
-#        doi_otps_history_df = pd.concat([existing_doi_otps_history_df, doi_otps_history_df])
     doi_otps_history_df = doi_otps_history_df.astype('str')
     doi_otps_history_df = doi_otps_history_df.drop_duplicates()
 
@@ -191,7 +189,6 @@ def _use_hash_id_set_otps(dpt_df, otps_history_tup):
             dpt_df.loc[pub_id_idx, otp_list_col] = otp_to_set
             dpt_pub_id_to_check_df = dpt_df[dpt_df[pub_id_col]==pub_id_to_check]
             otp_set_dpt_df = concat_dfs([otp_set_dpt_df, dpt_pub_id_to_check_df])
-#            otp_set_dpt_df = pd.concat([otp_set_dpt_df, dpt_pub_id_to_check_df])
             otp_to_set_dpt_df = otp_to_set_dpt_df.drop(index=pub_id_idx)
         else:
             continue
@@ -218,7 +215,6 @@ def _use_known_doi_otps(dfs_tup, cols_tup, dpt_df,
     dpt_df_to_add = dpt_df[dpt_df[doi_col]==doi_to_check].copy()
     dpt_df_to_add.loc[doi_idx, otp_list_col] = doi_otp_to_set
     otp_set_dpt_df = concat_dfs([otp_set_dpt_df, dpt_df_to_add])
-#    otp_set_dpt_df = pd.concat([otp_set_dpt_df, dpt_df_to_add])
     otp_to_set_dpt_df = otp_to_set_dpt_df.drop(index=doi_idx)
     dfs_tup = (otp_set_dpt_df, otp_to_set_dpt_df)
     return dfs_tup
@@ -244,8 +240,6 @@ def _use_authors_otps(dfs_tup, cols_tup, dpt_df_to_add,
             new_dpt_df_to_add = dpt_df_to_add[dpt_df_to_add[author_col]==auth_to_check].copy()
             new_dpt_df_to_add.loc[auth_idx_to_replace, otp_list_col] = auth_otp_to_set
             otp_set_dpt_df = concat_dfs([otp_set_dpt_df, new_dpt_df_to_add])
-#            otp_set_dpt_df = pd.concat([otp_set_dpt_df, new_dpt_df_to_add])
-#            otp_set_dpt_df = otp_set_dpt_df.drop_duplicates()
             otp_to_set_dpt_df = otp_to_set_dpt_df.drop(index=auth_idx_to_replace)
     dfs_tup = (otp_set_dpt_df, otp_to_set_dpt_df)
     return dfs_tup

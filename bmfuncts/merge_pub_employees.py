@@ -194,7 +194,6 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
                     frames.append(temp_df)
 
                 empl_pub_match_df = concat_dfs(frames, concat_ignore_index=True)
-#                empl_pub_match_df = pd.concat(frames, ignore_index=True)
                 flag_lastname_match = True
 
                 # Test of lastnames similarity found by '_orphan_reduction' function
@@ -206,7 +205,6 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
                 # Appending to dataframe orphan_df the row 'pub_df_row'
                 # as effective orphan after orphan reduction
                 orphan_df = concat_dfs([orphan_df, pub_df_row.to_frame().T])
-#                orphan_df = pd.concat([orphan_df, pub_df_row.to_frame().T])
                 flag_lastname_match = False
 
                 # Test of lastnames no-similarity by '_orphan_reduction' function
@@ -277,12 +275,10 @@ def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', v
                 # Appending to the dataframe 'submit_df' the dataframe 'pub_emp_join_df'
                 # which is specific to a given publication
                 submit_df = concat_dfs([submit_df, pub_emp_join_df], concat_ignore_index=True)
-#                submit_df = pd.concat([submit_df, pub_emp_join_df], ignore_index=True)
             else:
                 # Appending to the dataframe orphan_df the row 'pub_df_row' as effective orphan
                 # after complementary checking of match via first name initials
                 orphan_df = concat_dfs([orphan_df, pub_df_row.to_frame().T], concat_ignore_index=True)
-#                orphan_df = pd.concat([orphan_df, pub_df_row.to_frame().T], ignore_index=True)
 
     # Dropping duplicate rows in both dataframes (mandatory)
     submit_df = submit_df.drop_duplicates()
@@ -407,8 +403,6 @@ def _add_biblio_list(in_path, out_path):
         pub_id_df[pub_full_ref_alias] = _set_full_ref(title, first_author,
                                                       journal_name, pub_year, doi)
         articles_plus_full_ref_df = concat_dfs([articles_plus_full_ref_df, pub_id_df])
-#        articles_plus_full_ref_df = pd.concat([articles_plus_full_ref_df, pub_id_df])
-
     articles_plus_full_ref_df.to_excel(out_path, index=False)
 
     end_message = f"Column with full reference of publication added in file: \n  '{out_path}'"
@@ -528,23 +522,17 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                 # Appending the merged df to new_submit_adds_df
                 new_submit_adds_df = concat_dfs([new_submit_adds_df, row_to_add_df],
                                                 concat_ignore_index=True)
-#                new_submit_adds_df = pd.concat([new_submit_adds_df, row_to_add_df],
-#                                               ignore_index=True)
 
                 # Appending row_to_move_df to  orphan_drop_df
                 orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df],
                                             concat_ignore_index=True)
-#                orphan_drop_df = pd.concat([orphan_drop_df, row_to_move_df],
-#                                           ignore_index=True)
 
     # Concatenating init_submit_df and new_submit_adds_df
     new_submit_df = concat_dfs([init_submit_df, new_submit_adds_df])
-#    new_submit_df = pd.concat([init_submit_df, new_submit_adds_df])
     new_submit_df = new_submit_df.sort_values([pub_id_alias, author_id_alias])
 
     # Droping orphan_drop_df rows from init_orphan_df
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep=False)
-#    new_orphan_df = pd.concat([init_orphan_df, orphan_drop_df]).drop_duplicates(keep=False)
 
     # Recovering the initial column names of init_orphan_df
     col_invert_rename_dic = {firstname_initials_col_base_alias + "_x": \
@@ -671,23 +659,17 @@ def _add_other_ext(submit_path, orphan_path, others_path):
                 # Appending the merged df to new_submit_adds_df
                 new_submit_adds_df = concat_dfs([new_submit_adds_df, row_to_add_df],
                                                 concat_ignore_index=True)
-#                new_submit_adds_df = pd.concat([new_submit_adds_df, row_to_add_df],
-#                                               ignore_index=True)
 
                 # Appending row_to_move_df to  orphan_drop_df
                 orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df],
                                             concat_ignore_index=True)
-#                orphan_drop_df = pd.concat([orphan_drop_df, row_to_move_df],
-#                                           ignore_index=True)
 
     # Concatenating init_submit_df and new_submit_adds_df
     new_submit_df = concat_dfs([init_submit_df, new_submit_adds_df])
-#    new_submit_df = pd.concat([init_submit_df, new_submit_adds_df])
     new_submit_df = new_submit_df.sort_values([pub_id_alias, author_id_alias])
 
     # Dropping orphan_drop_df rows from init_orphan_df
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep=False)
-#    new_orphan_df = pd.concat([init_orphan_df, orphan_drop_df]).drop_duplicates(keep=False)
 
     # Recovering the initial column names of init_orphan_df
     col_invert_rename_dic = {firstname_initials_col_base_alias + "_x": \
@@ -850,7 +832,6 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
                     new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop]
             add_hash_id_dg = hash_id_dg[hash_id_dg[pub_id_col]==pub_id_to_keep].copy()
         new_hash_id_df = concat_dfs([new_hash_id_df, add_hash_id_dg])
-#        new_hash_id_df = pd.concat([new_hash_id_df, add_hash_id_dg])
     return new_submit_df, new_orphan_df, new_hash_id_df
 
 
@@ -914,10 +895,6 @@ def _creating_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     orphan_to_hash = orphan_df[useful_cols].copy()
     dg_to_hash = concat_dfs([submit_to_hash, orphan_to_hash],
                             dedup_cols=[pub_id_alias], drop_ignore_index=True)
-#    dg_to_hash = pd.concat([submit_to_hash, orphan_to_hash])
-
-    # Dropping rows of same pub_id_alias and reindexing the rows using ignore_index
-#    dg_to_hash = dg_to_hash.drop_duplicates(subset=[pub_id_alias], ignore_index=True)
 
     hash_id_df = pd.DataFrame()
     for idx in range(len(dg_to_hash)):
@@ -1123,7 +1100,6 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
         # Updating submit_df and orphan_df
         submit_df = concat_dfs([submit_df, submit_df_add])
-#        submit_df = pd.concat([submit_df, submit_df_add])
 
         # Updating progress bar state
         if progress_callback:

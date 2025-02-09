@@ -52,7 +52,6 @@ def _get_doi_pub_id(articles_df, dois_list):
     for doi in dois_list:
         doi_df = dois_df_init[dois_df_init['DOI']==doi]
         dois_pub_id_df = concat_dfs([dois_pub_id_df, doi_df])
-#        dois_pub_id_df = pd.concat([dois_pub_id_df, doi_df])
     return dois_pub_id_df
 
 
@@ -81,12 +80,9 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
                     addr_df[morm_inst_col] = institute_norm
                     addr_df[inst_col_list[main_inst_idx]] = 1
                 new_pub_df = concat_dfs([new_pub_df, addr_df])
-#                new_pub_df = pd.concat([new_pub_df, addr_df])
             new_authorsinst_authors_df = concat_dfs([new_authorsinst_authors_df, new_pub_df])
-#            new_authorsinst_authors_df = pd.concat([new_authorsinst_authors_df, new_pub_df])
         else:
             new_authorsinst_authors_df = concat_dfs([new_authorsinst_authors_df, pub_df])
-#            new_authorsinst_authors_df = pd.concat([new_authorsinst_authors_df, pub_df])
     return new_authorsinst_authors_df
 
 
@@ -353,11 +349,9 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
                 row_to_drop_df = pub_df.loc[pub_row_num].to_frame().T
                 # Appending the row to drop to the dataframe that will contain all the rows to drop
                 drop_df = concat_dfs([drop_df, row_to_drop_df], concat_ignore_index=True)
-#                drop_df = pd.concat([drop_df, row_to_drop_df], ignore_index=True)
 
     # Removing the rows to drop from the dataframe to update
     new_pub_df = concat_dfs([pub_df, drop_df], keep=False)
-#    new_pub_df = pd.concat([pub_df, drop_df]).drop_duplicates(keep=False)
 
     print("External authors removed")
     return new_pub_df

@@ -47,7 +47,6 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
                         else:
                             country_raw_inst_df.loc[idx_row, institution_col] = bp.EMPTY
         new_raw_institutions_df = concat_dfs([new_raw_institutions_df, country_raw_inst_df])
-#        new_raw_institutions_df = pd.concat([new_raw_institutions_df, country_raw_inst_df])
     return new_raw_institutions_df
 
 
@@ -313,7 +312,6 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     for pub_id, dg in all_address_df.groupby(parsing_pub_id_alias):
         if pub_id in pub_num_list:
             inst_pub_addresses_df = concat_dfs([inst_pub_addresses_df, dg])
-#            inst_pub_addresses_df = pd.concat([inst_pub_addresses_df, dg])
     if progress_callback:
         progress_callback(20)
 

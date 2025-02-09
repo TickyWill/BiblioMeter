@@ -433,7 +433,6 @@ def _build_year_month_dpt(year_months_file_path):
         list_df_eff_month.append(df_eff_month)
 
     df_eff_year = concat_dfs(list_df_eff_month)
-#    df_eff_year = pd.concat(list_df_eff_month, axis=0)
 
     # Aggregating all the information related to one matriculate
     # as a list without duplicates, for each column (except 'Matricule')

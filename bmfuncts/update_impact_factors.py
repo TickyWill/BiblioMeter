@@ -79,29 +79,6 @@ def _get_if(if_updated_file_path, useful_col_list,
     return if_updated_df
 
 
-#def _append_df(df1, df2, col_alias):
-#    """Allows to avoid warnings when using pandas concat of two dataframes 
-#    and drops duplicates on col_alias in the concatenated dataframe.
-#
-#    Args:
-#        df1 (dataframe): First data to concatenate.
-#        df2 (dataframe): Second data to concatenate.
-#        col_alias (str): Name of the column used for deduplication \
-#        after concatenation.
-#    Returns:
-#        (dataframe): Result of the concatenation.    
-#    """
-#    concat_df = df1.copy()
-#    if df1.empty:
-#        concat_df = df2.copy()
-#    else:
-#        if not df2.empty:
-#            concat_df = pd.concat([df1, df2])
-#    concat_df = concat_df.drop_duplicates(subset=col_alias,
-#                                          keep='last')
-#    return concat_df
-
-
 def _update_year_if_database(institute, org_tup, bibliometer_path,
                              corpus_year, year_if_db_df,
                              most_recent_year, files_tup):

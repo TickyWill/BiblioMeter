@@ -169,7 +169,6 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
         for _, author_df in pub_id_df.groupby(author_idx_col_alias):
             if len(author_df)==1:
                 homonyms_df = concat_dfs([homonyms_df, author_df])
-#                homonyms_df = pd.concat([homonyms_df, author_df])
     kept_matricules_df = homonyms_df[[pub_id_col_alias, matricule_col_alias]]
 
     # Building hash_id and kept matricules df
@@ -184,7 +183,6 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     if kept_homonyms_file_path.is_file():
         existing_homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
         homonyms_history_df = concat_dfs([existing_homonyms_history_df, homonyms_history_df])
-#        homonyms_history_df = pd.concat([existing_homonyms_history_df, homonyms_history_df])
     homonyms_history_df = homonyms_history_df.astype('str')
     homonyms_history_df = homonyms_history_df.drop_duplicates()
 
@@ -272,7 +270,6 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
                 if len(author_df)==1:
                     # Keeping row of authors without homonyms
                     homonyms_df_new = concat_dfs([homonyms_df_new, author_df])
-#                    homonyms_df_new = pd.concat([homonyms_df_new, author_df])
                 else:
                     pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col_alias]\
                                                              ==pub_id]
@@ -288,11 +285,9 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
                                                   ==mat_to_keep].copy()
                         new_author_df[homonyms_col_alias] = "_"
                         homonyms_df_new = concat_dfs([homonyms_df_new, new_author_df])
-#                        homonyms_df_new = pd.concat([homonyms_df_new, new_author_df])
                     else:
                         # Keeping all rows when homonymies have not been resolved
                         homonyms_df_new = concat_dfs([homonyms_df_new, author_df])
-#                        homonyms_df_new = pd.concat([homonyms_df_new, author_df])
 
         # Setting actual homonyms status
         actual_homonym_status = False
