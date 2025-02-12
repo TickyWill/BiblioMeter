@@ -12,11 +12,14 @@ __all__ = ['align_cell',
            'format_page',
            'format_wb_sheet',
            'get_col_letter',
+           'save_formatted_df_to_xlsx',
            'set_base_keys_list',
            'set_col_width',
            'set_df_attributes',
           ]
 
+# Standard Library imports
+from pathlib import Path
 
 # 3rd party imports
 import BiblioParsing as bp
@@ -259,6 +262,7 @@ def _set_attr_dict(cols_list, widths_list):
     col_attr_dict = dict(zip(cols_list, attr_list))
     return col_attr_dict
 
+
 def _set_if_db_attributes(cols_list):
     # Setting col-attributes dict using col-widths list
     # with widths-list order: first col, other cols
@@ -336,6 +340,28 @@ def _set_inst_attributes(cols_list):
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
+def _set_distrib_inst_attributes(cols_list):
+    # Setting col-attributes dict using col-widths list
+    # with widths-list order: first col, other cols, last col
+    widths_list = [12, 15, 15]
+    col_attr_dict = _set_attr_dict(cols_list, widths_list)
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':20}
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_inst_stat_attributes(cols_list):
+    attr_list = [[30, "left"], [25, "center"],
+                 [15, "center"], [95, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
 
 def set_df_attributes(df_title, df_cols_list, keys_list):
     """Sets the attributes for formating a given data type as openpyxl object.
@@ -364,6 +390,8 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     geo_alias = pg.DF_TITLES_LIST[8]
     inst_alias = pg.DF_TITLES_LIST[9]
     if_ana_alias = pg.DF_TITLES_LIST[10]
+    distrib_inst_alias = pg.DF_TITLES_LIST[11]
+    inst_stat_alias = pg.DF_TITLES_LIST[12]
 
     attr_tup = _set_base_attributes(df_cols_list, keys_list)
 
@@ -390,6 +418,12 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
 
     elif df_title==inst_alias:
         attr_tup = _set_inst_attributes(df_cols_list)
+
+    elif df_title==inst_stat_alias:
+        attr_tup = _set_inst_stat_attributes(df_cols_list)
+
+    elif df_title==distrib_inst_alias:
+        attr_tup = _set_distrib_inst_attributes(df_cols_list)
     return attr_tup
 
 
@@ -552,3 +586,15 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
         wb.active = wb[sheet_name]
         wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
     return wb
+
+
+def save_formatted_df_to_xlsx(save_path, item_filename, item_df,
+                              item_df_title, sheet_name):
+    """Formats the 'item_df' dataframe through `format_page` function imported 
+    from the `bmfuncts.format_files` module and saves it as xlsx workbook.
+    """
+    item_xlsx_file = item_filename
+    item_xlsx_path = save_path / Path(item_xlsx_file)
+    wb, ws = format_page(item_df, item_df_title)
+    ws.title = sheet_name
+    wb.save(item_xlsx_path)

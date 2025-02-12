@@ -58,7 +58,8 @@ DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 
 DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "Authors_df", "Authors_stat_df", "KPI_df",
-                  "KW_df", "Geo_df", "Institutions_df", "IF_anal_df"]
+                  "KW_df", "Geo_df", "Institutions_df",
+                  "IF_anal_df", "Distrib_inst_df", "Institutions_stat_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
@@ -136,45 +137,49 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
 
 
 ARCHI_YEAR = {
-              "analyses"                  : "5 - Analyses",
-              "authors analysis"          : "Auteurs",
-              "if analysis"               : "IFs",
-              "keywords analysis"         : "Mots clefs",
-              "subjects analysis"         : "Thématique",
-              "countries analysis"        : "Géographique",
-              "institutions analysis"     : "Collaborations",
-              "authors file name"         : "Informations auteur par publication",
-              "authors weight file name"  : "Statistiques par auteurs",
-              "countries file name"       : "Pays par publication",
-              "country weight file name"  : "Statistiques par pays",
-              "continent weight file name": "Statistiques par continent",
-              "norm inst file name"       : "Institutions normalisées",
-              "raw inst file name"        : "Institutions brutes",
-              "bdd mensuelle"             : "0 - BDD multi mensuelle",
-              "submit file name"          : "submit.xlsx",
-              "orphan file name"          : "orphan.xlsx",
-              "hash_id file name"         : "hash_id.xlsx",
-              "homonymes folder"          : "1 - Consolidation Homonymes",
-              "homonymes file name base"  : "Fichier Consolidation",
-              "OTP folder"                : "2 - OTP",
-              "OTP file name base"        : "fichier_ajout_OTP",
-              "pub list folder"           : "3 - Résultats Finaux",
-              "pub list file name base"   : "Liste consolidée",
-              "invalid file name base"    : "Liste des invalides",
-              "history folder"            : "4 - Informations",
-              "kept homonyms file name"   : "Homonymes conservés.xlsx",
-              "kept OTPs file name"       : "OTPs conservés.xlsx",
-              "corpus"                    : "Corpus",
-              "concat"                    : "concatenation",
-              "dedup"                     : "deduplication",
-              "scopus"                    : "scopus",
-              "wos"                       : "wos",
-              "parsing"                   : "parsing",
-              "rawdata"                   : "rawdata",
+              "analyses"                            : "5 - Analyses",
+              "authors analysis"                    : "Auteurs",
+              "if analysis"                         : "IFs",
+              "keywords analysis"                   : "Mots clefs",
+              "subjects analysis"                   : "Thématique",
+              "countries analysis"                  : "Géographique",
+              "institutions analysis"               : "Collaborations",
+              "authors file name"                   : "Informations auteur par publication",
+              "authors weight file name"            : "Statistiques par auteurs",
+              "countries file name"                 : "Pays par publication",
+              "country weight file name"            : "Statistiques par pays",
+              "continent weight file name"          : "Statistiques par continent",
+              "norm inst file name"                 : "Institutions normalisées",
+              "raw inst file name"                  : "Institutions brutes",
+              "institutions distribution file name" : "Distribution institutions par types et par adresses",
+              "institution weight file name"        : "Statistiques par institutions",
+              "bdd mensuelle"                       : "0 - BDD multi mensuelle",
+              "submit file name"                    : "submit.xlsx",
+              "orphan file name"                    : "orphan.xlsx",
+              "hash_id file name"                   : "hash_id.xlsx",
+              "homonymes folder"                    : "1 - Consolidation Homonymes",
+              "homonymes file name base"            : "Fichier Consolidation",
+              "OTP folder"                          : "2 - OTP",
+              "OTP file name base"                  : "fichier_ajout_OTP",
+              "pub list folder"                     : "3 - Résultats Finaux",
+              "pub list file name base"             : "Liste consolidée",
+              "invalid file name base"              : "Liste des invalides",
+              "history folder"                      : "4 - Informations",
+              "kept homonyms file name"             : "Homonymes conservés.xlsx",
+              "kept OTPs file name"                 : "OTPs conservés.xlsx",
+              "corpus"                              : "Corpus",
+              "concat"                              : "concatenation",
+              "dedup"                               : "deduplication",
+              "scopus"                              : "scopus",
+              "wos"                                 : "wos",
+              "parsing"                             : "parsing",
+              "rawdata"                             : "rawdata",
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["hash_ids", "pub_lists", "ifs", "kws", "countries", "continents", "authors"]
+RESULTS_TO_SAVE = ["hash_ids", "pub_lists", "ifs", "kws",
+                   "countries", "continents", "authors", 
+                   "institutionq"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -237,9 +242,9 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
                    'weight'           : "Weight",
                    'country'          : "Pays",
                    'continent'        : "Continent",
+                   'institution'      : "Institution",
                    'pub_ids list'     : "Liste des Pub_ids",
                   }
-
 
 
 COL_NAMES_BM = {'Dpts'      : eg.EMPLOYEES_ADD_COLS['dpts_list'],

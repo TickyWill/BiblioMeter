@@ -148,17 +148,11 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     if_updated_year_if_db_df = concat_dfs([year_if_db_df,
                                            missing_if_corpus_year_if_df],
                                            dedup_cols=[journal_col_alias])
-#    if_updated_year_if_db_df = _append_df(year_if_db_df,
-#                                          missing_if_corpus_year_if_df,
-#                                          journal_col_alias)
 
     # Appending 'missing_issn_corpus_year_if_df' to  'updated_year_if_db_df'
     fully_updated_year_if_db_df = concat_dfs([if_updated_year_if_db_df,
                                               missing_issn_corpus_year_if_df],
                                               dedup_cols=[journal_col_alias])
-#    fully_updated_year_if_db_df = _append_df(if_updated_year_if_db_df,
-#                                             missing_issn_corpus_year_if_df,
-#                                             journal_col_alias)
 
     # Sorting 'updated_year_if_db_df' by journal column
     fully_updated_year_if_db_df = fully_updated_year_if_db_df.sort_values(by=[journal_col_alias])
@@ -187,9 +181,6 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     corpus_year_most_recent_year_if_df = concat_dfs([missing_if_most_recent_year_if_df,
                                                      missing_issn_most_recent_year_if_df],
                                                      dedup_cols=[journal_col_alias])
-#    corpus_year_most_recent_year_if_df = _append_df(missing_if_most_recent_year_if_df,
-#                                                    missing_issn_most_recent_year_if_df,
-#                                                    journal_col_alias)
     corpus_year_most_recent_year_if_df = corpus_year_most_recent_year_if_df.rename(
         columns={most_recent_year_if_col_alias: new_most_recent_year_if_col_alias,})
 
@@ -260,9 +251,6 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
         most_recent_year_if_df_to_add = concat_dfs([most_recent_year_if_df_to_add,
                                                     corpus_year_most_recent_year_if_df_to_add],
                                                     dedup_cols=[journal_col])
-#        most_recent_year_if_df_to_add = _append_df(most_recent_year_if_df_to_add,
-#                                                   corpus_year_most_recent_year_if_df_to_add,
-#                                                   journal_col)
         fully_updated_year_if_db_df = dfs_tup[0]
         if_sheet_name = if_db_year
         if_db_df_title = pg.DF_TITLES_LIST[3]
@@ -335,18 +323,12 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
         most_recent_year_if_df_to_add = concat_dfs([most_recent_year_if_df_to_add,
                                                     corpus_year_most_recent_year_if_df_to_add],
                                                     dedup_cols=[journal_col])
-#        most_recent_year_if_df_to_add = _append_df(most_recent_year_if_df_to_add,
-#                                                   corpus_year_most_recent_year_if_df_to_add,
-#                                                   journal_col)
 
         most_recent_year_if_df_to_add = most_recent_year_if_df_to_add.drop_duplicates()
 
     most_recent_year_if_db_df = concat_dfs([most_recent_year_if_db_df,
                                             most_recent_year_if_df_to_add],
                                             dedup_cols=[journal_col])
-#    most_recent_year_if_db_df = _append_df(most_recent_year_if_db_df,
-#                                           most_recent_year_if_df_to_add,
-#                                           journal_col)
     most_recent_year_if_db_df = most_recent_year_if_db_df.sort_values(by=journal_col)
     if_sheet_name = off_if_db_years_list[0]
     if_db_df_title = pg.DF_TITLES_LIST[3]

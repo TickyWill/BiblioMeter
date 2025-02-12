@@ -4,6 +4,7 @@
 __all__ = ['save_final_countries',
            'save_final_continents',
            'save_final_ifs',
+           'save_final_institutions',
            'save_final_kws',
            'save_final_pub_lists',
            'save_final_results',
@@ -361,7 +362,7 @@ def save_final_countries(bibliometer_path,
     # Copying file from origin path to target path
     shutil.copy2(origin_countries_file_path, target_countries_file_path)
 
-    end_message = (f"Final countries for year {corpus_year} saved in folder: "
+    end_message = (f"Final countries statistics for year {corpus_year} saved in folder: "
                    f"\n  '{target_countries_file_path}'")
     return end_message
 
@@ -411,8 +412,58 @@ def save_final_continents(bibliometer_path,
     # Copying file from origin path to target path
     shutil.copy2(origin_continents_file_path, target_continents_file_path)
 
-    end_message = (f"Final continents for year {corpus_year} saved in folder: "
+    end_message = (f"Final continents statistics for year {corpus_year} saved in folder: "
                    f"\n  '{target_continents_file_path}'")
+    return end_message
+
+
+def save_final_institutions(bibliometer_path,
+                            corpus_year, results_folder_path):
+    """Saves final results of publications per institution for the corpus year.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
+    """
+
+    # Setting aliases for saving results
+    results_sub_folder_alias = pg.ARCHI_RESULTS["institutions"]
+
+    # Setting aliases of common parts of file names
+    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
+    origin_institutions_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
+    institutions_file_alias = pg.ARCHI_YEAR["institution weight file name"]
+    year_institutions_file_alias = institutions_file_alias + " " + corpus_year
+
+    # Setting common paths
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
+    origin_institutions_path = origin_analysis_folder_path / Path(origin_institutions_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_institutions_path = year_target_folder_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required results folders
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_institutions_path):
+        os.makedirs(target_institutions_path)
+
+    # Setting full path 'origin_institutions_file_path' and 'target_institutions_file_path'
+    origin_institutions_file_alias = institutions_file_alias + ".xlsx"
+    origin_institutions_file_path = origin_institutions_path / Path(origin_institutions_file_alias)
+    target_institutions_file_alias = year_institutions_file_alias + ".xlsx"
+    target_institutions_file_path = target_institutions_path / Path(target_institutions_file_alias)
+
+    # Copying file from origin path to target path
+    shutil.copy2(origin_institutions_file_path, target_institutions_file_path)
+
+    end_message = (f"Final institutions statistics for year {corpus_year} saved in folder: "
+                   f"\n  '{target_institutions_file_path}'")
     return end_message
 
 
@@ -497,6 +548,12 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     if results_to_save_dict["continents"]:
         message = save_final_continents(bibliometer_path,
                                         corpus_year, results_folder_path)
+        if verbose:
+            print("\n",message)
+
+    if results_to_save_dict["institutions"]:
+        message = save_final_institutions(bibliometer_path,
+                                          corpus_year, results_folder_path)
         if verbose:
             print("\n",message)
 
