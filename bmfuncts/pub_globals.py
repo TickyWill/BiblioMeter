@@ -179,7 +179,7 @@ ARCHI_YEAR = {
 # Setting list of final results to save
 RESULTS_TO_SAVE = ["hash_ids", "pub_lists", "ifs", "kws",
                    "countries", "continents", "authors", 
-                   "institutionq"]
+                   "institutions"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -244,6 +244,7 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
                    'continent'        : "Continent",
                    'institution'      : "Institution",
                    'pub_ids list'     : "Liste des Pub_ids",
+                   'address ID'       : "Adresse_id",
                   }
 
 

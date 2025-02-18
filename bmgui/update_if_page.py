@@ -215,8 +215,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
             if_db_file_status = os.path.exists(if_db_path)
             if if_db_file_status:
                 progress_callback(10)
-                new_if_db_update_status = _launch_update_if_db(institute,
-                                                               org_tup,
+                new_if_db_update_status = _launch_update_if_db(institute, org_tup,
                                                                bibliometer_path,
                                                                pub_list_folder_alias,
                                                                master.years_list,

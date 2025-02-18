@@ -23,6 +23,7 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.build_pub_authors import build_institute_pubs_authors
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import set_year_pub_id
 from bmfuncts.useful_functs import standardize_txt
 
 
@@ -949,16 +950,19 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     updating 'submit_df' and 'orphan_df' dataframes.
     5. The 'submit_df' and 'orphan_df' dataframes are updated by search in the employees \
     database through the `_build_submit_df` internal function using recusively items from \
-    'years' list for the search year; the dataframes are saved as Excel files which full \
+    'years' list for the search year.
+    6. The dataframes are refactored by replacing NaN values by the UNKNOWN global and \
+    modifying the publications IDs through the `set_year_pub_id` function imported from \
+    the `bmfuncts.useful_functs`module. Then they are saved as Excel files which full \
     paths are given by 'submit_path' and 'orphan_path', respectively.
-    6. A new column containing the job type for each author is added in the file which \
+    7. A new column containing the job type for each author is added in the file which \
     full path is given by 'submit_path' through the `_add_author_job_type` internal function.
-    7. A new column containing the full reference of each publication is added \
+    8. A new column containing the full reference of each publication is added \
     in the file which full path is given by 'submit_path' through the `_add_biblio_list` \
     internal function.
-    8. Column names are changed in the two files which full path are given by respectively, \
+    9. Column names are changed in the two files which full path are given by respectively, \
     'submit_path' and 'orphan_path' through the `_change_col_names` internal function.    
-    9. An Excel file containing the unique hash ID built for each publication \
+    10. An Excel file containing the unique hash ID built for each publication \
     is created through the `_creating_hash_id` internal function.
 
     Args:
@@ -986,27 +990,6 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
             df[col] = df[col].fillna(unknown_alias)
         for col in initials_cols:
             df[col] = df[col].fillna("NA")
-
-    def _unique_pub_id(df):
-        """Transforms the column 'Pub_id' of df y adding "yyyy_" 
-        (year in 4 digits) to the values.
-
-        Args:
-            df (pandas.DataFrame): data that we want to modify.
-        Returns:
-            (pandas.DataFrame): df with its changed column.
-        """
-        year_df = df[year_col_alias].iloc[0]
-
-        def _rename_pub_id(old_pub_id, year):
-            pub_id_str = str(int(old_pub_id))
-            while len(pub_id_str)<3:
-                pub_id_str = "0" + pub_id_str
-            new_pub_id = str(int(year)) + '_' + pub_id_str
-            return new_pub_id
-
-        df[pub_id_alias] = df[pub_id_alias].apply(lambda x: _rename_pub_id(x, year_df))
-        return df
 
     # Setting useful aliases
     unknown_alias = bp.UNKNOWN
@@ -1120,9 +1103,9 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
-    submit_df = _unique_pub_id(submit_df)
+    submit_df = set_year_pub_id(submit_df, corpus_year, pub_id_alias)
     if not orphan_status:
-        orphan_df = _unique_pub_id(orphan_df)
+        orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_alias)
 
     # Saving orphan_df
     orphan_df.to_excel(orphan_path, index=False)

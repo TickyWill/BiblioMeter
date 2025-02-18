@@ -1,5 +1,6 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
 
+    To Do: import `standardize_address` from BinlioParsing package.
 """
 
 __all__ = ['check_dedup_parsing_available',
@@ -9,7 +10,10 @@ __all__ = ['check_dedup_parsing_available',
            'read_parsing_dict',
            'save_fails_dict',
            'save_parsing_dict',
+           'save_xlsx_file',
            'set_rawdata',
+           'set_year_pub_id',
+           'standardize_address',
            'standardize_firstname_initials',
            'standardize_txt',
           ]
@@ -17,6 +21,7 @@ __all__ = ['check_dedup_parsing_available',
 
 # Standard library imports
 import json
+import re
 import os
 import shutil
 from pathlib import Path
@@ -28,6 +33,86 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def standardize_address(raw_address):    
+    """Standardizes the string 'raw_address' by replacing all aliases of a word, 
+    such as 'University', 'Institute', 'Center' and' Department', by a standardized 
+    version.
+
+    The aliases of a given word are captured using a specific regex which is case sensitive defined 
+    by the global 'DIC_WORD_RE_PATTERN'. The aliases may contain symbols from a given list of any 
+    language including accentuated ones. The length of the alliases is limited to a maximum according 
+    to the longest alias known.
+        ex: The longest alias known for the word 'University' is 'Universidade'. 
+            Thus, 'University' aliases are limited to 12 symbols begenning with the base 'Univ' 
+            + up to 8 symbols from the list '[aàädeéirstyz]' and possibly finishing with a dot. 
+    Then, dashes are replaced by a hyphen-minus using 'DASHES_CHANGE' global and apostrophes are replaced 
+    by the standard cote using 'APOSTROPHE_CHANGE' global. 
+    The globals are imported from the `BiblioParsing` package imported as "bp". 
+    Finally, the country is normalized through the `normalize_country` function imported from 
+    the `BiblioParsing` package imported as "bp".
+
+    Args:
+        raw_address (str): The full address to be standardized.
+
+    Returns:
+        (str): The full standardized address.
+
+    Note:
+        Copied from BiblioParsing package.
+    """    
+    # Uniformizing words
+    standard_address = raw_address
+    for word_to_subsitute, re_pattern in bp.DIC_WORD_RE_PATTERN.items():
+        standard_address = re.sub(re_pattern,word_to_subsitute + ' ', standard_address)
+    standard_address = re.sub(r'\s+', ' ', standard_address)
+    standard_address = re.sub(r'\s,', ',', standard_address)
+    
+    # Uniformizing dashes
+    standard_address = standard_address.translate(bp.DASHES_CHANGE)
+    
+    # Uniformizing apostrophes
+    standard_address = standard_address.translate(bp.APOSTROPHE_CHANGE)
+    
+    # Uniformizing countries
+    country_pos = -1
+    first_raw_affiliations_list = standard_address.split(',')
+    # This split below is just for country finding even if affiliation may be separated by dashes
+    raw_affiliations_list = sum([x.split(' - ') for x in first_raw_affiliations_list], [])        
+    country = bp.normalize_country(raw_affiliations_list[country_pos].strip())
+    space = " "
+    if country!=bp.UNKNOWN:
+        standard_address = ','.join(first_raw_affiliations_list[:-1] + [space + country])
+    else:
+        standard_address = ','.join(first_raw_affiliations_list + [space + country])
+    return standard_address
+
+
+def save_xlsx_file(root_path, df, file_name):        
+    file_path = root_path / Path(file_name)
+    df.to_excel(file_path, index=False)
+
+
+def set_year_pub_id(df, year, pub_id_col):
+    """Transforms the column 'Pub_id' of the df
+    by adding "yyyy_" to the value of the row.
+
+    Args:
+        df (pandas.DataFrame()): pandas.DataFrame() to be modified.
+        year (str): 4 digits year of the corpus.
+        pub_id_col (str): Name of the column of publications ID.
+    Returns:
+        (dataframe): the df with its changed column.
+    """
+    def _rename_pub_id(old_pub_id, year):
+        pub_id_str = str(int(old_pub_id))
+        while len(pub_id_str)<3:
+            pub_id_str = "0" + pub_id_str
+        new_pub_id = str(int(year)) + '_' + pub_id_str
+        return new_pub_id
+    df[pub_id_col] = df[pub_id_col].apply(lambda x: _rename_pub_id(x, year))
+    return df
 
 
 def concat_dfs(dfs_list, dedup_cols=None, keep='first', axis=0,

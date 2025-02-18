@@ -46,11 +46,9 @@ def _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    auth_analysis_folder_path = authors_analysis(institute,
-                                                 org_tup,
+    auth_analysis_folder_path = authors_analysis(institute, org_tup,
                                                  bibliometer_path,
-                                                 datatype,
-                                                 year_select,
+                                                 datatype, year_select,
                                                  progress_callback)
 
     info_title = "- Information -"
@@ -75,11 +73,9 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path,
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    kw_analysis_folder_path = keywords_analysis(institute,
-                                                org_tup,
+    kw_analysis_folder_path = keywords_analysis(institute, org_tup,
                                                 bibliometer_path,
-                                                datatype,
-                                                year_select,
+                                                datatype, year_select,
                                                 progress_callback,
                                                 verbose=False)
 
@@ -108,14 +104,13 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
     """
     # TO DO: use 'results_folder_path' in info_text
 
-    return_tup = coupling_analysis(institute,
-                                   org_tup,
+    return_tup = coupling_analysis(institute, org_tup,
                                    bibliometer_path,
-                                   datatype,
-                                   year_select,
+                                   datatype, year_select,
                                    progress_callback,
-                                   verbose=False)
-    analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = return_tup
+                                   verbose=True)
+    (analysis_folder_alias, geo_analysis_folder_alias,
+     inst_analysis_folder_alias) = return_tup
 
     info_title = "- Information -"
     info_text = ("L'analyse géographique et des collaborations "
@@ -156,11 +151,9 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 
-    if_analysis_folder_path, _, _ = if_analysis(institute,
-                                                org_tup,
+    if_analysis_folder_path, _, _ = if_analysis(institute, org_tup,
                                                 bibliometer_path,
-                                                datatype,
-                                                year_select,
+                                                datatype, year_select,
                                                 if_most_recent_year,
                                                 progress_callback,
                                                 verbose=False)
@@ -223,8 +216,11 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
             print(f"Coupling analysis launched for year {year_select}")
-            _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
-                                      year_select, results_folder_path, progress_callback)
+            _launch_coupling_analysis(institute, org_tup,
+                                      bibliometer_path,
+                                      datatype, year_select,
+                                      results_folder_path,
+                                      progress_callback)
         else:
             progress_callback(100)
             info_title = "- Information -"

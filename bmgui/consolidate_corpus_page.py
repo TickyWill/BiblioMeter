@@ -433,8 +433,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
 
 def _launch_add_otp_try(institute, org_tup,
                         bibliometer_path,
-                        paths_tup,
-                        files_tup,
+                        paths_tup, files_tup,
                         year_select,
                         progress_callback):
     """Launches files creation for adding OTP attribute to publications.
