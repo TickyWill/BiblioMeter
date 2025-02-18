@@ -27,7 +27,7 @@ def _build_institute_authors_addresses(institute, org_tup, bibliometer_path, yea
     # Setting useful aliases
     bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
     submit_file_name = pg.ARCHI_YEAR["submit file name"]
-    
+
     # Setting useful paths
     year_folder_path = bibliometer_path / Path(str(year))
     submit_filder_path = year_folder_path / Path(bdd_mensuelle_alias)
@@ -39,11 +39,11 @@ def _build_institute_authors_addresses(institute, org_tup, bibliometer_path, yea
     bm_author_id_col = submit_col_rename_dic[bp.COL_NAMES['authors'][1]]
     bm_address_col = submit_col_rename_dic[bp.COL_NAMES['address'][2]]
     bm_cols_list = [bm_pub_id_col, bm_author_id_col, bm_address_col]
-    
+
     # Building the dict of Institute-authors IDs per publications
     submit_df = pd.read_excel(submit_file_path,
                               usecols=bm_cols_list)
-    
+
     institute_author_addresses_df = pd.DataFrame()
     for _, submit_row in submit_df.iterrows():
         pub_id = submit_row[bm_pub_id_col]
@@ -53,8 +53,8 @@ def _build_institute_authors_addresses(institute, org_tup, bibliometer_path, yea
         for auth_address in auth_addresses_list:
             data.append([pub_id, author_idx, auth_address])
             author_addresse_df = pd.DataFrame(data, columns=bm_cols_list)
-            institute_author_addresses_df = concat_dfs([institute_author_addresses_df,
-                                                        author_addresse_df])    
+            dfs_list = [institute_author_addresses_df, author_addresse_df]
+            institute_author_addresses_df = concat_dfs(dfs_list)
     inst_pud_ids_list = list(set(institute_author_addresses_df[bm_pub_id_col].to_list()))
     return institute_author_addresses_df, inst_pud_ids_list, bm_cols_list
 
@@ -83,14 +83,10 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
 
     # Setting useful local variables
     dedup_folder = "dedup"
-    xlsx_extent = ".xlsx"
 
     # Setting aliases from globals
     tsv_extent_alias = "." + pg.TSV_SAVE_EXTENT
     addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
-
-    # Setting useful paths
-    year_folder_path = bibliometer_path / Path(str(year))
 
     # Setting useful column names aliases
     bp_pub_id_alias = bp.COL_NAMES['address'][0]
@@ -107,11 +103,11 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     return_tup = _build_institute_authors_addresses(institute, org_tup, bibliometer_path, year)
     return_df, inst_pud_ids_list, bm_cols_list = return_tup
     bm_pub_id_col, bm_author_id_col, bm_address_col = bm_cols_list[0], bm_cols_list[1], bm_cols_list[2]
-    return_df[bm_address_col] = return_df[bm_address_col].apply(lambda x: standardize_address(x))
+    return_df[bm_address_col] = return_df[bm_address_col].apply(standardize_address)
     institute_author_addresses_df = return_df.copy()
 
     # Setting useful column lists and columns rename dict
-    bm_full_cols_tup = (bm_pub_id_col, bm_address_id_alias, bm_author_id_col, bm_address_col)    
+    bm_full_cols_tup = (bm_pub_id_col, bm_address_id_alias, bm_author_id_col, bm_address_col)
     bp_init_cols_list = [bp_pub_id_alias, bp_address_id_alias, bp_address_alias]
     bm_final_cols_list = [bm_pub_id_col, bm_address_id_alias, bm_address_col]
     bp2bm_rename_cols_dict = dict(zip(bp_init_cols_list, bm_final_cols_list))
@@ -121,8 +117,7 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     addresses_item_path = parsing_path_dict[dedup_folder] / Path(addresses_item_file)
     all_address_df = pd.read_csv(addresses_item_path, sep='\t')
     all_address_df = set_year_pub_id(all_address_df, year, bp_pub_id_alias)
-    all_address_df[bp_address_alias] = all_address_df[bp_address_alias].apply(
-        lambda x: standardize_address(x))
+    all_address_df[bp_address_alias] = all_address_df[bp_address_alias].apply(standardize_address)
     all_address_df.rename(columns=bp2bm_rename_cols_dict, inplace=True)
     if progress_callback:
         progress_callback(15)
@@ -134,10 +129,9 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
             inst_pub_addresses_init_df = concat_dfs([inst_pub_addresses_init_df, dg])
 
     bm_full_cols_tup = (bm_pub_id_col, bm_address_id_alias, bm_author_id_col, bm_address_col)
-    
+
     bp_init_cols_list = [bp_pub_id_alias, bp_address_id_alias, bp_address_alias]
     bm_final_cols_list = [bm_pub_id_col, bm_address_id_alias, bm_address_col]
-    bp_to_bm_cols_convert_dict = dict(zip(bp_init_cols_list, bm_final_cols_list))
 
     return_tup = (inst_pub_addresses_init_df, institute_author_addresses_df,
                   bm_full_cols_tup, bp2bm_rename_cols_dict)
@@ -153,10 +147,7 @@ def _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
         df1_address_ids_list = pub_id_df1[bm_address_id_col].to_list()
         df1_addresses_list = pub_id_df1[bm_address_col].to_list()
         df1_address_dict = dict(zip(df1_addresses_list, df1_address_ids_list))
-
         pub_id_df2 = institute_author_addresses_df[institute_author_addresses_df[bm_pub_id_col]==pub_id]
-        df2_addresses_list = list(set(pub_id_df2[bm_address_col].to_list()))
-
         df1_out_df2_addresses_list = list(set(df1_addresses_list) - set(pub_id_df2[bm_address_col].to_list()))
 
         out_df = pd.DataFrame()
@@ -167,7 +158,7 @@ def _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
             data.append([pub_id, address_id, author_id, address])
             address_df = pd.DataFrame(data,
                                       columns=bm_full_cols_tup)
-            out_df = concat_dfs([out_df, address_df])  
+            out_df = concat_dfs([out_df, address_df])
 
         for df2_address, df2_address_df in pub_id_df2.groupby(bm_address_col):
             df2_author_ids_list = df2_address_df[bm_author_id_col].to_list()
@@ -183,7 +174,7 @@ def _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
     return pubid_addid_authid_addresse_df
 
 
-def _correct_inst_address(pubid_addid_authid_addresse_df, bm_full_cols_tup):        
+def _correct_inst_address(pubid_addid_authid_addresse_df, bm_full_cols_tup):
     bm_pub_id_col, bm_address_id_col, bm_author_id_col, bm_address_col = bm_full_cols_tup
     out_df = pd.DataFrame()
     for pub_id, pub_id_df in pubid_addid_authid_addresse_df.groupby(bm_pub_id_col):
@@ -198,7 +189,8 @@ def _correct_inst_address(pubid_addid_authid_addresse_df, bm_full_cols_tup):
                     ines_rpl_str = "CEA, LITEN, INES"
                     unknown_rpl_str = "France"
                     new_addresses_list = [address.replace("INES", ines_rpl_str) for address in addresses_list]
-                    new_addresses_list = [address.replace(bp.UNKNOWN, unknown_rpl_str) for address in new_addresses_list]
+                    new_addresses_list = [address.replace(bp.UNKNOWN, unknown_rpl_str)
+                                          for address in new_addresses_list]
                     addresses_dict = dict(zip(new_addresses_list, address_ids_list))
                     data = []
                     for address in new_addresses_list:
@@ -217,7 +209,7 @@ def _correct_inst_address(pubid_addid_authid_addresse_df, bm_full_cols_tup):
 
 
 def _build_final_institute_addresses_df(corr_pubid_addid_authid_addresse_df, bm_full_cols_tup):
-    bm_pub_id_col, bm_address_id_col, bm_author_id_col, bm_address_col = bm_full_cols_tup
+    bm_pub_id_col, bm_address_id_col, _, bm_address_col = bm_full_cols_tup
     cols_list = [bm_pub_id_col, bm_address_id_col, bm_address_col]
     in_df = corr_pubid_addid_authid_addresse_df.copy()
     out_df = pd.DataFrame()
@@ -235,7 +227,7 @@ def _build_final_institute_addresses_df(corr_pubid_addid_authid_addresse_df, bm_
 
 
 def build_institute_addresses_df(institute, org_tup, bibliometer_path,
-                                  year, progress_callback=None, verbose=False):
+                                  year, verbose=False):
     """
     Uses the following functions:
     - `_build_init_institute_addresses_df`    - internal
@@ -243,10 +235,15 @@ def build_institute_addresses_df(institute, org_tup, bibliometer_path,
     - `_correct_inst_address`                 - internal
     - `save_xlsx_file`                       - imported from `bmfuncts.useful_functs`.
     """
+    # Setting useful aliases
+    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
+    inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
 
-    # Setting root fot saving intermediate results
-    save_folder_path = bibliometer_path / Path(year) / Path("5 - Analyses\Collaborations")
-    
+    # Setting root for saving intermediate results
+    year_folder_path = bibliometer_path / Path(year)
+    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
+    save_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
+
     # Building "inst_pub_addresses_init_df", "institute_author_addresses_df", "bm_full_cols_tup"
     return_tup = _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
                                                     year, progress_callback=None)
@@ -260,15 +257,15 @@ def build_institute_addresses_df(institute, org_tup, bibliometer_path,
                        "institute_author_addresses_df.xlsx")
         print("inst_pub_addresses_init_df, institute_author_addresses_df and bm_full_cols_tup built")
 
-    if institute.upper()=="LITEN":    
+    if institute.upper()=="LITEN":
         # Building "pubid_addid_authid_addresse_df"
         return_df = _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
                                                           institute_author_addresses_df,
                                                           bm_full_cols_tup)
         pubid_addid_authid_addresse_df = return_df
-        if verbose: 
+        if verbose:
             print("pubid_addid_authid_addresse_df built")
-    
+
         # Building  corrected "pubid_addid_authid_addresse_df"
         corr_pubid_addid_authid_addresse_df = _correct_inst_address(pubid_addid_authid_addresse_df,
                                                                     bm_full_cols_tup)

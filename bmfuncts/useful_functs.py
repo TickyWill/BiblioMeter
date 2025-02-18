@@ -35,7 +35,7 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 
 
-def standardize_address(raw_address):    
+def standardize_address(raw_address):
     """Standardizes the string 'raw_address' by replacing all aliases of a word, 
     such as 'University', 'Institute', 'Center' and' Department', by a standardized 
     version.
@@ -55,31 +55,29 @@ def standardize_address(raw_address):
 
     Args:
         raw_address (str): The full address to be standardized.
-
     Returns:
         (str): The full standardized address.
-
     Note:
         Copied from BiblioParsing package.
-    """    
+    """
     # Uniformizing words
     standard_address = raw_address
     for word_to_subsitute, re_pattern in bp.DIC_WORD_RE_PATTERN.items():
         standard_address = re.sub(re_pattern,word_to_subsitute + ' ', standard_address)
     standard_address = re.sub(r'\s+', ' ', standard_address)
     standard_address = re.sub(r'\s,', ',', standard_address)
-    
+
     # Uniformizing dashes
     standard_address = standard_address.translate(bp.DASHES_CHANGE)
-    
+
     # Uniformizing apostrophes
     standard_address = standard_address.translate(bp.APOSTROPHE_CHANGE)
-    
+
     # Uniformizing countries
     country_pos = -1
     first_raw_affiliations_list = standard_address.split(',')
     # This split below is just for country finding even if affiliation may be separated by dashes
-    raw_affiliations_list = sum([x.split(' - ') for x in first_raw_affiliations_list], [])        
+    raw_affiliations_list = sum([x.split(' - ') for x in first_raw_affiliations_list], [])
     country = bp.normalize_country(raw_affiliations_list[country_pos].strip())
     space = " "
     if country!=bp.UNKNOWN:
@@ -89,7 +87,14 @@ def standardize_address(raw_address):
     return standard_address
 
 
-def save_xlsx_file(root_path, df, file_name):        
+def save_xlsx_file(root_path, df, file_name):
+    """Saves data as an Excel file that is one sheet and nor formatted.
+
+    Args:
+        root_path (path): The path to the folder where the Excel file is saved.
+        df (dataframe): The data to saved.
+        file_name (str): The name of the file including '.xlsx' extent.
+    """
     file_path = root_path / Path(file_name)
     df.to_excel(file_path, index=False)
 

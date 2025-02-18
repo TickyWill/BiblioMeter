@@ -28,9 +28,9 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
         => "Sch" col value = "['G-INP Sch']"
         => "Lab" col value = "['IMEP-LaHC Lab']"
         => Other type col value = "[]"
-    """    
+    """
     distrib_institutions_df = pd.DataFrame()
-    for row_idx, row in norm_institutions_df.iterrows():
+    for _, row in norm_institutions_df.iterrows():
         inst_list = row[institutions_col].split("; ")
         for inst_type in inst_types_list:
             inst_type_check_str = " " + inst_type
@@ -61,8 +61,8 @@ def _build_pub_id_inst_type_df(distrib_institutions_df, inst_type,
     # Setting useful column names
     bp_country_col_alias = pub_cols_list[1]
 
-    # Building tha dataframe with one row per list of institutions of type 'inst_type' 
-    # per country for each publication 
+    # Building tha dataframe with one row per list of institutions of type 'inst_type'
+    # per country for each publication
     full_inst_list = []
     pub_id_inst_type_df = pd.DataFrame(columns=pub_cols_list)
     for pub_id, pub_id_df in distrib_institutions_df.groupby(pub_id_col):
@@ -80,7 +80,7 @@ def _build_pub_id_inst_type_df(distrib_institutions_df, inst_type,
         pub_inst_df = pd.DataFrame(data, columns=pub_cols_list)
         pub_id_inst_type_df = concat_dfs([pub_id_inst_type_df, pub_inst_df])
     full_inst_list = list(set(full_inst_list))
-    
+
     # Building the dataframe with one row per institution name and country
     # for each publication
     final_pub_id_inst_type_df = pd.DataFrame(columns=pub_cols_list)
@@ -95,7 +95,7 @@ def _build_pub_id_inst_type_df(distrib_institutions_df, inst_type,
                     pub_id = row[pub_id_col]
                     country = row[bp_country_col_alias]
                     data.append([pub_id, country, inst_name])
-                if data!=[]:
+                if data:
                     pub_id_inst_name_df = pd.DataFrame(data, columns=pub_cols_list)
                     final_pub_id_inst_type_df = concat_dfs([final_pub_id_inst_type_df,
                                                             pub_id_inst_name_df])
@@ -115,12 +115,12 @@ def _build_inst_type_stat_df(distrib_institutions_df, inst_type,
     pg_country_col = stat_cols_list[1]
     pub_nb_col = stat_cols_list[2]
     pub_cols_list = [pub_id_col, bp_country_col_alias, inst_type]
-    
+
     # Building the dataframe with one row per list of institutions of type 'inst_type'
     # per country for each publication
     pub_id_inst_type_df = _build_pub_id_inst_type_df(distrib_institutions_df, inst_type,
                                                      pub_cols_list, pub_id_col)
-    
+
     # Building the dataframe with the statistics data per institution
     # for a given type of institutions
     inst_type_stat_df = pd.DataFrame(columns=stat_cols_list)
@@ -163,10 +163,10 @@ def _build_and_save_inst_stat_df(distrib_institutions_df, inst_types_list,
     # Initialize parameters for saving results as multisheet workbook
     first = True
     wb = openpyxl_Workbook()
-    
+
     for inst_type in inst_types_list:
         inst_type_stat_df = _build_inst_type_stat_df(distrib_institutions_df, inst_type,
-                                                     stat_cols_list, pub_id_col)        
+                                                     stat_cols_list, pub_id_col)
         inst_sheet_name = inst_type
         inst_df_title = pg.DF_TITLES_LIST[12]
         wb = format_wb_sheet(inst_sheet_name, inst_type_stat_df, inst_df_title, wb, first)
@@ -201,7 +201,7 @@ def build_and_save_institutions_stat(norm_institutions_df, inst_types_file_path,
     institutions_col = pg.COL_NAMES_BONUS['institution']
     pub_nb_col = pg.COL_NAMES_BONUS["pub number"]
     pub_ids_col = pg.COL_NAMES_BONUS["pub_ids list"]
-    
+
     # Setting useful columns list
     stat_cols_list = [institutions_col, country_col, pub_nb_col, pub_ids_col]
 
@@ -210,7 +210,6 @@ def build_and_save_institutions_stat(norm_institutions_df, inst_types_file_path,
     inst_stat_filename_alias = pg.ARCHI_YEAR["institution weight file name"] + xlsx_extent
 
     # Setting useful paths
-    distrib_inst_file_path = inst_analysis_folder_path / Path(distrib_inst_filename_alias)
     inst_stat_xlsx_path = inst_analysis_folder_path / Path(inst_stat_filename_alias)
 
     # Getting institutions types data
@@ -220,7 +219,7 @@ def build_and_save_institutions_stat(norm_institutions_df, inst_types_file_path,
     # Building distributed info of normalized institutions per type and per address
     distrib_institutions_df = _build_distributed_inst_df(norm_institutions_df, institutions_col,
                                                          inst_types_list)
-    
+
     # Saving formatted df of distributed institutions
     distrib_inst_df_title = pg.DF_TITLES_LIST[11]
     sheet_name = 'Distributed Inst ' + year
