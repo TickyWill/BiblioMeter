@@ -7,6 +7,7 @@ __all__ = ['check_dedup_parsing_available',
            'concat_dfs',
            'create_archi',
            'create_folder',
+           'keep_initials',
            'read_parsing_dict',
            'save_fails_dict',
            'save_parsing_dict',
@@ -33,6 +34,30 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def keep_initials(df, initials_col_base, missing_fill=None):
+    """Keeps the first-name initials avoiding setting them to NaN 
+    when they are equal to 'NA'.
+    
+    Args:
+        df (dataframe): Data where the first-name inirials are kept.
+        initials_col_base (str): Base of the column names \
+        of first_name initiales. 
+        missing_fill (str): Optional value for replacing NaN \
+        in the other columns (default = None).
+    Returns:
+        (dataframe): The modifyed dataframe.
+    """
+    df_cols = list(df.columns)
+    df_initials_cols = [x for x in df_cols if initials_col_base in x]
+    for col in df_initials_cols:
+        df[col] = df[col].fillna("NA")
+    if missing_fill:
+        df_fill_na_cols = list(set(df_cols) - set(df_initials_cols))
+        for col in df_fill_na_cols:
+            df[col] = df[col].fillna(missing_fill)
+    return df
 
 
 def standardize_address(raw_address):

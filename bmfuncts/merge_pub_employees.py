@@ -2,11 +2,13 @@
 of the Institute taking care of:
 
 - Creation of list of Institute authors with selected attributes;
-- Creation of full reference for each publication.
+- Creation of full reference for each publication;
+- Creation of publications hash-ID
 
 """
 
 __all__ = ['recursive_year_search']
+
 
 # Standard Library imports
 import os
@@ -21,271 +23,13 @@ import BiblioParsing as bp
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.build_pub_authors import build_institute_pubs_authors
+from bmfuncts.build_year_pub_empl import build_submit_df
+from bmfuncts.create_hash_id import create_hash_id
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import set_year_pub_id
 from bmfuncts.useful_functs import standardize_txt
-
-
-def _build_submit_df(empl_df, pub_df, bibliometer_path, test_case = 'No test', verbose = False):
-    """Builds a dataframe of the merged employees information with the publication 
-    list with one row per author.
-
-    The merge is based on test of similarities between last names and first names 
-    of employees and authors. 
-    Found homonyms are tagged by 'HOMONYM_FLAG' global imported from globals 
-    module imported as pg.
-
-    Args:
-        empl_df (dataframe): Employees database of a given year.
-        pub_df (dataframe): Institute publications list with one row per author. 
-        bibliometer_path (path): Full path to working folder.
-        test_case (str): Optional test case for testing the function (default = 'No test').
-        verbose (bool): Optional status of prints (default = False).
-    Returns:
-        (tup): (dataframe of merged employees information with \
-        the publications list with one row per Institute author with \
-        identified homonyms, dataframe of publications list with \
-        one row per author that has not been identified as Institute employee).
-    """
-
-    def _orphan_reduction(orphan_lastname, eff_lastname):
-        # A bug with "if ' TRAN ' in ' TUAN TRAN ':"
-        orphan_lastname = ' ' + orphan_lastname + ' '
-        lastname_match_list = []
-        for eff_name in eff_lastname:
-            if (orphan_lastname in eff_name) or (eff_name in orphan_lastname):
-                lastname_match_list.append(eff_name.strip())
-        return lastname_match_list
-
-    def _test_full_match(empl_pub_match_df, pub_lastname, emp_useful_cols_alias):
-        if verbose:
-            if len(empl_pub_match_df)!=0:
-                print('\nMatch found for author lastname:', pub_lastname)
-                print(' Nb of matches:', len(empl_pub_match_df))
-                print(' Employee matricule:',
-                      empl_pub_match_df[emp_useful_cols_alias['matricule']].to_list()[0])
-                print(' Employee lastname:',
-                      empl_pub_match_df[emp_useful_cols_alias['name']].to_list()[0])
-            else:
-                print('\nNo match for author lastname:', pub_lastname)
-                print('  Nb first matches:', len(empl_pub_match_df))
-
-    def _test_similarity(empl_pub_match_df, pub_lastname, emp_useful_cols_alias,
-                         lastname_match_list, flag_lastname_match):
-        if verbose:
-            print('\nSimilarities by orphan reduction for author lastname:', pub_lastname)
-            print('  Lastname flag match:', flag_lastname_match)
-            print('  Nb similarities by orphan reduction:', len(lastname_match_list))
-            print('  List of lastnames with similarities:', lastname_match_list)
-            print('  Employee matricules:',
-                  empl_pub_match_df[emp_useful_cols_alias['matricule']].to_list())
-            print('  Employee lastnames:',
-                  empl_pub_match_df[emp_useful_cols_alias['name']].to_list())
-            print('  Employee firstnames:',
-                  empl_pub_match_df[emp_useful_cols_alias['first_name']].to_list())
-            print('  Employee fullnames:',
-                  empl_pub_match_df[emp_add_cols_alias['employee_full_name']].to_list())
-
-    def _test_no_similarity(pub_df_row, pub_lastname, bp_colnames_alias, bm_colnames_alias,
-                            lastname_match_list, flag_lastname_match):
-        if verbose:
-            print('\nNo similarity by orphan reduction for author lastname:', pub_lastname)
-            print('  Lastname flag match:', flag_lastname_match)
-            print('  Nb similarities by orphan reduction:', len(lastname_match_list))
-            print('  Orphan full author name:', pub_df_row[bp_colnames_alias['authors'][2]])
-            print('  Orphan author lastname:', pub_df_row[bm_colnames_alias['Last_name']])
-            print('  Orphan author firstname initials:',
-                  pub_df_row[bm_colnames_alias['First_name']])
-
-    def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname, eff_firstnames,
-                                          bp_colnames_alias, list_idx, eff_lastnames_spec):
-        if verbose:
-            print('\nInitials for author lastname:', pub_lastname)
-            print('  Author fullname:', pub_df_row[bp_colnames_alias['authors'][2]])
-            print('  Author firstname initials:', pub_firstname)
-            print('\nInitials of matching employees for author lastname:', pub_lastname)
-            print('  Employees firstname initials list:', eff_firstnames)
-            print('\nChecking initials matching for author lastname:', pub_lastname)
-            print('  Nb of matching initials:', len(list_idx))
-            print('  Index list of matching initials:', list_idx)
-            print('  Employees lastnames list:', eff_lastnames_spec)
-
-    def _save_spec_dfs(temp_df):
-        name_suffix = test_name + '.xlsx'
-        temp_df.to_excel(checks_path / Path('temp_df_' + name_suffix),
-                         index=False)
-        empl_pub_match_df.to_excel(checks_path / Path('empl_pub_match_df_' + name_suffix),
-                                  index=False)
-
-    # Setting useful aliases
-    bp_colnames_alias = bp.COL_NAMES
-    bm_colnames_alias = pg.COL_NAMES_BM
-    emp_useful_cols_alias = eg.EMPLOYEES_USEFUL_COLS
-    emp_add_cols_alias = eg.EMPLOYEES_ADD_COLS
-
-    # Initializing a Data frame that will contains all matches
-    # between 'pub_df' author-name and 'empl_df' emmployee-name
-    submit_df = pd.DataFrame()
-
-    # Initializing a Data frame that will contains all 'pub_df' author-names
-    # which do not match with any of the 'empl_df' emmployee-names
-    orphan_df = pd.DataFrame(columns=list(pub_df.columns))
-
-    # Building the set of lastnames (without duplicates) of the dataframe 'empl_df'
-    eff_lastnames = set(empl_df[emp_useful_cols_alias['name']].to_list())
-    eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
-
-    # Setting the useful info for testing the function if verbose = True
-    # Setting a dict keyed by type of test with values for test states and
-    # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
-    # for testing this function for year 2021
-    test_dict   = {'Full match'            : [True, True, True,True,True,'SIMONATO'],
-                   'Lower value similarity': [False,True, True,True,True,'SILVA' ],
-                   'Upper value similarity': [False,True, True,True,True,'TUAN TRAN'],
-                   'No similarity'         : [False,False,True,True,True,'LUIS GABRIEL'],
-                   'No test'               : [False,False,False,False,False,'None']
-                   }
-    test_nb = len(test_dict[test_case])-1
-    test_name = test_dict[test_case][test_nb]
-    test_states = test_dict[test_case][0:test_nb]
-    checks_path = Path(bibliometer_path) / Path('Temp_checks')
-
-    # Building submit_df and orphan_df dataframes
-    for _, pub_df_row in pub_df.iterrows():
-
-        # Building a dataframe 'empl_pub_match_df' with rows of 'empl_df'
-        # where name in column COL_NAMES_BM['Last_name'] of the dataframe 'pub_df'
-        # matches with name in column EMPLOYEES_USEFUL_COLS['name'] of the dataframe 'empl_df'
-
-        # Initializing 'empl_pub_match_df' as dataframe
-        empl_pub_match_df = pd.DataFrame()
-
-        # Initializing the flag 'flag_lastname_match' as True by default
-        flag_lastname_match = True
-
-        # Getting the lastname from pub_df_row row of the dataframe pub_df
-        pub_lastname = pub_df_row[bm_colnames_alias['Last_name']]
-
-        # Building the dataframe 'empl_pub_match_df' with rows of dataframe empl_df
-        # where item at EMPLOYEES_USEFUL_COLS['name'] matches author lastname 'pub_lastname'
-        empl_pub_match_df = empl_df[empl_df[emp_useful_cols_alias['name']]==pub_lastname].copy()
-
-        # Test of lastname full match
-        if pub_lastname==test_name and test_states[0]:
-            _test_full_match(empl_pub_match_df, pub_lastname, emp_useful_cols_alias)
-
-        if len(empl_pub_match_df)==0: # No match found
-            flag_lastname_match = False
-            # Checking for a similarity
-            lastname_match_list = _orphan_reduction(pub_lastname, eff_lastnames)
-
-            if lastname_match_list:
-                # Concatenating in the dataframe 'empl_pub_match_df',
-                # the rows of the dataframe 'empl_df'
-                # corresponding to each of the found similarities by orphan reduction
-                frames = []
-                for lastname_match in lastname_match_list:
-                    temp_df = empl_df[empl_df[emp_useful_cols_alias['name']]\
-                                      ==lastname_match].copy()
-                    # Replacing the employee last name by the publication last name
-                    # for 'pub_emp_join_df' building
-                    temp_df[emp_add_cols_alias['employee_full_name']]=\
-                        pub_lastname + ' ' + temp_df[bm_colnames_alias['First_name']]
-                    frames.append(temp_df)
-
-                empl_pub_match_df = concat_dfs(frames, concat_ignore_index=True)
-                flag_lastname_match = True
-
-                # Test of lastnames similarity found by '_orphan_reduction' function
-                if pub_lastname==test_name and test_states[1]:
-                    _test_similarity(empl_pub_match_df, pub_lastname, emp_useful_cols_alias,
-                                     lastname_match_list, flag_lastname_match)
-
-            else:
-                # Appending to dataframe orphan_df the row 'pub_df_row'
-                # as effective orphan after orphan reduction
-                orphan_df = concat_dfs([orphan_df, pub_df_row.to_frame().T])
-                flag_lastname_match = False
-
-                # Test of lastnames no-similarity by '_orphan_reduction' function
-                if pub_lastname==test_name and test_states[2]:
-                    _test_no_similarity(pub_df_row, pub_lastname, bp_colnames_alias,
-                                        bm_colnames_alias, lastname_match_list,
-                                        flag_lastname_match)
-
-        # Checking match for a given lastname between the publication first-name
-        # and the employee first-name
-        if flag_lastname_match:
-
-            # Finding the author name initials for the current publication
-            pub_firstname = pub_df_row[bm_colnames_alias['First_name']]
-
-            # List of firstnames initials of a given name in the employees data
-            eff_firstnames = empl_pub_match_df[bm_colnames_alias['First_name']].to_list()
-            eff_lastnames_spec = empl_pub_match_df[emp_useful_cols_alias['name']].to_list()
-
-            # Building the list of index of firs names initials
-            list_idx = []
-            for idx,eff_firstname in enumerate(eff_firstnames):
-
-                if pub_firstname==eff_firstname:
-                    list_idx.append(idx)
-
-                elif pub_firstname==eff_firstname:
-                    # Replacing the employee first name initials
-                    # by the publication first name initials
-                    # for 'pub_emp_join_df' building
-                    empl_pub_match_df[emp_add_cols_alias['employee_full_name']].iloc[idx]=\
-                        pub_lastname + ' ' + pub_firstname
-                    list_idx.append(idx)
-
-            # Test of match of firstname initials for lastname match or similarity
-            if pub_lastname==test_name and test_states[3]:
-                _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
-                                                  eff_firstnames, bp_colnames_alias,
-                                                  list_idx, eff_lastnames_spec)
-
-            if list_idx:
-                # Building a dataframe 'temp_df' with the row 'pub_df_row'
-                # related to a given publication
-                # and adding the item value HOMONYM_FLAG
-                # at column COL_NAMES_BM['Homonym']
-                # when several matches on firstname initials are found
-                temp_df = pub_df_row.to_frame().T
-                temp_df[bm_colnames_alias['Homonym']]=\
-                    pg.HOMONYM_FLAG if len(list_idx) > 1 else '_'
-
-                # Saving specific dataframes 'temp_df' and 'empl_pub_match_df' for function testing
-                if pub_lastname==test_name and test_states[4]:
-                    # Creating path for saving test files
-                    if not os.path.isdir(checks_path):
-                        os.makedirs(checks_path)
-                    _save_spec_dfs(temp_df)
-
-                # Merging the dataframe 'empl_pub_match_df' to the dataframe 'temp_df'
-                # by matching column '[COL_NAMES_BM['Last_name']]' of the dataframe 'temp_df'
-                # to the column 'EMPLOYEES_ADD_COLS['employee_full_name']'
-                # of the dataframe 'empl_pub_match_df'
-                pub_emp_join_df = pd.merge(temp_df,
-                                           empl_pub_match_df,
-                                           how='left',
-                                           left_on=[bm_colnames_alias['Full_name']],
-                                           right_on=[emp_add_cols_alias['employee_full_name']])
-
-                # Appending to the dataframe 'submit_df' the dataframe 'pub_emp_join_df'
-                # which is specific to a given publication
-                submit_df = concat_dfs([submit_df, pub_emp_join_df], concat_ignore_index=True)
-            else:
-                # Appending to the dataframe orphan_df the row 'pub_df_row' as effective orphan
-                # after complementary checking of match via first name initials
-                orphan_df = concat_dfs([orphan_df, pub_df_row.to_frame().T], concat_ignore_index=True)
-
-    # Dropping duplicate rows in both dataframes (mandatory)
-    submit_df = submit_df.drop_duplicates()
-    orphan_df = orphan_df.drop_duplicates()
-
-    return submit_df, orphan_df
 
 
 def _add_author_job_type(in_path, out_path):
@@ -434,6 +178,10 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
         per Institute author including external PhD students, updated dataframe \
         of publications list with one row per author that has not been identified \
         as Institute employee).
+    Note:
+        Care is taken to keep 'NA' value for the first name initiales \
+        that are set to NaN by default through the `keep_initials` function \
+        imported from "bmfuncts.useful_functs" internal module.
     """
 
     # Setting aliases for useful column names
@@ -454,6 +202,12 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     # with dates conversion through converters_alias
     init_submit_df = pd.read_excel(submit_path, converters=converters_alias)
     init_orphan_df = pd.read_excel(orphan_path, converters=converters_alias)
+
+    # Replace in "init_submit_df" and "init_orphan_df" NaN values "NA" in first name initials
+    init_submit_df = keep_initials(init_submit_df, firstname_initials_col_base_alias,
+                                   missing_fill=bp.UNKNOWN)
+    init_orphan_df = keep_initials(init_orphan_df, firstname_initials_col_base_alias,
+                                   missing_fill=bp.UNKNOWN)
 
     # Initializing new_submit_df with same column names as init_submit_df
     new_submit_df = pd.DataFrame(columns=list(init_submit_df.columns))
@@ -489,6 +243,9 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                                 sheet_name=ext_docs_sheet_name_alias,
                                 usecols=ext_docs_usecols,
                                 converters=converters_alias)
+
+    # Replace in "ext_docs_df" NaN values "NA" in first name initials
+    ext_docs_df = keep_initials(ext_docs_df, ext_docs_pub_initials_alias)
     ext_docs_df = ext_docs_df.dropna(how='any')
 
     # Searching for last names of init_orphan_df in ext_docs_df
@@ -572,6 +329,10 @@ def _add_other_ext(submit_path, orphan_path, others_path):
         per Institute author including employees under external hiring contract \
         at the Institute, updated dataframe of publications list with one row \
         per author that has not been identified as Institute employee).
+    Note:
+        Care is taken to keep 'NA' value for the first name initiales \
+        that are set to NaN by default through the `keep_initials` function \
+        imported from "bmfuncts.useful_functs" internal module.
     """
 
     # Setting aliases for useful column names
@@ -592,6 +353,12 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     # with dates conversion through converters_alias
     init_submit_df = pd.read_excel(submit_path, converters=converters_alias)
     init_orphan_df = pd.read_excel(orphan_path, converters=converters_alias)
+
+    # Replace in "init_submit_df" and "init_orphan_df" NaN values "NA" in first name initials
+    init_submit_df = keep_initials(init_submit_df, firstname_initials_col_base_alias,
+                                   missing_fill=bp.UNKNOWN)
+    init_orphan_df = keep_initials(init_orphan_df, firstname_initials_col_base_alias,
+                                   missing_fill=bp.UNKNOWN)
 
     # Initializing new_submit_df with same column names as init_submit_df
     new_submit_df = pd.DataFrame(columns=list(init_submit_df.columns))
@@ -627,6 +394,9 @@ def _add_other_ext(submit_path, orphan_path, others_path):
                               sheet_name=others_sheet_name_alias,
                               usecols=others_usecols,
                               converters=converters_alias)
+
+    # Replace in "other_df" NaN values "NA" in first name initials
+    others_df = keep_initials(others_df, others_pub_initials_alias)
     others_df = others_df.dropna(how='any')
 
     # Searching for last names of init_orphan_df in others_df
@@ -794,136 +564,6 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     orphan_status = new_orphan_df.empty
     return orphan_status
 
-
-def _my_hash(text:str):
-    """Builts hash given the string 'text' 
-    with a fixed prime numbers to mix up the bits."""
-
-    my_hash = 0
-    facts = (257,961) # prime numbers to mix up the bits
-    minus_one = 0xFFFFFFFF # "-1" hex code
-    for ch in text:
-        my_hash = (my_hash*facts[0] ^ ord(ch)*facts[1]) & minus_one
-    return my_hash
-
-
-def _clean_hash_id_df(dfs_tup, cols_tup):
-    """Cleans data from publications with same hash ID."""
-    # Setting parameters from args
-    submit_df, orphan_df, hash_id_df = dfs_tup
-    pub_id_col, hash_id_col = cols_tup
-
-    # Setting publications IDs list
-    submit_pub_id_list = list(submit_df[pub_id_col])
-    orphan_pub_id_list = list(orphan_df[pub_id_col])
-
-    new_hash_id_df = pd.DataFrame()
-    new_submit_df = submit_df.copy()
-    new_orphan_df = orphan_df.copy()
-    for _, hash_id_dg in hash_id_df.groupby(hash_id_col):
-        add_hash_id_dg = hash_id_dg.copy()
-        if len(hash_id_dg)>1:
-            pub_id_list = list(hash_id_dg[pub_id_col])
-            pub_id_to_keep = pub_id_list[0]
-            pub_id_to_drop_list = pub_id_list[1:]
-            for pub_id_to_drop in pub_id_to_drop_list:
-                if pub_id_to_drop in submit_pub_id_list:
-                    new_submit_df = new_submit_df[new_submit_df[pub_id_col]!=pub_id_to_drop]
-                if pub_id_to_drop in orphan_pub_id_list:
-                    new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop]
-            add_hash_id_dg = hash_id_dg[hash_id_dg[pub_id_col]==pub_id_to_keep].copy()
-        new_hash_id_df = concat_dfs([new_hash_id_df, add_hash_id_dg])
-    return new_submit_df, new_orphan_df, new_hash_id_df
-
-
-def _creating_hash_id(institute, org_tup, working_folder_path, file_names_tup):
-    """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias'.
-
-    The containt of these columns is as follows:
-
-    - The 'hash_id_col_alias' column contains the unique hash ID built for each publication \
-    through the `_my_hash` internal function on the basis of the values of 'year_alias', \
-    'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns.
-    - The 'pub_id_alias' column contains the publication order number in the publications list.
-
-    Finally, the data are cleaned from the publications that have same hash ID through \
-    the `_clean_hash_id_df` internal function and the dataframes are saved as Excel files.
-
-    Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        working_folder_path (path): Full path to working folder.
-        submit_file_name (str): File name of the Excel file of the publications list \
-        with one row per Institute author with one row per author \
-        that has been identified as Institute employee.
-        orphan_file_name (str): File name of the Excel file of the publications list \
-        with one row per author that has not been identified as Institute employee.
-    Returns:
-        (str): End message recalling path to the saved file.        
-    """
-    # Setting parameters from args
-    submit_file_name, orphan_file_name = file_names_tup
-
-    # Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    submit_col_rename_dic = col_rename_tup[1]
-
-    # Setting useful aliases
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
-    hash_id_col_alias = pg.COL_HASH['hash_id']
-    pub_id_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
-    year_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
-    first_auth_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]
-    doi_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][6]]
-    title_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][9]]
-    issn_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][10]]
-
-    # Setting useful paths
-    submit_file_path = working_folder_path / Path(submit_file_name)
-    orphan_file_path = working_folder_path / Path(orphan_file_name)
-    hash_id_file_path = working_folder_path / Path(hash_id_file_alias)
-
-    # Setting useful columns list
-    useful_cols = [pub_id_alias, year_alias, first_auth_alias,
-                   title_alias, issn_alias, doi_alias]
-
-    # Getting dataframes to hash
-    submit_df = pd.read_excel(submit_file_path)
-    orphan_df = pd.read_excel(orphan_file_path)
-
-    # Concatenate de dataframes to hash
-    submit_to_hash = submit_df[useful_cols].copy()
-    orphan_to_hash = orphan_df[useful_cols].copy()
-    dg_to_hash = concat_dfs([submit_to_hash, orphan_to_hash],
-                            dedup_cols=[pub_id_alias], drop_ignore_index=True)
-
-    hash_id_df = pd.DataFrame()
-    for idx in range(len(dg_to_hash)):
-        pub_id = dg_to_hash.loc[idx, pub_id_alias]
-        text   = (f"{str(dg_to_hash.loc[idx, year_alias])}"
-                  f"{str(dg_to_hash.loc[idx, first_auth_alias])}"
-                  f"{str(dg_to_hash.loc[idx, title_alias])}"
-                  f"{str(dg_to_hash.loc[idx, issn_alias])}"
-                  f"{str(dg_to_hash.loc[idx, doi_alias])}")
-        hash_id = _my_hash(text)
-        hash_id_df.loc[idx, hash_id_col_alias] = str(hash_id)
-        hash_id_df.loc[idx, pub_id_alias] = pub_id
-
-    # Cleaning dataframe from publications with same hash ID
-    dfs_tup = (submit_df, orphan_df, hash_id_df)
-    cols_tup = (pub_id_alias, hash_id_col_alias)
-    new_submit_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
-
-    # Saving the data
-    new_submit_df.to_excel(submit_file_path, index=False)
-    new_orphan_df.to_excel(orphan_file_path, index=False)
-    new_hash_id_df.to_excel(hash_id_file_path, index=False)
-    hash_id_nb = len(new_hash_id_df)
-    print(f"{hash_id_nb} hash IDs of publications created")
-    message = f"{hash_id_nb} hash IDs of publications created and saved in file: \n  {hash_id_file_path}"
-    return message
-
-
 def recursive_year_search(out_path, empl_df, institute, org_tup,
                           bibliometer_path, datatype, corpus_year, search_depth,
                           progress_callback=None, progress_bar_state=None):
@@ -938,10 +578,10 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     the `bmfuncts.build_pub_authors` module.
     2. The 'submit_df' dataframe of the publications list containing all matches \
     between Institute authors and employee names is initialized using the most recent year \
-    of the employees database through the `_build_submit_df` internal function; \
-    this is done together with the initialization of 'orphan_df' dataframe of the publications \
-    list with authors not found in the employees database; these two dataframes contains \
-    one row per author of each publication.
+    of the employees database through the `build_submit_df` function imported from \
+    `bmfuncts.build_year_pub_empl` module; this is done together with the initialization \
+    of 'orphan_df' dataframe of the publications list with authors not found in the \
+    employees database; these two dataframes contains one row per author of each publication.
     3. New rows containing the information of authors that are PhD students \
     at the Institute but not as employees of it are added through the `_add_ext_docs` \
     internal function updating 'submit_df' and 'orphan_df' dataframes.
@@ -949,7 +589,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     contract at the Institute are added through the `_add_other_ext` internal function \
     updating 'submit_df' and 'orphan_df' dataframes.
     5. The 'submit_df' and 'orphan_df' dataframes are updated by search in the employees \
-    database through the `_build_submit_df` internal function using recusively items from \
+    database through the `build_submit_df` function using recusively items from \
     'years' list for the search year.
     6. The dataframes are refactored by replacing NaN values by the UNKNOWN global and \
     modifying the publications IDs through the `set_year_pub_id` function imported from \
@@ -963,7 +603,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     9. Column names are changed in the two files which full path are given by respectively, \
     'submit_path' and 'orphan_path' through the `_change_col_names` internal function.    
     10. An Excel file containing the unique hash ID built for each publication \
-    is created through the `_creating_hash_id` internal function.
+    is created through the `create_hash_id` function imported from "bmfuncts.create_hash_id" \
+    module.
 
     Args:
         out_path (path): Full path to the folder for saving built dataframes. 
@@ -980,20 +621,15 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
         (default = None).        
     Returns:
         (tup): (end_message (str), empty status (bool) of the publications \
-        list with authors not found in the employees database)
+        list with authors not found in the employees database).
+    Note:
+        Care is taken to keep 'NA' value for the first name initiales \
+        that are set to NaN by default through the `keep_initials` function \
+        imported from "bmfuncts.useful_functs" internal module.
     """
-
-    # Internal functions
-    def _set_unknown(df, cols, initials_cols):
-        fill_na_cols = list(set(cols) - set(initials_cols))
-        for col in fill_na_cols:
-            df[col] = df[col].fillna(unknown_alias)
-        for col in initials_cols:
-            df[col] = df[col].fillna("NA")
+    print("\nMerge publications and employees information launched...")
 
     # Setting useful aliases
-    unknown_alias = bp.UNKNOWN
-    year_col_alias = bp.COL_NAMES['articles'][2]
     pub_id_alias = bp.COL_NAMES['pub_id']
     initials_col_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
     submit_file_name_alias = pg.ARCHI_YEAR["submit file name"]
@@ -1016,6 +652,9 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     # Building the articles dataframe
     pub_df = build_institute_pubs_authors(institute, org_tup, bibliometer_path,
                                           datatype, corpus_year)
+
+    # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
+    pub_df = keep_initials(pub_df, initials_col_alias, missing_fill=bp.UNKNOWN)
     if progress_callback:
         progress_callback(progress_bar_state + step * 5)
 
@@ -1027,6 +666,11 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
         year_start = int(corpus_year)-1
     year_stop = year_start - (search_depth - 1)
     years = [str(i) for i in range(year_start, year_stop-1,-1)]
+
+    # Replace in "empl_df" NaN values by UNKNOWN string except in first name initials
+    for year in years:
+        empl_df[year] = keep_initials(empl_df[year], initials_col_alias,
+                                      missing_fill=bp.UNKNOWN)
     if progress_callback:
         progress_callback(progress_bar_state + step * 10)
 
@@ -1042,18 +686,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     # not matching with any employee name
     orphan_df = pd.DataFrame()
 
-    # Setting the test case selected within the following list
-    # ['Full match',
-    #  'Lower value similarity',
-    #  'Upper value similarity',
-    #  'No similarity',
-    #  'No test']
-    test_case = 'Upper value similarity'
+    # Setting the test case
+    test_case = 'No test'
 
     # Building the initial dataframes
-    submit_df, orphan_df = _build_submit_df(empl_df[years[0]],
-                                            pub_df, bibliometer_path,
-                                            test_case=test_case)
+    submit_df, orphan_df = build_submit_df(empl_df[years[0]],
+                                           pub_df, bibliometer_path,
+                                           test_case=test_case)
 
     # Saving initial files of submit_df and orphan_df
     submit_df.to_excel(submit_path, index=False)
@@ -1076,10 +715,10 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     for _, year in enumerate(years):
         # Updating the dataframes submit_df_add and orphan_df
-        submit_df_add, orphan_df = _build_submit_df(empl_df[year],
-                                                    orphan_df,
-                                                    bibliometer_path,
-                                                    test_case)
+        submit_df_add, orphan_df = build_submit_df(empl_df[year],
+                                                   orphan_df,
+                                                   bibliometer_path,
+                                                   test_case=test_case)
 
         # Updating submit_df and orphan_df
         submit_df = concat_dfs([submit_df, submit_df_add])
@@ -1094,12 +733,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     # *************************************************************************************
 
     # Replace NaN values by UNKNOWN string except in first name initials
-    submit_cols = list(submit_df.columns)
-    submit_initials_cols = [x for x in list(submit_df.columns) if initials_col_alias in x]
-    _set_unknown(submit_df, submit_cols, submit_initials_cols)
-    orphan_cols = list(orphan_df.columns)
-    orphan_initials_cols = [initials_col_alias]
-    _set_unknown(orphan_df, orphan_cols, orphan_initials_cols)
+    submit_df = keep_initials(submit_df, initials_col_alias, missing_fill=bp.UNKNOWN)
+    orphan_df = keep_initials(orphan_df, initials_col_alias, missing_fill=bp.UNKNOWN)
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
@@ -1134,7 +769,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     # Creating universal identification of articles independent of database extraction
     file_names_tup = (submit_file_name_alias, orphan_file_name_alias)
-    _creating_hash_id(institute, org_tup, out_path, file_names_tup)
+    create_hash_id(institute, org_tup, out_path, file_names_tup)
     if progress_callback:
         progress_callback(100)
 
