@@ -383,7 +383,7 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        year (str): Contains the corpus year defined by 4 digits.
+        year (str): Contains the corpus year defined by 4 digits..        
     Returns:
         (dataframe): Publications list with one row per author with correction \
         of author-names and drop of authors with inappropriate affiliation \
@@ -494,5 +494,4 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
                                              inst_merged_df, cols_tup)
     inst_merged_df = _check_authors_to_remove(institute, bibliometer_path,
                                               inst_merged_df, names_cols_tup)
-
     return inst_merged_df

@@ -33,7 +33,8 @@ def _test_full_match(empl_pub_match_df, pub_lastname, emp_useful_cols_alias):
         print('  Nb first matches:', len(empl_pub_match_df))
 
 
-def _test_similarity(empl_pub_match_df, pub_lastname, emp_useful_cols_alias,
+def _test_similarity(empl_pub_match_df, pub_lastname,
+                     emp_useful_cols_alias, emp_add_cols_alias,
                      lastname_match_list, flag_lastname_match):
     print('\nSimilarities by orphan reduction for author lastname:', pub_lastname)
     print('  Lastname flag match:', flag_lastname_match)
@@ -74,21 +75,19 @@ def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname, e
 
 
 def _set_match_test_info(bibliometer_path, test_case):
-    test_dict = {'Full match'            : [True, True, True, True, True,'TYLER'],
-                 'Lower value similarity': [False, True, True, True, True,'SILVA' ],
-                 'Upper value similarity': [False, True, True, True, True,'TUAN TRAN'],
-                 'No similarity'         : [False, False, True, True, True,'LUIS GABRIEL'],
-                 'No test'               : [False, False, False, False, False,'None']
+    test_dict = {'Full match'            : [True, True, True, True, True],
+                 'Lower value similarity': [False, True, True, True, True],
+                 'Upper value similarity': [False, True, True, True, True],
+                 'No similarity'         : [False, False, True, True, True],
+                 'No test'               : [False, False, False, False, False]
                  }
-    test_nb = len(test_dict[test_case])-1
-    test_name = test_dict[test_case][test_nb]
-    test_states = test_dict[test_case][0:test_nb]
+    test_states = test_dict[test_case]
     checks_path = Path(bibliometer_path) / Path('Temp_checks')
     if test_states[4]:
         # Creating temporary output folder
         if not os.path.exists(checks_path):
             os.makedirs(checks_path)
-    return test_name, test_states, checks_path
+    return test_states, checks_path
 
 
 def _save_spec_dfs(temp_df, empl_pub_match_df, test_name, checks_path):
@@ -108,12 +107,18 @@ def _orphan_reduction(orphan_lastname, eff_lastname):
     return lastname_match_list
 
 
-def build_submit_df(empl_df, pub_df, bibliometer_path, test_case='No test'):
+def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test_name="No name"):
     """Builds a dataframe of the merged employees information with the publication 
     list with one row per author.
 
     The merge is based on test of similarities between last names and first names 
     of employees and authors. 
+    The 'test_case' arg allows to print and save the results of the similarity 
+    test for a given author name defined by the 'test_name' arg. The test parameters  
+    are set through the `_set_match_test_info` internal function. The values of the test 
+    parameters are printed through the `_test_full_match`, `_test_similarity` and 
+    `_test_no_similarity` internal functions. The results are saved through the 
+    `_save_spec_dfs` internal function.
     Found homonyms are tagged by 'HOMONYM_FLAG' global imported from globals 
     module imported as pg.
 
@@ -121,7 +126,8 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case='No test'):
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute publications list with one row per author. 
         bibliometer_path (path): Full path to working folder.
-        test_case (str): Optional test case for testing the function (default = 'No test').
+        test_case (str): Optional test case for testing the function (default = "No test").
+        test_name (str): Optional author last-name for testing the function (default = "No name").
     Returns:
         (tup): (dataframe of merged employees information with \
         the publications list with one row per Institute author with \
@@ -156,8 +162,7 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case='No test'):
     # Setting the useful info for testing the function
     # Setting a dict keyed by type of test with values for test states and
     # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
-    test_name, test_states, checks_path = _set_match_test_info(bibliometer_path,
-                                                               test_case)
+    test_states, checks_path = _set_match_test_info(bibliometer_path, test_case)
 
     # Building submit_df and orphan_df dataframes
     for _, pub_df_row in pub_df.iterrows():
@@ -207,7 +212,8 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case='No test'):
 
                 # Test of lastnames similarity found by '_orphan_reduction' function
                 if pub_lastname==test_name and test_states[1]:
-                    _test_similarity(empl_pub_match_df, pub_lastname, emp_useful_cols_alias,
+                    _test_similarity(empl_pub_match_df, pub_lastname,
+                                     emp_useful_cols_alias, emp_add_cols_alias,
                                      lastname_match_list, flag_lastname_match)
 
             else:

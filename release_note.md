@@ -1,7 +1,7 @@
 # Application Release Backlog
 
 ## Release 6.1.0 - 2025/xx/xx
-* **Summary**: This release corresponds to the update of the collaborations analysis.
+* **Summary**: This release corresponds to the update of the collaborations analysis with the developpement of the statistics per institution of affiliation of the authors.
 * **Features**:
   - Feature 1: .
 * **Improvements**:
@@ -10,6 +10,8 @@
   - Improvement 3: Update of `create_archi` function to automatically create useful folders for saving corpus extractions.
   - Improvement 4: Update of `save_otps` function to automatically create an empty file that will contain the OTPs attributed by the user if it not exists.
   - Improvement 5: Replace `_append_df` function by `concat_dfs` function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
+  - Improvement 6: Add of `keep_initials` function  to avoid interpretation of first-name initials equal to NA as NaN.
+  - Improvement 7: Redistribution of `merge_pub_employees`module into 3 modules for sake of clarity (new modules: `build_year_pub_empl` and `create_hash_id`). 
 * **Bug Fixes**:
   - None.
 * **Known Issues**:

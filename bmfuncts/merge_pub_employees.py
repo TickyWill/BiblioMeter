@@ -11,7 +11,6 @@ __all__ = ['recursive_year_search']
 
 
 # Standard Library imports
-import os
 import warnings
 from pathlib import Path
 
@@ -564,9 +563,23 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     orphan_status = new_orphan_df.empty
     return orphan_status
 
+
+def _adapt_depth_search(empl_df, corpus_year, search_depth):
+    """Sets the list of years for recursive search of author-employee match."""
+    eff_available_years = list(empl_df.keys())
+    corpus_year_status = corpus_year in eff_available_years
+    year_start = int(corpus_year)
+    if not corpus_year_status:
+        year_start = int(corpus_year)-1
+    year_stop = year_start - (search_depth - 1)
+    years = [str(i) for i in range(year_start, year_stop-1,-1)]
+    return years
+
+
 def recursive_year_search(out_path, empl_df, institute, org_tup,
                           bibliometer_path, datatype, corpus_year, search_depth,
-                          progress_callback=None, progress_bar_state=None):
+                          progress_callback=None, progress_bar_state=None,
+                          set_test_case="No test", set_test_name="No name"):
     """Searches in the employees database of the Institute the information for the authors 
     of the publications of a corpus.
 
@@ -616,9 +629,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
         corpus_year (str): Contains the corpus year defined by 4 digits.
         search_depth (int): Depth for search in 'empl_df' using 'years' list.
         progress_callback (function): Function for updating ProgressBar \
-        tkinter widget status (default = None).
+        tkinter widget status (optional, default = None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
-        (default = None).        
+        (optional, default = None).
+        set_test_case (str): Test case for testing the `build_submit_df` function \
+        (optional, default = "No test").
+        set_test_name (str): Author last-name for testing the `build_submit_df` function \
+        (optional, default = "No name").
     Returns:
         (tup): (end_message (str), empty status (bool) of the publications \
         list with authors not found in the employees database).
@@ -645,9 +662,6 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     orphan_path = out_path / Path(orphan_file_name_alias)
     ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
     others_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
-    if progress_callback:
-        step = (100 - progress_bar_state) / 100
-        progress_callback(progress_bar_state + step * 2)
 
     # Building the articles dataframe
     pub_df = build_institute_pubs_authors(institute, org_tup, bibliometer_path,
@@ -655,23 +669,16 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
     pub_df = keep_initials(pub_df, initials_col_alias, missing_fill=bp.UNKNOWN)
-    if progress_callback:
-        progress_callback(progress_bar_state + step * 5)
 
-    # Building the search time depth of Institute co-authors among the employees dataframe
-    eff_available_years = list(empl_df.keys())
-    corpus_year_status = corpus_year in eff_available_years
-    year_start = int(corpus_year)
-    if not corpus_year_status:
-        year_start = int(corpus_year)-1
-    year_stop = year_start - (search_depth - 1)
-    years = [str(i) for i in range(year_start, year_stop-1,-1)]
+    # Setting the years list for recursive search  of author-employee match
+    years = _adapt_depth_search(empl_df, corpus_year, search_depth)
 
     # Replace in "empl_df" NaN values by UNKNOWN string except in first name initials
     for year in years:
         empl_df[year] = keep_initials(empl_df[year], initials_col_alias,
                                       missing_fill=bp.UNKNOWN)
     if progress_callback:
+        step = (100 - progress_bar_state) / 100
         progress_callback(progress_bar_state + step * 10)
 
     # *******************************************************************
@@ -686,13 +693,11 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     # not matching with any employee name
     orphan_df = pd.DataFrame()
 
-    # Setting the test case
-    test_case = 'No test'
-
     # Building the initial dataframes
     submit_df, orphan_df = build_submit_df(empl_df[years[0]],
                                            pub_df, bibliometer_path,
-                                           test_case=test_case)
+                                           test_case=set_test_case,
+                                           test_name=set_test_name)
 
     # Saving initial files of submit_df and orphan_df
     submit_df.to_excel(submit_path, index=False)
@@ -718,7 +723,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
         submit_df_add, orphan_df = build_submit_df(empl_df[year],
                                                    orphan_df,
                                                    bibliometer_path,
-                                                   test_case=test_case)
+                                                   test_case=set_test_case,
+                                                   test_name=set_test_name)
 
         # Updating submit_df and orphan_df
         submit_df = concat_dfs([submit_df, submit_df_add])
