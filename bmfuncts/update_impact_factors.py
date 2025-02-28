@@ -87,7 +87,7 @@ def _get_missing_if_and_issn(bibliometer_path, year, year_useful_col_list, files
     """
     # Setting parameters from args
     pub_list_folder, missing_if_filename_base, missing_issn_filename_base = files_tup
-    
+
     # Setting useful paths
     year_path = bibliometer_path / Path(year)
     pub_list_path = year_path / Path(pub_list_folder)
@@ -134,9 +134,6 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
         partial IFs database of most-recent-year limited to the \
         corpus journals data (dataframe))
     """
-    # Setting parameters from args
-    pub_list_folder, missing_if_filename_base, missing_issn_filename_base = files_tup
-
     # Setting aliases of useful columns
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     journal_col_alias = final_col_dic['journal']
@@ -159,7 +156,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     # already present and not yet present in the IF database respectively
     return_tup = _get_missing_if_and_issn(bibliometer_path, corpus_year,
                                           corpus_year_useful_col_list, files_tup)
-    missing_if_corpus_year_if_df, missing_issn_corpus_year_if_df = return_tup      
+    missing_if_corpus_year_if_df, missing_issn_corpus_year_if_df = return_tup
 
     if add_corpus_years_list:
         for year in add_corpus_years_list:
@@ -168,7 +165,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
             return_tup = _get_missing_if_and_issn(bibliometer_path, year,
                                                   corpus_year_useful_col_list, files_tup)
             add_missing_if_year_if_df, add_missing_issn_year_if_df = return_tup
-            
+
             # Completing "missing_if_corpus_year_if_df" and "missing_issn_corpus_year_if_df"
             missing_if_corpus_year_if_df = concat_dfs([missing_if_corpus_year_if_df,
                                                        add_missing_if_year_if_df])
@@ -405,14 +402,14 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
 
     # Setting useful paths
-    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias) 
+    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
     inst_all_if_path = if_root_folder_path / Path(inst_all_if_filename_alias)
     if progress_callback:
         progress_callback(20)
 
     # Getting the IFs database content and its IFSs available years list
     if_db_dict = pd.read_excel(inst_all_if_path, sheet_name=None)
-    full_if_db_years_list = list(if_db_dict.keys())    
+    full_if_db_years_list = list(if_db_dict.keys())
     if_db_years_list = sorted(list(set(full_if_db_years_list).intersection(set(corpi_years_list))))
 
     # Setting useful parameters for the update of the IFs database
