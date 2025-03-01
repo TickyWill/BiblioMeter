@@ -107,7 +107,7 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
         dept_if_df = dept_if_df.rename(columns={"index": corpus_year_row_alias})
 
         # Combining the two dataframes through rows concatenation
-        dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df])
+        dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df], dedup=False)
 
         # Reading as the dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"
@@ -431,6 +431,30 @@ def _build_analysis_if_data(institute, org_tup, analysis_df,
     return kpi_dict, if_analysis_col_new
 
 
+def _unique_journal_name(init_analysis_df, journal_col, issn_col):
+    """Sets a unique journal name by ISSN value.
+    """
+    analysis_df = pd.DataFrame(columns=init_analysis_df.columns)
+    for _, df in init_analysis_df.groupby(by=[issn_col]):
+        issn_df = df.copy()
+        issn = issn_df[issn_col].to_list()[0]
+        journal_names_list = issn_df[journal_col].to_list()
+        if len(journal_names_list)>1:
+            if issn!=bp.UNKNOWN:
+                journal_length_list = [len(journal) for journal in journal_names_list]
+                journal_names_dict = dict(zip(journal_length_list, journal_names_list))
+                length_min = min(journal_length_list)
+                issn_df[journal_col] = journal_names_dict[length_min]
+            else:
+                journal_names_list = list(set(issn_df[journal_col].to_list()))
+                journal_issn_list = [issn + str(num) for num in range(len(journal_names_list))]
+                journal_names_dict = dict(zip(journal_names_list, journal_issn_list))
+                issn_df[issn_col] = issn_df[journal_col].copy()
+                issn_df[issn_col] = issn_df[issn_col].map(journal_names_dict)
+        analysis_df = concat_dfs([analysis_df, issn_df], dedup=False, concat_ignore_index=True)
+    return analysis_df
+
+
 def if_analysis(institute, org_tup, bibliometer_path, datatype,
                 corpus_year, if_most_recent_year,
                 progress_callback=None, verbose=False):
@@ -464,31 +488,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         (tup): (full path to the folder where results of impact-factors \
         analysis are saved, dataframe of Institute KPIs database, dict of Institute KPIs).
     """
-
     # internal functions
-    def _unique_journal_name(init_analysis_df):
-        """Sets a unique journal name by ISSN value.
-        """
-        analysis_df = pd.DataFrame(columns=init_analysis_df.columns)
-        for _, df in init_analysis_df.groupby(by=[issn_col_alias]):
-            issn_df = df.copy()
-            issn = issn_df[issn_col_alias].to_list()[0]
-            journal_names_list = issn_df[journal_col_alias].to_list()
-            if len(journal_names_list) > 1:
-                if issn != unknown_alias:
-                    journal_length_list = [len(journal) for journal in journal_names_list]
-                    journal_names_dict = dict(zip(journal_length_list, journal_names_list))
-                    length_min = min(journal_length_list)
-                    issn_df[journal_col_alias] = journal_names_dict[length_min]
-                else:
-                    journal_names_list = list(set(issn_df[journal_col_alias].to_list()))
-                    journal_issn_list = [issn + str(num) for num in range(len(journal_names_list))]
-                    journal_names_dict = dict(zip(journal_names_list, journal_issn_list))
-                    issn_df[issn_col_alias] = issn_df[journal_col_alias].copy()
-                    issn_df[issn_col_alias] = issn_df[issn_col_alias].map(journal_names_dict)
-            analysis_df = concat_dfs([analysis_df, issn_df], concat_ignore_index=True)
-        return analysis_df
-
     def _capwords_journal_col(journal_col):
         return lambda row: journal_capwords(row[journal_col])
 
@@ -496,7 +496,6 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         return lambda x: x if x not in (no_if1, no_if2) else 0
 
     # Setting useful aliases
-    unknown_alias = bp.UNKNOWN
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
     pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
@@ -569,7 +568,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
                    corpus_year_if_col: corpus_year}
 
     # * Setting the IF analysis year and column
-    if if_most_recent_year >= corpus_year:
+    if if_most_recent_year>=corpus_year:
         if_analysis_col = pg.ANALYSIS_IF
         if_analysis_year = if_col_dict[pg.ANALYSIS_IF]
     else:
@@ -586,14 +585,14 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(55)
 
     # * Setting final dataframe to be analyzed
-    analysis_df = _unique_journal_name(init_analysis_df)
+    analysis_df = _unique_journal_name(init_analysis_df, journal_col_alias, issn_col_alias)
     analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias]
     analysis_df[journal_norm_col_alias] = analysis_df[journal_norm_col_alias].map(journal_norm_dict)
     analysis_df[journal_col_alias] = analysis_df. \
         apply(_capwords_journal_col(journal_col_alias), axis=1)
     for if_col, _ in if_col_dict.items():
         analysis_df[if_col] = analysis_df[if_col]. \
-            apply(_replace_no_if(unknown_alias, pg.NOT_AVAILABLE_IF))
+            apply(_replace_no_if(bp.UNKNOWN, pg.NOT_AVAILABLE_IF))
     if progress_callback:
         progress_callback(60)
 

@@ -145,23 +145,24 @@ def set_year_pub_id(df, year, pub_id_col):
     return df
 
 
-def concat_dfs(dfs_list, dedup_cols=None, keep='first', axis=0,
+def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
                concat_ignore_index=False, drop_ignore_index=False):
     """Allows to avoid warnings when using pandas concat of a list of dataframes 
     with empty dataframe in it and drops duplicates in the concatenated dataframe.
 
     Args:
         dfs_list (list): The list of pandas dataframes to concatenate.
+        dedup (bool): If true, deduplication is applied, optional, default:True)
         dedup_cols (list): Same as 'subset' parameter of 'drop_duplicates' method \
-        of 'pandas.DataFrame' method, optional, default None.
+        of 'pandas.DataFrame' method, optional, default:None.
         keep (str): Same as 'keep' parameter of 'drop_duplicates' method \
-        of 'pandas.DataFrame' method, optional, default 'first'.
+        of 'pandas.DataFrame' method, optional, default:'first'.
         axis (int): Same as 'axis' parameter of 'concat' method of 'pandas.DataFrame' \
-        method, optional, default 0.
+        method, optional, default:0.
         concat_ignore_index (bool): Same as 'ignore_index' parameter of concat \
-        method of 'pandas.DataFrame' method, optional, default False.
+        method of 'pandas.DataFrame' method, optional, default:False.
         drop_ignore_index (bool): Same as 'ignore_index' parameter of drop_duplicates \
-        method of 'pandas.DataFrame' method, optional, default False.
+        method of 'pandas.DataFrame' method, optional, default:False.
     Returns:
         (dataframe): Result of the concatenation.    
     """
@@ -182,15 +183,16 @@ def concat_dfs(dfs_list, dedup_cols=None, keep='first', axis=0,
         concat_df = pd.concat(dfs_clean_list, axis=axis,
                               ignore_index=concat_ignore_index)
 
-    # Removing duplicates
-    full_col_list = list(concat_df.columns)
-    if dedup_cols and all(i in full_col_list for i in dedup_cols):
-        concat_df = concat_df.drop_duplicates(subset=dedup_cols,
-                                              keep=keep,
-                                              ignore_index=drop_ignore_index)
-    else:
-        concat_df = concat_df.drop_duplicates(keep=keep,
-                                              ignore_index=drop_ignore_index)
+    if dedup:
+        # Removing duplicates
+        full_col_list = list(concat_df.columns)
+        if dedup_cols and all(i in full_col_list for i in dedup_cols):
+            concat_df = concat_df.drop_duplicates(subset=dedup_cols,
+                                                  keep=keep,
+                                                  ignore_index=drop_ignore_index)
+        else:
+            concat_df = concat_df.drop_duplicates(keep=keep,
+                                                  ignore_index=drop_ignore_index)
     return concat_df
 
 
