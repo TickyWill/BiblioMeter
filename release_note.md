@@ -11,7 +11,8 @@
   - Improvement 4: Update of `save_otps` function to automatically create an empty file that will contain the OTPs attributed by the user if it not exists.
   - Improvement 5: Replace `_append_df` function by `concat_dfs` function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
   - Improvement 6: Add of `keep_initials` function  to avoid interpretation of first-name initials equal to NA as NaN.
-  - Improvement 7: Redistribution of `merge_pub_employees`module into 3 modules for sake of clarity (new modules: `build_year_pub_empl` and `create_hash_id`). 
+  - Improvement 7: Redistribution of `merge_pub_employees`module into 3 modules for sake of clarity (new modules: `build_year_pub_empl` and `create_hash_id`).
+  - Improvement 8: Added management of last corpus year when it is not in available years of impact factors in `update_impact_factors` module.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:

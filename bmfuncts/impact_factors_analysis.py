@@ -109,7 +109,7 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
         # Combining the two dataframes through rows concatenation
         dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df], dedup=False)
 
-        # Reading as the dataframe the KPI file of 'dept' if it exists else creating it
+        # Reading as a dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"
         file_path = results_kpis_folder_path / Path(filename)
         if os.path.isfile(file_path):
@@ -298,7 +298,7 @@ def _build_basic_kpi_dict(dept_analysis_df, dept_books_kpi_dict, cols_tup):
 # ***********************************
 
 
-def _build_analysis_if_data(institute, org_tup, analysis_df,
+def _build_if_analysis_data(institute, org_tup, analysis_df,
                             if_analysis_col, if_analysis_year,
                             if_analysis_folder_path, books_list_file_path,
                             verbose=False):
@@ -455,10 +455,10 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
     return analysis_df
 
 
-def if_analysis(institute, org_tup, bibliometer_path, datatype,
-                corpus_year, if_most_recent_year,
-                progress_callback=None, verbose=False):
-    """ Performs the analysis of journal impact_factors (IFs) of the 'corpus_year' corpus.
+def _build_pub_analysis_data(institute, org_tup, bibliometer_path,
+                             datatype, corpus_year,
+                             if_col_list, progress_callback):
+    """Builds the dataframe of publications list to be analyzed.
 
     This is done through the following steps:
 
@@ -466,9 +466,116 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     function imported from `bmfuncts.useful_functs` module.
     2. Builds the dataframe of publications list to be analyzed using \
     normalized journal names available in the deduplicated list of publications \
-    resulting from the parsing step. 
+    resulting from the parsing step.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        corpus_year (str): 4 digits year of the corpus.
+        if_col_list (list): List of column names of impact-factors.
+        if_most_recent_year (str): Most recent year of impact factors.
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status.
+    Returns:
+        
+    """
+    # internal functions
+    def _capwords_journal_col(journal_col):
+        return lambda row: journal_capwords(row[journal_col])
+
+    def _replace_no_if(no_if1, no_if2):
+        return lambda x: x if x not in (no_if1, no_if2) else 0
+
+    # Setting useful aliases
+    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
+    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
+    papers_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
+    books_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[1]
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    saved_pub_list_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
+    saved_dedup_parsing_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+
+    # Setting useful xlsx file names for input data
+    year_pub_list_filename = pub_list_filename_base + " " + corpus_year
+    papers_list_filename = year_pub_list_filename + "_" + papers_doctype_alias + ".xlsx"
+    books_list_filename = year_pub_list_filename + "_" + books_doctype_alias + ".xlsx"
+
+    # Setting input-data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_folder_path = saved_results_root_path / Path(saved_results_folder_alias)
+    year_saved_results_folder_path = saved_results_folder_path / Path(corpus_year)
+    saved_pub_list_path = year_saved_results_folder_path / Path(saved_pub_list_folder_alias)
+    saved_dedup_parsing_path = year_saved_results_folder_path / Path(saved_dedup_parsing_folder_alias)
+    papers_list_file_path = saved_pub_list_path / Path(papers_list_filename)
+    books_list_file_path = saved_pub_list_path / Path(books_list_filename)
+
+    # Setting useful column names aliases
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    journal_col_alias = final_col_dic['journal']
+    doctype_col_alias = final_col_dic['doc_type']
+    issn_col_alias = final_col_dic['issn']
+    journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
+    if progress_callback:
+        progress_callback(15)
+
+    # Getting the item-filename dict of the user for getting deduplication results
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    item_filename_dict = config_tup[2]
+
+    # Setting parsing files extension of saved parsing results
+    parsing_save_extent = pg.TSV_SAVE_EXTENT
+
+    # Getting the dict of deduplication results
+    dedup_parsing_dict = read_parsing_dict(saved_dedup_parsing_path, item_filename_dict,
+                                           parsing_save_extent)
+    if progress_callback:
+        progress_callback(30)
+
+    # Building the dict {journal name : normalized journal name,}
+    # from the deduplication results
+    articles_df = dedup_parsing_dict[articles_item_alias]
+    journal_norm_dict = dict(zip(articles_df[journal_col_alias],
+                                 articles_df[journal_norm_col_alias]))
+    if progress_callback:
+        progress_callback(50)
+
+    # Initializing the dataframe to be analysed
+    usecols = [journal_col_alias, doctype_col_alias, issn_col_alias] + \
+              depts_col_list + if_col_list
+    init_analysis_df = pd.read_excel(papers_list_file_path,
+                                     usecols=usecols)
+    if progress_callback:
+        progress_callback(55)
+
+    # Setting final dataframe to be analyzed
+    analysis_df = _unique_journal_name(init_analysis_df, journal_col_alias, issn_col_alias)
+    analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias]
+    analysis_df[journal_norm_col_alias] = analysis_df[journal_norm_col_alias].map(journal_norm_dict)
+    analysis_df[journal_col_alias] = analysis_df. \
+        apply(_capwords_journal_col(journal_col_alias), axis=1)
+    for if_col in if_col_list:
+        analysis_df[if_col] = analysis_df[if_col]. \
+            apply(_replace_no_if(bp.UNKNOWN, pg.NOT_AVAILABLE_IF))
+    if progress_callback:
+        progress_callback(60)
+
+    return analysis_df, books_list_file_path
+
+
+def if_analysis(institute, org_tup, bibliometer_path, datatype,
+                corpus_year, if_most_recent_year,
+                progress_callback=None, verbose=False):
+    """ Performs the analysis of journal impact_factors (IFs) of the 'corpus_year' corpus.
+
+    This is done through the following steps:
+
+    1. Builds the dataframe of publications list to be analyzed through \
+    the `_build_pub_analysis_data` internal function. 
     3. Builds the IFs data resulting from IFs analysis of this dataframe \
-     through the `_build_analysis_if_data` internal function and saves them as xlsx files.
+     through the `_build_if_analysis_data` internal function and saves them as xlsx files.
     4. Updates database of key performance indicators (KPIs) of the Institute \
     with the results of this analysis through the `update_kpi_database` function.
     5. Saves the results of this analysis for the 'datatype' case through the \
@@ -488,32 +595,16 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         (tup): (full path to the folder where results of impact-factors \
         analysis are saved, dataframe of Institute KPIs database, dict of Institute KPIs).
     """
-    # internal functions
-    def _capwords_journal_col(journal_col):
-        return lambda row: journal_capwords(row[journal_col])
-
-    def _replace_no_if(no_if1, no_if2):
-        return lambda x: x if x not in (no_if1, no_if2) else 0
-
     # Setting useful aliases
-    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
-    pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     if_analysis_folder_alias = pg.ARCHI_YEAR["if analysis"]
-    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
-    papers_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
-    books_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[1]
+    most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
+    corpus_year_if_col_alias = pg.COL_NAMES_BONUS['IF année publi']
+    most_recent_year_if_col = most_recent_year_if_col_base_alias + \
+                              ", " + if_most_recent_year
 
-    # Setting useful xlsx file names for results saving
-    year_pub_list_filename = pub_list_filename_base + " " + corpus_year
-    papers_list_filename = year_pub_list_filename + "_" + papers_doctype_alias + ".xlsx"
-    books_list_filename = year_pub_list_filename + "_" + books_doctype_alias + ".xlsx"
-
-    # Setting useful paths
+    # Setting analysis-results paths
     year_folder_path = bibliometer_path / Path(corpus_year)
-    pub_list_folder_path = year_folder_path / Path(pub_list_folder_alias)
-    papers_list_file_path = pub_list_folder_path / Path(papers_list_filename)
-    books_list_file_path = pub_list_folder_path / Path(books_list_filename)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias)
 
@@ -525,80 +616,27 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     if progress_callback:
         progress_callback(10)
 
-    # Setting useful column names aliases
-    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
-    journal_col_alias = final_col_dic['journal']
-    doctype_col_alias = final_col_dic['doc_type']
-    issn_col_alias = final_col_dic['issn']
-    journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
-    most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
-    corpus_year_if_col = pg.COL_NAMES_BONUS['IF année publi']
-    most_recent_year_if_col_alias = most_recent_year_if_col_base_alias + \
-                                    ", " + if_most_recent_year
-    if progress_callback:
-        progress_callback(15)
+    # Setting the IF columns dict
+    if_col_dict = {most_recent_year_if_col: if_most_recent_year,
+                   corpus_year_if_col_alias: corpus_year}
 
-    # Building the dataframe of publications list to be analyzed
-
-    # * Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
-    parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
-
-    # * Setting parsing files extension of saved results
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
-
-    # * Setting path of deduplicated parsings
-    dedup_parsing_path = parsing_path_dict['dedup']
-
-    # * Getting the dict of deduplication results
-    dedup_parsing_dict = read_parsing_dict(dedup_parsing_path, item_filename_dict,
-                                           parsing_save_extent)
-    if progress_callback:
-        progress_callback(30)
-
-    # * Building the dict {journal name : normalized journal name,}
-    articles_df = dedup_parsing_dict[articles_item_alias]
-    journal_norm_dict = dict(zip(articles_df[journal_col_alias],
-                                 articles_df[journal_norm_col_alias]))
-    if progress_callback:
-        progress_callback(50)
-
-    # * Setting the IF columns dict
-    if_col_dict = {most_recent_year_if_col_alias: if_most_recent_year,
-                   corpus_year_if_col: corpus_year}
-
-    # * Setting the IF analysis year and column
+    # Setting the IF analysis year and column
     if if_most_recent_year>=corpus_year:
         if_analysis_col = pg.ANALYSIS_IF
         if_analysis_year = if_col_dict[pg.ANALYSIS_IF]
     else:
-        if_analysis_col = most_recent_year_if_col_alias
+        if_analysis_col = most_recent_year_if_col
         if_analysis_year = if_most_recent_year
 
-    # * Initializing the dataframe to be analysed
+    # Building the dataframe of publications list to be analyzed
     if_col_list = list(if_col_dict.keys())
-    usecols = [journal_col_alias, doctype_col_alias, issn_col_alias] + \
-              depts_col_list + if_col_list
-    init_analysis_df = pd.read_excel(papers_list_file_path,
-                                     usecols=usecols)
-    if progress_callback:
-        progress_callback(55)
-
-    # * Setting final dataframe to be analyzed
-    analysis_df = _unique_journal_name(init_analysis_df, journal_col_alias, issn_col_alias)
-    analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias]
-    analysis_df[journal_norm_col_alias] = analysis_df[journal_norm_col_alias].map(journal_norm_dict)
-    analysis_df[journal_col_alias] = analysis_df. \
-        apply(_capwords_journal_col(journal_col_alias), axis=1)
-    for if_col, _ in if_col_dict.items():
-        analysis_df[if_col] = analysis_df[if_col]. \
-            apply(_replace_no_if(bp.UNKNOWN, pg.NOT_AVAILABLE_IF))
-    if progress_callback:
-        progress_callback(60)
+    analysis_df, books_list_file_path = _build_pub_analysis_data(institute, org_tup, bibliometer_path,
+                                                                 datatype, corpus_year,
+                                                                 if_col_list, progress_callback)
 
     # Building the data resulting from IFs analysis of the final dataframe
     # and saving them as xlsx files
-    kpi_dict, if_analysis_col_new = _build_analysis_if_data(institute, org_tup,
+    kpi_dict, if_analysis_col_new = _build_if_analysis_data(institute, org_tup,
                                                             analysis_df, if_analysis_col,
                                                             if_analysis_year,
                                                             if_analysis_folder_path,
