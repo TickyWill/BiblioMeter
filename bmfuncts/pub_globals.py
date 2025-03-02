@@ -121,6 +121,7 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
 ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "dedup_parsing"       : "Synthèse des extractions",
                  "hash_id"             : "Identifiants universels",
+                 "submit"              : "Croisement auteurs-effectifs",
                  "pub-lists"           : "Listes consolidées des publications",
                  "impact-factors"      : "Analyse des facteurs d'impact",
                  "authors_prod"        : "Analyse par auteurs",
@@ -177,9 +178,9 @@ ARCHI_YEAR = {
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["hash_ids", "pub_lists", "ifs", "kws",
-                   "countries", "continents", "authors", 
-                   "institutions"]
+RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists",
+                   "ifs", "kws","countries", "continents",
+                   "authors", "institutions"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 

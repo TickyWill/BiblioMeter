@@ -16,29 +16,70 @@ import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as pg
-from bmfuncts.config_utils import set_user_config
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.update_impact_factors import journal_capwords
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import read_parsing_dict
+from bmfuncts.useful_functs import get_final_dedup
+from bmfuncts.useful_functs import read_final_pub_list_data
 
 
-def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_year,
-                        kpi_dict, if_key, verbose=False):
+def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corpus_year_row):
+    """Builds the IFs data for a department."""
+    # Building sub dict of KPIs dict for 'dept'
+    dept_kpi_dict = dict(kpi_dict[dept].items())
+
+    # Building sub dict of publications KPIs of 'dept' in keys order specified by 'ordered_keys'
+    dept_pub_dict = {k: dept_kpi_dict[k] for k in ordered_keys}
+
+    # Building 'dept_pub_df' using keys of 'dept_pub_dict' as indexes
+    # and setting the name of the values column to 'corpus_year'
+    dept_pub_df = pd.DataFrame.from_dict(dept_pub_dict, orient="index",
+                                         columns=[corpus_year])
+
+    # Renaming the index column of 'dept_pub_df' as 'corpus_year_row'
+    dept_pub_df = dept_pub_df.reset_index()
+    dept_pub_df = dept_pub_df.rename_axis("idx", axis=1)
+    dept_pub_df = dept_pub_df.rename(columns={"index": corpus_year_row})
+
+    # Building sub dict of IFs KPIs of 'dept' in keys order specified by 'ordered_keys'
+    part_dept_if_dict = dict(dept_kpi_dict[if_key].items())
+    dept_if_dict = dict({pg.KPI_KEYS_ORDER_DICT[14]: if_key}, **part_dept_if_dict)
+
+    # Building 'dept_if_df' using keys of 'dept_if_dict' as indexes
+    # and setting the name of the values column to 'corpus_year'
+    dept_if_df = pd.DataFrame.from_dict(dept_if_dict, orient="index",
+                                        columns=[corpus_year])
+
+    # Renaming the index column of ''dept_if_df as 'corpus_year_row'
+    dept_if_df = dept_if_df.reset_index()
+    dept_if_df = dept_if_df.rename_axis("idx", axis=1)
+    dept_if_df = dept_if_df.rename(columns={"index": corpus_year_row})
+
+    # Combining the two dataframes through rows concatenation
+    dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df], dedup=False)
+
+    return dept_kpi_df
+
+
+def update_kpi_database(institute, org_tup, saved_results_path,
+                        corpus_year, kpi_dict, if_key, verbose=False):
     """Updates database of the key performance indicators (KPIs) with values of 'kpi_dict' 
     hierarchical dict for the Institute and each of the its departments with the KPIs data 
     of 'corpus_year' corpus.
 
-    These updated databases are saved as openpyxl workbooks using the `format_page` function \
+    The IFs data for each department are built through the `_build_dept_if_data` internal 
+    function. 
+    These updated databases are saved as openpyxl workbooks using the `format_page` function 
     imported from the `bmfuncts.format_files` module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
         corpus_year (str): 4 digits year of the corpus.
         kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
         including itself and valued with KPIs dict of these keys.
@@ -50,15 +91,11 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
     """
 
     # Setting aliases for updating KPIs database
-    results_root_alias = pg.ARCHI_RESULTS["root"]
-    results_folder_alias = pg.ARCHI_RESULTS[datatype]
     results_sub_folder_alias = pg.ARCHI_RESULTS["kpis"]
     kpi_file_base_alias = pg.ARCHI_RESULTS["kpis file name base"]
 
     # Setting paths for saving results
-    results_root_path = bibliometer_path / Path(results_root_alias)
-    results_folder_path = results_root_path / Path(results_folder_alias)
-    results_kpis_folder_path = results_folder_path / Path(results_sub_folder_alias)
+    results_kpis_folder_path = saved_results_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folder
     if not os.path.exists(results_kpis_folder_path):
@@ -67,47 +104,16 @@ def update_kpi_database(institute, org_tup, bibliometer_path, datatype, corpus_y
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
     corpus_year_row_alias = pg.KPI_KEYS_ORDER_DICT[0]
+    ordered_keys = [v for k, v in pg.KPI_KEYS_ORDER_DICT.items() if k in range(1, 14)]
 
     # Initializing return dataframe
     institute_kpi_df = pd.DataFrame()
 
     # Building as a dataframe the column of KPIs of each 'dept'
     for dept in [institute] + depts_col_list:
-
-        # Building sub dict of KPIs dict for 'dept'
-        dept_kpi_dict = dict(kpi_dict[dept].items())
-
-        # Building sub dict of publications KPIs of 'dept' in keys order specified by 'ordered_keys'
-        ordered_keys = [v for k, v in pg.KPI_KEYS_ORDER_DICT.items() if k in range(1, 14)]
-
-        dept_pub_dict = {k: dept_kpi_dict[k] for k in ordered_keys}
-
-        # Building 'dept_pub_df' using keys of 'dept_pub_dict' as indexes
-        # and setting the name of the values column to 'corpus_year'
-        dept_pub_df = pd.DataFrame.from_dict(dept_pub_dict, orient="index",
-                                             columns=[corpus_year])
-
-        # Renaming the index column of 'dept_pub_df' as 'corpus_year_row_alias'
-        dept_pub_df = dept_pub_df.reset_index()
-        dept_pub_df = dept_pub_df.rename_axis("idx", axis=1)
-        dept_pub_df = dept_pub_df.rename(columns={"index": corpus_year_row_alias})
-
-        # Building sub dict of IFs KPIs of 'dept' in keys order specified by 'ordered_keys'
-        part_dept_if_dict = dict(dept_kpi_dict[if_key].items())
-        dept_if_dict = dict({pg.KPI_KEYS_ORDER_DICT[14]: if_key}, **part_dept_if_dict)
-
         # Building 'dept_if_df' using keys of 'dept_if_dict' as indexes
-        # and setting the name of the values column to 'corpus_year'
-        dept_if_df = pd.DataFrame.from_dict(dept_if_dict, orient="index",
-                                            columns=[corpus_year])
-
-        # Renaming the index column of ''dept_if_df as 'corpus_year_row_alias'
-        dept_if_df = dept_if_df.reset_index()
-        dept_if_df = dept_if_df.rename_axis("idx", axis=1)
-        dept_if_df = dept_if_df.rename(columns={"index": corpus_year_row_alias})
-
-        # Combining the two dataframes through rows concatenation
-        dept_kpi_df = concat_dfs([dept_pub_df, dept_if_df], dedup=False)
+        dept_kpi_df = _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys,
+                                          corpus_year, corpus_year_row_alias)
 
         # Reading as a dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"
@@ -455,8 +461,35 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
     return analysis_df
 
 
+def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
+    """Reads saved articles data resulting from the parsing step.
+
+    It uses the `get_final_dedup` function of 
+    the `bmfuncts.useful_functs` module.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dataframe): The dataframe of the authors data.
+    """
+    # Setting useful aliases
+    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
+
+    # Getting the dict of deduplication results
+    dedup_parsing_dict = get_final_dedup(bibliometer_path,
+                                         saved_results_path,
+                                         corpus_year)
+
+    # Getting ID of each author with author name
+    authors_df = dedup_parsing_dict[articles_item_alias]
+    return authors_df
+
+
 def _build_pub_analysis_data(institute, org_tup, bibliometer_path,
-                             datatype, corpus_year,
+                             saved_results_path, corpus_year,
                              if_col_list, progress_callback):
     """Builds the dataframe of publications list to be analyzed.
 
@@ -472,7 +505,8 @@ def _build_pub_analysis_data(institute, org_tup, bibliometer_path,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
         corpus_year (str): 4 digits year of the corpus.
         if_col_list (list): List of column names of impact-factors.
         if_most_recent_year (str): Most recent year of impact factors.
@@ -489,73 +523,41 @@ def _build_pub_analysis_data(institute, org_tup, bibliometer_path,
         return lambda x: x if x not in (no_if1, no_if2) else 0
 
     # Setting useful aliases
-    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
-    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
-    papers_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
-    books_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[1]
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
-    saved_pub_list_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
-    saved_dedup_parsing_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
-
-    # Setting useful xlsx file names for input data
-    year_pub_list_filename = pub_list_filename_base + " " + corpus_year
-    papers_list_filename = year_pub_list_filename + "_" + papers_doctype_alias + ".xlsx"
-    books_list_filename = year_pub_list_filename + "_" + books_doctype_alias + ".xlsx"
-
-    # Setting input-data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_folder_path = saved_results_root_path / Path(saved_results_folder_alias)
-    year_saved_results_folder_path = saved_results_folder_path / Path(corpus_year)
-    saved_pub_list_path = year_saved_results_folder_path / Path(saved_pub_list_folder_alias)
-    saved_dedup_parsing_path = year_saved_results_folder_path / Path(saved_dedup_parsing_folder_alias)
-    papers_list_file_path = saved_pub_list_path / Path(papers_list_filename)
-    books_list_file_path = saved_pub_list_path / Path(books_list_filename)
-
-    # Setting useful column names aliases
-    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
-    journal_col_alias = final_col_dic['journal']
-    doctype_col_alias = final_col_dic['doc_type']
-    issn_col_alias = final_col_dic['issn']
     journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
+
+    # Setting useful column names
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    journal_col = final_col_dic['journal']
+    doctype_col = final_col_dic['doc_type']
+    issn_col = final_col_dic['issn']
     if progress_callback:
         progress_callback(15)
 
-    # Getting the item-filename dict of the user for getting deduplication results
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
-    item_filename_dict = config_tup[2]
-
-    # Setting parsing files extension of saved parsing results
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
-
-    # Getting the dict of deduplication results
-    dedup_parsing_dict = read_parsing_dict(saved_dedup_parsing_path, item_filename_dict,
-                                           parsing_save_extent)
-    if progress_callback:
-        progress_callback(30)
+    # Getting articles data reuslting from deduplication parsing
+    articles_df = _read_articles_data(bibliometer_path, saved_results_path, corpus_year)
 
     # Building the dict {journal name : normalized journal name,}
     # from the deduplication results
-    articles_df = dedup_parsing_dict[articles_item_alias]
-    journal_norm_dict = dict(zip(articles_df[journal_col_alias],
+    journal_norm_dict = dict(zip(articles_df[journal_col],
                                  articles_df[journal_norm_col_alias]))
+    if progress_callback:
+        progress_callback(30)
+
+    # Initializing the dataframe to be analysed
+    cols_list = [journal_col, doctype_col, issn_col] + \
+                depts_col_list + if_col_list
+    return_tup = read_final_pub_list_data(saved_results_path,
+                                          corpus_year, cols_list)
+    init_analysis_df, books_list_file_path = return_tup
     if progress_callback:
         progress_callback(50)
 
-    # Initializing the dataframe to be analysed
-    usecols = [journal_col_alias, doctype_col_alias, issn_col_alias] + \
-              depts_col_list + if_col_list
-    init_analysis_df = pd.read_excel(papers_list_file_path,
-                                     usecols=usecols)
-    if progress_callback:
-        progress_callback(55)
-
     # Setting final dataframe to be analyzed
-    analysis_df = _unique_journal_name(init_analysis_df, journal_col_alias, issn_col_alias)
-    analysis_df[journal_norm_col_alias] = analysis_df[journal_col_alias]
+    analysis_df = _unique_journal_name(init_analysis_df, journal_col, issn_col)
+    analysis_df[journal_norm_col_alias] = analysis_df[journal_col]
     analysis_df[journal_norm_col_alias] = analysis_df[journal_norm_col_alias].map(journal_norm_dict)
-    analysis_df[journal_col_alias] = analysis_df. \
-        apply(_capwords_journal_col(journal_col_alias), axis=1)
+    analysis_df[journal_col] = analysis_df. \
+        apply(_capwords_journal_col(journal_col), axis=1)
     for if_col in if_col_list:
         analysis_df[if_col] = analysis_df[if_col]. \
             apply(_replace_no_if(bp.UNKNOWN, pg.NOT_AVAILABLE_IF))
@@ -596,6 +598,8 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         analysis are saved, dataframe of Institute KPIs database, dict of Institute KPIs).
     """
     # Setting useful aliases
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     if_analysis_folder_alias = pg.ARCHI_YEAR["if analysis"]
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
@@ -607,6 +611,10 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     year_folder_path = bibliometer_path / Path(corpus_year)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias)
+
+    # Setting input-data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
@@ -631,7 +639,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     # Building the dataframe of publications list to be analyzed
     if_col_list = list(if_col_dict.keys())
     analysis_df, books_list_file_path = _build_pub_analysis_data(institute, org_tup, bibliometer_path,
-                                                                 datatype, corpus_year,
+                                                                 saved_results_path, corpus_year,
                                                                  if_col_list, progress_callback)
 
     # Building the data resulting from IFs analysis of the final dataframe
@@ -646,9 +654,9 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(75)
 
     # Updating the KPIs database
-    institute_kpi_df = update_kpi_database(institute, org_tup, bibliometer_path,
-                                           datatype, corpus_year, kpi_dict,
-                                           if_analysis_col_new, verbose=verbose)
+    institute_kpi_df = update_kpi_database(institute, org_tup, saved_results_path,
+                                           corpus_year, kpi_dict, if_analysis_col_new,
+                                           verbose=verbose)
     if progress_callback:
         progress_callback(90)
 

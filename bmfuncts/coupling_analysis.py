@@ -203,6 +203,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
     institutions_folder_alias = pg.ARCHI_INSTITUTIONS["root"]
     inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
 
     # Setting useful file names
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
@@ -213,6 +215,10 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
     institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
+
+    # Setting input_data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
@@ -228,7 +234,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
 
     # Building only addresses of Institute publications
     inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, bibliometer_path,
-                                                         year, verbose=False)
+                                                         saved_results_path, year, verbose=False)
     if verbose:
         print("Addresses of Institute publications selected.")
     if progress_callback:

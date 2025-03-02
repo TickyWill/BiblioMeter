@@ -15,11 +15,11 @@ import pandas as pd
 
 # Local imports
 import bmfuncts.pub_globals as pg
-from bmfuncts.config_utils import set_user_config
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
-from bmfuncts.useful_functs import read_parsing_dict
+from bmfuncts.useful_functs import get_final_dedup
+from bmfuncts.useful_functs import read_final_pub_list_data
 
 
 def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_tup,
@@ -105,6 +105,18 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
         print(message, "\n")
 
 
+def _get_clean_kw_data(dedup_parsing_dict, kw_item_alias, keywords_col_alias):
+    """Building the keywords dataframe for the keywords type 'kw_type' 
+    from 'dedup_parsing_dict' dict at 'kw_item_alias' key."""
+    kw_df = dedup_parsing_dict[kw_item_alias]
+    kw_df[keywords_col_alias] = kw_df[keywords_col_alias]. \
+        apply(lambda x: x.replace(' ', '_').replace('-', '_'))
+    kw_df[keywords_col_alias] = kw_df[keywords_col_alias]. \
+        apply(lambda x: x.replace('_(', ';').replace(')', ''))
+    kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.lower())
+    return kw_df
+
+
 def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
                       year, progress_callback=None, verbose=False):
     """ Performs the analysis of publications keywords (KWs) of the 'year' corpus.
@@ -141,21 +153,19 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
     index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
     title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-    pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     kw_analysis_folder_alias = pg.ARCHI_YEAR["keywords analysis"]
-    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
-    doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
 
-    # Setting useful file names
-    pub_list_filename = pub_list_filename_base + " " + str(year) + "_" + doctype_alias + ".xlsx"
-
-    # Setting useful paths
+    # Setting output-data paths
     year_folder_path = bibliometer_path / Path(str(year))
-    pub_list_folder_path = year_folder_path / Path(pub_list_folder_alias)
-    pub_list_file_path = pub_list_folder_path / Path(pub_list_filename)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
+
+    # Setting input-data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
     if progress_callback:
         progress_callback(5)
 
@@ -168,29 +178,18 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(10)
 
     # Setting useful column names aliases
-    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
-    final_pub_id_col_alias = final_col_dic['pub_id']
     parsing_pub_id_col_alias = bp.COL_NAMES['pub_id']
     keywords_col_alias = bp.COL_NAMES['keywords'][1]
     weight_col_alias = pg.COL_NAMES_BONUS['weight']
+
+    # Setting useful column names
+    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
+    final_pub_id_col = final_col_dic['pub_id']
     if progress_callback:
         progress_callback(15)
 
-    # Getting the full paths of the working folder architecture for the corpus "year"
-    config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
-    parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
-
-    # Setting parsing files extension of saved results
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
-    if progress_callback:
-        progress_callback(20)
-
-    # Setting path of deduplicated parsings
-    dedup_parsing_path = parsing_path_dict['dedup']
-
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_parsing_dict(dedup_parsing_path, item_filename_dict,
-                                           parsing_save_extent)
+    dedup_parsing_dict = get_final_dedup(bibliometer_path, saved_results_path, year)
     if progress_callback:
         progress_callback(25)
 
@@ -202,9 +201,10 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     if progress_callback:
         progress_callback(25)
 
-    # Building the dataframe to be analysed from the file which full path is 'pub_list_file_path'
-    analysis_df = pd.read_excel(pub_list_file_path,
-                                usecols=[final_pub_id_col_alias] + depts_col_list)
+    # Building the dataframe to be analysed
+    cols_list = [final_pub_id_col] + depts_col_list
+    pub_df, _ = read_final_pub_list_data(saved_results_path,
+                                         year, cols_list)
     if progress_callback:
         progress_callback(30)
 
@@ -215,17 +215,13 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     for kw_type, kw_item_alias in kw_item_alias_dict.items():
         # Building the keywords dataframe for the keywords type 'kw_type'
         # from 'dedup_parsing_dict' dict at 'kw_item_alias' key
-        kw_df = dedup_parsing_dict[kw_item_alias]
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias]. \
-            apply(lambda x: x.replace(' ', '_').replace('-', '_'))
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias]. \
-            apply(lambda x: x.replace('_(', ';').replace(')', ''))
-        kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.lower())
+        kw_df = _get_clean_kw_data(dedup_parsing_dict, kw_item_alias,
+                                   keywords_col_alias)
 
         # Creating keywords-analysis data and saving them as xlsx files
-        cols_tup = (depts_col_list, final_pub_id_col_alias, parsing_pub_id_col_alias,
+        cols_tup = (depts_col_list, final_pub_id_col, parsing_pub_id_col_alias,
                     keywords_col_alias, weight_col_alias)
-        _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_tup,
+        _create_kw_analysis_data(institute, year, pub_df, kw_type, kw_df, cols_tup,
                                  kw_analysis_folder_path, verbose=verbose)
 
         # Updating progress bar state

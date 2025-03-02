@@ -13,6 +13,7 @@
   - Improvement 6: Add of `keep_initials` function  to avoid interpretation of first-name initials equal to NA as NaN.
   - Improvement 7: Redistribution of `merge_pub_employees`module into 3 modules for sake of clarity (new modules: `build_year_pub_empl` and `create_hash_id`).
   - Improvement 8: Added management of last corpus year when it is not in available years of impact factors in `update_impact_factors` module.
+  - Improvement 9: Enhanced analysis modules by use of saved final results rather than available results in corpus-year folders in order to take into account corresponding datatype results. 
 * **Bug Fixes**:
   - None.
 * **Known Issues**:

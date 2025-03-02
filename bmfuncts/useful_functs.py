@@ -7,7 +7,9 @@ __all__ = ['check_dedup_parsing_available',
            'concat_dfs',
            'create_archi',
            'create_folder',
+           'get_final_dedup',
            'keep_initials',
+           'read_final_pub_list_data',
            'read_parsing_dict',
            'save_fails_dict',
            'save_parsing_dict',
@@ -125,15 +127,15 @@ def save_xlsx_file(root_path, df, file_name):
 
 
 def set_year_pub_id(df, year, pub_id_col):
-    """Transforms the column 'Pub_id' of the df
-    by adding "yyyy_" to the value of the row.
+    """Transforms the pub-ID column of df by adding "yyyy_" 
+    (year in 4 digits) to the values.
 
     Args:
-        df (pandas.DataFrame()): pandas.DataFrame() to be modified.
-        year (str): 4 digits year of the corpus.
-        pub_id_col (str): Name of the column of publications ID.
+        df (pandas.DataFrame): The data we want to modify.
+        year (str): The 4 digits year to add as "yyyy".
+        pub_id_col (str): The name of the pub-ID column to transform.
     Returns:
-        (dataframe): the df with its changed column.
+        (pandas.DataFrame): The data with its changed column.
     """
     def _rename_pub_id(old_pub_id, year):
         pub_id_str = str(int(old_pub_id))
@@ -604,6 +606,106 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
         if item_df is not None:
             parsing_dict[item] = item_df
     return parsing_dict
+
+
+def get_final_dedup(bibliometer_path, saved_results_path, corpus_year):
+    """Reads saved final-parsing data as dict resulting from the parsing step.
+
+    It uses the `read_parsing_dict` function of 
+    the `bmfuncts.useful_functs` module.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dict): Parsing results keyed by parsing items (str) and valued \
+        by data (dataframe) of the parsing item.
+    """
+    # Setting useful aliases
+    parsing_save_extent_alias = pg.TSV_SAVE_EXTENT
+    saved_dedup_parsing_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+
+    # Getting the item-filename dict of the user for getting deduplication results
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    item_filename_dict = config_tup[2]
+
+    # Setting path of deduplicated parsings
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_dedup_parsing_path = year_saved_results_path / Path(saved_dedup_parsing_folder_alias)
+
+    # Getting the dict of deduplication results
+    dedup_parsing_dict = read_parsing_dict(saved_dedup_parsing_path, item_filename_dict,
+                                           parsing_save_extent_alias)
+    return dedup_parsing_dict
+
+
+def read_final_submit_data(saved_results_path, corpus_year):
+    """Reads saved publications list with one row per Institute author 
+    and its attributes.
+    
+    This data have been initially built through the `resursive_year_search` 
+    function of the `bmfuncts.merge_pub_employees` module.
+
+    Args:
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dataframe): The resulting dataframe from the read.
+    """
+
+    # Setting useful aliases
+    saved_submit_folder_alias = pg.ARCHI_RESULTS["submit"]
+    saved_submit_file_base_alias = pg.ARCHI_YEAR["submit file name"]
+    year_submit_filename = corpus_year + " " + saved_submit_file_base_alias
+
+    # Setting useful paths
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_submit_path = year_saved_results_path / Path(saved_submit_folder_alias)
+    submit_file_path = saved_submit_path / Path(year_submit_filename)
+
+    # Reading the submit file
+    submit_df = pd.read_excel(submit_file_path)
+    return submit_df
+
+
+def read_final_pub_list_data(saved_results_path,
+                             corpus_year, cols_list):
+    """Reads saved final data of papers lists resulting from 
+    the consolidation step.
+
+    Args:
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
+        corpus_year (str): 4 digits year of the corpus.
+        cols_list (list): Use columns names for the file read.
+    Returns:
+        (tup): (papers data (dataframe), full path to the books data file).
+    """
+    # Setting useful aliases
+    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
+    papers_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
+    books_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[1]
+    saved_pub_list_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
+
+    # Setting useful xlsx file names for input data
+    year_pub_list_filename = pub_list_filename_base + " " + corpus_year
+    papers_list_filename = year_pub_list_filename + "_" + papers_doctype_alias + ".xlsx"
+    books_list_filename = year_pub_list_filename + "_" + books_doctype_alias + ".xlsx"
+
+    # Setting input-data paths
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_pub_list_path = year_saved_results_path / Path(saved_pub_list_folder_alias)
+    papers_list_file_path = saved_pub_list_path / Path(papers_list_filename)
+    books_list_file_path = saved_pub_list_path / Path(books_list_filename)
+
+    # Initializing the dataframe to be analysed
+    papers_df = pd.read_excel(papers_list_file_path,
+                                usecols=cols_list)
+
+    return papers_df, books_list_file_path
 
 
 def save_fails_dict(fails_dict, parsing_path):
