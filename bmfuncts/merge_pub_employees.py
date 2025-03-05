@@ -300,7 +300,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     new_submit_df.to_excel(submit_path, index=False)
     new_orphan_df.to_excel(orphan_path, index=False)
 
-    print("External PhD students added")
+    print("    External PhD students added")
     return (new_submit_df, new_orphan_df)
 
 
@@ -450,7 +450,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     new_submit_df.to_excel(submit_path, index=False)
     new_orphan_df.to_excel(orphan_path, index=False)
 
-    print("Other external collaborators added")
+    print("    Other external collaborators added")
     return (new_submit_df, new_orphan_df)
 
 
@@ -528,7 +528,7 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
             file_name = inst_col + "_" + orphan_file_name
             file_path = working_folder_path / Path(file_name)
         df_to_save.to_excel(file_path, index=False)
-        message = f"Excel file of orphan authors created for Institute subdivision: {inst_col}"
+        message = f"    Excel file of orphan authors created for Institute subdivision: {inst_col}"
         if verbose:
             print(message)
 

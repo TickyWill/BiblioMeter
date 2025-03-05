@@ -77,7 +77,6 @@ def update_kpi_database(institute, org_tup, saved_results_path,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
         where final results have been saved.
         corpus_year (str): 4 digits year of the corpus.
@@ -113,7 +112,7 @@ def update_kpi_database(institute, org_tup, saved_results_path,
     for dept in [institute] + depts_col_list:
         # Building 'dept_if_df' using keys of 'dept_if_dict' as indexes
         dept_kpi_df = _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys,
-                                          corpus_year, corpus_year_row_alias)
+                                           corpus_year, corpus_year_row_alias)
 
         # Reading as a dataframe the KPI file of 'dept' if it exists else creating it
         filename = dept + "_" + kpi_file_base_alias + ".xlsx"

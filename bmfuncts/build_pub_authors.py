@@ -61,11 +61,15 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
     articles_df, authorsinst_authors_df = dfs_tup
     pub_id_col = bp.COL_NAMES['auth_inst'][0]
     address_col = bp.COL_NAMES['auth_inst'][2]
-    morm_inst_col = bp.COL_NAMES['auth_inst'][4]
+    norm_inst_col = bp.COL_NAMES['auth_inst'][4]
     institute_norm = org_tup[3][0][0]
     inst_col_list = org_tup[4]
     main_inst_idx = org_tup[7]
-    top_inst = 'CEA'
+
+    # Setting test parameters to include institute in addresse
+    top_inst = 'CEA'.lower()
+    town = 'Grenoble'.lower()
+    other_inst = ['LITEN', 'LETI', 'IRIG', 'IBS']
 
     hal_added_dois_list = _get_hal_added_dois(bibliometer_path, corpus_year)
     hal_added_pub_id_df = _get_doi_pub_id(articles_df, hal_added_dois_list)
@@ -75,9 +79,12 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
         if pub_id in hal_added_pub_id_list:
             new_pub_df = pd.DataFrame(columns=pub_df.columns)
             for addr, addr_df in pub_df.groupby(address_col):
-                if top_inst in addr and (institute.lower() not in addr.lower()):
+                addr_lw = addr.lower()
+                exclude_test = any(ext.lower() in addr_lw for ext in other_inst)
+                include_test = top_inst in addr_lw and town in addr_lw and not exclude_test
+                if include_test:
                     addr_df[address_col] = institute + ', ' + addr
-                    addr_df[morm_inst_col] = institute_norm
+                    addr_df[norm_inst_col] = institute_norm
                     addr_df[inst_col_list[main_inst_idx]] = 1
                 new_pub_df = concat_dfs([new_pub_df, addr_df])
             new_authorsinst_authors_df = concat_dfs([new_authorsinst_authors_df, new_pub_df])
@@ -209,7 +216,7 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
                 new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + \
                                                             ' ' + initials_eff_ortho
 
-    print("Mispelling of author names corrected")
+    print("    Mispelling of author names corrected")
     return new_df
 
 
@@ -285,7 +292,7 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
                 new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_compl \
                 + ' ' + initials_eff_compl
 
-    print("False author names replaced")
+    print("    False author names replaced")
     return new_df
 
 
@@ -353,7 +360,7 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
     # Removing the rows to drop from the dataframe to update
     new_pub_df = concat_dfs([pub_df, drop_df], keep=False)
 
-    print("External authors removed")
+    print("    External authors removed")
     return new_pub_df
 
 

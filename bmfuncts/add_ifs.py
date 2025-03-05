@@ -341,6 +341,7 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, cols_tup, empty_kw):
         row_most_recent_year_if = row[most_recent_year_if_col]
         row_corpus_year_if = row[corpus_year_if_col]
         if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
+            print(row_issn + " not in inst_issn_list nor in inst_eissn_list")
             missing_issn_df = concat_dfs([missing_issn_df, row.to_frame().T])
         elif empty_kw in [row_most_recent_year_if, row_corpus_year_if]:
             row_journal = row[journal_col]
