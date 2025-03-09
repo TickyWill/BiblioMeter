@@ -10,7 +10,6 @@ Then it provides xlsx files to the user for:
 - Completion of impact-factors database.
 
 Finally it saves the consolidated publications list in a dedicated directory.
-
 """
 __all__ = ['create_consolidate_corpus']
 

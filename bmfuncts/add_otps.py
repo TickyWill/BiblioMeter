@@ -218,7 +218,8 @@ def _enhance_homonyms_file(institute, org_tup, in_path):
 
     # Adding a column with a list of the authors in the file where homonymies
     # have been solved and pointed by in_path
-    end_message, final_solved_homonymies_df = _add_authors_name_list(institute, org_tup, new_solved_homonymies_df)
+    end_message, final_solved_homonymies_df = _add_authors_name_list(institute, org_tup,
+                                                                     new_solved_homonymies_df)
     print('\n ',end_message)
 
     return final_solved_homonymies_df
@@ -332,7 +333,7 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
     # the detailed information is related to the first author only
     out_df = pd.DataFrame()
     for _, dg in init_df.groupby(pub_id_alias):
-        dg = dg.sort_values(by = [idx_author_alias])
+        dg = dg.sort_values(by=[idx_author_alias])
         for dpt in dpt_list:
             x = dg[dpt].any().astype(int)
             dg[dpt] = x
@@ -343,12 +344,12 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
 
     # Configuring an Excel file per department with the list of OTPs
     for dpt in sorted(dpt_list):
-        # Setting df_dpt with only pub_ids for which the first author
+        # Setting dpt_df with only pub_ids for which the first author
         # is from the 'dpt' department
         filtre_dpt = False
         for dpt_value in dpt_attributs_dict[dpt][dpt_label_alias]:
-            filtre_dpt = filtre_dpt | (out_df[dpt_alias] == dpt_value)
-        df_dpt = out_df[filtre_dpt].copy()
+            filtre_dpt = filtre_dpt | (out_df[dpt_alias]==dpt_value)
+        dpt_df = out_df[filtre_dpt].copy()
 
         # Setting the list of OTPs for the 'dpt' department
         dpt_otp_list = dpt_attributs_dict[dpt][dpt_otp_alias]
@@ -358,7 +359,7 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
         xl_dpt_path = out_path / Path(otp_file_name_dpt)
 
         # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_otp_file(institute, org_tup, dpt, df_dpt, dpt_otp_list,
+        _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
                            otp_alias, xl_dpt_path, otp_col_list)
 
 
@@ -426,7 +427,8 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
             # Renaming the columns
             otp_lab_df = otp_lab_df.reindex(columns=otp_col_list)
 
-            # Formatting 'otp_lab_df' as a new sheet of the 'wb' multisheet openpyxl workbook
+            # Formatting 'otp_lab_df' as a new sheet of the 'wb'
+            # multisheet openpyxl workbook
             sheet_name = otp_lab
             otp_lab_df_title = pg.DF_TITLES_LIST[2]
             wb = format_wb_sheet(sheet_name, otp_lab_df,

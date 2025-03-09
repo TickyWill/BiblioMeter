@@ -34,6 +34,7 @@ from bmgui.gui_utils import str_size_mm
 from bmfuncts.useful_functs import create_archi
 from bmfuncts.useful_functs import set_rawdata
 
+
 class AppMain(tk.Tk):
     """Main class of the BiblioMeter application.
 
@@ -87,7 +88,7 @@ class AppMain(tk.Tk):
 
             # Getting new working directory
             dialog_title = "Choisir un nouveau dossier de travail"
-            bmf_str = tk.filedialog.askdirectory(title = dialog_title)
+            bmf_str = tk.filedialog.askdirectory(title=dialog_title)
             if bmf_str=='':
                 warning_title = "!!! Attention !!!"
                 warning_text = "Chemin non renseigné."
@@ -271,7 +272,7 @@ class AppMain(tk.Tk):
             # Managing analysis launch button
             SetLaunchButton(self, institute_select, inst_default_bmf, datatype_select)
 
-        def _update_page(*args, institute_widget = None):
+        def _update_page(*args, institute_widget=None):
             """Gets the selected Institute and 'datatype' widgets parameters.
             Then, trace change in datatype selection to update page parameters."""
 

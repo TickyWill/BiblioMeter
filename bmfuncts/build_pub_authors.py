@@ -22,7 +22,7 @@ import BiblioParsing as bp
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import read_parsing_dict
+from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import standardize_firstname_initials
 from bmfuncts.useful_functs import standardize_txt
 
@@ -363,19 +363,88 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
     print("    External authors removed")
     return new_pub_df
 
+def _read_parsing_data(bibliometer_path, saved_results_path,
+                       corpus_year):
+    """Reads saved data of publications, authors 
+    and authors with affiliations resulting from 
+    the parsing step.
+
+    It uses the `get_final_dedup` function of 
+    the `bmfuncts.useful_functs` module.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        saved_results_path (path): Full path to the folder \
+        where final results have been saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (tup): (dataframe of the publications data, \
+        dataframe of the authors data, dataframe of \
+        the authors with affiliations data).
+    """
+    # Setting useful aliases
+    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
+    authors_item_alias = bp.PARSING_ITEMS_LIST[1]
+    auth_inst_item_alias = bp.PARSING_ITEMS_LIST[5]
+
+    # Getting the dict of deduplication results
+    dedup_parsing_dict = get_final_dedup(bibliometer_path,
+                                         saved_results_path,
+                                         corpus_year)
+
+    # Getting ID of each publication with complementary info
+    articles_df = dedup_parsing_dict[articles_item_alias]
+
+    # Getting ID of each author with author name
+    authors_df = dedup_parsing_dict[authors_item_alias]
+
+    # Getting ID of each author with institution by publication ID
+    authorsinst_df = dedup_parsing_dict[auth_inst_item_alias]
+
+    return articles_df, authors_df, authorsinst_df
+
+
+def _recasting_inst_merged_df(inst_merged_df, bm_cols_tup):
+    # Setting useful alias
+    bp_co_auth_alias = bp.COL_NAMES['authors'][2]
+    bm_fullname_alias, bm_lastname_alias, bm_firstname_alias = bm_cols_tup
+
+    # Transforming to uppercase the Institute author name
+    # which is in column COL_NAMES['co_author']
+    col = bp_co_auth_alias
+    inst_merged_df[col] = inst_merged_df[col].str.upper()
+
+    # Splitting the Institute author name to firstname initials and lastname
+    # and putting them as a tuple in column COL_NAMES_BM['Full_name']
+    col_in, col_out = bp_co_auth_alias, bm_fullname_alias
+    inst_merged_df[col_out] = inst_merged_df.apply(lambda row:
+                                                   _split_lastname_firstname(row[col_in]),
+                                                   axis=1)
+
+    # Splitting tuples of column COL_NAMES_BM['Full_name']
+    # into the two columns COL_NAMES_BM['Last_name'] and COL_NAMES_BM['First_name']
+    col_in = bm_fullname_alias # Last_name + firstname initials
+    col1_out, col2_out = bm_lastname_alias, bm_firstname_alias
+    inst_merged_df[[col1_out, col2_out]] = pd.DataFrame(inst_merged_df[col_in].tolist())
+
+    # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
+    col_in = bm_fullname_alias # Last_name + firstname initials
+    inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
+    
+    return inst_merged_df
+
 
 def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype, year):
     """Builds the publications list dataframe with one row per Institute author 
     for each publication from the results of the corpus parsing.
 
-    First, the parsing results are got through the `read_parsing_dict` function 
-    imported from `bmfuncts.useful_functs` module. 
+    First, the parsing results are got through the `_read_parsing_data` internal 
+    function. 
     After that, a publications list dataframe with one row per author affiliated 
-    to the Institute is built using the 'filt_authors_inst_' filter. 
-    Then, the dataframe is complemented with useful new columns 
-    of full name, last name and first name of authors after standardization of 
-    last name through the `standardize_txt` function. imported from 
-    `bmfuncts.useful_functs` module. 
+    to the Institute is built using the 'filt_authors_inst' filter got through 
+    the `_build_filt_authors_inst` internal function. 
+    Then, the dataframe is recasted through the `_recasting_inst_merged_df` 
+    internal function. 
     Finally, the dataframe is cleaned as follows:
 
     - Author-name spelling is corrected through the `_check_names_spelling` \
@@ -397,42 +466,27 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
         to the Institute.
 
     """
-
-    # Setting useful col list
-    bp_auth_col_list = bp.COL_NAMES['authors']
-    bp_pub_id_alias = bp_auth_col_list[0]
-    bp_auth_idx_alias = bp_auth_col_list[1]
-    bp_co_auth_alias = bp_auth_col_list[2]
-
-    # Setting useful aliases
-    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
-    authors_item_alias = bp.PARSING_ITEMS_LIST[1]
-    auth_inst_item_alias = bp.PARSING_ITEMS_LIST[5]
-    bm_colnames_alias = pg.COL_NAMES_BM
+    # Setting useful col aliases
+    bp_pub_id_alias = bp.COL_NAMES['authors'][0]
+    bp_auth_idx_alias = bp.COL_NAMES['authors'][1]
+    bm_fullname_alias = pg.COL_NAMES_BM['Full_name']
+    bm_lastname_alias = pg.COL_NAMES_BM['Last_name']
+    bm_firstname_alias = pg.COL_NAMES_BM['First_name']
     corpus_year_col_alias = pg.COL_NAMES_BONUS['corpus_year']
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    
+    # Setting useful cols tup
+    bm_cols_tup = (bm_fullname_alias, bm_lastname_alias, bm_firstname_alias)
 
-    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
-    parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
+    # Setting input-data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
 
-    # Setting parsing files extension of saved results
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
-
-    # Setting path of deduplicated parsings
-    dedup_parsing_path = parsing_path_dict['dedup']
-
-    # Getting the dict of deduplication results
-    dedup_parsing_dict = read_parsing_dict(dedup_parsing_path, item_filename_dict,
-                                           parsing_save_extent)
-
-    # Getting ID of each author with institution by publication ID
-    authorsinst_df = dedup_parsing_dict[auth_inst_item_alias]
-
-    # Getting ID of each author with author name
-    authors_df = dedup_parsing_dict[authors_item_alias]
-
-    # Getting ID of each publication with complementary info
-    articles_df = dedup_parsing_dict[articles_item_alias]
+    # Getting the useful parsing results
+    return_tup = _read_parsing_data(bibliometer_path,
+                                    saved_results_path, year)
+    articles_df, authors_df, authorsinst_df = return_tup
 
     # Adding new column with year of initial publication which is the corpus year
     articles_df[corpus_year_col_alias] = year
@@ -446,14 +500,16 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     if datatype=="Scopus-HAL & WoS":
         # Checkking affiliations for added DOIs from HAL
         dfs_tup = (articles_df, authorsinst_authors_df)
-        authorsinst_authors_df = _check_added_dois_affil(institute, org_tup, bibliometer_path,
+        authorsinst_authors_df = _check_added_dois_affil(institute, org_tup,
+                                                         bibliometer_path,
                                                          year, dfs_tup)
 
     # Building the authors filter of the institution INSTITUTE
     inst_col_list = org_tup[4]
     main_inst_idx = org_tup[7]
     main_status = org_tup[8]
-    filt_authors_inst = _build_filt_authors_inst(authorsinst_authors_df, inst_col_list,
+    filt_authors_inst = _build_filt_authors_inst(authorsinst_authors_df,
+                                                 inst_col_list,
                                                  main_status, main_inst_idx)
 
     # Associating each publication (including its complementary info)
@@ -466,39 +522,17 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
                               left_on=[bp_pub_id_alias],
                               right_on=[bp_pub_id_alias])
 
-    # Transforming to uppercase the Institute author name
-    # which is in column COL_NAMES['co_author']
-    col = bp_co_auth_alias
-    inst_merged_df[col] = inst_merged_df[col].str.upper()
-
-    # Splitting the Institute author name to firstname initials and lastname
-    # and putting them as a tuple in column COL_NAMES_BM['Full_name']
-    col_in, col_out = bp_co_auth_alias, bm_colnames_alias['Full_name']
-    inst_merged_df[col_out] = inst_merged_df.apply(lambda row:
-                                                   _split_lastname_firstname(row[col_in]),
-                                                   axis=1)
-
-    # Splitting tuples of column COL_NAMES_BM['Full_name']
-    # into the two columns COL_NAMES_BM['Last_name'] and COL_NAMES_BM['First_name']
-    col_in = bm_colnames_alias['Full_name'] # Last_name + firstname initials
-    col1_out, col2_out = bm_colnames_alias['Last_name'], bm_colnames_alias['First_name']
-    inst_merged_df[[col1_out, col2_out]] = pd.DataFrame(inst_merged_df[col_in].tolist())
-
-    # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
-    col_in = bm_colnames_alias['Full_name'] # Last_name + firstname initials
-    inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
-
+    # Recasting the built dataframe
+    inst_merged_df = _recasting_inst_merged_df(inst_merged_df, bm_cols_tup)
 
     # Checking author name spelling and correct it then replacing author names
     # resulting from publication metadata errors
     # finally Searching for authors external to Institute but tagged as affiliated to it
     # and dropping their row in the returned dataframe
-    names_cols_tup = (bm_colnames_alias['Last_name'],
-                      bm_colnames_alias['First_name'])
-    cols_tup = (bm_colnames_alias['Full_name'],) + names_cols_tup
-    inst_merged_df = _check_names_spelling(bibliometer_path, inst_merged_df, cols_tup)
+    inst_merged_df = _check_names_spelling(bibliometer_path, inst_merged_df,
+                                           bm_cols_tup)
     inst_merged_df = _check_names_to_replace(bibliometer_path, year,
-                                             inst_merged_df, cols_tup)
+                                             inst_merged_df, bm_cols_tup)
     inst_merged_df = _check_authors_to_remove(institute, bibliometer_path,
-                                              inst_merged_df, names_cols_tup)
+                                              inst_merged_df, bm_cols_tup[1:])
     return inst_merged_df
