@@ -98,9 +98,9 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     wb.save(other_dg_path)
 
     split_ratio = 100
-    if pub_nb != 0:
+    if pub_nb!=0:
         split_ratio = round(key_pub_nb / pub_nb*100)
-    return split_ratio
+    return split_ratio, pub_nb
 
 
 def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
@@ -286,8 +286,9 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                                      paths_tup, corpus_year)
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio = split_pub_list_by_doc_type(institute, org_tup,
-                                             bibliometer_path, corpus_year)
+    split_ratio, pub_nb = split_pub_list_by_doc_type(institute, org_tup,
+                                                     bibliometer_path,
+                                                     corpus_year)
 
     # Saving pub list and hash-IDs as final results
     status_values = len(pg.RESULTS_TO_SAVE) * [False]
@@ -307,7 +308,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                     "in several files by group of document types. \n"
                     f"{final_save_message}")
 
-    return end_message, split_ratio, if_database_complete
+    return end_message, pub_nb, split_ratio, if_database_complete
 
 
 def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):

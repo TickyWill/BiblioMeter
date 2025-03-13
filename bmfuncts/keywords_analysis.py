@@ -203,7 +203,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
 
     # Building the dataframe to be analysed
     cols_list = [final_pub_id_col] + depts_col_list
-    pub_df, _ = read_final_pub_list_data(saved_results_path,
+    pub_df = read_final_pub_list_data(saved_results_path,
                                          year, cols_list)
     if progress_callback:
         progress_callback(30)

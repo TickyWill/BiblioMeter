@@ -50,7 +50,7 @@ def _build_countries_stat(countries_df):
         pub_ids_nb = len(pub_ids_list)
         by_country_df.loc[idx_country, final_country_alias] = country
         by_country_df.loc[idx_country, weight_alias] = pub_ids_nb
-        if country != "France":
+        if country!="France":
             pud_ids_txt = "; ".join(pub_ids_list)
         else:
             pud_ids_txt = pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb - 1]
@@ -103,7 +103,7 @@ def _build_continents_stat(countries_df):
         pub_ids_nb = len(pub_ids_list)
         by_continent_df.loc[idx_continent, continent_alias] = continent
         by_continent_df.loc[idx_continent, weight_alias] = pub_ids_nb
-        if continent != "Europe":
+        if continent!="Europe":
             pud_ids_txt = "; ".join(pub_ids_list)
         else:
             pud_ids_txt = pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb - 1]

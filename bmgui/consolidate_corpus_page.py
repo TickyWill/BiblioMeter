@@ -582,16 +582,16 @@ def _launch_pub_list_conso_try(institute, org_tup,
                                              bibliometer_path, datatype,
                                              otp_path, pub_list_path,
                                              otp_file_base, year_select)
-            end_message, split_ratio, if_database_complete = (conso_tup[0], conso_tup[1],
-                                                              conso_tup[2])
+            end_message, pub_nb, split_ratio, if_database_complete = conso_tup
             print(end_message)
-            progress_callback(50)
-            end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
-            print('\n',end_message)
+            progress_callback(70)
+            if pg.LISTES_CONCAT:
+                end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
+                print('\n',end_message)
             progress_callback(100)
             info_title = "- Information -"
-            info_text = (f"La liste consolidée des publications de l'année {year_select} "
-                         f"a été créée dans le dossier :\n\n '{pub_list_path}' "
+            info_text = (f"Une liste consolidée de {pub_nb} publications a été créée "
+                         f"pour l'année {year_select} dans le dossier :\n\n '{pub_list_path}' "
                          f"\n\nsous le nom :   '{pub_list_file}'."
                          "\n\nLes IFs disponibles ont été automatiquement attribués.")
             if if_database_complete:
@@ -611,19 +611,20 @@ def _launch_pub_list_conso_try(institute, org_tup,
                               "\n3- Puis sauvegardez les fichiers sous le même nom ;"
                               "\n4- Pour prendre en compte ces compléments, allez à la page "
                               "de mise à jour des IFs.")
-            info_text += ("\n\nPar ailleurs, la liste consolidée des publications "
+            info_text += ("\n\nPar ailleurs, cette liste consolidée des publications "
                           f"a été décomposée à {split_ratio} % "
                           "en trois fichiers disponibles dans le même dossier "
                           "correspondant aux différentes "
                           "classes de documents (les classes n'étant pas exhaustives, "
                           "la décomposition peut être partielle)."
                           "\n\nLa liste des publications invalides a été créée "
-                          "dans le même dossier."
-                          "\n\nEnfin, la concaténation des listes consolidées des publications "
-                          "disponibles, a été créée dans le dossier :"
-                          f"\n\n '{bdd_multi_annuelle_folder}' "
-                          "\n\nsous un nom vous identifiant ainsi que la liste des années "
-                          "prises en compte et caractérisé par la date et l'heure de la création.")
+                          "dans le même dossier.")
+            if pg.LISTES_CONCAT:
+                info_text += ("\n\nEnfin, la concaténation des listes consolidées des publications "
+                              "disponibles, a été créée dans le dossier :"
+                              f"\n\n '{bdd_multi_annuelle_folder}' "
+                              "\n\nsous un nom vous identifiant ainsi que la liste des années "
+                              "prises en compte et caractérisé par la date et l'heure de la création.")
             messagebox.showinfo(info_title, info_text)
 
         else:
@@ -631,7 +632,8 @@ def _launch_pub_list_conso_try(institute, org_tup,
             warning_title = "!!! ATTENTION : fichiers manquants !!!"
             warning_text = ("Les fichiers d'attribution des OTPs "
                             f"de l'année {year_select} ne sont pas disponibles."
-                            "\n1- Effectuez l'attribution des OTPs pour cette année."
+                            "\n1- Relancez la création des fichiers d'attribution des OTPs "
+                            "pour cette année."
                             "\n2- Relancez la consolidation de la liste des publications "
                             "pour cette année.")
             messagebox.showwarning(warning_title, warning_text)

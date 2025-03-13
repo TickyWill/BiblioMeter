@@ -2,7 +2,6 @@
 and in publications lists.
 """
 __all__ = ['update_inst_if_database',
-           'journal_capwords',
           ]
 
 
@@ -19,31 +18,8 @@ from openpyxl import Workbook as openpyxl_Workbook
 import bmfuncts.pub_globals as pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.rename_cols import set_final_col_names
+from bmfuncts.useful_functs import set_capwords_lambda
 from bmfuncts.useful_functs import concat_dfs
-
-def journal_capwords(text):
-    """Capitalizes words in journal names except those given 
-    by the 'BM_LOW_WORDS_LIST' global import from globals 
-    module imported as pg.
-
-    Args:
-        text (str): Journal name to be capitalized by words.
-    Returns:
-        (str): Journal name capitalized by main words.
-    """
-    text_split_list = []
-    for x in text.split():
-        if x.lower() in pg.BM_LOW_WORDS_LIST:
-            x = x.lower()
-        else:
-            x = x.capitalize()
-        text_split_list.append(x)
-    text = " ".join(text_split_list)
-    return text
-
-
-def _capwords_journal_col(journal_col):
-    return lambda row: journal_capwords(row[journal_col])
 
 
 def _get_if(if_updated_file_path, useful_col_list):
@@ -76,7 +52,7 @@ def _get_if(if_updated_file_path, useful_col_list):
     if_updated_df = if_updated_df[useful_col_list]
     if not if_updated_df.empty:
         if_updated_df[journal_col] = if_updated_df.\
-            apply(_capwords_journal_col(journal_col), axis=1)
+            apply(set_capwords_lambda(journal_col), axis=1)
 
     return if_updated_df
 
@@ -217,8 +193,8 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
     2. Then, for each IFs-year, the steps are as follows:
 
         1. Gets the initial database of the IFs-year from the all-years database \
-        and capitalizes the journal-names main words through the `_capwords_journal_col` \
-        internal function.
+        and capitalizes the journal-names main words through the `set_capwords_lambda` \
+        function imported from `bmfuncts.useful_functs` module.
         2. Builds the fully updated dataframes of IFs database for the IFs-year and \
         the partial dataframe of most-recent-year IFs limited to the corpus journals data \
         through the `_update_year_if_database` internal function, with corpus year set to IFs-year.
@@ -262,7 +238,7 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
         year_if_db_df = if_db_dict[if_db_year]
         year_if_db_df = year_if_db_df.fillna(unknown_alias)
         year_if_db_df[journal_col] = year_if_db_df.\
-            apply(_capwords_journal_col(journal_col), axis=1)
+            apply(set_capwords_lambda(journal_col), axis=1)
         corpus_year = if_db_year
         dfs_tup = _update_year_if_database(institute, org_tup, bibliometer_path,
                                            corpus_year, year_if_db_df,
@@ -289,7 +265,8 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
 
     1. Initializes the dataframe of the IFs database of the most-recent year \
     from the all-years database and capitalizes the journal-names main words 
-    through the `_capwords_journal_col` internal function.
+    through the `set_capwords_lambda` function imported from \
+    `bmfuncts.useful_functs` module.
     2. Then, for each corpus year in the 'off_if_db_years_list' years list, \
     the steps are as follows:
 
@@ -331,7 +308,7 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
     most_recent_year_if_db_df = if_db_dict[most_recent_year]
     most_recent_year_if_db_df = most_recent_year_if_db_df.fillna(unknown_alias)
     most_recent_year_if_db_df[journal_col] = most_recent_year_if_db_df.\
-        apply(_capwords_journal_col(journal_col), axis=1)
+        apply(set_capwords_lambda(journal_col), axis=1)
 
     # Building fully updated Ifs database for years beginning
     # from the most recent year available for IFs

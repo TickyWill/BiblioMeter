@@ -168,8 +168,8 @@ def _build_and_save_inst_stat_df(distrib_institutions_df, inst_types_list,
         inst_type_stat_df = _build_inst_type_stat_df(distrib_institutions_df, inst_type,
                                                      stat_cols_list, pub_id_col)
         inst_sheet_name = inst_type
-        inst_df_title = pg.DF_TITLES_LIST[12]
-        wb = format_wb_sheet(inst_sheet_name, inst_type_stat_df, inst_df_title, wb, first)
+        inst_stat_title = pg.DF_TITLES_LIST[12]
+        wb = format_wb_sheet(inst_sheet_name, inst_type_stat_df, inst_stat_title, wb, first)
         first = False
 
     # Saving workbook

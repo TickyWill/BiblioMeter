@@ -18,6 +18,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
            'COL_NAMES_COMPL',
+           'COL_NAMES_DOCTYPE_ANALYSIS',
            'COL_NAMES_EXT',
            'COL_NAMES_IF_ANALYSIS',
            'COL_NAMES_ORTHO',
@@ -29,7 +30,9 @@ __all__ = ['ANALYSIS_IF',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
+           'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
+           'LISTES_CONCAT',
            'NOT_AVAILABLE_IF',
            'OTHER_DOCTYPE',
            'OTP_SHEET_NAME_BASE',
@@ -59,7 +62,8 @@ DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "Authors_df", "Authors_stat_df", "KPI_df",
                   "KW_df", "Geo_df", "Institutions_df",
-                  "IF_anal_df", "Distrib_inst_df", "Institutions_stat_df"]
+                  "IF_anal_df", "Distrib_inst_df",
+                  "Institutions_stat_df", "doctype_stat_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
@@ -70,6 +74,8 @@ PARSING_PERF = "Parsing_perf.json"
 TSV_SAVE_EXTENT = "dat"
 
 XL_INDEX_BASE = 1
+
+LISTES_CONCAT = False
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 
@@ -123,6 +129,7 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "hash_id"             : "Identifiants universels",
                  "submit"              : "Croisement auteurs-effectifs",
                  "pub-lists"           : "Listes consolidées des publications",
+                 "doctypes"            : "Analyse par types de document",
                  "impact-factors"      : "Analyse des facteurs d'impact",
                  "authors_prod"        : "Analyse par auteurs",
                  "keywords"            : "Analyse des mots clefs",
@@ -140,6 +147,7 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
 ARCHI_YEAR = {
               "analyses"                            : "5 - Analyses",
               "authors analysis"                    : "Auteurs",
+              "doctype analysis"                    : "Edition",
               "if analysis"                         : "IFs",
               "keywords analysis"                   : "Mots clefs",
               "subjects analysis"                   : "Thématique",
@@ -148,8 +156,11 @@ ARCHI_YEAR = {
               "authors file name"                   : "Informations auteur par publication",
               "authors weight file name"            : "Statistiques par auteurs",
               "countries file name"                 : "Pays par publication",
+              "book weight file name"               : "Statistiques par ouvrage",
               "country weight file name"            : "Statistiques par pays",
               "continent weight file name"          : "Statistiques par continent",
+              "journal weight file name"            : "Statistiques par journal",
+              "proceedings weight file name"        : "Statistiques par actes de conférence",
               "norm inst file name"                 : "Institutions normalisées",
               "raw inst file name"                  : "Institutions brutes",
               "institutions distribution file name" : "Distribution institutions par types et par adresses",
@@ -180,7 +191,7 @@ ARCHI_YEAR = {
 # Setting list of final results to save
 RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists",
                    "ifs", "kws","countries", "continents",
-                   "authors", "institutions"]
+                   "authors", "institutions", "doctypes"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -195,9 +206,9 @@ ROW_COLORS = {'odd'      : '0000FFFF',
 
 DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction',
                                  'Correction; Early Access', 'Data Paper', 'Erratum',
-                                 'Letter', 'Note', 'Review', 'Review; early access',
+                                 'Letter', 'Note', 'Review', 'Review; Early Access',
                                  'Short Survey'],
-                 'Books'      : ['Article; Book Chapter', 'Book', 'Book chapter',
+                 'Books'      : ['Article; Book Chapter', 'Book', 'Book Chapter',
                                  'Biographical-Item', 'Editorial', 'Editorial Material'],
                  'Proceedings': ['Conference Paper', 'Meeting Abstract',
                                  'Article; Proceedings Paper'],
@@ -312,24 +323,40 @@ COL_NAMES_AUTHOR_ANALYSIS = {'author_nb'       : "Nombre d'auteurs",
                              'pub_nb'          : "Nombre de publications",
                             }
 
+COL_NAMES_DOCTYPE_ANALYSIS = {'articles'   : "Journal",
+                              'proceedings': "Actes de conférence",
+                              'books'      : "Ouvrage",
+                              'articles_nb': "Nombre d'articles",
+                              'chapters_nb': "Nombre de chapitres",
+                             }
+
 KPI_KEYS_ORDER_DICT = {0  : "Année de publication",
-                       1  : "Nombre de publications",
-                       2  : "Ouvrages",
-                       3  : "Chapitres",
-                       4  : "Moyenne de chapitres par ouvrage",
-                       5  : "Maximum de chapitres par ouvrage",
-                       6  : "Journaux & actes de conférence",
-                       7  : "Journaux",
-                       8  : "Articles & communications",
-                       9  : "Communications",
-                       10 : "Communications (%)",
-                       11 : "Articles",
-                       12 : "Moyenne d'articles par journal",
-                       13 : "Maximum d'articles par journal",
-                       14 : "Facteur d'impact d'analyse",
-                       15 : "Facteur d'impact maximum",
-                       16 : "Facteur d'impact minimum",
-                       17 : "Facteur d'impact moyen",
-                       18 : "Articles sans facteur d'impact",
-                       19 : "Articles sans facteur d'impact (%)",
+                       1  : "Publications",
+                       2  : "Articles",
+                       3  : "Articles de journal",
+                       4  : "Articles de conférence",
+                       5  : "Chapitres d'ouvrage",
+                       6  : "Journaux",
+                       7  : "Actes de conférence",
+                       8  : "Ouvrages",
+                       9  : "Moyenne d'articles par journal",
+                       10 : "Moyenne d'articles par conférence",
+                       11 : "Moyenne de chapitres par ouvrage",
+                       12 : "Maximum d'articles par journal",
+                       13 : "Maximum d'articles par conférence",
+                       14 : "Maximum de chapitres par ouvrage",
+                       15 : "Articles de conférence (%)",
+                       16 : "Chapitres d'ouvrage (%)",
+                       17 : "Facteur d'impact d'analyse",
+                       18 : "Facteur d'impact maximum",
+                       19 : "Facteur d'impact minimum",
+                       20 : "Facteur d'impact moyen",
+                       21 : "Articles sans facteur d'impact",
+                       22 : "Articles sans facteur d'impact (%)",
                       }
+
+KPI_KEYS_DICT = {'articles'   : [6,3,9,12],
+                 'proceedings': [7,4,10,13],
+                 'books'      : [8,5,11,14],
+                 'complements': [1,2,15,16],
+                }

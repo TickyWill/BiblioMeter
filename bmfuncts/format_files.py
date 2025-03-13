@@ -127,10 +127,14 @@ def align_cell(ws, columns_list, col_attr, xl_idx_base):
                                                  color='FFFFFF'),
                               right=openpyxl_Side(border_style='thick',
                                                   color='FFFFFF'))
+    wrap_text = False
     for col_idx, col in enumerate(columns_list):
         column_letter = openpyxl_get_column_letter(col_idx + xl_idx_base)
+        if col_idx==len(columns_list):
+            wrap_text = True
         for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1],
+            cell.alignment = openpyxl_Alignment(wrap_text=wrap_text,
+                                                horizontal=col_attr[col][1],
                                                 vertical="center")
             cell.border = borders
     return ws
@@ -292,7 +296,7 @@ def _set_kpi_attributes(cols_list):
 def _set_if_ana_attributes(cols_list):
     # Setting col-attributes dict using col-widths list
     # with widths-list order: first col, other cols
-    widths_list = [50, 15]
+    widths_list = [80, 15]
     col_attr_dict = _set_attr_dict(cols_list, widths_list)
 
     # Setting row-heights dict
@@ -363,6 +367,17 @@ def _set_inst_stat_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
+def _set_doctype_stat_attributes(cols_list):
+    attr_list = [[80, "left"], [25, "center"], [15, "center"],
+                 [95, "left"], [15, "center"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+
 def set_df_attributes(df_title, df_cols_list, keys_list):
     """Sets the attributes for formating a given data type as openpyxl object.
 
@@ -392,6 +407,7 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     if_ana_alias = pg.DF_TITLES_LIST[10]
     distrib_inst_alias = pg.DF_TITLES_LIST[11]
     inst_stat_alias = pg.DF_TITLES_LIST[12]
+    doctype_stat_alias = pg.DF_TITLES_LIST[13]
 
     attr_tup = _set_base_attributes(df_cols_list, keys_list)
 
@@ -424,6 +440,9 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
 
     elif df_title==distrib_inst_alias:
         attr_tup = _set_distrib_inst_attributes(df_cols_list)
+
+    elif df_title==doctype_stat_alias:
+        attr_tup = _set_doctype_stat_attributes(df_cols_list)
     return attr_tup
 
 
@@ -480,7 +499,7 @@ def set_base_keys_list(institute, org_tup):
 
 
 def format_page(df, df_title, attr_keys_list=None, wb=None,
-                header=True, cell_colors=None):
+                header=True, cell_colors=None, idx_wrap=None):
     """Formats a worksheet of an openpyxl workbook using 
     columns attributes got through the `set_df_attributes`  
     internal function.
@@ -545,10 +564,12 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
     ws = set_col_width(ws, df_cols_list, col_attr_dict,
                        col_idx_init, xl_idx_base)
 
-    # Setting height of first row
+    # Setting height of rows
     for idx_row in range(ws.max_row):
         if idx_row==0:
             height = row_heights_dict['first_row']
+        elif idx_wrap and idx_row<=idx_wrap: # Auto Height of data row
+            height = None 
         else:
             height = row_heights_dict['other_rows']
         ws.row_dimensions[idx_row + 1].height = height
@@ -556,7 +577,7 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
 
 
 def format_wb_sheet(sheet_name, df, df_title, wb, first,
-                    attr_keys_list=None):
+                    attr_keys_list=None, idx_wrap=None):
     """Formats impact-factors (IFs) sheet in the 'wb' openpyxl workbook 
     as first sheet of the workbook if first is True.
 
@@ -579,22 +600,24 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
         (openpyxl workbook): The updated workbook with the 'sheet_name' sheet.
     """
     if first:
-        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
+        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list,
+                             wb=wb, idx_wrap=idx_wrap)
         ws.title = sheet_name
     else:
         wb.create_sheet(sheet_name)
         wb.active = wb[sheet_name]
-        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
+        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list,
+                             wb=wb, idx_wrap=idx_wrap)
     return wb
 
 
 def save_formatted_df_to_xlsx(save_path, item_filename, item_df,
-                              item_df_title, sheet_name):
+                              item_df_title, sheet_name, idx_wrap=None):
     """Formats the 'item_df' dataframe through `format_page` function imported 
     from the `bmfuncts.format_files` module and saves it as xlsx workbook.
     """
     item_xlsx_file = item_filename
     item_xlsx_path = save_path / Path(item_xlsx_file)
-    wb, ws = format_page(item_df, item_df_title)
+    wb, ws = format_page(item_df, item_df_title, idx_wrap=idx_wrap)
     ws.title = sheet_name
     wb.save(item_xlsx_path)

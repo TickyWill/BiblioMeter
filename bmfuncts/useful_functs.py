@@ -14,6 +14,7 @@ __all__ = ['check_dedup_parsing_available',
            'save_fails_dict',
            'save_parsing_dict',
            'save_xlsx_file',
+           'set_capwords_lambda',
            'set_rawdata',
            'set_year_pub_id',
            'standardize_address',
@@ -36,6 +37,43 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def _set_capwords(text):
+    """Capitalizes words in text except those given 
+    by the 'BM_LOW_WORDS_LIST' global import from globals 
+    module imported as pg.
+
+    Args:
+        text (str): Text to be capitalized by words.
+    Returns:
+        (str): Text capitalized by main words.
+    """
+    text_list = []
+    for sub_text in text.split("; "):
+        space_split_list = []
+        for x in sub_text.split():
+            if x.lower() in pg.BM_LOW_WORDS_LIST:
+                x = x.lower()
+            else:
+                x = x.capitalize()
+            space_split_list.append(x)
+        sub_text = " ".join(space_split_list)
+        text_list.append(sub_text)
+    text = "; ".join(text_list)
+    return text
+
+
+def set_capwords_lambda(col):
+    """Build lambda function based on `_set_capwords` 
+    internal function.
+
+    Args:
+        col (str): Name of the column to be modified.
+    Return:
+        (lambda function): Function to be applied by rows.
+    """
+    return lambda row: _set_capwords(row[col])
 
 
 def keep_initials(df, initials_col_base, missing_fill=None):
@@ -686,26 +724,21 @@ def read_final_pub_list_data(saved_results_path,
     """
     # Setting useful aliases
     pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
-    papers_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[0]
-    books_doctype_alias = list(pg.DOCTYPE_TO_SAVE_DICT.keys())[1]
     saved_pub_list_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
 
     # Setting useful xlsx file names for input data
     year_pub_list_filename = pub_list_filename_base + " " + corpus_year
-    papers_list_filename = year_pub_list_filename + "_" + papers_doctype_alias + ".xlsx"
-    books_list_filename = year_pub_list_filename + "_" + books_doctype_alias + ".xlsx"
+    pub_list_filename = year_pub_list_filename + ".xlsx"
 
     # Setting input-data paths
     year_saved_results_path = saved_results_path / Path(corpus_year)
     saved_pub_list_path = year_saved_results_path / Path(saved_pub_list_folder_alias)
-    papers_list_file_path = saved_pub_list_path / Path(papers_list_filename)
-    books_list_file_path = saved_pub_list_path / Path(books_list_filename)
+    pub_list_file_path = saved_pub_list_path / Path(pub_list_filename)
 
     # Initializing the dataframe to be analysed
-    papers_df = pd.read_excel(papers_list_file_path,
-                                usecols=cols_list)
-
-    return papers_df, books_list_file_path
+    pub_df = pd.read_excel(pub_list_file_path,
+                           usecols=cols_list)
+    return pub_df
 
 
 def save_fails_dict(fails_dict, parsing_path):

@@ -538,6 +538,42 @@ def save_final_institutions(bibliometer_path,
     return end_message
 
 
+def save_final_doctypes(bibliometer_path,
+                        corpus_year, results_folder_path):
+    """Saves final results of number of publications per doctype for the corpus year.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
+    """
+
+    # Setting aliases for saving results
+    results_sub_folder_alias = pg.ARCHI_RESULTS["doctypes"]
+
+    # Setting aliases of common parts of file names
+    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
+    origin_doctypes_folder_alias = pg.ARCHI_YEAR["doctype analysis"]
+
+    # Setting common paths
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
+    origin_doctypes_folder_path = origin_analysis_folder_path / Path(origin_doctypes_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_doctypes_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
+    
+    # Copying origin dir into target dir
+    shutil.copytree(origin_doctypes_folder_path, target_doctypes_folder_path, dirs_exist_ok=True)
+
+    end_message = (f"Final stat per doctype for year {corpus_year} saved in folder: "
+                   f"\n  '{target_doctypes_folder_path}'")
+    return end_message
+
+
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                        if_analysis_name, results_to_save_dict, verbose = False):
     """Saves final results of given datatype and corpus year according 
@@ -632,6 +668,10 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     if results_to_save_dict["institutions"]:
         message = save_final_institutions(bibliometer_path, corpus_year,
                                           results_folder_path)
+
+    if results_to_save_dict["doctypes"]:
+        message = save_final_doctypes(bibliometer_path, corpus_year,
+                                      results_folder_path)
         if verbose:
             print("\n",message)
 
