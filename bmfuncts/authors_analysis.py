@@ -22,6 +22,7 @@ from bmfuncts.save_final_results import save_final_results
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import read_final_submit_data
+from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import set_year_pub_id
 
 
@@ -60,7 +61,7 @@ def _read_authors_data(bibliometer_path, saved_results_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (dataframe): The dataframe of the authors data.
@@ -126,7 +127,7 @@ def _build_auth_nb_per_pub(bibliometer_path, saved_results_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         cols_tup (tup): (Pub-ID column name, authors-number column name).
     Returns:
@@ -174,13 +175,8 @@ def _build_author_employee_df(bibliometer_path, datatype,
     Returns:
         (dataframe): The dataframe of the authors data per publications.
     """
-    # Setting useful aliases
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
-
-    # Setting useful paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
+    # Setting input-data path
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
     # Setting useful columns names
     submit_select_cols, add_cols_list = all_cols_tup

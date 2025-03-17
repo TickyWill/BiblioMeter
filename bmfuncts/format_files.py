@@ -357,9 +357,30 @@ def _set_distrib_inst_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_inst_stat_attributes(cols_list):
+def _set_inst_country_pub_attributes(cols_list):
     attr_list = [[30, "left"], [25, "center"],
                  [15, "center"], [95, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_pub_country_inst_attributes(cols_list):
+    attr_list = [[15, "center"], [25, "center"],
+                 [15, "center"], [95, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_country_inst_pub_attributes(cols_list):
+    attr_list = [[30, "left"], [15, "center"],
+                 [95, "left"], [15, "center"],
+                 [95, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
     row_heights_dict = {'first_row':30,
                         'other_rows':15}
@@ -406,8 +427,10 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     inst_alias = pg.DF_TITLES_LIST[9]
     if_ana_alias = pg.DF_TITLES_LIST[10]
     distrib_inst_alias = pg.DF_TITLES_LIST[11]
-    inst_stat_alias = pg.DF_TITLES_LIST[12]
+    inst_country_pub_alias = pg.DF_TITLES_LIST[12]
     doctype_stat_alias = pg.DF_TITLES_LIST[13]
+    pub_country_inst_alias = pg.DF_TITLES_LIST[14]
+    country_inst_pub_alias = pg.DF_TITLES_LIST[15]
 
     attr_tup = _set_base_attributes(df_cols_list, keys_list)
 
@@ -435,8 +458,14 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     elif df_title==inst_alias:
         attr_tup = _set_inst_attributes(df_cols_list)
 
-    elif df_title==inst_stat_alias:
-        attr_tup = _set_inst_stat_attributes(df_cols_list)
+    elif df_title==inst_country_pub_alias:
+        attr_tup = _set_inst_country_pub_attributes(df_cols_list)
+
+    elif df_title==pub_country_inst_alias:
+        attr_tup = _set_pub_country_inst_attributes(df_cols_list)
+
+    elif df_title==country_inst_pub_alias:        
+        attr_tup = _set_country_inst_pub_attributes(df_cols_list)
 
     elif df_title==distrib_inst_alias:
         attr_tup = _set_distrib_inst_attributes(df_cols_list)
@@ -524,6 +553,8 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
         the openpyxl package (default = True).
         cell_colors (list): List of openpyxl.PatternFill objects \
         (default = None).
+        idx_wrap (int): The optional maximum index of the rows \
+        for which text is wraped in the last column.
     Returns:
         (tup): (worbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).
@@ -586,7 +617,7 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
 
     Args:
         sheet_name (str): 4-digits IFs sheet-name.
-        df (dataframe): IFs database of a  year.
+        df (dataframe): Data to be saved.
         df_title (str): Name of data to be formatted for setting \
         columns attributes, to be specified using the 'DF_TITLES_LIST' \
         global defined in `bmfuncts.pub_globals` module.
@@ -595,7 +626,9 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
         attr_keys_list (list): The optional list of columns names (str) \
         that will be used as keys for building the dict \
         valued by the attributes lists of each column composed \
-        by [horizontal alignment (str), width (int)] (default = None). 
+        by [horizontal alignment (str), width (int)] (default = None).
+        idx_wrap (int): The optional maximum index of the rows \
+        for which text is wraped in the last column.
     Returns:
         (openpyxl workbook): The updated workbook with the 'sheet_name' sheet.
     """
@@ -615,6 +648,17 @@ def save_formatted_df_to_xlsx(save_path, item_filename, item_df,
                               item_df_title, sheet_name, idx_wrap=None):
     """Formats the 'item_df' dataframe through `format_page` function imported 
     from the `bmfuncts.format_files` module and saves it as xlsx workbook.
+
+    Args:
+        save_path (path): Full path to the folder where the data will be saved.
+        item_filename (str): Name of the file for saving the data.
+        item_df (dataframe): Data to be saved.
+        item_df_title (str): Name of data to be formatted for setting \
+        columns attributes, to be specified using the 'DF_TITLES_LIST' \
+        global defined in `bmfuncts.pub_globals` module.
+        sheet_name (str): 4-digits IFs sheet-name. 
+        idx_wrap (int): The optional maximum index of the rows \
+        for which text is wraped in the last column.
     """
     item_xlsx_file = item_filename
     item_xlsx_path = save_path / Path(item_xlsx_file)

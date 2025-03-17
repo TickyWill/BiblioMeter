@@ -18,6 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 # 3rd party imports
+import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -57,9 +58,13 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     # Setting useful aliases
     pub_list_path_alias = pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
+
+    # Setting useful file names
     year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
     pub_list_file_alias = year_pub_list_file_alias + ".xlsx"
     other_dg_file_alias = year_pub_list_file_alias + "_" + pg.OTHER_DOCTYPE + ".xlsx"
+
+    # Setting useful paths
     corpus_year_path = bibliometer_path / Path(corpus_year)
     pub_list_path = corpus_year_path / Path(pub_list_path_alias)
     pub_list_file_path = pub_list_path / Path(pub_list_file_alias)
@@ -67,18 +72,18 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
 
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
-    pub_id_col_alias = final_col_dic['pub_id']
-    doc_type_alias = final_col_dic['doc_type']
+    pub_id_col = final_col_dic['pub_id']
+    doc_type_col = final_col_dic['doc_type']
 
     full_pub_list_df = pd.read_excel(pub_list_file_path)
     other_dg = full_pub_list_df.copy()
     pub_nb = len(full_pub_list_df)
     key_pub_nb = 0
     for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
-        doctype_list = [x.upper() for x in  doctype_list]
+        doctype_list = [x.upper() for x in doctype_list]
         key_dg = pd.DataFrame(columns=full_pub_list_df.columns)
 
-        for doc_type, dg in full_pub_list_df.groupby(doc_type_alias):
+        for doc_type, dg in full_pub_list_df.groupby(doc_type_col):
             if doc_type.upper() in doctype_list:
                 key_dg = concat_dfs([key_dg, dg])
                 other_dg = other_dg.drop(dg.index)
@@ -87,12 +92,12 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         key_dg_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
         key_dg_path = pub_list_path / Path(key_dg_file_alias)
 
-        key_dg = key_dg.sort_values(by=[pub_id_col_alias])
+        key_dg = key_dg.sort_values(by=[pub_id_col])
         wb, _ = format_page(key_dg, common_df_title,
                             attr_keys_list=format_cols_list)
         wb.save(key_dg_path)
 
-    other_dg = other_dg.sort_values(by=[pub_id_col_alias])
+    other_dg = other_dg.sort_values(by=[pub_id_col])
     wb, _ = format_page(other_dg, common_df_title,
                         attr_keys_list=format_cols_list)
     wb.save(other_dg_path)
@@ -166,6 +171,17 @@ def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
     return otp_df
 
 
+def _correct_book_chapters(pub_list_df, cols_tup):
+    """Corrects book chapters with ISSN to articles."""
+    issn_col, doc_type_col = cols_tup
+    book_doctypes_list = [x.upper() for x in pg.DOC_TYPE_DICT["Books"]]
+    for idx_row, row in pub_list_df.iterrows():
+        issn, doctype = row[issn_col], row[doc_type_col].upper()
+        if issn!=bp.UNKNOWN and doctype in book_doctypes_list:
+            pub_list_df.loc[idx_row, doc_type_col] = "Article"
+    return pub_list_df
+
+
 def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                          in_path, out_path, in_file_base, corpus_year):
     """Builds the dataframe of the publications final list
@@ -218,14 +234,16 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     final_col_list = list(final_col_dic.values())
+    pub_id_col = final_col_dic['pub_id']
+    doc_type_col = final_col_dic['doc_type']
+    issn_col = final_col_dic['issn']
+    otp_col = final_col_dic['otp'] # Choix de l'OTP
 
     # Setting useful aliases
     pub_list_filename_base_alias = pg.ARCHI_YEAR["pub list file name base"]
     missing_if_filename_base_alias = pg.ARCHI_IF["missing_if_base"]
     missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
     invalid_pub_filename_base_alias = pg.ARCHI_YEAR["invalid file name base"]
-    pub_id_alias = final_col_dic['pub_id']
-    otp_alias = final_col_dic['otp'] # Choix de l'OTP
     otp_col_new_alias = pg.COL_NAMES_BONUS['final OTP'] # OTP
 
     # Setting useful paths
@@ -240,40 +258,44 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     otp_df = _concat_dept_otps_dfs(org_tup, in_file_base, in_path)
 
     # Deduplicating rows on Pub_id
-    otp_df = otp_df.drop_duplicates(subset=[pub_id_alias])
+    otp_df = otp_df.drop_duplicates(subset=[pub_id_col])
 
     # Selecting useful columns using final_col_list
     consolidate_pub_list_df = otp_df[final_col_list].copy()
-
-    # Saving df to EXCEL file
-    consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
+    consolidate_pub_list_df = consolidate_pub_list_df.reset_index()
 
     # Saving set OTPs
-    otp_message = save_otps(institute, org_tup, bibliometer_path, corpus_year)
+    otp_message = save_otps(institute, org_tup, bibliometer_path,
+                            corpus_year, consolidate_pub_list_df)
 
     # Setting pub ID as index for unique identification of rows
-    consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_alias)
+    consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_col)
 
     # Droping invalid publications by pub Id as index
-    invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
+    invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_col]\
                                                 !=ig.INVALIDE].index
     invalids_df = consolidate_pub_list_df.drop(index=invalids_idx_list)
-    valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_alias]\
+    valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_col]\
                                                          ==ig.INVALIDE].index
     consolidate_pub_list_df = consolidate_pub_list_df.drop(index=valids_idx_list)
 
     # Resetting pub ID as a standard column
     consolidate_pub_list_df = consolidate_pub_list_df.reset_index()
     invalids_df = invalids_df.reset_index()
+    
+    # Correcting book chapters with ISSN to articles
+    #cols_tup = (issn_col, doc_type_col)
+    #consolidate_pub_list_df = _correct_book_chapters(consolidate_pub_list_df,
+    #                                                 cols_tup)
 
-    # Re_saving df to EXCEL file
+    # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
 
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
     invalids_df_title = pg.DF_TITLES_LIST[0]
     format_cols_list = set_base_keys_list(institute, org_tup)
-    invalids_df = invalids_df.rename(columns={otp_alias: otp_col_new_alias})
+    invalids_df = invalids_df.rename(columns={otp_col: otp_col_new_alias})
     wb, _ = format_page(invalids_df, invalids_df_title,
                         attr_keys_list=format_cols_list)
     wb.save(invalids_file_path)

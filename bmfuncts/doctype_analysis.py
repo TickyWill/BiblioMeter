@@ -24,6 +24,7 @@ from bmfuncts.useful_functs import set_capwords_lambda
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import read_final_pub_list_data
+from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _unique_journal_name(init_analysis_df, journal_col, issn_col):
@@ -59,7 +60,7 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
     Args:
         bibliometer_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (dataframe): The dataframe of the authors data.
@@ -79,7 +80,7 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
 
 def build_doctype_analysis_data(institute, org_tup, bibliometer_path, datatype, corpus_year,
                                 final_cols_tup, if_col_list=None):
-    """Builds the dataframe of publications list to be analyzed.
+    """To update: Builds the dataframe of publications list to be analyzed.
 
     This is done through the following steps:
 
@@ -93,13 +94,12 @@ def build_doctype_analysis_data(institute, org_tup, bibliometer_path, datatype, 
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
-        if_col_list (list): List of column names of impact-factors.
-        if_most_recent_year (str): Most recent year of impact factors.
+        final_cols_tup (tup) : (final columns names dict, departments columns list) .
+        if_col_list (list): Optional list of column names of impact-factors.
     Returns:
-        
+        (dataframe): 
     """
     # Building pub_df_dict dict
     # keyyed by doctypes: ['articles', 'proceedings', 'books']
@@ -110,15 +110,11 @@ def build_doctype_analysis_data(institute, org_tup, bibliometer_path, datatype, 
     #    pub_df_dict['articles'] = articles_df
     #    pub_df_dict['proceedings'] = proceedings_df
     #    pub_df_dict['books'] = books_df
+    # Setting input-data path
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
     # Setting useful aliases
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
     journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
-
-    # Setting input-data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
 
     # Setting useful column names
     final_col_dic, depts_col_list = final_cols_tup
@@ -128,7 +124,8 @@ def build_doctype_analysis_data(institute, org_tup, bibliometer_path, datatype, 
     issn_col = final_col_dic['issn']
 
     # Getting articles data reuslting from deduplication parsing
-    parsing_articles_df = _read_articles_data(bibliometer_path, saved_results_path, corpus_year)
+    parsing_articles_df = _read_articles_data(bibliometer_path,
+                                              saved_results_path, corpus_year)
 
     # Building the dict {journal name : normalized journal name,}
     # from the deduplication results

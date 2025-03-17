@@ -35,7 +35,7 @@ from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 
 
-def save_otps(institute, org_tup, bibliometer_path, corpus_year):
+def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
     """Saves the history of the attributed OTPs by the user.
 
     First, builds the dataframe to save with 2 sheets:
@@ -61,6 +61,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
+        pub_df (dataframe): Consolidated publications data with OTPs. 
     Returns:
         (str): End message.
     """
@@ -71,12 +72,9 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
     history_folder_alias = pg.ARCHI_YEAR["history folder"]
     kept_otps_file_alias = pg.ARCHI_YEAR["kept OTPs file name"]
     hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
-    pub_list_file_alias = pub_list_file_base_alias + f' {corpus_year}.xlsx'
 
     # Setting useful column name aliases
     pub_id_alias = all_col_rename_dic[bp.COL_NAMES['pub_id']]
@@ -91,16 +89,11 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     corpus_year_path = bibliometer_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
-    pub_list_folder_path = corpus_year_path / Path(pub_list_folder_alias)
-    pub_list_file_path = pub_list_folder_path / Path(pub_list_file_alias)
     history_folder_path = corpus_year_path / Path(history_folder_alias)
     kept_otps_file_path = history_folder_path / Path(kept_otps_file_alias)
 
     # Getting the hash_id dataframe
     hash_id_df  = pd.read_excel(hash_id_file_path)
-
-    # Getting the dataframe of consolidated pub list with OTPs
-    pub_df = pd.read_excel(pub_list_file_path)
 
     # Building set OTPs df
     if otp_col_alias in pub_df.columns:
@@ -112,15 +105,15 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year):
     otps_df = otps_df.astype(str)
     set_otps_df = otps_df.copy()
     sep = ","
-    for idx,row in otps_df.iterrows():
-        if sep in row[otp_col] or row[otp_col] == "0":
+    for idx, row in otps_df.iterrows():
+        if sep in row[otp_col] or row[otp_col]=="0":
             set_otps_df = set_otps_df.drop(idx)
 
     # Building hash_id and kept otp df
     hash_otps_history_df = pd.merge(hash_id_df,
                                     set_otps_df,
-                                    how = 'inner',
-                                    on = pub_id_alias)
+                                    how='inner',
+                                    on=pub_id_alias)
     hash_otps_history_df = hash_otps_history_df.drop(columns=[pub_id_alias, author_col_alias, doi_col_alias])
     hash_otps_history_df = hash_otps_history_df.rename(columns={otp_col:otp_col_alias})
 

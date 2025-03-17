@@ -23,6 +23,7 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_final_dedup
+from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import standardize_firstname_initials
 from bmfuncts.useful_functs import standardize_txt
 
@@ -375,7 +376,7 @@ def _read_parsing_data(bibliometer_path, saved_results_path,
     Args:
         bibliometer_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (tup): (dataframe of the publications data, \
@@ -473,15 +474,12 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     bm_lastname_alias = pg.COL_NAMES_BM['Last_name']
     bm_firstname_alias = pg.COL_NAMES_BM['First_name']
     corpus_year_col_alias = pg.COL_NAMES_BONUS['corpus_year']
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
     
     # Setting useful cols tup
     bm_cols_tup = (bm_fullname_alias, bm_lastname_alias, bm_firstname_alias)
 
     # Setting input-data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
     # Getting the useful parsing results
     return_tup = _read_parsing_data(bibliometer_path,

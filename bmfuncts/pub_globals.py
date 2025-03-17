@@ -43,8 +43,10 @@ __all__ = ['ANALYSIS_IF',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
+           'STAT_FILE_DICT',
+           'STAT_INST_TYPES_LIST',
            'TSV_SAVE_EXTENT',
-           'XL_INDEX_BASE'
+           'XL_INDEX_BASE', 
           ]
 
 # 3rd party imports
@@ -63,7 +65,8 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "Authors_df", "Authors_stat_df", "KPI_df",
                   "KW_df", "Geo_df", "Institutions_df",
                   "IF_anal_df", "Distrib_inst_df",
-                  "Institutions_stat_df", "doctype_stat_df"]
+                  "inst_country_pub_df", "doctype_stat_df",
+                  "pub_country_inst_df", "country_inst_pub_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
@@ -163,7 +166,7 @@ ARCHI_YEAR = {
               "proceedings weight file name"        : "Statistiques par actes de conférence",
               "norm inst file name"                 : "Institutions normalisées",
               "raw inst file name"                  : "Institutions brutes",
-              "institutions distribution file name" : "Distribution institutions par types et par adresses",
+              "institutions distribution file name" : "Distribution institutions par types",
               "institution weight file name"        : "Statistiques par institutions",
               "bdd mensuelle"                       : "0 - BDD multi mensuelle",
               "submit file name"                    : "submit.xlsx",
@@ -255,7 +258,9 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
                    'country'          : "Pays",
                    'continent'        : "Continent",
                    'institution'      : "Institution",
+                   'inst number'      : "Nombre d'entités",
                    'pub_ids list'     : "Liste des Pub_ids",
+                   'inst list'        : "Liste des entités",
                    'address ID'       : "Adresse_id",
                   }
 
@@ -360,3 +365,17 @@ KPI_KEYS_DICT = {'articles'   : [6,3,9,12],
                  'books'      : [8,5,11,14],
                  'complements': [1,2,15,16],
                 }
+
+
+stat_keys_list = ["country per pub",
+                  "inst per country per pub",
+                  "inst and pub per country"]
+stat_names_list = ["Stat-Publications par institutions",
+                   "Stat-Institutions par publication",
+                   "Stat_Institutions & Publications par pays",]
+stat_df_titles_list = [12, 14, 15]
+values_tup_list = tuple(zip(stat_names_list, stat_df_titles_list ))
+
+STAT_FILE_DICT = dict(zip(stat_keys_list, values_tup_list))
+STAT_INST_TYPES_LIST = ["Firm", "Nro", "Rto", "Univ", "Inst",
+                        "CNRS-Lab", "Univ-Lab", "Jlab", "CEA-Inst"]

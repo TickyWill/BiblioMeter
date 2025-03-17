@@ -16,6 +16,7 @@ __all__ = ['check_dedup_parsing_available',
            'save_xlsx_file',
            'set_capwords_lambda',
            'set_rawdata',
+           'set_saved_results_path',
            'set_year_pub_id',
            'standardize_address',
            'standardize_firstname_initials',
@@ -37,6 +38,17 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def set_saved_results_path(bibliometer_path, datatype):
+    # Setting useful aliases 
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
+
+    # Setting saved data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
+    return saved_results_path
 
 
 def _set_capwords(text):
@@ -106,12 +118,13 @@ def standardize_address(raw_address):
     version.
 
     The aliases of a given word are captured using a specific regex which is case sensitive defined 
-    by the global 'DIC_WORD_RE_PATTERN'. The aliases may contain symbols from a given list of any 
-    language including accentuated ones. The length of the alliases is limited to a maximum according 
-    to the longest alias known.
+    by the global 'DIC_WORD_RE_PATTERN' imported from the `BiblioParsing` package imported as "bp". 
+    The aliases may contain symbols from a given list of any language including accentuated ones. 
+    The length of the alliases is limited to a maximum according to the longest alias known.
         ex: The longest alias known for the word 'University' is 'Universidade'. 
-            Thus, 'University' aliases are limited to 12 symbols begenning with the base 'Univ' 
-            + up to 8 symbols from the list '[aàädeéirstyz]' and possibly finishing with a dot. 
+            Thus, 'University' aliases are limited to 12 symbols beginning with the base 'Univ' 
+            with possibly before one symbol among a to z and after up to 8 symbols from the list 
+            '[aàäcdeéirstyz]' and possibly finishing with a dot. 
     Then, dashes are replaced by a hyphen-minus using 'DASHES_CHANGE' global and apostrophes are replaced 
     by the standard cote using 'APOSTROPHE_CHANGE' global. 
     The globals are imported from the `BiblioParsing` package imported as "bp". 
@@ -127,8 +140,12 @@ def standardize_address(raw_address):
     """
     # Uniformizing words
     standard_address = raw_address
-    for word_to_subsitute, re_pattern in bp.DIC_WORD_RE_PATTERN.items():
-        standard_address = re.sub(re_pattern,word_to_subsitute + ' ', standard_address)
+    for word_to_substitute, re_pattern in bp.DIC_WORD_RE_PATTERN.items():
+        if word_to_substitute=='University':
+            # Corrected in new version of BiblioParsing package
+            # To be removed when available from package new install
+            re_pattern = re.compile(r'\b[a-z]{0,1}Univ[aàäcdeéirstyz]{0,8}\b\.?')
+        standard_address = re.sub(re_pattern, word_to_substitute + ' ', standard_address)
     standard_address = re.sub(r'\s+', ' ', standard_address)
     standard_address = re.sub(r'\s,', ',', standard_address)
 
@@ -137,6 +154,9 @@ def standardize_address(raw_address):
 
     # Uniformizing apostrophes
     standard_address = standard_address.translate(bp.APOSTROPHE_CHANGE)
+    
+    # Droping symbols
+    standard_address = standard_address.translate(bp.SYMB_DROP)
 
     # Uniformizing countries
     country_pos = -1
@@ -655,7 +675,7 @@ def get_final_dedup(bibliometer_path, saved_results_path, corpus_year):
     Args:
         bibliometer_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (dict): Parsing results keyed by parsing items (str) and valued \
@@ -688,7 +708,7 @@ def read_final_submit_data(saved_results_path, corpus_year):
 
     Args:
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (dataframe): The resulting dataframe from the read.
@@ -716,7 +736,7 @@ def read_final_pub_list_data(saved_results_path,
 
     Args:
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         cols_list (list): Use columns names for the file read.
     Returns:

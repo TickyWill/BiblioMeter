@@ -22,6 +22,7 @@ from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import set_saved_results_path
 
 def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, cols_tup):
     """Removes the affiliation items given in the file pointed by 'country_unkept_affil_file_path' 
@@ -198,13 +199,14 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     Returns:
         (path): Full path to the folder where results of coupling analysis are saved.
     """
+    # Setting input-data path
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+
     # Setting aliases from globals
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
     institutions_folder_alias = pg.ARCHI_INSTITUTIONS["root"]
     inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
 
     # Setting useful file names
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
@@ -215,10 +217,6 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
     institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
-
-    # Setting input_data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):

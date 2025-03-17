@@ -20,6 +20,7 @@ from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import read_final_pub_list_data
+from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_tup,
@@ -148,13 +149,13 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     Returns:
         (path): Full path to the folder where results of keywords analysis are saved.
     """
+    # Setting input-data path
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
     # Setting useful aliases
     auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
     index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
     title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     kw_analysis_folder_alias = pg.ARCHI_YEAR["keywords analysis"]
 
@@ -162,10 +163,6 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     year_folder_path = bibliometer_path / Path(str(year))
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
-
-    # Setting input-data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
     if progress_callback:
         progress_callback(5)
 

@@ -18,6 +18,7 @@ from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _build_dept_doctype_df(init_dept_doctype_df, dept, cols_tup):
@@ -337,7 +338,7 @@ def update_kpi_database(institute, org_tup, saved_results_path,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         saved_results_path (path): Full path to the folder \
-        where final results have been saved.
+        where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
         including itself and valued with KPIs dict of these keys.
@@ -432,15 +433,12 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         (tup): (full path to the folder where results of impact-factors \
         analysis are saved, dataframe of Institute KPIs database, dict of Institute KPIs).
     """
-    # Setting useful aliases 
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    # Setting input-data path
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+
+    # Setting useful aliases
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     if_analysis_folder_alias = pg.ARCHI_YEAR["if analysis"]
-
-    # Setting input-data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
-    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
 
     # Setting analysis-results paths
     year_folder_path = bibliometer_path / Path(corpus_year)
