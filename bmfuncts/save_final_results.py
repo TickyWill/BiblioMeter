@@ -462,7 +462,7 @@ def save_final_continents(bibliometer_path,
     return end_message
 
 
-def save_final_institutions(bibliometer_path,
+def save_final_institutions_old(bibliometer_path,
                             corpus_year, results_folder_path):
     """Saves final results of publications per institution for the corpus year.
 
@@ -535,6 +535,42 @@ def save_final_institutions(bibliometer_path,
 
     end_message = (f"Final institutions analysis for year {corpus_year} saved in folder: "
                    f"\n  '{target_institutions_path}'")
+    return end_message
+
+
+def save_final_institutions(bibliometer_path,
+                            corpus_year, results_folder_path):
+    """Saves final results of publications per institution for the corpus year.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
+    """
+
+    # Setting aliases for saving results
+    results_sub_folder_alias = pg.ARCHI_RESULTS["institutions"]
+
+    # Setting aliases of common parts of file names
+    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
+    origin_inst_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
+
+    # Setting common paths
+    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
+    origin_inst_folder_path = origin_analysis_folder_path / Path(origin_inst_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_inst_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
+    
+    # Copying origin dir into target dir
+    shutil.copytree(origin_inst_folder_path, target_inst_folder_path, dirs_exist_ok=True)
+
+    end_message = (f"Final stat per institutions for year {corpus_year} saved in folder: "
+                   f"\n  '{target_inst_folder_path}'")
     return end_message
 
 
