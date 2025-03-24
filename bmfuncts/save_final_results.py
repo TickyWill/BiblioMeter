@@ -565,7 +565,7 @@ def save_final_institutions(bibliometer_path,
     origin_inst_folder_path = origin_analysis_folder_path / Path(origin_inst_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_inst_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
-    
+
     # Copying origin dir into target dir
     shutil.copytree(origin_inst_folder_path, target_inst_folder_path, dirs_exist_ok=True)
 
@@ -601,7 +601,7 @@ def save_final_doctypes(bibliometer_path,
     origin_doctypes_folder_path = origin_analysis_folder_path / Path(origin_doctypes_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_doctypes_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
-    
+
     # Copying origin dir into target dir
     shutil.copytree(origin_doctypes_folder_path, target_doctypes_folder_path, dirs_exist_ok=True)
 
@@ -704,6 +704,8 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     if results_to_save_dict["institutions"]:
         message = save_final_institutions(bibliometer_path, corpus_year,
                                           results_folder_path)
+        if verbose:
+            print("\n",message)
 
     if results_to_save_dict["doctypes"]:
         message = save_final_doctypes(bibliometer_path, corpus_year,

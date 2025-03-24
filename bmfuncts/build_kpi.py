@@ -9,7 +9,6 @@ from pathlib import Path
 # 3rd party imports
 import numpy as np
 import pandas as pd
-import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as pg
@@ -21,12 +20,12 @@ from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import set_saved_results_path
 
 
-def _build_dept_doctype_df(init_dept_doctype_df, dept, cols_tup):
+def _build_dept_doctype_df(init_dept_doctype_df, cols_tup):
     # setting parameters from args
     journal_col, items_nb_col = cols_tup
 
     # Adding a column with number of articles per journal
-    # then droping duplicate rows
+    # then dropping duplicate rows
     count_doctype_df = init_dept_doctype_df[journal_col].value_counts().to_frame()
     count_doctype_df = count_doctype_df.rename(columns={"count": items_nb_col})
     count_doctype_df = count_doctype_df.reset_index()
@@ -81,7 +80,7 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
 
     # Setting new col names and related parameters
     items_nb_col_alias = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
-    
+
     # Setting useful col names tup
     cols_tup = (journal_col, items_nb_col_alias)
 
@@ -89,7 +88,7 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
     doctype_df_dict = {}
     doctype_kpi_dict = {}
     for dept in [institute] + depts_col_list:
-        # Building the doctype datafor "dept"
+        # Building the doctype data for "dept"
         if dept!=institute:
             dept_doctype_df = doctype_df[doctype_df[dept]==1].copy()
         else:
@@ -97,9 +96,9 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
 
         # Building the books dataframe for "dept"
         doctype_df_dict[dept] = _build_dept_doctype_df(dept_doctype_df,
-                                                       dept, cols_tup)
+                                                       cols_tup)
 
-        # Computing KPI for department'dept'
+        # Computing KPI for department 'dept'
         doctype_kpi_dict[dept] = _build_dept_doctype_kpi(doctype,
                                                          doctype_df_dict[dept],
                                                          items_nb_col_alias)
@@ -122,7 +121,7 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     4. Computes the IF-KPIs of the department using the data of the 'dept_if_df' dataframe.
     5. Builds the 'dept_if_kpi_dict' dict using the IF_KPIs computed.
     6. Sets the value of the 'dept_kpi_dict' dict at key given by 'if_analysis_col_new' \
-    aqual to 'dept_if_kpi_dict' dict; by that the 'dept_kpi_dict' dict becomes a hierarchical dict.  
+    equal to 'dept_if_kpi_dict' dict; by that the 'dept_kpi_dict' dict becomes a hierarchical dict.  
     7. Sets the value of the 'kpi_dict' hierarchical dict at key 'dept' (name of the department) \
     equal to the 'dept_kpi_dict' hierarchical dict.
     8. Saves the 'dept_if_df' dataframe as openpyxl workbook using the `format_page` function \
@@ -144,10 +143,11 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
         hierarchical dict of each department and that is also column name of IFs values \
         in the saved files).
     """
+    print("    Building of basic KPIs")
+
     # Setting useful column names aliases
     final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
     journal_col_alias = final_col_dic['journal']
-    doctype_col_alias = final_col_dic['doc_type']
 
     # Setting useful tuple args
     params_tup = (institute, depts_col_list, journal_col_alias)
@@ -157,12 +157,12 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     art_proc_nb_key = pg.KPI_KEYS_ORDER_DICT[2]
     proc_rario_key = pg.KPI_KEYS_ORDER_DICT[15]
     chapt_ratio_key = pg.KPI_KEYS_ORDER_DICT[16]
-    
+
     # Initializing useful dicts
     init_kpi_dict = {}
     pub_dfs_dict = {}
     items_nb_key_dict = {}
-    
+
     # Building KPIs dict for all doctypes
     doctypes_list = list(pub_df_dict.keys())
     for doctype in doctypes_list:
@@ -185,8 +185,12 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
         # Computing complementary KPIs
         art_proc_nb = doctype_nb_dict['articles'] + doctype_nb_dict['proceedings']
         pub_nb = art_proc_nb + doctype_nb_dict['books']
-        proc_ratio = round(doctype_nb_dict['proceedings'] / art_proc_nb * 100)
-        chapt_ratio = round(doctype_nb_dict['books'] / pub_nb * 100)
+        proc_ratio = 0
+        chapt_ratio = 0
+        if art_proc_nb:
+            proc_ratio = round(doctype_nb_dict['proceedings'] / art_proc_nb * 100)
+        if pub_nb:
+            chapt_ratio = round(doctype_nb_dict['books'] / pub_nb * 100)
 
         # Completing KPI dict for department 'dept'
         kpi_dict[dept]['complements'] = {}
@@ -194,7 +198,7 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
         kpi_dict[dept]['complements'][art_proc_nb_key] = art_proc_nb
         kpi_dict[dept]['complements'][proc_rario_key] = proc_ratio
         kpi_dict[dept]['complements'][chapt_ratio_key] = chapt_ratio
-       
+
     return kpi_dict
 
 
@@ -202,7 +206,7 @@ def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
     """Building the IFs data for computing IF KPIs"""
     # Setting parameters from args
     journal_col, if_analysis_col = cols_list[0], cols_list[3]
-    
+
     # Selecting useful columns from 'dept_articles_df' dataframe
     dept_if_df = dept_by_journal_df[cols_list]
 
@@ -220,6 +224,8 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
                            if_analysis_col, if_analysis_folder_path,
                            kpi_dict, final_cols_tup,
                            verbose=False):
+    print("    Building of IF KPIs")
+
     # Setting useful columns info from args
     final_col_dic, depts_col_list = final_cols_tup
     journal_col = final_col_dic['journal']
@@ -230,7 +236,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
 
     # Setting useful tuple
     cols_list = [journal_col, issn_col, articles_nb_col_alias, if_analysis_col]
-    
+
     for dept in [institute] + depts_col_list:
         # Setting the statistiques by journals data for 'dept'
         dept_by_journal_df = by_journal_dict[dept]
@@ -288,10 +294,10 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
     """Builds the KPI data for a department."""
     dept_kpi_dict = kpi_dict[dept]
     new_dept_kpi_dict = {}
-    for doctype, doctype_kpi_dict in dept_kpi_dict.items():
+    for _, doctype_kpi_dict in dept_kpi_dict.items():
         new_dept_kpi_dict = dict(new_dept_kpi_dict, **doctype_kpi_dict)
 
-    # Building sub dict of publications KPIs of 'dept' in keys order 
+    # Building sub dict of publications KPIs of 'dept' in keys order
     # specified by 'ordered_keys'
     dept_basic_kpi_dict = {k: new_dept_kpi_dict[k] for k in ordered_keys[1:17]}
     part_dept_if_kpi_dict = {k: new_dept_kpi_dict[k] for k in ordered_keys[18:23]}
@@ -322,7 +328,7 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
     return dept_kpi_df
 
 
-def update_kpi_database(institute, org_tup, saved_results_path,
+def update_kpi_database(institute, saved_results_path,
                         corpus_year, kpi_dict, if_key,
                         final_cols_tup, verbose=False):
     """Updates database of the key performance indicators (KPIs) with values of 'kpi_dict' 
@@ -404,7 +410,7 @@ def update_kpi_database(institute, org_tup, saved_results_path,
 
 
 def if_analysis(institute, org_tup, bibliometer_path, datatype,
-                corpus_year, if_most_recent_year, 
+                corpus_year, if_most_recent_year,
                 progress_callback=None, verbose=False):
     """ Performs the analysis of journal impact_factors (IFs) of the 'corpus_year' corpus.
 
@@ -462,7 +468,8 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     return_tup = doctype_analysis(institute, org_tup, bibliometer_path,
                                   datatype, corpus_year, if_most_recent_year,
                                   progress_callback=progress_callback)
-    pub_df_dict, by_journal_dict, if_analysis_col, if_analysis_year = return_tup
+    (pub_df_dict, by_journal_dict, if_analysis_col,
+     if_analysis_year, doctypes_analysis_folder_path) = return_tup
     if progress_callback:
         progress_callback(60)
 
@@ -470,7 +477,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     kpi_dict = _build_basic_kpi(institute, org_tup, pub_df_dict)
     if progress_callback:
         progress_callback(70)
-    
+
     # Building the IFs KPIs
     return_tup = _build_articles_if_kpi(institute, by_journal_dict,
                                         if_analysis_year, if_analysis_col,
@@ -481,7 +488,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(75)
 
     # Updating the KPIs database
-    institute_kpi_df = update_kpi_database(institute, org_tup, saved_results_path,
+    institute_kpi_df = update_kpi_database(institute, saved_results_path,
                                            corpus_year, kpi_dict, new_if_analysis_col,
                                            final_cols_tup, verbose=verbose)
     if progress_callback:
@@ -496,4 +503,4 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)
-    return if_analysis_folder_path, institute_kpi_df, kpi_dict
+    return doctypes_analysis_folder_path, if_analysis_folder_path, institute_kpi_df, kpi_dict

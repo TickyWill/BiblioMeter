@@ -502,8 +502,8 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
 
     The split is in separate lists of publications depending on values in columns 
     given by 'inst_col_list' list that is specific to the Institute. Some lists 
-    of publications identifyed by 'orphan_drop_dict' dict that is specific to 
-    the Institute, are droped from the initial publications list with one row 
+    of publications identified by 'orphan_drop_dict' dict that is specific to 
+    the Institute, are dropped from the initial publications list with one row 
     per author that has not been identified as Institute employees. The lists 
     resulting from the split are saved as Excel files in the folder which full path 
     is given by 'orphan_path'.
@@ -602,7 +602,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     contract at the Institute are added through the `_add_other_ext` internal function \
     updating 'submit_df' and 'orphan_df' dataframes.
     5. The 'submit_df' and 'orphan_df' dataframes are updated by search in the employees \
-    database through the `build_submit_df` function using recusively items from \
+    database through the `build_submit_df` function using recursively items from \
     'years' list for the search year.
     6. The dataframes are refactored by replacing NaN values by the UNKNOWN global and \
     modifying the publications IDs through the `set_year_pub_id` function imported from \
@@ -644,7 +644,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
         that are set to NaN by default through the `keep_initials` function \
         imported from "bmfuncts.useful_functs" internal module.
     """
-    print("\nMerge publications and employees information launched...")
+    print(f"\nMerge publications and employees information launched for year {corpus_year}...")
 
     # Setting useful aliases
     pub_id_alias = bp.COL_NAMES['pub_id']

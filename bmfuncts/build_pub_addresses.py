@@ -54,7 +54,7 @@ def _build_institute_authors_addresses(institute, org_tup,
 
 def _read_addresses_data(bibliometer_path, saved_results_path,
                          corpus_year):
-    """Reads saved addresses data resulting from the parsing step.
+    """Reads saved data of addresses resulting from the parsing step.
 
     It uses the `get_final_dedup` function imported from 
     the `bmfuncts.useful_functs` module.
@@ -65,7 +65,7 @@ def _read_addresses_data(bibliometer_path, saved_results_path,
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
-        (dataframe): The dataframe of the addresses data.
+        (dataframe): The data of addresses.
     """
     # Setting useful aliases
     addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
@@ -143,7 +143,7 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     return return_tup
 
 
-def _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
+def _build_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
                                           institute_author_addresses_df,
                                           bm_full_cols_list):
     """Builds the data of addresses per 'author_id', per 'address_id' and per 'pub_id'.
@@ -163,7 +163,7 @@ def _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
 
         # Setting list of other-authors addresses for 'pub_id'
         df2_addresses_list = pub_id_df2[bm_address_col].to_list()
-        df1_out_df2_addresses_list = list(set(df1_addresses_list) - set(pub_id_df2[bm_address_col].to_list()))
+        df1_out_df2_addresses_list = list(set(df1_addresses_list) - set(df2_addresses_list))
 
         # Building partial 'pubid_addid_authid_addresse_df' for 'pub_id' as 'pub_id_out_df'
         pub_id_out_df = pd.DataFrame()
@@ -255,25 +255,25 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
                                     verbose, save_folder_path, save_num):
     """Cleans the data of addresses per 'pub_id' depending on the Institute.
     
-    It uses the `_built_pubid_addid_authid_addresse_df`, `_correct_inst_address` 
+    It uses the `_build_pubid_addid_authid_addresse_df`, `_correct_inst_address` 
     and `_build_final_institute_addresses_df` internal functions to do that. 
     The resulting data may be saved for control through the `save_xlsx_file` 
     function imported from `bmfuncts.useful_functs` and the use of 'verbose' arg.
     """
     if institute.upper()=="LITEN":
         # Building "pubid_addid_authid_addresse_df"
-        return_df = _built_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
+        return_df = _build_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
                                                           institute_author_addresses_df,
                                                           bm_full_cols_list)
         pubid_addid_authid_addresse_df = return_df
         if verbose:
-            print("pubid_addid_authid_addresse_df built")
+            print("    pubid_addid_authid_addresse_df built")
 
         # Building  corrected "pubid_addid_authid_addresse_df"
         corr_pubid_addid_authid_addresse_df = _correct_inst_address(pubid_addid_authid_addresse_df,
                                                                     bm_full_cols_list)
         if verbose:
-            print("corr_pubid_addid_authid_addresse_df built")
+            print("    corr_pubid_addid_authid_addresse_df built")
             # - saving intermediate results
             save_num += 1
             save_xlsx_file(save_folder_path, pubid_addid_authid_addresse_df,
@@ -291,7 +291,6 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
 
 
 def _set_save_folder_path(bibliometer_path, year):
-    
     # Setting useful aliases
     analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
     inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
@@ -336,7 +335,8 @@ def build_institute_addresses_df(institute, org_tup, bibliometer_path,
      bm_full_cols_list, bp2bm_rename_cols_dict) = return_tup
 
     if verbose:
-        print("inst_pub_addresses_init_df, institute_author_addresses_df and bm_full_cols_list built")
+        print("    inst_pub_addresses_init_df, institute_author_addresses_df "
+              "and bm_full_cols_list built")
         # - saving intermediate results
         save_folder_path = _set_save_folder_path(bibliometer_path, year)
         save_num += 1
@@ -351,7 +351,7 @@ def build_institute_addresses_df(institute, org_tup, bibliometer_path,
                                                  verbose, save_folder_path, save_num)
     inst_pub_addresses_df, save_num = return_tup
     if verbose:
-        print("inst_pub_addresses_df built")
+        print("    inst_pub_addresses_df built")
         # - saving intermediate results
         save_num += 1
         save_xlsx_file(save_folder_path, inst_pub_addresses_df,

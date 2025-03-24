@@ -464,7 +464,7 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     elif df_title==pub_country_inst_alias:
         attr_tup = _set_pub_country_inst_attributes(df_cols_list)
 
-    elif df_title==country_inst_pub_alias:        
+    elif df_title==country_inst_pub_alias:
         attr_tup = _set_country_inst_pub_attributes(df_cols_list)
 
     elif df_title==distrib_inst_alias:
@@ -600,7 +600,7 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
         if idx_row==0:
             height = row_heights_dict['first_row']
         elif idx_wrap and idx_row<=idx_wrap: # Auto Height of data row
-            height = None 
+            height = None
         else:
             height = row_heights_dict['other_rows']
         ws.row_dimensions[idx_row + 1].height = height

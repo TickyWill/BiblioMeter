@@ -23,6 +23,7 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_final_dedup
+from bmfuncts.useful_functs import save_final_dedup
 from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import standardize_firstname_initials
 from bmfuncts.useful_functs import standardize_txt
@@ -57,9 +58,9 @@ def _get_doi_pub_id(articles_df, dois_list):
 
 
 def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, dfs_tup):
-    """Checks if normalized affiliation attribution is correct 
-    for the added DOIS from HAL database."""
-    articles_df, authorsinst_authors_df = dfs_tup
+    """Checks if normalized affiliation attribution is correct for the added DOIS 
+    from HAL database and save the corrected files of parsing."""
+    articles_df, addresses_df, authorsinst_df = dfs_tup
     pub_id_col = bp.COL_NAMES['auth_inst'][0]
     address_col = bp.COL_NAMES['auth_inst'][2]
     norm_inst_col = bp.COL_NAMES['auth_inst'][4]
@@ -67,7 +68,7 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
     inst_col_list = org_tup[4]
     main_inst_idx = org_tup[7]
 
-    # Setting test parameters to include institute in addresse
+    # Setting test parameters to include institute in address
     top_inst = 'CEA'.lower()
     town = 'Grenoble'.lower()
     other_inst = ['LITEN', 'LETI', 'IRIG', 'IBS']
@@ -75,8 +76,37 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
     hal_added_dois_list = _get_hal_added_dois(bibliometer_path, corpus_year)
     hal_added_pub_id_df = _get_doi_pub_id(articles_df, hal_added_dois_list)
     hal_added_pub_id_list = hal_added_pub_id_df[pub_id_col].to_list()
-    new_authorsinst_authors_df = pd.DataFrame(columns=authorsinst_authors_df.columns)
-    for pub_id, pub_df in authorsinst_authors_df.groupby(pub_id_col):
+
+    new_authorsinst_df = pd.DataFrame(columns=authorsinst_df.columns)
+    for pub_id, pub_df in authorsinst_df.groupby(pub_id_col):
+        if pub_id in hal_added_pub_id_list:
+            new_pub_df = pd.DataFrame(columns=pub_df.columns)
+            for addrs, addr_df in pub_df.groupby(address_col):
+                addrs_list = addrs.split("; ")
+                new_addrs_list = []
+                for addr in addrs_list:
+                    addr_lw = addr.lower()
+                    exclude_test = any(ext.lower() in addr_lw for ext in other_inst)
+                    include_test = top_inst in addr_lw and town in addr_lw and not exclude_test
+                    new_addr = addr
+                    new_norm_inst = addr_df[norm_inst_col]
+                    new_main_inst_idx = addr_df[inst_col_list[main_inst_idx]]
+                    if include_test:
+                        new_addr = institute + ', ' + addr
+                        new_norm_inst = institute_norm
+                        new_main_inst_idx = 1
+                    new_addrs_list.append(new_addr)
+                    new_addrs = "; ".join(new_addrs_list)
+                    addr_df[address_col] = new_addrs
+                    addr_df[norm_inst_col] = new_norm_inst
+                    addr_df[inst_col_list[main_inst_idx]] = new_main_inst_idx
+                new_pub_df = concat_dfs([new_pub_df, addr_df])
+            new_authorsinst_df = concat_dfs([new_authorsinst_df, new_pub_df])
+        else:
+            new_authorsinst_df = concat_dfs([new_authorsinst_df, pub_df])
+
+    new_addresses_df = pd.DataFrame(columns=addresses_df.columns)
+    for pub_id, pub_df in addresses_df.groupby(pub_id_col):
         if pub_id in hal_added_pub_id_list:
             new_pub_df = pd.DataFrame(columns=pub_df.columns)
             for addr, addr_df in pub_df.groupby(address_col):
@@ -85,13 +115,12 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
                 include_test = top_inst in addr_lw and town in addr_lw and not exclude_test
                 if include_test:
                     addr_df[address_col] = institute + ', ' + addr
-                    addr_df[norm_inst_col] = institute_norm
-                    addr_df[inst_col_list[main_inst_idx]] = 1
                 new_pub_df = concat_dfs([new_pub_df, addr_df])
-            new_authorsinst_authors_df = concat_dfs([new_authorsinst_authors_df, new_pub_df])
+            new_addresses_df = concat_dfs([new_addresses_df, new_pub_df])
         else:
-            new_authorsinst_authors_df = concat_dfs([new_authorsinst_authors_df, pub_df])
-    return new_authorsinst_authors_df
+            new_addresses_df = concat_dfs([new_addresses_df, pub_df])
+
+    return new_addresses_df, new_authorsinst_df
 
 
 def _retain_firstname_initials(row):
@@ -111,9 +140,9 @@ def _split_lastname_firstname(row, digits_min=4):
             first_names_list = first_names_list[::-1]
             last_names_list = last_names_list[:name_idx] + last_names_list[(name_idx + 1):]
 
-    first_name_initials = _retain_firstname_initials((' ').join(first_names_list))
-    last_name = standardize_txt((' ').join(last_names_list))
-    return (last_name, first_name_initials)
+    first_name_initials = _retain_firstname_initials(' '.join(first_names_list))
+    last_name = standardize_txt(' '.join(last_names_list))
+    return last_name, first_name_initials
 
 
 def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status, main_inst_idx):
@@ -151,7 +180,7 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
 def _check_names_spelling(bibliometer_path, init_df, cols_tup):
     """Replace author names in 'init_df' dataframe by the employee name.
 
-    This is done when a name-spelling discrepency is given in the dedicated 
+    This is done when a name-spelling discrepancy is given in the dedicated 
     Excel file named 'orthograph_file_name' and located in the 'orphan_treat_root' 
     folder of the working folder.
     Beforehand, the full name given by this file is standardized through the 
@@ -364,9 +393,10 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
     print("    External authors removed")
     return new_pub_df
 
-def _read_parsing_data(bibliometer_path, saved_results_path,
-                       corpus_year):
-    """Reads saved data of publications, authors 
+
+def _read_useful_parsing_data(bibliometer_path, saved_results_path,
+                              corpus_year, items_list):
+    """Reads saved data of publications, addresses, authors 
     and authors with affiliations resulting from 
     the parsing step.
 
@@ -378,15 +408,18 @@ def _read_parsing_data(bibliometer_path, saved_results_path,
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
+        items_list (list): List of items (str) to be read.
     Returns:
         (tup): (dataframe of the publications data, \
+        dataframe of the addresses data \
         dataframe of the authors data, dataframe of \
         the authors with affiliations data).
     """
-    # Setting useful aliases
-    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
-    authors_item_alias = bp.PARSING_ITEMS_LIST[1]
-    auth_inst_item_alias = bp.PARSING_ITEMS_LIST[5]
+    # Setting useful parameters from args
+    (articles_item,
+     addresses_item,
+     authors_item,
+     auth_inst_item) = items_list
 
     # Getting the dict of deduplication results
     dedup_parsing_dict = get_final_dedup(bibliometer_path,
@@ -394,13 +427,58 @@ def _read_parsing_data(bibliometer_path, saved_results_path,
                                          corpus_year)
 
     # Getting ID of each publication with complementary info
-    articles_df = dedup_parsing_dict[articles_item_alias]
+    articles_df = dedup_parsing_dict[articles_item]
+
+    # Getting ID of each address with address info
+    addresses_df = dedup_parsing_dict[addresses_item]
 
     # Getting ID of each author with author name
-    authors_df = dedup_parsing_dict[authors_item_alias]
+    authors_df = dedup_parsing_dict[authors_item]
 
     # Getting ID of each author with institution by publication ID
-    authorsinst_df = dedup_parsing_dict[auth_inst_item_alias]
+    authorsinst_df = dedup_parsing_dict[auth_inst_item]
+
+    return articles_df, addresses_df, authors_df, authorsinst_df
+
+
+def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year):
+    # Setting useful aliases
+    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
+    addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
+    authors_item_alias = bp.PARSING_ITEMS_LIST[1]
+    auth_inst_item_alias = bp.PARSING_ITEMS_LIST[5]
+
+    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    item_filename_dict = config_tup[2]
+
+    # Setting input-data paths
+    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+
+    # Getting the useful parsing results
+    items_list = [articles_item_alias,
+                  addresses_item_alias,
+                  authors_item_alias,
+                  auth_inst_item_alias]
+    return_tup = _read_useful_parsing_data(bibliometer_path, saved_results_path,
+                                           corpus_year, items_list)
+    articles_df, addresses_df, authors_df, authorsinst_df = return_tup
+
+    if datatype=="Scopus-HAL & WoS":
+        # Checking affiliations for added DOIs from HAL
+        dfs_tup = articles_df, addresses_df, authorsinst_df
+        return_tup = _check_added_dois_affil(institute, org_tup, bibliometer_path,
+                                             corpus_year, dfs_tup)
+        addresses_df, authorsinst_df = return_tup
+
+        # Saving checked parsing data
+        dedup_infos = bibliometer_path, datatype, corpus_year
+        addresses_file_name_base = item_filename_dict[addresses_item_alias]
+        auth_inst_file_name_base = item_filename_dict[auth_inst_item_alias]
+        save_final_dedup(addresses_df, addresses_file_name_base,
+                         pg.TSV_SAVE_EXTENT, dedup_infos)
+        save_final_dedup(authorsinst_df, auth_inst_file_name_base,
+                         pg.TSV_SAVE_EXTENT, dedup_infos)
 
     return articles_df, authors_df, authorsinst_df
 
@@ -431,7 +509,7 @@ def _recasting_inst_merged_df(inst_merged_df, bm_cols_tup):
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = bm_fullname_alias # Last_name + firstname initials
     inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
-    
+
     return inst_merged_df
 
 
@@ -439,12 +517,12 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     """Builds the publications list dataframe with one row per Institute author 
     for each publication from the results of the corpus parsing.
 
-    First, the parsing results are got through the `_read_parsing_data` internal 
+    First, the parsing results are got through the `_get_input_data` internal 
     function. 
     After that, a publications list dataframe with one row per author affiliated 
     to the Institute is built using the 'filt_authors_inst' filter got through 
     the `_build_filt_authors_inst` internal function. 
-    Then, the dataframe is recasted through the `_recasting_inst_merged_df` 
+    Then, the dataframe is recast through the `_recasting_inst_merged_df` 
     internal function. 
     Finally, the dataframe is cleaned as follows:
 
@@ -460,7 +538,7 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        year (str): Contains the corpus year defined by 4 digits..        
+        year (str): Contains the corpus year defined by 4 digits.
     Returns:
         (dataframe): Publications list with one row per author with correction \
         of author-names and drop of authors with inappropriate affiliation \
@@ -474,16 +552,13 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     bm_lastname_alias = pg.COL_NAMES_BM['Last_name']
     bm_firstname_alias = pg.COL_NAMES_BM['First_name']
     corpus_year_col_alias = pg.COL_NAMES_BONUS['corpus_year']
-    
+
     # Setting useful cols tup
     bm_cols_tup = (bm_fullname_alias, bm_lastname_alias, bm_firstname_alias)
 
-    # Setting input-data paths
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
-
-    # Getting the useful parsing results
-    return_tup = _read_parsing_data(bibliometer_path,
-                                    saved_results_path, year)
+    # Getting input-data from parsing ones
+    return_tup = _get_input_data(institute, org_tup, bibliometer_path,
+                                 datatype, year)
     articles_df, authors_df, authorsinst_df = return_tup
 
     # Adding new column with year of initial publication which is the corpus year
@@ -495,12 +570,6 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
                                       how='inner',
                                       left_on=[bp_pub_id_alias, bp_auth_idx_alias],
                                       right_on=[bp_pub_id_alias, bp_auth_idx_alias])
-    if datatype=="Scopus-HAL & WoS":
-        # Checkking affiliations for added DOIs from HAL
-        dfs_tup = (articles_df, authorsinst_authors_df)
-        authorsinst_authors_df = _check_added_dois_affil(institute, org_tup,
-                                                         bibliometer_path,
-                                                         year, dfs_tup)
 
     # Building the authors filter of the institution INSTITUTE
     inst_col_list = org_tup[4]
@@ -511,7 +580,7 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
                                                  main_status, main_inst_idx)
 
     # Associating each publication (including its complementary info)
-    # whith each of its INSTITUTE authors
+    # with each of its INSTITUTE authors
     # The resulting dataframe contains a row for each INSTITUTE author
     # with the corresponding publication info
     inst_merged_df = pd.merge(authorsinst_authors_df[filt_authors_inst],

@@ -1,6 +1,6 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
 
-    To Do: import `standardize_address` from BinlioParsing package.
+    To Do: import `standardize_address` from BiblioParsing package.
 """
 
 __all__ = ['check_dedup_parsing_available',
@@ -12,6 +12,7 @@ __all__ = ['check_dedup_parsing_available',
            'read_final_pub_list_data',
            'read_parsing_dict',
            'save_fails_dict',
+           'save_final_dedup',
            'save_parsing_dict',
            'save_xlsx_file',
            'set_capwords_lambda',
@@ -41,7 +42,7 @@ from bmfuncts.config_utils import set_user_config
 
 
 def set_saved_results_path(bibliometer_path, datatype):
-    # Setting useful aliases 
+    # Setting useful aliases
     saved_results_root_alias = pg.ARCHI_RESULTS["root"]
     saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
 
@@ -99,7 +100,7 @@ def keep_initials(df, initials_col_base, missing_fill=None):
         missing_fill (str): Optional value for replacing NaN \
         in the other columns (default = None).
     Returns:
-        (dataframe): The modifyed dataframe.
+        (dataframe): The modified dataframe.
     """
     df_cols = list(df.columns)
     df_initials_cols = [x for x in df_cols if initials_col_base in x]
@@ -117,10 +118,10 @@ def standardize_address(raw_address):
     such as 'University', 'Institute', 'Center' and' Department', by a standardized 
     version.
 
-    The aliases of a given word are captured using a specific regex which is case sensitive defined 
+    The aliases of a given word are captured using a specific regex which is case-sensitive defined 
     by the global 'DIC_WORD_RE_PATTERN' imported from the `BiblioParsing` package imported as "bp". 
     The aliases may contain symbols from a given list of any language including accentuated ones. 
-    The length of the alliases is limited to a maximum according to the longest alias known.
+    The length of the aliases is limited to a maximum according to the longest alias known.
         ex: The longest alias known for the word 'University' is 'Universidade'. 
             Thus, 'University' aliases are limited to 12 symbols beginning with the base 'Univ' 
             with possibly before one symbol among a to z and after up to 8 symbols from the list 
@@ -144,7 +145,7 @@ def standardize_address(raw_address):
         if word_to_substitute=='University':
             # Corrected in new version of BiblioParsing package
             # To be removed when available from package new install
-            re_pattern = re.compile(r'\b[a-z]{0,1}Univ[aàäcdeéirstyz]{0,8}\b\.?')
+            re_pattern = re.compile(r'\b[a-z]{?}Univ[aàäcdeéirstyz]{0,8}\b\.?')
         standard_address = re.sub(re_pattern, word_to_substitute + ' ', standard_address)
     standard_address = re.sub(r'\s+', ' ', standard_address)
     standard_address = re.sub(r'\s,', ',', standard_address)
@@ -154,8 +155,8 @@ def standardize_address(raw_address):
 
     # Uniformizing apostrophes
     standard_address = standard_address.translate(bp.APOSTROPHE_CHANGE)
-    
-    # Droping symbols
+
+    # Dropping symbols
     standard_address = standard_address.translate(bp.SYMB_DROP)
 
     # Uniformizing countries
@@ -177,7 +178,7 @@ def save_xlsx_file(root_path, df, file_name):
 
     Args:
         root_path (path): The path to the folder where the Excel file is saved.
-        df (dataframe): The data to saved.
+        df (dataframe): The data to save.
         file_name (str): The name of the file including '.xlsx' extent.
     """
     file_path = root_path / Path(file_name)
@@ -548,7 +549,7 @@ def _save_item(item_df, item_filename_base, save_extent, parsing_path):
         item_df.to_csv(item_working_path, index=False, sep=',')
 
 
-def _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
+def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
     # Setting parameters from args
     bibliometer_path, datatype, corpus_year = dedup_infos
 
@@ -613,7 +614,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
 
             if dedup_infos:
                 item_idx += 1
-                return_tup = _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+                return_tup = save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
                 if item_idx==parsing_items_nb:
                     corpus_year, final_dedup_path = return_tup
                     end_message = (f"Deduplication files for year {corpus_year} saved in folder: "

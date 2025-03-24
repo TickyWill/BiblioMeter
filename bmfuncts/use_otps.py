@@ -4,11 +4,13 @@ such as homonyms and OTPs.
 """
 
 __all__ = ['save_otps',
+           'set_pub_otp_df',
            'set_saved_otps',
           ]
 
 
 # Standard library imports
+import os
 from pathlib import Path
 
 # 3rd party imports
@@ -31,11 +33,90 @@ from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.format_files import get_col_letter
 from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.format_files import set_df_attributes
+from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 
+def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
+    """Gets the publications list of the a department 
+    from the EXCEL files where the user has set the OTPs.
 
-def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
+    The name of the file is build using the file-name base 
+    and the department label. This name is added '_ok' if 
+    this file exists in the folder of files. 
+    Then the file is read as a multisheet EXCEL file. 
+    The final publication list of the department results from 
+    the concatenation of the containt of all the existing sheets.  
+
+    Args:
+        dpt_label (str): Label of the department.
+        in_file_base (str): Base of OTPs files names.
+        in_path (path): Full path to folder of files where OTPs \
+        have been attributed.
+    Returns:
+        (dataframe): The concatenated publications list with OTPs.        
+    """
+    otp_file_name_dpt = in_file_base + '_' + dpt_label
+    otp_file_name_dpt_ok = otp_file_name_dpt + '_ok'
+    dpt_otp_path = in_path / Path(otp_file_name_dpt_ok + '.xlsx')
+    if not os.path.exists(dpt_otp_path):
+        dpt_otp_path = in_path / Path(otp_file_name_dpt + '.xlsx')
+    dpt_otp_dict = pd.read_excel(dpt_otp_path, sheet_name=None)
+    dpt_otp_df = pd.DataFrame()
+    for _, lab_df in dpt_otp_dict.items():
+        dpt_otp_df = concat_dfs([dpt_otp_df, lab_df])
+    return dpt_otp_df
+
+
+def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
+    """Concatenates the publications list of the Institute departments 
+    after getting them through the `_set_dpt_otp_df` internal function.
+
+    Args:
+        org_tup (tup): Contains Institute parameters.
+        in_file_base (str): Base of OTPs files names.
+        in_path (path): Full path to folder of files where OTPs \
+        have been attributed.
+    Returns:
+        (dataframe): The concatenated publications list with OTPs.        
+    """
+    # Setting institute parameters
+    dpt_label_dict = org_tup[1]
+    dpt_label_list = list(dpt_label_dict.keys())
+
+    # Concatenating publications list with OTPs of the Institute departments
+    otp_df_init_status = True
+    for dpt_label in dpt_label_list:
+        # Getting department publications list with OTPs
+        dpt_otp_df = _set_dpt_otp_df(dpt_label, in_file_base, in_path)
+
+        # Appending department publications list with OTPs
+        # to the full publication list to be returned
+        if otp_df_init_status:
+            otp_df = dpt_otp_df.copy()
+            otp_df_init_status = False
+        else:
+            otp_df = concat_dfs([otp_df, dpt_otp_df])
+    return otp_df
+
+
+def set_pub_otp_df(org_tup, final_col_list, pub_id_col, otp_path, otp_file_base):
+
+    # Getting dept OTPs df and concatenating them
+    init_pub_otp_df = _concat_dept_otps_dfs(org_tup, otp_file_base, otp_path)
+
+    # Deduplicating rows on Pub_id
+    init_pub_otp_df = init_pub_otp_df.drop_duplicates(subset=[pub_id_col])
+
+    # Selecting useful columns using final_col_list
+    pub_otp_df = init_pub_otp_df[final_col_list].copy()
+    pub_otp_df = pub_otp_df.reset_index()
+
+    return pub_otp_df
+
+
+def save_otps(institute, org_tup, bibliometer_path, corpus_year,
+              otp_path, otp_file_base):
     """Saves the history of the attributed OTPs by the user.
 
     First, builds the dataframe to save with 2 sheets:
@@ -61,14 +142,18 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        pub_df (dataframe): Consolidated publications data with OTPs. 
+        otp_path (path): -----------------.
+        otp_file_base (str): ------------------. 
     Returns:
         (str): End message.
     """
-
-    #  Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    all_col_rename_dic = col_rename_tup[2]
+    # Setting useful column names
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+    final_col_list = list(final_col_dic.values())
+    pub_id_col = final_col_dic['pub_id']
+    author_col = final_col_dic['first_author']
+    doi_col = final_col_dic['doi']
+    otp_list_col = final_col_dic['otp']
 
     # Setting useful folder and file aliases
     bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
@@ -77,10 +162,6 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
     hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
 
     # Setting useful column name aliases
-    pub_id_alias = all_col_rename_dic[bp.COL_NAMES['pub_id']]
-    author_col_alias = all_col_rename_dic[bp.COL_NAMES['articles'][1]]
-    doi_col_alias = all_col_rename_dic[bp.COL_NAMES['articles'][6]]
-    otp_list_col_alias = all_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]
     otp_col_alias = pg.COL_NAMES_BONUS['final OTP']
     hash_otp_sheet_alias = pg.SHEET_SAVE_OTP['hash_OTP']
     doi_otp_sheet_alias = pg.SHEET_SAVE_OTP['doi_OTP']
@@ -95,12 +176,16 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
     # Getting the hash_id dataframe
     hash_id_df  = pd.read_excel(hash_id_file_path)
 
+    # Setting the publication list with OTP info
+    pub_otp_df = set_pub_otp_df(org_tup, final_col_list, pub_id_col,
+                                otp_path, otp_file_base)
+
     # Building set OTPs df
-    if otp_col_alias in pub_df.columns:
+    if otp_col_alias in pub_otp_df.columns:
         otp_col = otp_col_alias
     else:
-        otp_col = otp_list_col_alias
-    otps_df = pub_df[[pub_id_alias, author_col_alias, doi_col_alias, otp_col]].copy()
+        otp_col = otp_list_col
+    otps_df = pub_otp_df[[pub_id_col, author_col, doi_col, otp_col]].copy()
     otps_df = otps_df.fillna(0)
     otps_df = otps_df.astype(str)
     set_otps_df = otps_df.copy()
@@ -113,12 +198,12 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
     hash_otps_history_df = pd.merge(hash_id_df,
                                     set_otps_df,
                                     how='inner',
-                                    on=pub_id_alias)
-    hash_otps_history_df = hash_otps_history_df.drop(columns=[pub_id_alias, author_col_alias, doi_col_alias])
+                                    on=pub_id_col)
+    hash_otps_history_df = hash_otps_history_df.drop(columns=[pub_id_col, author_col, doi_col])
     hash_otps_history_df = hash_otps_history_df.rename(columns={otp_col:otp_col_alias})
 
     # Building DOI and kept otp df
-    doi_otps_history_df = set_otps_df[[author_col_alias, doi_col_alias, otp_col]].copy()
+    doi_otps_history_df = set_otps_df[[author_col, doi_col, otp_col]].copy()
     doi_otps_history_df = doi_otps_history_df.rename(columns={otp_col:otp_col_alias})
 
     # Concatenating with the dataframes of already saved solved OTPs by hash_id and by DOI
@@ -149,7 +234,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year, pub_df):
         doi_otps_history_df.to_excel(writer, sheet_name=doi_otp_sheet_alias, index=False)
 
     message = "History of kept OTPs saved"
-    return message
+    return message, pub_otp_df
 
 
 def _use_hash_id_set_otps(dpt_df, otps_history_tup):

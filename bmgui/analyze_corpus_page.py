@@ -53,7 +53,7 @@ def _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
 
     info_title = "- Information -"
     info_text = (f"L'analyse de la production par auteur a été effectuée "
-                 "pour l'année {year_select}."
+                 f"pour l'année {year_select}."
                  "\nLes fichiers obtenus ont été créés dans le dossier :"
                  f"\n\n'{auth_analysis_folder_path}' ")
     messagebox.showinfo(info_title, info_text)
@@ -151,17 +151,19 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 
-    if_analysis_folder_path, _, _ = if_analysis(institute, org_tup,
-                                                bibliometer_path,
-                                                datatype, year_select,
-                                                if_most_recent_year,
-                                                progress_callback,
-                                                verbose=False)
+    return_tup = if_analysis(institute, org_tup, bibliometer_path,
+                             datatype, year_select, if_most_recent_year,
+                             progress_callback, verbose=False)
+    doctypes_analysis_folder_path, if_analysis_folder_path, _, _ = return_tup
     info_title = "- Information -"
-    info_text = (f"L'analyse des IFs a été effectuée pour l'année {year_select} "
+    info_text = ("L'analyse par type de documents et l'analyse des IFs "
+                 f"ont été effectuées pour l'année {year_select} "
                  f"avec les valeurs {analysis_if}. "
-                 "\n\nLes fichiers obtenus ont été créés dans le dossier :"
-                 f"\n\n'{if_analysis_folder_path}'."
+                 "\n\nPour les types de documents, les fichiers obtenus "
+                 "ont été créés dans le dossier :"
+                 f"\n\n'{doctypes_analysis_folder_path}'."
+                 "\n\nPour les IFs, les fichiers obtenus ont été créés "
+                 f"dans le dossier :\n\n'{if_analysis_folder_path}'."
                  "\n\nLa base de données des indicateurs respective de l'Institut "
                  "et de chaque département a été mise à jour "
                  "avec les résultats de cette analyse et se trouve dans le dossier :"
@@ -214,7 +216,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                     "\n\nContinuer ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
-            print(f"Coupling analysis launched for year {year_select}")
+            print(f"\nCoupling analysis launched for year {year_select}")
             _launch_coupling_analysis(institute, org_tup,
                                       bibliometer_path,
                                       datatype, year_select,
@@ -232,7 +234,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         # Getting year selection
         year_select = variable_years.get()
 
-        print(f"Keywords analysis launched for year {year_select}")
+        print(f"\nKeywords analysis launched for year {year_select}")
         _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype,
                             year_select, progress_callback)
         progress_bar.place_forget()

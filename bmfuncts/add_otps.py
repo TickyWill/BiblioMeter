@@ -90,7 +90,7 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict, otp_dept_col, dpt_label):
     cols[b], cols[a] = cols[a], cols[b]
     out_df = out_df[cols]
 
-    # Droping the initial 'dpt_col' column of affiliation department
+    # Dropping the initial 'dpt_col' column of affiliation department
     out_df = out_df.drop(columns=[dpt_col])
 
     # Renaming the 'otp_dept_col' as 'dpt_col'

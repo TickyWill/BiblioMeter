@@ -63,7 +63,7 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
-        (dataframe): The dataframe of the authors data.
+        (dataframe): The data of the authors.
     """
     # Setting useful aliases
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
@@ -78,20 +78,19 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
     return articles_df
 
 
-def build_doctype_analysis_data(institute, org_tup, bibliometer_path, datatype, corpus_year,
+def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
                                 final_cols_tup, if_col_list=None):
     """To update: Builds the dataframe of publications list to be analyzed.
 
     This is done through the following steps:
 
-    1. Gets deduplication results of the parsing step trough the `read_parsing_dict` \
+    1. Gets deduplication results of the parsing step through the `read_parsing_dict` \
     function imported from `bmfuncts.useful_functs` module.
     2. Builds the dataframe of publications list to be analyzed using \
     normalized journal names available in the deduplicated list of publications \
     resulting from the parsing step.
 
     Args:
-        institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
@@ -159,10 +158,7 @@ def build_doctype_analysis_data(institute, org_tup, bibliometer_path, datatype, 
     books_df = analysis_df[analysis_df[doctype_col].isin(pg.DOC_TYPE_DICT['Books'])]
 
     # Setting pub_df_dict
-    pub_df_dict = {}
-    pub_df_dict['articles'] = articles_df
-    pub_df_dict['proceedings'] = proceedings_df
-    pub_df_dict['books'] = books_df
+    pub_df_dict = {'articles': articles_df, 'proceedings': proceedings_df, 'books': books_df}
     return pub_df_dict
 
 
@@ -176,7 +172,7 @@ def _set_by_issn_df(by_doc_df, idx_doc, issn, dg, drop_dup_cols,
     pub_ids_col = cols_list[3]
     if_analysis_col = cols_list[4]
     pub_id_col = drop_dup_cols[0]
-    
+
     dg = dg.drop_duplicates(drop_dup_cols)
     by_doc_df.loc[idx_doc, issn_col] = issn
 
@@ -209,7 +205,7 @@ def _build_doctype_stat(doctype, doctype_df, if_analysis_col, final_col_dic):
     pub_id_col = final_col_dic['pub_id']
     journal_col = final_col_dic['journal']
     issn_col = final_col_dic['issn']
-    
+
     # Setting useful local aliases
     journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
     pub_ids_alias = pg.COL_NAMES_BONUS["pub_ids list"]  # "Liste des Pub_ids"
@@ -217,7 +213,7 @@ def _build_doctype_stat(doctype, doctype_df, if_analysis_col, final_col_dic):
     weight_alias = pg.COL_NAMES_DOCTYPE_ANALYSIS["articles_nb"]
     if doctype=="books":
         weight_alias = pg.COL_NAMES_DOCTYPE_ANALYSIS["chapters_nb"]
-        
+
     # Setting useful cols tup
     cols_list = [final_doctype_alias, issn_col, weight_alias,
                  pub_ids_alias, if_analysis_col]
@@ -325,20 +321,20 @@ def _build_and_save_doctype_stat(institute, bibliometer_path, pub_df_dict,
             doctype_stat_title = pg.DF_TITLES_LIST[13]
             sheet_name = pg.COL_NAMES_DOCTYPE_ANALYSIS[doctype] + " " + corpus_year
             dept_doctype_file = dept + "-" + doctype_file
-            doctype_folder = doctype_folders_dict[doctype] / sub_folder_path 
+            doctype_folder = doctype_folders_dict[doctype] / sub_folder_path
             if dept==institute:
                 doctype_folder = doctype_folders_dict[doctype]
             save_formatted_df_to_xlsx(doctype_folder, dept_doctype_file,
                                       by_doc_dept_df, doctype_stat_title,
                                       sheet_name, idx_wrap=idx_wrap)
-    return by_journal_dict
+    return by_journal_dict, doctypes_analysis_folder_path
 
 
 def _set_analysis_if_cols_list(corpus_year, if_most_recent_year):
-    # Setting useful aliases    
+    # Setting useful aliases
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
     corpus_year_if_col_alias = pg.COL_NAMES_BONUS['IF année publi']
-    
+
     # Setting IFs column names info
     most_recent_year_if_col = most_recent_year_if_col_base_alias + \
                               ", " + if_most_recent_year
@@ -358,6 +354,8 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
                      corpus_year, if_most_recent_year, progress_callback=None):
     """ 
     """
+    print(f"\n    Doctype analysis launched for year {corpus_year}...")
+
     # Setting useful columns info
     final_cols_tup = set_final_col_names(institute, org_tup)
 
@@ -366,16 +364,17 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
     analysis_if_col_list, if_analysis_col, if_analysis_year = return_tup
 
     # Building the dataframe of publications data to be analyzed
-    pub_df_dict = build_doctype_analysis_data(institute, org_tup, bibliometer_path,
-                                              datatype, corpus_year, final_cols_tup,
+    pub_df_dict = build_doctype_analysis_data(bibliometer_path, datatype,
+                                              corpus_year, final_cols_tup,
                                               if_col_list=analysis_if_col_list)
     if progress_callback:
         progress_callback(20)
 
-    # Building and saving statistics for each doctype    
-    by_journal_dict = _build_and_save_doctype_stat(institute, bibliometer_path,
-                                                   pub_df_dict, corpus_year,
-                                                   if_analysis_col, final_cols_tup)
+    # Building and saving statistics for each doctype
+    return_tup = _build_and_save_doctype_stat(institute, bibliometer_path,
+                                               pub_df_dict, corpus_year,
+                                               if_analysis_col, final_cols_tup)
+    by_journal_dict, doctypes_analysis_folder_path = return_tup
 
     # Saving stat analysis as final result
     status_values = len(pg.RESULTS_TO_SAVE) * [False]
@@ -386,4 +385,7 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(50)
-    return pub_df_dict, by_journal_dict, if_analysis_col, if_analysis_year
+
+    final_return_tup = (pub_df_dict, by_journal_dict, if_analysis_col,
+                        if_analysis_year, doctypes_analysis_folder_path)
+    return final_return_tup

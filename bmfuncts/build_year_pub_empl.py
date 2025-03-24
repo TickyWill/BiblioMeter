@@ -147,11 +147,11 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
     # Replace in "pub_df" NaN values "NA" in first name initials
     pub_df = keep_initials(pub_df, bm_colnames_alias['First_name'])
 
-    # Initializing a Data frame that will contains all matches
+    # Initializing a Data frame that will contain all matches
     # between 'pub_df' author-name and 'empl_df' emmployee-name
     submit_df = pd.DataFrame()
 
-    # Initializing a Data frame that will contains all 'pub_df' author-names
+    # Initializing a Data frame that will contain all 'pub_df' author-names
     # which do not match with any of the 'empl_df' emmployee-names
     orphan_df = pd.DataFrame(columns=list(pub_df.columns))
 
@@ -244,14 +244,11 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
             for idx, eff_firstname in enumerate(eff_firstnames):
 
                 if pub_firstname==eff_firstname:
-                    list_idx.append(idx)
-
-                elif pub_firstname==eff_firstname:
-                    # Replacing the employee first name initials
-                    # by the publication first name initials
-                    # for 'pub_emp_join_df' building
-                    empl_pub_match_df[emp_add_cols_alias['employee_full_name']].iloc[idx]=\
-                        pub_lastname + ' ' + pub_firstname
+                    ## Replacing the employee first name initials
+                    ## by the publication first name initials
+                    ## for 'pub_emp_join_df' building
+                    #empl_pub_match_df[emp_add_cols_alias['employee_full_name']].iloc[idx]=\
+                    #    pub_lastname + ' ' + pub_firstname
                     list_idx.append(idx)
 
             # Test of match of firstname initials for lastname match or similarity

@@ -366,6 +366,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
         (tup): (end message recalling the full path to the saved file \
         of the IFs database (str), List of IFs-database years (4-digits strings)).
     """
+    print("\nUpdate of IF database launched...")
 
     # Setting aliases of useful columns
     final_col_dic, _ = set_final_col_names(institute, org_tup)

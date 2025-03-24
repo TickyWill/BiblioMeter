@@ -69,7 +69,7 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     1. Builds dataframes of countries, normalized institutions and raw institutions \
     through the `build_norm_raw_institutions` function imported from the `BiblioParsing \
     package` imported as bp, using 'inst_pub_addresses_df' dataframe and specific files \
-    for this function; in these datraframes, each row contains:
+    for this function; in these dataframes, each row contains:
 
         - A publication IDs
         - The index of an address of the publication addresses 
@@ -86,6 +86,8 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     5. Saves the normalized institutions and raw institutions dataframes through the \
     `save_formatted_df_to_xlsx` function imported from the `bmfuncts.format_files` module.
     """
+    print("    Building normalized and raw affiliations data...")
+
     # Setting local parameters
     xlsx_extent = ".xlsx"
 
@@ -114,8 +116,6 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     country_unkept_affil_file_path = institutions_folder_path / Path(country_unkept_affil_file_alias)
 
     # Building countries, normalized institutions and not normalized institutions data
-    if verbose:
-        print("Building of normalized and raw institutions on going...")
     file_path_0 = inst_types_file_path
     file_path_1 = country_affil_file_path
     file_path_2 = country_towns_file_alias
@@ -127,7 +127,8 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
                                                 country_towns_folder_path=file_path_3)
     countries_df, norm_institutions_df, raw_institutions_df = return_tup
     if verbose:
-        print("countries, normalized institutions and not normalized institutions data built")
+        print("      countries, normalized institutions and not-yet-normalized "
+              "institutions data built")
     if progress_callback:
         progress_callback(60)
 
@@ -138,7 +139,8 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     raw_institutions_df = _copy_dg_col_to_df(raw_institutions_df, countries_df,
                                              cols_list, countries_col_alias)
     if verbose:
-        print("Countries column added to normalized institutions and not normalized institutions data")
+        print("      Countries column added to normalized institutions "
+              "and not-yet-normalized institutions data")
     if progress_callback:
         progress_callback(70)
 
@@ -149,7 +151,8 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
                                               country_unkept_affil_file_path,
                                               cols_tup)
     if verbose:
-        print("Unkept institutions removed from not normalized institutions data")
+        print("      Unkept institutions removed from not-yet-normalized "
+              "institutions data")
     if progress_callback:
         progress_callback(75)
 
@@ -162,7 +165,8 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias,
                               raw_institutions_df, inst_df_title, sheet_name)
     if verbose:
-        print("Normalized institutions and not normalized institutions data saved as openpyxl files")
+        print("      Normalized institutions and not-yet-normalized "
+              "institutions data saved")
     return countries_df, norm_institutions_df
 
 
@@ -234,7 +238,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, bibliometer_path,
                                                          saved_results_path, year, verbose=False)
     if verbose:
-        print("Addresses of Institute publications selected.")
+        print("    Addresses of Institute publications selected.")
     if progress_callback:
         progress_callback(20)
 
@@ -245,15 +249,16 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
                                               progress_callback, verbose=verbose)
     countries_df, norm_institutions_df = return_tup
     if verbose:
-        print("normalized and raw institutions built and saved.")
+        print("    normalized and raw institutions built and saved.")
     if progress_callback:
         progress_callback(75)
 
     # Building and saving inst stat dataframe
-    build_and_save_institutions_stat(norm_institutions_df, inst_types_file_path,
+    build_and_save_institutions_stat(institute, norm_institutions_df,
+                                     inst_types_file_path,
                                      inst_analysis_folder_path, year)
     if verbose:
-        print("Distributed institutions and institutions stat built and saved.")
+        print("    Distributed institutions and institutions stat built and saved.")
     if progress_callback:
         progress_callback(80)
 
@@ -261,7 +266,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     geo_analysis_folder_alias = build_and_save_geo_stat(countries_df, analysis_folder_path,
                                                         year)
     if verbose:
-        print("Geo stat built and saved.")
+        print("    Geo stat built and saved.")
     if progress_callback:
         progress_callback(90)
 

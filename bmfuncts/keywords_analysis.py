@@ -149,6 +149,8 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     Returns:
         (path): Full path to the folder where results of keywords analysis are saved.
     """
+    print(f"\nKeywords analysis launched for year {year}...")
+
     # Setting input-data path
     saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 

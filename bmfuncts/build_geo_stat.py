@@ -121,6 +121,8 @@ def build_and_save_geo_stat(countries_df, analysis_folder_path, year):
     Then, it saves the statistics dataframes through the `_save_formatted_df_to_xlsx` 
     internal function.
     """
+    print("    Computing of geographical statistics")
+
     # Setting local parameters
     xlsx_extent = ".xlsx"
 

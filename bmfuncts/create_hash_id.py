@@ -20,7 +20,7 @@ from bmfuncts.useful_functs import concat_dfs
 
 
 def _my_hash(text:str):
-    """Builts hash given the string 'text' 
+    """Builds hash given the string 'text' 
     with a fixed prime numbers to mix up the bits."""
 
     my_hash = 0
@@ -63,7 +63,7 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
 def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias'.
 
-    The containt of these columns is as follows:
+    The content of these columns is as follows:
 
     - The 'hash_id_col_alias' column contains the unique hash ID built for each publication \
     through the `_my_hash` internal function on the basis of the values of 'year_alias', \

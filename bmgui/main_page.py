@@ -183,7 +183,6 @@ class AppMain(tk.Tk):
                 messagebox.showinfo(info_title, info_text)
             else:
                 corpi_val.set("")
-            
 
         def _set_corpi_widgets_param(inst_bmf):
             """Sets 'corpi' widgets parameters and values accordingly 
