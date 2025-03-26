@@ -234,7 +234,7 @@ def _set_base_attributes(df_cols_list, final_cols_list):
 def _set_auth_attributes(cols_list):
     attr_list = [[12, "center"]] * 3 \
               + [[30, "left"]] * 3 \
-              + [[15, "center"]] * 2
+              + [[15, "center"]] * 4
     col_attr_dict = dict(zip(cols_list, attr_list))
     row_heights_dict = {'first_row':30,
                         'other_rows':15}
@@ -243,8 +243,8 @@ def _set_auth_attributes(cols_list):
 
 
 def _set_auth_stat_attributes(cols_list):
-    attr_list = [[30, "left"], [50, "left"],
-                 [15, "center"], [95, "left"]]
+    attr_list = [[15, "center"], [15, "center"], [30, "left"],
+                 [50, "left"],[15, "center"], [95, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
     row_heights_dict = {'first_row':30,
                         'other_rows':15}

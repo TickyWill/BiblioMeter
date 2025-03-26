@@ -16,8 +16,9 @@
   - Improvement 7: Redistribution of "merge_pub_employees" module into 3 modules for sake of clarity (new modules: "build_year_pub_empl" and "create_hash_id").
   - Improvement 8: Addition of management of last corpus year when it is not in available years of impact factors in "update_impact_factors" module.
   - Improvement 9: Enhancement of analysis modules by use of saved final results rather than available results in corpus-year folders in order to take into account corresponding datatype results.
-  - Improvements 10: Addition of "doctypes_analysis" module to provide statistics of publications by journals, conference proceedings or books.
-  - Improvements 11: Substitution of "impact_factors_analysis" module by "build_kpi" one for the sake of clarity.
+  - Improvement 10: Addition of "doctypes_analysis" module to provide statistics of publications by journals, conference proceedings or books.
+  - Improvement 11: Substitution of "impact_factors_analysis" module by "build_kpi" one for the sake of clarity.
+  - Improvement 12: Addition of author job type and matriculate to the results provided by "author_analysis" module through the use of publications list with one row per author after solving homonymies.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:

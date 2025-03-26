@@ -131,6 +131,7 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "dedup_parsing"       : "Synthèse des extractions",
                  "hash_id"             : "Identifiants universels",
                  "submit"              : "Croisement auteurs-effectifs",
+                 "homonyms"            : "Résolution homonymes",
                  "pub-lists"           : "Listes consolidées des publications",
                  "doctypes"            : "Analyse par types de document",
                  "impact-factors"      : "Analyse des facteurs d'impact",
@@ -194,7 +195,8 @@ ARCHI_YEAR = {
 # Setting list of final results to save
 RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists",
                    "ifs", "kws","countries", "continents",
-                   "authors", "institutions", "doctypes"]
+                   "authors", "institutions", "doctypes",
+                   "homonyms",]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 

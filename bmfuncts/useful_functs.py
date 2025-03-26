@@ -9,7 +9,9 @@ __all__ = ['check_dedup_parsing_available',
            'create_folder',
            'get_final_dedup',
            'keep_initials',
+           'name_capwords',
            'read_final_pub_list_data',
+           'read_final_set_homonyms_data',
            'read_parsing_dict',
            'save_fails_dict',
            'save_final_dedup',
@@ -39,6 +41,31 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def name_capwords(text):
+    """Capitalizes words in full names of authors getting 
+    rid of particular separators and keeping firstname initiales.
+
+    Args:
+        text (str): Full name to be capitalized by words.
+    Returns:
+        (str): Full name capitalized by words.
+    """
+    sep_list = ["-", "'"]
+    sub_text_list = text.split()[:-1]
+    text_split_list = []
+    for sub_text in sub_text_list:
+        for sep in sep_list:
+            if sep in sub_text:
+                words_list = [x.capitalize() for x in sub_text.split(sep)]
+                sub_text = sep.join(words_list)
+            else:
+                sub_text = sub_text.capitalize()
+        text_split_list.append(sub_text)
+    text_split_list.append(text.split()[-1])
+    text = " ".join(text_split_list)
+    return text
 
 
 def set_saved_results_path(bibliometer_path, datatype):
@@ -760,6 +787,38 @@ def read_final_pub_list_data(saved_results_path,
     pub_df = pd.read_excel(pub_list_file_path,
                            usecols=cols_list)
     return pub_df
+
+
+def read_final_set_homonyms_data(saved_results_path, corpus_year):
+    """Reads saved publications list with one row per Institute author 
+    and its attributes after resolving homonyms.
+    
+    This data have been initially built through the `set_saved_homonyms` 
+    function of the `bmfuncts.use_homonyms` module.
+
+    Args:
+        saved_results_path (path): Full path to the folder \
+        where final results are saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dataframe): The resulting dataframe from the read.
+    """
+
+    # Setting useful aliases
+    saved_homonyms_folder_alias = pg.ARCHI_RESULTS["homonyms"]
+    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
+    
+    # Setting input file
+    year_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
+
+    # Setting useful paths
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_homonyms_path = year_saved_results_path / Path(saved_homonyms_folder_alias)
+    homonyms_file_path = saved_homonyms_path / Path(year_homonyms_file)
+
+    # Reading the submit file
+    set_homonyms_df = pd.read_excel(homonyms_file_path)
+    return set_homonyms_df
 
 
 def save_fails_dict(fails_dict, parsing_path):

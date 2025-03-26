@@ -241,6 +241,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     results_to_save_dict["pub_lists"] = True
     results_to_save_dict["hash_ids"] = True
     results_to_save_dict["submit"] = True
+    results_to_save_dict["homonyms"] = True
     if_analysis_name = None
     final_save_message = save_final_results(institute, org_tup, bibliometer_path,
                                             datatype, corpus_year, if_analysis_name,

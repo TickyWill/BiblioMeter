@@ -273,7 +273,8 @@ def _launch_recursive_year_search_try(institute, org_tup,
 
     # Setting dialogs and checking answers
     # for ad-hoc use of '_recursive_year_search_try' internal function
-    # after adapting search depth to available years for search
+    # after adapting search depth to available years for search    
+    print(f"Reading employees data...")
     tup = set_employees_data(year_select, all_effectifs_path, search_depth_init)
     all_effectifs_df, search_depth, annees_disponibles = tup[0], tup[1], tup[2]
     if annees_disponibles:
@@ -897,7 +898,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         year_select = variable_years.get()
 
         # Setting paths and aliases dependent on year_select
-        homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
+        homonymes_file_alias = homonymes_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path = bibliometer_path / Path(year_select)
         bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = bdd_mensuelle_path / Path(submit_alias)

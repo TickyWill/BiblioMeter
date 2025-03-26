@@ -31,7 +31,7 @@ from bmfuncts.useful_functs import set_year_pub_id
 from bmfuncts.useful_functs import standardize_txt
 
 
-def _add_author_job_type(in_path, out_path):
+def _add_author_job_type(in_path, out_path, empl_dict, years):
     """Adds a new column containing the job type for each author 
     of the publications list with one row per author.
 
@@ -48,19 +48,43 @@ def _add_author_job_type(in_path, out_path):
     Returns:
         (str): End message recalling the full path to the saved file of \
         the modified publications list.
-    """
-
+    """ 
     # internal functions:
     def _get_author_type(row):
-        author_type = '-'
-        for col_name, dic in author_types_dic.items():
-            for key,values_list in dic.items():
-                values_status = [True for value in values_list if value in row[col_name]]
-                if any(values_status):
-                    author_type = key
+        mat = row[mat_col_alias]
+        if mat!="externe":
+            author_type = '-'
+            years_nb = len(years)
+            year_idx = 0
+            set_author_type = "FIN"
+            while set_author_type=="FIN" and year_idx<years_nb:
+                year_empl_df = empl_dict[years[year_idx]]
+                year_mat_df = year_empl_df[year_empl_df[mat_col_alias]==str(mat)]
+                for col_name, dic in author_types_dic.items():
+                    mat_value = ""
+                    if not year_mat_df[col_name].empty:
+                        mat_value = list(year_mat_df[col_name])[0]
+                    for key, values_list in dic.items():
+                        values_status = [True for value in values_list if value in mat_value]
+                        if any(values_status):
+                            set_author_type = key
+                year_idx += 1
+            author_type = set_author_type 
+        else:
+            author_type = 'Coll'
+            for col_name, dic in author_types_dic.items():
+                mat_value = row[col_name]
+                for key, values_list in dic.items():
+                    values_status = [True for value in values_list if value in mat_value]
+                    if any(values_status):
+                        author_type = key
+                        break
+                if author_type!='Coll':
+                    break
         return author_type
 
     # Setting useful aliases
+    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule'] 
     category_col_alias = eg.EMPLOYEES_USEFUL_COLS['category']
     status_col_alias = eg.EMPLOYEES_USEFUL_COLS['status']
     qualification_col_alias = eg.EMPLOYEES_USEFUL_COLS['qualification']
@@ -266,7 +290,8 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
                 row_to_copy_df = ext_docs_df.loc[ext_docs_row_num].to_frame().T
 
                 # Dropping the columns of row_to_copy_df that should not be present in row_to_add_df
-                row_to_copy_df = row_to_copy_df.drop([ext_docs_pub_last_name_alias, ext_docs_pub_initials_alias],
+                row_to_copy_df = row_to_copy_df.drop([ext_docs_pub_last_name_alias,
+                                                      ext_docs_pub_initials_alias],
                                                      axis = 1)
 
                 # Merging the two dataframes on respective full name column
@@ -564,9 +589,9 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     return orphan_status
 
 
-def _adapt_depth_search(empl_df, corpus_year, search_depth):
+def _adapt_depth_search(empl_dict, corpus_year, search_depth):
     """Sets the list of years for recursive search of author-employee match."""
-    eff_available_years = list(empl_df.keys())
+    eff_available_years = list(empl_dict.keys())
     corpus_year_status = corpus_year in eff_available_years
     year_start = int(corpus_year)
     if not corpus_year_status:
@@ -576,7 +601,7 @@ def _adapt_depth_search(empl_df, corpus_year, search_depth):
     return years
 
 
-def recursive_year_search(out_path, empl_df, institute, org_tup,
+def recursive_year_search(out_path, empl_dict, institute, org_tup,
                           bibliometer_path, datatype, corpus_year, search_depth,
                           progress_callback=None, progress_bar_state=None,
                           set_test_case="No test", set_test_name="No name"):
@@ -621,13 +646,13 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     Args:
         out_path (path): Full path to the folder for saving built dataframes. 
-        empl_df (dataframe): Hierarchical employees database keyed by 'years' list.
+        empl_dict (dict): Hierarchical employees database keyed by 'years' list.
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): Contains the corpus year defined by 4 digits.
-        search_depth (int): Depth for search in 'empl_df' using 'years' list.
+        search_depth (int): Depth for search in 'empl_dict' using 'years' list.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (optional, default = None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
@@ -648,6 +673,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
 
     # Setting useful aliases
     pub_id_alias = bp.COL_NAMES['pub_id']
+    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule'] 
     initials_col_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
     submit_file_name_alias = pg.ARCHI_YEAR["submit file name"]
     orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
@@ -671,19 +697,20 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     pub_df = keep_initials(pub_df, initials_col_alias, missing_fill=bp.UNKNOWN)
 
     # Setting the years list for recursive search  of author-employee match
-    years = _adapt_depth_search(empl_df, corpus_year, search_depth)
+    years = _adapt_depth_search(empl_dict, corpus_year, search_depth)
 
-    # Replace in "empl_df" NaN values by UNKNOWN string except in first name initials
+    # Replace in "empl_dict" NaN values by UNKNOWN string except in first name initials
     for year in years:
-        empl_df[year] = keep_initials(empl_df[year], initials_col_alias,
-                                      missing_fill=bp.UNKNOWN)
+        empl_dict[year] = keep_initials(empl_dict[year], initials_col_alias,
+                                        missing_fill=bp.UNKNOWN)
+        empl_dict[year][mat_col_alias] = empl_dict[year][mat_col_alias].apply(lambda x: str(x))
     if progress_callback:
         step = (100 - progress_bar_state) / 100
         progress_callback(progress_bar_state + step * 10)
 
     # *******************************************************************
     # * Building recursively the `submit_df` and `orphan_df` dataframes *
-    # *                 using `empl_df` files of years                   *
+    # *                 using `empl_dict` files of years                   *
     # *******************************************************************
 
     # Initializing the dataframes to be built
@@ -694,7 +721,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     orphan_df = pd.DataFrame()
 
     # Building the initial dataframes
-    submit_df, orphan_df = build_submit_df(empl_df[years[0]],
+    print(f"    Initializing cross pub_employees data")
+    submit_df, orphan_df = build_submit_df(empl_dict[years[0]],
                                            pub_df, bibliometer_path,
                                            test_case=set_test_case,
                                            test_name=set_test_name)
@@ -719,8 +747,9 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
         progress_bar_loop_progression = step * 50 // len(years)
 
     for _, year in enumerate(years):
+        print(f"    Search among employees of {year}")
         # Updating the dataframes submit_df_add and orphan_df
-        submit_df_add, orphan_df = build_submit_df(empl_df[year],
+        submit_df_add, orphan_df = build_submit_df(empl_dict[year],
                                                    orphan_df,
                                                    bibliometer_path,
                                                    test_case=set_test_case,
@@ -744,6 +773,7 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
+    print("    Setting year pub IDs")
     submit_df = set_year_pub_id(submit_df, corpus_year, pub_id_alias)
     if not orphan_status:
         orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_alias)
@@ -755,7 +785,8 @@ def recursive_year_search(out_path, empl_df, institute, org_tup,
     submit_df.to_excel(submit_path, index=False)
 
     # Adding author job type and saving new submit_df
-    _add_author_job_type(submit_path, submit_path)
+    print("    Adding column with author job type")
+    _add_author_job_type(submit_path, submit_path, empl_dict, years)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 5)
 

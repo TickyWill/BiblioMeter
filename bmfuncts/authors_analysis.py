@@ -17,38 +17,14 @@ import pandas as pd
 import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.format_files import format_page
-from bmfuncts.rename_cols import build_col_conversion_dic
+from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_final_dedup
-from bmfuncts.useful_functs import read_final_submit_data
+from bmfuncts.useful_functs import name_capwords
+from bmfuncts.useful_functs import read_final_set_homonyms_data
 from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import set_year_pub_id
-
-
-def name_capwords(text):
-    """Capitalizes words in full names of authors getting 
-    rid of particular separators and keeping firstname initiales.
-
-    Args:
-        text (str): Full name to be capitalized by words.
-    Returns:
-        (str): Full name capitalized by words.
-    """
-    sep_list = ["-", "'"]
-    sub_text_list = text.split()[:-1]
-    text_split_list = []
-    for sub_text in sub_text_list:
-        for sep in sep_list:
-            if sep in sub_text:
-                words_list = [x.capitalize() for x in sub_text.split(sep)]
-                sub_text = sep.join(words_list)
-            else:
-                sub_text = sub_text.capitalize()
-        text_split_list.append(sub_text)
-    text_split_list.append(text.split()[-1])
-    text = " ".join(text_split_list)
-    return text
 
 
 def _read_authors_data(bibliometer_path, saved_results_path,
@@ -82,25 +58,27 @@ def _read_authors_data(bibliometer_path, saved_results_path,
 def _set_useful_cols(institute, org_tup):
     """Sets the column names  useful for building authors analysis data.
 
-    It uses 'build_col_conversion_dic' function imported from 
+    It uses 'set_homonym_col_names' function imported from 
     'bmfuncts.rename_cols' module.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
     Returns:
-        (tup): (list of useful cols returned by 'build_col_conversion_dic' function \
+        (tup): (list of useful cols returned by 'set_homonym_col_names' function \
         at seconde position of the returned tuple, list of cols to be added).
     """
 
     #  Setting useful col names alias
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    submit_col_rename_dic = col_rename_tup[1]
-    pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
-    author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
-    inst_author_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][2]]
-    first_author_col_alias = submit_col_rename_dic[bp.COL_NAMES["articles"][1]]
-    employee_col_alias = submit_col_rename_dic[eg.EMPLOYEES_ADD_COLS['employee_full_name']]
+    homonyms_col_dic = set_homonym_col_names(institute, org_tup)
+    
+    pub_id_col_alias = homonyms_col_dic['pub_id']
+    author_idx_col_alias = homonyms_col_dic['author_id']
+    inst_author_col_alias = homonyms_col_dic['inst_author']
+    first_author_col_alias = homonyms_col_dic['first_author']
+    mat_col_alias = homonyms_col_dic['matricul']
+    type_col_alias = homonyms_col_dic['author_type']
+    employee_col_alias = homonyms_col_dic['empl_full_name']
     nb_auth_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb']
     is_first_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author']
     is_last_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author']
@@ -108,13 +86,13 @@ def _set_useful_cols(institute, org_tup):
     pub_list_col_alias = pg.COL_NAMES_BONUS['pub_ids list']
 
     # Building cols lists
-    submit_useful_cols = [pub_id_col_alias, author_idx_col_alias,
-                          inst_author_col_alias, first_author_col_alias,
-                          employee_col_alias]
+    homonyms_useful_cols = [pub_id_col_alias, author_idx_col_alias,
+                            inst_author_col_alias, first_author_col_alias,
+                            mat_col_alias, type_col_alias, employee_col_alias]
     add_cols = [nb_auth_col_alias, is_first_col_alias, is_last_col_alias,
                 nb_pub_col_alias, pub_list_col_alias]
 
-    return submit_useful_cols, add_cols
+    return homonyms_useful_cols, add_cols
 
 
 def _build_auth_nb_per_pub(bibliometer_path, saved_results_path,
@@ -159,9 +137,9 @@ def _build_author_employee_df(bibliometer_path, datatype,
 
     The input data are as follows:
     - The publications list with one row per Institute author and its attributes 
-    got through the `read_final_submit_data` internal function; this list has been 
-    initially built through the `resursive_year_search` function of 
-    the `bmfuncts.merge_pub_employees` module.
+    got through the `read_final_set_homonyms_data` internal function; this list 
+    has been initially built through the `set_saved_homonyms` 
+    function of the `bmfuncts.use_homonyms` module.
     - The number of authors per pub-ID got from the saved parsing results through 
     the `_build_auth_nb_per_pub` internal function.
 
@@ -179,19 +157,21 @@ def _build_author_employee_df(bibliometer_path, datatype,
     saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
     # Setting useful columns names
-    submit_select_cols, add_cols_list = all_cols_tup
-    pub_id_col = submit_select_cols[0]
-    author_idx_col = submit_select_cols[1]
-    inst_author_col = submit_select_cols[2]
-    first_author_col = submit_select_cols[3]
-    employee_col = submit_select_cols[4]
+    homonyms_select_cols, add_cols_list = all_cols_tup
+    pub_id_col = homonyms_select_cols[0]
+    author_idx_col = homonyms_select_cols[1]
+    inst_author_col = homonyms_select_cols[2]
+    first_author_col = homonyms_select_cols[3]
+    mat_col = homonyms_select_cols[4]
+    type_col = homonyms_select_cols[5]
+    employee_col = homonyms_select_cols[6]
     nb_auth_col = add_cols_list[0]
     is_first_col = add_cols_list[1]
     is_last_col = add_cols_list[2]
 
     # Getting the publications list with one row per Institute author
     # and its attributes columns
-    submit_df = read_final_submit_data(saved_results_path, corpus_year)
+    set_homonyms_df = read_final_set_homonyms_data(saved_results_path, corpus_year)
 
     # Getting the number of authors per pub-ID from parsing results
     select_cols_tup = (pub_id_col, nb_auth_col)
@@ -200,9 +180,9 @@ def _build_author_employee_df(bibliometer_path, datatype,
 
     # Initializing dataframe to build
     add_select_cols_list = [nb_auth_col, is_first_col, is_last_col]
-    author_employee_df = pd.DataFrame(columns=submit_select_cols + add_select_cols_list)
-    for col in submit_select_cols:
-        author_employee_df[col] = submit_df[col].copy()
+    author_employee_df = pd.DataFrame(columns=homonyms_select_cols + add_select_cols_list)
+    for col in homonyms_select_cols:
+        author_employee_df[col] = set_homonyms_df[col].copy()
     author_employee_df[is_first_col] = 0
     author_employee_df[is_last_col] = 0
 
@@ -222,7 +202,7 @@ def _build_author_employee_df(bibliometer_path, datatype,
     author_employee_df = author_employee_df.sort_values(by=[pub_id_col, author_idx_col],
                                                         axis=0)
     cols_order = [pub_id_col, nb_auth_col, author_idx_col, inst_author_col,
-                  first_author_col, employee_col, is_first_col, is_last_col]
+                  first_author_col, employee_col, mat_col, type_col, is_first_col, is_last_col]
     author_employee_df = author_employee_df[cols_order]
 
     # Capitalize names
@@ -247,18 +227,22 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         (dataframe): The data of publications number per author.
     """
     # Setting useful columns names
-    submit_select_cols, add_cols_list = all_cols_tup
-    pub_id_col = submit_select_cols[0]
-    inst_author_col = submit_select_cols[2]
-    employee_col = submit_select_cols[4]
+    homonyms_select_cols, add_cols_list = all_cols_tup
+    pub_id_col = homonyms_select_cols[0]
+    inst_author_col = homonyms_select_cols[2]
+    mat_col = homonyms_select_cols[4]
+    type_col = homonyms_select_cols[5]
+    employee_col = homonyms_select_cols[6]
     nb_pub_col = add_cols_list[3]
     pub_list_col = add_cols_list[4]
 
     # Selecting useful columns in author_employee_df
-    sub_author_employee_df = author_employee_df[[pub_id_col, employee_col, inst_author_col]].copy()
+    sub_author_employee_df = author_employee_df[[pub_id_col, employee_col, mat_col,
+                                                 type_col, inst_author_col]].copy()
 
     # Initializing the dataframe to built with useful columns
-    useful_cols_list = [employee_col, inst_author_col, nb_pub_col, pub_list_col]
+    useful_cols_list = [mat_col, type_col, employee_col,
+                        inst_author_col, nb_pub_col, pub_list_col]
     pub_nb_per_auth_df = pd.DataFrame(columns = useful_cols_list)
 
     # Building the targetted dataframe
@@ -276,7 +260,11 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         pub_nb_per_auth_df = concat_dfs([pub_nb_per_auth_df, empl_df])
     pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
-    return pub_nb_per_auth_df
+    # Renaming cols 
+    author_employee_df.rename(columns={employee_col: "Nom effectif"})
+    pub_nb_per_auth_df.rename(columns={employee_col: "Nom effectif"})
+    
+    return author_employee_df, pub_nb_per_auth_df
 
 
 def authors_analysis(institute, org_tup, bibliometer_path, datatype,
@@ -342,10 +330,11 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(50)
 
     # Building pub_nb_per_author_df
-    pub_nb_per_author_df = _build_pub_nb_per_author_df(author_employee_df, useful_col_tup)
+    return_tup = _build_pub_nb_per_author_df(author_employee_df, useful_col_tup)
+    author_employee_df, pub_nb_per_author_df = return_tup
     if progress_callback:
         progress_callback(60)
-
+    
     # Saving the author-employee dataframe as EXCEL file
     author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
     auth_df_title = pg.DF_TITLES_LIST[4]
