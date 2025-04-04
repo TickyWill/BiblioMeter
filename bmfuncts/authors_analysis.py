@@ -14,7 +14,6 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.employees_globals as eg
 import bmfuncts.pub_globals as pg
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_homonym_col_names
@@ -71,7 +70,7 @@ def _set_useful_cols(institute, org_tup):
 
     #  Setting useful col names alias
     homonyms_col_dic = set_homonym_col_names(institute, org_tup)
-    
+
     pub_id_col_alias = homonyms_col_dic['pub_id']
     author_idx_col_alias = homonyms_col_dic['author_id']
     inst_author_col_alias = homonyms_col_dic['inst_author']
@@ -260,10 +259,10 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
         pub_nb_per_auth_df = concat_dfs([pub_nb_per_auth_df, empl_df])
     pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
-    # Renaming cols 
+    # Renaming cols
     author_employee_df.rename(columns={employee_col: "Nom effectif"})
     pub_nb_per_auth_df.rename(columns={employee_col: "Nom effectif"})
-    
+
     return author_employee_df, pub_nb_per_auth_df
 
 
@@ -276,7 +275,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     1. Sets the column names  useful for building authors analysis data 
     trough the `_set_useful_cols` internal function.
     2. Builds data of authors per publication with corresponding employee name, 
-    number of authors, author position in the authors list trough the 
+    number of authors, author position in the authors list through the 
     `_build_author_employee_df` internal function.
     3. Builds the data of publications number per author trough the 
     `_build_pub_nb_per_author_df` internal function.
@@ -334,7 +333,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     author_employee_df, pub_nb_per_author_df = return_tup
     if progress_callback:
         progress_callback(60)
-    
+
     # Saving the author-employee dataframe as EXCEL file
     author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
     auth_df_title = pg.DF_TITLES_LIST[4]

@@ -58,7 +58,7 @@ def _get_if(if_updated_file_path, useful_col_list):
 
 
 def _get_missing_if_and_issn(bibliometer_path, year, year_useful_col_list, files_tup):
-    """Gets missing-IFs data and missing-ISSNs data for the corpus-year year 
+    """Gets missing-IFs data and missing-ISSNs data for the corpus year 
     through the `_get_if` internal function.
     """
     # Setting parameters from args
@@ -99,7 +99,7 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
         corpus_year (str): 4-digits year of the corpus.
         year_if_db_df (dataframe): IFs database of a given year to be updated.
         most_recent_year (str): 4-digits most-recent year in IFs database.
-        files_tup (tup): Tuple = (publications-list folder name (str), \
+        files_tup (tup): (publications-list folder name (str), \
         base for building missing-IFs file name (str), \
         base for building missing-ISSNs file name (str)).
         add_corpus_years_list (list): List of corpuses of which the filled \
@@ -187,7 +187,7 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
                                 if_db_dict, if_db_years_list,
                                 most_recent_year, journal_col,
                                 files_tup, save_params_tup):
-    """Updates the IFs database for the years in the 'previous_years_list' years list.
+    """Updates the impact factors (IFs) database for the years in the 'previous_years_list' years list.
 
     1. Initializes the dataframe to add for building the IFs database of the most-recent year.
     2. Then, for each IFs-year, the steps are as follows:
@@ -208,16 +208,16 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        if_db_dict (hierarchical dataframe): IFs database of all years.
+        if_db_dict (hierarchical dict): IFs database keyed by years (str) \
+        and valued by data of IFs per journal (dataframe).
         most_recent_year (str): 4-digits most-recent year in IFs database.
         journal_col (str): Column name of journals.
         files_tup (tup): Files parameters used by `_update_year_if_database` \
         internal function.
-        save_params_tup (tup): Tuple = (workbook to be updated (Openpyxl workbook), \
-        sheets status, True no sheet yet added to the workbook (bool), \
-        IFs-database status, True if IFs database concerned).
+        save_params_tup (tup): (workbook to be updated (Openpyxl workbook), \
+        sheets status true if no sheet yet added to the workbook (bool)).
     Returns:
-        (tup): Tuple = (updated workbook (Openpyxl workbook), \
+        (tup): (updated workbook (Openpyxl workbook), \
         updated sheets status (bool), \
         the dataframe to add for building the IFs database \
         of the most-recent year (dataframe)).
@@ -261,7 +261,7 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
                              most_recent_year_if_df_to_add,
                              most_recent_year, journal_col,
                              files_tup, save_params_tup):
-    """Updates the IFs database for the most-recent year.
+    """Updates the impact factors (IFs) database for the most-recent year.
 
     1. Initializes the dataframe of the IFs database of the most-recent year \
     from the all-years database and capitalizes the journal-names main words 
@@ -286,14 +286,15 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
-        if_db_df (hierarchical dataframe): IFs database of all years.
+        if_db_dict (hierarchical dict): IFs database keyed by years (str) \
+        and valued by data of IFs per journal (dataframe).
+        off_if_db_years_list (list): The list of years not in the IFs database.
         most_recent_year (str): 4-digits most-recent year in IFs database.
         journal_col (str): Column name of journals.
         files_tup (tup): Files parameters used by `_update_year_if_database` \
         internal function.
-        save_params_tup (tup): Tuple = (workbook to be updated (Openpyxl workbook), \
-        sheets status, True no sheet yet added to the workbook (bool), \
-        IFs-database status, True if IFs database concerned).
+        save_params_tup (tup): (workbook to be updated (Openpyxl workbook), \
+        sheets status true if no sheet yet added to the workbook (bool)).
     Returns:
         (Openpyxl workbook): The fully updated workbook of the IFs database.
     """

@@ -85,6 +85,23 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     internal function.
     5. Saves the normalized institutions and raw institutions dataframes through the \
     `save_formatted_df_to_xlsx` function imported from the `bmfuncts.format_files` module.
+
+    Args:
+        institute (str): Institute name.
+        inst_pub_addresses_df (dataframe): Data of addresses related only to publications \
+        of the Institute.
+        inst_analysis_folder_path (path): The full path to the folder wher the build data \
+        are saved.
+        year (str): 4 digits year of the corpus.
+        final_pub_id (str): Final name of publication ID columns. 
+        paths_tup (tup): (the full path to the folder where useful institutions info \
+        are stored, the full path to the file of institutions types definition).
+        progress_callback (function): Function for updating ProgressBar tkinter \
+        widget status.
+        verbose (bool): Status of prints (default = False).
+    Returns:
+        (tup): (Data with one row per country for each publication ID, Data with one row \
+        per address with attached institutions list  for each publication ID).
     """
     print("    Building normalized and raw affiliations data...")
 
@@ -172,7 +189,7 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
 
 def coupling_analysis(institute, org_tup, bibliometer_path,
                       datatype, year, progress_callback=None, verbose=False):
-    """ Performs the analysis of countries and authors affiliations of Institute publications 
+    """Performs the analysis of countries and authors affiliations of Institute publications 
     of the 'year' corpus.
 
     This is done through the following steps:

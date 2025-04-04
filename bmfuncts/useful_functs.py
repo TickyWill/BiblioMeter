@@ -69,6 +69,15 @@ def name_capwords(text):
 
 
 def set_saved_results_path(bibliometer_path, datatype):
+    """Sets the specific full path to the folder where results 
+    of BiblioMeter are saved for the given case of data type.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    Returns:
+        (path): The full path of the saved results.
+    """
     # Setting useful aliases
     saved_results_root_alias = pg.ARCHI_RESULTS["root"]
     saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
@@ -201,7 +210,7 @@ def standardize_address(raw_address):
 
 
 def save_xlsx_file(root_path, df, file_name):
-    """Saves data as an Excel file that is one sheet and nor formatted.
+    """Saves data as an xlsx file that is one sheet and not formatted.
 
     Args:
         root_path (path): The path to the folder where the Excel file is saved.
@@ -213,7 +222,7 @@ def save_xlsx_file(root_path, df, file_name):
 
 
 def set_year_pub_id(df, year, pub_id_col):
-    """Transforms the pub-ID column of df by adding "yyyy_" 
+    """Transforms the pub-ID column of 'df' data by adding "yyyy_" 
     (year in 4 digits) to the values.
 
     Args:
@@ -353,7 +362,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
 def _get_database_file_path(database_folder_path, database_file_end):
     """Selects the most recent file ending with 'database_file_end'.
 
-    This done through the following steps:
+    This is done through the following steps:
 
     1. Lists all the files with this ending present in the \
     folder targeted by "database_folder_path".
@@ -400,7 +409,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
         from databases.
         database (str): The database selected for the analysis.
     Returns:
-        (tup): Tuple = (path to database extractions (path), \
+        (tup): (path to database extractions (path), \
         file name ending (str), \
         path to the folder of empty files (path)).
     """
@@ -421,7 +430,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
 
 
 def set_rawdata(bibliometer_path, datatype, years_list, database):
-    """The function sets the rawdata to be used for the data type 'datatype' analysis.
+    """Sets the rawdata to be used for the data type 'datatype' analysis.
 
     It copies the files ending with 'database_file_end' from database folder 
     targeted by the path 'database_folder_path' to the rawdata folder 
@@ -501,7 +510,8 @@ def create_folder(root_path, folder, verbose=False):
 def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
     """Creates a corpus folder with the required architecture.
 
-    It uses the global "ARCHI_YEAR" for the names of the sub_folders.
+    It uses the global "ARCHI_YEAR" for the names of the sub_folders 
+    and the `create_folder` function of the same module.
 
     Args:
         bibliometer_path (path): The full path of the working folder.
@@ -577,6 +587,22 @@ def _save_item(item_df, item_filename_base, save_extent, parsing_path):
 
 
 def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
+    """Saves the data of an item of the deduplication results of the parsing step
+    as final results.
+
+    Args:
+        item_df (dataframe): The data of the deduplication item to be saved.
+        item_filename_base (str): The file name base to build the name of the file \
+        for saving the item data.
+        save_extent (str): The extent for building the name of the file for saving \
+        the data.
+        dedup_infos (tup): (The full path to the working folder (path), \
+        Data combination type from corpuses databases (str), \
+        4 digits year of the corpus (str)).
+    Returns:
+        (tup): (4 digits year of the corpus (str), The full path to the folder \
+        where the deduplication result are saved).
+    """
     # Setting parameters from args
     bibliometer_path, datatype, corpus_year = dedup_infos
 
@@ -610,15 +636,16 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
 def save_parsing_dict(parsing_dict, parsing_path,
                       item_filename_dict, save_extent,
                       dedup_infos=None):
-    """Saves the dataframes passed through the dict of parsing results 
+    """Saves the data passed through the dict of parsing results 
     as files of a specifyed type.
 
-    It may manage the final saving of the deduplication results.
+    It may manage the final saving of the parsing-deduplication results 
+    depending on the optional argument 'dedup_infos'.
 
     Args:
         parsing_dict (dict): Parsing results keyed by parsing items \
         given by 'PARSING_ITEMS_LIST' global imported from the package \
-        imported as bp and valued by the dataframes of parsing results.
+        imported as bp and valued by the data (dataframes) of parsing results.
         parsing_path (path): Full path to the folder for saving \
         the parsing results.
         item_filename_dict (dict): Dict keyed by the parsing items \
@@ -807,7 +834,7 @@ def read_final_set_homonyms_data(saved_results_path, corpus_year):
     # Setting useful aliases
     saved_homonyms_folder_alias = pg.ARCHI_RESULTS["homonyms"]
     homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
-    
+
     # Setting input file
     year_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
 

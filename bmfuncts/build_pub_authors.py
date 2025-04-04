@@ -149,6 +149,8 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
     """Builds the `filt_authors_inst_` filter to select the authors by their institution.
 
     Args:
+        authorsinst_authors_df (dataframe): Data of combined name of author to author ID \
+        with affiliation by publication ID.
         inst_col_list (list): List of column names (str) that contains \
         affiliation status to the Institute.
         main_status (bool): Status of the combination of 'inst_col_list' columns \
@@ -162,7 +164,6 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
 
         - True if any in these columns is equal to 1 for the author;
         - False otherwise.
-
     """
     main_inst_col = inst_col_list[main_inst_idx]
     if main_status:
@@ -396,7 +397,7 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
 
 def _read_useful_parsing_data(bibliometer_path, saved_results_path,
                               corpus_year, items_list):
-    """Reads saved data of publications, addresses, authors 
+    """Reads the saved data of publications, addresses, authors 
     and authors with affiliations resulting from 
     the parsing step.
 
@@ -410,10 +411,10 @@ def _read_useful_parsing_data(bibliometer_path, saved_results_path,
         corpus_year (str): 4 digits year of the corpus.
         items_list (list): List of items (str) to be read.
     Returns:
-        (tup): (dataframe of the publications data, \
-        dataframe of the addresses data \
-        dataframe of the authors data, dataframe of \
-        the authors with affiliations data).
+        (tup): (the publications data (dataframe), \
+         the addresses data (dataframe), \
+         the authors data (dataframe), \
+         the authors with affiliations data (dataframe)).
     """
     # Setting useful parameters from args
     (articles_item,
@@ -442,6 +443,9 @@ def _read_useful_parsing_data(bibliometer_path, saved_results_path,
 
 
 def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year):
+    """Gets the input data through the `_read_useful_parsing_data` internal function 
+    and corrects incomplete affiliations for the added DOIs info from HAL database through 
+    the `_check_added_dois_affil`internal function."""
     # Setting useful aliases
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
     addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
@@ -484,6 +488,9 @@ def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year)
 
 
 def _recasting_inst_merged_df(inst_merged_df, bm_cols_tup):
+    """Recasts the data with with one row per Institute author 
+    for each publication by format of authors full names and their 
+    redistribution into last names and firsname initials."""
     # Setting useful alias
     bp_co_auth_alias = bp.COL_NAMES['authors'][2]
     bm_fullname_alias, bm_lastname_alias, bm_firstname_alias = bm_cols_tup
@@ -522,7 +529,7 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     After that, a publications list dataframe with one row per author affiliated 
     to the Institute is built using the 'filt_authors_inst' filter got through 
     the `_build_filt_authors_inst` internal function. 
-    Then, the dataframe is recast through the `_recasting_inst_merged_df` 
+    Then, the dataframe is recasted through the `_recasting_inst_merged_df` 
     internal function. 
     Finally, the dataframe is cleaned as follows:
 
@@ -564,7 +571,7 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     # Adding new column with year of initial publication which is the corpus year
     articles_df[corpus_year_col_alias] = year
 
-    # Combining name of author to author ID with institution by publication ID
+    # Combining name of author to author ID with affiliation by publication ID
     authorsinst_authors_df = pd.merge(authorsinst_df,
                                       authors_df,
                                       how='inner',

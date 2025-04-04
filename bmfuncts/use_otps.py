@@ -37,14 +37,15 @@ from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 
+
 def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
     """Gets the publications list of the a department 
-    from the EXCEL files where the user has set the OTPs.
+    from the xlsx files where the user has set the OTPs.
 
     The name of the file is build using the file-name base 
     and the department label. This name is added '_ok' if 
     this file exists in the folder of files. 
-    Then the file is read as a multisheet EXCEL file. 
+    Then the file is read as a multisheet xlsx file. 
     The final publication list of the department results from 
     the concatenation of the containt of all the existing sheets.  
 
@@ -54,7 +55,7 @@ def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
         in_path (path): Full path to folder of files where OTPs \
         have been attributed.
     Returns:
-        (dataframe): The concatenated publications list with OTPs.        
+        (dataframe): The publications list with OTPs for thr department.        
     """
     otp_file_name_dpt = in_file_base + '_' + dpt_label
     otp_file_name_dpt_ok = otp_file_name_dpt + '_ok'
@@ -101,7 +102,21 @@ def _concat_dept_otps_dfs(org_tup, in_file_base, in_path):
 
 
 def set_pub_otp_df(org_tup, final_col_list, pub_id_col, otp_path, otp_file_base):
+    """Builds the data of publications list with OTPs from the files where OTPs 
+    have been set by the user for each department.
+ 
+    For that it uses the `_concat_dept_otps_dfs` internal function.
 
+    Args:
+        org_tup (tup): Contains Institute parameters.
+        final_col_list (list): The list of column names of the built data.
+        pub_id_col (str): The column name of publications IDs.
+        otp_path (path): The full path to the folder where the files \
+        with the set OTPs are saved.
+        otp_file_base (str): The file name base of the files with the set OTPs.
+    Returns:
+        (dataframe): The built data. 
+    """
     # Getting dept OTPs df and concatenating them
     init_pub_otp_df = _concat_dept_otps_dfs(org_tup, otp_file_base, otp_path)
 
@@ -119,7 +134,9 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
               otp_path, otp_file_base):
     """Saves the history of the attributed OTPs by the user.
 
-    First, builds the dataframe to save with 2 sheets:
+    First, it builds the data of publications list with OTPs set by the user \
+    through the `set_pub_otp_df` function of the same module. 
+    Then, it builds the history data to save with 2 sheets:
 
     - A sheet which name is given by 'SHEET_SAVE_OTP' global at key 'hash_OTP' \
     with the following columns:
@@ -135,17 +152,20 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
         - DOI of the publication for which OTPs have been attributed.
         - The OTPs value attributed.
 
-    Finally, saves the dataframe as Excel file.
+    Finally, saves the history data as a multisheet xlsx file.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
-        otp_path (path): -----------------.
-        otp_file_base (str): ------------------. 
+        otp_path (path): The full path to the folder where the files \
+        with the set OTPs are saved.
+        otp_file_base (str): The file name base of the files with \
+        the set OTPs.
     Returns:
-        (str): End message.
+        (tup): (End message (str), the built data of publications list \
+        with OTPs set by the user (dataframe)).
     """
     # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
@@ -451,7 +471,6 @@ def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
 
 def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
                            dpt_otp_file_name_path, otps_history_tup):
-
     """Rebuilds and saves the openpyxl workbook for the department labelled 'dpt'.
 
     A data validation list is added to the cells 'otp_cell_alias' only when 
@@ -714,7 +733,18 @@ def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
 def _get_otps_history(institute, org_tup,
                       hash_id_file_path,
                       kept_otps_file_path):
-    """
+    """Gets the history of previously set OTPs.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        hash_id_file_path (path): The full path to the Hash-IDs file.
+        kept_otps_file_path (path): the full path to the history of \
+        the set OTPs.
+    Returns:
+        (tup): (Tuple of lists of infos for using previoulsly set OTPs, \
+        Tuple of useful columns names, The data of the the history \
+        of previously set OTPs by DOI).
     """
     # Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
@@ -737,7 +767,7 @@ def _get_otps_history(institute, org_tup,
     hash_otp_history_df = pd.read_excel(kept_otps_file_path,
                                         sheet_name=hash_otp_sheet_alias)
 
-    # Building df of pub_id and OTPs to set related to hash_id
+    # Building data of pub_id and OTPs to set related to hash_id
     pub_id_otp_to_set_df = pd.merge(hash_id_df,
                                     hash_otp_history_df,
                                     how='inner',
@@ -772,12 +802,18 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     before submiting to the user the file for attributing the not yet 
     attributed OTPs.
 
-    Loops on department to:
+    First, it gets the history of the previously set OTPs through \
+    the `_get_otps_history` internal function. 
+    Then, if the level at which the OTPs are set by the user is the laboratory:
 
-        1. Build the dataframe with already attributed OTPs \
-    and OTPs remaining to be attributed. 
-        2. Save the file to be submitted to the user through the \
-    `_re_save_dpt_otp_file` internal function.
+    1. The data of OTPs data given by laboratory of each department are set \
+    through `set_lab_otps` function imported from the `bmfuncts.build_otps_info` module.
+    2. The history of the attributed OTPs is used to built the files to be submitted \
+    to the user through the `_set_saved_lab_otps` internal function.
+
+    Otherwise, The level is kept to the department. Then, the history of the attributed \
+    OTPs is used to built the files to be submitted to the user through \
+    the `_set_saved_dept_otps` internal function.
 
     Args:
         institute (str): Institute name.

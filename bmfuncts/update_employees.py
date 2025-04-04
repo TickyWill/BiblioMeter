@@ -122,15 +122,16 @@ def _add_sheets_to_workbook(file_full_path, df_to_add, sheet_name):
     """
 
     with pd.ExcelWriter(file_full_path,  # https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
-                        engine = 'openpyxl',
-                        mode = 'a',
-                        if_sheet_exists = 'replace') as writer:
-        df_to_add.to_excel(writer, sheet_name = sheet_name, index = False)
+                        engine='openpyxl',
+                        mode='a',
+                        if_sheet_exists='replace') as writer:
+        df_to_add.to_excel(writer, sheet_name=sheet_name, index=False)
+
 
 def _update_months_history(months2add_file_path,
                            one_year_employees_folder_path,
-                           one_year_employees_basename_alias,
-                           replace = True,):
+                           one_year_employees_base_name,
+                           replace=True,):
     """Updates the file pointed by 'year_months_file_path' for a year.
 
     More specifically only the new months contained in the EXCEL file 
@@ -150,7 +151,7 @@ def _update_months_history(months2add_file_path,
         with one sheet per months to update the employees file.
         one_year_employees_folder_path (path): Full path to the folder containing \
         the files gathering the employees per year.
-        one_year_employees_basename_alias (path): Base for building the file \
+        one_year_employees_base_name (path): Base for building the file \
         name of the file gathering the employees for a year.
         replace (bool): If true, existing sheets are replaced in the Ecxel \
         file (default: True).
@@ -182,7 +183,7 @@ def _update_months_history(months2add_file_path,
         return None, None, None, None, years2add_error
 
     year = years_list[0]
-    file_name = f'{year}' + one_year_employees_basename_alias
+    file_name = f'{year}' + one_year_employees_base_name
     year_months_file_path = one_year_employees_folder_path / Path(file_name)
 
     if os.path.isfile(year_months_file_path):
@@ -239,12 +240,12 @@ def _add_column_keep_history(df):
     """
 
     # Setting useful aliases
-    col_eff_dpt_alias     = eg.EMPLOYEES_USEFUL_COLS['dpt']
+    col_eff_dpt_alias = eg.EMPLOYEES_USEFUL_COLS['dpt']
     col_eff_service_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
-    col_add_dpts_alias    = eg.EMPLOYEES_ADD_COLS['dpts_list']
-    col_add_servs_alias   = eg.EMPLOYEES_ADD_COLS['servs_list']
-    col_add_month_alias   = eg.EMPLOYEES_ADD_COLS['months_list']
-    col_add_year_alias    = eg.EMPLOYEES_ADD_COLS['years_list']
+    col_add_dpts_alias = eg.EMPLOYEES_ADD_COLS['dpts_list']
+    col_add_servs_alias = eg.EMPLOYEES_ADD_COLS['servs_list']
+    col_add_month_alias = eg.EMPLOYEES_ADD_COLS['months_list']
+    col_add_year_alias = eg.EMPLOYEES_ADD_COLS['years_list']
 
     # Converting the list of tuples[(mm_1, yyyy_1, item_1), ...(mm_n, yyyy_n, item_n)]
     # into a list of 3 lists [[mm_1,...,mm_n], [yyyy_1,....yyyy_n],[item_1,....,item_n]]
@@ -254,14 +255,14 @@ def _add_column_keep_history(df):
     cols_tup_list = [(col_eff_dpt_alias, col_add_dpts_alias),
                      (col_eff_service_alias, col_add_servs_alias)]
     for cols_tup in cols_tup_list:
-        col_in, col_out =  cols_tup[0], cols_tup[1]
+        col_in, col_out = cols_tup[0], cols_tup[1]
         df[col_out] = df[col_in].apply(lambda x: [list(x) for x in list(zip(*x))])
 
     # Exploding the 2 lists of 3 lists into the columns
     # named 'months', 'years', 'Dpts' and 'Servs'
     for col in [col_add_dpts_alias, col_add_servs_alias]:
         new_col = [col_add_month_alias,col_add_year_alias,col]
-        df[new_col] = pd.DataFrame(df[col].tolist(), index = df.index)
+        df[new_col] = pd.DataFrame(df[col].tolist(), index=df.index)
 
     return df
 
@@ -313,9 +314,9 @@ def _add_column_full_name(df):
         (dataframe): The updated dataframe.
     """
 
-    col_last_name_alias          = eg.EMPLOYEES_USEFUL_COLS['name']
+    col_last_name_alias = eg.EMPLOYEES_USEFUL_COLS['name']
     col_first_name_initial_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
-    col_full_name_alias          = eg.EMPLOYEES_ADD_COLS['employee_full_name']
+    col_full_name_alias = eg.EMPLOYEES_ADD_COLS['employee_full_name']
 
     df[col_full_name_alias] = df[col_last_name_alias] + ' ' + df[col_first_name_initial_alias]
 
@@ -353,7 +354,7 @@ def _select_employee_dpt_and_serv(df):
 
     """
 
-    col_dpt_alias  = eg.EMPLOYEES_USEFUL_COLS['dpt']
+    col_dpt_alias = eg.EMPLOYEES_USEFUL_COLS['dpt']
     col_serv_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
 
     cols_list = [col_dpt_alias, col_serv_alias]
@@ -401,27 +402,27 @@ def _build_year_month_dpt(year_months_file_path):
 
     # Setting lists of columns
     useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values())
-    add_col_list    = list(eg.EMPLOYEES_ADD_COLS.values())
+    add_col_list = list(eg.EMPLOYEES_ADD_COLS.values())
 
     # Setting useful aliases from globals
-    dpt_col_alias       = eg.EMPLOYEES_USEFUL_COLS['dpt']
+    dpt_col_alias = eg.EMPLOYEES_USEFUL_COLS['dpt']
     firstname_col_alias = eg.EMPLOYEES_USEFUL_COLS['first_name']
-    name_col_alias      = eg.EMPLOYEES_USEFUL_COLS['name']
+    name_col_alias = eg.EMPLOYEES_USEFUL_COLS['name']
     matricule_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
-    serv_col_alias      = eg.EMPLOYEES_USEFUL_COLS['serv']
+    serv_col_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
 
     # Reading the sheets from the excel file as a dict
     # {sheet-name: sheet-content dataframe}
     df_dict = pd.read_excel(year_months_file_path,
-                            sheet_name = None,
-                            usecols = useful_col_list)
+                            sheet_name=None,
+                            usecols=useful_col_list)
 
     # Concatenating the sheets from the 'sheet_names'
     # list into the dataframe 'df_eff_year'
     list_df_eff_month = []
     for sheet_name,df_eff_month in df_dict.items():
-        month = sheet_name[0:2]  # Extraction of the month mm for the sheet name mmyyyy
-        year = sheet_name[2:]    # Extraction of year yyyy for the sheet name mmyyyy
+        month = sheet_name[0:2] # Extraction of the month mm for the sheet name mmyyyy
+        year = sheet_name[2:] # Extraction of year yyyy for the sheet name mmyyyy
 
         # For the sheet 'sheet_name' of the dataframe 'df_eff_month'
         # replacing each cell of column 'dpt_col_alias'/'serv_col_alias' that specifies
@@ -486,7 +487,7 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
 
     # Setting useful file name aliases
     one_year_employees_basename_alias = eg.EMPLOYEES_ARCHI["one_year_employees_filebase"]
-    all_years_employees_file_alias    = eg.EMPLOYEES_ARCHI["employees_file_name"]
+    all_years_employees_file_alias = eg.EMPLOYEES_ARCHI["employees_file_name"]
 
     # Getting useful employees paths
     (months2add_employees_folder_path,
@@ -495,8 +496,7 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
      backup_folder_path) = _set_employees_paths(bibliometer_path)
 
     # Setting full paths to useful files
-    all_years_file_path        = all_years_employees_folder_path / \
-                                 Path(all_years_employees_file_alias)
+    all_years_file_path = all_years_employees_folder_path / Path(all_years_employees_file_alias)
     all_years_file_backup_path = backup_folder_path / Path(all_years_employees_file_alias)
 
     # Setting the list of files available to add (expected only one)
@@ -570,7 +570,8 @@ def set_employees_data(corpus_year, all_effectifs_path, search_depth):
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
-        all_effectifs_path (path): Full path to file of Institute employees database.
+        all_effectifs_path (path): Full path to file of Institute \
+        employees database.
         search_depth (int): Initial search depth.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
@@ -587,9 +588,9 @@ def set_employees_data(corpus_year, all_effectifs_path, search_depth):
     # Getting employees df
     useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values()) + list(eg.EMPLOYEES_ADD_COLS.values())
     all_effectifs_df = pd.read_excel(all_effectifs_path,
-                                     sheet_name = None,
-                                     dtype = eg.EMPLOYEES_COL_TYPES,
-                                     usecols = useful_col_list,
+                                     sheet_name=None,
+                                     dtype=eg.EMPLOYEES_COL_TYPES,
+                                     usecols=useful_col_list,
                                      keep_default_na=False)
 
     # Standardizing employee last name and consequently updating employee full name

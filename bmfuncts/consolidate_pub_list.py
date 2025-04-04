@@ -49,7 +49,8 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
-        (int): Split ratio in % of the publications final list.
+        (tup): (split ratio in % of the publications final list (int), 
+        consolidated publications number (int)).
     """
     # Setting useful parameters for use of 'format_page' function
     common_df_title = pg.DF_TITLES_LIST[0]
@@ -106,21 +107,6 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     if pub_nb!=0:
         split_ratio = round(key_pub_nb / pub_nb*100)
     return split_ratio, pub_nb
-
-
-def _correct_book_chapters(pub_list_df, cols_tup):
-    """Corrects book chapters with ISSN to articles.
-
-    Note:
-        Unused function.
-    """
-    issn_col, doc_type_col = cols_tup
-    book_doctypes_list = [x.upper() for x in pg.DOC_TYPE_DICT["Books"]]
-    for idx_row, row in pub_list_df.iterrows():
-        issn, doctype = row[issn_col], row[doc_type_col].upper()
-        if issn!=bp.UNKNOWN and doctype in book_doctypes_list:
-            pub_list_df.loc[idx_row, doc_type_col] = "Article"
-    return pub_list_df
 
 
 def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,

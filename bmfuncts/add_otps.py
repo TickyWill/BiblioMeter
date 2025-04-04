@@ -56,7 +56,19 @@ def add_data_val(ws, data_val, df_len, col_letter, xl_idx_base):
     return ws
 
 
-def _set_otps_dept_affil(org_tup, in_df, otp_col_dict, otp_dept_col, dpt_label):
+def _set_otps_dept_affil(org_tup, in_df, otp_col_dict):
+    """Replaces the 'dpt_col' column of affiliation department by 'otp_dept_col'
+    new column filled with the department label to be used for the OTP attribution.
+
+    Args:
+        org_tup (tup): Contains Institute parameters.
+        in_df (dataframe): Data of the publications list \
+        with a row per Institute author and their attributes columns.
+        otp_col_dict (dict): The final columns names of the dataframes \
+        for OTPs attribution by the user.
+    returns:
+        (tup): (End message (str), modifyed data (dataframe)).
+    """
     # Internal functions
     def _set_dpt(dpt_label_list):
         return lambda x: 1 if x in dpt_label_list else 0
@@ -65,13 +77,21 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict, otp_dept_col, dpt_label):
     dpt_attributs_dict = org_tup[2]
     dpt_list = list(dpt_attributs_dict.keys())
 
+    # Setting useful alias
+    dpt_label_alias = ig.DPT_LABEL_KEY
+
+    # Getting the final name of the department column
     dpt_col = otp_col_dict['dpt']
+
+    # Setting name of the column for setting the department
+    # to be used for OTPs attribution
+    otp_dept_col = "otp_dept"
 
     out_df = pd.DataFrame()
     for dept, dg in in_df.groupby(dpt_col):
         if dept not in dpt_list:
             for dpt in dpt_list:
-                if dept in dpt_attributs_dict[dpt][dpt_label]:
+                if dept in dpt_attributs_dict[dpt][dpt_label_alias]:
                     dg[otp_dept_col] = dpt
         else:
             dg[otp_dept_col] = dept
@@ -80,7 +100,7 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict, otp_dept_col, dpt_label):
     # For each department adding a column containing 1 or 0
     # depending on if the author belongs or not to the department
     for dpt in dpt_list:
-        dpt_label_list = dpt_attributs_dict[dpt][dpt_label]
+        dpt_label_list = dpt_attributs_dict[dpt][dpt_label_alias]
         out_df[dpt] = out_df[dpt_col]
         out_df[dpt] = out_df[dpt].apply(_set_dpt(dpt_label_list))
 
@@ -116,12 +136,11 @@ def _add_authors_name_list(institute, org_tup, in_df):
     Args:
         institute (str): The Intitute name.
         org_tup (tup): Contains Institute parameters.
-        in_path (path): Fullpath of the excel file of the publications list \
+        in_df (dataframe): Data of the publications list \
         with a row per Institute author and their attributes columns.
-        out_path (path): Fullpath of the processed dataframe as an Excel file \
-        saved after going through its treatment.
     Returns:
-        (str): End message recalling out_path.
+        (tup): (End message (str), the data of the publication list \
+        added with the new columns (dataframe)).
     """
 
     # Internal functions
@@ -180,29 +199,28 @@ def _add_authors_name_list(institute, org_tup, in_df):
 
 
 def _enhance_homonyms_file(institute, org_tup, in_path):
-    """Enhances the file of resolved homonymies by checking department attribution 
-    and adding a column for the department to be used for OTPs attribution.
+    """Enhances the data got from the Excel file where homonyms 
+    have been solved by the user by checking department 
+    attribution and adding useful columns.
 
-    First, useful columns are added to the dataframe got from the Excel file 
-    where homonyms have been solved by the user and pointed by 'in_path' path 
-    through the `_add_authors_name_list` internal function. 
+    First, the final columns names of the dataframes for OTPs attribution 
+    by the user are set through the 'set_otp_names' function imported 
+    from the `bmfuncts.rename_cols` module. 
+    Then, a new column with the department to be used for OTPs attribution 
+    is added to the data through the `_set_otps_dept_affil` internal function. 
+    Finally, useful columns with authors names list are added to the data through 
+    the `_add_authors_name_list` internal function. 
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         in_path (path): Full path to the file where homonyms have been solved.
     Returns:
-        (dataframe): 
+        (dataframe): The enhanced data. 
     """
     # Setting OTP df column names
     otp_col_dict = set_otp_col_names(institute, org_tup)
     dpt_alias = otp_col_dict['dpt']
-
-    # Setting useful alias
-    dpt_label_alias = ig.DPT_LABEL_KEY
-
-    # Setting name of the column for setting the department to be used for OTPs attribution
-    otp_dept_col = "otp_dept"
 
     solved_homonymies_df = pd.read_excel(in_path)
     solved_homonymies_df = solved_homonymies_df.fillna('')
@@ -210,10 +228,9 @@ def _enhance_homonyms_file(institute, org_tup, in_path):
     # Removing possible spaces in dept name
     solved_homonymies_df[dpt_alias] = solved_homonymies_df[dpt_alias].apply(lambda x: x.strip())
 
-    # Setting the affiliation department for OTPs attribution in 'otp_dept_col' column
+    # Setting the affiliation department for OTPs attribution
     end_message, new_solved_homonymies_df = _set_otps_dept_affil(org_tup, solved_homonymies_df,
-                                                                 otp_col_dict, otp_dept_col,
-                                                                 dpt_label_alias)
+                                                                 otp_col_dict)
     print('\n ',end_message)
 
     # Adding a column with a list of the authors in the file where homonymies

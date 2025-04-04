@@ -199,9 +199,8 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     before submiting the file for resolving remaining homonyms to the user.
 
     First, builds the dataframe with solved homonyms and homonyms remaining \
-    to be solved.
-
-    Finally, saves the dataframe through the `_save_shaped_homonyms_file` \
+    to be solved. 
+    Then, saves the dataframe through the `_save_shaped_homonyms_file` \
     internal function.
 
     Args:

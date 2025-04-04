@@ -24,13 +24,22 @@ from bmfuncts.useful_functs import concat_dfs
 def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_types_list):
     """Distributes the column that contains the list of the normalized institutions 
     of a publication and an author address into a column for each institution type.
-    
+
     ex: "Institution" col value = UGA Univ; USMB Univ; CNRS Nro; G-INP Sch; IMEP-LaHC Lab
         => "Univ" col value = "['UGA Univ', 'USMB Univ']"
         => "Nro" col value = "['CNRS Nro']"
         => "Sch" col value = "['G-INP Sch']"
         => "Lab" col value = "['IMEP-LaHC Lab']"
         => Other type col value = "[]"
+
+    Args:
+        norm_institutions_df (dataframe): Data of the normalized institutions per publication.
+        institutions_col (str): Column name of the normalizedinstitutions list in \
+        the 'norm-institution_df' dataframe.
+        inst_types_list (list): Institution types that are used as column names in the built data.
+    Returns:
+        (dataframe): The built data with distributed normalized institutions per intitution \
+        type and per publication.
     """
     set_words_template = Template(r'[\s]$word$$')
     distrib_institutions_df = pd.DataFrame()
@@ -47,9 +56,14 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
 
 def _set_inst_names_list(inst_names):
     """Converts the string containing a list of institutions into a list.
-    
+
     ex: "['Sorbonne Univ', 'Paris-Sud Univ', 'UPMC Univ']" 
         => ['Sorbonne Univ', 'Paris-Sud Univ', 'UPMC Univ']
+
+    Args:
+        inst_names (str): Contains the list of institutions.
+    Returns:
+        (list): The list of institutions names (str).
     """
     inst_names = inst_names[1:len(inst_names)-1]
     inst_names_list = inst_names.split(", ")
@@ -60,6 +74,14 @@ def _set_inst_names_list(inst_names):
 def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list):
     """Builds the data with one row per institution name and its country 
     for each publication for a given type of institutions.
+
+    Args:
+        institute (str): Institute name.
+        distrib_institutions_df (dataframe): data with distributed normalized \
+        institutions per intitution type and per publication.
+        cols_list (list): The columns names (str) list used to build the data.
+    Returns:
+        (dataframe): The built data. 
     """
     # Setting useful column names
     pub_id_col, bp_country_col, inst_type_col = cols_list
@@ -111,7 +133,20 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list):
 
 def _build_inst_type_inst_df(final_pub_id_inst_type_df,
                              input_cols_list, stat_cols_list):
-    """Builds the statistics data for a given type of institutions.
+    """Builds data with one row per institution and attached country, 
+    number of publications and list of publications IDs for a given type 
+    of institutions.
+
+    Args:
+        final_pub_id_inst_type_df (dataframe): The data with one row \
+        per institution name and its country for each publication \
+        for a given type of institutions.
+        input_cols_list (list): The columns names (str) list used from \
+        the 'final_pub_id_inst_type_df' input data. 
+        stat_cols_list (list): The columns names (str) list used to build \
+        the statistics data.
+    Returns:
+        (dataframe): The built data.
     """
     # Setting col names from args
     pub_id_col, bp_country_col, inst_type_col = input_cols_list
@@ -146,10 +181,21 @@ def _build_inst_type_inst_df(final_pub_id_inst_type_df,
 
 def _build_inst_type_pub_id_df(final_pub_id_inst_type_df, input_cols_list,
                                stat_cols_list):
-    """Builds, for a given type of institutions, data with, on the one hand, 
-    one row per publication with attached countries number and countries list 
-    and, on the other hand, one row per publication and country with attached 
-    number of institutions and list of institutions."""
+    """Builds data with one row per publication and country with attached 
+    number of institutions and list of institutions for a given type of 
+    institutions.
+
+    Args:
+        final_pub_id_inst_type_df (dataframe): The data with one row \
+        per institution name and its country for each publication \
+        for a given type of institutions.
+        input_cols_list (list): The columns names (str) list used from \
+        the 'final_pub_id_inst_type_df' input data.
+        stat_cols_list (list): The columns names (str) list used to build \
+        the statistics data.
+    Returns:
+        (dataframe): The built data.
+    """
     # Setting col names from args
     pub_id_col, bp_country_col, inst_type_col = input_cols_list
     pg_country_col, _, inst_nb_col, inst_list_col, _, _ = stat_cols_list
@@ -177,8 +223,21 @@ def _build_inst_type_pub_id_df(final_pub_id_inst_type_df, input_cols_list,
 
 
 def _build_inst_type_country_df(pub_country_inst_df, input_cols_list, stat_cols_list):
-    """Builds data with one row per country with attached number 
-    of publications and list of publications for a given type of institutions."""
+    """Builds data with one row per country with attached number of 
+    publications and list of publications IDs for a given type of institutions.
+
+    Args:
+        pub_country_inst_df (dataframe): The data with one row per publication \
+        and country with attached number of institutions and list of institutions \
+        as built through the `_build_inst_type_pub_id_df` internal function \
+        for the given type of institutions. 
+        input_cols_list (list): The  names (str) list of the basic columns \
+        used to build the data.
+        stat_cols_list (list): The names (str) list of the specific columns \
+        that will contain the statistics results in the built data.
+    Returns:
+        (dataframe): The built data.
+    """
 
     # Setting col names from args
     pub_id_col, _, _ = input_cols_list
@@ -208,11 +267,31 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list, stat_cols_
 
 def _build_inst_stat_data(institute, distrib_institutions_df,
                           common_cols_list, stat_cols_list):
-    """Builds 3 dataframes of institutions statistics for each inst_type.
-    
-    This is done through the use of the `_build_pub_id_inst_type_df`,
-    `_build_inst_type_inst_df`, `_build_inst_type_pub_id_df` and 
-    `_build_inst_type_country_df` internal functions."""
+    """Builds 3 dataframes of institutions statistics for each institution type.
+
+    This done through the cycling on the list of the institutions type 
+    defined by the 'STAT_FILE_DICT' global. The cycled steps are as follows:
+
+    1. Building the data with one row per institution name and its \
+    country for each publication for the type of institutions through \
+    the `_build_pub_id_inst_type_df` internal function.
+    2. Building the 3 sets of statistical data for the type of institutions \
+    through the `_build_inst_type_inst_df`, `_build_inst_type_pub_id_df` \
+    and `_build_inst_type_country_df` internal functions.
+
+    Args:
+        institute (str): Institute name.
+        distrib_institutions_df (dataframe): data with distributed normalized \
+        institutions per intitution type and per publication.
+        common_cols_list (list): The  names (str) list of the common columns \
+        used to build the data.
+        stat_cols_list (list): The names (str) list of the specific columns \
+        that will contain the statistics results in the built data.
+    Returns:
+        (Hierarchical dict): The dict keyed by institutions types and valued \
+        by dicts keyed by the statistical keys (str) given by the 'STAT_FILE_DICT' \
+        global and valued by the built data (dataframe) of the statistical results.
+    """
     stat_keys_alias = list(pg.STAT_FILE_DICT.keys())
     inst_type_data_dict = {}
     for inst_type in pg.STAT_INST_TYPES_LIST:
@@ -248,7 +327,14 @@ def _save_inst_stat_data(inst_type_data_dict, inst_stat_path):
     1. A dataframe is selected in the institutions statistics dict.
     2. A sheet is added to the openpyxl workbook containing the data 
     of the dataframe through the `format_wb_sheet` function 
-    imported from the `bmfuncts.format_files` module. 
+    imported from the `bmfuncts.format_files` module.
+
+    Args:
+        inst_type_data_dict (hierarchical dict): The institutions statistics \
+        dict keyed by institutions type (str) and valued by dicts keyed by \
+        statistical keys (str) and valued by data (dataframe) of statistical results.
+        inst_stat_path (path): The full path to the folder where the statistical \
+        results are saved.
     """
     inst_types_list = inst_type_data_dict.keys()
     for stat_key, value_tup in pg.STAT_FILE_DICT.items():
@@ -281,6 +367,14 @@ def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
     are built through the `_build_inst_stat_data` internal function.
     2. The data are saved as multisheet openpyxl workbooks through 
     the `_save_inst_stat_data` internal function.
+
+    Args:
+        institute (str): Institute name.
+        norm_institutions_df (dataframe): Data of the normalized institutions \
+        per publication.
+        inst_types_file_path (path): The full path to the institutions-types file.
+        inst_analysis_folder_path (path); The full path to the folder \
+        where the results of the institutions analysis are saved.
     """
     # Setting useful column alias
     pub_id_col_alias = bp.COL_NAMES['pub_id']
@@ -319,9 +413,18 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
     2. Saves the built dataframe through `save_formatted_df_to_xlsx` function \
     imported from the `bmfuncts.format_files` module.
     3. Builds and saves the institutions statistics through the \
-    `_build_and_save_inst_stat_df` internal function.
+    `_build_and_save_inst_stat_data` internal function.
+
+    Args:
+        institute (str): Institute name.
+        norm_institutions_df (dataframe): Data of the normalized institutions \
+        per publication.
+        inst_types_file_path (path): The full path to the institutions-types file.
+        inst_analysis_folder_path (path); The full path to the folder \
+        where the results of the institutions analysis are saved.
+        year (str): 4 digits-year of the analyzed corpus.
     """
-    print("    Computing of institutions statistics")
+    print("    Computing institutions statistics")
 
     # Setting local parameters
     xlsx_extent = ".xlsx"

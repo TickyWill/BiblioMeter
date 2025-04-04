@@ -239,6 +239,8 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     with its impact factor for the corpus year.
 
     Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
@@ -355,6 +357,8 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     """Saves final results of number of publications per keyword for the corpus year.
 
     Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
@@ -586,7 +590,7 @@ def save_final_doctypes(bibliometer_path,
 
 
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
-                       if_analysis_name, results_to_save_dict, verbose = False):
+                       if_analysis_name, results_to_save_dict, verbose=False):
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
 

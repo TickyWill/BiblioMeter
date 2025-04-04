@@ -52,9 +52,9 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
 
 
 def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
-    """Reads saved articles data resulting from the parsing step.
+    """Reads saved data of publications list resulting from the parsing step.
 
-    It uses the `get_final_dedup` function of 
+    It uses the `get_final_dedup` function imported from the 
     the `bmfuncts.useful_functs` module.
 
     Args:
@@ -63,7 +63,7 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
-        (dataframe): The data of the authors.
+        (dataframe): The data of the publications list.
     """
     # Setting useful aliases
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
@@ -80,35 +80,31 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
 
 def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
                                 final_cols_tup, if_col_list=None):
-    """To update: Builds the dataframe of publications list to be analyzed.
+    """Builds the data of publications list to be analyzed for each documents types.
 
-    This is done through the following steps:
+    The list of documents-types items is ['articles', 'proceedings', 'books']. 
+    The data are built through the following steps:
 
-    1. Gets deduplication results of the parsing step through the `read_parsing_dict` \
-    function imported from `bmfuncts.useful_functs` module.
-    2. Builds the dataframe of publications list to be analyzed using \
-    normalized journal names available in the deduplicated list of publications \
-    resulting from the parsing step.
+    1. A dict keyed by documents-type values and valued by normalized documents-type \
+    values is built through the use of parsing results returned by the \
+    `_read_articles_data` internal function.
+    2. The data of the final publication list is got through the `read_final_pub_list_data` \
+    function imported from the `bmfuncts.useful_functs` module.
+    3. The journal names are normalized using the dict built at step 1.
+    4. THe words of the values of journal columns and documents types are capitalized through \
+    the `set_capwords_lambda` lambda function imported from the `bmfuncts.useful_functs` module.
+    5. The data thus obtained are split into data of each documents-types items.
 
     Args:
-        org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
-        final_cols_tup (tup) : (final columns names dict, departments columns list) .
+        final_cols_tup (tup): (final columns names dict, departments columns list).
         if_col_list (list): Optional list of column names of impact-factors.
     Returns:
-        (dataframe): 
+        (dict): The dict keyed per documents-types items (str) and valued \
+        by the data (dataframe) built for each documents type.
     """
-    # Building pub_df_dict dict
-    # keyyed by doctypes: ['articles', 'proceedings', 'books']
-    # valued by a dataframe for each doctype
-    #    colunms: ['Journal', 'Type du document', 'ISSN', 'DACLE', 'DCOS', 'DOPT', 'DPFT',
-    #              'DSYS', 'DTIS', 'DEXT', 'DIR', 'IF en cours, 2023',
-    #              "IF de l'année de première publication", 'Dedup_Same_Journal']
-    #    pub_df_dict['articles'] = articles_df
-    #    pub_df_dict['proceedings'] = proceedings_df
-    #    pub_df_dict['books'] = books_df
     # Setting input-data path
     saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
@@ -122,7 +118,7 @@ def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
     doctype_col = final_col_dic['doc_type']
     issn_col = final_col_dic['issn']
 
-    # Getting articles data reuslting from deduplication parsing
+    # Getting articles data resulting from deduplication parsing
     parsing_articles_df = _read_articles_data(bibliometer_path,
                                               saved_results_path, corpus_year)
 
@@ -164,6 +160,24 @@ def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
 
 def _set_by_issn_df(by_doc_df, idx_doc, issn, dg, drop_dup_cols,
                     journal_col, norm_doc):
+    """Computes the statistics data of a given ISSN with attached 
+    number of publications and list of publications IDs.
+
+    Args:
+        by_doc_df (dataframe): The data where the statistics will be set.
+        idx_doc (int): The index at which the statistics will be set.
+        issn (str): The given ISSN value for which the statistics data \
+        are computed.
+        dg (dataframe): The data of publications list for the given \
+        ISSN value.
+        drop_dup_cols (list): The list of columns names (str) for droping \
+        duplicates in 'dg' data.
+        journal_col (str): The column name of documents-types values.
+        norm_doc (str): The normalized name of the document-type value \
+        for the given ISSN value.
+    Returns:
+        (dataframe): The data where the statistics have been set.
+    """
     # Setting useful col names
     cols_list = by_doc_df.columns
     final_doctype_col = cols_list[0]
@@ -201,6 +215,25 @@ def _set_by_issn_df(by_doc_df, idx_doc, issn, dg, drop_dup_cols,
 
 
 def _build_doctype_stat(doctype, doctype_df, if_analysis_col, final_col_dic):
+    """Builds the statistics data of a given document type with one row 
+    per document-type value with attached number of publications and 
+    list of publications IDs.
+
+    To do that, it uses the `_set_by_issn_df` internal function.
+
+    Args:
+        doctype (str): The documents type label.
+        doctype_df (dataframe): The data of publications list \
+        of the documents type to be analyzed.
+        if_analysis_col(str): Name of the column of IFs in the \
+        analysis results.
+        final_col_dic (dict): The dict keyed by columns labels \
+        and valued by final columns names of the statistics data.
+    Returns:
+        (tup): (The built data (dataframe), The maximum index \
+        to wrap the list of publications IDs when saving data as \
+        formatted files).
+    """
     # Setting useful column names
     pub_id_col = final_col_dic['pub_id']
     journal_col = final_col_dic['journal']
@@ -243,6 +276,8 @@ def _build_doctype_stat(doctype, doctype_df, if_analysis_col, final_col_dic):
 
 
 def _build_dept_df(institute, dept, df):
+    """Builds the publications list data for a given department by selecting 
+    them in the full publications list data given by the 'df' dataframe."""
     if dept!=institute:
         dept_df = df[df[dept]==1].copy()
     else:
@@ -252,12 +287,39 @@ def _build_dept_df(institute, dept, df):
 
 def _build_and_save_doctype_stat(institute, bibliometer_path, pub_df_dict,
                                  corpus_year, if_analysis_col, final_cols_tup):
-    """Builds the publications statistics dataframes per country and per continent.
+    """Builds the statistics data of publications per documents types for each 
+    department of the Institute including itself.
     
-    First, it builds the statistics dataframes through the `_build_countries_stat` 
-    and the `_build_continents_stat` internal functions.
-    Then, it saves the statistics dataframes through the `save_formatted_df_to_xlsx` 
+    First, it sets the full path to the files of publications list for each 
+    document type. 
+    Then, it builds the statistics data by cycling on department and 
+    on documents types, the following steps:
+
+    1. The publications list of the given document type for the given \
+    department are built through the `_build_dept_df` internal function.
+    2. The statistics data of the given document type for the given \
+    department are built through the `_build_doctype_stat` internal \
+    function.
+    3. These statistics data of the given document type for the given \
+    department are saved through the `save_formatted_df_to_xlsx` \
     function imported from `bmfuncts.format_files` module.
+    
+    Args:
+        institute (str): Institute name.
+        bibliometer_path (path): Full path to working folder.
+        pub_df_dict (dict): The dict keyed by documents types and valued \
+        by the publications list data of each documents type.
+        corpus_year (str): 4 digits year of the corpus.
+        if_analysis_col (str): Name of the column of IFs in the IFs \
+        analysis results.
+        final_cols_tup (tup): The columns info as returned by \
+        the `set_final_col_names` function imported from the \
+        `bmfuncts.rename_cols` module.
+    Returns:
+        (tup): (Dict keyed by department labels (str) of the Institute \
+        and valued by data (dataframe) of statistics per journal, full path \
+        to the folder where the results of the anqlysis per documents types \
+        are saved).
     """
     # Setting parameters from args
     final_col_dic, depts_col_list = final_cols_tup
@@ -331,6 +393,16 @@ def _build_and_save_doctype_stat(institute, bibliometer_path, pub_df_dict,
 
 
 def _set_analysis_if_cols_list(corpus_year, if_most_recent_year):
+    """Sets the specific columns names for the impact-factors analysis.
+
+    Args:
+        corpus_year (str): 4 digits year of the corpus.
+        if_most_recent_year (str): Most recent year of impact factors.
+    Returns:
+        (tup): (List of the columns names (str) to be used for \
+        the IF analysis, Name (str) of the column of IFs in the IFs \
+        analysis results, 4 digits-year (str) of IFs analysis). 
+    """
     # Setting useful aliases
     most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
     corpus_year_if_col_alias = pg.COL_NAMES_BONUS['IF année publi']
@@ -351,8 +423,41 @@ def _set_analysis_if_cols_list(corpus_year, if_most_recent_year):
 
 
 def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
-                     corpus_year, if_most_recent_year, progress_callback=None):
-    """ 
+                     corpus_year, if_most_recent_year,
+                     progress_callback=None):
+    """Performs the analysis per documents-types of the Institute 
+    publications of the 'year' corpus.
+
+    This is done through the following steps:
+
+    1. The specific columns names for the impact-factors analysis \
+    are set through the `_set_analysis_if_cols_lis` internal function. 
+    2. The data of the publications list per documents-types to be \
+    analyzed are built through the `build_doctype_analysis_data` \
+    function of the same module. 
+    3. The statistic data are built for each documents type through \
+    the function `_build_and_save_doctype_stat` internal function. 
+    4. The results of this analysis for the 'datatype' case are saved \
+    through the `save_final_results` function imported from \
+    `bmfuncts.save_final_results` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        corpus_year (str): 4 digits year of the corpus.
+        if_most_recent_year (str): Most recent year of impact factors.
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (default = None).
+    Returns:
+        (tup): (Dict keyed by document-types labels (str) and valued by \
+        the publications lists (dataframe) of each document-type, \
+        Dict keyed by department labels (str) of the Institute \
+        and valued by data (dataframe) of statistics per journal, \
+        Name (str) of the column of IFs in the IFs analysis results, \
+        4 digits-year (str) of IFs analysis, Full path to the folder \
+        where IFs analysis final results are saved).
     """
     print(f"\n    Doctype analysis launched for year {corpus_year}...")
 
@@ -381,8 +486,9 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
     results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["doctypes"] = True
     if_analysis_name = None
-    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
-                           if_analysis_name, results_to_save_dict, verbose=False)
+    _ = save_final_results(institute, org_tup, bibliometer_path, datatype,
+                           corpus_year, if_analysis_name, results_to_save_dict,
+                           verbose=False)
     if progress_callback:
         progress_callback(50)
 

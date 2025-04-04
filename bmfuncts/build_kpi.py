@@ -1,4 +1,6 @@
-
+"""Module of functions for building key performance indicators (KPIs) 
+including impact-factors KPIs.
+"""
 __all__ = ['if_analysis']
 
 
@@ -21,6 +23,17 @@ from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _build_dept_doctype_df(init_dept_doctype_df, cols_tup):
+    """Builds the document-type data of a department of the Institute 
+    with the number of publications per the document-type values.
+
+    Args:
+        init_dept_doctype_df (dataframe): Data of the department \
+        publications list of a document-type.
+        cols_tup (tup): (document-type values col name (str), col name \
+        of publications number (str))
+    Returns:
+        (dataframe): The built data.
+    """
     # setting parameters from args
     journal_col, items_nb_col = cols_tup
 
@@ -36,6 +49,17 @@ def _build_dept_doctype_df(init_dept_doctype_df, cols_tup):
 
 
 def _build_dept_doctype_kpi(doctype, dept_doctype_df, items_nb_col_alias):
+    """Builds the key performance indicators (KPIs) of a given document-type 
+    for a department of the Institute.
+
+    Args:
+        doctype (str): The document-type label.
+        dept_doctype_df (dataframe): Data of the given document-type with \
+        the number of publications per document-type values.
+        items_nb_col_alias (str): The col name of publications number.
+    Returns:
+        (dict): The dict keyed by KPIs labels and valued by their values.
+    """
     # Number of items by doctype
     nb_doctypes = round(len(dept_doctype_df))
 
@@ -61,18 +85,27 @@ def _build_dept_doctype_kpi(doctype, dept_doctype_df, items_nb_col_alias):
 
 
 def _build_doctype_kpi(doctype, doctype_df, params_tup):
-    """Computes the key performance indicators (KPIs) 
-    of a given document-type for each department of 
-    the Institute including itself.
+    """Builds the key performance indicators (KPIs) dict of a given 
+    document-type for each department of the Institute including itself.
+
+    The doctype KPIs dict is built by cycling on each department label, 
+    including the Institute name, through the following steps:
+
+    1. Sets the publications list of the given document type for the department.
+    2. Builds the document-type data of a department of the Institute 
+    with the number of publications per the document-type values through \
+    the `_build_dept_doctype_df` internal function. 
+    3. Builds the doctype KPIs dict at the department-label key through the \
+    `_build_dept_doctype_kpi` internal function.
 
     Args:
-        doctype_df (dataframe): Publications list of \
-        the given document-type. 
-        params_tup (tup): Tuple = (Institute name (str), \
-        list of departments (list), column name of journals (str)).
+        doctype (str): The document-type label.
+        doctype_df (dataframe): Publications list of the given document-type.
+        params_tup (tup): (Institute name (str), list of departments (list), \
+        column name of journals (str)).
     Returns:
-        (dict): Hierarchical dict keyed by departments and valued \
-        at each key by KPIs of the department.
+        (dict): Hierarchical dict keyed by departments and valued at each \
+        key by KPIs dict of the department for the given document type.
     """
 
     # Setting useful parameters from args
@@ -85,63 +118,55 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
     cols_tup = (journal_col, items_nb_col_alias)
 
     # Building the doctype KPIs dict covering all departments
-    doctype_df_dict = {}
     doctype_kpi_dict = {}
     for dept in [institute] + depts_col_list:
-        # Building the doctype data for "dept"
+        # Setting the doctype data for "dept"
         if dept!=institute:
             dept_doctype_df = doctype_df[doctype_df[dept]==1].copy()
         else:
             dept_doctype_df = doctype_df.copy()
 
         # Building the books dataframe for "dept"
-        doctype_df_dict[dept] = _build_dept_doctype_df(dept_doctype_df,
-                                                       cols_tup)
+        dept_doctype_df = _build_dept_doctype_df(dept_doctype_df,
+                                                 cols_tup)
 
         # Computing KPI for department 'dept'
         doctype_kpi_dict[dept] = _build_dept_doctype_kpi(doctype,
-                                                         doctype_df_dict[dept],
+                                                         dept_doctype_df,
                                                          items_nb_col_alias)
-    return doctype_df_dict, doctype_kpi_dict
+    return doctype_kpi_dict
 
 
 def _build_basic_kpi(institute, org_tup, pub_df_dict):
-    """Builds the data of each department of the Institute including itself 
-    for impact-factors (IFs) analysis.
+    """Builds the basic key performance indicators (KPIs) 
+    data of each department of the Institute including itself.
 
-    This is done through the following steps:
+    First, an initial hierarchical dict keyed by doctypes 
+    and valued by KPIs dict built through the `_build_doctype_kpi` 
+    internal function. 
+    Then, a final hierarchical dict is built by cycling on each 
+    department label, including the Institute name, through 
+    the following steps:
 
-    1. Builds the 'dept_articles_df' dataframe of publications list of the department \
-    selected from the 'articles_df' dataframe.
-    2. Initializes the 'dept_kpi_dict' dict with the basic key performance indicators (KPIs) \
-    of the department using the 'dept_articles_df' through the `_build_basic_kpi_dict` internal \
-    function which returns also 'dept_articles_df' dataframe with only articles as document types.
-    3. Builds the 'dept_if_df' dataframe from 'dept_articles_df' dataframe selecting \
-    useful columns for IF-KPIs computation and cleans it.
-    4. Computes the IF-KPIs of the department using the data of the 'dept_if_df' dataframe.
-    5. Builds the 'dept_if_kpi_dict' dict using the IF_KPIs computed.
-    6. Sets the value of the 'dept_kpi_dict' dict at key given by 'if_analysis_col_new' \
-    equal to 'dept_if_kpi_dict' dict; by that the 'dept_kpi_dict' dict becomes a hierarchical dict.  
-    7. Sets the value of the 'kpi_dict' hierarchical dict at key 'dept' (name of the department) \
-    equal to the 'dept_kpi_dict' hierarchical dict.
-    8. Saves the 'dept_if_df' dataframe as openpyxl workbook using the `format_page` function \
-    imported from the `bmfuncts.format_files` module.
+    1. Building the hierarchical dict at the department_label key \
+    and at each-doctype key.
+    2. Computing complementary KPIs for the department.
+    3. Completing hierarchical dict at the department_label key \
+    and at 'complements' key with the computed complementary KPIs.
+
+    The final hierarchical dict is keyed by the departments and valued 
+    by a dict keyed by doctypes including complements' key and valued 
+    by KPIs extracted from the initial hierarchical dict and 
+    the complementary computed ones.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        articles_df (dataframe): Articles data to be analyzed.
-        books_df (dataframe): Books data to be analyzed
-        if_analysis_col (str): Column name of the IFs values to be used for \
-        the analysis in the 'articles_df' dataframe.
-        if_analysis_year (str): 4 digits year of the IFs values used for the analysis.
-        if_analysis_folder_path (path): Full path to the folder for saving results.
-        verbose (bool): Status of prints (default = False).
+        pub_df_dict (dataframe): Articles data to be analyzed.
     Returns:
-        (tup): (hierarchical dict keyed by departments of the Institute including \
-        itself and valued with KPIs dict of each department, key of IF-KPIs in the \
-        hierarchical dict of each department and that is also column name of IFs values \
-        in the saved files).
+        (hierarchical dict): The dict keyed by departments of \
+        the Institute including itself and valued with basic-KPIs \
+        dict of each department.
     """
     print("    Building of basic KPIs")
 
@@ -160,15 +185,12 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
 
     # Initializing useful dicts
     init_kpi_dict = {}
-    pub_dfs_dict = {}
     items_nb_key_dict = {}
 
     # Building KPIs dict for all doctypes
     doctypes_list = list(pub_df_dict.keys())
     for doctype in doctypes_list:
-        return_tup = _build_doctype_kpi(doctype, pub_df_dict[doctype], params_tup)
-        doctype_df_dict, doctype_kpi_dict = return_tup
-        pub_dfs_dict[doctype] = doctype_df_dict
+        doctype_kpi_dict = _build_doctype_kpi(doctype, pub_df_dict[doctype], params_tup)
         init_kpi_dict[doctype] = doctype_kpi_dict
         items_nb_key_dict[doctype] = pg.KPI_KEYS_ORDER_DICT[pg.KPI_KEYS_DICT[doctype][1]]
 
@@ -203,27 +225,67 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
 
 
 def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
-    """Building the IFs data for computing IF KPIs"""
+    """Builds the IFs data for a department.
+    Args:
+        dept_by_journal_df (dataframe): The statistiques by journals \
+        data for the department.
+        if_analysis_year (str): 4-digits year for the IFs analysis.
+        cols_list (list): Useful column names. 
+    Returns:
+        (dataframe): The built IFs data of a department.
+    """
     # Setting parameters from args
     journal_col, if_analysis_col = cols_list[0], cols_list[3]
+    new_if_col = cols_list[4]
 
     # Selecting useful columns from 'dept_articles_df' dataframe
-    dept_if_df = dept_by_journal_df[cols_list]
+    dept_if_df = dept_by_journal_df[cols_list[0:4]]
 
     # Cleaning the 'dept_if_df' dataframe
     new_if_col = "IF " + if_analysis_year
     dept_if_df = dept_if_df.rename(columns={if_analysis_col: new_if_col})
-    dept_if_df[new_if_col] = dept_if_df[new_if_col].replace("Not available", 0)
+    dept_if_df[new_if_col] = dept_if_df[new_if_col].replace(pg.NOT_AVAILABLE_IF, 0)
     dept_if_df = dept_if_df.sort_values(by=[new_if_col, journal_col],
                                         ascending=False)
     dept_if_df = dept_if_df.reset_index().drop(columns=["index"])
-    return dept_if_df, new_if_col
+    return dept_if_df
 
 
 def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
                            if_analysis_col, if_analysis_folder_path,
                            kpi_dict, final_cols_tup,
                            verbose=False):
+    """Builds the key performance indicators (KPIs) data specific to 
+    the impact factors (IFs) for each department of the Institute 
+    including itself.
+
+    This is done through the following steps by cycling on the department:
+
+    1. The IFs data for the department is set through the `_build_dept_if_df` \
+    internal function. 
+    2. The IF KPIs data are computed for the department and the KPIs dict is \
+    filled with the computed values at the key corresponding to the label of \
+    the department.
+    3. The IFs data for the department are saved as openpyxl workbook through \
+    `format_page` function imported  from the `bmfuncts.format_files` module. 
+
+    Args:
+        institute (str): Institute name.
+        by_journal_dict (dict): Dict keyed by department labels (str) of \
+        the Institute and valued by data (dataframe) of statistics per journal.
+        if_analysis_year (str): 4 digits-year of IFs analysis.
+        if_analysis_col (str): Name of the column of IFs in the IFs analysis results.
+        if_analysis_folder_path (path): Full path to the folder where IFs analysis \
+        final results are saved.
+        kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
+        including itself and valued with KPIs dict of these keys.
+        final_cols_tup (tup): Tuple of infos about the final column names as returned \
+        by the `set_final_col_names` function of the `bmfuncts.rename_cols` module.
+        verbose (bool): Status of prints (default = False).
+    Returns:
+        (tup): (KPIs updated data with IFs data (hierarchical dict), name of the column \
+        of IFs in the IFs analysis results).
+    """
     print("    Building of IF KPIs")
 
     # Setting useful columns info from args
@@ -234,16 +296,20 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
     # Setting useful column names aliases
     articles_nb_col_alias = pg.COL_NAMES_DOCTYPE_ANALYSIS["articles_nb"]
 
+    # Setting name of the column of IFs in the IFs analysis results
+    new_if_analysis_col = "IF " + if_analysis_year
+
     # Setting useful tuple
-    cols_list = [journal_col, issn_col, articles_nb_col_alias, if_analysis_col]
+    cols_list = [journal_col, issn_col, articles_nb_col_alias,
+                 if_analysis_col, new_if_analysis_col]
 
     for dept in [institute] + depts_col_list:
         # Setting the statistiques by journals data for 'dept'
         dept_by_journal_df = by_journal_dict[dept]
 
         # Building the 'dept_if_df' dataframe for computing IF KPIs
-        dept_if_df, new_if_analysis_col = _build_dept_if_df(dept_by_journal_df,
-                                                            if_analysis_year, cols_list)
+        dept_if_df= _build_dept_if_df(dept_by_journal_df,
+                                      if_analysis_year, cols_list)
 
         # Computing IF KPIs values for 'dept'
         dept_kpi_dict = kpi_dict[dept]
@@ -291,7 +357,22 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
 
 
 def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corpus_year_row):
-    """Builds the KPI data for a department."""
+    """Builds the key performance indicators (KPIs) data for a given department.
+
+    Args:
+        dept (str): The department label.
+        kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
+        including itself and valued with KPIs dict of these keys. 
+        if_key (str): Column name of the analyzed impact factors (either those of \
+        the publication year or the last available ones). 
+        ordered_keys (list): Ordered list of keys (str) to set the order of the KPIs \
+        in the database.
+        corpus_year (str): 4 digits year of the corpus.
+        corpus_year_row (str): The first column name in the KPIs database and \
+        that corresponds to the label of the first row.
+    Returns:
+        (dataframe): Department KPIs data.
+    """
     dept_kpi_dict = kpi_dict[dept]
     new_dept_kpi_dict = {}
     for _, doctype_kpi_dict in dept_kpi_dict.items():
@@ -331,28 +412,26 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
 def update_kpi_database(institute, saved_results_path,
                         corpus_year, kpi_dict, if_key,
                         final_cols_tup, verbose=False):
-    """Updates database of the key performance indicators (KPIs) with values of 'kpi_dict' 
-    hierarchical dict for the Institute and each of the its departments with the KPIs data 
-    of 'corpus_year' corpus.
+    """Updates the database of the key performance indicators (KPIs) with the KPIs data 
+    of the given corpus.
 
-    The IFs data for each department are built through the `_build_dept_if_data` internal 
+    The KPIs data for each department are set through the `_build_dept_kpi_data` internal 
     function. 
     These updated databases are saved as openpyxl workbooks using the `format_page` function 
     imported from the `bmfuncts.format_files` module.
 
     Args:
         institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
         including itself and valued with KPIs dict of these keys.
         if_key (str): Column name of the analyzed impact factors (either those of \
-        the publication year or the most available ones).
+        the publication year or the last available ones).
         verbose (bool): Status of prints (default = False).
     Returns:
-        (dataframe): Institute KPIs database.
+        (dataframe): Institute KPIs data.
     """
 
     # Setting aliases for updating KPIs database
@@ -402,7 +481,7 @@ def update_kpi_database(institute, saved_results_path,
         if dept==institute:
             institute_kpi_df = db_dept_kpi_df.copy()
 
-    message = f"\n    Kpi database updated and saved in folder: \n {file_path}"
+    message = f"\n    KPIs database updated and saved in folder: \n {file_path}"
     if verbose:
         print(message)
 
@@ -412,16 +491,20 @@ def update_kpi_database(institute, saved_results_path,
 def if_analysis(institute, org_tup, bibliometer_path, datatype,
                 corpus_year, if_most_recent_year,
                 progress_callback=None, verbose=False):
-    """ Performs the analysis of journal impact_factors (IFs) of the 'corpus_year' corpus.
+    """Performs the analysis per document types together with 
+    the analysis of the journals impact-factors (IFs) and update 
+    the key performance indicators (KPIs).
 
     This is done through the following steps:
 
-    1. Builds the dataframe of publications list to be analyzed through \
-    the `_build_pub_analysis_data` internal function. 
-    3. Builds the IFs data resulting from IFs analysis of this dataframe \
-     through the `_build_if_analysis_data` internal function and saves them as xlsx files.
-    4. Updates database of key performance indicators (KPIs) of the Institute \
-    with the results of this analysis through the `update_kpi_database` function.
+    1. Performs the analysis per doctypes through the `doctype_analysis` \
+    function imported from `bmfuncts.doctype_analysis` module. 
+    2. Initializes the KPIs dict with the basic KPIs data through the \
+    `_build_basic_kpi` internal function.
+    3. Adds to the KPIs dict, the IFs KPIs computed through the \
+    `_build_articles_if_kpi` internal function.
+    4. Updates the database of the Institute with KPIs dict through \
+    the `update_kpi_database` function of the same module.
     5. Saves the results of this analysis for the 'datatype' case through the \
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
@@ -436,8 +519,11 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         tkinter widget status (default = None).
         verbose (bool): Status of prints (default = False).
     Returns:
-        (tup): (full path to the folder where results of impact-factors \
-        analysis are saved, dataframe of Institute KPIs database, dict of Institute KPIs).
+        (tup): (full path to the folder where results of analysis per doctypes are saved,\
+        full path to the folder where results of impact-factors analysis are saved, \
+        Institute KPIs data (dataframe), KPIs data (hierarchical dict keyed by \
+        departments of the Institute including itself and valued with KPIs dict \
+        of these keys)).
     """
     # Setting input-data path
     saved_results_path = set_saved_results_path(bibliometer_path, datatype)

@@ -22,7 +22,6 @@ from bmfuncts.useful_functs import concat_dfs
 def _my_hash(text:str):
     """Builds hash given the string 'text' 
     with a fixed prime numbers to mix up the bits."""
-
     my_hash = 0
     facts = (257,961) # prime numbers to mix up the bits
     minus_one = 0xFFFFFFFF # "-1" hex code
@@ -77,11 +76,10 @@ def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         working_folder_path (path): Full path to working folder.
-        submit_file_name (str): File name of the Excel file of the publications list \
-        with one row per Institute author with one row per author \
-        that has been identified as Institute employee.
-        orphan_file_name (str): File name of the Excel file of the publications list \
-        with one row per author that has not been identified as Institute employee.
+        file_names_tup (tup): (File name (str) of the Excel file of the publications list \
+        with one row per Institute author with one row per author that has been identified \
+        as Institute employee, File name (str) of the Excel file of the publications list \
+        with one row per author that has not been identified as Institute employee).
     Returns:
         (str): End message recalling path to the saved file.        
     """
@@ -144,5 +142,6 @@ def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     new_hash_id_df.to_excel(hash_id_file_path, index=False)
     hash_id_nb = len(new_hash_id_df)
     print(f"{hash_id_nb} hash IDs of publications created")
-    message = f"{hash_id_nb} hash IDs of publications created and saved in file: \n  {hash_id_file_path}"
+    message = (f"{hash_id_nb} hash IDs of publications created and saved in file: ",
+               "\n  {hash_id_file_path}")
     return message

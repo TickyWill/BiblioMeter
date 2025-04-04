@@ -27,12 +27,12 @@ def build_col_conversion_dic(institute, org_tup):
         of the Institute.
     Returns:
         (tup): (dict for renaming the specific columns of the dataframe \
-               of publications list with one row per author that has not been \
-               identified as Institute employee, \
-               dict for renaming the specific columns of the dataframe of merged \
-               employees information with the publications list with one \
-               row per Institute author, \
-               dict for renaming the columns of all the results dataframes).
+        of publications list with one row per author that has not been \
+        identified as Institute employee, \
+        dict for renaming the specific columns of the dataframe of merged \
+        employees information with the publications list with one \
+        row per Institute author, \
+        dict for renaming the columns of all the results dataframes).
     """
 
     # Setting institute parameters
@@ -126,7 +126,8 @@ def set_homonym_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
     the dataframe for homonyms solving by the user.
 
-    This is done through the `build_col_conversion_dic` internal function.
+    This is done through the `build_col_conversion_dic` function of 
+    the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -172,7 +173,8 @@ def set_otp_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
     the dataframes for OTPs attribution by the user.
 
-    This is done through the `build_col_conversion_dic` internal function.
+    This is done through the `build_col_conversion_dic` function of 
+    the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -220,7 +222,8 @@ def set_final_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
     the final publications-list dataframe.
 
-    This is done through the `build_col_conversion_dic` internal function.
+    This is done through the `build_col_conversion_dic` function 
+    of the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -229,7 +232,7 @@ def set_final_col_names(institute, org_tup):
     Returns:
         (tup): (dict to be used for setting the final \
         column names of the final publications-list dataframe, \
-               list of the final column names of the departments).
+        list of the final column names of the departments).
     """
     # Setting institute parameters
     dpt_col_names = org_tup[0]
@@ -270,7 +273,8 @@ def set_if_col_names(institute, org_tup):
     columns specific to impact-factors, to be used for updating the 
     final publications-list dataframe with impact factors values.
 
-    This is done through the `set_final_col_names` internal function.
+    This is done through the `set_final_col_names` function of 
+    the same module.
 
     Args:
         institute (str): The Intitute name.

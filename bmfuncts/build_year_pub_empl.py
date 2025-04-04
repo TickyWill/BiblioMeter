@@ -135,8 +135,8 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
         one row per author that has not been identified as Institute employee).
     Note:
         Care is taken to keep 'NA' value for the first name initiales \
-        that are set to NaN by default through the `keep_initials` function \
-        imported from "bmfuncts.useful_functs" internal module.
+        (that are set to NaN otherwise) through the `keep_initials` function \
+        imported from `bmfuncts.useful_functs` module.
     """
     # Setting useful aliases
     bp_colnames_alias = bp.COL_NAMES

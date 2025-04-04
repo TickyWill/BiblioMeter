@@ -39,16 +39,19 @@ def _add_author_job_type(in_path, out_path, empl_dict, years):
     in 3 columns which names are given by 'category_col_alias', 
     'status_col_alias' and 'qualification_col_alias'. 
     The name of the new column is given by 'author_type_col_alias'. 
-    The updated publications list is saved as Excel file.
+    The updated publications list is saved as xlsx file.
 
     Args:
-        in_path (path):  Full path to the Excel file of the publications list \
+        in_path (path):  Full path to the file of the publications list \
         with one row per author with attributes as Institute employee.
         out_path (path): Full path for saving the modified publications list.
+        empl_dict (dict): The employees database as a dict keyed by the years \
+        and valued by the employees data for each year.
+        years (list): The years list for recursive search in the employees database.
     Returns:
         (str): End message recalling the full path to the saved file of \
         the modified publications list.
-    """ 
+    """
     # internal functions:
     def _get_author_type(row):
         mat = row[mat_col_alias]
@@ -69,7 +72,7 @@ def _add_author_job_type(in_path, out_path, empl_dict, years):
                         if any(values_status):
                             set_author_type = key
                 year_idx += 1
-            author_type = set_author_type 
+            author_type = set_author_type
         else:
             author_type = 'Coll'
             for col_name, dic in author_types_dic.items():
@@ -84,7 +87,7 @@ def _add_author_job_type(in_path, out_path, empl_dict, years):
         return author_type
 
     # Setting useful aliases
-    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule'] 
+    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
     category_col_alias = eg.EMPLOYEES_USEFUL_COLS['category']
     status_col_alias = eg.EMPLOYEES_USEFUL_COLS['status']
     qualification_col_alias = eg.EMPLOYEES_USEFUL_COLS['qualification']
@@ -94,7 +97,7 @@ def _add_author_job_type(in_path, out_path, empl_dict, years):
                         status_col_alias        : eg.STATUS_DIC,
                         qualification_col_alias : eg.QUALIFICATION_DIC}
 
-    # Read of the excel file with dates conversion through EMPLOYEES_CONVERTERS_DIC
+    # Read of the xlsx file with dates conversion through EMPLOYEES_CONVERTERS_DIC
     submit_df = pd.read_excel(in_path, converters=eg.EMPLOYEES_CONVERTERS_DIC)
 
     submit_df[author_type_col_alias] = submit_df.apply(_get_author_type, axis=1)
@@ -136,10 +139,10 @@ def _add_biblio_list(in_path, out_path):
     'pub_title_alias', 'pub_first_author_alias', 'pub_year_alias', 
     'pub_journal_alias' and 'pub_doi_alias', respectively. 
     The name of the new column is given by 'pub_full_ref_alias'. 
-    The updated publications list is saved as Excel file.
+    The updated publications list is saved as an xlsx file.
 
     Args:
-        in_path (path): Full path to the Excel file of the publications list.
+        in_path (path): Full path to the xlsx file of the publications list.
         out_path (path): Full path for saving the modified publications list.
     Returns:
         (str): End message recalling the full path to the saved file \
@@ -155,7 +158,7 @@ def _add_biblio_list(in_path, out_path):
     pub_title_alias = bp.COL_NAMES['articles'][9]
     pub_full_ref_alias = pg.COL_NAMES_BONUS['liste biblio']
 
-    # Read of the excel file with dates convertion through EMPLOYEES_CONVERTERS_DIC
+    # Read of the xlsx file with dates convertion through EMPLOYEES_CONVERTERS_DIC
     submit_df = pd.read_excel(in_path, converters=eg.EMPLOYEES_CONVERTERS_DIC)
 
     articles_plus_full_ref_df = pd.DataFrame()
@@ -183,18 +186,18 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
 
     The specific authors are PhD students at the Institute but not as employees of it. 
     The list of these PhD students with the required information is got from 
-    the excel file which full path is given by 'ext_docs_path' in sheet which 
+    the xlsx file which full path is given by 'ext_docs_path' in sheet which 
     name is given by 'ext_docs_sheet_name_alias'. 
     The row of the added PhD students is dropped in the publications list 
     with one row per author that has not been identified as Institute employee. 
-    The new publications lists are saved as Excel files.
+    The new publications lists are saved as an xlsx files.
 
     Args:
-        submit_path (path): Full path to the Excel file of the publications list \
+        submit_path (path): Full path to the xlsx file of the publications list \
         with one row per author with attributes as Institute employee.
-        orphan_path (path): Full path to the Excel file of the publications list \
+        orphan_path (path): Full path to the xlsx file of the publications list \
         with one row per author that has not been identified as Institute employee.
-        ext_docs_path (path): Full path to the Excel file giving the PhD students \
+        ext_docs_path (path): Full path to the xlsx file giving the PhD students \
         at the Institute but not employees of it.
     Returns:
         (tup): (updated dataframe of the publications list with one row \
@@ -221,7 +224,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     orphan_full_name_alias = pg.COL_NAMES_BM['Full_name']
     orphan_last_name_alias = pg.COL_NAMES_BM['Last_name']
 
-    # Reading of the existing submit excel file of the corpus year
+    # Reading of the existing submit xlsx file of the corpus year
     # with dates conversion through converters_alias
     init_submit_df = pd.read_excel(submit_path, converters=converters_alias)
     init_orphan_df = pd.read_excel(orphan_path, converters=converters_alias)
@@ -253,7 +256,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
-    # Reading of the external phd students excel file
+    # Reading of the external phd students xlsx file
     # using the same useful columns as init_submit_df defined by EXT_DOCS_USEFUL_COL_LIST
     # with dates conversion through converters_alias
     # and drop of empty rows
@@ -335,18 +338,18 @@ def _add_other_ext(submit_path, orphan_path, others_path):
 
     The specific authors are under external hiring contract at the Institute. 
     The list of these employees with the required information is got from 
-    the excel file which full path is given by 'others_path' in sheet which 
+    the xlsx file which full path is given by 'others_path' in sheet which 
     name is given by 'others_sheet_name_alias'. 
     The row of the added employees is dropped in the publications list 
     with one row per author that has not been identified as Institute employee. 
-    The new publications lists are saved as Excel files.
+    The new publications lists are saved as an xlsx files.
 
     Args:
-        submit_path (path): Full path to the Excel file of the publications list \
+        submit_path (path): Full path to the xlsx file of the publications list \
         with one row per author with attributes as Institute employee.
-        orphan_path (path): Full path to the Excel file of the publications list \
+        orphan_path (path): Full path to the xlsx file of the publications list \
         with one row per author that has not been identified as Institute employee.
-        ext_docs_path (path): Full path to the Excel file giving the employees \
+        others_path (path): Full path to the xlsx file giving the employees \
         under external hiring contract at the Institute.
     Returns:
         (tup): (updated dataframe of the publications list with one row \
@@ -373,7 +376,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     orphan_full_name_alias = pg.COL_NAMES_BM['Full_name']
     orphan_last_name_alias = pg.COL_NAMES_BM['Last_name']
 
-    # Reading of the existing submit excel file of the corpus year
+    # Reading of the existing submit xlsx file of the corpus year
     # with dates conversion through converters_alias
     init_submit_df = pd.read_excel(submit_path, converters=converters_alias)
     init_orphan_df = pd.read_excel(orphan_path, converters=converters_alias)
@@ -405,7 +408,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
-    # Reading of the external phd students excel file
+    # Reading of the external phd students xlsx file
     # using the same useful columns as init_submit_df defined by EXT_DOCS_USEFUL_COL_LIST
     # with dates conversion through converters_alias
     # and drop of empty rows
@@ -489,9 +492,9 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        submit_path (path): Full path to the Excel file of the publications list \
+        submit_path (path): Full path to the xlsx file of the publications list \
         with one row per author with attributes as Institute employee.
-        orphan_path (path): Full path to the Excel file of the publications list \
+        orphan_path (path): Full path to the xlsx file of the publications list \
         with one row per author that has not been identified as Institute employee.
     Returns:
         (str): End message recalling the full paths to the modified files.        
@@ -530,14 +533,13 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     of publications identified by 'orphan_drop_dict' dict that is specific to 
     the Institute, are dropped from the initial publications list with one row 
     per author that has not been identified as Institute employees. The lists 
-    resulting from the split are saved as Excel files in the folder which full path 
+    resulting from the split are saved as xlsx files in the folder which full path 
     is given by 'orphan_path'.
 
     Args:
-        institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         working_folder_path (path): Full path to working folder.
-        orphan_file_name (str): File name of the Excel file of the publications list \
+        orphan_file_name (str): File name of the xlsx file of the publications list \
         with one row per author that has not been identified as Institute employee.
         verbose (bool): Status of prints (default = False).
     Returns:
@@ -553,7 +555,7 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
             file_name = inst_col + "_" + orphan_file_name
             file_path = working_folder_path / Path(file_name)
         df_to_save.to_excel(file_path, index=False)
-        message = f"    Excel file of orphan authors created for Institute subdivision: {inst_col}"
+        message = f"    File of orphan authors created for Institute subdivision: {inst_col}"
         if verbose:
             print(message)
 
@@ -564,12 +566,12 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     inst_col_list = org_tup[4]
     orphan_drop_dict = org_tup[10]
 
-    # Reading of the existing orphan excel file
+    # Reading of the existing orphan xlsx file
     # with dates conversion through converters_alias
     orphan_path = working_folder_path / Path(orphan_file_name)
     orphan_df = pd.read_excel(orphan_path, converters=converters_alias, keep_default_na=False)
 
-    # Creating, and saving as Excel file, orphan authors for each Institute subdivision
+    # Creating, and saving as an xlsx file, orphan authors for each Institute subdivision
     institute_df = orphan_df.copy()
     new_orphan_df = orphan_df.copy()
     droped_indexes = set()
@@ -631,7 +633,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     'years' list for the search year.
     6. The dataframes are refactored by replacing NaN values by the UNKNOWN global and \
     modifying the publications IDs through the `set_year_pub_id` function imported from \
-    the `bmfuncts.useful_functs`module. Then they are saved as Excel files which full \
+    the `bmfuncts.useful_functs`module. Then they are saved as xlsx files which full \
     paths are given by 'submit_path' and 'orphan_path', respectively.
     7. A new column containing the job type for each author is added in the file which \
     full path is given by 'submit_path' through the `_add_author_job_type` internal function.
@@ -640,13 +642,14 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     internal function.
     9. Column names are changed in the two files which full path are given by respectively, \
     'submit_path' and 'orphan_path' through the `_change_col_names` internal function.    
-    10. An Excel file containing the unique hash ID built for each publication \
+    10. An xlsx file containing the unique hash ID built for each publication \
     is created through the `create_hash_id` function imported from "bmfuncts.create_hash_id" \
     module.
 
     Args:
         out_path (path): Full path to the folder for saving built dataframes. 
-        empl_dict (dict): Hierarchical employees database keyed by 'years' list.
+        empl_dict (dict): The employees database as a dict keyed by the years \
+        and valued by the employees data for each year.
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
@@ -673,7 +676,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
 
     # Setting useful aliases
     pub_id_alias = bp.COL_NAMES['pub_id']
-    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule'] 
+    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
     initials_col_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
     submit_file_name_alias = pg.ARCHI_YEAR["submit file name"]
     orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
@@ -696,14 +699,14 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
     pub_df = keep_initials(pub_df, initials_col_alias, missing_fill=bp.UNKNOWN)
 
-    # Setting the years list for recursive search  of author-employee match
+    # Setting the years list for recursive search of author-employee match
     years = _adapt_depth_search(empl_dict, corpus_year, search_depth)
 
     # Replace in "empl_dict" NaN values by UNKNOWN string except in first name initials
     for year in years:
         empl_dict[year] = keep_initials(empl_dict[year], initials_col_alias,
                                         missing_fill=bp.UNKNOWN)
-        empl_dict[year][mat_col_alias] = empl_dict[year][mat_col_alias].apply(lambda x: str(x))
+        empl_dict[year] = empl_dict[year].astype({mat_col_alias: 'str'})
     if progress_callback:
         step = (100 - progress_bar_state) / 100
         progress_callback(progress_bar_state + step * 10)
@@ -721,7 +724,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     orphan_df = pd.DataFrame()
 
     # Building the initial dataframes
-    print(f"    Initializing cross pub_employees data")
+    print("    Initializing cross pub_employees data")
     submit_df, orphan_df = build_submit_df(empl_dict[years[0]],
                                            pub_df, bibliometer_path,
                                            test_case=set_test_case,

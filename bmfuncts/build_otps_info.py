@@ -211,7 +211,7 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None
 def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
                          otps_cols, dept_otps_dict,
                          serv_otps_list, unknown_alias):
-    """ Builds the OTPs dict for a known service of a department different 
+    """Builds the OTPs dict for a known service of a department different 
     from the department direction.
     """
     # Setting useful col names of the OTPs source file
@@ -240,9 +240,9 @@ def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
 
 def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
                           dept_otps_dict, unknown_alias):
-    """ Builds the OTPs dict for a department different from the Institute direction, 
+    """Builds the OTPs dict for a department different from the Institute direction, 
     and different from 'CLINATEC'.
-    
+
     It uses the `_build_lap_otps_dict` internal function for seek of clarity.
     """
     # Setting useful col names of the OTPs source file
@@ -259,7 +259,6 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             serv, lab, serv_otps_list,
                                             srv=serv, dpt=otps_dept)
-
         elif otps_serv==unknown_alias:
             serv = _set_dir(otps_dept)
             lab = _set_dir(serv)
@@ -268,7 +267,6 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             serv, lab, new_serv_otps_list,
                                             srv=serv, dpt=None)
-
         else:
             dept_otps_dict = _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
                                                   otps_cols, dept_otps_dict,
@@ -340,7 +338,6 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             serv, lab, dept_otps_list,
                                             srv=serv, dpt=dept)
-
         elif "DIR" in otps_dept or otps_dept==inst_dir:
             dept = "DIR"
             serv = inst_dir
@@ -348,7 +345,6 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             serv, lab, dept_otps_list,
                                             srv=serv, dpt=dept)
-
         else:
             dept_otps_dict = _build_dept_otps_dict(otps_dept, otps_dept_df,
                                                    otps_cols, dept_otps_dict,

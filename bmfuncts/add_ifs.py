@@ -470,7 +470,6 @@ def _add_if_cols(corpus_df, if_dict, if_cols_tup, aliases_tup,
 
 
 def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
-
     """Adds two new columns containing impact factors to the corpus 
     dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
 
