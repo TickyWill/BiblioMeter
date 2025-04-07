@@ -1,6 +1,8 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
 
-    To Do: import `standardize_address` from BiblioParsing package.
+ToDo:
+    - import `standardize_address` from BiblioParsing package.
+    - Redistribution of module in modules of common-objective functions.
 """
 
 __all__ = ['check_dedup_parsing_available',
@@ -181,7 +183,7 @@ def standardize_address(raw_address):
         if word_to_substitute=='University':
             # Corrected in new version of BiblioParsing package
             # To be removed when available from package new install
-            re_pattern = re.compile(r'\b[a-z]{?}Univ[aàäcdeéirstyz]{0,8}\b\.?')
+            re_pattern = re.compile(r'\b[a-z]?Univ[aàäcdeéirstyz]{0,8}\b\.?')
         standard_address = re.sub(re_pattern, word_to_substitute + ' ', standard_address)
     standard_address = re.sub(r'\s+', ' ', standard_address)
     standard_address = re.sub(r'\s,', ',', standard_address)

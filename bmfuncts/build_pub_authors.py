@@ -30,7 +30,13 @@ from bmfuncts.useful_functs import standardize_txt
 
 
 def _get_hal_added_dois(bibliometer_path, corpus_year):
-    """Gets the list of the added DOIS from HAL database."""
+    """Gets the list of the added DOIS from HAL database.
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        corpus_year (str): Contains the corpus year defined by 4 digits.
+    Returns:
+        (list): The list of added DOIs.
+    """
     doi_col = bp.COL_NAMES['articles'][6]
     extract_root_alias = pg.ARCHI_EXTRACT["root"]
     scopus_extract_root_alias = pg.ARCHI_EXTRACT[bp.SCOPUS]["root"]
@@ -45,7 +51,15 @@ def _get_hal_added_dois(bibliometer_path, corpus_year):
 
 
 def _get_doi_pub_id(articles_df, dois_list):
-    """Gets the publications ID per DOI as a dataframe."""
+    """Gets data of the publications ID per DOI in the given list of DOIs.
+
+    Args:
+        articles_df (dataframe): The data of publications list resulting \
+        from the parsing step.
+        dois_list (list): The DOIs (str) list for which publications IDs are got.
+    Returns:
+        (dataframe): The data of the publications ID per DOI.
+    """
     pub_id_col = bp.COL_NAMES['articles'][0]
     doi_col = bp.COL_NAMES['articles'][6]
     usecols = [pub_id_col, doi_col]
@@ -58,8 +72,22 @@ def _get_doi_pub_id(articles_df, dois_list):
 
 
 def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, dfs_tup):
-    """Checks if normalized affiliation attribution is correct for the added DOIS 
-    from HAL database and save the corrected files of parsing."""
+    """Checks if normalized affiliation attribution is correct for the added DOIs 
+    from HAL database and save the corrected files of parsing.
+
+    Args:
+        institute (str): The institute name.
+        org_tup (tup): Contains parameters of the institute.
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        corpus_year (str): Contains the corpus year defined by 4 digits.
+        dfs_tup (tup): (The publications data (dataframe), \
+        The addresses data (dataframe), \
+        The authors with affiliations data (dataframe)).
+    Returns:
+         (tup): (The corrected data of addresses (dataframe), \
+         The corrected data of authors with affiliations (dataframe)).
+    """
     articles_df, addresses_df, authorsinst_df = dfs_tup
     pub_id_col = bp.COL_NAMES['auth_inst'][0]
     address_col = bp.COL_NAMES['auth_inst'][2]
@@ -123,23 +151,45 @@ def _check_added_dois_affil(institute, org_tup, bibliometer_path, corpus_year, d
     return new_addresses_df, new_authorsinst_df
 
 
-def _retain_firstname_initials(row):
-    row = row.replace('-',' ')
-    initials = ''.join(row.split(' '))
+def _retain_firstname_initials(txt):
+    """Removes '-' from the initials of the author's 
+    first name.
+
+    Args:
+        txt (str): The raw initials of the author's \
+        first name.
+    returns:
+        (str): The modifyed initials.
+    """
+    txt = txt.replace('-',' ')
+    initials = ''.join(txt.split(' '))
     return initials
 
 
-def _split_lastname_firstname(row, digits_min=4):
-    names_list = row.split()
+def _split_lastname_firstname(txt, digits_min=4):
+    """Sets the lambda function for extracting last_name 
+    and first-name initials from the author's name.
+
+    It uses the `_retain_firstname_initials` internal function 
+    and the `standardize_txt` function imported from the \
+    `bmfuncts.useful_functs` module.
+
+    Args:
+        txt (str): The txt from which last name and first-name initials \
+        of the author are extracted.
+        digits_min (int): The minimum length of the names that contains '-' \
+        symbol to be kept in author's last name.
+    returns:
+        tup): (The extracted last name, the extracted first-name initials).
+    """
+    names_list = txt.split()
     first_names_list = names_list[-1:]
     last_names_list = names_list[:-1]
     for name_idx, name in enumerate(last_names_list):
-
         if len(name)<digits_min and ('-' in name):
             first_names_list.append(name)
             first_names_list = first_names_list[::-1]
             last_names_list = last_names_list[:name_idx] + last_names_list[(name_idx + 1):]
-
     first_name_initials = _retain_firstname_initials(' '.join(first_names_list))
     last_name = standardize_txt(' '.join(last_names_list))
     return last_name, first_name_initials
@@ -178,7 +228,7 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
     return filt_authors_inst_
 
 
-def _check_names_spelling(bibliometer_path, init_df, cols_tup):
+def _check_names_spelling(bibliometer_path, init_df, cols_list):
     """Replace author names in 'init_df' dataframe by the employee name.
 
     This is done when a name-spelling discrepancy is given in the dedicated 
@@ -191,15 +241,15 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
         bibliometer_path (path): Full path to working folder.
         init_df (dataframe): Publications list with one row per author \
         where author names should be corrected.
-        cols_tup (tup): Tuple of useful column names in 'init_df' dataframe \
-        = (full name, last name, first name).
+        cols_list (list): Useful column names in 'init_df' dataframe \
+        = [full name, last name, first name].
     Returns:
         (dataframe): Publications list with one row per author where \
         spelling of author names have been corrected.
     """
 
     # Setting parameters from args
-    col0, col1, col2 = cols_tup
+    col0, col1, col2 = cols_list
     pub_fullname_col = col0
     pub_last_name_col = col1
     pub_first_name_col = col2
@@ -247,11 +297,11 @@ def _check_names_spelling(bibliometer_path, init_df, cols_tup):
                 new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + \
                                                             ' ' + initials_eff_ortho
 
-    print("    Mispelling of author names corrected")
+    print("    Misspelling of author names corrected")
     return new_df
 
 
-def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
+def _check_names_to_replace(bibliometer_path, year, init_df, cols_list):
     """Replace author names in 'init_df' dataframe by the correct author name.
 
     This is done when metadata error is reported in the dedicated Excel file named 
@@ -263,15 +313,15 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
         year (str): Corpus year of publications list.
         init_df (dataframe): Publications list with one row per author \
         where author names should be corrected.
-        cols_tup (tup): Tuple of useful column names in 'init_df' dataframe \
-        = (full name, last name, first name).
+        cols_list (list): Useful column names in 'init_df' dataframe \
+        = [full name, last name, first name].
     Returns:
         (dataframe): Publications list with one row per author where \
         author names have been corrected.
     """
 
     # Setting parameters from args
-    col0, col1, col2 = cols_tup
+    col0, col1, col2 = cols_list
     pub_fullname_col = col0
     pub_last_name_col = col1
     pub_first_name_col = col2
@@ -327,27 +377,27 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_tup):
     return new_df
 
 
-def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_tup):
+def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_list):
     """Drops rows of authors to be removed in the 'pub-df' dataframe.
 
-    The authors to remove are reported in the dedicated Excel 
+    The authors to remove are reported in the dedicated xlsx 
     file named 'outliers_file_name' at sheet 'outliers_sheet' 
     and located in the 'orphan_treat_root' folder of the working folder.
 
     Args:
-        institute (str): Institute name.
+        institute (str): The institute name.
         bibliometer_path (path): Full path to working folder.
         pub_df (dataframe): Publications list with one row per author \
         where rows should be dropped.
-        cols_tup (tup): Tuple of useful column names in 'pub_df' dataframe \
-        = (last name, first name).
+        cols_list (list): Useful column names in 'pub_df' dataframe \
+        = [last name, first name].
     Returns:
         (dataframe): Publications list with one row per author where \
         rows of authors to be removed have been dropped.
     """
 
     # Setting parameters from args
-    pub_last_col, pub_initials_col = cols_tup
+    pub_last_col, pub_initials_col = cols_list
 
     # Setting useful aliases
     orphan_treat_root = pg.ARCHI_ORPHAN["root"]
@@ -411,10 +461,10 @@ def _read_useful_parsing_data(bibliometer_path, saved_results_path,
         corpus_year (str): 4 digits year of the corpus.
         items_list (list): List of items (str) to be read.
     Returns:
-        (tup): (the publications data (dataframe), \
-         the addresses data (dataframe), \
-         the authors data (dataframe), \
-         the authors with affiliations data (dataframe)).
+        (tup): (The publications data (dataframe), \
+         The addresses data (dataframe), \
+         The authors data (dataframe), \
+         The authors with affiliations data (dataframe)).
     """
     # Setting useful parameters from args
     (articles_item,
@@ -445,7 +495,18 @@ def _read_useful_parsing_data(bibliometer_path, saved_results_path,
 def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year):
     """Gets the input data through the `_read_useful_parsing_data` internal function 
     and corrects incomplete affiliations for the added DOIs info from HAL database through 
-    the `_check_added_dois_affil`internal function."""
+    the `_check_added_dois_affil` internal function.
+
+    Args:
+        institute (str): The institute name.
+        org_tup (tup): Contains parameters of the institute .
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        corpus_year (str): Contains the corpus year defined by 4 digits.
+    Returns:
+        (tup): (The built data of articles, The built data of authors, \
+        The built data of authors with affiliations).
+    """
     # Setting useful aliases
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
     addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
@@ -487,13 +548,21 @@ def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year)
     return articles_df, authors_df, authorsinst_df
 
 
-def _recasting_inst_merged_df(inst_merged_df, bm_cols_tup):
+def _recasting_inst_merged_df(inst_merged_df, bm_cols_list):
     """Recasts the data with with one row per Institute author 
     for each publication by format of authors full names and their 
-    redistribution into last names and firsname initials."""
+    redistribution into last names and firsname initials.
+
+    Args:
+        inst_merged_df (dataframe): Data of publications list \
+        with one row per author. 
+        bm_cols_list (list): Useful column names specific to 'BiblioMeter'.
+    Returns:
+        (dataframe): The recasted data.
+    """
     # Setting useful alias
     bp_co_auth_alias = bp.COL_NAMES['authors'][2]
-    bm_fullname_alias, bm_lastname_alias, bm_firstname_alias = bm_cols_tup
+    bm_fullname_alias, bm_lastname_alias, bm_firstname_alias = bm_cols_list
 
     # Transforming to uppercase the Institute author name
     # which is in column COL_NAMES['co_author']
@@ -541,8 +610,8 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     through the `_check_authors_to_remove` internal function.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): The institute name.
+        org_tup (tup): Contains parameters of the institute .
         bibliometer_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year (str): Contains the corpus year defined by 4 digits.
@@ -550,7 +619,6 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
         (dataframe): Publications list with one row per author with correction \
         of author-names and drop of authors with inappropriate affiliation \
         to the Institute.
-
     """
     # Setting useful col aliases
     bp_pub_id_alias = bp.COL_NAMES['authors'][0]
@@ -561,7 +629,7 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     corpus_year_col_alias = pg.COL_NAMES_BONUS['corpus_year']
 
     # Setting useful cols tup
-    bm_cols_tup = (bm_fullname_alias, bm_lastname_alias, bm_firstname_alias)
+    bm_cols_list = [bm_fullname_alias, bm_lastname_alias, bm_firstname_alias]
 
     # Getting input-data from parsing ones
     return_tup = _get_input_data(institute, org_tup, bibliometer_path,
@@ -597,16 +665,16 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
                               right_on=[bp_pub_id_alias])
 
     # Recasting the built dataframe
-    inst_merged_df = _recasting_inst_merged_df(inst_merged_df, bm_cols_tup)
+    inst_merged_df = _recasting_inst_merged_df(inst_merged_df, bm_cols_list)
 
     # Checking author name spelling and correct it then replacing author names
     # resulting from publication metadata errors
     # finally Searching for authors external to Institute but tagged as affiliated to it
     # and dropping their row in the returned dataframe
     inst_merged_df = _check_names_spelling(bibliometer_path, inst_merged_df,
-                                           bm_cols_tup)
+                                           bm_cols_list)
     inst_merged_df = _check_names_to_replace(bibliometer_path, year,
-                                             inst_merged_df, bm_cols_tup)
+                                             inst_merged_df, bm_cols_list)
     inst_merged_df = _check_authors_to_remove(institute, bibliometer_path,
-                                              inst_merged_df, bm_cols_tup[1:])
+                                              inst_merged_df, bm_cols_list[1:])
     return inst_merged_df

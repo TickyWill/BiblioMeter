@@ -109,19 +109,30 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
                                    datatype, year_select,
                                    progress_callback,
                                    verbose=True)
-    (analysis_folder_alias, geo_analysis_folder_alias,
-     inst_analysis_folder_alias) = return_tup
+    (analysis_folder, geo_analysis_folder, inst_analysis_folder,
+     country_affil_file_path, wrong_affil_types_dict) = return_tup
 
-    info_title = "- Information -"
-    info_text = ("L'analyse géographique et des collaborations "
-                 f"a été effectuée pour l'année {year_select}."
-                 "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
-                 f"\n\n    '{analysis_folder_alias}/{geo_analysis_folder_alias}'"
-                 f"\n\n    '{analysis_folder_alias}/{inst_analysis_folder_alias}'")
-    # info_text += ("\n\nLa base de donnée des indicateurs respective de l'Institut "
-    #            "et de chaque département a été mise à jour "
-    #            "avec les résultats de cette analyse et se trouve dans le dossier :"
-    #            f"\n\n'{results_folder_path}'.")
+    if not wrong_affil_types_dict:
+        info_title = "- Information -"
+        info_text = ("L'analyse géographique et l'analyse des collaborations "
+                     f"a été effectuée pour l'année {year_select}."
+                     "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
+                     f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
+                     f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
+        # info_text += ("\n\nLa base de donnée des indicateurs respective de l'Institut "
+        #            "et de chaque département a été mise à jour "
+        #            "avec les résultats de cette analyse et se trouve dans le dossier :"
+        #            f"\n\n'{results_folder_path}'.")
+    else:        
+        info_title = "- Attention -"
+        info_text = ("L'analyse géographique et l'analyse des collaborations "
+                     f"a été abandonnée pour l'année {year_select}."
+                     "\n\nDes types d'affiliations erronés ont été rencontrés dans le fichier "
+                     f"suivant : \n    '{country_affil_file_path}"
+                     f"\n\n1- Corriger dans ce fichier les types d'affiliation suivants:")
+        for k,v in wrong_affil_types_dict.items():
+            info_text += f"\n        {k}: {v}"
+        info_text +="\n\n2- Relancer l'analyse des collaborations" 
     messagebox.showinfo(info_title, info_text)
 
 

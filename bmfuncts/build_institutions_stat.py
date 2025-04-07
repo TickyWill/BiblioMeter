@@ -21,7 +21,8 @@ from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.useful_functs import concat_dfs
 
 
-def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_types_list):
+def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_types_list,
+                               progress_param=None):
     """Distributes the column that contains the list of the normalized institutions 
     of a publication and an author address into a column for each institution type.
 
@@ -37,10 +38,20 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
         institutions_col (str): Column name of the normalizedinstitutions list in \
         the 'norm-institution_df' dataframe.
         inst_types_list (list): Institution types that are used as column names in the built data.
+        progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
+        The initial progress status (int), The final progress status (int)) \
+        (optional, default = None)
     Returns:
         (dataframe): The built data with distributed normalized institutions per intitution \
         type and per publication.
     """
+    if progress_param:
+        step_nb = len(norm_institutions_df) * len(inst_types_list)
+        progress_callback, progress_init, progress_final = progress_param
+        progress_step = (progress_final - progress_init) / step_nb
+        progress_status = progress_init
+        progress_callback(progress_status)
+    
     set_words_template = Template(r'[\s]$word$$')
     distrib_institutions_df = pd.DataFrame()
     for _, row in norm_institutions_df.iterrows():
@@ -48,6 +59,9 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
         for inst_type in inst_types_list:
             re_search_words = re.compile(set_words_template.substitute({"word":inst_type}))
             row[inst_type] = [inst for inst in inst_list if re.search(re_search_words, inst)]
+            if progress_param:
+                progress_status += progress_step
+                progress_callback(progress_status)
         row_df = row.to_frame().T.astype(str)
         distrib_institutions_df = concat_dfs([distrib_institutions_df, row_df])
     distrib_institutions_df = distrib_institutions_df.astype(str)
@@ -203,8 +217,6 @@ def _build_inst_type_pub_id_df(final_pub_id_inst_type_df, input_cols_list,
     # Building stat per country for given inst_type
     institutions_cols_list = [pub_id_col, pg_country_col,
                               inst_nb_col, inst_list_col]
-    pub_country_inst_df = pd.DataFrame(columns=institutions_cols_list)
-
     institutions_data = []
     for pub_id, pub_id_df in final_pub_id_inst_type_df.groupby(pub_id_col):
         for country, country_df in pub_id_df.groupby(bp_country_col):
@@ -401,7 +413,8 @@ def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
 
 def build_and_save_institutions_stat(institute, norm_institutions_df,
                                      inst_types_file_path,
-                                     inst_analysis_folder_path, year):
+                                     inst_analysis_folder_path, year,
+                                     progress_param=None):
     """Builds and saves the institutions statistics from the publications data 
     with normalized institutions.
 
@@ -423,11 +436,20 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
         inst_analysis_folder_path (path); The full path to the folder \
         where the results of the institutions analysis are saved.
         year (str): 4 digits-year of the analyzed corpus.
+        progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
+        The initial progress status (int), The final progress status (int)) \
+        (optional, default = None)
     """
     print("    Computing institutions statistics")
 
     # Setting local parameters
     xlsx_extent = ".xlsx"
+
+    # Setting optional values
+    if progress_param:
+        progress_callback, init_progress, final_progress = progress_param
+        progress_inter = init_progress + (final_progress - init_progress) * 0.85
+        progress_callback(init_progress)
 
     # Setting useful column names aliases
     inst_type_abbr_col = bp.INST_TYPES_USECOLS[1]
@@ -441,8 +463,11 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
     inst_types_list = inst_types_df[inst_type_abbr_col].to_list()
 
     # Building distributed info of normalized institutions per type and per address
-    distrib_institutions_df = _build_distributed_inst_df(norm_institutions_df, institutions_col,
-                                                         inst_types_list)
+    inter_progress_param = None
+    if progress_param:
+        inter_progress_param = (progress_callback, init_progress, progress_inter)
+    distrib_institutions_df = _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_types_list,
+                                                         progress_param=inter_progress_param)
 
     # Saving formatted df of distributed institutions
     distrib_inst_df_title = pg.DF_TITLES_LIST[11]
@@ -452,4 +477,6 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
                               sheet_name)
 
     # Building and saving as multisheet openpyxl files the data of institutions statistics
-    _build_and_save_inst_stat_data(institute, distrib_institutions_df, inst_analysis_folder_path)
+    _build_and_save_inst_stat_data(institute, distrib_institutions_df, inst_analysis_folder_path )
+    if progress_param:
+        progress_callback(final_progress)

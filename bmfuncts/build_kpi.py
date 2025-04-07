@@ -180,7 +180,7 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     # Setting useful KPI dict keys
     pub_nb_key = pg.KPI_KEYS_ORDER_DICT[1]
     art_proc_nb_key = pg.KPI_KEYS_ORDER_DICT[2]
-    proc_rario_key = pg.KPI_KEYS_ORDER_DICT[15]
+    proc_ratio_key = pg.KPI_KEYS_ORDER_DICT[15]
     chapt_ratio_key = pg.KPI_KEYS_ORDER_DICT[16]
 
     # Initializing useful dicts
@@ -218,7 +218,7 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
         kpi_dict[dept]['complements'] = {}
         kpi_dict[dept]['complements'][pub_nb_key] = pub_nb
         kpi_dict[dept]['complements'][art_proc_nb_key] = art_proc_nb
-        kpi_dict[dept]['complements'][proc_rario_key] = proc_ratio
+        kpi_dict[dept]['complements'][proc_ratio_key] = proc_ratio
         kpi_dict[dept]['complements'][chapt_ratio_key] = chapt_ratio
 
     return kpi_dict

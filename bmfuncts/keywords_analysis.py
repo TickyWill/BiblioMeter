@@ -106,15 +106,21 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
         print(message, "\n")
 
 
-def _get_clean_kw_data(dedup_parsing_dict, kw_item_alias, keywords_col_alias):
-    """Building the keywords dataframe for the keywords type 'kw_type' 
-    from 'dedup_parsing_dict' dict at 'kw_item_alias' key."""
-    kw_df = dedup_parsing_dict[kw_item_alias]
-    kw_df[keywords_col_alias] = kw_df[keywords_col_alias]. \
+def _get_clean_kw_data(kw_df, keywords_col):
+    """Building the keywords data from 'dedup_parsing_dict' dict 
+    at 'kw_item' key.
+
+    Args:
+        kw_df (dataframe): The data of keywords to be cleaned.
+        keywords_col (str): The column name where data are cleaned.
+    Returns:
+        (dataframe): The cleaned data.
+    """
+    kw_df[keywords_col] = kw_df[keywords_col]. \
         apply(lambda x: x.replace(' ', '_').replace('-', '_'))
-    kw_df[keywords_col_alias] = kw_df[keywords_col_alias]. \
+    kw_df[keywords_col] = kw_df[keywords_col]. \
         apply(lambda x: x.replace('_(', ';').replace(')', ''))
-    kw_df[keywords_col_alias] = kw_df[keywords_col_alias].apply(lambda x: x.lower())
+    kw_df[keywords_col] = kw_df[keywords_col].apply(lambda x: x.lower())
     return kw_df
 
 
@@ -193,10 +199,10 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(25)
 
     # Setting useful filenames dict
-    kw_item_alias_dict = {'AK': auth_kw_item_alias,
-                          'IK': index_kw_item_alias,
-                          'TK': title_kw_item_alias,
-                          }
+    kw_items_dict = {'AK': auth_kw_item_alias,
+                     'IK': index_kw_item_alias,
+                     'TK': title_kw_item_alias,
+                    }
     if progress_callback:
         progress_callback(25)
 
@@ -210,12 +216,12 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     # Plotting the words-cloud of the different kinds of keywords
     if progress_callback:
         progress_bar_state = 30
-        progress_bar_loop_progression = 50 // len(kw_item_alias_dict.keys())
-    for kw_type, kw_item_alias in kw_item_alias_dict.items():
+        progress_bar_loop_progression = 50 // len(kw_items_dict.keys())
+    for kw_type, kw_item in kw_items_dict.items():
         # Building the keywords dataframe for the keywords type 'kw_type'
-        # from 'dedup_parsing_dict' dict at 'kw_item_alias' key
-        kw_df = _get_clean_kw_data(dedup_parsing_dict, kw_item_alias,
-                                   keywords_col_alias)
+        # from 'dedup_parsing_dict' dict at 'kw_item' key
+        init_kw_df = dedup_parsing_dict[kw_item]
+        kw_df = _get_clean_kw_data(init_kw_df, keywords_col_alias)
 
         # Creating keywords-analysis data and saving them as xlsx files
         cols_tup = (depts_col_list, final_pub_id_col, parsing_pub_id_col_alias,

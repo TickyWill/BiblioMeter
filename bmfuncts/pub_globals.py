@@ -63,10 +63,11 @@ DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 
 DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "Authors_df", "Authors_stat_df", "KPI_df",
-                  "KW_df", "Geo_df", "Institutions_df",
+                  "KW_df", "Geo_df", "norm_institutions_df",
                   "IF_anal_df", "Distrib_inst_df",
                   "inst_country_pub_df", "doctype_stat_df",
-                  "pub_country_inst_df", "country_inst_pub_df"]
+                  "pub_country_inst_df", "country_inst_pub_df",
+                  "raw_institutions_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 

@@ -29,6 +29,13 @@ from bmfuncts.useful_functs import set_saved_results_path
 
 def _unique_journal_name(init_analysis_df, journal_col, issn_col):
     """Sets a unique journal name by ISSN value.
+
+    Args:
+        init_analysis_df (dataframe): The initial data to be modified.
+        journal_col (str): The name of the column of the journal names.
+        issn_col (str) The name of the column of the ISSNs.
+    Returns:
+        (dataframe): The modified data.
     """
     analysis_df = pd.DataFrame(columns=init_analysis_df.columns)
     for _, df in init_analysis_df.groupby(by=[issn_col]):
@@ -277,7 +284,15 @@ def _build_doctype_stat(doctype, doctype_df, if_analysis_col, final_col_dic):
 
 def _build_dept_df(institute, dept, df):
     """Builds the publications list data for a given department by selecting 
-    them in the full publications list data given by the 'df' dataframe."""
+    them in the full publications list data.
+
+    Args:
+        institute (str): The institute name.
+        dept (str): The department label.
+        df (dataframe): The full publications-list data.
+    Returns:
+        (dataframe): The publications-list data of the given department.
+    """
     if dept!=institute:
         dept_df = df[df[dept]==1].copy()
     else:

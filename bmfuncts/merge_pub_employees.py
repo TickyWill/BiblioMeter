@@ -235,10 +235,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     init_orphan_df = keep_initials(init_orphan_df, firstname_initials_col_base_alias,
                                    missing_fill=bp.UNKNOWN)
 
-    # Initializing new_submit_df with same column names as init_submit_df
-    new_submit_df = pd.DataFrame(columns=list(init_submit_df.columns))
-
-    # Initializing the dataframe to be concatenated to init_submit_df in new_submit_df
+    # Initializing the dataframe to be concatenated with init_submit_df
     # with same column names as init_submit_df
     new_submit_adds_df = pd.DataFrame(columns=list(init_submit_df.columns))
 

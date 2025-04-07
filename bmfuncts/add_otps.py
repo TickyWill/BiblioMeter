@@ -406,7 +406,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
     Arg:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        dpt_df (dataframe): The publications-list dataframe of a departmentof \
+        dpt_df (dataframe): The publications-list dataframe of a department of \
         the Institute.
         dpt_otp_dict (dict): Dict keyed by lab-names and valued by lab-OTPs lists.
         xl_dpt_path (path): Full path to the file for setting publication OTP.  
@@ -414,6 +414,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
         of the file created for setting publications OTP.
         otp_lab_name_col (str): Column name of lab name to be used for the selection \
         of the OTPs validation list.
+        dpt (str): The department label.
     """
     # Setting num of first col and first row in EXCEL files
     xl_idx_base = pg.XL_INDEX_BASE
@@ -479,8 +480,20 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
 
 def _set_otp_lab(institute, org_tup, otp_col_dic,
                  dpt_labs_list, lab_df, lab):
-    """Sets the lab name to be used for the determination 
-    of the OTPs list of the 'lab' lab.
+    """Sets the laboratory name to be used for the determination 
+    of the OTPs list of the 'lab' laboratory.
+
+    Arg:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.  
+        otp_col_dic (dict): Dict valued by the column names for rename of columns \
+        of the file created for setting publications OTP.
+        dpt_labs_list (list): The list of the laboratories labels of the department.
+        lab_df (dataframe): The publications-list data of a laboratory of \
+        a department of the Institute.
+        lab (str): The laboratory label.
+    Returns:
+        (str): The laboratory name to be used for setting the OTPs list.
     """
     # Setting institute parameters
     nolab_depts = org_tup[16]
@@ -520,12 +533,30 @@ def _set_otp_lab(institute, org_tup, otp_col_dic,
 def _build_otp_dept_df(institute, org_tup, otp_col_dic,
                        dpt_attributs_dict, dpt_labs_list,
                        otp_lab_name_col, full_df, dpt):
-    """Builds a dataframe extracted from 'full_df' dataframe by 
-    electing rows of publications where at least one author is 
-    affiliated to the department 'dpt'.
+    """Builds a data extracted from 'full_df' data by selecting rows 
+    of publications where at least one author is affiliated to the 
+    given department.
     
     A column is added with the lab to be used for the determination 
     of the OTPs list through the `_set_otp_lab` internal function.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.  
+        otp_col_dic (dict): Dict valued by the column names for rename of columns \
+        of the file created for setting publications OTP.
+        dpt_attributs_dict (dict): the dict keyed by departments of the Institute \
+        and valued by the list of possible labels of each department.
+        dpt_labs_list (list): The list of the laboratories labels of the department.
+        otp_lab_name_col (str): The column name set in the `_add_lab_otp` internal \
+        function.
+        full_df (dataframe): The publications data of one row per publication ID \
+        with 1 or 0 assigned to each department column depending on if at least \
+        one co-author is a member of this department and with the detailed information \
+        related to the first author only
+        dpt (str): The department label.
+    Returns:
+        (dataframe): The built data.
     """
 
     # Setting useful aliases
@@ -552,6 +583,34 @@ def _build_otp_dept_df(institute, org_tup, otp_col_dic,
             lab_df[otp_lab_name_col] = otp_lab
             otp_dpt_df = concat_dfs([otp_dpt_df, lab_df])
     return otp_dpt_df
+
+def _set_full_pub_df(init_pub_df, cols_list, dpt_list):
+    """Adds the publications data of one row per publication ID 
+    with 1 or 0 assigned to each department column depending
+    on if at least one co-author is a member of this department and with
+    the detailed information related to the first author only.
+
+    Args:
+        init_pub_df (dataframe): The initial publications data \
+        with one row per publication ID.
+        cols_list (list): The useful columns names (str).
+        dpt_list (list): The departments names of the Institute \
+        used as column names.
+    Returns:
+        (dataframe): The modifyed data of publications.
+    """
+    pub_id_col, idx_author_col, dpt_col = cols_list
+    full_pub_df = pd.DataFrame()
+    for _, dg in init_pub_df.groupby(pub_id_col):
+        dg = dg.sort_values(by=[idx_author_col])
+        for dpt in dpt_list:
+            x = dg[dpt].any().astype(int)
+            dg[dpt] = x
+        full_pub_df = concat_dfs([full_pub_df, dg.iloc[:1]])
+
+    # Removing possible spaces in dept name
+    full_pub_df[dpt_col] = full_pub_df[dpt_col].apply(lambda x: x.strip())
+    return full_pub_df
 
 
 def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_dict):
@@ -593,22 +652,14 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
     otp_lab_name_col = "otp_lab"
 
     # Enhancing file where homonymies have been solved by the user
-    init_df = _enhance_homonyms_file(institute, org_tup, in_path)
+    init_pub_df = _enhance_homonyms_file(institute, org_tup, in_path)
 
-    # Building 'new_df' out of 'init_df' with one row per pub_id
+    # Building 'full_pub_df' data out of 'init_pub_df' data.
     # 1 or 0 is assigned to each department column depending
-    # on if at least one co-author is a member of this department,
-    # the detailed information is related to the first author only
-    new_df = pd.DataFrame()
-    for _, dg in init_df.groupby(pub_id_col):
-        dg = dg.sort_values(by=[idx_author_col])
-        for dpt in dpt_list:
-            x = dg[dpt].any().astype(int)
-            dg[dpt] = x
-        new_df = concat_dfs([new_df, dg.iloc[:1]])
-
-    # Removing possible spaces in dept name
-    new_df[dpt_col] = new_df[dpt_col].apply(lambda x: x.strip())
+    # on if at least one co-author is a member of this department.
+    # The detailed information is related to the first author only.
+    cols_list = [pub_id_col, idx_author_col, dpt_col]
+    full_pub_df = _set_full_pub_df(init_pub_df, cols_list, dpt_list)
 
     # Configuring an Excel file per department with the list of OTPs
     for dpt in sorted(dpt_list):
@@ -622,7 +673,7 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
         # for the 'dpt' department
         otp_dpt_df = _build_otp_dept_df(institute, org_tup, otp_col_dic,
                                         dpt_attributs_dict, dpt_labs_list,
-                                        otp_lab_name_col, new_df, dpt)
+                                        otp_lab_name_col, full_pub_df, dpt)
 
         # Setting the full path of the EXCEl file for the 'dpt' department
         otp_file_name_dpt = f'{out_file_base}_{dpt}.xlsx'

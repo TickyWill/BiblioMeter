@@ -21,7 +21,13 @@ from bmfuncts.useful_functs import concat_dfs
 
 def _my_hash(text:str):
     """Builds hash given the string 'text' 
-    with a fixed prime numbers to mix up the bits."""
+    with a fixed prime numbers to mix up the bits.
+
+    Args:
+        text (str): The text for which the Hash Id is built.
+    Returns:
+        (int): The built Hash ID.
+    """
     my_hash = 0
     facts = (257,961) # prime numbers to mix up the bits
     minus_one = 0xFFFFFFFF # "-1" hex code
@@ -31,7 +37,20 @@ def _my_hash(text:str):
 
 
 def _clean_hash_id_df(dfs_tup, cols_tup):
-    """Cleans data from publications with same hash ID."""
+    """Cleans data from publications with same hash ID.
+
+    Args:
+        dfs_tup (tup): (data (dataframe) of publications list with one row \
+        per institute author and attributes as employee, \
+        data (dataframe) of publications list with one row per author not found \
+        in the employees database, data of Hash IDs with related publication IDs).
+        cols_tup (tup): The name of useful columns.
+    Returns:
+        (tup): (The cleaned data (dataframe) of publications list with one row \
+        per institute author and attributes as employee, \
+        The cleaned data (dataframe) of publications list with one row per author not found \
+        in the employees database, The cleaned data of Hash IDs with related publication IDs).
+    """
     # Setting parameters from args
     submit_df, orphan_df, hash_id_df = dfs_tup
     pub_id_col, hash_id_col = cols_tup

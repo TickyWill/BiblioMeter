@@ -91,7 +91,7 @@ def _set_full(div):
 
 
 def _add_invalide(new_lab_otps_dict):
-    """ Adds 'INVALIDE' global, imported from 
+    """Adds 'INVALIDE' global, imported from 
     'bmfuncts.intitute_globals' module, to OTPs list 
     of values of 'new_lab_otps_dict'.
 
@@ -199,8 +199,26 @@ def _set_lab_otps_dict(dept_otps_dict, inst_dir):
 
 
 def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None):
-    """Sets OTPs dict for 'lb' lab of 'srv' service 
-    of 'dpt' department using `-try_init_dict` internal function.
+    """Updates of the OTPs data for the given lab of the given service 
+    of the given department.
+
+    It uses the `-try_init_dict` internal function to nitialize the OTPs data 
+    at the right key value depending on the status of the optio.
+
+    Args:
+        dept_otps_dict (dict): The hierarchical dict of OTPs data to be updated.
+        dept (str): The label of the department.
+        serv (str): The label of the service of the department.
+        lb (str): The label of the laboratory of the service of the department.
+        otps_list (list): The list of OTPs values.
+        srv (str): The optional label of the service to be used as key \
+        (default = None).
+        dpt (str): The optional label of the department to be used as key \
+        (default = None).
+    Returns:
+        (dict): The updated data as a hierarchical dict keyed by the department label \
+        and valued by a dict keyed by the service label and valued by a dict keyed \
+        by laboratory label and valued by the OTPs list. 
     """
     dpt, dept_otps_dict = _try_init_dict(dept_otps_dict, dpt, dept)
     srv, dept_otps_dict[dpt] = _try_init_dict(dept_otps_dict[dpt], srv, serv)
@@ -208,11 +226,25 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None
     return dept_otps_dict
 
 
-def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
+def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
                          otps_cols, dept_otps_dict,
-                         serv_otps_list, unknown_alias):
-    """Builds the OTPs dict for a known service of a department different 
-    from the department direction.
+                         serv_otps_list, unknown):
+    """Updates the OTPs dict for each laboratory of a given service of a given 
+    department different from the department direction.
+
+    Args:
+        otps_serv_df (dataframe): The OTPs info got from the OTPs database \
+        for the given service of the given department.
+        otps_serv (str): The service label to be used for OTPs selection.
+        otps_dept (str): The department label to be used for OTPs selection.
+        otps_cols (list): The names (str) of the useful cols.
+        dept_otps_dict (dict): The hierarchical dict to be updated.
+        serv_otps_list (list): The list of OTPs to be used for the service.
+        unknown (str): The string used to represent unknown values.
+    Returns:
+        (dict): The updated hierarchical dict of OTPs of the department \
+        keyed by services and valued by a dict keyed by laboratories and \
+        valued by OTPs list.
     """
     # Setting useful col names of the OTPs source file
     otps_otp_col = otps_cols[1]
@@ -220,7 +252,7 @@ def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
 
     dept_otps_dict[otps_dept][otps_serv] = {}
     labs_list = _set_sorted_list2(otps_serv_df, otps_lab_col)
-    if labs_list==[unknown_alias]:
+    if labs_list==[unknown]:
         lab = _set_dir(otps_serv)
         dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                         otps_serv, lab, serv_otps_list,
@@ -228,7 +260,7 @@ def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
     else:
         for otps_lab, otps_lab_df in otps_serv_df.groupby(otps_lab_col):
             lab_otps_list = _set_sorted_list2(otps_lab_df, otps_otp_col)
-            if otps_lab==unknown_alias or "DIR" in otps_lab:
+            if otps_lab==unknown or "DIR" in otps_lab:
                 lab = _set_dir(otps_serv)
             else:
                 lab = otps_lab
@@ -239,11 +271,23 @@ def _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
 
 
 def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
-                          dept_otps_dict, unknown_alias):
-    """Builds the OTPs dict for a department different from the Institute direction, 
-    and different from 'CLINATEC'.
+                          dept_otps_dict, unknown):
+    """Updates the OTPs dict for each lab of each service of a department  
+     different from the Institute and different from 'CLINATEC'.
 
-    It uses the `_build_lap_otps_dict` internal function for seek of clarity.
+    It uses the `_build_lab_otps_dict` internal function for seek of clarity.
+
+    Args:
+        otps_dept (str): The department label to be used for OTPs selection.
+        otps_dept_df (dataframe): The OTPs info got from the OTPs database \
+        for the given department.
+        otps_cols (list): The names (str) of the useful cols.
+        dept_otps_dict (dict): The hierarchical dict to be updated.
+        unknown (str): The string used to represent unknown values.
+    Returns:
+        (dict): The updated hierarchical dict of OTPs of the department \
+        keyed by services and valued by a dict keyed by laboratories and \
+        valued by OTPs list.
     """
     # Setting useful col names of the OTPs source file
     otps_otp_col = otps_cols[1]
@@ -259,7 +303,7 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             serv, lab, serv_otps_list,
                                             srv=serv, dpt=otps_dept)
-        elif otps_serv==unknown_alias:
+        elif otps_serv==unknown:
             serv = _set_dir(otps_dept)
             lab = _set_dir(serv)
             otps_lists = [dept_otps_dict[otps_dept][serv][lab], serv_otps_list]
@@ -268,9 +312,9 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
                                             serv, lab, new_serv_otps_list,
                                             srv=serv, dpt=None)
         else:
-            dept_otps_dict = _build_lap_otps_dict(otps_serv_df, otps_serv, otps_dept,
+            dept_otps_dict = _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
                                                   otps_cols, dept_otps_dict,
-                                                  serv_otps_list, unknown_alias)
+                                                  serv_otps_list, unknown)
     return dept_otps_dict
 
 
