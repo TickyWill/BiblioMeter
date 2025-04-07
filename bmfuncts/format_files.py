@@ -1,6 +1,8 @@
 """Module of functions for formatting files as openpyxl workbooks 
 used by several modules of package `bmfuncts`.
 
+ToDo: Refactoring of the module (same lines repeated in several 
+functions).
 """
 
 
@@ -12,11 +14,14 @@ __all__ = ['align_cell',
            'format_page',
            'format_wb_sheet',
            'get_col_letter',
+           'save_formatted_df_to_xlsx',
            'set_base_keys_list',
            'set_col_width',
            'set_df_attributes',
           ]
 
+# Standard Library imports
+from pathlib import Path
 
 # 3rd party imports
 import BiblioParsing as bp
@@ -124,10 +129,14 @@ def align_cell(ws, columns_list, col_attr, xl_idx_base):
                                                  color='FFFFFF'),
                               right=openpyxl_Side(border_style='thick',
                                                   color='FFFFFF'))
+    wrap_text = False
     for col_idx, col in enumerate(columns_list):
         column_letter = openpyxl_get_column_letter(col_idx + xl_idx_base)
+        if col_idx==len(columns_list):
+            wrap_text = True
         for cell in ws[column_letter]:
-            cell.alignment = openpyxl_Alignment(horizontal=col_attr[col][1],
+            cell.alignment = openpyxl_Alignment(wrap_text=wrap_text,
+                                                horizontal=col_attr[col][1],
                                                 vertical="center")
             cell.border = borders
     return ws
@@ -225,42 +234,130 @@ def _set_base_attributes(df_cols_list, final_cols_list):
 
 
 def _set_auth_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the authors data to be saved.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
     attr_list = [[12, "center"]] * 3 \
               + [[30, "left"]] * 3 \
-              + [[15, "center"]] * 2
+              + [[15, "center"]] * 4
     col_attr_dict = dict(zip(cols_list, attr_list))
+
+    # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':15}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
 def _set_auth_stat_attributes(cols_list):
-    attr_list = [[30, "left"], [50, "left"],
-                 [15, "center"], [95, "left"]]
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the statistics data to be saved for authors 
+    scientific production.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    attr_list = [[15, "center"], [15, "center"], [30, "left"],
+                 [50, "left"],[15, "center"], [95, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
+
+    # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':15}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_attr_dict(cols_list, widths_list):
-    other_cols_nb = len(cols_list)-2
-    last_col_align = "left"
-    if len(widths_list)==2:
-        last_col_align = "center"
+def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
+    """ Sets the width and horizontal alignement of each columns 
+    to be used for formatting the data to be saved.
+
+    The specified widths are at least the following:
+    
+        - The width of the first column.
+        - The width of the other columns than first and last ones.
+        - The width of the last columns.
+
+    If the specified-widths number is of only 2, the last column is centered. 
+    If the specified width value of the first column is less than 15, 
+    the first column is centered.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+        widths_list (list): The list of specified widths (int) \
+        of columns.
+        last_cols_nb (int): The number of last columns to be considered \
+        (optional, default = 1).
+    Returns:
+        (dict): The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str)).
+    """
+    # Computing number of other columns than first and last ones
+    cols_nb = len(cols_list)
+    first_and_last_cols_nb = 1 + last_cols_nb
+    other_cols_nb = cols_nb - (first_and_last_cols_nb)
+
+    # Setting first column alignement
+    first_col_width = widths_list[0]
     first_col_align = "left"
-    if widths_list[0]<=15:
+    if first_col_width<=15:
         first_col_align = "center"
-    attr_list = [[widths_list[0], first_col_align]] \
-              + [[widths_list[1], "center"]] * other_cols_nb \
-              + [[widths_list[-1], last_col_align]]
+
+    # Setting last columns alignement
+    spec_widths_nb = len(widths_list)
+    last_col_align = "left"
+    if spec_widths_nb==2:
+        last_col_align = "center"
+
+    # Setting width and alignement of each columns as dict
+    other_cols_width = widths_list[1]
+    last_cols_width = widths_list[-1]
+    attr_list = [[first_col_width, first_col_align]] \
+              + [[other_cols_width, "center"]] * other_cols_nb \
+              + [[last_cols_width, last_col_align]] * last_cols_nb
     col_attr_dict = dict(zip(cols_list, attr_list))
     return col_attr_dict
 
+
 def _set_if_db_attributes(cols_list):
-    # Setting col-attributes dict using col-widths list
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the impact-factors (IFs) data to be saved 
+    for the update of the IFs database.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
     # with widths-list order: first col, other cols
     widths_list = [60, 15]
     col_attr_dict = _set_attr_dict(cols_list, widths_list)
@@ -268,11 +365,29 @@ def _set_if_db_attributes(cols_list):
     # Setting row-heights dict
     row_heights_dict = {'first_row':20,
                         'other_rows':15}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
 def _set_kpi_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the key performance indicators (KPIs) data to be saved 
+    for the update of the KPIs database.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
     # Setting col-attributes dict using col-widths list
     # with widths-list order: first col, other cols
     widths_list = [35, 15]
@@ -281,25 +396,61 @@ def _set_kpi_attributes(cols_list):
     # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':20}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
 def _set_if_ana_attributes(cols_list):
-    # Setting col-attributes dict using col-widths list
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the analysis results to be saved for the 
+    impact-factors data.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
     # with widths-list order: first col, other cols
-    widths_list = [50, 15]
+    widths_list = [80, 15]
     col_attr_dict = _set_attr_dict(cols_list, widths_list)
 
     # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':20}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
 def _set_kw_attributes(cols_list):
-    # Setting col-attributes dict using col-widths list
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the analysis results to be saved for the 
+    keywords data.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
     # with widths-list order: first col, other cols
     widths_list = [50, 15]
     col_attr_dict = _set_attr_dict(cols_list, widths_list)
@@ -307,12 +458,30 @@ def _set_kw_attributes(cols_list):
     # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':20}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
 def _set_geo_attributes(cols_list):
-    # Setting col-attributes dict using col-widths list
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the analysis results to be saved for the 
+    geographical data.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
     # with widths-list order: first col, other cols, last col
     widths_list = [32, 15, 100]
     col_attr_dict = _set_attr_dict(cols_list, widths_list)
@@ -320,12 +489,29 @@ def _set_geo_attributes(cols_list):
     # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':20}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_inst_attributes(cols_list):
-    # Setting col-attributes dict using col-widths list
+def _set_norm_inst_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the normalized-institutions data to be saved.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
     # with widths-list order: first col, other cols, last col
     widths_list = [12, 15, 100]
     col_attr_dict = _set_attr_dict(cols_list, widths_list)
@@ -333,6 +519,181 @@ def _set_inst_attributes(cols_list):
     # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':20}
+
+    # Setting value to initialize columns index
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_raw_inst_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the raw-institutions data to be saved.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    # with widths-list order: first col, other cols, last cols
+    widths_list = [12, 15, 100]
+    col_attr_dict = _set_attr_dict(cols_list, widths_list, last_cols_nb=2)
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':20}
+
+    # Setting value to initialize columns index
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_distrib_inst_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the distributed-institutions data to be saved.
+
+    The widths and horizontal alignement of each columns are 
+    set through `_set_attr_dict` internal function.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    # with widths-list order: first col, other cols, last col
+    widths_list = [12, 15, 15]
+    col_attr_dict = _set_attr_dict(cols_list, widths_list)
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':20}
+
+    # Setting value to initialize columns index
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_inst_country_pub_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the data of publication IDs per country and 
+    per institution to be saved.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    attr_list = [[30, "left"], [25, "center"],
+                 [15, "center"], [95, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+
+    # Setting value to initialize columns index
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_pub_country_inst_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the data of institutions per country and per 
+    publication ID to be saved.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    attr_list = [[15, "center"], [25, "center"],
+                 [15, "center"], [95, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+
+    # Setting value to initialize columns index
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_country_inst_pub_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the data of publication IDs per institutions 
+    and per country to be saved.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    attr_list = [[30, "left"], [15, "center"],
+                 [95, "left"], [15, "center"],
+                 [95, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+
+    # Setting value to initialize columns index
+    col_idx_init = 0
+    return col_attr_dict, row_heights_dict, col_idx_init
+
+
+def _set_doctype_stat_attributes(cols_list):
+    """Sets the widths and horizontal alignement of each columns 
+    and the heights of the first row and other rows to be used 
+    for formatting the statistics data of doctype-analysis results 
+    to be saved.
+
+    Args:
+        cols_list (list): The columns names (str) of the data.
+    Returns:
+        (tup): (The dict keyed by columns names (str) and valued (list) \
+        by the width (int) and the horizontal alignement (str), 
+        The dict keyed by given row types (str) and valued by row heights (int), 
+        The value (int) for initializing columns index).
+    """
+    # Setting col-attributes dict
+    attr_list = [[80, "left"], [25, "center"], [15, "center"],
+                 [95, "left"], [15, "center"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
+
+    # Setting row-heights dict
+    row_heights_dict = {'first_row':30,
+                        'other_rows':15}
+
+    # Setting value to initialize columns index
     col_idx_init = 0
     return col_attr_dict, row_heights_dict, col_idx_init
 
@@ -362,8 +723,14 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     kpi_alias = pg.DF_TITLES_LIST[6]
     kw_alias = pg.DF_TITLES_LIST[7]
     geo_alias = pg.DF_TITLES_LIST[8]
-    inst_alias = pg.DF_TITLES_LIST[9]
+    norm_inst_alias = pg.DF_TITLES_LIST[9]
     if_ana_alias = pg.DF_TITLES_LIST[10]
+    distrib_inst_alias = pg.DF_TITLES_LIST[11]
+    inst_country_pub_alias = pg.DF_TITLES_LIST[12]
+    doctype_stat_alias = pg.DF_TITLES_LIST[13]
+    pub_country_inst_alias = pg.DF_TITLES_LIST[14]
+    country_inst_pub_alias = pg.DF_TITLES_LIST[15]
+    raw_inst_alias = pg.DF_TITLES_LIST[16]
 
     attr_tup = _set_base_attributes(df_cols_list, keys_list)
 
@@ -388,8 +755,26 @@ def set_df_attributes(df_title, df_cols_list, keys_list):
     elif df_title==geo_alias:
         attr_tup = _set_geo_attributes(df_cols_list)
 
-    elif df_title==inst_alias:
-        attr_tup = _set_inst_attributes(df_cols_list)
+    elif df_title==norm_inst_alias:
+        attr_tup = _set_norm_inst_attributes(df_cols_list)
+
+    elif df_title==inst_country_pub_alias:
+        attr_tup = _set_inst_country_pub_attributes(df_cols_list)
+
+    elif df_title==pub_country_inst_alias:
+        attr_tup = _set_pub_country_inst_attributes(df_cols_list)
+
+    elif df_title==country_inst_pub_alias:
+        attr_tup = _set_country_inst_pub_attributes(df_cols_list)
+
+    elif df_title==distrib_inst_alias:
+        attr_tup = _set_distrib_inst_attributes(df_cols_list)
+
+    elif df_title==doctype_stat_alias:
+        attr_tup = _set_doctype_stat_attributes(df_cols_list)
+
+    elif df_title==raw_inst_alias:
+        attr_tup = _set_raw_inst_attributes(df_cols_list)
     return attr_tup
 
 
@@ -446,7 +831,7 @@ def set_base_keys_list(institute, org_tup):
 
 
 def format_page(df, df_title, attr_keys_list=None, wb=None,
-                header=True, cell_colors=None):
+                header=True, cell_colors=None, idx_wrap=None):
     """Formats a worksheet of an openpyxl workbook using 
     columns attributes got through the `set_df_attributes`  
     internal function.
@@ -471,6 +856,8 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
         the openpyxl package (default = True).
         cell_colors (list): List of openpyxl.PatternFill objects \
         (default = None).
+        idx_wrap (int): The optional maximum index of the rows \
+        for which text is wraped in the last column.
     Returns:
         (tup): (worbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).
@@ -511,10 +898,12 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
     ws = set_col_width(ws, df_cols_list, col_attr_dict,
                        col_idx_init, xl_idx_base)
 
-    # Setting height of first row
+    # Setting height of rows
     for idx_row in range(ws.max_row):
         if idx_row==0:
             height = row_heights_dict['first_row']
+        elif idx_wrap and idx_row<=idx_wrap: # Auto Height of data row
+            height = None
         else:
             height = row_heights_dict['other_rows']
         ws.row_dimensions[idx_row + 1].height = height
@@ -522,7 +911,7 @@ def format_page(df, df_title, attr_keys_list=None, wb=None,
 
 
 def format_wb_sheet(sheet_name, df, df_title, wb, first,
-                    attr_keys_list=None):
+                    attr_keys_list=None, idx_wrap=None):
     """Formats impact-factors (IFs) sheet in the 'wb' openpyxl workbook 
     as first sheet of the workbook if first is True.
 
@@ -531,7 +920,7 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
 
     Args:
         sheet_name (str): 4-digits IFs sheet-name.
-        df (dataframe): IFs database of a  year.
+        df (dataframe): Data to be saved.
         df_title (str): Name of data to be formatted for setting \
         columns attributes, to be specified using the 'DF_TITLES_LIST' \
         global defined in `bmfuncts.pub_globals` module.
@@ -540,15 +929,42 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first,
         attr_keys_list (list): The optional list of columns names (str) \
         that will be used as keys for building the dict \
         valued by the attributes lists of each column composed \
-        by [horizontal alignment (str), width (int)] (default = None). 
+        by [horizontal alignment (str), width (int)] (default = None).
+        idx_wrap (int): The optional maximum index of the rows \
+        for which text is wraped in the last column.
     Returns:
         (openpyxl workbook): The updated workbook with the 'sheet_name' sheet.
     """
     if first:
-        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
+        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list,
+                             wb=wb, idx_wrap=idx_wrap)
         ws.title = sheet_name
     else:
         wb.create_sheet(sheet_name)
         wb.active = wb[sheet_name]
-        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list, wb=wb)
+        wb, ws = format_page(df, df_title, attr_keys_list=attr_keys_list,
+                             wb=wb, idx_wrap=idx_wrap)
     return wb
+
+
+def save_formatted_df_to_xlsx(save_path, item_filename, item_df,
+                              item_df_title, sheet_name, idx_wrap=None):
+    """Formats the 'item_df' dataframe through `format_page` function imported 
+    from the `bmfuncts.format_files` module and saves it as xlsx workbook.
+
+    Args:
+        save_path (path): Full path to the folder where the data will be saved.
+        item_filename (str): Name of the file for saving the data.
+        item_df (dataframe): Data to be saved.
+        item_df_title (str): Name of data to be formatted for setting \
+        columns attributes, to be specified using the 'DF_TITLES_LIST' \
+        global defined in `bmfuncts.pub_globals` module.
+        sheet_name (str): 4-digits IFs sheet-name. 
+        idx_wrap (int): The optional maximum index of the rows \
+        for which text is wraped in the last column.
+    """
+    item_xlsx_file = item_filename
+    item_xlsx_path = save_path / Path(item_xlsx_file)
+    wb, ws = format_page(item_df, item_df_title, idx_wrap=idx_wrap)
+    ws.title = sheet_name
+    wb.save(item_xlsx_path)

@@ -18,9 +18,9 @@ import bmfuncts.pub_globals as pg
 import bmgui.gui_globals as gg
 from bmfuncts.add_ifs import get_if_db
 from bmfuncts.authors_analysis import authors_analysis
+from bmfuncts.build_kpi import if_analysis
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.coupling_analysis import coupling_analysis
-from bmfuncts.impact_factors_analysis import if_analysis
 from bmfuncts.keywords_analysis import keywords_analysis
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
@@ -46,16 +46,14 @@ def _launch_au_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    auth_analysis_folder_path = authors_analysis(institute,
-                                                 org_tup,
+    auth_analysis_folder_path = authors_analysis(institute, org_tup,
                                                  bibliometer_path,
-                                                 datatype,
-                                                 year_select,
+                                                 datatype, year_select,
                                                  progress_callback)
 
     info_title = "- Information -"
     info_text = (f"L'analyse de la production par auteur a été effectuée "
-                 "pour l'année {year_select}."
+                 f"pour l'année {year_select}."
                  "\nLes fichiers obtenus ont été créés dans le dossier :"
                  f"\n\n'{auth_analysis_folder_path}' ")
     messagebox.showinfo(info_title, info_text)
@@ -75,11 +73,9 @@ def _launch_kw_analysis(institute, org_tup, bibliometer_path,
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    kw_analysis_folder_path = keywords_analysis(institute,
-                                                org_tup,
+    kw_analysis_folder_path = keywords_analysis(institute, org_tup,
                                                 bibliometer_path,
-                                                datatype,
-                                                year_select,
+                                                datatype, year_select,
                                                 progress_callback,
                                                 verbose=False)
 
@@ -108,25 +104,35 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
     """
     # TO DO: use 'results_folder_path' in info_text
 
-    return_tup = coupling_analysis(institute,
-                                   org_tup,
+    return_tup = coupling_analysis(institute, org_tup,
                                    bibliometer_path,
-                                   datatype,
-                                   year_select,
+                                   datatype, year_select,
                                    progress_callback,
-                                   verbose=False)
-    analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = return_tup
+                                   verbose=True)
+    (analysis_folder, geo_analysis_folder, inst_analysis_folder,
+     country_affil_file_path, wrong_affil_types_dict) = return_tup
 
-    info_title = "- Information -"
-    info_text = ("L'analyse géographique et des collaborations "
-                 f"a été effectuée pour l'année {year_select}."
-                 "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
-                 f"\n\n    '{analysis_folder_alias}/{geo_analysis_folder_alias}'"
-                 f"\n\n    '{analysis_folder_alias}/{inst_analysis_folder_alias}'")
-    # info_text += ("\n\nLa base de donnée des indicateurs respective de l'Institut "
-    #            "et de chaque département a été mise à jour "
-    #            "avec les résultats de cette analyse et se trouve dans le dossier :"
-    #            f"\n\n'{results_folder_path}'.")
+    if not wrong_affil_types_dict:
+        info_title = "- Information -"
+        info_text = ("L'analyse géographique et l'analyse des collaborations "
+                     f"a été effectuée pour l'année {year_select}."
+                     "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
+                     f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
+                     f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
+        # info_text += ("\n\nLa base de donnée des indicateurs respective de l'Institut "
+        #            "et de chaque département a été mise à jour "
+        #            "avec les résultats de cette analyse et se trouve dans le dossier :"
+        #            f"\n\n'{results_folder_path}'.")
+    else:
+        info_title = "- Attention -"
+        info_text = ("L'analyse géographique et l'analyse des collaborations "
+                     f"a été abandonnée pour l'année {year_select}."
+                     "\n\nDes types d'affiliations erronés ont été rencontrés dans le fichier "
+                     f"suivant : \n    '{country_affil_file_path}"
+                     f"\n\n1- Corriger dans ce fichier les types d'affiliation suivants:")
+        for k,v in wrong_affil_types_dict.items():
+            info_text += f"\n        {k}: {v}"
+        info_text +="\n\n2- Relancer l'analyse des collaborations"
     messagebox.showinfo(info_title, info_text)
 
 
@@ -156,20 +162,19 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 
-    if_analysis_folder_path, _, _ = if_analysis(institute,
-                                                org_tup,
-                                                bibliometer_path,
-                                                datatype,
-                                                year_select,
-                                                if_most_recent_year,
-                                                progress_callback,
-                                                verbose=False)
-
+    return_tup = if_analysis(institute, org_tup, bibliometer_path,
+                             datatype, year_select, if_most_recent_year,
+                             progress_callback, verbose=False)
+    doctypes_analysis_folder_path, if_analysis_folder_path, _, _ = return_tup
     info_title = "- Information -"
-    info_text = (f"L'analyse des IFs a été effectuée pour l'année {year_select} "
+    info_text = ("L'analyse par type de documents et l'analyse des IFs "
+                 f"ont été effectuées pour l'année {year_select} "
                  f"avec les valeurs {analysis_if}. "
-                 "\n\nLes fichiers obtenus ont été créés dans le dossier :"
-                 f"\n\n'{if_analysis_folder_path}'."
+                 "\n\nPour les types de documents, les fichiers obtenus "
+                 "ont été créés dans le dossier :"
+                 f"\n\n'{doctypes_analysis_folder_path}'."
+                 "\n\nPour les IFs, les fichiers obtenus ont été créés "
+                 f"dans le dossier :\n\n'{if_analysis_folder_path}'."
                  "\n\nLa base de données des indicateurs respective de l'Institut "
                  "et de chaque département a été mise à jour "
                  "avec les résultats de cette analyse et se trouve dans le dossier :"
@@ -222,9 +227,12 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                     "\n\nContinuer ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
-            print(f"Coupling analysis launched for year {year_select}")
-            _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
-                                      year_select, results_folder_path, progress_callback)
+            print(f"\nCoupling analysis launched for year {year_select}")
+            _launch_coupling_analysis(institute, org_tup,
+                                      bibliometer_path,
+                                      datatype, year_select,
+                                      results_folder_path,
+                                      progress_callback)
         else:
             progress_callback(100)
             info_title = "- Information -"
@@ -237,7 +245,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
         # Getting year selection
         year_select = variable_years.get()
 
-        print(f"Keywords analysis launched for year {year_select}")
+        print(f"\nKeywords analysis launched for year {year_select}")
         _launch_kw_analysis(institute, org_tup, bibliometer_path, datatype,
                             year_select, progress_callback)
         progress_bar.place_forget()

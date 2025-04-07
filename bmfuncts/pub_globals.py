@@ -18,6 +18,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
            'COL_NAMES_COMPL',
+           'COL_NAMES_DOCTYPE_ANALYSIS',
            'COL_NAMES_EXT',
            'COL_NAMES_IF_ANALYSIS',
            'COL_NAMES_ORTHO',
@@ -29,7 +30,9 @@ __all__ = ['ANALYSIS_IF',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
            'HOMONYM_FLAG',
+           'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
+           'LISTES_CONCAT',
            'NOT_AVAILABLE_IF',
            'OTHER_DOCTYPE',
            'OTP_SHEET_NAME_BASE',
@@ -40,8 +43,10 @@ __all__ = ['ANALYSIS_IF',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
+           'STAT_FILE_DICT',
+           'STAT_INST_TYPES_LIST',
            'TSV_SAVE_EXTENT',
-           'XL_INDEX_BASE'
+           'XL_INDEX_BASE', 
           ]
 
 # 3rd party imports
@@ -58,17 +63,23 @@ DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 
 DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "Authors_df", "Authors_stat_df", "KPI_df",
-                  "KW_df", "Geo_df", "Institutions_df", "IF_anal_df"]
+                  "KW_df", "Geo_df", "norm_institutions_df",
+                  "IF_anal_df", "Distrib_inst_df",
+                  "inst_country_pub_df", "doctype_stat_df",
+                  "pub_country_inst_df", "country_inst_pub_df",
+                  "raw_institutions_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
 PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 
-PARSING_PERF = "Parsing_perf.json"    # 'failed.json'
+PARSING_PERF = "Parsing_perf.json"
 
 TSV_SAVE_EXTENT = "dat"
 
 XL_INDEX_BASE = 1
+
+LISTES_CONCAT = False
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 
@@ -78,19 +89,21 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                  : "BDD multi annuelle",
                            }
 
 ARCHI_EXTRACT = {"root"             : "Extractions Institut",
-                 bp.SCOPUS          : {"root"          : "ScopusExtractions_Files",
-                                       DATATYPE_LIST[0]: "scopus",
-                                       DATATYPE_LIST[1]: "scopus_hal",
-                                       DATATYPE_LIST[2]: "scopus",
-                                       "file_extent"   : '.' + bp.SCOPUS_RAWDATA_EXTENT,
+                 bp.SCOPUS          : {"root"           : "ScopusExtractions_Files",
+                                       DATATYPE_LIST[0] : "scopus",
+                                       DATATYPE_LIST[1] : "scopus_hal",
+                                       DATATYPE_LIST[2] : "scopus",
+                                       "file_extent"    : '.' + bp.SCOPUS_RAWDATA_EXTENT,
+                                       "added_dois_file": " hal_added_dois.xlsx",
                                       },
-                 bp.WOS             : {"root"          : "WosExtractions_Files",
-                                       DATATYPE_LIST[0]: "wos",
-                                       DATATYPE_LIST[1]: "wos",
-                                       DATATYPE_LIST[2]: "wos",
-                                       "file_extent"   : '.' + bp.WOS_RAWDATA_EXTENT,
+                 bp.WOS             : {"root"           : "WosExtractions_Files",
+                                       DATATYPE_LIST[0] : "wos",
+                                       DATATYPE_LIST[1] : "wos",
+                                       DATATYPE_LIST[2] : "wos",
+                                       "file_extent"    : '.' + bp.WOS_RAWDATA_EXTENT,
                                       },
-                 "empty-file folder": "Fichier vierge"
+                 "empty-file folder": "Fichier vierge",
+                 "archiv"           : "Archives",
                 }
 
 ARCHI_IF = {"root"                   : "Impact Factor",
@@ -106,6 +119,7 @@ ARCHI_INSTITUTIONS = {"root"                 : "Traitement Institutions",
                       "inst_types_base"      : "Institutions_types.xlsx",
                       "affiliations_base"    : "Country_affiliations.xlsx",
                       "country_towns_base"   : "Country_towns.xlsx",
+                      "unkept_affil_base"    : "Unkept_affiliations.xlsx",
                      }
 
 ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
@@ -117,7 +131,10 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
 ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "dedup_parsing"       : "Synthèse des extractions",
                  "hash_id"             : "Identifiants universels",
+                 "submit"              : "Croisement auteurs-effectifs",
+                 "homonyms"            : "Résolution homonymes",
                  "pub-lists"           : "Listes consolidées des publications",
+                 "doctypes"            : "Analyse par types de document",
                  "impact-factors"      : "Analyse des facteurs d'impact",
                  "authors_prod"        : "Analyse par auteurs",
                  "keywords"            : "Analyse des mots clefs",
@@ -133,45 +150,54 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
 
 
 ARCHI_YEAR = {
-              "analyses"                  : "5 - Analyses",
-              "authors analysis"          : "Auteurs",
-              "if analysis"               : "IFs",
-              "keywords analysis"         : "Mots clefs",
-              "subjects analysis"         : "Thématique",
-              "countries analysis"        : "Géographique",
-              "institutions analysis"     : "Collaborations",
-              "authors file name"         : "Informations auteur par publication",
-              "authors weight file name"  : "Statistiques par auteurs",
-              "countries file name"       : "Pays par publication",
-              "country weight file name"  : "Statistiques par pays",
-              "continent weight file name": "Statistiques par continent",
-              "norm inst file name"       : "Institutions normalisées",
-              "raw inst file name"        : "Institutions brutes",
-              "bdd mensuelle"             : "0 - BDD multi mensuelle",
-              "submit file name"          : "submit.xlsx",
-              "orphan file name"          : "orphan.xlsx",
-              "hash_id file name"         : "hash_id.xlsx",
-              "homonymes folder"          : "1 - Consolidation Homonymes",
-              "homonymes file name base"  : "Fichier Consolidation",
-              "OTP folder"                : "2 - OTP",
-              "OTP file name base"        : "fichier_ajout_OTP",
-              "pub list folder"           : "3 - Résultats Finaux",
-              "pub list file name base"   : "Liste consolidée",
-              "invalid file name base"    : "Liste des invalides",
-              "history folder"            : "4 - Informations",
-              "kept homonyms file name"   : "Homonymes conservés.xlsx",
-              "kept OTPs file name"       : "OTPs conservés.xlsx",
-              "corpus"                    : "Corpus",
-              "concat"                    : "concatenation",
-              "dedup"                     : "deduplication",
-              "scopus"                    : "scopus",
-              "wos"                       : "wos",
-              "parsing"                   : "parsing",
-              "rawdata"                   : "rawdata",
+              "analyses"                            : "5 - Analyses",
+              "authors analysis"                    : "Auteurs",
+              "doctype analysis"                    : "Edition",
+              "if analysis"                         : "IFs",
+              "keywords analysis"                   : "Mots clefs",
+              "subjects analysis"                   : "Thématique",
+              "countries analysis"                  : "Géographique",
+              "institutions analysis"               : "Collaborations",
+              "authors file name"                   : "Informations auteur par publication",
+              "authors weight file name"            : "Statistiques par auteurs",
+              "countries file name"                 : "Pays par publication",
+              "book weight file name"               : "Statistiques par ouvrage",
+              "country weight file name"            : "Statistiques par pays",
+              "continent weight file name"          : "Statistiques par continent",
+              "journal weight file name"            : "Statistiques par journal",
+              "proceedings weight file name"        : "Statistiques par actes de conférence",
+              "norm inst file name"                 : "Institutions normalisées",
+              "raw inst file name"                  : "Institutions brutes",
+              "institutions distribution file name" : "Distribution institutions par types",
+              "institution weight file name"        : "Statistiques par institutions",
+              "bdd mensuelle"                       : "0 - BDD multi mensuelle",
+              "submit file name"                    : "submit.xlsx",
+              "orphan file name"                    : "orphan.xlsx",
+              "hash_id file name"                   : "hash_id.xlsx",
+              "homonymes folder"                    : "1 - Consolidation Homonymes",
+              "homonymes file name base"            : "Fichier Consolidation",
+              "OTP folder"                          : "2 - OTP",
+              "OTP file name base"                  : "fichier_ajout_OTP",
+              "pub list folder"                     : "3 - Résultats Finaux",
+              "pub list file name base"             : "Liste consolidée",
+              "invalid file name base"              : "Liste des invalides",
+              "history folder"                      : "4 - Informations",
+              "kept homonyms file name"             : "Homonymes conservés.xlsx",
+              "kept OTPs file name"                 : "OTPs conservés.xlsx",
+              "corpus"                              : "Corpus",
+              "concat"                              : "concatenation",
+              "dedup"                               : "deduplication",
+              "scopus"                              : "scopus",
+              "wos"                                 : "wos",
+              "parsing"                             : "parsing",
+              "rawdata"                             : "rawdata",
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["hash_ids", "pub_lists", "ifs", "kws", "countries", "continents", "authors"]
+RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists",
+                   "ifs", "kws","countries", "continents",
+                   "authors", "institutions", "doctypes",
+                   "homonyms",]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -186,9 +212,9 @@ ROW_COLORS = {'odd'      : '0000FFFF',
 
 DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction',
                                  'Correction; Early Access', 'Data Paper', 'Erratum',
-                                 'Letter', 'Note', 'Review', 'Review; early access',
+                                 'Letter', 'Note', 'Review', 'Review; Early Access',
                                  'Short Survey'],
-                 'Books'      : ['Article; Book Chapter', 'Book', 'Book chapter',
+                 'Books'      : ['Article; Book Chapter', 'Book', 'Book Chapter',
                                  'Biographical-Item', 'Editorial', 'Editorial Material'],
                  'Proceedings': ['Conference Paper', 'Meeting Abstract',
                                  'Article; Proceedings Paper'],
@@ -234,9 +260,12 @@ COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
                    'weight'           : "Weight",
                    'country'          : "Pays",
                    'continent'        : "Continent",
+                   'institution'      : "Institution",
+                   'inst number'      : "Nombre d'entités",
                    'pub_ids list'     : "Liste des Pub_ids",
+                   'inst list'        : "Liste des entités",
+                   'address ID'       : "Adresse_id",
                   }
-
 
 
 COL_NAMES_BM = {'Dpts'      : eg.EMPLOYEES_ADD_COLS['dpts_list'],
@@ -302,24 +331,54 @@ COL_NAMES_AUTHOR_ANALYSIS = {'author_nb'       : "Nombre d'auteurs",
                              'pub_nb'          : "Nombre de publications",
                             }
 
+COL_NAMES_DOCTYPE_ANALYSIS = {'articles'   : "Journal",
+                              'proceedings': "Actes de conférence",
+                              'books'      : "Ouvrage",
+                              'articles_nb': "Nombre d'articles",
+                              'chapters_nb': "Nombre de chapitres",
+                             }
+
 KPI_KEYS_ORDER_DICT = {0  : "Année de publication",
-                       1  : "Nombre de publications",
-                       2  : "Ouvrages",
-                       3  : "Chapitres",
-                       4  : "Moyenne de chapitres par ouvrage",
-                       5  : "Maximum de chapitres par ouvrage",
-                       6  : "Journaux & actes de conférence",
-                       7  : "Journaux",
-                       8  : "Articles & communications",
-                       9  : "Communications",
-                       10 : "Communications (%)",
-                       11 : "Articles",
-                       12 : "Moyenne d'articles par journal",
-                       13 : "Maximum d'articles par journal",
-                       14 : "Facteur d'impact d'analyse",
-                       15 : "Facteur d'impact maximum",
-                       16 : "Facteur d'impact minimum",
-                       17 : "Facteur d'impact moyen",
-                       18 : "Articles sans facteur d'impact",
-                       19 : "Articles sans facteur d'impact (%)",
+                       1  : "Publications",
+                       2  : "Articles",
+                       3  : "Articles de journal",
+                       4  : "Articles de conférence",
+                       5  : "Chapitres d'ouvrage",
+                       6  : "Journaux",
+                       7  : "Actes de conférence",
+                       8  : "Ouvrages",
+                       9  : "Moyenne d'articles par journal",
+                       10 : "Moyenne d'articles par conférence",
+                       11 : "Moyenne de chapitres par ouvrage",
+                       12 : "Maximum d'articles par journal",
+                       13 : "Maximum d'articles par conférence",
+                       14 : "Maximum de chapitres par ouvrage",
+                       15 : "Articles de conférence (%)",
+                       16 : "Chapitres d'ouvrage (%)",
+                       17 : "Facteur d'impact d'analyse",
+                       18 : "Facteur d'impact maximum",
+                       19 : "Facteur d'impact minimum",
+                       20 : "Facteur d'impact moyen",
+                       21 : "Articles sans facteur d'impact",
+                       22 : "Articles sans facteur d'impact (%)",
                       }
+
+KPI_KEYS_DICT = {'articles'   : [6,3,9,12],
+                 'proceedings': [7,4,10,13],
+                 'books'      : [8,5,11,14],
+                 'complements': [1,2,15,16],
+                }
+
+
+stat_keys_list = ["country per pub",
+                  "inst per country per pub",
+                  "inst and pub per country"]
+stat_names_list = ["Stat-Publications par institutions",
+                   "Stat-Institutions par publication",
+                   "Stat_Institutions & Publications par pays",]
+stat_df_titles_list = [12, 14, 15]
+values_tup_list = tuple(zip(stat_names_list, stat_df_titles_list ))
+
+STAT_FILE_DICT = dict(zip(stat_keys_list, values_tup_list))
+STAT_INST_TYPES_LIST = ["Firm", "Nro", "Rto", "Univ", "Inst",
+                        "CNRS-Lab", "Univ-Lab", "Jlab", "CEA-Inst"]

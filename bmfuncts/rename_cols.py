@@ -27,12 +27,12 @@ def build_col_conversion_dic(institute, org_tup):
         of the Institute.
     Returns:
         (tup): (dict for renaming the specific columns of the dataframe \
-               of publications list with one row per author that has not been \
-               identified as Institute employee, \
-               dict for renaming the specific columns of the dataframe of merged \
-               employees information with the publications list with one \
-               row per Institute author, \
-               dict for renaming the columns of all the results dataframes).
+        of publications list with one row per author that has not been \
+        identified as Institute employee, \
+        dict for renaming the specific columns of the dataframe of merged \
+        employees information with the publications list with one \
+        row per Institute author, \
+        dict for renaming the columns of all the results dataframes).
     """
 
     # Setting institute parameters
@@ -126,7 +126,8 @@ def set_homonym_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
     the dataframe for homonyms solving by the user.
 
-    This is done through the `build_col_conversion_dic` internal function.
+    This is done through the `build_col_conversion_dic` function of 
+    the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -140,25 +141,27 @@ def set_homonym_col_names(institute, org_tup):
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     all_col_rename_dic = col_rename_tup[2]
 
-    homonyms_col_dic_init = {'pub_id'       : bp.COL_NAMES['pub_id'],
-                             'corpus_year'  : pg.COL_NAMES_BONUS['corpus_year'],
-                             'final_year'   : bp.COL_NAMES['articles'][2],
-                             'first_author' : bp.COL_NAMES['articles'][1],
-                             'title'        : bp.COL_NAMES['articles'][9],
-                             'journal'      : bp.COL_NAMES['articles'][3],
-                             'doc_type'     : bp.COL_NAMES['articles'][7],
-                             'doi'          : bp.COL_NAMES['articles'][6],
-                             'full_ref'     : pg.COL_NAMES_BONUS['liste biblio'],
-                             'issn'         : bp.COL_NAMES['articles'][10],
-                             'author_id'    : bp.COL_NAMES['auth_inst'][1],
-                             'matricul'     : eg.EMPLOYEES_USEFUL_COLS['matricule'],
-                             'last_name'    : eg.EMPLOYEES_USEFUL_COLS['name'],
-                             'first_name'   : eg.EMPLOYEES_USEFUL_COLS['first_name'],
-                             'author_type'  : pg.COL_NAMES_BONUS['author_type'],
-                             'dpt'          : eg.EMPLOYEES_USEFUL_COLS['dpt'],
-                             'serv'         : eg.EMPLOYEES_USEFUL_COLS['serv'],
-                             'lab'          : eg.EMPLOYEES_USEFUL_COLS['lab'],
-                             'homonym'      : pg.COL_NAMES_BONUS['homonym'],
+    homonyms_col_dic_init = {'pub_id'        : bp.COL_NAMES['pub_id'],
+                             'corpus_year'   : pg.COL_NAMES_BONUS['corpus_year'],
+                             'final_year'    : bp.COL_NAMES['articles'][2],
+                             'inst_author'   : bp.COL_NAMES['authors'][2],
+                             'first_author'  : bp.COL_NAMES['articles'][1],
+                             'title'         : bp.COL_NAMES['articles'][9],
+                             'journal'       : bp.COL_NAMES['articles'][3],
+                             'doc_type'      : bp.COL_NAMES['articles'][7],
+                             'doi'           : bp.COL_NAMES['articles'][6],
+                             'full_ref'      : pg.COL_NAMES_BONUS['liste biblio'],
+                             'issn'          : bp.COL_NAMES['articles'][10],
+                             'author_id'     : bp.COL_NAMES['auth_inst'][1],
+                             'matricul'      : eg.EMPLOYEES_USEFUL_COLS['matricule'],
+                             'last_name'     : eg.EMPLOYEES_USEFUL_COLS['name'],
+                             'first_name'    : eg.EMPLOYEES_USEFUL_COLS['first_name'],
+                             'author_type'   : pg.COL_NAMES_BONUS['author_type'],
+                             'dpt'           : eg.EMPLOYEES_USEFUL_COLS['dpt'],
+                             'serv'          : eg.EMPLOYEES_USEFUL_COLS['serv'],
+                             'lab'           : eg.EMPLOYEES_USEFUL_COLS['lab'],
+                             'empl_full_name': eg.EMPLOYEES_ADD_COLS['employee_full_name'],
+                             'homonym'       : pg.COL_NAMES_BONUS['homonym'],
                              }
 
     homonyms_col_list = [all_col_rename_dic[name] for _, name in homonyms_col_dic_init.items()]
@@ -170,7 +173,8 @@ def set_otp_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
     the dataframes for OTPs attribution by the user.
 
-    This is done through the `build_col_conversion_dic` internal function.
+    This is done through the `build_col_conversion_dic` function of 
+    the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -218,7 +222,8 @@ def set_final_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
     the final publications-list dataframe.
 
-    This is done through the `build_col_conversion_dic` internal function.
+    This is done through the `build_col_conversion_dic` function 
+    of the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -227,7 +232,7 @@ def set_final_col_names(institute, org_tup):
     Returns:
         (tup): (dict to be used for setting the final \
         column names of the final publications-list dataframe, \
-               list of the final column names of the departments).
+        list of the final column names of the departments).
     """
     # Setting institute parameters
     dpt_col_names = org_tup[0]
@@ -268,7 +273,8 @@ def set_if_col_names(institute, org_tup):
     columns specific to impact-factors, to be used for updating the 
     final publications-list dataframe with impact factors values.
 
-    This is done through the `set_final_col_names` internal function.
+    This is done through the `set_final_col_names` function of 
+    the same module.
 
     Args:
         institute (str): The Intitute name.
@@ -347,7 +353,6 @@ def set_col_attr(institute, org_tup, columns_list):
     for col in columns_list:
         if col in set_col_list:
             continue
-        else:
-            final_col_attr_dict[col] = [15, "center"]
+        final_col_attr_dict[col] = [15, "center"]
 
     return final_col_attr_dict
