@@ -252,7 +252,7 @@ def _set_auth_attributes(cols_list):
               + [[15, "center"]] * 4
     col_attr_dict = dict(zip(cols_list, attr_list))
 
-    # Setting row-heights dict 
+    # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':15}
 
@@ -280,7 +280,7 @@ def _set_auth_stat_attributes(cols_list):
                  [50, "left"],[15, "center"], [95, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
 
-    # Setting row-heights dict 
+    # Setting row-heights dict
     row_heights_dict = {'first_row':30,
                         'other_rows':15}
 
@@ -335,7 +335,7 @@ def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
     last_cols_width = widths_list[-1]
     attr_list = [[first_col_width, first_col_align]] \
               + [[other_cols_width, "center"]] * other_cols_nb \
-              + [[last_cols_width, last_col_align]] * last_cols_nb 
+              + [[last_cols_width, last_col_align]] * last_cols_nb
     col_attr_dict = dict(zip(cols_list, attr_list))
     return col_attr_dict
 

@@ -374,10 +374,10 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     return_df, inst_pud_ids_list, bm_cols_list = return_tup
     bm_pub_id_col, bm_author_id_col, bm_address_col = bm_cols_list
     return_df[bm_address_col] = return_df[bm_address_col].apply(standardize_address)
-    institute_author_addresses_df = return_df.copy() 
+    institute_author_addresses_df = return_df.copy()
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.50)
-    
+
 
     # Setting useful column lists and columns rename dict
     bm_full_cols_list = (bm_pub_id_col, bm_address_id_alias, bm_author_id_col, bm_address_col)
@@ -389,15 +389,15 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     all_address_df = _read_addresses_data(bibliometer_path, saved_results_path, year)
     all_address_df = set_year_pub_id(all_address_df, year, bp_pub_id_alias)
     all_address_df[bp_address_alias] = all_address_df[bp_address_alias].apply(standardize_address)
-    all_address_df.rename(columns=bp2bm_rename_cols_dict, inplace=True) 
+    all_address_df.rename(columns=bp2bm_rename_cols_dict, inplace=True)
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.70)
 
-    # Selecting only addresses of the publications of the institute 
+    # Selecting only addresses of the publications of the institute
     inst_pub_addresses_init_df = pd.DataFrame()
     for pub_id, dg in all_address_df.groupby(bm_pub_id_col):
         if pub_id in inst_pud_ids_list:
-            inst_pub_addresses_init_df = concat_dfs([inst_pub_addresses_init_df, dg]) 
+            inst_pub_addresses_init_df = concat_dfs([inst_pub_addresses_init_df, dg])
     if progress_param:
         progress_callback(final_progress)
 
@@ -443,9 +443,10 @@ def build_institute_addresses_df(institute, org_tup, bibliometer_path,
     save_num = 0
 
     # Building "inst_pub_addresses_init_df", "institute_author_addresses_df", "bm_full_cols_list"
+    inter_progress_param_1 = None
     if progress_param:
         inter_progress_1 = init_progress + (final_progress - init_progress) * 0.20
-        inter_progress_param_1 = (progress_callback, init_progress, inter_progress_1)    
+        inter_progress_param_1 = (progress_callback, init_progress, inter_progress_1)
     return_tup = _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
                                                     saved_results_path, year,
                                                     progress_param=inter_progress_param_1)
@@ -466,9 +467,10 @@ def build_institute_addresses_df(institute, org_tup, bibliometer_path,
         save_xlsx_file(save_folder_path, institute_author_addresses_df,
                        str(save_num) + "-institute_author_addresses_df.xlsx")
 
+    inter_progress_param_2 = None
     if progress_param:
         inter_progress_2 = init_progress + (final_progress - init_progress) * 0.80
-        inter_progress_param_2 = (progress_callback, inter_progress_1, inter_progress_2)    
+        inter_progress_param_2 = (progress_callback, inter_progress_1, inter_progress_2)
     return_tup = _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
                                                  institute_author_addresses_df, bm_full_cols_list,
                                                  verbose, save_folder_path, save_num,

@@ -132,7 +132,7 @@ def keep_initials(df, initials_col_base, missing_fill=None):
     when they are equal to 'NA'.
     
     Args:
-        df (dataframe): Data where the first-name inirials are kept.
+        df (dataframe): Data where the first-name initials are kept.
         initials_col_base (str): Base of the column names \
         of first_name initiales. 
         missing_fill (str): Optional value for replacing NaN \
@@ -156,7 +156,7 @@ def standardize_address(raw_address):
     such as 'University', 'Institute', 'Center' and' Department', by a standardized 
     version.
 
-    The aliases of a given word are captured using a specific regex which is case-sensitive defined 
+    The aliases of a given word are captured using a specific regex which is case sensitive defined 
     by the global 'DIC_WORD_RE_PATTERN' imported from the `BiblioParsing` package imported as "bp". 
     The aliases may contain symbols from a given list of any language including accentuated ones. 
     The length of the aliases is limited to a maximum according to the longest alias known.
@@ -251,7 +251,7 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
 
     Args:
         dfs_list (list): The list of pandas dataframes to concatenate.
-        dedup (bool): If true, deduplication is applied, optional, default:True)
+        dedup (bool): If true, deduplication is applied, optional, default:True.
         dedup_cols (list): Same as 'subset' parameter of 'drop_duplicates' method \
         of 'pandas.DataFrame' method, optional, default:None.
         keep (str): Same as 'keep' parameter of 'drop_duplicates' method \
@@ -450,11 +450,11 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     Returns:
         (str): End message recalling the database and data type used.
     """
-
     # Getting database extractions info
     return_tup = _set_database_extract_info(bibliometer_path, datatype, database)
     database_folder_path, database_file_end, empty_file_folder = return_tup
 
+    # Setting specific parameters for Scopus-HAL data
     last_year_database_file_end = database_file_end
     if datatype==pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
         last_year_datatype = pg.DATATYPE_LIST[0]
@@ -466,6 +466,8 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     for year in years_list:
         if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[2]:
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
+            year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                              database_file_end)
         else:
             year_database_folder_path = database_folder_path / Path(year)
             year_database_file_path = _get_database_file_path(year_database_folder_path,
@@ -694,7 +696,6 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
         the package imported as bp and valued by the dataframes \
         of parsing results.
     """
-
     parsing_dict = {}
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
@@ -715,8 +716,6 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
                     item_df = pd.read_csv(item_tsv_path, sep = "\t")
                 except pd.errors.EmptyDataError:
                     item_df = pd.DataFrame()
-        else:
-            pass
 
         if item_df is not None:
             parsing_dict[item] = item_df

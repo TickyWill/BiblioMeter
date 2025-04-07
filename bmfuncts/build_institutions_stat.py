@@ -51,7 +51,7 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
         progress_step = (progress_final - progress_init) / step_nb
         progress_status = progress_init
         progress_callback(progress_status)
-    
+
     set_words_template = Template(r'[\s]$word$$')
     distrib_institutions_df = pd.DataFrame()
     for _, row in norm_institutions_df.iterrows():

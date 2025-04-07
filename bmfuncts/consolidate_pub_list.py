@@ -18,7 +18,6 @@ from datetime import datetime
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports

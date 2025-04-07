@@ -219,7 +219,7 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
         inst_df_title = pg.DF_TITLES_LIST[9]
         sheet_name = 'Norm Inst ' + year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_filename_alias,
-                                  norm_institutions_df, inst_df_title, sheet_name)        
+                                  norm_institutions_df, inst_df_title, sheet_name)
         inst_df_title = pg.DF_TITLES_LIST[16]
         sheet_name = 'Raw Inst ' + year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias,
@@ -306,7 +306,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         inter_progress_1 = 15
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
-        
+
     inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, bibliometer_path,
                                                          saved_results_path, year, verbose=False,
                                                          progress_param=progress_param)
@@ -322,7 +322,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
                                               final_pub_id_alias, paths_tup,
                                               progress_param=progress_param,
                                               verbose=verbose)
-    (countries_df, norm_institutions_df, 
+    (countries_df, norm_institutions_df,
      country_affil_file_path, wrong_affil_types_dict) = return_tup
     if not wrong_affil_types_dict:
         if verbose:

@@ -589,7 +589,14 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
 
 
 def _adapt_depth_search(empl_dict, corpus_year, search_depth):
-    """Sets the list of years for recursive search of author-employee match."""
+    """Sets the list of years for recursive search of author-employee match.
+
+    Args: 
+        empl_dict (dict): The employees database as a dict keyed by the years \
+        and valued by the employees data for each year.
+        corpus_year (str): Contains the corpus year defined by 4 digits.
+        search_depth (int): Depth for search in 'empl_dict'.
+    """
     eff_available_years = list(empl_dict.keys())
     corpus_year_status = corpus_year in eff_available_years
     year_start = int(corpus_year)

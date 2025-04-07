@@ -123,7 +123,7 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
         #            "et de chaque département a été mise à jour "
         #            "avec les résultats de cette analyse et se trouve dans le dossier :"
         #            f"\n\n'{results_folder_path}'.")
-    else:        
+    else:
         info_title = "- Attention -"
         info_text = ("L'analyse géographique et l'analyse des collaborations "
                      f"a été abandonnée pour l'année {year_select}."
@@ -132,7 +132,7 @@ def _launch_coupling_analysis(institute, org_tup, bibliometer_path, datatype,
                      f"\n\n1- Corriger dans ce fichier les types d'affiliation suivants:")
         for k,v in wrong_affil_types_dict.items():
             info_text += f"\n        {k}: {v}"
-        info_text +="\n\n2- Relancer l'analyse des collaborations" 
+        info_text +="\n\n2- Relancer l'analyse des collaborations"
     messagebox.showinfo(info_title, info_text)
 
 
