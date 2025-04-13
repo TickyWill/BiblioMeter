@@ -11,6 +11,7 @@ __all__ = ['ANALYSIS_IF',
            'ARCHI_ORPHAN',
            'ARCHI_RESULTS',
            'ARCHI_YEAR',
+           'AUTHORS_FULL_LIST_NAME_CORRECTION',
            'BDD_LIST',
            'BM_LOW_WORDS_LIST',
            'COL_HASH',
@@ -67,7 +68,8 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "IF_anal_df", "Distrib_inst_df",
                   "inst_country_pub_df", "doctype_stat_df",
                   "pub_country_inst_df", "country_inst_pub_df",
-                  "raw_institutions_df"]
+                  "raw_institutions_df", "invalids_df",
+                  "missing_if_issn_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
@@ -80,6 +82,8 @@ TSV_SAVE_EXTENT = "dat"
 XL_INDEX_BASE = 1
 
 LISTES_CONCAT = False
+
+AUTHORS_FULL_LIST_NAME_CORRECTION = False
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
 
@@ -244,8 +248,9 @@ SHEET_SAVE_OTP = {'hash_OTP': 'Hash_ID-OTP',
 
 
 COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
-                   'nom prénom liste' : "Liste ordonnée des auteurs ",
+                   'nom prénom liste' : "Liste ordonnée des auteurs de l'institut",
                    'liste biblio'     : "Référence bibliographique complète",
+                   'liste auteurs'    : "Liste ordonnée de tous les auteurs",
                    'author_type'      : "Type de l'auteur",
                    'homonym'          : "Homonymes",
                    'list OTP'         : "Choix de l'OTP",

@@ -25,11 +25,11 @@ import bmfuncts.institute_globals as ig
 import bmfuncts.pub_globals as pg
 from bmfuncts.add_ifs import add_if
 from bmfuncts.format_files import format_page
-from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.use_otps import save_otps
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import reorder_df
 
 
 def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year):
@@ -38,9 +38,7 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
 
     This is done for the 'corpus_year' corpus. 
     These dataframes are saved through the `format_page` function 
-    imported from `bmfuncts.format_files` module after setting 
-    the attrubutes keys list through the `set_base_keys_list` 
-    function imported from the same module.
+    imported from `bmfuncts.format_files` module.
 
     Args:
         institute (str): Institute name.
@@ -53,7 +51,6 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     """
     # Setting useful parameters for use of 'format_page' function
     common_df_title = pg.DF_TITLES_LIST[0]
-    format_cols_list = set_base_keys_list(institute, org_tup)
 
     # Setting useful aliases
     pub_list_path_alias = pg.ARCHI_YEAR["pub list folder"]
@@ -93,13 +90,13 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         key_dg_path = pub_list_path / Path(key_dg_file_alias)
 
         key_dg = key_dg.sort_values(by=[pub_id_col])
-        wb, _ = format_page(key_dg, common_df_title,
-                            attr_keys_list=format_cols_list)
+        wb, ws = format_page(key_dg, common_df_title)
+        ws.title = key + " " + corpus_year
         wb.save(key_dg_path)
 
     other_dg = other_dg.sort_values(by=[pub_id_col])
-    wb, _ = format_page(other_dg, common_df_title,
-                        attr_keys_list=format_cols_list)
+    wb, ws = format_page(other_dg, common_df_title)
+    ws.title = "Others " + corpus_year
     wb.save(other_dg_path)
 
     split_ratio = 100
@@ -126,9 +123,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     the 'invalids_df' dedicated dataframe.
     3. These two dataframes are then saved respectively as EXCEL file \
     and openpyxl file through the `format_page` function imported \
-    from `bmfuncts.format_files` module after setting the attrubutes \
-    keys list through the `set_base_keys_list` function imported \
-    from the same module.
+    from `bmfuncts.format_files` module.
     4. The file saved from the 'consolidate_pub_list_df' dataframe \
     is added with impact factors values through the `add_if` function \
     of the present module.
@@ -192,20 +187,20 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                                                          ==ig.INVALIDE].index
     consolidate_pub_list_df = consolidate_pub_list_df.drop(index=valids_idx_list)
 
-    # Resetting pub ID as a standard column
-    consolidate_pub_list_df = consolidate_pub_list_df.reset_index()
-    invalids_df = invalids_df.reset_index()
+    # Resetting pub ID as a standard column with position after Hash-ID
+    col_dict = {pub_id_col: 1}
+    consolidate_pub_list_df = reorder_df(consolidate_pub_list_df, col_dict)
+    invalids_df = reorder_df(invalids_df, col_dict)
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
 
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
-    invalids_df_title = pg.DF_TITLES_LIST[0]
-    format_cols_list = set_base_keys_list(institute, org_tup)
+    invalids_df_title = pg.DF_TITLES_LIST[17]
     invalids_df = invalids_df.rename(columns={otp_col: otp_col_new_alias})
-    wb, _ = format_page(invalids_df, invalids_df_title,
-                        attr_keys_list=format_cols_list)
+    wb, ws = format_page(invalids_df, invalids_df_title)
+    ws.title = "Invalides " +  corpus_year
     wb.save(invalids_file_path)
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
@@ -223,10 +218,9 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     # Saving pub list and hash-IDs as final results
     status_values = len(pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
-    results_to_save_dict["pub_lists"] = True
-    results_to_save_dict["hash_ids"] = True
-    results_to_save_dict["submit"] = True
-    results_to_save_dict["homonyms"] = True
+    keys_list = ["pub_lists", "hash_ids", "submit", "homonyms"]
+    for key in keys_list:
+        results_to_save_dict[key] = True
     if_analysis_name = None
     final_save_message = save_final_results(institute, org_tup, bibliometer_path,
                                             datatype, corpus_year, if_analysis_name,
@@ -242,7 +236,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     return end_message, pub_nb, split_ratio, if_database_complete
 
 
-def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
+def concatenate_pub_lists(bibliometer_path, years_list):
     """Builds the concatenated dataframe of the publications lists 
     of the corpuses listed in 'years_list'.
 
@@ -288,9 +282,8 @@ def concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list):
     out_path = bibliometer_path / Path(bdd_multi_annuelle_folder_alias)
     out_file_path = out_path / Path(out_file)
     concat_df_title = pg.DF_TITLES_LIST[0]
-    format_cols_list = set_base_keys_list(institute, org_tup)
-    wb, _ = format_page(concat_df, concat_df_title,
-                        attr_keys_list=format_cols_list)
+    wb, ws = format_page(concat_df, concat_df_title)
+    ws.title = "Publications de " + available_liste_conso
     wb.save(out_file_path)
 
     end_message  = f"Concatenation of consolidated pub lists saved in folder: \n  '{out_path}'"

@@ -17,6 +17,7 @@ import BiblioParsing as bp
 import bmfuncts.pub_globals as pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import reorder_df
 
 
 def _my_hash(text:str):
@@ -75,6 +76,22 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
                     new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop]
             add_hash_id_dg = hash_id_dg[hash_id_dg[pub_id_col]==pub_id_to_keep].copy()
         new_hash_id_df = concat_dfs([new_hash_id_df, add_hash_id_dg])
+
+    # Adding column of Hash-IDs and reordering columns in new_submit_df
+    new_submit_df = new_submit_df.merge(new_hash_id_df,
+                                        how="inner",
+                                        on=pub_id_col)
+    col_dict = {hash_id_col: 0}
+    new_submit_df = reorder_df(new_submit_df, col_dict)
+
+    # Adding column of Hash-IDs and reordering columns in new_orphan_df
+    new_orphan_df = new_orphan_df.merge(new_hash_id_df,
+                                        how="inner",
+                                        on=pub_id_col)
+    col_dict = {hash_id_col: 0,
+                pub_id_col : 1}
+    new_orphan_df = reorder_df(new_orphan_df, col_dict)
+
     return new_submit_df, new_orphan_df, new_hash_id_df
 
 

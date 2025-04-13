@@ -587,7 +587,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
             print(end_message)
             progress_callback(70)
             if pg.LISTES_CONCAT:
-                end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
+                end_message = concatenate_pub_lists(bibliometer_path, years_list)
                 print('\n',end_message)
             progress_callback(100)
             info_title = "- Information -"

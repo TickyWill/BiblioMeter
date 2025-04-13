@@ -338,7 +338,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
     auth_df_title = pg.DF_TITLES_LIST[4]
     wb, ws = format_page(author_employee_df, auth_df_title)
-    ws.title = 'Auteurs' + corpus_year
+    ws.title = 'Auteurs ' + corpus_year
     wb.save(author_employee_xlsx_file_path)
     if progress_callback:
         progress_callback(70)
@@ -347,7 +347,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
     author_stat_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_stat_file + ".xlsx")
     auth_stat_df_title = pg.DF_TITLES_LIST[5]
     wb, ws = format_page(pub_nb_per_author_df, auth_stat_df_title)
-    ws.title = 'Auteurs' + corpus_year
+    ws.title = 'Stat auteurs ' + corpus_year
     wb.save(author_stat_xlsx_file_path)
     if progress_callback:
         progress_callback(80)

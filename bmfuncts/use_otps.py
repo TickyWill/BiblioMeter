@@ -31,7 +31,6 @@ from bmfuncts.format_files import format_heading
 from bmfuncts.format_files import format_page
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.format_files import get_col_letter
-from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.format_files import set_df_attributes
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import build_col_conversion_dic
@@ -215,10 +214,9 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
             set_otps_df = set_otps_df.drop(idx)
 
     # Building hash_id and kept otp df
-    hash_otps_history_df = pd.merge(hash_id_df,
-                                    set_otps_df,
-                                    how='inner',
-                                    on=pub_id_col)
+    hash_otps_history_df = hash_id_df.merge(set_otps_df,
+                                            how='inner',
+                                            on=pub_id_col)
     hash_otps_history_df = hash_otps_history_df.drop(columns=[pub_id_col, author_col, doi_col])
     hash_otps_history_df = hash_otps_history_df.rename(columns={otp_col:otp_col_alias})
 
@@ -427,7 +425,7 @@ def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
     """
     # Setting parameters from args
     otp_set_lab_df, otp_to_set_lab_df = dfs_tup
-    (attr_keys_list, otp_list_col, cell_colors,
+    (otp_list_col, cell_colors,
      xl_idx_base, otp_col_letter) = common_args_tup
 
     # Initializing new_lab_df with the publications which otp is not yet set
@@ -443,8 +441,7 @@ def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
     sheet_name = lab
     new_lab_df_title = pg.DF_TITLES_LIST[2]
     wb = format_wb_sheet(sheet_name, new_lab_df,
-                         new_lab_df_title, wb, first,
-                         attr_keys_list=attr_keys_list)
+                         new_lab_df_title, wb, first)
     ws = wb.active
 
     # Activating the validation data list in the OTPs column of new_lab_df
@@ -460,32 +457,28 @@ def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
 
     # Re-shaping the alignment and the border of the columns
     df_cols_list = new_lab_df.columns
-    col_attr_dict, _, _ = set_df_attributes(new_lab_df_title, df_cols_list,
-                                            attr_keys_list)
+    col_attr_dict, _, _ = set_df_attributes(new_lab_df_title, df_cols_list)
     ws = align_cell(ws, df_cols_list, col_attr_dict, xl_idx_base)
 
     # Re-shaping header
     ws = format_heading(ws, new_lab_df_title)
-
     return wb, ws
 
-def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
+
+def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
                            dpt_otp_file_name_path, otps_history_tup):
-    """Rebuilds and saves the openpyxl workbook for the department labelled 'dpt'.
+    """Rebuilds and saves the OTPs data for a department as a multisheet 
+    Openpyxl workbook with one sheet per lab.
 
     A data validation list is added to the cells 'otp_cell_alias' only when 
-    the OTP in not already attributed.
-
-    The openpyxl workbook is created through the `format_page` function imported from 
-    the `bmfuncts.format_files` module and is re-configured in the same way as in this 
-    function after being modified and before being saved.
-
-    The columns attributes for formatting the workbook are defined through the `set_col_attr` 
-    function imported from `bmfuncts.rename_cols` module.
+    the OTP in not already attributed. 
+    It loops on lab of the department to:
+    - To use the set OTPs by Hash-ID through the `_use_hash_id_set_otps` internal function.
+    - To use the set OTPs by DOI through the `_use_doi_set_otps` internal function.
+    - To create and configure a sheet in the workbook with the OTPs data for the lab _
+    through the `_set_lab_otp_ws` internal function.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         dpt_pub_dict (dict): The data of the department keyed by laboratory \
         names (str) and valued by publications data (dataframe).
         dpt_lab_otps_dict (dict): The data of the department keyed \
@@ -503,9 +496,6 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
     # Setting parameters from args
     cols_tup = otps_history_tup[1]
 
-    # Setting col attributes keys
-    attr_keys_list = set_base_keys_list(institute, org_tup)
-
     # Setting parameters from args
     otp_list_col = cols_tup[4]
     otp_col_letter = " "
@@ -520,7 +510,7 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
             otp_col_letter = get_col_letter(lab_df, otp_list_col, xl_idx_base)
 
         # Setting common args
-        common_args_tup = (attr_keys_list, otp_list_col, cell_colors,
+        common_args_tup = (otp_list_col, cell_colors,
                            xl_idx_base, otp_col_letter)
 
         # Using set OTPs by Hash-ID
@@ -543,7 +533,7 @@ def _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
     wb.save(dpt_otp_file_name_path)
 
 
-def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
+def _set_saved_lab_otps(org_tup, otps_history_tup,
                         otp_folder_path, otp_file_base,
                         lab_otps_dict):
     """Attributes the OTPs from the history of the attributed OTPs 
@@ -558,7 +548,6 @@ def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
     `_re_save_dpt_otp_file` internal function.
 
     Args:
-        institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
         data of OTPs set by DOI (dataframe).
@@ -587,11 +576,11 @@ def _set_saved_lab_otps(institute, org_tup, otps_history_tup,
         dpt_pub_dict = pd.read_excel(dpt_otp_file_name_path, sheet_name=None)
 
         # Resetting validation list for OTPs when not already set and saving the file
-        _re_save_labs_otp_file(institute, org_tup, dpt_pub_dict, dpt_lab_otps_dict,
+        _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
                                dpt_otp_file_name_path, otps_history_tup)
 
 
-def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
+def _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
                           dpt_otp_file_name_path, dpt_otp_sheet_name):
     """Rebuilds and saves the openpyxl workbook of the publications list with set OTPs 
     and list-data-validation rules for not yet set OTPs for a department.
@@ -607,8 +596,6 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
     function imported from `bmfuncts.rename_cols` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         dfs_tup (tup): (Data of the already attributed OTPs for the department (dataframe), \
         Data of the OTPs still to be attributed for the department (dataframe)).
         cols_tup (tup): Useful column names (str).
@@ -627,7 +614,6 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
     otp_list_col = cols_tup[4]
 
     # Setting formatting attributes
-    attr_keys_list = set_base_keys_list(institute, org_tup)
     dpt_df_title = pg.DF_TITLES_LIST[2]
 
     # Building validation list of OTP for the department
@@ -640,7 +626,7 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
     new_dpt_df[otp_list_col] = validation_list
 
     # Creating and formatting the openpyxl workbook
-    wb, ws = format_page(new_dpt_df, dpt_df_title, attr_keys_list=attr_keys_list)
+    wb, ws = format_page(new_dpt_df, dpt_df_title)
 
     # Getting the column letter for the OTPs column
     otp_col_letter = get_col_letter(new_dpt_df, otp_list_col, xl_idx_base)
@@ -658,7 +644,7 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
 
     # Re-shaping the alignment and the border of the columns
     df_cols_list = new_dpt_df.columns
-    col_attr_dict, _, _ = set_df_attributes(dpt_df_title, df_cols_list, attr_keys_list)
+    col_attr_dict, _, _ = set_df_attributes(dpt_df_title, df_cols_list)
     ws = align_cell(ws, df_cols_list, col_attr_dict, xl_idx_base)
 
     # Re-shaping header
@@ -671,7 +657,7 @@ def _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
     wb.save(dpt_otp_file_name_path)
 
 
-def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
+def _set_saved_dept_otps(org_tup, otps_history_tup,
                          otp_folder_path, otp_file_base):
     """Attributes the OTPs from the history of the attributed OTPs 
     at department level before submiting to the user the file 
@@ -685,7 +671,6 @@ def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
     `_re_save_dpt_otp_file` internal function.
 
     Args:
-        institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
         data of OTPs set by DOI (dataframe).
@@ -726,7 +711,7 @@ def _set_saved_dept_otps(institute, org_tup, otps_history_tup,
         dpt_otp_list = dpt_attributs_dict[dpt][ig.DPT_OTP_KEY]
 
         # Resetting validation list for OTPs when not already set and saving the file
-        _re_save_dpt_otp_file(institute, org_tup, dfs_tup, cols_tup, dpt_otp_list,
+        _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
                               dpt_otp_file_name_path, dpt_otp_sheet_name)
 
 
@@ -848,11 +833,11 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
                                              kept_otps_file_path)
         if otp_level=="LAB":
             lab_otps_dict = set_lab_otps(institute, org_tup, bibliometer_path)
-            _set_saved_lab_otps(institute, org_tup, otps_history_tup,
+            _set_saved_lab_otps(org_tup, otps_history_tup,
                                 otp_folder_path, otp_file_base_alias,
                                 lab_otps_dict)
         else:
-            _set_saved_dept_otps(institute, org_tup, otps_history_tup,
+            _set_saved_dept_otps(org_tup, otps_history_tup,
                                  otp_folder_path, otp_file_base_alias)
 
         message = "Already set OTPS used"

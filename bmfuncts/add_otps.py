@@ -25,7 +25,6 @@ from bmfuncts.format_files import build_data_val
 from bmfuncts.format_files import format_page
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.format_files import get_col_letter
-from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.rename_cols import set_otp_col_names
 from bmfuncts.useful_functs import concat_dfs
@@ -166,7 +165,7 @@ def _add_authors_name_list(institute, org_tup, in_df):
     matricule_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
     full_name_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
     author_type_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
-    full_name_list_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste'] + institute]
+    full_name_list_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste']]
     dept_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
     serv_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['serv']]
     lab_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['lab']]
@@ -242,7 +241,7 @@ def _enhance_homonyms_file(institute, org_tup, in_path):
     return final_solved_homonymies_df
 
 
-def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
+def _save_dpt_otp_file(dpt, dpt_df, dpt_otp_list,
                        otp_alias, xl_dpt_path, otp_col_list):
     """Creates an openpyxl file to allow the user to set the OTP attribute   
     of the publications for the Institute department labelled 'dpt'.
@@ -266,8 +265,6 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
     'xl_dpt_path'.
 
     Arg:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         dpt (str): Institute department.
         dpt_df (dataframe): The publications-list dataframe of the 'dpt' department.
         dpt_otp_list (list): List of Institute departments (str).
@@ -289,9 +286,8 @@ def _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
     dpt_df = dpt_df.reindex(columns=otp_col_list)
 
     # Formatting 'dpt_df' as openpyxl workbook
-    attr_keys_list = set_base_keys_list(institute, org_tup)
     dpt_df_title = pg.DF_TITLES_LIST[2]
-    wb, ws = format_page(dpt_df, dpt_df_title, attr_keys_list=attr_keys_list)
+    wb, ws = format_page(dpt_df, dpt_df_title)
     ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
     # Activating the validation data list in all cells of the OTPs column
@@ -376,12 +372,12 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
         xl_dpt_path = out_path / Path(otp_file_name_dpt)
 
         # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_otp_file(institute, org_tup, dpt, dpt_df, dpt_otp_list,
+        _save_dpt_otp_file(dpt, dpt_df, dpt_otp_list,
                            otp_alias, xl_dpt_path, otp_col_list)
 
 
-def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
-                           xl_dpt_path, otp_col_dic, otp_lab_name_col, dpt):
+def _save_dpt_lab_otp_file(institute, dpt_df, dpt_otp_dict, xl_dpt_path,
+                           otp_col_dic, otp_lab_name_col, dpt):
     """Creates an openpyxl file to allow the user to set the OTP attribute   
     of the publications for each laboratory of a department of the Institute. 
 
@@ -405,7 +401,6 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
 
     Arg:
         institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         dpt_df (dataframe): The publications-list dataframe of a department of \
         the Institute.
         dpt_otp_dict (dict): Dict keyed by lab-names and valued by lab-OTPs lists.
@@ -421,9 +416,6 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
 
     # Setting useful aliases
     otp_alias = otp_col_dic['otp_list']
-
-    # Setting col attributes keys
-    attr_keys_list = set_base_keys_list(institute, org_tup)
 
     # Setting useful-columns list of OTP df
     otp_col_list = list(otp_col_dic.values())
@@ -450,8 +442,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
             sheet_name = otp_lab
             otp_lab_df_title = pg.DF_TITLES_LIST[2]
             wb = format_wb_sheet(sheet_name, otp_lab_df,
-                                 otp_lab_df_title, wb, first,
-                                 attr_keys_list=attr_keys_list)
+                                 otp_lab_df_title, wb, first)
             ws = wb.active
 
             # Getting the column letter for the OTPs column
@@ -468,7 +459,7 @@ def _save_dpt_lab_otp_file(institute, org_tup, dpt_df, dpt_otp_dict,
 
         # Formatting 'dpt_df' as openpyxl workbook
         dpt_df_title = pg.DF_TITLES_LIST[2]
-        wb, ws = format_page(dpt_df, dpt_df_title, attr_keys_list=attr_keys_list)
+        wb, ws = format_page(dpt_df, dpt_df_title)
         dpt_label = dpt
         if dpt=="DIR":
             dpt_label = "(" + institute.upper() + ")"
@@ -584,6 +575,7 @@ def _build_otp_dept_df(institute, org_tup, otp_col_dic,
             otp_dpt_df = concat_dfs([otp_dpt_df, lab_df])
     return otp_dpt_df
 
+
 def _set_full_pub_df(init_pub_df, cols_list, dpt_list):
     """Adds the publications data of one row per publication ID 
     with 1 or 0 assigned to each department column depending
@@ -680,8 +672,8 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
         xl_dpt_path = out_path / Path(otp_file_name_dpt)
 
        # Adding a column with validation list for OTPs and saving the file
-        _save_dpt_lab_otp_file(institute, org_tup, otp_dpt_df, dpt_otp_dict,
-                               xl_dpt_path, otp_col_dic, otp_lab_name_col, dpt)
+        _save_dpt_lab_otp_file(institute, otp_dpt_df, dpt_otp_dict, xl_dpt_path,
+                               otp_col_dic, otp_lab_name_col, dpt)
 
 
 def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_base):

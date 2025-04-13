@@ -15,6 +15,7 @@ __all__ = ['check_dedup_parsing_available',
            'read_final_pub_list_data',
            'read_final_set_homonyms_data',
            'read_parsing_dict',
+           'reorder_df',
            'save_fails_dict',
            'save_final_dedup',
            'save_parsing_dict',
@@ -25,6 +26,7 @@ __all__ = ['check_dedup_parsing_available',
            'set_year_pub_id',
            'standardize_address',
            'standardize_firstname_initials',
+           'standardize_full_name_order',
            'standardize_txt',
           ]
 
@@ -43,6 +45,49 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
+
+
+def reorder_df(df, col_dict):
+    """Reorders data by modifying the order of the columns using 
+    the given index for each column to be moved.
+    
+    A positive index gives the effective position of the column in 
+    the reordered list of the columns. 
+    A negative index means that the column sis to be added at the end 
+    of the reordered list of the columns. The lowest negative index 
+    corresponds to the first added column among the columns to be added 
+    at the end.
+
+    Args:
+        df (dataframe): The data to be reordered.
+        col_dict (dict); Dict keyed by the names (str) of the column \
+        to be moved and valued by the indices (int) of the columns \
+        in the reordered list of columns.
+    Returns:
+        (dataframe): The reordered data.
+    """
+    df = df.reset_index()
+    if "index" in df.columns:
+        df = df.drop(columns="index")
+    init_cols = list(df.columns)
+    new_cols = init_cols.copy()
+    append_cols_dict = {}
+    for col, col_idx in col_dict.items():
+        if col_idx>=0:
+            init_col_idx = init_cols.index(col)
+            new_cols.remove(col)
+            new_cols.insert(col_idx, init_cols[init_col_idx])
+        if col_idx<0:
+            append_cols_dict[col] = col_idx
+    while append_cols_dict:
+        col_idx_min = min(append_cols_dict.values())
+        reverse_cols_dict = dict(map(reversed, append_cols_dict.items()))
+        col_min = reverse_cols_dict[col_idx_min]
+        new_cols.remove(col_min)
+        new_cols.append(col_min)
+        del append_cols_dict[col_min]
+    df = df[new_cols]
+    return df
 
 
 def name_capwords(text):
@@ -68,6 +113,36 @@ def name_capwords(text):
     text_split_list.append(text.split()[-1])
     text = " ".join(text_split_list)
     return text
+
+
+def standardize_full_name_order(author):
+    """Sets the first-name initials before the last name in a full name.
+
+    It append "." after each initial and takes care of keeping '-'
+    between the parts of composed first names.
+
+    Args:
+        author (str): Full name to transform (expected shape 'NAME IJ', \
+        where 'NAME' is the last name and 'IJ' the first name initials).
+    Returns:
+        (str): The transformed full name (ex: I. J. Name).
+        """
+    author_parts_list = author.split(" ")
+    author_initials = author_parts_list[-1]
+    if "-" in author_initials:
+        author_initials_list = author_initials.split("-")
+        new_author_initial_list = []
+        for author_initial in author_initials_list:
+            new_author_initial = author_initial + "."
+            new_author_initial_list.append(new_author_initial)
+        new_author_initials = "-".join(new_author_initial_list) + " "
+    else:
+        new_author_initial_list = [x + ". " for x in author_initials]
+        new_author_initials = "".join(new_author_initial_list)
+    last_name_parts_list = [x.capitalize() for x in author_parts_list[:-1]]
+    last_name = " ".join(last_name_parts_list)
+    new_author = "".join([new_author_initials] + [last_name])
+    return new_author
 
 
 def set_saved_results_path(bibliometer_path, datatype):

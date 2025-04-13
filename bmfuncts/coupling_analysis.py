@@ -351,9 +351,9 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         # Saving coupling analysis as final result
         status_values = len(pg.RESULTS_TO_SAVE) * [False]
         results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
-        results_to_save_dict["countries"] = True
-        results_to_save_dict["continents"] = True
-        results_to_save_dict["institutions"] = True
+        save_keys_list = ["countries", "continents", "institutions"]
+        for key in save_keys_list:
+            results_to_save_dict[key] = True
         if_analysis_name = None
         _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year,
                                if_analysis_name, results_to_save_dict, verbose=False)

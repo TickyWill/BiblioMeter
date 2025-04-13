@@ -22,10 +22,12 @@ import BiblioParsing as bp
 import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import reorder_df
 from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import save_final_dedup
 from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import standardize_firstname_initials
+from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
 
 
@@ -548,14 +550,14 @@ def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year)
     return articles_df, authors_df, authorsinst_df
 
 
-def _recasting_inst_merged_df(inst_merged_df, bm_cols_list):
+def _recasting_authors_df(authors_df, bm_cols_list):
     """Recasts the data with with one row per Institute author 
     for each publication by format of authors full names and their 
     redistribution into last names and firsname initials.
 
     Args:
-        inst_merged_df (dataframe): Data of publications list \
-        with one row per author. 
+        authors_df (dataframe): Data of publication IDs list \
+        with one row per author resulting from parsing step. 
         bm_cols_list (list): Useful column names specific to 'BiblioMeter'.
     Returns:
         (dataframe): The recasted data.
@@ -567,47 +569,113 @@ def _recasting_inst_merged_df(inst_merged_df, bm_cols_list):
     # Transforming to uppercase the Institute author name
     # which is in column COL_NAMES['co_author']
     col = bp_co_auth_alias
-    inst_merged_df[col] = inst_merged_df[col].str.upper()
+    authors_df[col] = authors_df[col].str.upper()
 
     # Splitting the Institute author name to firstname initials and lastname
     # and putting them as a tuple in column COL_NAMES_BM['Full_name']
     col_in, col_out = bp_co_auth_alias, bm_fullname_alias
-    inst_merged_df[col_out] = inst_merged_df.apply(lambda row:
-                                                   _split_lastname_firstname(row[col_in]),
-                                                   axis=1)
+    authors_df[col_out] = authors_df.apply(lambda row:
+                                           _split_lastname_firstname(row[col_in]),
+                                           axis=1)
 
     # Splitting tuples of column COL_NAMES_BM['Full_name']
     # into the two columns COL_NAMES_BM['Last_name'] and COL_NAMES_BM['First_name']
     col_in = bm_fullname_alias # Last_name + firstname initials
     col1_out, col2_out = bm_lastname_alias, bm_firstname_alias
-    inst_merged_df[[col1_out, col2_out]] = pd.DataFrame(inst_merged_df[col_in].tolist())
+    authors_df[[col1_out, col2_out]] = pd.DataFrame(authors_df[col_in].tolist())
 
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = bm_fullname_alias # Last_name + firstname initials
-    inst_merged_df[col_in] = inst_merged_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
+    authors_df[col_in] = authors_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
+    print("    Author name recasted to last name and first-name initials")
+    return authors_df
 
-    return inst_merged_df
+
+def _build_authors_full_list(authors_df, cols_list):
+    """Builds the data of authors full-list per publications.
+
+    Args:
+        inst_merged_df (dataframe): Data of publications list \
+        with one row per author.  
+        cols_list (list): Useful column names.
+    Returns:
+        (dataframe): The built data.
+    """
+    bp_pub_id_col, bp_authors_col, fullname_col, authors_list_col = cols_list
+    authors_col = bp_authors_col
+    if pg.AUTHORS_FULL_LIST_NAME_CORRECTION:
+        authors_col = fullname_col
+    data = []
+    for pub_id, pub_id_authors_df in authors_df.groupby(bp_pub_id_col):
+        init_authors_list = pub_id_authors_df[authors_col].to_list()
+        authors_list = []
+        for author in init_authors_list:
+            new_author = standardize_full_name_order(author)
+            authors_list.append(new_author)
+        authors_str = ", ".join(authors_list)
+        data.append([pub_id, authors_str])
+    pub_authors_df = pd.DataFrame(data, columns=[bp_pub_id_col, authors_list_col])
+    print("    Full list of authors per publication built")
+    return pub_authors_df
+
+
+def _reorder_cols(inst_merged_df, reorder_cols_list):
+    """Reorders the columns the data with one row per Institute's author 
+    for each publication.
+
+    The columns of full name, last name and first-name initials are set 
+    at the end of the data. The column of full-authors list is set just 
+    before the first author of the publication in place of the initial 
+    position of the full-name column. It uses the `reorder_df` function 
+    imported from `bmfuncts.useful_functs` module.
+
+    Args:
+        authors_df (dataframe): Data of publication IDs list \
+        with one row per author where authors full name has been \
+        formatted and split into last name and first name initials \
+        and the misspelled names have been corrected. 
+        cols_list (list): The names of the columns to be reordered.
+    Returns:
+        (dataframe): The data with reordered columns.
+    """
+    fullname_col, lastname_col, firstname_col, authors_list_col = reorder_cols_list
+    init_cols_list = list(inst_merged_df.columns)
+    fullname_init_idx = init_cols_list.index(fullname_col)
+
+    col_dict = {authors_list_col : fullname_init_idx,
+                fullname_col     : -3,
+                lastname_col     : -2,
+                firstname_col    : -1,
+               }
+    new_inst_merged_df = reorder_df(inst_merged_df, col_dict)
+    return new_inst_merged_df
 
 
 def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype, year):
     """Builds the publications list dataframe with one row per Institute author 
     for each publication from the results of the corpus parsing.
 
-    First, the parsing results are got through the `_get_input_data` internal 
-    function. 
-    After that, a publications list dataframe with one row per author affiliated 
-    to the Institute is built using the 'filt_authors_inst' filter got through 
-    the `_build_filt_authors_inst` internal function. 
-    Then, the dataframe is recasted through the `_recasting_inst_merged_df` 
-    internal function. 
-    Finally, the dataframe is cleaned as follows:
-
-    - Author-name spelling is corrected through the `_check_names_spelling` \
-    internal function;
+    This done truoght the following steps:
+    
+    1. The parsing results are got through the `_get_input_data` internal function.
+    2. The authors data resulting from the parsing step are recasted to split \
+    authors full name into last name and first name initials through \
+    the `_recasting_inst_merged_df` internal function.
+    3. The misspelling of authors name in the recasted authors data are corrrected \
+    through the `_check_names_spelling` internal function. 
+    4. The data of full list of authors per publications are built through the \
+    `_build_authors_full_list` internal function.
+    5. The data of full list of authors per publications are merged to the data \
+    of the list of publications resulting from the parsing step.
+    6. A publications list data with one row per author affiliated to the Institute \
+    is built using the 'filt_authors_inst' filter got through \
+    the `_build_filt_authors_inst` internal function.
+    7. Finally, the publications list data are cleaned as follows:
     - Errors on author names resulting from publication metadata errors \
     are corrected through the `_check_names_to_replace` internal function.
     - The row of authors mistakenly affiliated to the Institute are dropped \
     through the `_check_authors_to_remove` internal function.
+    - The columns are reordered through the `_reorder_cols` internal function.
 
     Args:
         institute (str): The institute name.
@@ -623,13 +691,17 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     # Setting useful col aliases
     bp_pub_id_alias = bp.COL_NAMES['authors'][0]
     bp_auth_idx_alias = bp.COL_NAMES['authors'][1]
-    bm_fullname_alias = pg.COL_NAMES_BM['Full_name']
-    bm_lastname_alias = pg.COL_NAMES_BM['Last_name']
-    bm_firstname_alias = pg.COL_NAMES_BM['First_name']
+    bp_authors_alias = bp.COL_NAMES['authors'][2]
+    fullname_alias = pg.COL_NAMES_BM['Full_name']
+    lastname_alias = pg.COL_NAMES_BM['Last_name']
+    firstname_alias = pg.COL_NAMES_BM['First_name']
     corpus_year_col_alias = pg.COL_NAMES_BONUS['corpus_year']
+    authors_list_alias = pg.COL_NAMES_BONUS['liste auteurs']
 
-    # Setting useful cols tup
-    bm_cols_list = [bm_fullname_alias, bm_lastname_alias, bm_firstname_alias]
+    # Setting useful cols list
+    names_cols_list = [fullname_alias, lastname_alias, firstname_alias]
+    full_authors_cols_list = [bp_pub_id_alias, bp_authors_alias, fullname_alias, authors_list_alias]
+    reorder_cols_list = names_cols_list + [authors_list_alias]
 
     # Getting input-data from parsing ones
     return_tup = _get_input_data(institute, org_tup, bibliometer_path,
@@ -639,12 +711,23 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     # Adding new column with year of initial publication which is the corpus year
     articles_df[corpus_year_col_alias] = year
 
+    # Recasting the authors data
+    authors_df = _recasting_authors_df(authors_df, names_cols_list)
+
+    # Checking authors name spelling and correct them
+    authors_df = _check_names_spelling(bibliometer_path, authors_df, names_cols_list)
+
+    # Adding column of full authors list
+    pub_authors_df = _build_authors_full_list(authors_df, full_authors_cols_list)
+    new_articles_df =  articles_df.merge(pub_authors_df,
+                                         how='right',
+                                         on=bp_pub_id_alias)
+
     # Combining name of author to author ID with affiliation by publication ID
-    authorsinst_authors_df = pd.merge(authorsinst_df,
-                                      authors_df,
-                                      how='inner',
-                                      left_on=[bp_pub_id_alias, bp_auth_idx_alias],
-                                      right_on=[bp_pub_id_alias, bp_auth_idx_alias])
+    authorsinst_authors_df = authorsinst_df.merge(authors_df,
+                                                  how='inner',
+                                                  left_on=[bp_pub_id_alias, bp_auth_idx_alias],
+                                                  right_on=[bp_pub_id_alias, bp_auth_idx_alias])
 
     # Building the authors filter of the institution INSTITUTE
     inst_col_list = org_tup[4]
@@ -658,23 +741,19 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     # with each of its INSTITUTE authors
     # The resulting dataframe contains a row for each INSTITUTE author
     # with the corresponding publication info
-    inst_merged_df = pd.merge(authorsinst_authors_df[filt_authors_inst],
-                              articles_df,
-                              how='left',
-                              left_on=[bp_pub_id_alias],
-                              right_on=[bp_pub_id_alias])
+    inst_merged_df = authorsinst_authors_df[filt_authors_inst].merge(new_articles_df,
+                                                                     how='left',
+                                                                     left_on=[bp_pub_id_alias],
+                                                                     right_on=[bp_pub_id_alias])
 
-    # Recasting the built dataframe
-    inst_merged_df = _recasting_inst_merged_df(inst_merged_df, bm_cols_list)
-
-    # Checking author name spelling and correct it then replacing author names
-    # resulting from publication metadata errors
-    # finally Searching for authors external to Institute but tagged as affiliated to it
+    # Replacing author names resulting from publication metadata errors
+    # Then searching for authors external to Institute but tagged as affiliated to it
     # and dropping their row in the returned dataframe
-    inst_merged_df = _check_names_spelling(bibliometer_path, inst_merged_df,
-                                           bm_cols_list)
     inst_merged_df = _check_names_to_replace(bibliometer_path, year,
-                                             inst_merged_df, bm_cols_list)
+                                             inst_merged_df, names_cols_list)
     inst_merged_df = _check_authors_to_remove(institute, bibliometer_path,
-                                              inst_merged_df, bm_cols_list[1:])
+                                              inst_merged_df, names_cols_list[1:])
+
+    # Setting columns order
+    inst_merged_df = _reorder_cols(inst_merged_df, reorder_cols_list)
     return inst_merged_df

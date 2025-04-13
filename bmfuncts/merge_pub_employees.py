@@ -28,6 +28,7 @@ from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import set_year_pub_id
+from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
 
 
@@ -122,7 +123,7 @@ def _set_full_ref(title, first_author, journal_name, pub_year, doi):
         (str): Full reference of the publication.
     """
     full_ref  = f'{title}, '                     # add the reference's title
-    full_ref += f'{first_author}. et al., '      # add the reference's first author
+    full_ref += f'{first_author} et al., '      # add the reference's first author
     full_ref += f'{journal_name.capitalize()}, ' # add the reference's journal name
     full_ref += f'{pub_year}, '                  # add the reference's publication year
     full_ref += f'{doi}'                         # add the reference's DOI
@@ -168,6 +169,7 @@ def _add_biblio_list(in_path, out_path):
         pub_id_first_row = pub_id_df.iloc[0]
         title = str(pub_id_first_row[pub_title_alias])
         first_author = str(pub_id_first_row[pub_first_author_alias])
+        first_author = standardize_full_name_order(first_author)
         journal_name = str(pub_id_first_row[pub_journal_alias])
         pub_year = str(pub_id_first_row[pub_year_alias])
         doi = str(pub_id_first_row[pub_doi_alias])
