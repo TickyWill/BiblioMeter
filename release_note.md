@@ -19,6 +19,7 @@
   - Improvement 10: Addition of "doctypes_analysis" module to provide statistics of publications by journals, conference proceedings or books.
   - Improvement 11: Substitution of "impact_factors_analysis" module by "build_kpi" one for the sake of clarity.
   - Improvement 12: Addition of author job type and matriculate to the results provided by "author_analysis" module through the use of publications list with one row per author after solving homonymies.
+  - Improvement 13: Integration to the saved results the Hash-ID and the full list of authors for each publication.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:
