@@ -467,7 +467,7 @@ def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
 
 def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
                            dpt_otp_file_name_path, otps_history_tup):
-    """Rebuilds and saves the OTPs data for a department as a multisheet 
+    """Rebuilds and saves the OTPs data for a department as a multi-sheet 
     Openpyxl workbook with one sheet per lab.
 
     A data validation list is added to the cells 'otp_cell_alias' only when 

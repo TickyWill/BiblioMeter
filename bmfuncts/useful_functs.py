@@ -53,7 +53,7 @@ def reorder_df(df, col_dict):
     
     A positive index gives the effective position of the column in 
     the reordered list of the columns. 
-    A negative index means that the column sis to be added at the end 
+    A negative index means that the column is to be added at the end 
     of the reordered list of the columns. The lowest negative index 
     corresponds to the first added column among the columns to be added 
     at the end.
@@ -118,7 +118,7 @@ def name_capwords(text):
 def standardize_full_name_order(author):
     """Sets the first-name initials before the last name in a full name.
 
-    It append "." after each initial and takes care of keeping '-'
+    It appends "." after each initial and takes care of keeping '-'
     between the parts of composed first names.
 
     Args:

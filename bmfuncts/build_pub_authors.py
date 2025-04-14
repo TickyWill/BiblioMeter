@@ -551,16 +551,16 @@ def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year)
 
 
 def _recasting_authors_df(authors_df, bm_cols_list):
-    """Recasts the data with with one row per Institute author 
-    for each publication by format of authors full names and their 
-    redistribution into last names and firsname initials.
+    """Recasts the data with one row per Institute author 
+    for each publication by formatting the authors full names and their 
+    redistribution into last names and firsnames initials.
 
     Args:
         authors_df (dataframe): Data of publication IDs list \
-        with one row per author resulting from parsing step. 
-        bm_cols_list (list): Useful column names specific to 'BiblioMeter'.
+        with one row per author resulting from the parsing step. 
+        bm_cols_list (list): Useful column names.
     Returns:
-        (dataframe): The recasted data.
+        (dataframe): The recast data.
     """
     # Setting useful alias
     bp_co_auth_alias = bp.COL_NAMES['authors'][2]
@@ -587,7 +587,7 @@ def _recasting_authors_df(authors_df, bm_cols_list):
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = bm_fullname_alias # Last_name + firstname initials
     authors_df[col_in] = authors_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
-    print("    Author name recasted to last name and first-name initials")
+    print("    Author name recast to last name and first-name initials")
     return authors_df
 
 
@@ -595,8 +595,8 @@ def _build_authors_full_list(authors_df, cols_list):
     """Builds the data of authors full-list per publications.
 
     Args:
-        inst_merged_df (dataframe): Data of publications list \
-        with one row per author.  
+        authors_df (dataframe): Data of publication IDs list \
+        with one row per author resulting from the parsing step. 
         cols_list (list): Useful column names.
     Returns:
         (dataframe): The built data.
@@ -620,7 +620,7 @@ def _build_authors_full_list(authors_df, cols_list):
 
 
 def _reorder_cols(inst_merged_df, reorder_cols_list):
-    """Reorders the columns the data with one row per Institute's author 
+    """Reorders the columns of the data with one row per Institute's author 
     for each publication.
 
     The columns of full name, last name and first-name initials are set 
@@ -630,11 +630,11 @@ def _reorder_cols(inst_merged_df, reorder_cols_list):
     imported from `bmfuncts.useful_functs` module.
 
     Args:
-        authors_df (dataframe): Data of publication IDs list \
+        inst_merged_df (dataframe): Data of publication IDs list \
         with one row per author where authors full name has been \
-        formatted and split into last name and first name initials \
+        formatted and split into last name and firstname initials \
         and the misspelled names have been corrected. 
-        cols_list (list): The names of the columns to be reordered.
+        reorder_cols_list (list): The names of the columns to be reordered.
     Returns:
         (dataframe): The data with reordered columns.
     """
@@ -655,13 +655,13 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     """Builds the publications list dataframe with one row per Institute author 
     for each publication from the results of the corpus parsing.
 
-    This done truoght the following steps:
+    This is done through the following steps:
     
     1. The parsing results are got through the `_get_input_data` internal function.
-    2. The authors data resulting from the parsing step are recasted to split \
-    authors full name into last name and first name initials through \
+    2. The authors data resulting from the parsing step are recast to split \
+    authors full name into last name and firstname initials through \
     the `_recasting_inst_merged_df` internal function.
-    3. The misspelling of authors name in the recasted authors data are corrrected \
+    3. The misspelling of authors name in the recast authors data are corrrected \
     through the `_check_names_spelling` internal function. 
     4. The data of full list of authors per publications are built through the \
     `_build_authors_full_list` internal function.

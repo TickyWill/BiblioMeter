@@ -244,8 +244,6 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     imported from `bmfuncts.format_files` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
         years_list (list): List of 4 digits years of the available \
         publications lists.

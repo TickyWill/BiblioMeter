@@ -211,7 +211,7 @@ def _set_base_attributes(cols_list):
 
 
 def _set_if_issn_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the missing IFs or ISSNs data to be saved.
 
@@ -241,7 +241,7 @@ def _set_if_issn_attributes(cols_list):
 
 
 def _set_invalid_list_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the invalid publications list data to be saved.
 
@@ -277,7 +277,7 @@ def _set_invalid_list_attributes(cols_list):
 
 
 def _set_pub_list_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the publications list data to be saved.
 
@@ -313,7 +313,7 @@ def _set_pub_list_attributes(cols_list):
 
 
 def _set_def_otp_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the data to be saved for setting OTP per 
     publication by the user.
@@ -352,7 +352,7 @@ def _set_def_otp_attributes(cols_list):
 
 
 def _set_auth_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the authors data to be saved.
 
@@ -380,7 +380,7 @@ def _set_auth_attributes(cols_list):
 
 
 def _set_auth_stat_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the statistics data to be saved for authors 
     scientific production.
@@ -408,7 +408,7 @@ def _set_auth_stat_attributes(cols_list):
 
 
 def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
-    """ Sets the width and horizontal alignement of each columns 
+    """ Sets the width and horizontal alignement of each column 
     to be used for formatting the data to be saved.
 
     The specified widths are at least the following:
@@ -448,7 +448,7 @@ def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
     if spec_widths_nb==2:
         last_col_align = "center"
 
-    # Setting width and alignement of each columns as dict
+    # Setting width and alignement of each column as dict
     other_cols_width = widths_list[1]
     last_cols_width = widths_list[-1]
     attr_list = [[first_col_width, first_col_align]] \
@@ -459,12 +459,12 @@ def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
 
 
 def _set_if_db_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the impact-factors (IFs) data to be saved 
     for the update of the IFs database.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -490,12 +490,12 @@ def _set_if_db_attributes(cols_list):
 
 
 def _set_kpi_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the key performance indicators (KPIs) data to be saved 
     for the update of the KPIs database.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -521,12 +521,12 @@ def _set_kpi_attributes(cols_list):
 
 
 def _set_if_ana_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the analysis results to be saved for the 
     impact-factors data.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -552,12 +552,12 @@ def _set_if_ana_attributes(cols_list):
 
 
 def _set_kw_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the analysis results to be saved for the 
     keywords data.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -583,12 +583,12 @@ def _set_kw_attributes(cols_list):
 
 
 def _set_geo_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the analysis results to be saved for the 
     geographical data.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -614,11 +614,11 @@ def _set_geo_attributes(cols_list):
 
 
 def _set_norm_inst_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the normalized-institutions data to be saved.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -644,11 +644,11 @@ def _set_norm_inst_attributes(cols_list):
 
 
 def _set_raw_inst_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the raw-institutions data to be saved.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -674,11 +674,11 @@ def _set_raw_inst_attributes(cols_list):
 
 
 def _set_distrib_inst_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the distributed-institutions data to be saved.
 
-    The widths and horizontal alignement of each columns are 
+    The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
 
     Args:
@@ -704,7 +704,7 @@ def _set_distrib_inst_attributes(cols_list):
 
 
 def _set_inst_country_pub_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the data of publication IDs per country and 
     per institution to be saved.
@@ -732,7 +732,7 @@ def _set_inst_country_pub_attributes(cols_list):
 
 
 def _set_pub_country_inst_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the data of institutions per country and per 
     publication ID to be saved.
@@ -760,7 +760,7 @@ def _set_pub_country_inst_attributes(cols_list):
 
 
 def _set_country_inst_pub_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the data of publication IDs per institutions 
     and per country to be saved.
@@ -789,7 +789,7 @@ def _set_country_inst_pub_attributes(cols_list):
 
 
 def _set_doctype_stat_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each columns 
+    """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the statistics data of doctype-analysis results 
     to be saved.
