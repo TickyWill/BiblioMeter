@@ -1,25 +1,25 @@
 # Application Release Backlog
 
-## Release 6.1.0 - 2025/xx/xx
-* **Summary**: This release corresponds to the update of the collaborations analysis with the developement of the statistics per institution of affiliations of the authors.
+## Release 6.1.0 - 2025/04/15
+* **Summary**: This release corresponds to the update of the collaborations analysis with the development of the statistics per institution of affiliations of the authors.
 * **Features**:
   - Feature 1: Creation of "build_pub_addresses" module for building information on collaborating institutions with the Institute by parsing author addresses.
-  - Feature 2: Creation of "build_institutions_stat" module allowing to build several statistics data for each type of institutions.
-  - Feature 3: Update of the "coupling_analysis" module to integrate the use of the above created modules.
+  - Feature 2: Creation of "build_institutions_stat" module allowing to build several statistics data for each type of institutions (ex: Number of publications co-written with universities).
 * **Improvements**:
-  - Improvement 1: Addition of "_clean_hash_id_df" function dedicated to managing duplicates of publications with same Hash ID (cleans hash_id.xlsx, submit.xlsx and orphan.xlsx files).
-  - Improvement 2: Addition of "_enhance_homonyms_file" and "_set_otps_dept_affil" functions dedicated to setting standardized department affiliation of authors before OTPs attribution.
-  - Improvement 3: Update of "create_archi" function to automatically create useful folders for saving corpus extractions.
-  - Improvement 4: Update of "save_otps" function to automatically create an empty file that will contain the OTPs attributed by the user if it not exists.
-  - Improvement 5: Substitution of "_append_df" function by "concat_dfs" function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
-  - Improvement 6: Addition of "keep_initials" function  to avoid interpretation of first-name initials equal to NA as NaN.
-  - Improvement 7: Redistribution of "merge_pub_employees" module into 3 modules for sake of clarity (new modules: "build_year_pub_empl" and "create_hash_id").
-  - Improvement 8: Addition of management of last corpus year when it is not in available years of impact factors in "update_impact_factors" module.
-  - Improvement 9: Enhancement of analysis modules by use of saved final results rather than available results in corpus-year folders in order to take into account corresponding datatype results.
-  - Improvement 10: Addition of "doctypes_analysis" module to provide statistics of publications by journals, conference proceedings or books.
-  - Improvement 11: Substitution of "impact_factors_analysis" module by "build_kpi" one for the sake of clarity.
-  - Improvement 12: Addition of author job type and matriculate to the results provided by "author_analysis" module through the use of publications list with one row per author after solving homonymies.
-  - Improvement 13: Integration to the saved results the Hash-ID and the full list of authors for each publication.
+  - Improvement 1: Update of the "coupling_analysis" module to integrate the use of the above created modules.
+  - Improvement 2: Addition of "_clean_hash_id_df" function dedicated to managing duplicates of publications with same Hash ID (cleans hash_id.xlsx, submit.xlsx and orphan.xlsx files).
+  - Improvement 3: Addition of "_enhance_homonyms_file" and "_set_otps_dept_affil" functions dedicated to setting standardized department affiliation of authors before OTPs attribution.
+  - Improvement 4: Update of "create_archi" function to automatically create useful folders for saving corpus extractions.
+  - Improvement 5: Update of "save_otps" function to automatically create an empty file that will contain the OTPs attributed by the user if it not exists.
+  - Improvement 6: Substitution of "_append_df" function by "concat_dfs" function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
+  - Improvement 7: Addition of "keep_initials" function  to avoid interpretation of first-name initials equal to NA as NaN.
+  - Improvement 8: Redistribution of "merge_pub_employees" module into 3 modules for sake of clarity (new modules: "build_year_pub_empl" and "create_hash_id").
+  - Improvement 9: Addition of management of last corpus year when it is not in available years of impact factors in "update_impact_factors" module.
+  - Improvement 10: Enhancement of analysis modules by use of saved final results rather than available results in corpus-year folders in order to take into account corresponding datatype results.
+  - Improvement 11: Addition of "doctypes_analysis" module to provide statistics of publications by journals, conference proceedings or books.
+  - Improvement 12: Substitution of "impact_factors_analysis" module by "build_kpi" one for the sake of clarity.
+  - Improvement 13: Addition of author job type and matriculate to the results provided by "author_analysis" module through the use of publications list with one row per author after solving homonymies.
+  - Improvement 14: Integration to the saved results of the Hash-ID and of the full list of authors for each publication.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:
