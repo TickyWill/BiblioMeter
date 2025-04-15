@@ -151,22 +151,24 @@ for col_convert in employees_col_convert_list:
     EMPLOYEES_CONVERTERS_DIC[col_convert] = lambda x: _get_str_date(str(x))
 
 
-CATEGORIES_DIC   = {'CDI'      : ['CDI'],
+CATEGORIES_DIC   = {'CDI'      : ['CDI', 'Retraite'],
                     'CDD'      : ['CDD'],
                     'CSc'      : ['Conseiller Scient.'],
                     'Stg'      : ['Stagiaire'],
+                    'MaD-Dtch' : ['Mis à disposition', "Détaché hors CEA"],
+                    'FIN'      : ["Fin de lien"],
                    }
 
-STATUS_DIC       = {'Doc'      : ['Thésard', 'Doctorant', 'Thèse', 'thèse'],
+STATUS_DIC       = {'Doc'      : ['Thésard', 'Doctorant', 'Thèse', 'thèse', 'THESARD'],
                     'Postdoc'  : ['Post doc', 'Post-doctorant'],
                     'CSc'      : ['Conseiller Scient.NR'],
-                    'Stg'      : ['Stagiaire'],
+                    'Stg'      : ['Stagiaire', "Apprentis."],
                     'Intrm'    : ['Intérimaire']
                    }
 
 QUALIFICATION_DIC = {'Doc'     : ['THESARD', 'THESE', 'Doc'],
                      'Postdoc' : ['POST-DOC', 'Postdoc'],
                      'CSc'     : ['CONSEILLER SCIENTIFIQUE'],
-                     'Stg'     : ['STAGIAIRE', 'Stg'],
-                     'Coll'    : ['Coll']
+                     'Stg'     : ['STAGIAIRE', 'Stg', "PROFESSIONNALISATION"],
+                     'Coll'    : ['Coll', 'externe']
                     }

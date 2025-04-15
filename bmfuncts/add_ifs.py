@@ -18,9 +18,9 @@ import pandas as pd
 # Local imports
 import bmfuncts.pub_globals as pg
 from bmfuncts.format_files import format_page
-from bmfuncts.format_files import set_base_keys_list
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import set_if_col_names
+from bmfuncts.useful_functs import concat_dfs
 
 
 def _create_if_column(issn_column, if_dict, if_empty_kw):
@@ -110,7 +110,7 @@ def _build_inst_issn_df(if_db_df, cols_tup):
 
     for year in years_list:
         year_sub_df = if_db_df[year][use_col_list].copy()
-        init_inst_issn_df = pd.concat([init_inst_issn_df, year_sub_df])
+        init_inst_issn_df = concat_dfs([init_inst_issn_df, year_sub_df])
     init_inst_issn_df[journal_col] = init_inst_issn_df.apply(lambda row:
                                                              (row[journal_col].upper()),
                                                              axis=1)
@@ -128,7 +128,7 @@ def _build_inst_issn_df(if_db_df, cols_tup):
             eissn_list = [unknown_alias]
         dg[eissn_col] = eissn_list[0]
 
-        inst_issn_df = pd.concat([inst_issn_df,dg.iloc[:1]])
+        inst_issn_df = concat_dfs([inst_issn_df, dg.iloc[:1]])
 
     inst_issn_df = inst_issn_df.sort_values(by=[journal_col])
     inst_issn_df = inst_issn_df.drop_duplicates()
@@ -302,7 +302,7 @@ def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
     articles_df = pd.DataFrame(columns=pub_df.columns)
     for doc_type, doc_type_df in pub_df.groupby(doctype_col):
         if doc_type.upper() not in doctype_to_drop_list:
-            articles_df = pd.concat([articles_df, doc_type_df])
+            articles_df = concat_dfs([articles_df, doc_type_df])
     articles_df = articles_df.drop(doctype_col, axis=1)
     return articles_df
 
@@ -321,7 +321,7 @@ def _build_issn_df(article_df, cols_tup):
         issn_df[journal_upper_col] = issn_df[journal_col].astype(str).str.upper()
         issn_df = issn_df.drop_duplicates(subset=[journal_upper_col], keep='first')
         issn_df = issn_df.drop([journal_upper_col], axis=1)
-        if_df = pd.concat([if_df, issn_df])
+        if_df = concat_dfs([if_df, issn_df])
     return if_df
 
 
@@ -340,7 +340,7 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, cols_tup, empty_kw):
         row_most_recent_year_if = row[most_recent_year_if_col]
         row_corpus_year_if = row[corpus_year_if_col]
         if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
-            missing_issn_df = pd.concat([missing_issn_df, row.to_frame().T])
+            missing_issn_df = concat_dfs([missing_issn_df, row.to_frame().T])
         elif empty_kw in [row_most_recent_year_if, row_corpus_year_if]:
             row_journal = row[journal_col]
             row[issn_col] = _get_id(inst_issn_df, row_journal,
@@ -349,12 +349,12 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, cols_tup, empty_kw):
             row[eissn_col] = _get_id(inst_issn_df, row_journal,
                                      journal_col, eissn_col,
                                      empty_kw)
-            missing_if_df = pd.concat([missing_if_df, row.to_frame().T])
+            missing_if_df = concat_dfs([missing_if_df, row.to_frame().T])
     return missing_if_df, missing_issn_df
 
 
-def _format_and_save_add_if_dfs(institute, org_tup, dfs_tup, out_cols_tup,
-                                empty_kw, out_paths_tup):
+def _format_and_save_add_if_dfs(dfs_tup, out_cols_tup, empty_kw,
+                                out_paths_tup, corpus_year):
     # Setting parameters from args
     corpus_df, year_missing_issn_df, year_missing_if_df = dfs_tup
     out_file_path, missing_issn_path, missing_if_path = out_paths_tup
@@ -365,23 +365,22 @@ def _format_and_save_add_if_dfs(institute, org_tup, dfs_tup, out_cols_tup,
     sorted_year_missing_if_df = _format_missing_df(
         year_missing_if_df, out_cols_tup, empty_kw, add_cols=False)
 
-    # Setting useful parameters for use of 'format_page' function
-    common_df_title = pg.DF_TITLES_LIST[0]
-    format_cols_list = set_base_keys_list(institute, org_tup)
-
     # Formatting and saving 'corpus_df' as openpyxl file at full path 'out_file_path'
-    wb, _ = format_page(corpus_df, common_df_title,
-                        attr_keys_list=format_cols_list)
+    corpus_df_title = pg.DF_TITLES_LIST[0]
+    wb, ws = format_page(corpus_df, corpus_df_title)
+    ws.title = "Publications " +  corpus_year
     wb.save(out_file_path)
 
     # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
-    wb, _ = format_page(sorted_year_missing_issn_df, common_df_title,
-                        attr_keys_list=format_cols_list)
+    missing_issn_df_title = pg.DF_TITLES_LIST[18]
+    wb, ws = format_page(sorted_year_missing_issn_df, missing_issn_df_title)
+    ws.title = "ISSNs manquants " +  corpus_year
     wb.save(missing_issn_path)
 
     # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
-    wb, _ = format_page(sorted_year_missing_if_df, common_df_title,
-                        attr_keys_list=format_cols_list)
+    missing_if_df_title = pg.DF_TITLES_LIST[18]
+    wb, ws = format_page(sorted_year_missing_if_df, missing_if_df_title)
+    ws.title = "IFs manquants " +  corpus_year
     wb.save(missing_if_path)
 
 
@@ -469,7 +468,6 @@ def _add_if_cols(corpus_df, if_dict, if_cols_tup, aliases_tup,
 
 
 def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
-
     """Adds two new columns containing impact factors to the corpus 
     dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
 
@@ -487,10 +485,8 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     values of the most recent year available in the 'if_dict' dict. 
     In these columns, the NaN values of impact-factors are replaced 
     by 'unknown_if_fill_alias'. 
-    The results are saved as openpyxl workbook formatted through the `format_page`
-    function imported from the `bmfuncts.format_files` module after 
-    setting the attrubutes keys list through the `set_base_keys_list` function 
-    imported from the same module.
+    The results are saved as openpyxl workbook formatted through the 
+    `_format_and_save_add_if_dfs` internal function.
 
     Args:
         institute (str): Institute name.
@@ -616,8 +612,8 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     out_paths_tup = (out_file_path, missing_issn_path, missing_if_path)
 
     # Formatting and saving the built dataframes as openpyxl workbooks
-    _format_and_save_add_if_dfs(institute, org_tup, dfs_tup, out_cols_tup,
-                                empty_kw_alias, out_paths_tup)
+    _format_and_save_add_if_dfs(dfs_tup, out_cols_tup, empty_kw_alias,
+                                out_paths_tup, corpus_year)
 
     end_message = f"IFs added for year {corpus_year} in file : \n  '{out_file_path}'"
     return end_message, if_database_complete

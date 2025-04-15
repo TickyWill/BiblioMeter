@@ -280,7 +280,7 @@ def set_org_params(institute, bibliometer_path):
 
     dpt_otp_list = list(set(sum([dpt_otp_df[dpt_otp_key]
                                  for _, dpt_otp_df in dpt_attributes_dict.items()], [])))
-    dpt_attributes_dict['DIR'] = {dpt_label_key: ['(' + institute.upper() + ')'],
+    dpt_attributes_dict['DIR'] = {dpt_label_key: dpt_label_dict['DIR'],
                                  dpt_otp_key  : dpt_otp_list}
     for dpt in list(col_names_dpt.keys()):
         dpt_attributes_dict[dpt][dpt_otp_key] += [ig.INVALIDE]

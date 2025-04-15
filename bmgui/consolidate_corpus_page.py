@@ -10,7 +10,6 @@ Then it provides xlsx files to the user for:
 - Completion of impact-factors database.
 
 Finally it saves the consolidated publications list in a dedicated directory.
-
 """
 __all__ = ['create_consolidate_corpus']
 
@@ -189,6 +188,7 @@ def _launch_update_employees(bibliometer_path,
 
 def _launch_recursive_year_search_try(institute, org_tup,
                                       bibliometer_path,
+                                      datatype,
                                       paths_tup,
                                       files_tup,
                                       year_select,
@@ -209,6 +209,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
         paths_tup (tup): (full path to folder where publications merged with \
         Institute employees and associated files are saved, full path to file \
         of Institute employees database).
@@ -231,6 +232,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                                                                institute,
                                                                org_tup,
                                                                bibliometer_path,
+                                                               datatype,
                                                                year_select,
                                                                search_depth,
                                                                progress_callback,
@@ -272,6 +274,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
     # Setting dialogs and checking answers
     # for ad-hoc use of '_recursive_year_search_try' internal function
     # after adapting search depth to available years for search
+    print("Reading employees data...")
     tup = set_employees_data(year_select, all_effectifs_path, search_depth_init)
     all_effectifs_df, search_depth, annees_disponibles = tup[0], tup[1], tup[2]
     if annees_disponibles:
@@ -430,8 +433,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
 
 def _launch_add_otp_try(institute, org_tup,
                         bibliometer_path,
-                        paths_tup,
-                        files_tup,
+                        paths_tup, files_tup,
                         year_select,
                         progress_callback):
     """Launches files creation for adding OTP attribute to publications.
@@ -581,16 +583,16 @@ def _launch_pub_list_conso_try(institute, org_tup,
                                              bibliometer_path, datatype,
                                              otp_path, pub_list_path,
                                              otp_file_base, year_select)
-            end_message, split_ratio, if_database_complete = (conso_tup[0], conso_tup[1],
-                                                              conso_tup[2])
+            end_message, pub_nb, split_ratio, if_database_complete = conso_tup
             print(end_message)
-            progress_callback(50)
-            end_message = concatenate_pub_lists(institute, org_tup, bibliometer_path, years_list)
-            print('\n',end_message)
+            progress_callback(70)
+            if pg.LISTES_CONCAT:
+                end_message = concatenate_pub_lists(bibliometer_path, years_list)
+                print('\n',end_message)
             progress_callback(100)
             info_title = "- Information -"
-            info_text = (f"La liste consolidée des publications de l'année {year_select} "
-                         f"a été créée dans le dossier :\n\n '{pub_list_path}' "
+            info_text = (f"Une liste consolidée de {pub_nb} publications a été créée "
+                         f"pour l'année {year_select} dans le dossier :\n\n '{pub_list_path}' "
                          f"\n\nsous le nom :   '{pub_list_file}'."
                          "\n\nLes IFs disponibles ont été automatiquement attribués.")
             if if_database_complete:
@@ -610,19 +612,20 @@ def _launch_pub_list_conso_try(institute, org_tup,
                               "\n3- Puis sauvegardez les fichiers sous le même nom ;"
                               "\n4- Pour prendre en compte ces compléments, allez à la page "
                               "de mise à jour des IFs.")
-            info_text += ("\n\nPar ailleurs, la liste consolidée des publications "
+            info_text += ("\n\nPar ailleurs, cette liste consolidée des publications "
                           f"a été décomposée à {split_ratio} % "
                           "en trois fichiers disponibles dans le même dossier "
                           "correspondant aux différentes "
                           "classes de documents (les classes n'étant pas exhaustives, "
                           "la décomposition peut être partielle)."
                           "\n\nLa liste des publications invalides a été créée "
-                          "dans le même dossier."
-                          "\n\nEnfin, la concaténation des listes consolidées des publications "
-                          "disponibles, a été créée dans le dossier :"
-                          f"\n\n '{bdd_multi_annuelle_folder}' "
-                          "\n\nsous un nom vous identifiant ainsi que la liste des années "
-                          "prises en compte et caractérisé par la date et l'heure de la création.")
+                          "dans le même dossier.")
+            if pg.LISTES_CONCAT:
+                info_text += ("\n\nEnfin, la concaténation des listes consolidées des publications "
+                              "disponibles, a été créée dans le dossier :"
+                              f"\n\n '{bdd_multi_annuelle_folder}' "
+                              "\n\nsous un nom vous identifiant ainsi que la liste des années "
+                              "prises en compte et caractérisé par la date et l'heure de la création.")
             messagebox.showinfo(info_title, info_text)
 
         else:
@@ -630,7 +633,8 @@ def _launch_pub_list_conso_try(institute, org_tup,
             warning_title = "!!! ATTENTION : fichiers manquants !!!"
             warning_text = ("Les fichiers d'attribution des OTPs "
                             f"de l'année {year_select} ne sont pas disponibles."
-                            "\n1- Effectuez l'attribution des OTPs pour cette année."
+                            "\n1- Relancez la création des fichiers d'attribution des OTPs "
+                            "pour cette année."
                             "\n2- Relancez la consolidation de la liste des publications "
                             "pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
@@ -843,6 +847,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         files_tup = (submit_alias, orphan_alias)
         _launch_recursive_year_search_try(institute, org_tup,
                                           bibliometer_path,
+                                          datatype,
                                           paths_tup,
                                           files_tup,
                                           year_select,
@@ -893,7 +898,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         year_select = variable_years.get()
 
         # Setting paths and aliases dependent on year_select
-        homonymes_file_alias =  homonymes_file_base_alias + f' {year_select}.xlsx'
+        homonymes_file_alias = homonymes_file_base_alias + f' {year_select}.xlsx'
         corpus_year_path = bibliometer_path / Path(year_select)
         bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
         submit_path = bdd_mensuelle_path / Path(submit_alias)

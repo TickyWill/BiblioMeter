@@ -1,20 +1,39 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
 
+ToDo:
+    - import `standardize_address` from BiblioParsing package.
+    - Redistribution of module in modules of common-objective functions.
 """
 
 __all__ = ['check_dedup_parsing_available',
+           'concat_dfs',
            'create_archi',
            'create_folder',
+           'get_final_dedup',
+           'keep_initials',
+           'name_capwords',
+           'read_final_pub_list_data',
+           'read_final_set_homonyms_data',
            'read_parsing_dict',
+           'reorder_df',
            'save_fails_dict',
+           'save_final_dedup',
            'save_parsing_dict',
+           'save_xlsx_file',
+           'set_capwords_lambda',
            'set_rawdata',
+           'set_saved_results_path',
+           'set_year_pub_id',
+           'standardize_address',
+           'standardize_firstname_initials',
+           'standardize_full_name_order',
            'standardize_txt',
           ]
 
 
 # Standard library imports
 import json
+import re
 import os
 import shutil
 from pathlib import Path
@@ -28,8 +47,347 @@ import bmfuncts.pub_globals as pg
 from bmfuncts.config_utils import set_user_config
 
 
+def reorder_df(df, col_dict):
+    """Reorders data by modifying the order of the columns using 
+    the given index for each column to be moved.
+    
+    A positive index gives the effective position of the column in 
+    the reordered list of the columns. 
+    A negative index means that the column is to be added at the end 
+    of the reordered list of the columns. The lowest negative index 
+    corresponds to the first added column among the columns to be added 
+    at the end.
+
+    Args:
+        df (dataframe): The data to be reordered.
+        col_dict (dict); Dict keyed by the names (str) of the column \
+        to be moved and valued by the indices (int) of the columns \
+        in the reordered list of columns.
+    Returns:
+        (dataframe): The reordered data.
+    """
+    df = df.reset_index()
+    if "index" in df.columns:
+        df = df.drop(columns="index")
+    init_cols = list(df.columns)
+    new_cols = init_cols.copy()
+    append_cols_dict = {}
+    for col, col_idx in col_dict.items():
+        if col_idx>=0:
+            init_col_idx = init_cols.index(col)
+            new_cols.remove(col)
+            new_cols.insert(col_idx, init_cols[init_col_idx])
+        if col_idx<0:
+            append_cols_dict[col] = col_idx
+    while append_cols_dict:
+        col_idx_min = min(append_cols_dict.values())
+        reverse_cols_dict = dict(map(reversed, append_cols_dict.items()))
+        col_min = reverse_cols_dict[col_idx_min]
+        new_cols.remove(col_min)
+        new_cols.append(col_min)
+        del append_cols_dict[col_min]
+    df = df[new_cols]
+    return df
+
+
+def name_capwords(text):
+    """Capitalizes words in full names of authors getting 
+    rid of particular separators and keeping firstname initiales.
+
+    Args:
+        text (str): Full name to be capitalized by words.
+    Returns:
+        (str): Full name capitalized by words.
+    """
+    sep_list = ["-", "'"]
+    sub_text_list = text.split()[:-1]
+    text_split_list = []
+    for sub_text in sub_text_list:
+        for sep in sep_list:
+            if sep in sub_text:
+                words_list = [x.capitalize() for x in sub_text.split(sep)]
+                sub_text = sep.join(words_list)
+            else:
+                sub_text = sub_text.capitalize()
+        text_split_list.append(sub_text)
+    text_split_list.append(text.split()[-1])
+    text = " ".join(text_split_list)
+    return text
+
+
+def standardize_full_name_order(author):
+    """Sets the first-name initials before the last name in a full name.
+
+    It appends "." after each initial and takes care of keeping '-'
+    between the parts of composed first names.
+
+    Args:
+        author (str): Full name to transform (expected shape 'NAME IJ', \
+        where 'NAME' is the last name and 'IJ' the first name initials).
+    Returns:
+        (str): The transformed full name (ex: I. J. Name).
+        """
+    author_parts_list = author.split(" ")
+    author_initials = author_parts_list[-1]
+    if "-" in author_initials:
+        author_initials_list = author_initials.split("-")
+        new_author_initial_list = []
+        for author_initial in author_initials_list:
+            new_author_initial = author_initial + "."
+            new_author_initial_list.append(new_author_initial)
+        new_author_initials = "-".join(new_author_initial_list) + " "
+    else:
+        new_author_initial_list = [x + ". " for x in author_initials]
+        new_author_initials = "".join(new_author_initial_list)
+    last_name_parts_list = [x.capitalize() for x in author_parts_list[:-1]]
+    last_name = " ".join(last_name_parts_list)
+    new_author = "".join([new_author_initials] + [last_name])
+    return new_author
+
+
+def set_saved_results_path(bibliometer_path, datatype):
+    """Sets the specific full path to the folder where results 
+    of BiblioMeter are saved for the given case of data type.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    Returns:
+        (path): The full path of the saved results.
+    """
+    # Setting useful aliases
+    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
+
+    # Setting saved data paths
+    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
+    return saved_results_path
+
+
+def _set_capwords(text):
+    """Capitalizes words in text except those given 
+    by the 'BM_LOW_WORDS_LIST' global import from globals 
+    module imported as pg.
+
+    Args:
+        text (str): Text to be capitalized by words.
+    Returns:
+        (str): Text capitalized by main words.
+    """
+    text_list = []
+    for sub_text in text.split("; "):
+        space_split_list = []
+        for x in sub_text.split():
+            if x.lower() in pg.BM_LOW_WORDS_LIST:
+                x = x.lower()
+            else:
+                x = x.capitalize()
+            space_split_list.append(x)
+        sub_text = " ".join(space_split_list)
+        text_list.append(sub_text)
+    text = "; ".join(text_list)
+    return text
+
+
+def set_capwords_lambda(col):
+    """Build lambda function based on `_set_capwords` 
+    internal function.
+
+    Args:
+        col (str): Name of the column to be modified.
+    Return:
+        (lambda function): Function to be applied by rows.
+    """
+    return lambda row: _set_capwords(row[col])
+
+
+def keep_initials(df, initials_col_base, missing_fill=None):
+    """Keeps the first-name initials avoiding setting them to NaN 
+    when they are equal to 'NA'.
+    
+    Args:
+        df (dataframe): Data where the first-name initials are kept.
+        initials_col_base (str): Base of the column names \
+        of first_name initiales. 
+        missing_fill (str): Optional value for replacing NaN \
+        in the other columns (default = None).
+    Returns:
+        (dataframe): The modified dataframe.
+    """
+    df_cols = list(df.columns)
+    df_initials_cols = [x for x in df_cols if initials_col_base in x]
+    for col in df_initials_cols:
+        df[col] = df[col].fillna("NA")
+    if missing_fill:
+        df_fill_na_cols = list(set(df_cols) - set(df_initials_cols))
+        for col in df_fill_na_cols:
+            df[col] = df[col].fillna(missing_fill)
+    return df
+
+
+def standardize_address(raw_address):
+    """Standardizes the string 'raw_address' by replacing all aliases of a word, 
+    such as 'University', 'Institute', 'Center' and' Department', by a standardized 
+    version.
+
+    The aliases of a given word are captured using a specific regex which is case sensitive defined 
+    by the global 'DIC_WORD_RE_PATTERN' imported from the `BiblioParsing` package imported as "bp". 
+    The aliases may contain symbols from a given list of any language including accentuated ones. 
+    The length of the aliases is limited to a maximum according to the longest alias known.
+        ex: The longest alias known for the word 'University' is 'Universidade'. 
+            Thus, 'University' aliases are limited to 12 symbols beginning with the base 'Univ' 
+            with possibly before one symbol among a to z and after up to 8 symbols from the list 
+            '[aàäcdeéirstyz]' and possibly finishing with a dot. 
+    Then, dashes are replaced by a hyphen-minus using 'DASHES_CHANGE' global and apostrophes are replaced 
+    by the standard cote using 'APOSTROPHE_CHANGE' global. 
+    The globals are imported from the `BiblioParsing` package imported as "bp". 
+    Finally, the country is normalized through the `normalize_country` function imported from 
+    the `BiblioParsing` package imported as "bp".
+
+    Args:
+        raw_address (str): The full address to be standardized.
+    Returns:
+        (str): The full standardized address.
+    Note:
+        Copied from BiblioParsing package.
+    """
+    # Uniformizing words
+    standard_address = raw_address
+    for word_to_substitute, re_pattern in bp.DIC_WORD_RE_PATTERN.items():
+        if word_to_substitute=='University':
+            # Corrected in new version of BiblioParsing package
+            # To be removed when available from package new install
+            re_pattern = re.compile(r'\b[a-z]?Univ[aàäcdeéirstyz]{0,8}\b\.?')
+        standard_address = re.sub(re_pattern, word_to_substitute + ' ', standard_address)
+    standard_address = re.sub(r'\s+', ' ', standard_address)
+    standard_address = re.sub(r'\s,', ',', standard_address)
+
+    # Uniformizing dashes
+    standard_address = standard_address.translate(bp.DASHES_CHANGE)
+
+    # Uniformizing apostrophes
+    standard_address = standard_address.translate(bp.APOSTROPHE_CHANGE)
+
+    # Dropping symbols
+    standard_address = standard_address.translate(bp.SYMB_DROP)
+
+    # Uniformizing countries
+    country_pos = -1
+    first_raw_affiliations_list = standard_address.split(',')
+    # This split below is just for country finding even if affiliation may be separated by dashes
+    raw_affiliations_list = sum([x.split(' - ') for x in first_raw_affiliations_list], [])
+    country = bp.normalize_country(raw_affiliations_list[country_pos].strip())
+    space = " "
+    if country!=bp.UNKNOWN:
+        standard_address = ','.join(first_raw_affiliations_list[:-1] + [space + country])
+    else:
+        standard_address = ','.join(first_raw_affiliations_list + [space + country])
+    return standard_address
+
+
+def save_xlsx_file(root_path, df, file_name):
+    """Saves data as an xlsx file that is one sheet and not formatted.
+
+    Args:
+        root_path (path): The path to the folder where the Excel file is saved.
+        df (dataframe): The data to save.
+        file_name (str): The name of the file including '.xlsx' extent.
+    """
+    file_path = root_path / Path(file_name)
+    df.to_excel(file_path, index=False)
+
+
+def set_year_pub_id(df, year, pub_id_col):
+    """Transforms the pub-ID column of 'df' data by adding "yyyy_" 
+    (year in 4 digits) to the values.
+
+    Args:
+        df (pandas.DataFrame): The data we want to modify.
+        year (str): The 4 digits year to add as "yyyy".
+        pub_id_col (str): The name of the pub-ID column to transform.
+    Returns:
+        (pandas.DataFrame): The data with its changed column.
+    """
+    def _rename_pub_id(old_pub_id, year):
+        pub_id_str = str(int(old_pub_id))
+        while len(pub_id_str)<3:
+            pub_id_str = "0" + pub_id_str
+        new_pub_id = str(int(year)) + '_' + pub_id_str
+        return new_pub_id
+    df[pub_id_col] = df[pub_id_col].apply(lambda x: _rename_pub_id(x, year))
+    return df
+
+
+def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
+               concat_ignore_index=False, drop_ignore_index=False):
+    """Allows to avoid warnings when using pandas concat of a list of dataframes 
+    with empty dataframe in it and drops duplicates in the concatenated dataframe.
+
+    Args:
+        dfs_list (list): The list of pandas dataframes to concatenate.
+        dedup (bool): If true, deduplication is applied, optional, default:True.
+        dedup_cols (list): Same as 'subset' parameter of 'drop_duplicates' method \
+        of 'pandas.DataFrame' method, optional, default:None.
+        keep (str): Same as 'keep' parameter of 'drop_duplicates' method \
+        of 'pandas.DataFrame' method, optional, default:'first'.
+        axis (int): Same as 'axis' parameter of 'concat' method of 'pandas.DataFrame' \
+        method, optional, default:0.
+        concat_ignore_index (bool): Same as 'ignore_index' parameter of concat \
+        method of 'pandas.DataFrame' method, optional, default:False.
+        drop_ignore_index (bool): Same as 'ignore_index' parameter of drop_duplicates \
+        method of 'pandas.DataFrame' method, optional, default:False.
+    Returns:
+        (dataframe): Result of the concatenation.    
+    """
+
+    # Setting list of not empty dataframes
+    dfs_clean_list = []
+    for df in dfs_list:
+        if not df.empty:
+            dfs_clean_list.append(df)
+    dfs_clean_nb = len(dfs_clean_list)
+
+    # Concatenating dataframes
+    if dfs_clean_nb==0:
+        concat_df = dfs_list[0].copy()
+    elif dfs_clean_nb==1:
+        concat_df = dfs_clean_list[0].copy()
+    else:
+        concat_df = pd.concat(dfs_clean_list, axis=axis,
+                              ignore_index=concat_ignore_index)
+
+    if dedup:
+        # Removing duplicates
+        full_col_list = list(concat_df.columns)
+        if dedup_cols and all(i in full_col_list for i in dedup_cols):
+            concat_df = concat_df.drop_duplicates(subset=dedup_cols,
+                                                  keep=keep,
+                                                  ignore_index=drop_ignore_index)
+        else:
+            concat_df = concat_df.drop_duplicates(keep=keep,
+                                                  ignore_index=drop_ignore_index)
+    return concat_df
+
+
+def standardize_firstname_initials(initials_init):
+    """Standardizes the initials of a firstname by removing minus symbol 
+    between initials. 
+    
+    For example, changes "P-Y" into "PY"
+
+    Args:
+        initials_init (str): String containing raw firstname initials 
+        to be standardized.
+    Returns:
+        (str): The standardized string."""
+    initials_init = initials_init.replace('-',' ')
+    initials = ''.join(initials_init.split(' '))
+    return initials
+
+
 def standardize_txt(text):
-    """Standardize text by keeping only ASCII characters
+    """Standardizes text by keeping only ASCII characters
     and replacing minus symbol between words by space.
 
     Args:
@@ -52,7 +410,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
         year (str): 4 digits year of the corpus.
     Returns:
         (bool): Status of the deduplication parsing folder \
-        (False if folder does'nt exist or is empty).
+        (False if folder didn't exist or is empty).
     """
     # To Do:  Checks if a specific parsing file is available not only if folder is empty
 
@@ -81,7 +439,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
 def _get_database_file_path(database_folder_path, database_file_end):
     """Selects the most recent file ending with 'database_file_end'.
 
-    This done through the following steps:
+    This is done through the following steps:
 
     1. Lists all the files with this ending present in the \
     folder targeted by "database_folder_path".
@@ -128,7 +486,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
         from databases.
         database (str): The database selected for the analysis.
     Returns:
-        (tup): Tuple = (path to database extractions (path), \
+        (tup): (path to database extractions (path), \
         file name ending (str), \
         path to the folder of empty files (path)).
     """
@@ -149,7 +507,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
 
 
 def set_rawdata(bibliometer_path, datatype, years_list, database):
-    """The function sets the rawdata to be used for the data type 'datatype' analysis.
+    """Sets the rawdata to be used for the data type 'datatype' analysis.
 
     It copies the files ending with 'database_file_end' from database folder 
     targeted by the path 'database_folder_path' to the rawdata folder 
@@ -167,11 +525,11 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     Returns:
         (str): End message recalling the database and data type used.
     """
-
     # Getting database extractions info
     return_tup = _set_database_extract_info(bibliometer_path, datatype, database)
     database_folder_path, database_file_end, empty_file_folder = return_tup
 
+    # Setting specific parameters for Scopus-HAL data
     last_year_database_file_end = database_file_end
     if datatype==pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
         last_year_datatype = pg.DATATYPE_LIST[0]
@@ -183,13 +541,15 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     for year in years_list:
         if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[2]:
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
+            year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                              database_file_end)
         else:
             year_database_folder_path = database_folder_path / Path(year)
-            if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[1] and year==years_list[-1]:
-                database_file_end = last_year_database_file_end
-
-        year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                          database_file_end)
+            year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                              database_file_end)
+            if not year_database_file_path:
+                year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                                  last_year_database_file_end)
 
         rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
@@ -202,7 +562,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     return message
 
 
-def create_folder(root_path, folder, verbose = False):
+def create_folder(root_path, folder, verbose=False):
     """Creates a folder checking first if it already exists.
 
     Args:
@@ -226,51 +586,64 @@ def create_folder(root_path, folder, verbose = False):
     return folder_path
 
 
-def create_archi(bibliometer_path, corpus_year_folder, verbose = False):
+def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
     """Creates a corpus folder with the required architecture.
 
-    It uses the global "ARCHI_YEAR" for the names of the sub_folders.
+    It uses the global "ARCHI_YEAR" for the names of the sub_folders 
+    and the `create_folder` function of the same module.
 
     Args:
         bibliometer_path (path): The full path of the working folder.
         corpus_year_folder (str): The name of the folder of the corpus.
         verbose (bool): Optional status of prints (default = False).
     Returns:
-        (str): End message recalling the folder created.
+        (str): End message recalling the corpus-year architecture created.
     """
     # Setting useful alias
     archi_alias = pg.ARCHI_YEAR
+    extract_folder_alias = pg.ARCHI_EXTRACT["root"]
+    archiv_folder_alias = pg.ARCHI_EXTRACT["archiv"]
 
-    corpus_year_folder_path = create_folder(bibliometer_path, corpus_year_folder, verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose = verbose)
-    _ = create_folder(corpus_year_folder_path, archi_alias["history folder"], verbose = verbose)
+    # Creating folders for corpus extractions from databases for the corpus year
+    extract_folder_path = bibliometer_path / Path(extract_folder_alias)
+    for bdd in pg.BDD_LIST:
+        bdd_extract_folder_alias = pg.ARCHI_EXTRACT[bdd]["root"]
+        bdd_extract_folder_path = extract_folder_path / Path(bdd_extract_folder_alias)
+        year_bdd_extract_folder_path = create_folder(bdd_extract_folder_path,
+                                                     corpus_year_folder, verbose=verbose)
+        _ = create_folder(year_bdd_extract_folder_path, archiv_folder_alias, verbose=verbose)
+
+    # Creating architecture for corpus-year working-folder
+    corpus_year_folder_path = create_folder(bibliometer_path, corpus_year_folder, verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose=verbose)
+    _ = create_folder(corpus_year_folder_path, archi_alias["history folder"], verbose=verbose)
 
     analysis_folder = create_folder(corpus_year_folder_path, archi_alias["analyses"],
-                                    verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["if analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["countries analysis"], verbose = verbose)
-    _ = create_folder(analysis_folder, archi_alias["institutions analysis"], verbose = verbose)
+                                    verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["if analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["countries analysis"], verbose=verbose)
+    _ = create_folder(analysis_folder, archi_alias["institutions analysis"], verbose=verbose)
 
-    corpus_folder = create_folder(corpus_year_folder_path, archi_alias["corpus"], verbose = verbose)
+    corpus_folder = create_folder(corpus_year_folder_path, archi_alias["corpus"], verbose=verbose)
 
-    concat_folder = create_folder(corpus_folder, archi_alias["concat"], verbose = verbose)
-    _ = create_folder(concat_folder, archi_alias["parsing"], verbose = verbose)
+    concat_folder = create_folder(corpus_folder, archi_alias["concat"], verbose=verbose)
+    _ = create_folder(concat_folder, archi_alias["parsing"], verbose=verbose)
 
-    dedup_folder = create_folder(corpus_folder, archi_alias["dedup"], verbose = verbose)
-    _ = create_folder(dedup_folder, archi_alias["parsing"], verbose = verbose)
+    dedup_folder = create_folder(corpus_folder, archi_alias["dedup"], verbose=verbose)
+    _ = create_folder(dedup_folder, archi_alias["parsing"], verbose=verbose)
 
-    scopus_folder = create_folder(corpus_folder, archi_alias["scopus"], verbose = verbose)
-    _ = create_folder(scopus_folder, archi_alias["parsing"], verbose = verbose)
-    _ = create_folder(scopus_folder, archi_alias["rawdata"], verbose = verbose)
+    scopus_folder = create_folder(corpus_folder, archi_alias["scopus"], verbose=verbose)
+    _ = create_folder(scopus_folder, archi_alias["parsing"], verbose=verbose)
+    _ = create_folder(scopus_folder, archi_alias["rawdata"], verbose=verbose)
 
-    wos_folder = create_folder(corpus_folder, archi_alias["wos"], verbose = verbose)
-    _ = create_folder(wos_folder, archi_alias["parsing"], verbose = verbose)
-    _ = create_folder(wos_folder, archi_alias["rawdata"], verbose = verbose)
+    wos_folder = create_folder(corpus_folder, archi_alias["wos"], verbose=verbose)
+    _ = create_folder(wos_folder, archi_alias["parsing"], verbose=verbose)
+    _ = create_folder(wos_folder, archi_alias["rawdata"], verbose=verbose)
 
     message = f"Architecture created for {corpus_year_folder} folder"
     return message
@@ -292,7 +665,23 @@ def _save_item(item_df, item_filename_base, save_extent, parsing_path):
         item_df.to_csv(item_working_path, index=False, sep=',')
 
 
-def _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
+def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
+    """Saves the data of an item of the deduplication results of the parsing step
+    as final results.
+
+    Args:
+        item_df (dataframe): The data of the deduplication item to be saved.
+        item_filename_base (str): The file name base to build the name of the file \
+        for saving the item data.
+        save_extent (str): The extent for building the name of the file for saving \
+        the data.
+        dedup_infos (tup): (The full path to the working folder (path), \
+        Data combination type from corpuses databases (str), \
+        4 digits year of the corpus (str)).
+    Returns:
+        (tup): (4 digits year of the corpus (str), The full path to the folder \
+        where the deduplication result are saved).
+    """
     # Setting parameters from args
     bibliometer_path, datatype, corpus_year = dedup_infos
 
@@ -326,15 +715,16 @@ def _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
 def save_parsing_dict(parsing_dict, parsing_path,
                       item_filename_dict, save_extent,
                       dedup_infos=None):
-    """Saves the dataframes passed through the dict of parsing results 
+    """Saves the data passed through the dict of parsing results 
     as files of a specifyed type.
 
-    It may manage the final saving of the deduplication results.
+    It may manage the final saving of the parsing-deduplication results 
+    depending on the optional argument 'dedup_infos'.
 
     Args:
         parsing_dict (dict): Parsing results keyed by parsing items \
         given by 'PARSING_ITEMS_LIST' global imported from the package \
-        imported as bp and valued by the dataframes of parsing results.
+        imported as bp and valued by the data (dataframes) of parsing results.
         parsing_path (path): Full path to the folder for saving \
         the parsing results.
         item_filename_dict (dict): Dict keyed by the parsing items \
@@ -357,7 +747,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
 
             if dedup_infos:
                 item_idx += 1
-                return_tup = _save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+                return_tup = save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
                 if item_idx==parsing_items_nb:
                     corpus_year, final_dedup_path = return_tup
                     end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
@@ -381,7 +771,6 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
         the package imported as bp and valued by the dataframes \
         of parsing results.
     """
-
     parsing_dict = {}
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
@@ -402,12 +791,137 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
                     item_df = pd.read_csv(item_tsv_path, sep = "\t")
                 except pd.errors.EmptyDataError:
                     item_df = pd.DataFrame()
-        else:
-            pass
 
         if item_df is not None:
             parsing_dict[item] = item_df
     return parsing_dict
+
+
+def get_final_dedup(bibliometer_path, saved_results_path, corpus_year):
+    """Reads saved final-parsing data as dict resulting from the parsing step.
+
+    It uses the `read_parsing_dict` function of 
+    the `bmfuncts.useful_functs` module.
+
+    Args:
+        bibliometer_path (path): Full path to working folder.
+        saved_results_path (path): Full path to the folder \
+        where final results are saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dict): Parsing results keyed by parsing items (str) and valued \
+        by data (dataframe) of the parsing item.
+    """
+    # Setting useful aliases
+    parsing_save_extent_alias = pg.TSV_SAVE_EXTENT
+    saved_dedup_parsing_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+
+    # Getting the item-filename dict of the user for getting deduplication results
+    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    item_filename_dict = config_tup[2]
+
+    # Setting path of deduplicated parsings
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_dedup_parsing_path = year_saved_results_path / Path(saved_dedup_parsing_folder_alias)
+
+    # Getting the dict of deduplication results
+    dedup_parsing_dict = read_parsing_dict(saved_dedup_parsing_path, item_filename_dict,
+                                           parsing_save_extent_alias)
+    return dedup_parsing_dict
+
+
+def read_final_submit_data(saved_results_path, corpus_year):
+    """Reads saved publications list with one row per Institute author 
+    and its attributes.
+    
+    This data have been initially built through the `resursive_year_search` 
+    function of the `bmfuncts.merge_pub_employees` module.
+
+    Args:
+        saved_results_path (path): Full path to the folder \
+        where final results are saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dataframe): The resulting dataframe from the read.
+    """
+
+    # Setting useful aliases
+    saved_submit_folder_alias = pg.ARCHI_RESULTS["submit"]
+    saved_submit_file_base_alias = pg.ARCHI_YEAR["submit file name"]
+    year_submit_filename = corpus_year + " " + saved_submit_file_base_alias
+
+    # Setting useful paths
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_submit_path = year_saved_results_path / Path(saved_submit_folder_alias)
+    submit_file_path = saved_submit_path / Path(year_submit_filename)
+
+    # Reading the submit file
+    submit_df = pd.read_excel(submit_file_path)
+    return submit_df
+
+
+def read_final_pub_list_data(saved_results_path,
+                             corpus_year, cols_list):
+    """Reads saved final data of papers lists resulting from 
+    the consolidation step.
+
+    Args:
+        saved_results_path (path): Full path to the folder \
+        where final results are saved.
+        corpus_year (str): 4 digits year of the corpus.
+        cols_list (list): Use columns names for the file read.
+    Returns:
+        (tup): (papers data (dataframe), full path to the books data file).
+    """
+    # Setting useful aliases
+    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
+    saved_pub_list_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
+
+    # Setting useful xlsx file names for input data
+    year_pub_list_filename = pub_list_filename_base + " " + corpus_year
+    pub_list_filename = year_pub_list_filename + ".xlsx"
+
+    # Setting input-data paths
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_pub_list_path = year_saved_results_path / Path(saved_pub_list_folder_alias)
+    pub_list_file_path = saved_pub_list_path / Path(pub_list_filename)
+
+    # Initializing the dataframe to be analysed
+    pub_df = pd.read_excel(pub_list_file_path,
+                           usecols=cols_list)
+    return pub_df
+
+
+def read_final_set_homonyms_data(saved_results_path, corpus_year):
+    """Reads saved publications list with one row per Institute author 
+    and its attributes after resolving homonyms.
+    
+    This data have been initially built through the `set_saved_homonyms` 
+    function of the `bmfuncts.use_homonyms` module.
+
+    Args:
+        saved_results_path (path): Full path to the folder \
+        where final results are saved.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (dataframe): The resulting dataframe from the read.
+    """
+
+    # Setting useful aliases
+    saved_homonyms_folder_alias = pg.ARCHI_RESULTS["homonyms"]
+    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
+
+    # Setting input file
+    year_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
+
+    # Setting useful paths
+    year_saved_results_path = saved_results_path / Path(corpus_year)
+    saved_homonyms_path = year_saved_results_path / Path(saved_homonyms_folder_alias)
+    homonyms_file_path = saved_homonyms_path / Path(year_homonyms_file)
+
+    # Reading the submit file
+    set_homonyms_df = pd.read_excel(homonyms_file_path)
+    return set_homonyms_df
 
 
 def save_fails_dict(fails_dict, parsing_path):
