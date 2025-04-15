@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmgui"))
 
 
 project = 'BiblioMeter'
-release = '6.0.0'
+release = '6.1.0'
 authors = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
 copyright = '2021, BiblioMeter team, Liten, Leti, CEA'
 
