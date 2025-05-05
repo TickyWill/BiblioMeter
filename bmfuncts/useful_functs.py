@@ -5,7 +5,8 @@ ToDo:
     - Redistribution of module in modules of common-objective functions.
 """
 
-__all__ = ['check_dedup_parsing_available',
+__all__ = ['build_pub_ids_lists',
+           'check_dedup_parsing_available',
            'concat_dfs',
            'create_archi',
            'create_folder',
@@ -869,7 +870,7 @@ def read_final_pub_list_data(saved_results_path,
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
-        cols_list (list): Use columns names for the file read.
+        cols_list (list): Used columns names for the file read.
     Returns:
         (tup): (papers data (dataframe), full path to the books data file).
     """
@@ -922,6 +923,41 @@ def read_final_set_homonyms_data(saved_results_path, corpus_year):
     # Reading the submit file
     set_homonyms_df = pd.read_excel(homonyms_file_path)
     return set_homonyms_df
+
+
+def build_pub_ids_lists(saved_results_path, year, cols_list):
+    """Builds the lists of publication IDs from the final list of publications 
+    of the institute for each document type.
+
+    The useful data are obtained from the final list of publications of the institute 
+    through the `read_final_pub_list_data` function imported from 
+    the `bmfuncts.useful_functs` module. 
+    The document types are capitalized through the `set_capwords_lambda` lambda function 
+    imported from the `bmfuncts.useful_functs` module.
+
+    Args:
+        saved_results_path (path): Full path to the folder where final results are saved.
+        year (str): 4 digits year of the corpus.
+        cols_list (list): The column names (str) of publication IDs and document type \
+        in the final list of publications.
+    Returns:
+        (tuple): (list of all publication IDs of the institute, \
+        list of the IDs of publications in journals, \
+        list of the IDs of publications in conference proceedings, \
+        list of the IDS of publications in books).
+    """
+    final_pub_id_col, final_doctype_col = cols_list 
+    pub_type_df = read_final_pub_list_data(saved_results_path, year, cols_list)
+    pub_type_df[final_doctype_col] = pub_type_df.apply(set_capwords_lambda(final_doctype_col), axis=1)
+    
+    journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Articles'])]
+    proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Proceedings'])]
+    books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Books'])]
+    institute_pub_ids_list = pub_type_df[final_pub_id_col].to_list()
+    journal_pub_ids_list = journal_pub_id_df[final_pub_id_col].to_list()
+    proceedings_pub_ids_list = proceedings_pub_id_df[final_pub_id_col].to_list()
+    book_pub_ids_list = books_pub_id_df[final_pub_id_col].to_list()
+    return institute_pub_ids_list, journal_pub_ids_list, proceedings_pub_ids_list, book_pub_ids_list
 
 
 def save_fails_dict(fails_dict, parsing_path):

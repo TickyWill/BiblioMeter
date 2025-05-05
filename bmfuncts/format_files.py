@@ -718,12 +718,13 @@ def _set_inst_country_pub_attributes(cols_list):
         The value (int) for initializing columns index).
     """
     # Setting col-attributes dict
-    attr_list = [[30, "left"], [25, "center"],
-                 [15, "center"], [95, "left"]]
+    attr_list = [[30, "left"], [25, "center"]] \
+              + [[15, "center"]] * 4 \
+              + [[95, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
 
     # Setting row-heights dict
-    row_heights_dict = {'first_row':30,
+    row_heights_dict = {'first_row':60,
                         'other_rows':15}
 
     # Setting value to initialize columns index
@@ -763,7 +764,7 @@ def _set_country_inst_pub_attributes(cols_list):
     """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the data of publication IDs per institutions 
-    and per country to be saved.
+    types and per country to be saved.
 
     Args:
         cols_list (list): The columns names (str) of the data.
@@ -774,13 +775,13 @@ def _set_country_inst_pub_attributes(cols_list):
         The value (int) for initializing columns index).
     """
     # Setting col-attributes dict
-    attr_list = [[30, "left"], [15, "center"],
-                 [95, "left"], [15, "center"],
-                 [95, "left"]]
+    attr_list = [[30, "left"], [15, "center"], [95, "left"]] \
+              + [[15, "center"]] * 4 \
+              + [[95, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
 
     # Setting row-heights dict
-    row_heights_dict = {'first_row':30,
+    row_heights_dict = {'first_row':60,
                         'other_rows':15}
 
     # Setting value to initialize columns index

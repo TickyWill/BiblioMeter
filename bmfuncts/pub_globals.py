@@ -247,29 +247,32 @@ SHEET_SAVE_OTP = {'hash_OTP': 'Hash_ID-OTP',
                   'doi_OTP' : 'DOI-OTP'}
 
 
-COL_NAMES_BONUS = {'nom prénom'       : "Nom, Prénom de l'auteur ",
-                   'nom prénom liste' : "Liste ordonnée des auteurs de l'institut",
-                   'liste biblio'     : "Référence bibliographique complète",
-                   'liste auteurs'    : "Liste ordonnée de tous les auteurs",
-                   'author_type'      : "Type de l'auteur",
-                   'homonym'          : "Homonymes",
-                   'list OTP'         : "Choix de l'OTP",
-                   'final OTP'        : "OTP",
-                   'corpus_year'      : "Année de première publication",
-                   'IF en cours'      : "IF en cours",
-                   'IF année publi'   : "IF de l'année de première publication",
-                   'IF clarivate'     : "IF",
-                   'e-ISSN'           : "e-ISSN",
-                   'database ISSN'    : "ISSN via source",
-                   'pub number'       : "Nombre de publications",
-                   'weight'           : "Weight",
-                   'country'          : "Pays",
-                   'continent'        : "Continent",
-                   'institution'      : "Institution",
-                   'inst number'      : "Nombre d'entités",
-                   'pub_ids list'     : "Liste des Pub_ids",
-                   'inst list'        : "Liste des entités",
-                   'address ID'       : "Adresse_id",
+COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
+                   'nom prénom liste'  : "Liste ordonnée des auteurs de l'institut",
+                   'liste biblio'      : "Référence bibliographique complète",
+                   'liste auteurs'     : "Liste ordonnée de tous les auteurs",
+                   'author_type'       : "Type de l'auteur",
+                   'homonym'           : "Homonymes",
+                   'list OTP'          : "Choix de l'OTP",
+                   'final OTP'         : "OTP",
+                   'corpus_year'       : "Année de première publication",
+                   'IF en cours'       : "IF en cours",
+                   'IF année publi'    : "IF de l'année de première publication",
+                   'IF clarivate'      : "IF",
+                   'e-ISSN'            : "e-ISSN",
+                   'database ISSN'     : "ISSN via source",
+                   'pub number'        : "Nombre de publications",
+                   'weight'            : "Weight",
+                   'country'           : "Pays",
+                   'continent'         : "Continent",
+                   'institution'       : "Institution",
+                   'inst number'       : "Nombre d'entités",
+                   'pub_ids list'      : "Liste des Pub_ids",
+                   'inst list'         : "Liste des entités",
+                   'address ID'        : "Adresse_id",
+                   'journal_pub_nb'    : "Nombre de publications de journal",
+                   'proceedings_pub_nb': "Nombre de publications d'actes de conférence",
+                   'book_pub_nb'       : "Nombre d'ouvrages ou de chapitres",
                   }
 
 
@@ -378,12 +381,17 @@ KPI_KEYS_DICT = {'articles'   : [6,3,9,12],
 stat_keys_list = ["country per pub",
                   "inst per country per pub",
                   "inst and pub per country"]
+
 stat_names_list = ["Stat-Publications par institutions",
                    "Stat-Institutions par publication",
                    "Stat_Institutions & Publications par pays",]
+
 stat_df_titles_list = [12, 14, 15]
-values_tup_list = tuple(zip(stat_names_list, stat_df_titles_list ))
+
+values_tup_list = tuple(zip(stat_names_list, stat_df_titles_list))
 
 STAT_FILE_DICT = dict(zip(stat_keys_list, values_tup_list))
-STAT_INST_TYPES_LIST = ["Firm", "Nro", "Rto", "Univ", "Inst",
+
+
+STAT_INST_TYPES_LIST = ["Firm", "Chu", "Nro", "Rto", "Univ", "Inst",
                         "CNRS-Lab", "Univ-Lab", "Jlab", "CEA-Inst"]
