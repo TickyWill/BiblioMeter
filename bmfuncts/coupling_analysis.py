@@ -251,7 +251,9 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     3. Builds the dataframes of countries, normalized institutions and raw institutions \
     through the `_build_and_save_norm_raw_dfs` internal function.
     4. Builds the publications statistics dataframes per institutions through the \
-    `_build_and_save_institutions_stat` internal function.
+    `_build_and_save_institutions_stat` internal function after setting the Institute publications \
+    IDs list through the `build_pub_ids_lists` function imported from the `bmfuncts.useful_functs` \
+    module.
     5. Builds the publications statistics dataframes per country and per continent through \
     the `_build_and_save_geo_stat` internal function.
     6. Saves the results of this analysis for the 'datatype' case through the \
