@@ -946,10 +946,10 @@ def build_pub_ids_lists(saved_results_path, year, cols_list):
         list of the IDs of publications in conference proceedings, \
         list of the IDS of publications in books).
     """
-    final_pub_id_col, final_doctype_col = cols_list 
+    final_pub_id_col, final_doctype_col = cols_list
     pub_type_df = read_final_pub_list_data(saved_results_path, year, cols_list)
     pub_type_df[final_doctype_col] = pub_type_df.apply(set_capwords_lambda(final_doctype_col), axis=1)
-    
+
     journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Articles'])]
     proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Proceedings'])]
     books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Books'])]
