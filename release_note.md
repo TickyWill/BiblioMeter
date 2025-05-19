@@ -7,6 +7,7 @@
   - Feature 2: Addition of the "build_pub_ids_lists" function to the "useful_functs" module for setting the list of the Institute publications IDS and performing collaborations analysis only on these IDs.
 * **Improvements**:
   - Improvement 1: Update of the "coupling_analysis" module to integrate the use of the above created or updated functions.
+  - Improvement 2: Update of the "bmfuncts/build_pub_addresses" and the "useful_functs" modules to integrate the use of the "standardize_address" function as imported from "BiblioParsing" package.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:
