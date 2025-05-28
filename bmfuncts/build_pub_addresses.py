@@ -19,7 +19,6 @@ from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import read_final_submit_data
 from bmfuncts.useful_functs import save_xlsx_file
 from bmfuncts.useful_functs import set_year_pub_id
-from bmfuncts.useful_functs import standardize_address
 
 
 def _build_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
@@ -339,7 +338,7 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     4. Selects only addresses of the publications of the institute.
 
     All addresses are standardized through the `standardize_address` function \
-    imported from the `bmfuncts.useful_functs` module.
+    imported from the `BiblioParsing` package.
 
     Args:
         institute (str): The institute name.
@@ -373,7 +372,7 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
                                                     saved_results_path, year)
     return_df, inst_pud_ids_list, bm_cols_list = return_tup
     bm_pub_id_col, bm_author_id_col, bm_address_col = bm_cols_list
-    return_df[bm_address_col] = return_df[bm_address_col].apply(standardize_address)
+    return_df[bm_address_col] = return_df[bm_address_col].apply(bp.standardize_address)
     institute_author_addresses_df = return_df.copy()
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.50)
@@ -388,7 +387,7 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     # Setting the addresses data from the deduplication results of the parsing step
     all_address_df = _read_addresses_data(bibliometer_path, saved_results_path, year)
     all_address_df = set_year_pub_id(all_address_df, year, bp_pub_id_alias)
-    all_address_df[bp_address_alias] = all_address_df[bp_address_alias].apply(standardize_address)
+    all_address_df[bp_address_alias] = all_address_df[bp_address_alias].apply(bp.standardize_address)
     all_address_df.rename(columns=bp2bm_rename_cols_dict, inplace=True)
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.70)

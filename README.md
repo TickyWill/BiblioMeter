@@ -65,6 +65,7 @@ app.mainloop()
 - 5.1.0 Enhanced orphan authors treatment
 - 6.0.0 Enhanced OTPs treatment
 - 6.1.0 Enhanced collaborations analysis
+- 6.2.0 Introduced analysis by subjects (OTPs)
 
 # Meta
 	- authors: BiblioAnalysis team

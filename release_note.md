@@ -1,5 +1,24 @@
 # Application Release Backlog
 
+## Release 6.2.0 - 2025/xx/xx
+* **Summary**: This release corresponds to the introduction of the analysis per subjects and to the update of the collaborations analysis with the enhancement of the publications statistics provided by the affiliations analysis of the authors.
+* **Features**:
+  - Feature 1: Update of the "\_build_inst_type_inst_df" and "\_build_inst_type_country_df" functions of "build_institutions_stat" module to add columns with number of publications per document type to the statistics results.
+  - Feature 2: Addition of the "build_pub_ids_lists" function to the "useful_functs" module for setting the list of the Institute publications IDS and performing collaborations analysis only on these IDs.
+* **Improvements**:
+  - Improvement 1: Update of the "coupling_analysis" module to integrate the use of the above created or updated functions.
+  - Improvement 2: Update of the "bmfuncts/build_pub_addresses" and the "useful_functs" modules to integrate the use of the "standardize_address" function as imported from "BiblioParsing" package.
+* **Bug Fixes**:
+  - None.
+* **Known Issues**:
+  - None.
+* **API Changes**:
+  - None.
+* **Deprecated Features**:
+  - None
+* **Contributors**: Amal Chabli.
+* **Acknowledgments**: Thanks to Baptiste Refalo for pull requests review.
+
 ## Release 6.1.0 - 2025/04/15
 * **Summary**: This release corresponds to the update of the collaborations analysis with the development of the statistics per institution of affiliations of the authors.
 * **Features**:
@@ -7,11 +26,11 @@
   - Feature 2: Creation of "build_institutions_stat" module allowing to build several statistics data for each type of institutions (ex: Number of publications co-written with universities).
 * **Improvements**:
   - Improvement 1: Update of the "coupling_analysis" module to integrate the use of the above created modules.
-  - Improvement 2: Addition of "_clean_hash_id_df" function dedicated to managing duplicates of publications with same Hash ID (cleans hash_id.xlsx, submit.xlsx and orphan.xlsx files).
-  - Improvement 3: Addition of "_enhance_homonyms_file" and "_set_otps_dept_affil" functions dedicated to setting standardized department affiliation of authors before OTPs attribution.
+  - Improvement 2: Addition of "\_clean_hash_id_df" function dedicated to managing duplicates of publications with same Hash ID (cleans hash_id.xlsx, submit.xlsx and orphan.xlsx files).
+  - Improvement 3: Addition of "\_enhance_homonyms_file" and "\_set_otps_dept_affil" functions dedicated to setting standardized department affiliation of authors before OTPs attribution.
   - Improvement 4: Update of "create_archi" function to automatically create useful folders for saving corpus extractions.
   - Improvement 5: Update of "save_otps" function to automatically create an empty file that will contain the OTPs attributed by the user if it not exists.
-  - Improvement 6: Substitution of "_append_df" function by "concat_dfs" function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
+  - Improvement 6: Substitution of "\_append_df" function by "concat_dfs" function to avoid warnings due to concatenation of empty dataframes using "concat" method of "pandas" library.
   - Improvement 7: Addition of "keep_initials" function  to avoid interpretation of first-name initials equal to NA as NaN.
   - Improvement 8: Redistribution of "merge_pub_employees" module into 3 modules for sake of clarity (new modules: "build_year_pub_empl" and "create_hash_id").
   - Improvement 9: Addition of management of last corpus year when it is not in available years of impact factors in "update_impact_factors" module.

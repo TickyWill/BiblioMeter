@@ -21,6 +21,7 @@ from bmfuncts.build_pub_addresses import build_institute_addresses_df
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
+from bmfuncts.useful_functs import build_pub_ids_lists
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import set_saved_results_path
 
@@ -48,9 +49,12 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
                                             for institution in unkept_institutions_list]
             for idx_row, inst_row in country_raw_inst_df.iterrows():
                 inst_row_list = [x.strip() for x in inst_row[institution_col].split(";")]
+                inst_row_list_mod = [x.translate(bp.SYMB_CHANGE).lower() for x in inst_row_list]
                 for unkept_inst in unkept_institutions_list_mod:
-                    if unkept_inst in inst_row_list:
-                        inst_row_list.remove(unkept_inst)
+                    if unkept_inst.lower() in inst_row_list_mod:
+                        inst_idx = inst_row_list_mod.index(unkept_inst.lower())
+                        del inst_row_list_mod[inst_idx]
+                        del inst_row_list[inst_idx]
                         if len(inst_row_list)>1:
                             country_raw_inst_df.loc[idx_row, institution_col] = "; ".join(inst_row_list)
                         elif len(inst_row_list)==1:
@@ -247,7 +251,9 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     3. Builds the dataframes of countries, normalized institutions and raw institutions \
     through the `_build_and_save_norm_raw_dfs` internal function.
     4. Builds the publications statistics dataframes per institutions through the \
-    `_build_and_save_institutions_stat` internal function.
+    `_build_and_save_institutions_stat` internal function after setting the Institute publications \
+    IDs list through the `build_pub_ids_lists` function imported from the `bmfuncts.useful_functs` \
+    module.
     5. Builds the publications statistics dataframes per country and per continent through \
     the `_build_and_save_geo_stat` internal function.
     6. Saves the results of this analysis for the 'datatype' case through the \
@@ -297,7 +303,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
 
     # Setting useful column names aliases
     final_col_dic, _ = set_final_col_names(institute, org_tup)
-    final_pub_id_alias = final_col_dic['pub_id']
+    final_pub_id_col = final_col_dic['pub_id']
+    final_doctype_col = final_col_dic['doc_type']
 
     # Building only addresses of Institute publications
     progress_param = None
@@ -319,7 +326,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     paths_tup = (institutions_folder_path, inst_types_file_path)
     return_tup = _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
                                               inst_analysis_folder_path, year,
-                                              final_pub_id_alias, paths_tup,
+                                              final_pub_id_col, paths_tup,
                                               progress_param=progress_param,
                                               verbose=verbose)
     (countries_df, norm_institutions_df,
@@ -333,9 +340,12 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
             progress_callback(inter_progress_2)
             inter_progress_3 = 93
             progress_param = (progress_callback, inter_progress_2, inter_progress_3)
+        pub_doctype_cols_list = [final_pub_id_col, final_doctype_col]
+        pub_ids_lists = build_pub_ids_lists(saved_results_path, year, pub_doctype_cols_list)
         build_and_save_institutions_stat(institute, norm_institutions_df,
                                          inst_types_file_path,
                                          inst_analysis_folder_path, year,
+                                         pub_ids_lists,
                                          progress_param=progress_param)
         if verbose:
             print("    Distributed institutions and institutions stat built and saved.")

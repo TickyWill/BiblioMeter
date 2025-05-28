@@ -5,7 +5,8 @@ ToDo:
     - Redistribution of module in modules of common-objective functions.
 """
 
-__all__ = ['check_dedup_parsing_available',
+__all__ = ['build_pub_ids_lists',
+           'check_dedup_parsing_available',
            'concat_dfs',
            'create_archi',
            'create_folder',
@@ -24,7 +25,6 @@ __all__ = ['check_dedup_parsing_available',
            'set_rawdata',
            'set_saved_results_path',
            'set_year_pub_id',
-           'standardize_address',
            'standardize_firstname_initials',
            'standardize_full_name_order',
            'standardize_txt',
@@ -224,66 +224,6 @@ def keep_initials(df, initials_col_base, missing_fill=None):
         for col in df_fill_na_cols:
             df[col] = df[col].fillna(missing_fill)
     return df
-
-
-def standardize_address(raw_address):
-    """Standardizes the string 'raw_address' by replacing all aliases of a word, 
-    such as 'University', 'Institute', 'Center' and' Department', by a standardized 
-    version.
-
-    The aliases of a given word are captured using a specific regex which is case sensitive defined 
-    by the global 'DIC_WORD_RE_PATTERN' imported from the `BiblioParsing` package imported as "bp". 
-    The aliases may contain symbols from a given list of any language including accentuated ones. 
-    The length of the aliases is limited to a maximum according to the longest alias known.
-        ex: The longest alias known for the word 'University' is 'Universidade'. 
-            Thus, 'University' aliases are limited to 12 symbols beginning with the base 'Univ' 
-            with possibly before one symbol among a to z and after up to 8 symbols from the list 
-            '[aàäcdeéirstyz]' and possibly finishing with a dot. 
-    Then, dashes are replaced by a hyphen-minus using 'DASHES_CHANGE' global and apostrophes are replaced 
-    by the standard cote using 'APOSTROPHE_CHANGE' global. 
-    The globals are imported from the `BiblioParsing` package imported as "bp". 
-    Finally, the country is normalized through the `normalize_country` function imported from 
-    the `BiblioParsing` package imported as "bp".
-
-    Args:
-        raw_address (str): The full address to be standardized.
-    Returns:
-        (str): The full standardized address.
-    Note:
-        Copied from BiblioParsing package.
-    """
-    # Uniformizing words
-    standard_address = raw_address
-    for word_to_substitute, re_pattern in bp.DIC_WORD_RE_PATTERN.items():
-        if word_to_substitute=='University':
-            # Corrected in new version of BiblioParsing package
-            # To be removed when available from package new install
-            re_pattern = re.compile(r'\b[a-z]?Univ[aàäcdeéirstyz]{0,8}\b\.?')
-        standard_address = re.sub(re_pattern, word_to_substitute + ' ', standard_address)
-    standard_address = re.sub(r'\s+', ' ', standard_address)
-    standard_address = re.sub(r'\s,', ',', standard_address)
-
-    # Uniformizing dashes
-    standard_address = standard_address.translate(bp.DASHES_CHANGE)
-
-    # Uniformizing apostrophes
-    standard_address = standard_address.translate(bp.APOSTROPHE_CHANGE)
-
-    # Dropping symbols
-    standard_address = standard_address.translate(bp.SYMB_DROP)
-
-    # Uniformizing countries
-    country_pos = -1
-    first_raw_affiliations_list = standard_address.split(',')
-    # This split below is just for country finding even if affiliation may be separated by dashes
-    raw_affiliations_list = sum([x.split(' - ') for x in first_raw_affiliations_list], [])
-    country = bp.normalize_country(raw_affiliations_list[country_pos].strip())
-    space = " "
-    if country!=bp.UNKNOWN:
-        standard_address = ','.join(first_raw_affiliations_list[:-1] + [space + country])
-    else:
-        standard_address = ','.join(first_raw_affiliations_list + [space + country])
-    return standard_address
 
 
 def save_xlsx_file(root_path, df, file_name):
@@ -869,7 +809,7 @@ def read_final_pub_list_data(saved_results_path,
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
-        cols_list (list): Use columns names for the file read.
+        cols_list (list): Used columns names for the file read.
     Returns:
         (tup): (papers data (dataframe), full path to the books data file).
     """
@@ -922,6 +862,41 @@ def read_final_set_homonyms_data(saved_results_path, corpus_year):
     # Reading the submit file
     set_homonyms_df = pd.read_excel(homonyms_file_path)
     return set_homonyms_df
+
+
+def build_pub_ids_lists(saved_results_path, year, cols_list):
+    """Builds the lists of publication IDs from the final list of publications 
+    of the institute for each document type.
+
+    The useful data are obtained from the final list of publications of the institute 
+    through the `read_final_pub_list_data` function imported from 
+    the `bmfuncts.useful_functs` module. 
+    The document types are capitalized through the `set_capwords_lambda` lambda function 
+    imported from the `bmfuncts.useful_functs` module.
+
+    Args:
+        saved_results_path (path): Full path to the folder where final results are saved.
+        year (str): 4 digits year of the corpus.
+        cols_list (list): The column names (str) of publication IDs and document type \
+        in the final list of publications.
+    Returns:
+        (tuple): (list of all publication IDs of the institute, \
+        list of the IDs of publications in journals, \
+        list of the IDs of publications in conference proceedings, \
+        list of the IDS of publications in books).
+    """
+    final_pub_id_col, final_doctype_col = cols_list
+    pub_type_df = read_final_pub_list_data(saved_results_path, year, cols_list)
+    pub_type_df[final_doctype_col] = pub_type_df.apply(set_capwords_lambda(final_doctype_col), axis=1)
+
+    journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Articles'])]
+    proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Proceedings'])]
+    books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Books'])]
+    institute_pub_ids_list = pub_type_df[final_pub_id_col].to_list()
+    journal_pub_ids_list = journal_pub_id_df[final_pub_id_col].to_list()
+    proceedings_pub_ids_list = proceedings_pub_id_df[final_pub_id_col].to_list()
+    book_pub_ids_list = books_pub_id_df[final_pub_id_col].to_list()
+    return institute_pub_ids_list, journal_pub_ids_list, proceedings_pub_ids_list, book_pub_ids_list
 
 
 def save_fails_dict(fails_dict, parsing_path):
