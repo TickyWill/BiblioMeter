@@ -39,7 +39,7 @@ class AppMain(tk.Tk):
     """Main class of the BiblioMeter application.
 
     Traces changes in institute selection to update page parameters. 
-    'bmf' stands for BiblioMeter_Files usual working directory name.
+    'wf' stands for working folder.
     """
     def __init__(self):
         self.datatype_optionbutton_font = None
@@ -69,10 +69,10 @@ class AppMain(tk.Tk):
             self.datatype_label.place(x=datatype_button_x_pos, y=datatype_button_y_pos)
             place_after(self.datatype_label, self.datatype_optionbutton, dy=dy_datatype)
 
-        def _display_path(inst_bmf):
-            """Shortens bmf path for easy display."""
+        def _display_path(inst_wf):
+            """Shortens wf path for easy display."""
 
-            p = Path(inst_bmf)
+            p = Path(inst_wf)
             if len(p.parts)<=4:
                 p_disp = p
             else:
@@ -83,91 +83,91 @@ class AppMain(tk.Tk):
 
         def _get_file(institute_select, datatype_select):
             """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
-            Updates 'bmf' widgets parameters and values accordingly to the working 
+            Updates 'wf' widgets parameters and values accordingly to the working 
             folder got and sets launch button of corpuses analysis."""
 
             # Getting new working directory
             dialog_title = "Choisir un nouveau dossier de travail"
-            bmf_str = tk.filedialog.askdirectory(title=dialog_title)
-            if bmf_str=='':
+            wf_str = tk.filedialog.askdirectory(title=dialog_title)
+            if wf_str=='':
                 warning_title = "!!! Attention !!!"
                 warning_text = "Chemin non renseigné."
                 messagebox.showwarning(warning_title, warning_text)
 
-            # Updating bmf values using new working directory
-            _set_bmf_widget_param(institute_select, bmf_str, datatype_select)
-            _update_corpi(bmf_str)
-            SetLaunchButton(self, institute_select, bmf_str, datatype_select)
+            # Updating wf values using new working directory
+            _set_wf_widget_param(institute_select, wf_str, datatype_select)
+            _update_corpi(wf_str)
+            SetLaunchButton(self, institute_select, wf_str, datatype_select)
 
-        def _set_bmf_widget_param(institute_select, inst_bmf, datatype_select):
-            """Sets 'bmf' widgets parameters and values 
+        def _set_wf_widget_param(institute_select, inst_wf, datatype_select):
+            """Sets 'wf' widgets parameters and values 
             according to the selected Institute."""
 
-            # Setting bmf widgets parameters
-            bmf_font = tkFont.Font(family=gg.FONT_NAME,
-                                   size=eff_bmf_font_size,
+            # Setting wf widgets parameters
+            wf_font = tkFont.Font(family=gg.FONT_NAME,
+                                   size=eff_wf_font_size,
                                    weight='bold')
-            bmf_label = tk.Label(self,
-                                 text=gg.TEXT_BMF,
-                                 font=bmf_font,)
-            bmf_val = tk.StringVar(self)
-            bmf_val2 = tk.StringVar(self)
-            bmf_entree2 = tk.Entry(self, textvariable=bmf_val2, width=eff_bmf_width)
-            bmf_button_font = tkFont.Font(family=gg.FONT_NAME,
+            wf_label = tk.Label(self,
+                                 text=gg.TEXT_WF,
+                                 font=wf_font,)
+            wf_val = tk.StringVar(self)
+            wf_val2 = tk.StringVar(self)
+            wf_entree2 = tk.Entry(self, textvariable=wf_val2, width=eff_wf_width)
+            wf_button_font = tkFont.Font(family=gg.FONT_NAME,
                                           size=eff_buttons_font_size)
-            bmf_button = tk.Button(self,
-                                   text=gg.TEXT_BMF_CHANGE,
-                                   font=bmf_button_font,
+            wf_button = tk.Button(self,
+                                   text=gg.TEXT_WF_CHANGE,
+                                   font=wf_button_font,
                                    command=lambda: _get_file(institute_select,
                                                              datatype_select))
-            # Placing bmf widgets
-            bmf_label.place(x=eff_bmf_pos_x_px,
-                            y=eff_bmf_pos_y_px,)
+            # Placing wf widgets
+            wf_label.place(x=eff_wf_pos_x_px,
+                            y=eff_wf_pos_y_px,)
 
-            text_width_mm, _ = str_size_mm(gg.TEXT_BMF, bmf_font, gg.PPI)
+            text_width_mm, _ = str_size_mm(gg.TEXT_WF, wf_font, gg.PPI) 
             eff_path_pos_x_px = mm_to_px(text_width_mm + add_space_mm, gg.PPI)
-            bmf_entree2.place(x=eff_path_pos_x_px,
-                              y=eff_bmf_pos_y_px,)
+            wf_entree2.place(x=eff_path_pos_x_px,
+                              y=eff_wf_pos_y_px,)
 
-            bmf_button.place(x=eff_path_pos_x_px,
-                             y=eff_bmf_pos_y_px + eff_button_dy_px,)
-            bmf_val.set(inst_bmf)
-            bmf_val2.set(_display_path(inst_bmf))
+            wf_button.place(x=eff_path_pos_x_px,
+                             y=eff_wf_pos_y_px + eff_button_dy_px,)
+            wf_val.set(inst_wf)
+            wf_val2.set(_display_path(inst_wf))
 
-        def _try_bmf_access(bmf_path):
+        def _try_wf_access(wf_path):
             """Returns status of the default working folder as boolean: True, if exists 
             and access is authorized to the user; False, otherwise."""
 
-            bmf_access_status = False
-            if os.access(bmf_path, os.F_OK | os.R_OK | os.W_OK):
-                bmf_access_status = True
+            wf_access_status = False
+            if os.access(wf_path, os.F_OK | os.R_OK | os.W_OK):
+                wf_access_status = True
             else:
                 warning_title = "!!! ATTENTION : Accés au dossier impossible !!!"
-                warning_text = (f"Accès non autorisé ou absence du dossier \n   {bmf_path}."
+                warning_text = (f"Accès non autorisé ou absence du dossier \n   {wf_path}."
                                 "\n\nChoisissez un autre dossier de travail.")
                 messagebox.showwarning(warning_title, warning_text)
-            return bmf_access_status
+            return wf_access_status
 
-        def _create_corpus(inst_bmf):
+        def _create_corpus(inst_wf):
             """Creates a new corpus folder in the working folder through `create_archi` 
             function imported from `bmfuncts.useful_functs` module.             
             Then, updates 'corpi' widget value with new list of available corpuses."""
 
-            corpi_val = _set_corpi_widgets_param(inst_bmf)
-            bmf_path = Path(inst_bmf)
-            bmf_access_status = _try_bmf_access(bmf_path)
-            if bmf_access_status:
+            corpi_val = _set_corpi_widgets_param(inst_wf)
+            wf_path = Path(inst_wf)
+            wf_access_status = _try_wf_access(wf_path)
+            if wf_access_status:
                 # Setting new corpus year folder name
-                corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
+                corpuses_list = last_available_years(wf_path, gg.CORPUSES_NUMBER)
                 last_corpus_year = corpuses_list[-1]
                 new_corpus_year_folder = str(int(last_corpus_year) + 1)
 
                 # Creating required folders for new corpus year
-                message = create_archi(bmf_path, new_corpus_year_folder, verbose=False)
+                message = create_archi(wf_path, new_corpus_year_folder, verbose=False)
                 print("\n",message)
 
                 # Getting updated corpuses list
-                corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
+                corpuses_list = last_available_years(wf_path, gg.CORPUSES_NUMBER)
 
                 # Setting corpi_val value to corpuses list
                 corpi_val_to_set = str(corpuses_list)
@@ -184,7 +184,7 @@ class AppMain(tk.Tk):
             else:
                 corpi_val.set("")
 
-        def _set_corpi_widgets_param(inst_bmf):
+        def _set_corpi_widgets_param(inst_wf):
             """Sets 'corpi' widgets parameters and values accordingly 
             to the working folder and returns tkinter 'corpi' parameter 
             that is used to set for display the available corpuses list."""
@@ -203,7 +203,7 @@ class AppMain(tk.Tk):
             corpi_button = tk.Button(self,
                                      text=gg.TEXT_BOUTON_CREATION_CORPUS,
                                      font=corpi_button_font,
-                                     command=lambda: _create_corpus(inst_bmf))
+                                     command=lambda: _create_corpus(inst_wf))
 
             # Placing corpuses widgets
             corpi_label.place(x=eff_corpi_pos_x_px,
@@ -218,60 +218,60 @@ class AppMain(tk.Tk):
                                y=eff_corpi_pos_y_px + eff_button_dy_px,)
             return corpi_val
 
-        def _update_corpi(inst_bmf):
+        def _update_corpi(inst_wf):
             """Updates tkinter 'corpi' parameter with the available corpuses list 
             accordingly to working folder."""
 
-            corpi_val = _set_corpi_widgets_param(inst_bmf)
+            corpi_val = _set_corpi_widgets_param(inst_wf)
             corpi_val_to_set = ""
-            bmf_path = Path(inst_bmf)
-            bmf_access_status = _try_bmf_access(bmf_path)
-            if bmf_access_status:
+            wf_path = Path(inst_wf)
+            wf_access_status = _try_wf_access(wf_path)
+            if wf_access_status:
                 # Getting updated corpuses list
-                corpuses_list = last_available_years(bmf_path, gg.CORPUSES_NUMBER)
+                corpuses_list = last_available_years(wf_path, gg.CORPUSES_NUMBER)
 
                 # Setting corpi_val value to corpuses list
                 corpi_val_to_set = str(corpuses_list)
             corpi_val.set(corpi_val_to_set)
 
-        def _update_datatype(*args, datatype_widget = None):
-            """Gets selected data-type and sets, accordingly, 'bmf' widgets parameters, 
+        def _update_datatype(*args, datatype_widget=None):
+            """Gets selected data-type and sets, accordingly, 'wf' widgets parameters, 
             'corpi' widgets parameters and sets launch button of corpuses analysis."""
 
             datatype_select = datatype_widget.get()
             self.datatype_optionbutton.configure(state = 'disabled')
 
-            # Managing working folder (bmf stands for "BiblioMeter_Files")
+            # Managing working folder
             institute_select = args[0]
-            inst_default_bmf = ig.WORKING_FOLDERS_DICT[institute_select] + "-" + gg.VERSION
-            _set_bmf_widget_param(institute_select, inst_default_bmf, datatype_select)
+            inst_default_wf = ig.WORKING_FOLDERS_DICT[institute_select] + "-" + gg.VERSION
+            _set_wf_widget_param(institute_select, inst_default_wf, datatype_select)
 
             # Managing corpus list
-            corpi_val = _set_corpi_widgets_param(inst_default_bmf)
+            corpi_val = _set_corpi_widgets_param(inst_default_wf)
 
             # Setting and displaying corpuses list initial values
             corpi_val_to_set = ""
-            default_bmf_path = Path(inst_default_bmf)
+            default_wf_path = Path(inst_default_wf)
             info_title = "- Information -"
             info_text = ("Le test de l'accès au dossier de travail défini "
                          "par défaut peut prendre un peu de temps."
                          "\n\nMerci de patienter.")
             messagebox.showinfo(info_title, info_text)
-            bmf_access_status = _try_bmf_access(default_bmf_path)
-            if bmf_access_status:
+            wf_access_status = _try_wf_access(default_wf_path)
+            if wf_access_status:
                 info_title = "- Information -"
                 info_text = ("L'accès au dossier de travail défini "
                              "par défaut est autorisé mais vous pouvez "
                              "en choisir un autre.")
                 messagebox.showinfo(info_title, info_text)
-                init_corpuses_list = last_available_years(default_bmf_path, gg.CORPUSES_NUMBER)
+                init_corpuses_list = last_available_years(default_wf_path, gg.CORPUSES_NUMBER)
                 corpi_val_to_set = str(init_corpuses_list)
             corpi_val.set(corpi_val_to_set)
 
             # Managing analysis launch button
-            SetLaunchButton(self, institute_select, inst_default_bmf, datatype_select)
+            SetLaunchButton(self, institute_select, inst_default_wf, datatype_select)
 
-        def _update_page(*args, institute_widget=None):
+        def _update_bm_page(*args, institute_widget=None):
             """Gets the selected Institute and 'datatype' widgets parameters.
             Then, trace change in datatype selection to update page parameters."""
 
@@ -345,10 +345,10 @@ class AppMain(tk.Tk):
         dy_inst = -10
 
         # Setting widgets parameters for Working-folder selection
-        eff_bmf_width = int(gg.REF_ENTRY_NB_CHAR * AppMain.width_sf_min)
-        eff_bmf_font_size = font_size(gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
-        eff_bmf_pos_x_px = mm_to_px(gg.REF_BMF_POS_X_MM * AppMain.height_sf_mm, gg.PPI)
-        eff_bmf_pos_y_px = mm_to_px(gg.REF_BMF_POS_Y_MM * AppMain.height_sf_mm, gg.PPI)
+        eff_wf_width = int(gg.REF_ENTRY_NB_CHAR * AppMain.width_sf_min)
+        eff_wf_font_size = font_size(gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
+        eff_wf_pos_x_px = mm_to_px(gg.REF_WF_POS_X_MM * AppMain.height_sf_mm, gg.PPI)
+        eff_wf_pos_y_px = mm_to_px(gg.REF_WF_POS_Y_MM * AppMain.height_sf_mm, gg.PPI)
         eff_button_dy_px = mm_to_px(gg.REF_BUTTON_DY_MM * AppMain.height_sf_mm, gg.PPI)
 
         # Setting widgets parameters for corpuses display
@@ -394,7 +394,7 @@ class AppMain(tk.Tk):
         place_after(self.inst_label, self.inst_optionbutton, dy=dy_inst)
 
         # Tracing Institute selection
-        institute_val.trace('w', partial(_update_page, institute_widget=institute_val))
+        institute_val.trace('w', partial(_update_bm_page, institute_widget=institute_val))
 
         # Handling exception
         threading.excepthook = _except_hook

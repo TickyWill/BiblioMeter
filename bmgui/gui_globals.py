@@ -13,9 +13,8 @@ __all__ = ['ADD_SPACE_MM',
            'PAGEBUTTON_HEIGHT_PX',
            'PAGES_LABELS',
            'PPI',
-           'REF_BMF_FONT_SIZE',
-           'REF_BMF_POS_X_MM',
-           'REF_BMF_POS_Y_MM',
+           'REF_WF_POS_X_MM',
+           'REF_WF_POS_Y_MM',
            'REF_BUTTON_DX_MM',
            'REF_BUTTON_DY_MM',
            'REF_BUTTON_FONT_SIZE',
@@ -56,8 +55,8 @@ __all__ = ['ADD_SPACE_MM',
            'REF_YEAR_BUT_POS_X_MM',
            'REF_YEAR_BUT_POS_Y_MM',
            'TEXT_BDD_PC',
-           'TEXT_BMF',
-           'TEXT_BMF_CHANGE',
+           'TEXT_WF',
+           'TEXT_WF_CHANGE',
            'TEXT_BOUTON_CREATION_CORPUS',
            'TEXT_BOUTON_LANCEMENT',
            'TEXT_COPYRIGHT',
@@ -189,7 +188,6 @@ REF_ENTRY_NB_CHAR = 110
 REF_SUB_TITLE_FONT_SIZE = 15
 REF_PAGE_TITLE_FONT_SIZE = 30
 REF_LAUNCH_FONT_SIZE = 25
-REF_BMF_FONT_SIZE = 15
 REF_COPYRIGHT_FONT_SIZE = 12
 REF_VERSION_FONT_SIZE = 12
 
@@ -204,9 +202,9 @@ REF_INST_POS_Y_MM = 40
 REF_DATATYPE_POS_X_MM = 110
 REF_DATATYPE_POS_Y_MM = 40
 
-# Positions reference in mm for bmf label and button
-REF_BMF_POS_X_MM = 5
-REF_BMF_POS_Y_MM = 55
+# Positions reference in mm for wf label and button
+REF_WF_POS_X_MM = 5
+REF_WF_POS_Y_MM = 55
 REF_BUTTON_DX_MM = -147
 REF_BUTTON_DY_MM = 10
 
@@ -261,10 +259,10 @@ TEXT_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
 TEXT_INSTITUTE = "Sélection de l'Institut"
 
 # Titre du dossier de travail
-TEXT_BMF = "Dossier de travail "
+TEXT_WF = "Dossier de travail "
 
 # Titre bouton changement de dossier de travail
-TEXT_BMF_CHANGE = "Changer de dossier de travail"
+TEXT_WF_CHANGE = "Changer de dossier de travail"
 
 # Titre liste des corpus analysés
 TEXT_CORPUSES = "Liste des corpus "

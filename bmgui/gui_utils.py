@@ -50,7 +50,7 @@ def show_frame(self, page_name):
     frame.tkraise()
 
 
-def set_page_title(self, master, page_name, institute, datatype = None):
+def set_page_title(self, master, page_name, institute, datatype=None):
     """Sets the page title of the 'page_name' page.
 
     Args:
@@ -133,13 +133,13 @@ def set_exit_button(self, master):
                       anchor='n')
 
 
-def last_available_years(bibliometer_path, year_number):
+def last_available_years(wf_path, year_number):
     """Returns a list of up to 'year_number' number 
     of the most-recent years of available corpuses 
-    in the working folder targetted by 'bibliometer_path'.
+    in the working folder targetted by 'wf_path'.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         year_number (int): Data combination type from corpuses databases.
     Returns:
         (list): List of 'year_number' length of available corpuses as strings of 4 digits.    
@@ -147,7 +147,7 @@ def last_available_years(bibliometer_path, year_number):
 
     # Récupérer les corpus disponibles TO DO : consolider le choix des années
     try:
-        list_dir = sorted(os.listdir(bibliometer_path))
+        list_dir = sorted(os.listdir(wf_path))
         years_full_list = []
 
         for year in list_dir:
@@ -158,14 +158,14 @@ def last_available_years(bibliometer_path, year_number):
 
     except FileNotFoundError:
         warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-        warning_text = (f"L'accès au dossier {bibliometer_path} est impossible."
+        warning_text = (f"L'accès au dossier {wf_path} est impossible."
                         "\nChoisissez un autre dossier de travail.")
         messagebox.showwarning(warning_title, warning_text)
         years_list = []
 
     except OSError:
         warning_title = "!!! ATTENTION : Erreur lors de l'accès au dossier de travail !!!"
-        warning_text = (f"L'accès au dossier {bibliometer_path} a échoué (erreur interne)"
+        warning_text = (f"L'accès au dossier {wf_path} a échoué (erreur interne)"
                         "\nVeuillez réessayer d'accéder à votre répertoire de travail avec "
                         "l'option \"Changer de dossier de travail\"")
         messagebox.showwarning(warning_title, warning_text)
@@ -174,7 +174,7 @@ def last_available_years(bibliometer_path, year_number):
     return years_list
 
 
-def existing_corpuses(bibliometer_path, corpuses_number=None):
+def existing_corpuses(wf_path, corpuses_number=None):
     """Returns a list of lists of booleans displaying True
     if rawdata and parsing results are available, and False otherwise.
 
@@ -189,7 +189,7 @@ def existing_corpuses(bibliometer_path, corpuses_number=None):
         - Deduplication parsing boolean list  = [ True,   True,   True,   True,   True,   False]
 
     Args:
-        bibliometer_path (path):  Full path to working folder.
+        wf_path (path):  Full path to working folder.
         corpuses_number (int): The number of corpuses to be checked \
         (default: CORPUSES_NUMBER global).
     Returns:
@@ -223,7 +223,7 @@ def existing_corpuses(bibliometer_path, corpuses_number=None):
     # Getting the last available corpus years
     if not corpuses_number:
         corpuses_number = gg.CORPUSES_NUMBER
-    years_folder_list = last_available_years(bibliometer_path, corpuses_number)
+    years_folder_list = last_available_years(wf_path, corpuses_number)
 
     # Setting the files type of raw data and saved parsing results
     parsing_save_extent = pg.TSV_SAVE_EXTENT
@@ -244,7 +244,7 @@ def existing_corpuses(bibliometer_path, corpuses_number=None):
     for year in years_folder_list:
 
         # Getting the full paths of the working folder architecture for the corpus "year"
-        config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+        config_tup = set_user_config(wf_path, year, pg.BDD_LIST)
         rawdata_path_dict, parsing_path_dict = config_tup[0], config_tup[1]
 
         # Setting useful paths for database 'database_type'
