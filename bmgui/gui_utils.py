@@ -28,8 +28,8 @@ from tkinter import messagebox
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
-import bmgui.gui_globals as gg
+import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
 from bmfuncts.config_utils import set_user_config
 
 
@@ -50,7 +50,7 @@ def show_frame(self, page_name):
     frame.tkraise()
 
 
-def set_page_title(self, master, page_name, institute, datatype=None):
+def set_page_title(self, master, page_label, institute, datatype=None):    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     """Sets the page title of the 'page_name' page.
 
     Args:
@@ -62,17 +62,16 @@ def set_page_title(self, master, page_name, institute, datatype=None):
     """
 
     # Setting page title
-    label_text = gg.PAGES_LABELS[page_name]
-    page_title = label_text + " du " + institute
+    page_title = page_label + " du " + institute
 
     # Setting font size for page label and button
-    eff_label_font_size = font_size(gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
-    eff_label_pos_y_px = mm_to_px(gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, gg.PPI)
-    eff_dy_px = mm_to_px(gg.REF_LABEL_DX_Y_MM * master.height_sf_mm, gg.PPI)
+    eff_label_font_size = font_size(bm_gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
+    eff_label_pos_y_px = mm_to_px(bm_gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, bm_gg.PPI)
+    eff_dy_px = mm_to_px(bm_gg.REF_LABEL_DX_Y_MM * master.height_sf_mm, bm_gg.PPI)
     mid_page_pos_x_px = master.win_width_px * 0.5
 
     # Creating title widget
-    label_font = tkFont.Font(family=gg.FONT_NAME,
+    label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                              size=eff_label_font_size)
     self.label = tk.Label(self,
                           text=page_title,
@@ -85,7 +84,7 @@ def set_page_title(self, master, page_name, institute, datatype=None):
         page_sub_title = f"Données {datatype}"
 
         # Creating title widget
-        label_font = tkFont.Font(family=gg.FONT_NAME,
+        label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=int(eff_label_font_size * 0.7))
         self.label = tk.Label(self,
                               text=page_sub_title,
@@ -95,7 +94,86 @@ def set_page_title(self, master, page_name, institute, datatype=None):
                          anchor="center")
 
 
-def set_exit_button(self, master):
+def set_exit_button(self, master):    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    """Sets exit button on any page of 'master'.
+
+    Args:
+        self (instense): Instense where is located 'master'.
+        master (class): `bmgui.main_page.AppMain` class.
+    """
+    # Internal functions
+    def _launch_exit():
+        ask_title = "Arrêt de l'application"
+        ask_text = ("Les traitements intermédiaires effectués sont sauvegardés."
+                    "\n\nConfirmez la mise en pause ?")
+        exit_answer = messagebox.askokcancel(ask_title, ask_text)
+        if exit_answer:
+            master.destroy()
+
+    # Setting useful local variables for positions modification (globals to create ??)
+    # numbers are reference values in mm for reference screen
+    exit_button_x_pos = mm_to_px(bm_gg.REF_EXIT_BUT_POS_X_MM * master.width_sf_mm, bm_gg.PPI)
+    exit_button_y_pos = mm_to_px(bm_gg.REF_EXIT_BUT_POS_Y_MM * master.height_sf_mm, bm_gg.PPI)
+    eff_buttons_font_size = font_size(11, master.width_sf_min)
+
+    # Setting widget for exit button
+    font_button_quit = tkFont.Font(family=bm_gg.FONT_NAME,
+                                   size=eff_buttons_font_size)
+    button_quit = tk.Button(self,
+                            text=bm_gg.EXIT_BUTTON_TXT,
+                            font=font_button_quit,
+                            command=_launch_exit)
+    button_quit.place(x=exit_button_x_pos,
+                      y=exit_button_y_pos,
+                      anchor='n')
+
+
+def set_page_title_old(self, master, page_name, institute, datatype=None):
+    """Sets the page title of the 'page_name' page.
+
+    Args:
+        self (instense): Instense where is located 'page_name' page.
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Name of 'page_name' page.
+        institute (str): Institute name.
+        datatype (str): Data combination type from corpuses databases (default = None).        
+    """
+
+    # Setting page title
+    label_text = bm_gg.PAGES_LABELS[page_name]
+    page_title = label_text + " du " + institute
+
+    # Setting font size for page label and button
+    eff_label_font_size = font_size(bm_gg.REF_LABEL_FONT_SIZE, master.width_sf_min)
+    eff_label_pos_y_px = mm_to_px(bm_gg.REF_LABEL_POS_Y_MM * master.height_sf_mm, bm_gg.PPI)
+    eff_dy_px = mm_to_px(bm_gg.REF_LABEL_DX_Y_MM * master.height_sf_mm, bm_gg.PPI)
+    mid_page_pos_x_px = master.win_width_px * 0.5
+
+    # Creating title widget
+    label_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                             size=eff_label_font_size)
+    self.label = tk.Label(self,
+                          text=page_title,
+                          font=label_font)
+    self.label.place(x=mid_page_pos_x_px,
+                     y=eff_label_pos_y_px,
+                     anchor="center")
+
+    if datatype:
+        page_sub_title = f"Données {datatype}"
+
+        # Creating title widget
+        label_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                 size=int(eff_label_font_size * 0.7))
+        self.label = tk.Label(self,
+                              text=page_sub_title,
+                              font=label_font)
+        self.label.place(x=mid_page_pos_x_px,
+                         y=eff_label_pos_y_px + eff_dy_px,
+                         anchor="center")
+
+
+def set_exit_button_old(self, master):
     """Sets exit button on any page of 'master'.
 
     Args:
@@ -117,15 +195,15 @@ def set_exit_button(self, master):
 
     # Setting useful local variables for positions modification (globals to create ??)
     # numbers are reference values in mm for reference screen
-    exit_button_x_pos = mm_to_px(gg.REF_EXIT_BUT_POS_X_MM * master.width_sf_mm,  gg.PPI)
-    exit_button_y_pos = mm_to_px(gg.REF_EXIT_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    exit_button_x_pos = mm_to_px(bm_gg.REF_EXIT_BUT_POS_X_MM * master.width_sf_mm,  bm_gg.PPI)
+    exit_button_y_pos = mm_to_px(bm_gg.REF_EXIT_BUT_POS_Y_MM * master.height_sf_mm, bm_gg.PPI)
     eff_buttons_font_size = font_size(11, master.width_sf_min)
 
     # Setting widget for exit button
-    font_button_quit = tkFont.Font(family=gg.FONT_NAME,
+    font_button_quit = tkFont.Font(family=bm_gg.FONT_NAME,
                                    size=eff_buttons_font_size)
     button_quit = tk.Button(self,
-                            text=gg.TEXT_PAUSE,
+                            text=bm_gg.TEXT_PAUSE,
                             font=font_button_quit,
                             command=_launch_exit)
     button_quit.place(x=exit_button_x_pos,
@@ -222,11 +300,11 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
     # Getting the last available corpus years
     if not corpuses_number:
-        corpuses_number = gg.CORPUSES_NUMBER
+        corpuses_number = bm_gg.CORPUSES_NUMBER
     years_folder_list = last_available_years(wf_path, corpuses_number)
 
     # Setting the files type of raw data and saved parsing results
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
     wos_rawdata_extent = bp.WOS_RAWDATA_EXTENT
     scopus_rawdata_extent = bp.SCOPUS_RAWDATA_EXTENT
 
@@ -244,7 +322,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
     for year in years_folder_list:
 
         # Getting the full paths of the working folder architecture for the corpus "year"
-        config_tup = set_user_config(wf_path, year, pg.BDD_LIST)
+        config_tup = set_user_config(wf_path, year, bm_pg.BDD_LIST)
         rawdata_path_dict, parsing_path_dict = config_tup[0], config_tup[1]
 
         # Setting useful paths for database 'database_type'
@@ -326,8 +404,8 @@ def str_size_mm(text, font, ppi):
         since it is based on a tkinter font definition.
     """
     w_px, h_px = font.measure(text), font.metrics("linespace")
-    w_mm = w_px * gg.IN_TO_MM / ppi
-    h_mm = h_px * gg.IN_TO_MM / ppi
+    w_mm = w_px * bm_gg.IN_TO_MM / ppi
+    h_mm = h_px * bm_gg.IN_TO_MM / ppi
     return w_mm, h_mm
 
 
@@ -342,14 +420,14 @@ def mm_to_px(size_mm, ppi, fact=1.0):
     Returns:
         (int): Upper integer value of the conversion to pixels.
     """
-    size_px = math.ceil((size_mm * fact / gg.IN_TO_MM) * ppi)
+    size_px = math.ceil((size_mm * fact / bm_gg.IN_TO_MM) * ppi)
     return size_px
 
 
 def _window_properties(screen_width_px, screen_height_px):
     """Computes useful values for adapting tkinter windows 
     and widgets positions to the display resolution using reference 
-    values given as globals in module imported as gg.
+    values given as globals in module imported as bm_gg.
 
     Args:
         screen_width_px (int): The display screen width in pixel.
@@ -364,21 +442,21 @@ def _window_properties(screen_width_px, screen_height_px):
     """
 
     # Getting number of pixels per inch screen resolution from imported global DISPLAYS
-    ppi = gg.DISPLAYS[gg.BM_GUI_DISP]["ppi"]
+    ppi = bm_gg.DISPLAYS[bm_gg.BM_GUI_DISP]["ppi"]
 
     # Setting screen effective sizes in mm from imported global DISPLAYS
-    screen_width_mm = gg.DISPLAYS[gg.BM_GUI_DISP]["width_mm"]
-    screen_height_mm = gg.DISPLAYS[gg.BM_GUI_DISP]["height_mm"]
+    screen_width_mm = bm_gg.DISPLAYS[bm_gg.BM_GUI_DISP]["width_mm"]
+    screen_height_mm = bm_gg.DISPLAYS[bm_gg.BM_GUI_DISP]["height_mm"]
 
     # Setting screen reference sizes in pixels and mm
-    ref_width_px = gg.REF_SCREEN_WIDTH_PX
-    ref_height_px = gg.REF_SCREEN_HEIGHT_PX
-    ref_width_mm = gg.REF_SCREEN_WIDTH_MM
-    ref_height_mm = gg.REF_SCREEN_HEIGHT_MM
+    ref_width_px = bm_gg.REF_SCREEN_WIDTH_PX
+    ref_height_px = bm_gg.REF_SCREEN_HEIGHT_PX
+    ref_width_mm = bm_gg.REF_SCREEN_WIDTH_MM
+    ref_height_mm = bm_gg.REF_SCREEN_HEIGHT_MM
 
     # Setting secondary window reference sizes in mm
-    ref_window_width_mm = gg.REF_WINDOW_WIDTH_MM
-    ref_window_height_mm = gg.REF_WINDOW_HEIGHT_MM
+    ref_window_width_mm = bm_gg.REF_WINDOW_WIDTH_MM
+    ref_window_height_mm = bm_gg.REF_WINDOW_HEIGHT_MM
 
     # Computing ratii of effective screen sizes to screen reference sizes in pixels
     scale_factor_width_px  = screen_width_px / ref_width_px
@@ -404,7 +482,7 @@ def general_properties(self):
     `_window_properties` internal function.
 
     The window title is set through the global "APPLICATION_TITLE". 
-    These globals are defined locally in the module imported as gg.
+    These globals are defined locally in the module imported as bm_gg.
 
     Args:
         self (instense): Instense where application launch window is created.
@@ -430,5 +508,5 @@ def general_properties(self):
     self.resizable(False, False)
 
     # Setting title window
-    self.title(gg.APPLICATION_WINDOW_TITLE)
+    self.title(bm_gg.APPLICATION_WINDOW_TITLE)
     return sizes_tuple

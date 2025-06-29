@@ -14,7 +14,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_geo_stat import build_and_save_geo_stat
 from bmfuncts.build_institutions_stat import build_and_save_institutions_stat
 from bmfuncts.build_pub_addresses import build_institute_addresses_df
@@ -145,11 +145,11 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     countries_alias = bp.COL_NAMES['country'][2]
 
     # Setting aliases from globals
-    norm_inst_filename_alias = pg.ARCHI_YEAR["norm inst file name"] + xlsx_extent
-    raw_inst_filename_alias = pg.ARCHI_YEAR["raw inst file name"] + xlsx_extent
-    country_affiliations_file_base_alias = pg.ARCHI_INSTITUTIONS["affiliations_base"]
-    country_towns_file_base_alias = pg.ARCHI_INSTITUTIONS["country_towns_base"]
-    country_unkept_inst_file_base_alias = pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
+    norm_inst_filename_alias = bm_pg.ARCHI_YEAR["norm inst file name"] + xlsx_extent
+    raw_inst_filename_alias = bm_pg.ARCHI_YEAR["raw inst file name"] + xlsx_extent
+    country_affiliations_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["affiliations_base"]
+    country_towns_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["country_towns_base"]
+    country_unkept_inst_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
 
     # Setting useful file names
     country_affil_file_alias = institute + "_" + country_affiliations_file_base_alias
@@ -220,11 +220,11 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
             progress_callback(inter_progress_3)
 
         # Saving formatted df of normalized and raw institutions
-        inst_df_title = pg.DF_TITLES_LIST[9]
+        inst_df_title = bm_pg.DF_TITLES_LIST[9]
         sheet_name = 'Norm Inst ' + year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_filename_alias,
                                   norm_institutions_df, inst_df_title, sheet_name)
-        inst_df_title = pg.DF_TITLES_LIST[16]
+        inst_df_title = bm_pg.DF_TITLES_LIST[16]
         sheet_name = 'Raw Inst ' + year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias,
                                   raw_institutions_df, inst_df_title, sheet_name)
@@ -280,10 +280,10 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     saved_results_path = set_saved_results_path(bibliometer_path, datatype)
 
     # Setting aliases from globals
-    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
-    institutions_folder_alias = pg.ARCHI_INSTITUTIONS["root"]
-    inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
+    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
 
     # Setting useful file names
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
@@ -359,8 +359,8 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
             progress_callback(98)
 
         # Saving coupling analysis as final result
-        status_values = len(pg.RESULTS_TO_SAVE) * [False]
-        results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+        status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+        results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
         save_keys_list = ["countries", "continents", "institutions"]
         for key in save_keys_list:
             results_to_save_dict[key] = True

@@ -19,8 +19,8 @@ import pandas as pd
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.pub_globals as pg
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_pub_authors import build_institute_pubs_authors
 from bmfuncts.build_year_pub_empl import build_submit_df
 from bmfuncts.create_hash_id import create_hash_id
@@ -88,18 +88,18 @@ def _add_author_job_type(in_path, out_path, empl_dict, years):
         return author_type
 
     # Setting useful aliases
-    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
-    category_col_alias = eg.EMPLOYEES_USEFUL_COLS['category']
-    status_col_alias = eg.EMPLOYEES_USEFUL_COLS['status']
-    qualification_col_alias = eg.EMPLOYEES_USEFUL_COLS['qualification']
-    author_type_col_alias = pg.COL_NAMES_BONUS['author_type']
+    mat_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['matricule']
+    category_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['category']
+    status_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['status']
+    qualification_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['qualification']
+    author_type_col_alias = bm_pg.COL_NAMES_BONUS['author_type']
 
-    author_types_dic = {category_col_alias      : eg.CATEGORIES_DIC,
-                        status_col_alias        : eg.STATUS_DIC,
-                        qualification_col_alias : eg.QUALIFICATION_DIC}
+    author_types_dic = {category_col_alias      : bm_eg.CATEGORIES_DIC,
+                        status_col_alias        : bm_eg.STATUS_DIC,
+                        qualification_col_alias : bm_eg.QUALIFICATION_DIC}
 
     # Read of the xlsx file with dates conversion through EMPLOYEES_CONVERTERS_DIC
-    submit_df = pd.read_excel(in_path, converters=eg.EMPLOYEES_CONVERTERS_DIC)
+    submit_df = pd.read_excel(in_path, converters=bm_eg.EMPLOYEES_CONVERTERS_DIC)
 
     submit_df[author_type_col_alias] = submit_df.apply(_get_author_type, axis=1)
 
@@ -157,10 +157,10 @@ def _add_biblio_list(in_path, out_path):
     pub_journal_alias = bp.COL_NAMES['articles'][3]
     pub_doi_alias = bp.COL_NAMES['articles'][6]
     pub_title_alias = bp.COL_NAMES['articles'][9]
-    pub_full_ref_alias = pg.COL_NAMES_BONUS['liste biblio']
+    pub_full_ref_alias = bm_pg.COL_NAMES_BONUS['liste biblio']
 
     # Read of the xlsx file with dates convertion through EMPLOYEES_CONVERTERS_DIC
-    submit_df = pd.read_excel(in_path, converters=eg.EMPLOYEES_CONVERTERS_DIC)
+    submit_df = pd.read_excel(in_path, converters=bm_eg.EMPLOYEES_CONVERTERS_DIC)
 
     articles_plus_full_ref_df = pd.DataFrame()
     # Splitting the frame into subframes with same Pub_id
@@ -215,16 +215,16 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     # Setting aliases for useful column names
     pub_id_alias = bp.COL_NAMES['authors'][0]
     author_id_alias = bp.COL_NAMES['authors'][1]
-    converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
-    firstname_initials_col_base_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
-    ext_docs_full_name_alias = eg.EMPLOYEES_ADD_COLS['employee_full_name']
-    ext_docs_useful_col_list_alias = eg.EXT_DOCS_USEFUL_COL_LIST
-    ext_docs_pub_last_name_alias = pg.COL_NAMES_PUB_NAMES['last name']
-    ext_docs_pub_initials_alias = pg.COL_NAMES_PUB_NAMES['initials']
-    ext_docs_sheet_name_alias = pg.SHEET_NAMES_ORPHAN["docs to add"]
-    ext_docs_col_adds_list_alias = pg.EXT_DOCS_COL_ADDS_LIST
-    orphan_full_name_alias = pg.COL_NAMES_BM['Full_name']
-    orphan_last_name_alias = pg.COL_NAMES_BM['Last_name']
+    converters_alias = bm_eg.EMPLOYEES_CONVERTERS_DIC
+    firstname_initials_col_base_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    ext_docs_full_name_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']
+    ext_docs_useful_col_list_alias = bm_eg.EXT_DOCS_USEFUL_COL_LIST
+    ext_docs_pub_last_name_alias = bm_pg.COL_NAMES_PUB_NAMES['last name']
+    ext_docs_pub_initials_alias = bm_pg.COL_NAMES_PUB_NAMES['initials']
+    ext_docs_sheet_name_alias = bm_pg.SHEET_NAMES_ORPHAN["docs to add"]
+    ext_docs_col_adds_list_alias = bm_pg.EXT_DOCS_COL_ADDS_LIST
+    orphan_full_name_alias = bm_pg.COL_NAMES_BM['Full_name']
+    orphan_last_name_alias = bm_pg.COL_NAMES_BM['Last_name']
 
     # Reading of the existing submit xlsx file of the corpus year
     # with dates conversion through converters_alias
@@ -364,16 +364,16 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     # Setting aliases for useful column names
     pub_id_alias = bp.COL_NAMES['authors'][0]
     author_id_alias = bp.COL_NAMES['authors'][1]
-    converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
-    firstname_initials_col_base_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
-    others_full_name_alias = eg.EMPLOYEES_ADD_COLS['employee_full_name']
-    ext_docs_useful_col_list_alias = eg.EXT_DOCS_USEFUL_COL_LIST
-    others_pub_last_name_alias = pg.COL_NAMES_PUB_NAMES['last name']
-    others_pub_initials_alias = pg.COL_NAMES_PUB_NAMES['initials']
-    others_sheet_name_alias = pg.SHEET_NAMES_ORPHAN["others to add"]
-    ext_docs_col_adds_list_alias = pg.EXT_DOCS_COL_ADDS_LIST
-    orphan_full_name_alias = pg.COL_NAMES_BM['Full_name']
-    orphan_last_name_alias = pg.COL_NAMES_BM['Last_name']
+    converters_alias = bm_eg.EMPLOYEES_CONVERTERS_DIC
+    firstname_initials_col_base_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    others_full_name_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']
+    ext_docs_useful_col_list_alias = bm_eg.EXT_DOCS_USEFUL_COL_LIST
+    others_pub_last_name_alias = bm_pg.COL_NAMES_PUB_NAMES['last name']
+    others_pub_initials_alias = bm_pg.COL_NAMES_PUB_NAMES['initials']
+    others_sheet_name_alias = bm_pg.SHEET_NAMES_ORPHAN["others to add"]
+    ext_docs_col_adds_list_alias = bm_pg.EXT_DOCS_COL_ADDS_LIST
+    orphan_full_name_alias = bm_pg.COL_NAMES_BM['Full_name']
+    orphan_last_name_alias = bm_pg.COL_NAMES_BM['Last_name']
 
     # Reading of the existing submit xlsx file of the corpus year
     # with dates conversion through converters_alias
@@ -505,7 +505,7 @@ def _change_col_names(institute, org_tup, submit_path, orphan_path):
     submit_col_rename_dic = col_rename_tup[1]
 
     # Read of the 'submit' file with dates convertion through EMPLOYEES_CONVERTERS_DIC
-    submit_df = pd.read_excel(submit_path, converters=eg.EMPLOYEES_CONVERTERS_DIC,
+    submit_df = pd.read_excel(submit_path, converters=bm_eg.EMPLOYEES_CONVERTERS_DIC,
                               keep_default_na=False)
     submit_df = submit_df.rename(columns=submit_col_rename_dic)
 
@@ -559,7 +559,7 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
             print(message)
 
     # Setting useful aliases
-    converters_alias = eg.EMPLOYEES_CONVERTERS_DIC
+    converters_alias = bm_eg.EMPLOYEES_CONVERTERS_DIC
 
     # Setting useful column names list and droping status
     inst_col_list = org_tup[4]
@@ -682,12 +682,12 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
 
     # Setting useful aliases
     pub_id_alias = bp.COL_NAMES['pub_id']
-    mat_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
-    initials_col_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
-    submit_file_name_alias = pg.ARCHI_YEAR["submit file name"]
-    orphan_file_name_alias = pg.ARCHI_YEAR["orphan file name"]
-    orphan_treat_alias = pg.ARCHI_ORPHAN["root"]
-    adds_file_name_alias = pg.ARCHI_ORPHAN["employees adds file"]
+    mat_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['matricule']
+    initials_col_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    submit_file_name_alias = bm_pg.ARCHI_YEAR["submit file name"]
+    orphan_file_name_alias = bm_pg.ARCHI_YEAR["orphan file name"]
+    orphan_treat_alias = bm_pg.ARCHI_ORPHAN["root"]
+    adds_file_name_alias = bm_pg.ARCHI_ORPHAN["employees adds file"]
 
     # Setting local parameters
     orphan_split_status = org_tup[9]

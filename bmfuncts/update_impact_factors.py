@@ -15,7 +15,7 @@ import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
 # local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.useful_functs import set_capwords_lambda
@@ -33,7 +33,7 @@ def _get_if(if_updated_file_path, useful_col_list):
         (dataframe): Dataframe of IFs which columns are given by 'useful_col_list'.
     """
     # Setting useful aliases
-    most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
+    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
 
     # Setting useful column names
     journal_col = useful_col_list[0]
@@ -114,9 +114,9 @@ def _update_year_if_database(institute, org_tup, bibliometer_path,
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     journal_col_alias = final_col_dic['journal']
     issn_col_alias = final_col_dic['issn']
-    eissn_col_alias = pg.COL_NAMES_BONUS['e-ISSN']
-    database_if_col_alias = pg.COL_NAMES_BONUS["IF clarivate"]
-    most_recent_year_if_col_base_alias = pg.COL_NAMES_BONUS["IF en cours"]
+    eissn_col_alias = bm_pg.COL_NAMES_BONUS['e-ISSN']
+    database_if_col_alias = bm_pg.COL_NAMES_BONUS["IF clarivate"]
+    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
 
     # Setting specific column names
     corpus_year_if_col = database_if_col_alias + " " + corpus_year
@@ -249,7 +249,7 @@ def _build_previous_years_if_df(institute, org_tup, bibliometer_path,
                                                     dedup_cols=[journal_col])
         fully_updated_year_if_db_df = dfs_tup[0]
         if_sheet_name = if_db_year
-        if_db_title = pg.DF_TITLES_LIST[3]
+        if_db_title = bm_pg.DF_TITLES_LIST[3]
         wb = format_wb_sheet(if_sheet_name, fully_updated_year_if_db_df,
                              if_db_title, wb, first)
         first = False
@@ -333,7 +333,7 @@ def _build_recent_year_if_df(institute, org_tup, bibliometer_path,
                                             dedup_cols=[journal_col])
     most_recent_year_if_db_df = most_recent_year_if_db_df.sort_values(by=journal_col)
     if_sheet_name = off_if_db_years_list[0]
-    if_db_title = pg.DF_TITLES_LIST[3]
+    if_db_title = bm_pg.DF_TITLES_LIST[3]
     wb = format_wb_sheet(if_sheet_name, most_recent_year_if_db_df,
                          if_db_title, wb, first)
     return wb
@@ -374,11 +374,11 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     journal_col_alias = final_col_dic['journal']
 
     # Setting useful aliases
-    if_root_folder_alias = pg.ARCHI_IF["root"]
-    missing_if_filename_base_alias = pg.ARCHI_IF["missing_if_base"]
-    missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    inst_all_if_filename_alias = institute + pg.ARCHI_IF["institute_if_all_years"]
-    pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
+    if_root_folder_alias = bm_pg.ARCHI_IF["root"]
+    missing_if_filename_base_alias = bm_pg.ARCHI_IF["missing_if_base"]
+    missing_issn_filename_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
+    inst_all_if_filename_alias = institute + bm_pg.ARCHI_IF["institute_if_all_years"]
+    pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
 
     # Setting useful paths
     if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
@@ -406,7 +406,7 @@ def update_inst_if_database(institute, org_tup, bibliometer_path,
     if kept_if_db_years_list:
         for if_year in kept_if_db_years_list:
             if_sheet_name = if_year
-            if_db_title = pg.DF_TITLES_LIST[3]
+            if_db_title = bm_pg.DF_TITLES_LIST[3]
             wb = format_wb_sheet(if_sheet_name, if_db_dict[if_year],
                                  if_db_title, wb, first)
             first = False

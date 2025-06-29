@@ -14,8 +14,8 @@ from tkinter import messagebox
 import pandas as pd
 
 # local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.pub_globals as pg
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import standardize_txt
 
@@ -47,11 +47,11 @@ def _set_employees_paths(bibliometer_path):
     """
 
     # Setting useful aliases
-    root_employees_folder_alias       = eg.EMPLOYEES_ARCHI["root"]
-    all_years_employees_folder_alias  = eg.EMPLOYEES_ARCHI["all_years_employees"]
-    one_year_employees_folder_alias   = eg.EMPLOYEES_ARCHI["one_year_employees"]
-    months2add_employees_folder_alias = eg.EMPLOYEES_ARCHI["complementary_employees"]
-    backup_folder_alias = pg.ARCHI_BACKUP["root"]
+    root_employees_folder_alias       = bm_eg.EMPLOYEES_ARCHI["root"]
+    all_years_employees_folder_alias  = bm_eg.EMPLOYEES_ARCHI["all_years_employees"]
+    one_year_employees_folder_alias   = bm_eg.EMPLOYEES_ARCHI["one_year_employees"]
+    months2add_employees_folder_alias = bm_eg.EMPLOYEES_ARCHI["complementary_employees"]
+    backup_folder_alias = bm_pg.ARCHI_BACKUP["root"]
 
     # Setting useful paths
     root_employees_folder_path       = bibliometer_path / Path(root_employees_folder_alias)
@@ -85,7 +85,7 @@ def _check_sheet_month(df, sheet_name):
     """
 
     # Setting lists of columns
-    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values())
+    useful_col_list = list(bm_eg.EMPLOYEES_USEFUL_COLS.values())
 
     # Initializing error messages
     col_error = None
@@ -131,7 +131,9 @@ def _add_sheets_to_workbook(file_full_path, df_to_add, sheet_name):
 def _update_months_history(months2add_file_path,
                            one_year_employees_folder_path,
                            one_year_employees_base_name,
-                           replace=True,):
+                           replace=True,
+                           progress_callback=None,
+                           progress_bar_state=None):
     """Updates the file pointed by 'year_months_file_path' for a year.
 
     More specifically only the new months contained in the EXCEL file 
@@ -155,14 +157,19 @@ def _update_months_history(months2add_file_path,
         name of the file gathering the employees for a year.
         replace (bool): If true, existing sheets are replaced in the Ecxel \
         file (default: True).
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (optional, default = None).
+        progress_bar_state (int): Initial status of ProgressBar tkinter widget \
+        (optional, default = None).
     Returns:
         (tup): Tuple of 5 strings = (year, year_months_file_path, \
         sheet_name_message, col_message, years2add_message).
-
     """
-
     df_months_to_add = pd.read_excel(months2add_file_path, sheet_name=None)
     months_to_add = list(df_months_to_add.keys())
+    months_to_add_nb = len(months_to_add)
+    if progress_callback:
+        step = 20 / months_to_add_nb
 
     years_list = []
     for month in months_to_add:
@@ -175,6 +182,9 @@ def _update_months_history(months2add_file_path,
         if month_year is None:
             return (None, None, month_sheet_name_error, None, None)
         years_list.append(month_year)
+        if progress_callback:
+            progress_bar_state += step
+            progress_callback(progress_bar_state)
 
     years_list = list(set(years_list))
     if len(years_list)>1:
@@ -195,6 +205,9 @@ def _update_months_history(months2add_file_path,
             months_to_add  = sorted(months_to_add)
         for month in months_to_add:
             _add_sheets_to_workbook(year_months_file_path, df_months_to_add[month], month)
+            if progress_callback:
+                progress_bar_state += step
+                progress_callback(progress_bar_state)
 
     else:
         # if the file is not present we create a new Excel file with one sheet per month
@@ -204,8 +217,14 @@ def _update_months_history(months2add_file_path,
         for month in months_to_add[1:]:
             # we add the other months
             _add_sheets_to_workbook(year_months_file_path, df_months_to_add[month], month)
-
-    return year, year_months_file_path, None, None, None
+            if progress_callback:
+                progress_bar_state = int(progress_bar_state + step)
+                progress_callback(progress_bar_state)
+        if progress_callback:
+            progress_bar_state += step
+    if progress_callback:
+        progress_bar_state = int(progress_bar_state)
+    return year, year_months_file_path, None, None, None, progress_bar_state
 
 
 def _add_column_keep_history(df):
@@ -240,12 +259,12 @@ def _add_column_keep_history(df):
     """
 
     # Setting useful aliases
-    col_eff_dpt_alias = eg.EMPLOYEES_USEFUL_COLS['dpt']
-    col_eff_service_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
-    col_add_dpts_alias = eg.EMPLOYEES_ADD_COLS['dpts_list']
-    col_add_servs_alias = eg.EMPLOYEES_ADD_COLS['servs_list']
-    col_add_month_alias = eg.EMPLOYEES_ADD_COLS['months_list']
-    col_add_year_alias = eg.EMPLOYEES_ADD_COLS['years_list']
+    col_eff_dpt_alias = bm_eg.EMPLOYEES_USEFUL_COLS['dpt']
+    col_eff_service_alias = bm_eg.EMPLOYEES_USEFUL_COLS['serv']
+    col_add_dpts_alias = bm_eg.EMPLOYEES_ADD_COLS['dpts_list']
+    col_add_servs_alias = bm_eg.EMPLOYEES_ADD_COLS['servs_list']
+    col_add_month_alias = bm_eg.EMPLOYEES_ADD_COLS['months_list']
+    col_add_year_alias = bm_eg.EMPLOYEES_ADD_COLS['years_list']
 
     # Converting the list of tuples[(mm_1, yyyy_1, item_1), ...(mm_n, yyyy_n, item_n)]
     # into a list of 3 lists [[mm_1,...,mm_n], [yyyy_1,....yyyy_n],[item_1,....,item_n]]
@@ -291,8 +310,8 @@ def _add_column_firstname_initial(df):
         initials = ''.join(initial_list)
         return initials
 
-    col_in  = eg.EMPLOYEES_USEFUL_COLS['first_name']
-    col_out = eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    col_in  = bm_eg.EMPLOYEES_USEFUL_COLS['first_name']
+    col_out = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
     df[col_out] = df[col_in].apply(_get_firstname_initials)
     return df
 
@@ -314,9 +333,9 @@ def _add_column_full_name(df):
         (dataframe): The updated dataframe.
     """
 
-    col_last_name_alias = eg.EMPLOYEES_USEFUL_COLS['name']
-    col_first_name_initial_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
-    col_full_name_alias = eg.EMPLOYEES_ADD_COLS['employee_full_name']
+    col_last_name_alias = bm_eg.EMPLOYEES_USEFUL_COLS['name']
+    col_first_name_initial_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    col_full_name_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']
 
     df[col_full_name_alias] = df[col_last_name_alias] + ' ' + df[col_first_name_initial_alias]
 
@@ -354,8 +373,8 @@ def _select_employee_dpt_and_serv(df):
 
     """
 
-    col_dpt_alias = eg.EMPLOYEES_USEFUL_COLS['dpt']
-    col_serv_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
+    col_dpt_alias = bm_eg.EMPLOYEES_USEFUL_COLS['dpt']
+    col_serv_alias = bm_eg.EMPLOYEES_USEFUL_COLS['serv']
 
     cols_list = [col_dpt_alias, col_serv_alias]
     for col in cols_list:
@@ -364,7 +383,9 @@ def _select_employee_dpt_and_serv(df):
     return df
 
 
-def _build_year_month_dpt(year_months_file_path):
+def _build_year_month_dpt(year_months_file_path,
+                          progress_callback=None,
+                          progress_bar_state=None):
     """Merges all employees information of a year available
     by month in an Excel workbook.
 
@@ -390,10 +411,14 @@ def _build_year_month_dpt(year_months_file_path):
     of the package 'bmfuncts'.
 
     Args:
-       year_months_file_path (path): The path to the Excel file \
-       that contains a sheet per month of a year.
+        year_months_file_path (path): The path to the Excel file \
+        that contains a sheet per month of a year.
+        progress_callback (function): Function for updating ProgressBar \
+        tkinter widget status (optional, default = None).
+        progress_bar_state (int): Initial status of ProgressBar tkinter widget \
+        (optional, default = None).
     Returns:
-       (dataframe): The built employees dataframe.
+        (dataframe): The built employees dataframe.
     """
 
     # Internal functions
@@ -401,43 +426,49 @@ def _build_year_month_dpt(year_months_file_path):
         return lambda x: (month, year, x)
 
     # Setting lists of columns
-    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values())
-    add_col_list = list(eg.EMPLOYEES_ADD_COLS.values())
+    useful_col_list = list(bm_eg.EMPLOYEES_USEFUL_COLS.values())
+    add_col_list = list(bm_eg.EMPLOYEES_ADD_COLS.values())
 
     # Setting useful aliases from globals
-    dpt_col_alias = eg.EMPLOYEES_USEFUL_COLS['dpt']
-    firstname_col_alias = eg.EMPLOYEES_USEFUL_COLS['first_name']
-    name_col_alias = eg.EMPLOYEES_USEFUL_COLS['name']
-    matricule_col_alias = eg.EMPLOYEES_USEFUL_COLS['matricule']
-    serv_col_alias = eg.EMPLOYEES_USEFUL_COLS['serv']
+    dpt_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['dpt']
+    firstname_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['first_name']
+    name_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['name']
+    matricule_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['matricule']
+    serv_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['serv']
 
     # Reading the sheets from the excel file as a dict
     # {sheet-name: sheet-content dataframe}
-    df_dict = pd.read_excel(year_months_file_path,
-                            sheet_name=None,
-                            usecols=useful_col_list)
+    year_empl_dict = pd.read_excel(year_months_file_path,
+                                   sheet_name=None,
+                                   usecols=useful_col_list)
+    months_nb = len(year_empl_dict.keys())
+    if progress_callback:
+        step = 20 / months_nb
 
     # Concatenating the sheets from the 'sheet_names'
     # list into the dataframe 'df_eff_year'
-    list_df_eff_month = []
-    for sheet_name,df_eff_month in df_dict.items():
+    month_empl_df_list = []
+    for sheet_name, month_empl_df in year_empl_dict.items():
         month = sheet_name[0:2] # Extraction of the month mm for the sheet name mmyyyy
         year = sheet_name[2:] # Extraction of year yyyy for the sheet name mmyyyy
 
-        # For the sheet 'sheet_name' of the dataframe 'df_eff_month'
+        # For the sheet 'sheet_name' of the dataframe 'month_empl_df'
         # replacing each cell of column 'dpt_col_alias'/'serv_col_alias' that specifies
         # the employee department dpt/service by a tuple (month,year,dpt)/(month,year,serv)
         for col_keep_history in [dpt_col_alias, serv_col_alias]:
-            df_eff_month[col_keep_history] = df_eff_month[col_keep_history].\
-                                             apply(_set_tup(month, year))
+            month_empl_df[col_keep_history] = month_empl_df[col_keep_history].\
+                                              apply(_set_tup(month, year))
 
-        list_df_eff_month.append(df_eff_month)
+        month_empl_df_list.append(month_empl_df)        
+        if progress_callback:
+            progress_bar_state += step
+            progress_callback(progress_bar_state)
 
-    df_eff_year = concat_dfs(list_df_eff_month)
+    year_empl_df = concat_dfs(month_empl_df_list)
 
     # Aggregating all the information related to one matriculate
     # as a list without duplicates, for each column (except 'Matricule')
-    df_eff_year_singlemat = df_eff_year.groupby(matricule_col_alias).\
+    singlemat_year_empl_df = year_empl_df.groupby(matricule_col_alias).\
                                                 agg(lambda x :list(dict.fromkeys(x))).\
                                                 reset_index()
 
@@ -448,11 +479,11 @@ def _build_year_month_dpt(year_months_file_path):
                dpt_col_alias,
                firstname_col_alias}
     for col in set(useful_col_list) - col_set:
-        df_eff_year_singlemat[col] = df_eff_year_singlemat[col].\
+        singlemat_year_empl_df[col] = singlemat_year_empl_df[col].\
                                      apply(lambda x: x[0] if len(x)==1 else list(x))
 
     # Dealing with same matriculate for different lastnames and firstnames
-    employees_df = df_eff_year_singlemat.explode([name_col_alias])
+    employees_df = singlemat_year_empl_df.explode([name_col_alias])
     employees_df = employees_df.explode([firstname_col_alias])
 
     # Adding 6 new columns
@@ -461,12 +492,17 @@ def _build_year_month_dpt(year_months_file_path):
     employees_df = _add_column_full_name(employees_df)
     employees_df = _select_employee_dpt_and_serv(employees_df)
 
-    employees_df = employees_df[useful_col_list + add_col_list]
+    employees_df = employees_df[useful_col_list + add_col_list]        
+    if progress_callback:
+        progress_bar_state += 10
+        progress_callback(progress_bar_state)
 
-    return employees_df
+
+    return employees_df, progress_bar_state
 
 
-def update_employees(bibliometer_path, progress_callback=None, replace=True):
+def update_employees(bibliometer_path, progress_callback=None,
+                     progress_bar_state_init=None, replace=True):
     """Updates the file defined by the global 'EMPLOYEES_ARCHI' at key 
     'employees_file_name' using the file defined by the global 
     'EMPLOYEES_ARCHI' at key "one_year_employees_filebase" 
@@ -486,8 +522,8 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
     """
 
     # Setting useful file name aliases
-    one_year_employees_basename_alias = eg.EMPLOYEES_ARCHI["one_year_employees_filebase"]
-    all_years_employees_file_alias = eg.EMPLOYEES_ARCHI["employees_file_name"]
+    one_year_employees_basename_alias = bm_eg.EMPLOYEES_ARCHI["one_year_employees_filebase"]
+    all_years_employees_file_alias = bm_eg.EMPLOYEES_ARCHI["employees_file_name"]
 
     # Getting useful employees paths
     (months2add_employees_folder_path,
@@ -502,8 +538,6 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
     # Setting the list of files available to add (expected only one)
     months2add_files = [file for file in os.listdir(months2add_employees_folder_path)
                              if file.endswith(".xlsx") and file[0] != '~']
-    if progress_callback:
-        progress_callback(15)
 
     if len(months2add_files)>1:
         files_number_error = (f"Too many files present in  '{months2add_employees_folder_path}' "
@@ -520,21 +554,22 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
      year_months_file_path,
      sheet_name_error,
      column_error,
-     years2add_error) = _update_months_history(months2add_file_path,
-                                               one_year_employees_folder_path,
-                                               one_year_employees_basename_alias,
-                                               replace)
-    if progress_callback:
-        progress_callback(20)
+     years2add_error,
+     progress_bar_state_1) = _update_months_history(months2add_file_path,
+                                                    one_year_employees_folder_path,
+                                                    one_year_employees_basename_alias,
+                                                    replace,
+                                                    progress_callback=progress_callback,
+                                                    progress_bar_state=progress_bar_state_init)
 
     if employees_year is None or year_months_file_path is None:
         return None, None, sheet_name_error, column_error, years2add_error, None
 
     # Building the dataframe employees_df by concatenating
     # the months of the current year
-    employees_df = _build_year_month_dpt(year_months_file_path)
-    if progress_callback:
-        progress_callback(25)
+    employees_df, progress_bar_state_2 = _build_year_month_dpt(year_months_file_path,
+                                                               progress_callback=progress_callback,
+                                                               progress_bar_state=progress_bar_state_1)
 
     # Saving employees_df as a sheet mame after employees_year,
     # in the workbook pointed by all_years_file_path
@@ -555,14 +590,18 @@ def update_employees(bibliometer_path, progress_callback=None, replace=True):
         employees_df.to_excel(all_years_file_path, sheet_name=employees_year)
         all_years_file_error  = f"The file '{all_years_file_path}' has been "
         all_years_file_error += f"created with a sheet named '{employees_year}'"
+    if progress_callback:
+        progress_callback(95)
 
     # Copying the all-years employees file updated to the backup folder
     shutil.copy(all_years_file_path, backup_folder_path)
+    if progress_callback:
+        progress_callback(100)
 
     return employees_year, None, None, None, None, all_years_file_error
 
 
-def set_employees_data(corpus_year, all_effectifs_path, search_depth):
+def set_employees_data(corpus_year, empl_file_path, search_depth):
     """Sets employees data through the reading of Institute employees database.
 
     The employee last name is standardized through the `standardize_txt` 
@@ -570,8 +609,8 @@ def set_employees_data(corpus_year, all_effectifs_path, search_depth):
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
-        all_effectifs_path (path): Full path to file of Institute \
-        employees database.
+        empl_file_path (path): Full path to file of Institute \
+        employees data.
         search_depth (int): Initial search depth.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
@@ -579,35 +618,36 @@ def set_employees_data(corpus_year, all_effectifs_path, search_depth):
         (tup): (employees data (df), adapted search depth (int), \
         list of available years of employees data).    
     """
-
+    print(f"Setting the adequate selection of employees data for {corpus_year} corpus...")
+    
     # Setting useful columns aliases
-    last_name_col_alias = eg.EMPLOYEES_USEFUL_COLS['name']
-    full_name_col_alias = eg.EMPLOYEES_ADD_COLS['employee_full_name']
-    first_name_col_alias = eg.EMPLOYEES_ADD_COLS['first_name_initials']
+    last_name_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['name']
+    full_name_col_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']
+    first_name_col_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
 
     # Getting employees df
-    useful_col_list = list(eg.EMPLOYEES_USEFUL_COLS.values()) + list(eg.EMPLOYEES_ADD_COLS.values())
-    all_effectifs_df = pd.read_excel(all_effectifs_path,
-                                     sheet_name=None,
-                                     dtype=eg.EMPLOYEES_COL_TYPES,
-                                     usecols=useful_col_list,
-                                     keep_default_na=False)
+    useful_col_list = list(bm_eg.EMPLOYEES_USEFUL_COLS.values()) + list(bm_eg.EMPLOYEES_ADD_COLS.values())
+    employees_dict = pd.read_excel(empl_file_path,
+                                   sheet_name=None,
+                                   dtype=bm_eg.EMPLOYEES_COL_TYPES,
+                                   usecols=useful_col_list,
+                                   keep_default_na=False)
 
     # Standardizing employee last name and consequently updating employee full name
-    new_all_effectifs_df = {}
-    for year in all_effectifs_df.keys():
-        year_all_effectifs_df = all_effectifs_df[year].copy()
-        year_all_effectifs_df[last_name_col_alias] = year_all_effectifs_df[last_name_col_alias].\
+    new_employees_dict = {}
+    for year in employees_dict.keys():
+        year_employees_df = employees_dict[year].copy()
+        year_employees_df[last_name_col_alias] = year_employees_df[last_name_col_alias].\
         apply(standardize_txt)
-        for row_num, _ in year_all_effectifs_df.iterrows():
-            last_name = year_all_effectifs_df.loc[row_num, last_name_col_alias]
-            first_name = year_all_effectifs_df.loc[row_num, first_name_col_alias]
+        for row_num, _ in year_employees_df.iterrows():
+            last_name = year_employees_df.loc[row_num, last_name_col_alias]
+            first_name = year_employees_df.loc[row_num, first_name_col_alias]
             full_name = last_name + " " + first_name
-            year_all_effectifs_df.loc[row_num, full_name_col_alias] = full_name
-        new_all_effectifs_df[year] = year_all_effectifs_df
+            year_employees_df.loc[row_num, full_name_col_alias] = full_name
+        new_employees_dict[year] = year_employees_df
 
     # Identifying available years in employees df
-    annees_dispo = [int(x) for x in list(all_effectifs_df.keys())]
+    annees_dispo = [int(x) for x in list(employees_dict.keys())]
     annees_a_verifier = [int(corpus_year) - int(search_depth)
                          + (i+1) for i in range(int(search_depth))]
     annees_verifiees = []
@@ -626,4 +666,4 @@ def set_employees_data(corpus_year, all_effectifs_path, search_depth):
                          "\n1- Complétez le fichier des effectifs de l'Institut ;"
                          "\n2- Puis relancer le croisement auteurs-effectifs.")
         messagebox.showwarning(warning_title, warning_text)
-    return (new_all_effectifs_df, search_depth, annees_verifiees)
+    return (new_employees_dict, search_depth, annees_verifiees)

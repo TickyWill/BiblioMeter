@@ -19,7 +19,7 @@ import pandas as pd
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
@@ -40,9 +40,9 @@ def _get_hal_added_dois(bibliometer_path, corpus_year):
         (list): The list of added DOIs.
     """
     doi_col = bp.COL_NAMES['articles'][6]
-    extract_root_alias = pg.ARCHI_EXTRACT["root"]
-    scopus_extract_root_alias = pg.ARCHI_EXTRACT[bp.SCOPUS]["root"]
-    added_dois_file_base_alias = pg.ARCHI_EXTRACT[bp.SCOPUS]["added_dois_file"]
+    extract_root_alias = bm_pg.ARCHI_EXTRACT["root"]
+    scopus_extract_root_alias = bm_pg.ARCHI_EXTRACT[bp.SCOPUS]["root"]
+    added_dois_file_base_alias = bm_pg.ARCHI_EXTRACT[bp.SCOPUS]["added_dois_file"]
     added_dois_file = corpus_year + added_dois_file_base_alias
     extract_root_path = bibliometer_path / Path(extract_root_alias)
     scopus_extract_path = extract_root_path / Path(scopus_extract_root_alias)
@@ -257,18 +257,18 @@ def _check_names_spelling(bibliometer_path, init_df, cols_list):
     pub_first_name_col = col2
 
     # Setting useful aliases
-    orphan_treat_root = pg.ARCHI_ORPHAN["root"]
-    orthograph_file_name = pg.ARCHI_ORPHAN["orthograph file"]
-    ortho_lastname_init = pg.COL_NAMES_ORTHO['last name init']
-    ortho_initials_init = pg.COL_NAMES_ORTHO['initials init']
-    ortho_lastname_new = pg.COL_NAMES_ORTHO['last name new']
-    ortho_initials_new = pg.COL_NAMES_ORTHO['initials new']
+    orphan_treat_root = bm_pg.ARCHI_ORPHAN["root"]
+    orthograph_file_name = bm_pg.ARCHI_ORPHAN["orthograph file"]
+    ortho_lastname_init = bm_pg.COL_NAMES_ORTHO['last name init']
+    ortho_initials_init = bm_pg.COL_NAMES_ORTHO['initials init']
+    ortho_lastname_new = bm_pg.COL_NAMES_ORTHO['last name new']
+    ortho_initials_new = bm_pg.COL_NAMES_ORTHO['initials new']
 
     # Setting useful path
     ortho_path = bibliometer_path / Path(orphan_treat_root) / Path(orthograph_file_name)
 
     # Reading data file targeted by 'ortho_path'
-    ortho_col_list = list(pg.COL_NAMES_ORTHO.values())
+    ortho_col_list = list(bm_pg.COL_NAMES_ORTHO.values())
     warnings.simplefilter(action='ignore', category=UserWarning)
     ortho_df = pd.read_excel(ortho_path,
                              usecols=ortho_col_list,
@@ -329,20 +329,20 @@ def _check_names_to_replace(bibliometer_path, year, init_df, cols_list):
     pub_first_name_col = col2
 
     # Setting useful aliases
-    orphan_treat_root = pg.ARCHI_ORPHAN["root"]
-    complements_file_name = pg.ARCHI_ORPHAN["complementary file"]
-    compl_to_replace_sheet = pg.SHEET_NAMES_ORPHAN['to replace']
-    compl_lastname_init = pg.COL_NAMES_COMPL['last name init']
-    compl_initials_init = pg.COL_NAMES_COMPL['initials init']
-    compl_lastname_new = pg.COL_NAMES_COMPL['last name new']
-    compl_initials_new = pg.COL_NAMES_COMPL['initials new']
-    compl_year_pub = pg.COL_NAMES_COMPL['publication year']
+    orphan_treat_root = bm_pg.ARCHI_ORPHAN["root"]
+    complements_file_name = bm_pg.ARCHI_ORPHAN["complementary file"]
+    compl_to_replace_sheet = bm_pg.SHEET_NAMES_ORPHAN['to replace']
+    compl_lastname_init = bm_pg.COL_NAMES_COMPL['last name init']
+    compl_initials_init = bm_pg.COL_NAMES_COMPL['initials init']
+    compl_lastname_new = bm_pg.COL_NAMES_COMPL['last name new']
+    compl_initials_new = bm_pg.COL_NAMES_COMPL['initials new']
+    compl_year_pub = bm_pg.COL_NAMES_COMPL['publication year']
 
     # Setting useful path
     complements_path = bibliometer_path / Path(orphan_treat_root) / Path(complements_file_name)
 
     # Getting the information of the year in the complementary file
-    compl_col_list = list(pg.COL_NAMES_COMPL.values())
+    compl_col_list = list(bm_pg.COL_NAMES_COMPL.values())
     warnings.simplefilter(action='ignore', category=UserWarning)
     compl_df = pd.read_excel(complements_path,
                              sheet_name=compl_to_replace_sheet,
@@ -402,11 +402,11 @@ def _check_authors_to_remove(institute, bibliometer_path, pub_df, cols_list):
     pub_last_col, pub_initials_col = cols_list
 
     # Setting useful aliases
-    orphan_treat_root = pg.ARCHI_ORPHAN["root"]
-    outliers_file_name = pg.ARCHI_ORPHAN["complementary file"]
-    outliers_sheet = pg.SHEET_NAMES_ORPHAN["to remove"] + institute
-    outliers_lastname_col = pg.COL_NAMES_EXT['last name']
-    outliers_initials_col = pg.COL_NAMES_EXT['initials']
+    orphan_treat_root = bm_pg.ARCHI_ORPHAN["root"]
+    outliers_file_name = bm_pg.ARCHI_ORPHAN["complementary file"]
+    outliers_sheet = bm_pg.SHEET_NAMES_ORPHAN["to remove"] + institute
+    outliers_lastname_col = bm_pg.COL_NAMES_EXT['last name']
+    outliers_initials_col = bm_pg.COL_NAMES_EXT['initials']
 
     # Setting useful path
     outliers_path = bibliometer_path / Path(orphan_treat_root) / Path(outliers_file_name)
@@ -516,7 +516,7 @@ def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year)
     auth_inst_item_alias = bp.PARSING_ITEMS_LIST[5]
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
     item_filename_dict = config_tup[2]
 
     # Setting input-data paths
@@ -543,9 +543,9 @@ def _get_input_data(institute, org_tup, bibliometer_path, datatype, corpus_year)
         addresses_file_name_base = item_filename_dict[addresses_item_alias]
         auth_inst_file_name_base = item_filename_dict[auth_inst_item_alias]
         save_final_dedup(addresses_df, addresses_file_name_base,
-                         pg.TSV_SAVE_EXTENT, dedup_infos)
+                         bm_pg.TSV_SAVE_EXTENT, dedup_infos)
         save_final_dedup(authorsinst_df, auth_inst_file_name_base,
-                         pg.TSV_SAVE_EXTENT, dedup_infos)
+                         bm_pg.TSV_SAVE_EXTENT, dedup_infos)
 
     return articles_df, authors_df, authorsinst_df
 
@@ -603,7 +603,7 @@ def _build_authors_full_list(authors_df, cols_list):
     """
     bp_pub_id_col, bp_authors_col, fullname_col, authors_list_col = cols_list
     authors_col = bp_authors_col
-    if pg.AUTHORS_FULL_LIST_NAME_CORRECTION:
+    if bm_pg.AUTHORS_FULL_LIST_NAME_CORRECTION:
         authors_col = fullname_col
     data = []
     for pub_id, pub_id_authors_df in authors_df.groupby(bp_pub_id_col):
@@ -692,11 +692,11 @@ def build_institute_pubs_authors(institute, org_tup, bibliometer_path, datatype,
     bp_pub_id_alias = bp.COL_NAMES['authors'][0]
     bp_auth_idx_alias = bp.COL_NAMES['authors'][1]
     bp_authors_alias = bp.COL_NAMES['authors'][2]
-    fullname_alias = pg.COL_NAMES_BM['Full_name']
-    lastname_alias = pg.COL_NAMES_BM['Last_name']
-    firstname_alias = pg.COL_NAMES_BM['First_name']
-    corpus_year_col_alias = pg.COL_NAMES_BONUS['corpus_year']
-    authors_list_alias = pg.COL_NAMES_BONUS['liste auteurs']
+    fullname_alias = bm_pg.COL_NAMES_BM['Full_name']
+    lastname_alias = bm_pg.COL_NAMES_BM['Last_name']
+    firstname_alias = bm_pg.COL_NAMES_BM['First_name']
+    corpus_year_col_alias = bm_pg.COL_NAMES_BONUS['corpus_year']
+    authors_list_alias = bm_pg.COL_NAMES_BONUS['liste auteurs']
 
     # Setting useful cols list
     names_cols_list = [fullname_alias, lastname_alias, firstname_alias]

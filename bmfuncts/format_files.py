@@ -37,7 +37,7 @@ from openpyxl.worksheet.datavalidation import DataValidation \
     as openpyxl_DataValidation
 
 # local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 
 
 def get_col_letter(df, col, xl_idx_base):
@@ -80,9 +80,9 @@ def build_data_val(values_list):
 def build_cell_fill_patterns():
     """Builds list of openpyxl patterns for filling cells using 'ROW_COLORS' global."""
     # Setting cell colors
-    cell_colors = [openpyxl_PatternFill(fgColor = pg.ROW_COLORS['odd'],
+    cell_colors = [openpyxl_PatternFill(fgColor = bm_pg.ROW_COLORS['odd'],
                                         fill_type = "solid"),
-                   openpyxl_PatternFill(fgColor = pg.ROW_COLORS['even'],
+                   openpyxl_PatternFill(fgColor = bm_pg.ROW_COLORS['even'],
                                         fill_type = "solid")]
     return cell_colors
 
@@ -152,7 +152,7 @@ def format_heading(ws, df_title):
     head_font = openpyxl_Font(bold=True)
     head_align = openpyxl_Alignment(wrap_text=True, horizontal="center",
                                     vertical="center")
-    pub_alias = pg.DF_TITLES_LIST[0]
+    pub_alias = bm_pg.DF_TITLES_LIST[0]
     cells_list = ws['A'] + ws[1]
     if df_title!=pub_alias:
         cells_list = ws[1]
@@ -832,24 +832,24 @@ def set_df_attributes(df_title, df_cols_list):
         and valued by rows height (int), Num of first column to be formatted (int)).
     """
     # Setting useful aliases
-    pub_list_alias = pg.DF_TITLES_LIST[0]
-    def_otp_alias = pg.DF_TITLES_LIST[2]
-    if_db_alias = pg.DF_TITLES_LIST[3]
-    auth_alias = pg.DF_TITLES_LIST[4]
-    auth_stat_alias = pg.DF_TITLES_LIST[5]
-    kpi_alias = pg.DF_TITLES_LIST[6]
-    kw_alias = pg.DF_TITLES_LIST[7]
-    geo_alias = pg.DF_TITLES_LIST[8]
-    norm_inst_alias = pg.DF_TITLES_LIST[9]
-    if_ana_alias = pg.DF_TITLES_LIST[10]
-    distrib_inst_alias = pg.DF_TITLES_LIST[11]
-    inst_country_pub_alias = pg.DF_TITLES_LIST[12]
-    doctype_stat_alias = pg.DF_TITLES_LIST[13]
-    pub_country_inst_alias = pg.DF_TITLES_LIST[14]
-    country_inst_pub_alias = pg.DF_TITLES_LIST[15]
-    raw_inst_alias = pg.DF_TITLES_LIST[16]
-    invalids_alias = pg.DF_TITLES_LIST[17]
-    missing_if_issn_alias = pg.DF_TITLES_LIST[18]
+    pub_list_alias = bm_pg.DF_TITLES_LIST[0]
+    def_otp_alias = bm_pg.DF_TITLES_LIST[2]
+    if_db_alias = bm_pg.DF_TITLES_LIST[3]
+    auth_alias = bm_pg.DF_TITLES_LIST[4]
+    auth_stat_alias = bm_pg.DF_TITLES_LIST[5]
+    kpi_alias = bm_pg.DF_TITLES_LIST[6]
+    kw_alias = bm_pg.DF_TITLES_LIST[7]
+    geo_alias = bm_pg.DF_TITLES_LIST[8]
+    norm_inst_alias = bm_pg.DF_TITLES_LIST[9]
+    if_ana_alias = bm_pg.DF_TITLES_LIST[10]
+    distrib_inst_alias = bm_pg.DF_TITLES_LIST[11]
+    inst_country_pub_alias = bm_pg.DF_TITLES_LIST[12]
+    doctype_stat_alias = bm_pg.DF_TITLES_LIST[13]
+    pub_country_inst_alias = bm_pg.DF_TITLES_LIST[14]
+    country_inst_pub_alias = bm_pg.DF_TITLES_LIST[15]
+    raw_inst_alias = bm_pg.DF_TITLES_LIST[16]
+    invalids_alias = bm_pg.DF_TITLES_LIST[17]
+    missing_if_issn_alias = bm_pg.DF_TITLES_LIST[18]
 
     if df_title==pub_list_alias:
         attr_tup = _set_pub_list_attributes(df_cols_list)
@@ -939,7 +939,7 @@ def format_page(df, df_title, wb=None, header=True,
         formatted active sheet).
     """
     # Setting base of columns and row indexes in openpyxl objects
-    xl_idx_base = pg.XL_INDEX_BASE
+    xl_idx_base = bm_pg.XL_INDEX_BASE
 
     # Setting list of cell colors
     if not cell_colors:

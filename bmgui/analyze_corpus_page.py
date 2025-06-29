@@ -14,8 +14,8 @@ from tkinter import messagebox
 from tkinter import ttk
 
 # Local imports
-import bmfuncts.pub_globals as pg
-import bmgui.gui_globals as gg
+import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
 from bmfuncts.add_ifs import get_if_db
 from bmfuncts.authors_analysis import authors_analysis
 from bmfuncts.build_kpi import if_analysis
@@ -158,7 +158,7 @@ def _launch_if_analysis(institute, org_tup, bibliometer_path, datatype,
     _, _, if_most_recent_year = get_if_db(institute, org_tup, bibliometer_path)
 
     analysis_if = "IF " + if_most_recent_year
-    if pg.ANALYSIS_IF==pg.COL_NAMES_BONUS['IF année publi']:
+    if bm_pg.ANALYSIS_IF==bm_pg.COL_NAMES_BONUS['IF année publi']:
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 
@@ -293,38 +293,38 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
 
 
     # Setting effective font sizes and positions (numbers are reference values)
-    eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
-    eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
-    eff_help_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-2, master.width_sf_min)
-    eff_select_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
-    eff_buttons_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
-    progress_bar_length_px = mm_to_px(100 * master.width_sf_mm, gg.PPI)
+    eff_etape_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
+    eff_launch_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-1, master.width_sf_min)
+    eff_help_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-2, master.width_sf_min)
+    eff_select_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
+    eff_buttons_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
+    progress_bar_length_px = mm_to_px(100 * master.width_sf_mm, bm_gg.PPI)
     progress_bar_dx = 50
-    if_analysis_x_pos_px = mm_to_px(10 * master.width_sf_mm, gg.PPI)
-    if_analysis_y_pos_px = mm_to_px(40 * master.height_sf_mm, gg.PPI)
+    if_analysis_x_pos_px = mm_to_px(10 * master.width_sf_mm, bm_gg.PPI)
+    if_analysis_y_pos_px = mm_to_px(40 * master.height_sf_mm, bm_gg.PPI)
     title_dy = 20
-    au_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
-    au_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, gg.PPI)
-    co_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
-    co_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, gg.PPI)
-    kw_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, gg.PPI)
-    kw_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, gg.PPI)
+    au_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, bm_gg.PPI)
+    au_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, bm_gg.PPI)
+    co_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, bm_gg.PPI)
+    co_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, bm_gg.PPI)
+    kw_analysis_label_dx_px = mm_to_px(0 * master.width_sf_mm, bm_gg.PPI)
+    kw_analysis_label_dy_px = mm_to_px(title_dy * master.height_sf_mm, bm_gg.PPI)
 
-    launch_dx_px = mm_to_px(10 * master.width_sf_mm, gg.PPI)
-    launch_dy_px = mm_to_px(2 * master.height_sf_mm, gg.PPI)
-    year_button_x_pos = mm_to_px(gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm, gg.PPI)
-    year_button_y_pos = mm_to_px(gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm, gg.PPI)
+    launch_dx_px = mm_to_px(10 * master.width_sf_mm, bm_gg.PPI)
+    launch_dy_px = mm_to_px(2 * master.height_sf_mm, bm_gg.PPI)
+    year_button_x_pos = mm_to_px(bm_gg.REF_YEAR_BUT_POS_X_MM * master.width_sf_mm, bm_gg.PPI)
+    year_button_y_pos = mm_to_px(bm_gg.REF_YEAR_BUT_POS_Y_MM * master.height_sf_mm, bm_gg.PPI)
     year_dy = -6
-    help_dx = mm_to_px(100 * master.width_sf_mm, gg.PPI)
-    help_dy = mm_to_px(0 * master.width_sf_mm, gg.PPI)
+    help_dx = mm_to_px(100 * master.width_sf_mm, bm_gg.PPI)
+    help_dy = mm_to_px(0 * master.width_sf_mm, bm_gg.PPI)
 
     # Setting common attributes
     etape_label_format = 'left'
     etape_underline = -1
 
     # Setting aliases for saving results independent of corpus year
-    results_root_alias = pg.ARCHI_RESULTS["root"]
-    results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
 
     # Setting paths for saving results independent of corpus year
     results_root_path = bibliometer_path / Path(results_root_alias)
@@ -334,6 +334,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     org_tup = set_org_params(institute, bibliometer_path)
 
     # Creating and setting widgets for page title and exit button
+    page_label = bm_gg.PAGES_LABELS[page_name]
     set_page_title(self, master, page_name, institute, datatype)
     set_exit_button(self, master)
 
@@ -343,32 +344,32 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
     variable_years.set(default_year)
 
     # - Creating years button option
-    self.font_OptionButton_years = tkFont.Font(family=gg.FONT_NAME,
+    self.font_OptionButton_years = tkFont.Font(family=bm_gg.FONT_NAME,
                                                size=eff_buttons_font_size)
     self.OptionButton_years = tk.OptionMenu(self,
                                             variable_years,
                                             *master.years_list)
     self.OptionButton_years.config(font=self.font_OptionButton_years)
-    gg.GUI_BUTTONS.append(self.OptionButton_years)
+    bm_gg.GUI_BUTTONS.append(self.OptionButton_years)
 
     # - Creating year selection label
-    self.font_Label_years = tkFont.Font(family=gg.FONT_NAME,
+    self.font_Label_years = tkFont.Font(family=bm_gg.FONT_NAME,
                                         size=eff_select_font_size,
                                         weight='bold')
     self.Label_years = tk.Label(self,
-                                text=gg.TEXT_YEAR_PI,
+                                text=bm_gg.TEXT_YEAR_PI,
                                 font=self.font_Label_years)
     self.Label_years.place(x=year_button_x_pos, y=year_button_y_pos)
 
     place_after(self.Label_years, self.OptionButton_years, dy=year_dy)
 
     # Creating help button
-    help_text = (f" - {gg.ANALYSIS_TEXT_DICT['if'][1]}\n\n"
-                 f" - {gg.ANALYSIS_TEXT_DICT['au'][1]}\n\n"
-                 f" - {gg.ANALYSIS_TEXT_DICT['co'][1]}\n\n"
-                 f" - {gg.ANALYSIS_TEXT_DICT['kw'][1]}\n\n"
+    help_text = (f" - {bm_gg.ANALYSIS_TEXT_DICT['if'][1]}\n\n"
+                 f" - {bm_gg.ANALYSIS_TEXT_DICT['au'][1]}\n\n"
+                 f" - {bm_gg.ANALYSIS_TEXT_DICT['co'][1]}\n\n"
+                 f" - {bm_gg.ANALYSIS_TEXT_DICT['kw'][1]}\n\n"
                 )
-    help_label_font = tkFont.Font(family=gg.FONT_NAME,
+    help_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                   size=eff_help_font_size)
     help_button = tk.Button(self,
                             text='Description',
@@ -385,11 +386,11 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                                    variable=progress_var)
 
     # Creating and setting impact-factors analysis widgets
-    title = gg.ANALYSIS_TEXT_DICT["if"][0]
-    launch_text = gg.ANALYSIS_TEXT_DICT["if"][2]
+    title = bm_gg.ANALYSIS_TEXT_DICT["if"][0]
+    launch_text = bm_gg.ANALYSIS_TEXT_DICT["if"][2]
 
     # - Setting title
-    if_analysis_font = tkFont.Font(family=gg.FONT_NAME,
+    if_analysis_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                    size=eff_etape_font_size,
                                    weight='bold')
     if_analysis_label = tk.Label(self,
@@ -402,24 +403,24 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                             y=if_analysis_y_pos_px)
 
     # - Setting launch button
-    if_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    if_analysis_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                           size=eff_launch_font_size)
     if_analysis_launch_button = tk.Button(self,
                                           text=launch_text,
                                           font=if_analysis_launch_font,
                                           command=_start_launch_if_analysis_try)
-    gg.GUI_BUTTONS.append(if_analysis_launch_button)
+    bm_gg.GUI_BUTTONS.append(if_analysis_launch_button)
     place_bellow(if_analysis_label,
                  if_analysis_launch_button,
                  dx=launch_dx_px,
                  dy=launch_dy_px)
 
     # Creating and setting authors analysis widgets
-    title = gg.ANALYSIS_TEXT_DICT["au"][0]
-    launch_text = gg.ANALYSIS_TEXT_DICT["au"][2]
+    title = bm_gg.ANALYSIS_TEXT_DICT["au"][0]
+    launch_text = bm_gg.ANALYSIS_TEXT_DICT["au"][2]
 
     # - Setting title
-    au_analysis_font = tkFont.Font(family=gg.FONT_NAME,
+    au_analysis_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                    size=eff_etape_font_size,
                                    weight='bold')
     au_analysis_label = tk.Label(self,
@@ -433,7 +434,7 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  dy=au_analysis_label_dy_px)
 
     # - Setting launch button
-    au_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    au_analysis_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                           size=eff_launch_font_size)
     au_analysis_launch_button = tk.Button(self,
                                           text=launch_text,
@@ -445,11 +446,11 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  dy=launch_dy_px)
 
     # Creating and setting coupling analysis widgets
-    title = gg.ANALYSIS_TEXT_DICT["co"][0]
-    launch_text = gg.ANALYSIS_TEXT_DICT["co"][2]
+    title = bm_gg.ANALYSIS_TEXT_DICT["co"][0]
+    launch_text = bm_gg.ANALYSIS_TEXT_DICT["co"][2]
 
     # - Setting title
-    co_analysis_label_font = tkFont.Font(family=gg.FONT_NAME,
+    co_analysis_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                          size=eff_etape_font_size,
                                          weight='bold')
     co_analysis_label = tk.Label(self,
@@ -462,24 +463,24 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  dy=co_analysis_label_dy_px)
 
     # - Setting launch button
-    co_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    co_analysis_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                           size=eff_launch_font_size)
     co_analysis_launch_button = tk.Button(self,
                                           text=launch_text,
                                           font=co_analysis_launch_font,
                                           command=_start_launch_coupling_analysis_try)
-    gg.GUI_BUTTONS.append(co_analysis_launch_button)
+    bm_gg.GUI_BUTTONS.append(co_analysis_launch_button)
     place_bellow(co_analysis_label,
                  co_analysis_launch_button,
                  dx=launch_dx_px,
                  dy=launch_dy_px)
 
     # Creating and setting keywords analysis widgets
-    title = gg.ANALYSIS_TEXT_DICT["kw"][0]
-    launch_text = gg.ANALYSIS_TEXT_DICT["kw"][2]
+    title = bm_gg.ANALYSIS_TEXT_DICT["kw"][0]
+    launch_text = bm_gg.ANALYSIS_TEXT_DICT["kw"][2]
 
     # - Setting title
-    kw_analysis_label_font = tkFont.Font(family=gg.FONT_NAME,
+    kw_analysis_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                          size=eff_etape_font_size,
                                          weight='bold')
     kw_analysis_label = tk.Label(self,
@@ -492,13 +493,13 @@ def create_analysis(self, master, page_name, institute, bibliometer_path, dataty
                  dy=kw_analysis_label_dy_px)
 
     # - Setting launch button
-    kw_analysis_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    kw_analysis_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                           size=eff_launch_font_size)
     kw_analysis_launch_button = tk.Button(self,
                                           text=launch_text,
                                           font=kw_analysis_launch_font,
                                           command=_start_launch_kw_analysis_try)
-    gg.GUI_BUTTONS.append(kw_analysis_launch_button)
+    bm_gg.GUI_BUTTONS.append(kw_analysis_launch_button)
     place_bellow(kw_analysis_label,
                  kw_analysis_launch_button,
                  dx=launch_dx_px,

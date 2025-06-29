@@ -15,7 +15,7 @@ import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.useful_functs import concat_dfs
@@ -340,9 +340,9 @@ def _build_inst_stat_data(institute, distrib_institutions_df,
         global and valued by the built data (dataframe) of the statistical results.
     """
     institute_pub_ids_list = pub_ids_lists[0]
-    stat_keys_alias = list(pg.STAT_FILE_DICT.keys())
+    stat_keys_alias = list(bm_pg.STAT_FILE_DICT.keys())
     inst_type_data_dict = {}
-    for inst_type in pg.STAT_INST_TYPES_LIST:
+    for inst_type in bm_pg.STAT_INST_TYPES_LIST:
         inst_type_data_dict[inst_type] = {}
 
         # Setting useful columns list
@@ -388,7 +388,7 @@ def _save_inst_stat_data(inst_type_data_dict, inst_stat_path):
         results are saved.
     """
     inst_types_list = inst_type_data_dict.keys()
-    for stat_key, value_tup in pg.STAT_FILE_DICT.items():
+    for stat_key, value_tup in bm_pg.STAT_FILE_DICT.items():
         stat_file, df_title_idx = value_tup
         # Initialize parameters for saving results as multisheet workbook
         first = True
@@ -399,7 +399,7 @@ def _save_inst_stat_data(inst_type_data_dict, inst_stat_path):
             inst_type_stat_df = inst_type_data_dict[inst_type][stat_key]
 
             inst_sheet_name = inst_type
-            inst_stat_title = pg.DF_TITLES_LIST[df_title_idx]
+            inst_stat_title = bm_pg.DF_TITLES_LIST[df_title_idx]
             wb = format_wb_sheet(inst_sheet_name, inst_type_stat_df,
                                  inst_stat_title, wb, first)
             first = False
@@ -434,15 +434,15 @@ def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
     # Setting useful column alias
     pub_id_col_alias = bp.COL_NAMES['pub_id']
     bp_country_col_alias = bp.COL_NAMES['address_inst'][3]
-    pg_country_col_alias = pg.COL_NAMES_BONUS['country']
-    inst_col_alias = pg.COL_NAMES_BONUS['institution']
-    pub_nb_col_alias = pg.COL_NAMES_BONUS["pub number"]
-    pub_ids_col_alias = pg.COL_NAMES_BONUS["pub_ids list"]
-    inst_nb_col_alias = pg.COL_NAMES_BONUS["inst number"]
-    inst_list_col_alias = pg.COL_NAMES_BONUS["inst list"]
-    journal_nb_col_alias = pg.COL_NAMES_BONUS['journal_pub_nb']
-    proc_nb_col_alias = pg.COL_NAMES_BONUS['proceedings_pub_nb']
-    book_nb_col_alias = pg.COL_NAMES_BONUS['book_pub_nb']
+    pg_country_col_alias = bm_pg.COL_NAMES_BONUS['country']
+    inst_col_alias = bm_pg.COL_NAMES_BONUS['institution']
+    pub_nb_col_alias = bm_pg.COL_NAMES_BONUS["pub number"]
+    pub_ids_col_alias = bm_pg.COL_NAMES_BONUS["pub_ids list"]
+    inst_nb_col_alias = bm_pg.COL_NAMES_BONUS["inst number"]
+    inst_list_col_alias = bm_pg.COL_NAMES_BONUS["inst list"]
+    journal_nb_col_alias = bm_pg.COL_NAMES_BONUS['journal_pub_nb']
+    proc_nb_col_alias = bm_pg.COL_NAMES_BONUS['proceedings_pub_nb']
+    book_nb_col_alias = bm_pg.COL_NAMES_BONUS['book_pub_nb']
 
     # Setting useful columns list
     common_cols_list = [pub_id_col_alias, bp_country_col_alias]
@@ -505,10 +505,10 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
 
     # Setting useful column names aliases
     inst_type_abbr_col = bp.INST_TYPES_USECOLS[1]
-    institutions_col = pg.COL_NAMES_BONUS['institution']
+    institutions_col = bm_pg.COL_NAMES_BONUS['institution']
 
     # Setting folder and file names aliases
-    distrib_inst_filename_alias = pg.ARCHI_YEAR["institutions distribution file name"] + xlsx_extent
+    distrib_inst_filename_alias = bm_pg.ARCHI_YEAR["institutions distribution file name"] + xlsx_extent
 
     # Getting institutions types data
     inst_types_df = pd.read_excel(inst_types_file_path, usecols = bp.INST_TYPES_USECOLS)
@@ -522,7 +522,7 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
                                                          progress_param=inter_progress_param)
 
     # Saving formatted df of distributed institutions
-    distrib_inst_df_title = pg.DF_TITLES_LIST[11]
+    distrib_inst_df_title = bm_pg.DF_TITLES_LIST[11]
     sheet_name = 'Distributed Inst ' + year
     save_formatted_df_to_xlsx(inst_analysis_folder_path, distrib_inst_filename_alias,
                               distrib_institutions_df, distrib_inst_df_title,

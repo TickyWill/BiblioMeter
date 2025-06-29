@@ -21,8 +21,8 @@ from pathlib import Path
 import pandas as pd
 
 # Local imports
-import bmfuncts.institute_globals as ig
-import bmfuncts.pub_globals as pg
+import bmfuncts.institute_globals as bm_ig
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.add_ifs import add_if
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
@@ -50,16 +50,16 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
         consolidated publications number (int)).
     """
     # Setting useful parameters for use of 'format_page' function
-    common_df_title = pg.DF_TITLES_LIST[0]
+    common_df_title = bm_pg.DF_TITLES_LIST[0]
 
     # Setting useful aliases
-    pub_list_path_alias = pg.ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
+    pub_list_path_alias = bm_pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
 
     # Setting useful file names
     year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
     pub_list_file_alias = year_pub_list_file_alias + ".xlsx"
-    other_dg_file_alias = year_pub_list_file_alias + "_" + pg.OTHER_DOCTYPE + ".xlsx"
+    other_dg_file_alias = year_pub_list_file_alias + "_" + bm_pg.OTHER_DOCTYPE + ".xlsx"
 
     # Setting useful paths
     corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -76,7 +76,7 @@ def split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year
     other_dg = full_pub_list_df.copy()
     pub_nb = len(full_pub_list_df)
     key_pub_nb = 0
-    for key, doctype_list in pg.DOCTYPE_TO_SAVE_DICT.items():
+    for key, doctype_list in bm_pg.DOCTYPE_TO_SAVE_DICT.items():
         doctype_list = [x.upper() for x in doctype_list]
         key_dg = pd.DataFrame(columns=full_pub_list_df.columns)
 
@@ -157,11 +157,11 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
     otp_col = final_col_dic['otp'] # Choix de l'OTP
 
     # Setting useful aliases
-    pub_list_filename_base_alias = pg.ARCHI_YEAR["pub list file name base"]
-    missing_if_filename_base_alias = pg.ARCHI_IF["missing_if_base"]
-    missing_issn_filename_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    invalid_pub_filename_base_alias = pg.ARCHI_YEAR["invalid file name base"]
-    otp_col_new_alias = pg.COL_NAMES_BONUS['final OTP'] # OTP
+    pub_list_filename_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
+    missing_if_filename_base_alias = bm_pg.ARCHI_IF["missing_if_base"]
+    missing_issn_filename_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
+    invalid_pub_filename_base_alias = bm_pg.ARCHI_YEAR["invalid file name base"]
+    otp_col_new_alias = bm_pg.COL_NAMES_BONUS['final OTP'] # OTP
 
     # Setting useful paths
     pub_list_file_path = out_path / Path(pub_list_filename_base_alias
@@ -181,10 +181,10 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Droping invalid publications by pub Id as index
     invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_col]\
-                                                !=ig.INVALIDE].index
+                                                !=bm_ig.INVALIDE].index
     invalids_df = consolidate_pub_list_df.drop(index=invalids_idx_list)
     valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_col]\
-                                                         ==ig.INVALIDE].index
+                                                         ==bm_ig.INVALIDE].index
     consolidate_pub_list_df = consolidate_pub_list_df.drop(index=valids_idx_list)
 
     # Resetting pub ID as a standard column with position after Hash-ID
@@ -197,7 +197,7 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
 
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
-    invalids_df_title = pg.DF_TITLES_LIST[17]
+    invalids_df_title = bm_pg.DF_TITLES_LIST[17]
     invalids_df = invalids_df.rename(columns={otp_col: otp_col_new_alias})
     wb, ws = format_page(invalids_df, invalids_df_title)
     ws.title = "Invalides " +  corpus_year
@@ -216,8 +216,8 @@ def built_final_pub_list(institute, org_tup, bibliometer_path, datatype,
                                                      corpus_year)
 
     # Saving pub list and hash-IDs as final results
-    status_values = len(pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     keys_list = ["pub_lists", "hash_ids", "submit", "homonyms"]
     for key in keys_list:
         results_to_save_dict[key] = True
@@ -252,10 +252,10 @@ def concatenate_pub_lists(bibliometer_path, years_list):
     """
 
     # Setting useful aliases
-    pub_list_path_alias = pg.ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
-    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
-    bdd_multi_annuelle_file_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
+    pub_list_path_alias = bm_pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
+    bdd_multi_annuelle_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    bdd_multi_annuelle_file_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
 
     # Building the concatenated dataframe of available publications lists
     concat_df = pd.DataFrame()
@@ -279,7 +279,7 @@ def concatenate_pub_lists(bibliometer_path, years_list):
                 f"{os.getlogin()}_{available_liste_conso}.xlsx")
     out_path = bibliometer_path / Path(bdd_multi_annuelle_folder_alias)
     out_file_path = out_path / Path(out_file)
-    concat_df_title = pg.DF_TITLES_LIST[0]
+    concat_df_title = bm_pg.DF_TITLES_LIST[0]
     wb, ws = format_page(concat_df, concat_df_title)
     ws.title = "Publications de " + available_liste_conso
     wb.save(out_file_path)

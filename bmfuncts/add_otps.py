@@ -17,9 +17,9 @@ import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
 # Local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.institute_globals as ig
-import bmfuncts.pub_globals as pg
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.institute_globals as bm_ig
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_otps_info import set_lab_otps
 from bmfuncts.format_files import build_data_val
 from bmfuncts.format_files import format_page
@@ -77,7 +77,7 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict):
     dpt_list = list(dpt_attributs_dict.keys())
 
     # Setting useful alias
-    dpt_label_alias = ig.DPT_LABEL_KEY
+    dpt_label_alias = bm_ig.DPT_LABEL_KEY
 
     # Getting the final name of the department column
     dpt_col = otp_col_dict['dpt']
@@ -160,15 +160,15 @@ def _add_authors_name_list(institute, org_tup, in_df):
     # Setting useful aliases
     pub_id_alias = bm_col_rename_dic[bp.COL_NAMES['pub_id']]
     idx_authors_alias = bm_col_rename_dic[bp.COL_NAMES['authors'][1]]
-    nom_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['name']]
-    prenom_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['first_name']]
-    matricule_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
-    full_name_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom'] + institute]
-    author_type_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['author_type']]
-    full_name_list_alias = bm_col_rename_dic[pg.COL_NAMES_BONUS['nom prénom liste']]
-    dept_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['dpt']]
-    serv_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['serv']]
-    lab_alias = bm_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['lab']]
+    nom_alias = bm_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['name']]
+    prenom_alias = bm_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['first_name']]
+    matricule_alias = bm_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    full_name_alias = bm_col_rename_dic[bm_pg.COL_NAMES_BONUS['nom prénom'] + institute]
+    author_type_alias = bm_col_rename_dic[bm_pg.COL_NAMES_BONUS['author_type']]
+    full_name_list_alias = bm_col_rename_dic[bm_pg.COL_NAMES_BONUS['nom prénom liste']]
+    dept_alias = bm_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['dpt']]
+    serv_alias = bm_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['serv']]
+    lab_alias = bm_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['lab']]
 
     # Adding the column 'full_name_alias' that will be used to create the authors fullname list
     in_df[prenom_alias] = in_df[prenom_alias].apply(lambda x: x.capitalize())
@@ -274,7 +274,7 @@ def _save_dpt_otp_file(dpt, dpt_df, dpt_otp_list,
         for setting publications OTP.
     """
     # Setting num of first col and first row in EXCEL files
-    xl_idx_base = pg.XL_INDEX_BASE
+    xl_idx_base = bm_pg.XL_INDEX_BASE
 
     # Building validation list of OTPs for 'dpt' department
     validation_list, data_val = build_data_val(dpt_otp_list)
@@ -286,9 +286,9 @@ def _save_dpt_otp_file(dpt, dpt_df, dpt_otp_list,
     dpt_df = dpt_df.reindex(columns=otp_col_list)
 
     # Formatting 'dpt_df' as openpyxl workbook
-    dpt_df_title = pg.DF_TITLES_LIST[2]
+    dpt_df_title = bm_pg.DF_TITLES_LIST[2]
     wb, ws = format_page(dpt_df, dpt_df_title)
-    ws.title = pg.OTP_SHEET_NAME_BASE + " " +  dpt
+    ws.title = bm_pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
     # Activating the validation data list in all cells of the OTPs column
     dpt_df_len = len(dpt_df)
@@ -334,8 +334,8 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
     idx_author_alias = otp_col_dic['author_id']
     dpt_alias = otp_col_dic['dpt']
     otp_alias = otp_col_dic['otp_list']
-    dpt_label_alias = ig.DPT_LABEL_KEY
-    dpt_otp_alias = ig.DPT_OTP_KEY
+    dpt_label_alias = bm_ig.DPT_LABEL_KEY
+    dpt_otp_alias = bm_ig.DPT_OTP_KEY
 
     # Enhancing file where homonymies have been solved by the user
     init_df = _enhance_homonyms_file(institute, org_tup, in_path)
@@ -412,7 +412,7 @@ def _save_dpt_lab_otp_file(institute, dpt_df, dpt_otp_dict, xl_dpt_path,
         dpt (str): The department label.
     """
     # Setting num of first col and first row in EXCEL files
-    xl_idx_base = pg.XL_INDEX_BASE
+    xl_idx_base = bm_pg.XL_INDEX_BASE
 
     # Setting useful aliases
     otp_alias = otp_col_dic['otp_list']
@@ -440,7 +440,7 @@ def _save_dpt_lab_otp_file(institute, dpt_df, dpt_otp_dict, xl_dpt_path,
             # Formatting 'otp_lab_df' as a new sheet of the 'wb'
             # multisheet openpyxl workbook
             sheet_name = otp_lab
-            otp_lab_df_title = pg.DF_TITLES_LIST[2]
+            otp_lab_df_title = bm_pg.DF_TITLES_LIST[2]
             wb = format_wb_sheet(sheet_name, otp_lab_df,
                                  otp_lab_df_title, wb, first)
             ws = wb.active
@@ -458,7 +458,7 @@ def _save_dpt_lab_otp_file(institute, dpt_df, dpt_otp_dict, xl_dpt_path,
         dpt_df = dpt_df.reindex(columns=otp_col_list)
 
         # Formatting 'dpt_df' as openpyxl workbook
-        dpt_df_title = pg.DF_TITLES_LIST[2]
+        dpt_df_title = bm_pg.DF_TITLES_LIST[2]
         wb, ws = format_page(dpt_df, dpt_df_title)
         dpt_label = dpt
         if dpt=="DIR":
@@ -551,7 +551,7 @@ def _build_otp_dept_df(institute, org_tup, otp_col_dic,
     """
 
     # Setting useful aliases
-    dpt_label_alias = ig.DPT_LABEL_KEY
+    dpt_label_alias = bm_ig.DPT_LABEL_KEY
 
     # Setting useful col names
     dpt_col = otp_col_dic['dpt']

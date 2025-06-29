@@ -11,9 +11,9 @@ import json
 from pathlib import Path
 
 # Local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.institute_globals as ig
-import bmfuncts.pub_globals as pg
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.institute_globals as bm_ig
+import bmfuncts.pub_globals as bm_pg
 
 
 def _get_bm_parsing_config():
@@ -31,8 +31,8 @@ def _get_bm_parsing_config():
     Returns:
         (dict): The dict resulting from the parsing of the json file.
     """
-    config_folder_name = pg.CONFIG_FOLDER
-    config_json_file_name = pg.PARSING_CONFIG_FILE
+    config_folder_name = bm_pg.CONFIG_FOLDER
+    config_json_file_name = bm_pg.PARSING_CONFIG_FILE
 
     # Reads the json file
     config_folder_path = Path(__file__).parent / Path(config_folder_name)
@@ -213,8 +213,8 @@ Args:
     Returns:
         (dict): The dict resulting from the parsing of the json file.
     """
-    config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])
-    config_file_path = config_root_path / Path(ig.CONFIG_JSON_FILES_DICT[institute])
+    config_root_path = bibliometer_path / Path(bm_eg.EMPLOYEES_ARCHI["root"])
+    config_file_path = config_root_path / Path(bm_ig.CONFIG_JSON_FILES_DICT[institute])
 
     # Reads the json_file
     with open(config_file_path, encoding = 'utf-8') as file:
@@ -261,10 +261,10 @@ def set_org_params(institute, bibliometer_path):
         (tup): A tuple of the 9 set parameters. 
     """
 
-    config_root_path = bibliometer_path / Path(eg.EMPLOYEES_ARCHI["root"])
-    config_file_path = config_root_path / Path(ig.CONFIG_JSON_FILES_DICT[institute])
-    dpt_label_key = ig.DPT_LABEL_KEY
-    dpt_otp_key = ig.DPT_OTP_KEY
+    config_root_path = bibliometer_path / Path(bm_eg.EMPLOYEES_ARCHI["root"])
+    config_file_path = config_root_path / Path(bm_ig.CONFIG_JSON_FILES_DICT[institute])
+    dpt_label_key = bm_ig.DPT_LABEL_KEY
+    dpt_otp_key = bm_ig.DPT_OTP_KEY
 
     with open(config_file_path, encoding = 'utf-8') as file:
         inst_org_dict = json.load(file)
@@ -283,7 +283,7 @@ def set_org_params(institute, bibliometer_path):
     dpt_attributes_dict['DIR'] = {dpt_label_key: dpt_label_dict['DIR'],
                                  dpt_otp_key  : dpt_otp_list}
     for dpt in list(col_names_dpt.keys()):
-        dpt_attributes_dict[dpt][dpt_otp_key] += [ig.INVALIDE]
+        dpt_attributes_dict[dpt][dpt_otp_key] += [bm_ig.INVALIDE]
 
     institutions_filter_list = [tuple(x) for x in inst_org_dict["INSTITUTIONS_FILTER_LIST"]]
     inst_col_list = [tup[1] for tup in institutions_filter_list]

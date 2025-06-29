@@ -14,7 +14,7 @@ import pandas as pd
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
@@ -127,8 +127,8 @@ def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     submit_col_rename_dic = col_rename_tup[1]
 
     # Setting useful aliases
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
-    hash_id_col_alias = pg.COL_HASH['hash_id']
+    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
+    hash_id_col_alias = bm_pg.COL_HASH['hash_id']
     pub_id_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
     year_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
     first_auth_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]

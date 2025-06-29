@@ -16,7 +16,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import set_if_col_names
@@ -154,9 +154,9 @@ def get_if_db(institute, org_tup, bibliometer_path):
     if_db_status = org_tup[5]
 
     # Setting useful aliases
-    if_root_folder_alias = pg.ARCHI_IF["root"]
-    if_filename_alias = pg.ARCHI_IF["all IF"]
-    inst_if_filename_alias = institute + pg.ARCHI_IF["institute_if_all_years"]
+    if_root_folder_alias = bm_pg.ARCHI_IF["root"]
+    if_filename_alias = bm_pg.ARCHI_IF["all IF"]
+    inst_if_filename_alias = institute + bm_pg.ARCHI_IF["institute_if_all_years"]
 
     if if_db_status:
         if_filename_alias = inst_if_filename_alias
@@ -289,7 +289,7 @@ def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
     an IF then droping the doc type column.
     """
     # Setting global aliase
-    doc_type_dict_alias = pg.DOC_TYPE_DICT
+    doc_type_dict_alias = bm_pg.DOC_TYPE_DICT
 
     # Setting list of document types to drop (usually no IF attributed)
     no_if_doctype_keys_list = org_tup[6]
@@ -366,19 +366,19 @@ def _format_and_save_add_if_dfs(dfs_tup, out_cols_tup, empty_kw,
         year_missing_if_df, out_cols_tup, empty_kw, add_cols=False)
 
     # Formatting and saving 'corpus_df' as openpyxl file at full path 'out_file_path'
-    corpus_df_title = pg.DF_TITLES_LIST[0]
+    corpus_df_title = bm_pg.DF_TITLES_LIST[0]
     wb, ws = format_page(corpus_df, corpus_df_title)
     ws.title = "Publications " +  corpus_year
     wb.save(out_file_path)
 
     # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
-    missing_issn_df_title = pg.DF_TITLES_LIST[18]
+    missing_issn_df_title = bm_pg.DF_TITLES_LIST[18]
     wb, ws = format_page(sorted_year_missing_issn_df, missing_issn_df_title)
     ws.title = "ISSNs manquants " +  corpus_year
     wb.save(missing_issn_path)
 
     # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
-    missing_if_df_title = pg.DF_TITLES_LIST[18]
+    missing_if_df_title = bm_pg.DF_TITLES_LIST[18]
     wb, ws = format_page(sorted_year_missing_if_df, missing_if_df_title)
     ws.title = "IFs manquants " +  corpus_year
     wb.save(missing_if_path)
@@ -521,17 +521,17 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     otp_col_alias = final_col_dic['otp']
     current_if_col_alias = if_maj_col_dic['current_if']
     corpus_year_if_col_alias = if_maj_col_dic['pub_year_if']
-    corpus_issn_col_alias = pg.COL_NAMES_BONUS["database ISSN"]
-    database_if_col_alias = pg.COL_NAMES_BONUS['IF clarivate']
-    eissn_col_alias = pg.COL_NAMES_BONUS['e-ISSN']
-    otp_col_new_alias = pg.COL_NAMES_BONUS['final OTP']
-    pub_id_nb_col_alias = pg.COL_NAMES_BONUS['pub number']
+    corpus_issn_col_alias = bm_pg.COL_NAMES_BONUS["database ISSN"]
+    database_if_col_alias = bm_pg.COL_NAMES_BONUS['IF clarivate']
+    eissn_col_alias = bm_pg.COL_NAMES_BONUS['e-ISSN']
+    otp_col_new_alias = bm_pg.COL_NAMES_BONUS['final OTP']
+    pub_id_nb_col_alias = bm_pg.COL_NAMES_BONUS['pub number']
 
     # Setting globals aliases
-    not_available_if_alias = pg.NOT_AVAILABLE_IF
-    if_empty_kw_alias = pg.FILL_EMPTY_KEY_WORD
-    empty_kw_alias = pg.FILL_EMPTY_KEY_WORD
-    outside_if_analysis_alias = pg.OUTSIDE_ANALYSIS
+    not_available_if_alias = bm_pg.NOT_AVAILABLE_IF
+    if_empty_kw_alias = bm_pg.FILL_EMPTY_KEY_WORD
+    empty_kw_alias = bm_pg.FILL_EMPTY_KEY_WORD
+    outside_if_analysis_alias = bm_pg.OUTSIDE_ANALYSIS
 
     # Setting tuples for passing args
     cols_tup = (journal_col_alias, issn_col_alias, eissn_col_alias)

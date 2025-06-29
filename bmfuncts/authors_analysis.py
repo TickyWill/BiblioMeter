@@ -14,7 +14,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.save_final_results import save_final_results
@@ -78,11 +78,11 @@ def _set_useful_cols(institute, org_tup):
     mat_col_alias = homonyms_col_dic['matricul']
     type_col_alias = homonyms_col_dic['author_type']
     employee_col_alias = homonyms_col_dic['empl_full_name']
-    nb_auth_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb']
-    is_first_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author']
-    is_last_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author']
-    nb_pub_col_alias = pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb']
-    pub_list_col_alias = pg.COL_NAMES_BONUS['pub_ids list']
+    nb_auth_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb']
+    is_first_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author']
+    is_last_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author']
+    nb_pub_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb']
+    pub_list_col_alias = bm_pg.COL_NAMES_BONUS['pub_ids list']
 
     # Building cols lists
     homonyms_useful_cols = [pub_id_col_alias, author_idx_col_alias,
@@ -300,10 +300,10 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
         are saved.
     """
     # Setting useful aliases
-    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    auth_analysis_folder_alias = pg.ARCHI_YEAR["authors analysis"]
-    authors_file_alias = pg.ARCHI_YEAR["authors file name"]
-    authors_stat_file_alias = pg.ARCHI_YEAR["authors weight file name"]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    auth_analysis_folder_alias = bm_pg.ARCHI_YEAR["authors analysis"]
+    authors_file_alias = bm_pg.ARCHI_YEAR["authors file name"]
+    authors_stat_file_alias = bm_pg.ARCHI_YEAR["authors weight file name"]
     year_authors_file = authors_file_alias + " " + corpus_year
     year_authors_stat_file = authors_stat_file_alias + " " + corpus_year
 
@@ -336,7 +336,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
 
     # Saving the author-employee dataframe as EXCEL file
     author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
-    auth_df_title = pg.DF_TITLES_LIST[4]
+    auth_df_title = bm_pg.DF_TITLES_LIST[4]
     wb, ws = format_page(author_employee_df, auth_df_title)
     ws.title = 'Auteurs ' + corpus_year
     wb.save(author_employee_xlsx_file_path)
@@ -345,7 +345,7 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
 
     # Saving the author-statistics dataframe as EXCEL file
     author_stat_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_stat_file + ".xlsx")
-    auth_stat_df_title = pg.DF_TITLES_LIST[5]
+    auth_stat_df_title = bm_pg.DF_TITLES_LIST[5]
     wb, ws = format_page(pub_nb_per_author_df, auth_stat_df_title)
     ws.title = 'Stat auteurs ' + corpus_year
     wb.save(author_stat_xlsx_file_path)
@@ -353,8 +353,8 @@ def authors_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(80)
 
     # Saving authors analysis as final result
-    status_values = len(pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
     if_analysis_name = None
     _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,

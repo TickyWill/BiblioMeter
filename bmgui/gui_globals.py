@@ -3,6 +3,7 @@
 
 __all__ = ['ADD_SPACE_MM',
            'ANALYSIS_TEXT_DICT',
+           'APPLICATION_WINDOW_TITLE',
            'BM_GUI_DISP',
            'CORPUSES_NUMBER',
            'ETAPE_LABEL_TEXT_LIST',
@@ -29,7 +30,7 @@ __all__ = ['ADD_SPACE_MM',
            'REF_ENTRY_NB_CHAR',
            'REF_ETAPE_BUT_DX_MM',
            'REF_ETAPE_BUT_DY_MM',
-           'REF_ETAPE_CHECK_DY_MM',
+#           'REF_ETAPE_CHECK_DY_MM',
            'REF_ETAPE_FONT_SIZE',
            'REF_ETAPE_POS_X_MM',
            'REF_ETAPE_POS_Y_MM_LIST',
@@ -41,6 +42,7 @@ __all__ = ['ADD_SPACE_MM',
            'REF_LABEL_FONT_SIZE',
            'REF_LABEL_POS_Y_MM',
            'REF_LAUNCH_FONT_SIZE',
+           'REF_MENU_NB_CHAR',
            'REF_PAGE_TITLE_FONT_SIZE',
            'REF_PAGE_TITLE_POS_Y_MM',
            'REF_SCREEN_WIDTH_PX',
@@ -55,14 +57,7 @@ __all__ = ['ADD_SPACE_MM',
            'REF_YEAR_BUT_POS_X_MM',
            'REF_YEAR_BUT_POS_Y_MM',
            'TEXT_BDD_PC',
-           'TEXT_WF',
-           'TEXT_WF_CHANGE',
-           'TEXT_BOUTON_CREATION_CORPUS',
-           'TEXT_BOUTON_LANCEMENT',
-           'TEXT_COPYRIGHT',
-           'TEXT_CORPUSES',
            'TEXT_CROISEMENT',
-           'TEXT_DATATYPE',
            'TEXT_ETAPE_1',
            'TEXT_ETAPE_2',
            'TEXT_ETAPE_3',
@@ -70,25 +65,45 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_ETAPE_5',
            'TEXT_ETAPE_6',
            'TEXT_HOMONYMES',
-           'TEXT_INSTITUTE',
            'TEXT_LAUNCH_PARSING',
            'TEXT_LAUNCH_SYNTHESE',
            'TEXT_MAJ_BDD_IF',
-           'TEXT_MAJ_EFFECTIFS',
            'TEXT_MAJ_PUB_IF',
            'TEXT_OTP',
-           'TEXT_PAUSE',
            'TEXT_PARSING',
            'TEXT_PUB_CONSO',
            'TEXT_STATUT',
            'TEXT_SYNTHESE',
-           'TEXT_TITLE',
            'TEXT_UPDATE_STATUS',
-           'TEXT_VERSION',
            'TEXT_YEAR_PC',
            'TEXT_YEAR_PI',
            'GUI_BUTTONS',
            'VERSION',
+           'APP_COPYRIGHT',
+           'APP_VERSION',
+           'CORPUSES_TXT',
+           'CREATE_CORPUS_BUTTON_TXT',
+           'DATATYPE_TXT',
+           'EMPL_UPDATE_TXT',
+           'EXIT_BUTTON_TXT',
+           'INSTITUTE_TXT',
+           'LAUNCH_BUTTON_TXT',
+           'MAIN_PAGE_TITLE',
+           'STEP_HELPS_LIST',
+           'STEP_LABELS_LIST',
+           'STEP_LAUNCHS_LIST',
+           'STEP_BUT_DX_MM_REF',
+           'STEP_BUT_DY_MM_REF',
+           'STEP_FONT_SIZE_REF',
+#           'STEP_CHECK_DY_MM_REF',
+           'STEP_POS_X_MM_REF',
+           'STEP_POS_Y_MM_REF_LIST', 
+           'STEPS_NB',
+           'WF_TXT',
+           'WF_CHANGE_TXT',
+           'YEAR_SELECT_TXT',
+           'YEAR_BUT_POS_X_MM_REF',
+           'YEAR_BUT_POS_Y_MM_REF',
            ]
 
 # Standard library imports
@@ -108,12 +123,11 @@ VERSION = '6.2.0'
 CORPUSES_NUMBER = 6
 
 # Setting the title of the application main window (internal)
-APPLICATION_WINDOW_TITLE = "BiblioMeter - Analyse de la production scientifique d'un institut"
+APPLICATION_WINDOW_TITLE = "Analyse de la production scientifique d'un institut"
 
 # *****************************************
 # ************ DISPLAY GLOBALS ************
 # *****************************************
-
 
 def _get_displays(in_to_mm):
     """ The function `get_displays` allows to identify the set of displays
@@ -164,13 +178,13 @@ BM_GUI_DISP = 0
 # Getting display resolution in pixels per inch
 PPI = DISPLAYS[BM_GUI_DISP]['ppi']
 
-# Setting display reference sizes in pixels and mm (internal)
+# Setting display reference sizes in pixels and mm
 REF_SCREEN_WIDTH_PX = 1920
 REF_SCREEN_HEIGHT_PX = 1080
 REF_SCREEN_WIDTH_MM = 467
 REF_SCREEN_HEIGHT_MM = 267
 
-# Application window reference sizes in mm for the display reference sizes (internal)
+# Application window reference sizes in mm for the display reference sizes
 REF_WINDOW_WIDTH_MM = 219
 REF_WINDOW_HEIGHT_MM = 173
 
@@ -183,6 +197,9 @@ FONT_NAME = "Helvetica"
 
 # Number of characters reference for editing the entered files-folder path
 REF_ENTRY_NB_CHAR = 110
+
+# Number of characters reference for editing the selected item in menu
+REF_MENU_NB_CHAR = 30
 
 # Font size references for page label and button
 REF_SUB_TITLE_FONT_SIZE = 15
@@ -232,7 +249,7 @@ REF_ETAPE_POS_X_MM = 10
 REF_ETAPE_POS_Y_MM_LIST = [40, 74, 101, 129]
 REF_ETAPE_BUT_DX_MM = 5
 REF_ETAPE_BUT_DY_MM = 5
-REF_ETAPE_CHECK_DY_MM = -8
+#REF_ETAPE_CHECK_DY_MM = -8
 REF_EXIT_BUT_POS_X_MM = 198
 REF_EXIT_BUT_POS_Y_MM = 150
 REF_YEAR_BUT_POS_X_MM = 10
@@ -253,41 +270,55 @@ PAGES_LABELS = {'ParseCorpusPage': "Analyse élémentaire des corpus",
 # *************** MAIN PAGE ***************
 
 # Titre de la page
-TEXT_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
+MAIN_PAGE_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
 
 # Choix de l'Institut
-TEXT_INSTITUTE = "Sélection de l'Institut"
+INSTITUTE_TXT = "Sélection de l'Institut"
 
 # Titre du dossier de travail
-TEXT_WF = "Dossier de travail "
+WF_TXT = "Dossier de travail "
 
 # Titre bouton changement de dossier de travail
-TEXT_WF_CHANGE = "Changer de dossier de travail"
+WF_CHANGE_TXT = "Changer de dossier de travail"
 
 # Titre liste des corpus analysés
-TEXT_CORPUSES = "Liste des corpus "
+CORPUSES_TXT = "Liste des corpus "
 
 # Titre bouton création d'un nouveau dossier de corpus
-TEXT_BOUTON_CREATION_CORPUS = "Créer un nouveau dossier de corpus annuel"
+CREATE_CORPUS_BUTTON_TXT = "Créer un nouveau dossier de corpus annuel"
 
 # Choix du type de données brutes
-TEXT_DATATYPE = "Type de données"
+DATATYPE_TXT = "Type de données"
 
 # Titre bouton de lancement
-TEXT_BOUTON_LANCEMENT = "Lancer l'analyse"
+LAUNCH_BUTTON_TXT = "Lancer l'analyse"
 
 # Copyright and contacts
-TEXT_COPYRIGHT = "Contributeurs et contacts :"
-TEXT_COPYRIGHT += "\n- Amal Chabli : amal.chabli@orange.fr"
-TEXT_COPYRIGHT += "\n- François Bertin : francois.bertin7@wanadoo.fr"
-TEXT_COPYRIGHT += "\n- Baptiste Refalo : baptiste.refalo@cea.fr"
-TEXT_COPYRIGHT += "\n- Ludovic Desmeuzes"
-TEXT_VERSION = f"\nVersion {VERSION}"
+APP_COPYRIGHT = "Contributeurs et contacts :"
+APP_COPYRIGHT += "\n- Amal Chabli : amal.chabli@orange.fr"
+APP_COPYRIGHT += "\n- François Bertin : francois.bertin7@wanadoo.fr"
+APP_COPYRIGHT += "\n- Baptiste Refalo : baptiste.refalo@cea.fr"
+APP_COPYRIGHT += "\n- Ludovic Desmeuzes"
+APP_VERSION = f"\nVersion {VERSION}"
 
 # ************ SECONDARY PAGES ************
 
 # Common to secondary pages
-TEXT_PAUSE = "Quitter"
+EXIT_BUTTON_TXT = "Quitter"
+
+# Setting label of help button
+HELP_BUTTON = "Description"
+
+# Setting reference positions in mm for help buttons
+REF_HELP_BUT_POS_X_MM = 180
+REF_HELP_BUT_POS_Y_MM = 0
+
+# - Setting year selection parameters
+YEAR_SELECT_TXT = "Sélection de l'année "
+
+# Setting reference positions in mm for year selection button
+YEAR_BUT_POS_X_MM_REF = 80 # 10
+YEAR_BUT_POS_Y_MM_REF = 45 # 40
 
 # Parsing page
 
@@ -317,12 +348,73 @@ TEXT_LAUNCH_SYNTHESE = "Lancer la synthèse"
 
 # Consolidation page
 
+STEP_FONT_SIZE_REF = 14
+
+STEP_POS_X_MM_REF = 10
+STEP_BUT_DX_MM_REF = 5
+STEP_BUT_DY_MM_REF = 4
+
+# Setting parameters for each step
+STEPS_NB = 5
+STEPS_DY = 24
+STEPS_Y_INIT = 60
+STEP_POS_Y_MM_REF_LIST = sum([[22], [STEPS_Y_INIT + n * STEPS_DY for n in range(STEPS_NB-1)]], [])
+STEP_LABEL, STEP_HELP, STEP_LAUNCH = [], [], []
+
+# Step 0
+STEP_LABEL.append("Effectifs - Mise à jour des données")
+STEP_HELP.append("Le fichier original des effectifs va être complété "
+                 "avec les données du fichier de mise à jour disponible."
+                 "\n\nCette mise à jour n'a besoin d'être effectuée "
+                 "que si un nouveau fichier de mise à jour est disponible.")
+STEP_LAUNCH.append("Lancer la mise à jour")
+
+# Step 1
+STEP_LABEL.append("Étape 1 - Croisement auteurs-efffectifs de l'institut")
+STEP_HELP.append("Deux fichiers avec une ligne par auteur de l'institut "
+                 "et par publication vont être créés à cette étape :"
+                 "\n\n - Un fichier avec les auteurs trouvés dans les effectifs "
+                 "qui permettra de construire la liste consolidée ;"
+                 "\n - Un fichier avec les auteurs non trouvés dans les effectifs "
+                 "dont l'examen permet d'alimenter les fichiers de correction.")
+STEP_LAUNCH.append("Effectuer le croisement auteurs-efffectifs")
+
+# Step 2
+STEP_LABEL.append("Étape 2 - Résolution des homonymies")
+STEP_HELP.append("Un fichier avec une ligne par auteur de l'institut "
+                 "et par publication va être créé à cette étape indiquant "
+                 "les homonymes à traiter."
+                 "\nL'historique des résolutions va être pris en compte.")
+STEP_LAUNCH.append("Créer le fichier pour la résolution des homonymies")
+
+# Step 3
+STEP_LABEL.append("Étape 3 - Attribution des OTPs")
+STEP_HELP.append("Un fichier par département avec une ligne par publication "
+                 "va être créé à cette étape avec une colonne pour l'attribution des OTPs."
+                 "\nL'historique des attributions va être pris en compte.")
+STEP_LAUNCH.append("Créer les fichiers pour l'attribution des OTPs")
+
+# Step 4
+STEP_LABEL.append("Étape 4 - Consolidation de la liste des publications")
+STEP_HELP.append("Un fichier avec avec une ligne par publication avec "
+                 "l'OTP éventuellement attribué et le facteur d'impact trouvé "
+                 "pour le journal dans la base de données des IFs va être créé à cette étape."
+                 "\nDeux fichiers vont être également créés indiquant les informations manquantes "
+                 "dans la base de données des facteurs d'impact.")
+STEP_LAUNCH.append("Créer la liste consolidée des publications")
+
+# Building lists of steps parameters 
+STEP_LABELS_LIST = [STEP_LABEL[step] for step in range(STEPS_NB)]
+STEP_HELPS_LIST = [STEP_HELP[step] for step in range(STEPS_NB)]
+STEP_LAUNCHS_LIST = [STEP_LAUNCH[step] for step in range(STEPS_NB)]
+
+
 # - Choix de l'année de travail
 TEXT_YEAR_PI = "Sélection de l'année "
 
 # - Etape 1
 TEXT_ETAPE_1 = "Etape 1 : Croisement auteurs-efffectifs de l'institut"
-TEXT_MAJ_EFFECTIFS = "Mettre à jour les effectifs de l'institut avant le croisement (coché = OUI) ?"
+EMPL_UPDATE_TXT = "Mettre à jour les effectifs de l'institut avant le croisement (coché = OUI) ?"
 TEXT_CROISEMENT = "Effectuer le croisement auteurs-efffectifs"
 
 # - Etape 2

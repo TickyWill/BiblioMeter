@@ -12,7 +12,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_final_dedup
@@ -242,8 +242,8 @@ def _set_save_folder_path(bibliometer_path, year):
         (path): The set full path.
     """
     # Setting useful aliases
-    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
 
     # Setting root for saving intermediate results
     year_folder_path = bibliometer_path / Path(year)
@@ -365,7 +365,7 @@ def _build_init_institute_addresses_df(institute, org_tup, bibliometer_path,
     bp_pub_id_alias = bp.COL_NAMES['address'][0]
     bp_address_id_alias = bp.COL_NAMES['address'][1]
     bp_address_alias = bp.COL_NAMES['address'][2]
-    bm_address_id_alias = pg.COL_NAMES_BONUS['address ID']
+    bm_address_id_alias = bm_pg.COL_NAMES_BONUS['address ID']
 
     # Getting the institute-authors IDs per publications of the institute
     return_tup = _build_institute_authors_addresses(institute, org_tup,

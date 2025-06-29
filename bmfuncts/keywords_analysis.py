@@ -14,7 +14,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
@@ -95,7 +95,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
 
         # Saving the keywords dataframe as EXCEL file
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
-        kw_df_title = pg.DF_TITLES_LIST[7]
+        kw_df_title = bm_pg.DF_TITLES_LIST[7]
         wb, ws = format_page(dept_kw_df, kw_df_title)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
@@ -164,8 +164,8 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
     index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
     title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    kw_analysis_folder_alias = pg.ARCHI_YEAR["keywords analysis"]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    kw_analysis_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting output-data paths
     year_folder_path = bibliometer_path / Path(str(year))
@@ -185,7 +185,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     # Setting useful column names aliases
     parsing_pub_id_col_alias = bp.COL_NAMES['pub_id']
     keywords_col_alias = bp.COL_NAMES['keywords'][1]
-    weight_col_alias = pg.COL_NAMES_BONUS['weight']
+    weight_col_alias = bm_pg.COL_NAMES_BONUS['weight']
 
     # Setting useful column names
     final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
@@ -235,8 +235,8 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
             progress_callback(progress_bar_state)
 
     # Saving keywords analysis as final result
-    status_values = len(pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["kws"] = True
     if_analysis_name = None
     _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year,

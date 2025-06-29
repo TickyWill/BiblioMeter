@@ -24,7 +24,7 @@ from pathlib import Path
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import set_final_col_names
 
 
@@ -44,11 +44,11 @@ def save_final_hash_ids(bibliometer_path, corpus_year,
 
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["hash_id"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["hash_id"]
 
     # Setting aliases of common parts of file names
-    origin_hash_id_folder_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    hash_id_file_base_alias = pg.ARCHI_YEAR["hash_id file name"]
+    origin_hash_id_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    hash_id_file_base_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
     year_hash_id_file_alias = corpus_year + " " + hash_id_file_base_alias
 
     # Setting common paths
@@ -91,11 +91,11 @@ def save_final_submit(bibliometer_path, corpus_year,
 
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["submit"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["submit"]
 
     # Setting aliases of common parts of file names
-    origin_submit_folder_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    submit_file_base_alias = pg.ARCHI_YEAR["submit file name"]
+    origin_submit_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    submit_file_base_alias = bm_pg.ARCHI_YEAR["submit file name"]
     year_submit_file_alias = corpus_year + " " + submit_file_base_alias
 
     # Setting common paths
@@ -137,11 +137,11 @@ def save_final_set_homonyms(bibliometer_path, corpus_year,
         the folder where final results have been saved.
     """
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["homonyms"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["homonyms"]
 
     # Setting aliases of common parts of file names
-    origin_submit_homonyms_alias = pg.ARCHI_YEAR["homonymes folder"]
-    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
+    origin_submit_homonyms_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
+    homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
     origin_homonyms_file =  homonyms_file_base_alias + " " + corpus_year + ".xlsx"
     target_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
 
@@ -182,12 +182,12 @@ def save_final_pub_lists(bibliometer_path,
         the folder where final results have been saved.
     """
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["pub-lists"]
 
     # Setting aliases of common parts of file names
-    origin_pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
-    invalid_pub_file_base_alias = pg.ARCHI_YEAR["invalid file name base"]
+    origin_pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
+    invalid_pub_file_base_alias = bm_pg.ARCHI_YEAR["invalid file name base"]
     year_pub_list_file_alias = pub_list_file_base_alias + " " + corpus_year
     year_invalid_pub_file_alias = invalid_pub_file_base_alias + " " + corpus_year
 
@@ -211,7 +211,7 @@ def save_final_pub_lists(bibliometer_path,
     origin_paths_dict["Full"] = origin_pub_list_path / Path(full_pub_list_file_alias)
     target_paths_dict["Full"] = target_pub_list_path / Path(full_pub_list_file_alias)
 
-    for key, _ in pg.DOCTYPE_TO_SAVE_DICT.items():
+    for key, _ in bm_pg.DOCTYPE_TO_SAVE_DICT.items():
         key_pub_list_file_alias = year_pub_list_file_alias + "_" + key + ".xlsx"
         origin_paths_dict[key] = origin_pub_list_path / Path(key_pub_list_file_alias)
         target_paths_dict[key] = target_pub_list_path / Path(key_pub_list_file_alias)
@@ -256,11 +256,11 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["impact-factors"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["impact-factors"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_ifs_folder_alias = pg.ARCHI_YEAR["if analysis"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_ifs_folder_alias = bm_pg.ARCHI_YEAR["if analysis"]
     ifs_file_base_alias = f'{if_analysis_name}'
 
     # Setting common paths
@@ -312,13 +312,13 @@ def save_final_authors(bibliometer_path, corpus_year,
         shutil.copy2(origin_file_path, target_file_path)
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["authors_prod"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["authors_prod"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_authors_folder_alias = pg.ARCHI_YEAR["authors analysis"]
-    authors_file_alias = pg.ARCHI_YEAR["authors file name"]
-    authors_stat_file_alias = pg.ARCHI_YEAR["authors weight file name"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_authors_folder_alias = bm_pg.ARCHI_YEAR["authors analysis"]
+    authors_file_alias = bm_pg.ARCHI_YEAR["authors file name"]
+    authors_stat_file_alias = bm_pg.ARCHI_YEAR["authors weight file name"]
     year_authors_file = authors_file_alias + " " + corpus_year
     year_authors_stat_file = authors_stat_file_alias + " " + corpus_year
 
@@ -383,11 +383,11 @@ def save_final_kws(institute, org_tup, bibliometer_path,
                          }
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["keywords"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["keywords"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_kws_folder_alias = pg.ARCHI_YEAR["keywords analysis"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_kws_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting common paths
     origin_corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -432,12 +432,12 @@ def save_final_countries(bibliometer_path,
     """
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["countries"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["countries"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_countries_folder_alias = pg.ARCHI_YEAR["countries analysis"]
-    countries_file_alias = pg.ARCHI_YEAR["country weight file name"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_countries_folder_alias = bm_pg.ARCHI_YEAR["countries analysis"]
+    countries_file_alias = bm_pg.ARCHI_YEAR["country weight file name"]
     year_countries_file_alias = countries_file_alias + " " + corpus_year
 
     # Setting common paths
@@ -482,12 +482,12 @@ def save_final_continents(bibliometer_path,
     """
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["countries"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["countries"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_countries_folder_alias = pg.ARCHI_YEAR["countries analysis"]
-    continents_file_alias = pg.ARCHI_YEAR["continent weight file name"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_countries_folder_alias = bm_pg.ARCHI_YEAR["countries analysis"]
+    continents_file_alias = bm_pg.ARCHI_YEAR["continent weight file name"]
     year_continents_file_alias = continents_file_alias + " " + corpus_year
 
     # Setting common paths
@@ -532,11 +532,11 @@ def save_final_institutions(bibliometer_path,
     """
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["institutions"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["institutions"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_inst_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_inst_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
 
     # Setting common paths
     origin_corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -568,11 +568,11 @@ def save_final_doctypes(bibliometer_path,
     """
 
     # Setting aliases for saving results
-    results_sub_folder_alias = pg.ARCHI_RESULTS["doctypes"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["doctypes"]
 
     # Setting aliases of common parts of file names
-    origin_analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    origin_doctypes_folder_alias = pg.ARCHI_YEAR["doctype analysis"]
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_doctypes_folder_alias = bm_pg.ARCHI_YEAR["doctype analysis"]
 
     # Setting common paths
     origin_corpus_year_path = bibliometer_path / Path(corpus_year)
@@ -618,8 +618,8 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     """
 
     # Setting aliases for saving results
-    results_root_alias = pg.ARCHI_RESULTS["root"]
-    results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
 
     # Setting paths for saving results
     results_root_path = bibliometer_path / Path(results_root_alias)

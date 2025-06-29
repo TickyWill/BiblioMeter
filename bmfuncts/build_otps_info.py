@@ -13,8 +13,8 @@ import BiblioParsing as bp
 import pandas as pd
 
 # local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.institute_globals as ig
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.institute_globals as bm_ig
 
 
 def _try_init_dict(dic, init_key, set_key):
@@ -107,7 +107,7 @@ def _add_invalide(new_lab_otps_dict):
     for dept, dept_dict in new_lab_otps_dict.items():
         final_lab_otps_dict[dept] = {}
         for k,v in dept_dict.items():
-            final_lab_otps_dict[dept][k] = v + [ig.INVALIDE]
+            final_lab_otps_dict[dept][k] = v + [bm_ig.INVALIDE]
     return final_lab_otps_dict
 
 
@@ -345,7 +345,7 @@ def set_lab_otps(institute, org_tup, bibliometer_path):
 
     # Seting useful aliases
     unknown_alias = bp.UNKNOWN
-    config_root_alias = eg.EMPLOYEES_ARCHI["root"]
+    config_root_alias = bm_eg.EMPLOYEES_ARCHI["root"]
 
     # Setting useful Institute config parameters
     otps_bdd_file = org_tup[12]

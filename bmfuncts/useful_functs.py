@@ -43,7 +43,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
 
 
@@ -156,8 +156,8 @@ def set_saved_results_path(bibliometer_path, datatype):
         (path): The full path of the saved results.
     """
     # Setting useful aliases
-    saved_results_root_alias = pg.ARCHI_RESULTS["root"]
-    saved_results_folder_alias = pg.ARCHI_RESULTS[datatype]
+    saved_results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+    saved_results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
 
     # Setting saved data paths
     saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
@@ -168,7 +168,7 @@ def set_saved_results_path(bibliometer_path, datatype):
 def _set_capwords(text):
     """Capitalizes words in text except those given 
     by the 'BM_LOW_WORDS_LIST' global import from globals 
-    module imported as pg.
+    module imported as bm_pg.
 
     Args:
         text (str): Text to be capitalized by words.
@@ -179,7 +179,7 @@ def _set_capwords(text):
     for sub_text in text.split("; "):
         space_split_list = []
         for x in sub_text.split():
-            if x.lower() in pg.BM_LOW_WORDS_LIST:
+            if x.lower() in bm_pg.BM_LOW_WORDS_LIST:
                 x = x.lower()
             else:
                 x = x.capitalize()
@@ -358,11 +358,11 @@ def check_dedup_parsing_available(bibliometer_path, year):
     dedup_parsing_status = False
 
     # Getting the full paths of the working folder architecture for the corpus "year select"
-    config_tup = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+    config_tup = set_user_config(bibliometer_path, year, bm_pg.BDD_LIST)
     parsing_path_dict = config_tup[1]
 
     # Setting parsing files extension of saved results
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
 
     # Setting path of deduplicated parsings
     dedup_parsing_path = parsing_path_dict['dedup']
@@ -418,7 +418,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     specific data types (ex: using only "WoS" datatype requires 
     empty files for Scopus extractions). 
     To do that, it uses the global 'ARCHI_EXTRACT' defined 
-    in the module imported as pg.
+    in the module imported as bm_pg.
 
     Args:
         bibliometer_path (path): The path to the working folder.
@@ -432,11 +432,11 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     """
 
     # Setting useful aliases
-    extraction_folder = pg.ARCHI_EXTRACT["root"]
-    empty_file_folder = pg.ARCHI_EXTRACT["empty-file folder"]
-    database_folder = pg.ARCHI_EXTRACT[database]["root"]
-    database_file_base = pg.ARCHI_EXTRACT[database][datatype]
-    database_file_extent = pg.ARCHI_EXTRACT[database]["file_extent"]
+    extraction_folder = bm_pg.ARCHI_EXTRACT["root"]
+    empty_file_folder = bm_pg.ARCHI_EXTRACT["empty-file folder"]
+    database_folder = bm_pg.ARCHI_EXTRACT[database]["root"]
+    database_file_base = bm_pg.ARCHI_EXTRACT[database][datatype]
+    database_file_extent = bm_pg.ARCHI_EXTRACT[database]["file_extent"]
     database_file_end = database_file_base + database_file_extent
 
     # Setting useful paths
@@ -471,15 +471,15 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
 
     # Setting specific parameters for Scopus-HAL data
     last_year_database_file_end = database_file_end
-    if datatype==pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
-        last_year_datatype = pg.DATATYPE_LIST[0]
+    if datatype==bm_pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
+        last_year_datatype = bm_pg.DATATYPE_LIST[0]
         return_tup = _set_database_extract_info(bibliometer_path, last_year_datatype,
                                                 database)
         _, last_year_database_file_end, _ = return_tup
 
     # Cycling on year
     for year in years_list:
-        if database==bp.SCOPUS and datatype==pg.DATATYPE_LIST[2]:
+        if database==bp.SCOPUS and datatype==bm_pg.DATATYPE_LIST[2]:
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
             year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                               database_file_end)
@@ -491,7 +491,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
                 year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                                   last_year_database_file_end)
 
-        rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, pg.BDD_LIST)
+        rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, bm_pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
         if os.path.exists(rawdata_path):
             shutil.rmtree(rawdata_path)
@@ -540,14 +540,14 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
         (str): End message recalling the corpus-year architecture created.
     """
     # Setting useful alias
-    archi_alias = pg.ARCHI_YEAR
-    extract_folder_alias = pg.ARCHI_EXTRACT["root"]
-    archiv_folder_alias = pg.ARCHI_EXTRACT["archiv"]
+    archi_alias = bm_pg.ARCHI_YEAR
+    extract_folder_alias = bm_pg.ARCHI_EXTRACT["root"]
+    archiv_folder_alias = bm_pg.ARCHI_EXTRACT["archiv"]
 
     # Creating folders for corpus extractions from databases for the corpus year
     extract_folder_path = bibliometer_path / Path(extract_folder_alias)
-    for bdd in pg.BDD_LIST:
-        bdd_extract_folder_alias = pg.ARCHI_EXTRACT[bdd]["root"]
+    for bdd in bm_pg.BDD_LIST:
+        bdd_extract_folder_alias = bm_pg.ARCHI_EXTRACT[bdd]["root"]
         bdd_extract_folder_path = extract_folder_path / Path(bdd_extract_folder_alias)
         year_bdd_extract_folder_path = create_folder(bdd_extract_folder_path,
                                                      corpus_year_folder, verbose=verbose)
@@ -626,9 +626,9 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
     bibliometer_path, datatype, corpus_year = dedup_infos
 
     # Setting aliases for final saving deduplication results
-    results_root_alias = pg.ARCHI_RESULTS["root"]
-    results_folder_alias = pg.ARCHI_RESULTS[datatype]
-    results_sub_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
 
     # Setting path for final saving deduplication results
     results_root_path   = bibliometer_path / Path(results_root_alias)
@@ -753,11 +753,11 @@ def get_final_dedup(bibliometer_path, saved_results_path, corpus_year):
         by data (dataframe) of the parsing item.
     """
     # Setting useful aliases
-    parsing_save_extent_alias = pg.TSV_SAVE_EXTENT
-    saved_dedup_parsing_folder_alias = pg.ARCHI_RESULTS["dedup_parsing"]
+    parsing_save_extent_alias = bm_pg.TSV_SAVE_EXTENT
+    saved_dedup_parsing_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
 
     # Getting the item-filename dict of the user for getting deduplication results
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
     item_filename_dict = config_tup[2]
 
     # Setting path of deduplicated parsings
@@ -786,8 +786,8 @@ def read_final_submit_data(saved_results_path, corpus_year):
     """
 
     # Setting useful aliases
-    saved_submit_folder_alias = pg.ARCHI_RESULTS["submit"]
-    saved_submit_file_base_alias = pg.ARCHI_YEAR["submit file name"]
+    saved_submit_folder_alias = bm_pg.ARCHI_RESULTS["submit"]
+    saved_submit_file_base_alias = bm_pg.ARCHI_YEAR["submit file name"]
     year_submit_filename = corpus_year + " " + saved_submit_file_base_alias
 
     # Setting useful paths
@@ -814,8 +814,8 @@ def read_final_pub_list_data(saved_results_path,
         (tup): (papers data (dataframe), full path to the books data file).
     """
     # Setting useful aliases
-    pub_list_filename_base = pg.ARCHI_YEAR["pub list file name base"]
-    saved_pub_list_folder_alias = pg.ARCHI_RESULTS["pub-lists"]
+    pub_list_filename_base = bm_pg.ARCHI_YEAR["pub list file name base"]
+    saved_pub_list_folder_alias = bm_pg.ARCHI_RESULTS["pub-lists"]
 
     # Setting useful xlsx file names for input data
     year_pub_list_filename = pub_list_filename_base + " " + corpus_year
@@ -848,8 +848,8 @@ def read_final_set_homonyms_data(saved_results_path, corpus_year):
     """
 
     # Setting useful aliases
-    saved_homonyms_folder_alias = pg.ARCHI_RESULTS["homonyms"]
-    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
+    saved_homonyms_folder_alias = bm_pg.ARCHI_RESULTS["homonyms"]
+    homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
 
     # Setting input file
     year_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
@@ -889,9 +889,9 @@ def build_pub_ids_lists(saved_results_path, year, cols_list):
     pub_type_df = read_final_pub_list_data(saved_results_path, year, cols_list)
     pub_type_df[final_doctype_col] = pub_type_df.apply(set_capwords_lambda(final_doctype_col), axis=1)
 
-    journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Articles'])]
-    proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Proceedings'])]
-    books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(pg.DOC_TYPE_DICT['Books'])]
+    journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['Articles'])]
+    proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['Proceedings'])]
+    books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['Books'])]
     institute_pub_ids_list = pub_type_df[final_pub_id_col].to_list()
     journal_pub_ids_list = journal_pub_id_df[final_pub_id_col].to_list()
     proceedings_pub_ids_list = proceedings_pub_id_df[final_pub_id_col].to_list()
@@ -901,13 +901,13 @@ def build_pub_ids_lists(saved_results_path, year, cols_list):
 
 def save_fails_dict(fails_dict, parsing_path):
     """The function `save_fails_dict` saves parsing fails in a json file 
-    named by the global PARSING_PERF imported from the module imported as pg.
+    named by the global PARSING_PERF imported from the module imported as bm_pg.
 
     Args:
         fails_dict (dict): The dict of parsing fails.
         parsing_path (path): The full path to the parsing results folder \
         where the json file is saved.
     """
-    parsing_perf_path = parsing_path / Path(pg.PARSING_PERF)
+    parsing_perf_path = parsing_path / Path(bm_pg.PARSING_PERF)
     with open(parsing_perf_path, 'w', encoding="utf-8") as write_json:
         json.dump(fails_dict, write_json, indent=4)

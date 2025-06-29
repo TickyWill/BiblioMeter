@@ -54,7 +54,7 @@ __all__ = ['ANALYSIS_IF',
 import BiblioParsing as bp
 
 # local imports
-import bmfuncts.employees_globals as eg
+import bmfuncts.employees_globals as bm_eg
 
 # Setting the databases of corpuses extraction
 BDD_LIST = [bp.SCOPUS, bp.WOS]
@@ -276,9 +276,9 @@ COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
                   }
 
 
-COL_NAMES_BM = {'Dpts'      : eg.EMPLOYEES_ADD_COLS['dpts_list'],
-                'Servs'     : eg.EMPLOYEES_ADD_COLS['servs_list'],
-                'First_name': eg.EMPLOYEES_ADD_COLS['first_name_initials'],
+COL_NAMES_BM = {'Dpts'      : bm_eg.EMPLOYEES_ADD_COLS['dpts_list'],
+                'Servs'     : bm_eg.EMPLOYEES_ADD_COLS['servs_list'],
+                'First_name': bm_eg.EMPLOYEES_ADD_COLS['first_name_initials'],
                 'Last_name' : 'Co_author_joined',
                 'Full_name' : 'Full_name',
                 'Homonym'   : COL_NAMES_BONUS['homonym'],

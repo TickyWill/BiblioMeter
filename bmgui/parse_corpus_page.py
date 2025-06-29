@@ -18,8 +18,8 @@ from tkinter import ttk
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
-import bmgui.gui_globals as gg
+import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
@@ -51,9 +51,9 @@ class CheckBoxCorpuses:
     def __init__(self, parent, master, year, wos_r, wos_p,
                  scopus_r, scopus_p, concat):
 
-        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * master.width_sf_mm,
-                                              gg.PPI)
-        font = tkFont.Font(family=gg.FONT_NAME, size=font_size(11, master.width_sf_min))
+        self.check_boxes_sep_space = mm_to_px(bm_gg.REF_CHECK_BOXES_SEP_SPACE * master.width_sf_mm,
+                                              bm_gg.PPI)
+        font = tkFont.Font(family=bm_gg.FONT_NAME, size=font_size(11, master.width_sf_min))
         self.lab = tk.Label(parent,
                             text='Année ' + year,
                             font=font)
@@ -121,12 +121,12 @@ def _create_table(self, master, pos_x_init):
     # Setting specific font properties
     ref_font_size = 11
     local_font_size = font_size(ref_font_size, master.width_sf_min)
-    header_font = tkFont.Font(family=gg.FONT_NAME,
+    header_font = tkFont.Font(family=bm_gg.FONT_NAME,
                               size=local_font_size)
 
     # Setting useful x position shift and y position reference in pixels
-    pos_x_shift = mm_to_px(25 * master.width_sf_mm, gg.PPI)
-    pos_y_ref = mm_to_px(30 * master.height_sf_mm, gg.PPI)
+    pos_x_shift = mm_to_px(25 * master.width_sf_mm, bm_gg.PPI)
+    pos_y_ref = mm_to_px(30 * master.height_sf_mm, bm_gg.PPI)
 
     # Initializing x position in pixels
     pos_x = pos_x_init
@@ -256,7 +256,7 @@ def _launch_parsing(master, corpus_year, database_type,
     bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
     rawdata_path_dict = config_tup[0]
     parsing_path_dict = config_tup[1]
     item_filename_dict = config_tup[2]
@@ -266,11 +266,11 @@ def _launch_parsing(master, corpus_year, database_type,
     parsing_path = parsing_path_dict[database_type]
 
     # Setting parsing files extension for saving
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
     progress_callback(10)
 
     # Getting files status for corpus parsing
-    if database_type in pg.BDD_LIST:
+    if database_type in bm_pg.BDD_LIST:
         rawdata_status = False
         parsing_status = False
         if database_type==bp.WOS:
@@ -411,7 +411,7 @@ def _launch_synthese(master, corpus_year, org_tup, datatype,
     institutions_filter_list = org_tup[3]
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
     parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
 
     # Setting useful paths for database 'database_type'
@@ -423,7 +423,7 @@ def _launch_synthese(master, corpus_year, org_tup, datatype,
     dedup_parsing_path = parsing_path_dict["dedup"]
 
     # Setting parsing files extension for saving
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
 
     # Getting files status for corpus concatenation and deduplication
     wos_parsing_status = master.list_wos_parsing[master.list_corpus_year.index(corpus_year)]
@@ -552,23 +552,23 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     w_sf_mm = master.width_sf_mm
     h_sf_mm = master.height_sf_mm
     w_sf_min = master.width_sf_min
-    position_selon_x_check = mm_to_px(70 * w_sf_mm, gg.PPI)
-    position_selon_y_check = mm_to_px(40 * h_sf_mm, gg.PPI)
-    espace_entre_ligne_check = mm_to_px(10 * h_sf_mm, gg.PPI)
-    labels_x_pos = mm_to_px(10 * w_sf_mm, gg.PPI)
-    labels_y_space = mm_to_px(10 * h_sf_mm, gg.PPI)
-    status_label_y_pos = mm_to_px(25 * h_sf_mm, gg.PPI)
-    parsing_label_y_pos = mm_to_px(107 * h_sf_mm, gg.PPI)
-    synthese_label_y_pos = mm_to_px(135 * h_sf_mm, gg.PPI)
-    status_button_x_pos = mm_to_px(148 * w_sf_mm, gg.PPI)
-    status_button_y_pos = mm_to_px(98 * h_sf_mm, gg.PPI)
-    dx_year_select = mm_to_px(1 * w_sf_mm, gg.PPI)
-    dy_year_select = mm_to_px(1 * h_sf_mm, gg.PPI)
-    dx_bdd_select = mm_to_px(12 * w_sf_mm, gg.PPI)
-    dy_bdd_select = mm_to_px(1 * h_sf_mm, gg.PPI)
-    dx_launch = mm_to_px(15 * w_sf_mm, gg.PPI)
-    dy_launch = mm_to_px(0.2 * h_sf_mm, gg.PPI)
-    progress_bar_length_px = mm_to_px(50 * w_sf_mm, gg.PPI)
+    position_selon_x_check = mm_to_px(70 * w_sf_mm, bm_gg.PPI)
+    position_selon_y_check = mm_to_px(40 * h_sf_mm, bm_gg.PPI)
+    espace_entre_ligne_check = mm_to_px(10 * h_sf_mm, bm_gg.PPI)
+    labels_x_pos = mm_to_px(10 * w_sf_mm, bm_gg.PPI)
+    labels_y_space = mm_to_px(10 * h_sf_mm, bm_gg.PPI)
+    status_label_y_pos = mm_to_px(25 * h_sf_mm, bm_gg.PPI)
+    parsing_label_y_pos = mm_to_px(107 * h_sf_mm, bm_gg.PPI)
+    synthese_label_y_pos = mm_to_px(135 * h_sf_mm, bm_gg.PPI)
+    status_button_x_pos = mm_to_px(148 * w_sf_mm, bm_gg.PPI)
+    status_button_y_pos = mm_to_px(98 * h_sf_mm, bm_gg.PPI)
+    dx_year_select = mm_to_px(1 * w_sf_mm, bm_gg.PPI)
+    dy_year_select = mm_to_px(1 * h_sf_mm, bm_gg.PPI)
+    dx_bdd_select = mm_to_px(12 * w_sf_mm, bm_gg.PPI)
+    dy_bdd_select = mm_to_px(1 * h_sf_mm, bm_gg.PPI)
+    dx_launch = mm_to_px(15 * w_sf_mm, bm_gg.PPI)
+    dy_launch = mm_to_px(0.2 * h_sf_mm, bm_gg.PPI)
+    progress_bar_length_px = mm_to_px(50 * w_sf_mm, bm_gg.PPI)
     eff_labels_font_size = font_size(14, w_sf_min)
     eff_select_font_size = font_size(12, w_sf_min)
     eff_buttons_font_size = font_size(11, w_sf_min)
@@ -582,15 +582,15 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
 
     # Setting useful local variables for default selection items in selection lists
     default_year = master.list_corpus_year[-1]
-    default_bdd = pg.BDD_LIST[0]
+    default_bdd = bm_pg.BDD_LIST[0]
 
     # Getting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
 
     # Setting useful aliases
-    institutions_folder_alias = pg.ARCHI_INSTITUTIONS["root"]
-    inst_aff_file_base_alias = pg.ARCHI_INSTITUTIONS["institute_affil_base"]
-    inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
+    inst_aff_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["institute_affil_base"]
+    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
 
     # Setting useful file names and paths for Institute affiliations
     institute_affil_file = institute + "_" + inst_aff_file_base_alias
@@ -602,8 +602,9 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                  institute_affil_file_path,
                  inst_types_file_path)
 
-    # Creating and setting widgets for page title and exit button
-    set_page_title(self, master, page_name, institute, datatype)
+    # Creating and setting widgets for page title and exit buttonbutton
+    page_label = bm_gg.PAGES_LABELS[page_name]
+    set_page_title(self, master, page_label, institute, datatype)
     set_exit_button(self, master)
 
     # Initializing progress bar widget
@@ -619,46 +620,46 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     self.CHECK = []
     self.TABLE = []
 
-    font_statut = tkFont.Font(family=gg.FONT_NAME,
+    font_statut = tkFont.Font(family=bm_gg.FONT_NAME,
                               size=eff_labels_font_size,
                               weight='bold')
     label_statut = tk.Label(self,
-                            text=gg.TEXT_STATUT,
+                            text=bm_gg.TEXT_STATUT,
                             font=font_statut)
     label_statut.place(x=labels_x_pos,
                        y=status_label_y_pos,
                        anchor="nw")
 
     # **************** Bouton pour actualiser la zone de stockage
-    font_exist_button = tkFont.Font(family=gg.FONT_NAME,
+    font_exist_button = tkFont.Font(family=bm_gg.FONT_NAME,
                                     size=eff_buttons_font_size)
     exist_button = tk.Button(self,
-                             text=gg.TEXT_UPDATE_STATUS,
+                             text=bm_gg.TEXT_UPDATE_STATUS,
                              font=font_exist_button,
                              command=lambda: _update(self,
                                                      master,
                                                      bibliometer_path,
                                                      pos_tup))
-    gg.GUI_BUTTONS.append(exist_button)
+    bm_gg.GUI_BUTTONS.append(exist_button)
     exist_button.place(x=status_button_x_pos,
                        y=status_button_y_pos,
                        anchor='n')
 
     # **************** Zone Construction des fichiers de "parsing" par BDD
-    font_parsing = tkFont.Font(family=gg.FONT_NAME,
+    font_parsing = tkFont.Font(family=bm_gg.FONT_NAME,
                                size=eff_labels_font_size,
                                weight='bold')
     label_parsing = tk.Label(self,
-                             text=gg.TEXT_PARSING,
+                             text=bm_gg.TEXT_PARSING,
                              font=font_parsing)
     label_parsing.place(x=labels_x_pos,
                         y=parsing_label_y_pos, anchor="nw")
 
     # Choix de l'année
-    font_year_pc_1 = tkFont.Font(family=gg.FONT_NAME,
+    font_year_pc_1 = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=eff_select_font_size)
     self.label_year_pc_1 = tk.Label(self,
-                                    text=gg.TEXT_YEAR_PC,
+                                    text=bm_gg.TEXT_YEAR_PC,
                                     font=font_year_pc_1)
     self.label_year_pc_1.place(x=year_x_pos,
                                y=parsing_year_y_pos,
@@ -669,20 +670,20 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     self.om_year_pc_1 = tk.OptionMenu(self,
                                       self.var_year_pc_1,
                                       *master.list_corpus_year)
-    font_year_pc_1 = tkFont.Font(family=gg.FONT_NAME,
+    font_year_pc_1 = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=eff_buttons_font_size)
     self.om_year_pc_1.config(font=font_year_pc_1)
-    gg.GUI_BUTTONS.append(self.om_year_pc_1)
+    bm_gg.GUI_BUTTONS.append(self.om_year_pc_1)
     place_after(self.label_year_pc_1,
                 self.om_year_pc_1,
                 dx=+ dx_year_select,
                 dy=- dy_year_select)
 
     # Choix de la BDD
-    font_bdd_pc_1 = tkFont.Font(family=gg.FONT_NAME,
+    font_bdd_pc_1 = tkFont.Font(family=bm_gg.FONT_NAME,
                                 size=eff_select_font_size)
     label_bdd_pc_1 = tk.Label(self,
-                              text=gg.TEXT_BDD_PC,
+                              text=bm_gg.TEXT_BDD_PC,
                               font =font_bdd_pc_1)
     place_after(self.om_year_pc_1,
                 label_bdd_pc_1,
@@ -693,8 +694,8 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     var_bdd_pc_1.set(default_bdd)
     om_bdd_pc_1 = tk.OptionMenu(self,
                                 var_bdd_pc_1,
-                                *pg.BDD_LIST)
-    font_bdd_pc_1 = tkFont.Font(family=gg.FONT_NAME,
+                                *bm_pg.BDD_LIST)
+    font_bdd_pc_1 = tkFont.Font(family=bm_gg.FONT_NAME,
                                 size=eff_buttons_font_size)
     om_bdd_pc_1.config(font=font_bdd_pc_1)
     place_after(label_bdd_pc_1,
@@ -703,34 +704,34 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                 dy=- dy_year_select)
 
     # Lancement du parsing
-    parsing_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    parsing_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                       size=eff_buttons_font_size)
     parsing_launch_button = tk.Button(self,
-                                      text=gg.TEXT_LAUNCH_PARSING,
+                                      text=bm_gg.TEXT_LAUNCH_PARSING,
                                       font=parsing_launch_font,
                                       command=_start_launch_parsing_try)
-    gg.GUI_BUTTONS.append(parsing_launch_button)
+    bm_gg.GUI_BUTTONS.append(parsing_launch_button)
     place_after(om_bdd_pc_1,
                 parsing_launch_button,
                 dx=dx_launch,
                 dy=dy_launch)
 
     # **************** Zone Synthèse des fichiers de parsing de toutes les BDD
-    font_synthese = tkFont.Font(family=gg.FONT_NAME,
+    font_synthese = tkFont.Font(family=bm_gg.FONT_NAME,
                                 size=eff_labels_font_size,
                                 weight='bold')
     label_synthese = tk.Label(self,
-                              text =gg.TEXT_SYNTHESE,
+                              text=bm_gg.TEXT_SYNTHESE,
                               font=font_synthese)
     label_synthese.place(x=labels_x_pos,
                          y=synthese_label_y_pos,
                          anchor="nw")
 
     # Choix de l'année
-    font_year_pc_2 = tkFont.Font(family=gg.FONT_NAME,
+    font_year_pc_2 = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=eff_select_font_size)
     self.label_year_pc_2 = tk.Label(self,
-                                    text=gg.TEXT_YEAR_PC,
+                                    text=bm_gg.TEXT_YEAR_PC,
                                     font=font_year_pc_2)
     self.label_year_pc_2.place(x=year_x_pos,
                                y=synthese_year_y_pos,
@@ -741,23 +742,23 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     self.om_year_pc_2 = tk.OptionMenu(self,
                                       self.var_year_pc_2,
                                       *master.list_corpus_year)
-    font_year_pc_2 = tkFont.Font(family=gg.FONT_NAME,
+    font_year_pc_2 = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=eff_buttons_font_size)
     self.om_year_pc_2.config(font=font_year_pc_2)
-    gg.GUI_BUTTONS.append(self.om_year_pc_2)
+    bm_gg.GUI_BUTTONS.append(self.om_year_pc_2)
     place_after(self.label_year_pc_2,
                 self.om_year_pc_2,
                 dx=+ dx_year_select,
                 dy=- dy_year_select)
 
     # Lancement de la synthèse
-    synthese_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    synthese_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                        size=eff_buttons_font_size)
     synthese_launch_button = tk.Button(self,
-                                     text=gg.TEXT_LAUNCH_SYNTHESE,
+                                     text=bm_gg.TEXT_LAUNCH_SYNTHESE,
                                      font=synthese_launch_font,
                                      command=_start_launch_synthese_try)
-    gg.GUI_BUTTONS.append(synthese_launch_button)
+    bm_gg.GUI_BUTTONS.append(synthese_launch_button)
     place_after(self.om_year_pc_2,
                 synthese_launch_button,
                 dx=dx_launch,

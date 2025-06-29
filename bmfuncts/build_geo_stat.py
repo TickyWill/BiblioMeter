@@ -13,7 +13,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 
 
@@ -38,9 +38,9 @@ def _build_countries_stat(countries_df):
     # Setting useful local aliases
     pub_id_alias = bp.COL_NAMES['pub_id']  # "Pub_id"
     country_alias = bp.COL_NAMES['country'][2]  # "Country"
-    final_country_alias = pg.COL_NAMES_BONUS['country']  # "Pays"
-    weight_alias = pg.COL_NAMES_BONUS['pub number']  # "Nombre de publications"
-    pub_ids_alias = pg.COL_NAMES_BONUS["pub_ids list"]  # "Liste des Pub_ids"
+    final_country_alias = bm_pg.COL_NAMES_BONUS['country']  # "Pays"
+    weight_alias = bm_pg.COL_NAMES_BONUS['pub number']  # "Nombre de publications"
+    pub_ids_alias = bm_pg.COL_NAMES_BONUS["pub_ids list"]  # "Liste des Pub_ids"
 
     by_country_df = pd.DataFrame(columns=[final_country_alias, weight_alias, pub_ids_alias])
     idx_country = 0
@@ -81,9 +81,9 @@ def _build_continents_stat(countries_df):
     # Setting useful local aliases
     pub_id_alias = bp.COL_NAMES['pub_id']  # "Pub_id"
     country_alias = bp.COL_NAMES['country'][2]  # "Country"
-    weight_alias = pg.COL_NAMES_BONUS['pub number']  # "Nombre de publications"
-    pub_ids_alias = pg.COL_NAMES_BONUS["pub_ids list"]  # "Liste des Pub_ids"
-    continent_alias = pg.COL_NAMES_BONUS['continent']  # "Continent"
+    weight_alias = bm_pg.COL_NAMES_BONUS['pub number']  # "Nombre de publications"
+    pub_ids_alias = bm_pg.COL_NAMES_BONUS["pub_ids list"]  # "Liste des Pub_ids"
+    continent_alias = bm_pg.COL_NAMES_BONUS['continent']  # "Continent"
 
     # Getting continent information by country from COUNTRIES_CONTINENT, a BiblioParsing global
     country_conti_dict = bp.COUNTRIES_CONTINENT
@@ -135,9 +135,9 @@ def build_and_save_geo_stat(countries_df, analysis_folder_path, year):
     xlsx_extent = ".xlsx"
 
     # Setting aliases from globals
-    geo_analysis_folder_alias = pg.ARCHI_YEAR["countries analysis"]
-    country_weight_filename_alias = pg.ARCHI_YEAR["country weight file name"] + xlsx_extent
-    continent_weight_filename_alias = pg.ARCHI_YEAR["continent weight file name"] + xlsx_extent
+    geo_analysis_folder_alias = bm_pg.ARCHI_YEAR["countries analysis"]
+    country_weight_filename_alias = bm_pg.ARCHI_YEAR["country weight file name"] + xlsx_extent
+    continent_weight_filename_alias = bm_pg.ARCHI_YEAR["continent weight file name"] + xlsx_extent
 
     # Setting useful paths
     geo_analysis_folder_path = analysis_folder_path / Path(geo_analysis_folder_alias)
@@ -151,7 +151,7 @@ def build_and_save_geo_stat(countries_df, analysis_folder_path, year):
     by_continent_df = _build_continents_stat(countries_df)
 
     # Saving formatted stat dataframes
-    geo_df_title = pg.DF_TITLES_LIST[8]
+    geo_df_title = bm_pg.DF_TITLES_LIST[8]
     sheet_name = 'Pays ' + year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, country_weight_filename_alias,
                               by_country_df, geo_df_title, sheet_name)

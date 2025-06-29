@@ -13,8 +13,8 @@ from tkinter import ttk
 from pathlib import Path
 
 # Local imports
-import bmgui.gui_globals as gg
-import bmfuncts.pub_globals as pg
+import bmgui.gui_globals as bm_gg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.add_ifs import add_if
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
@@ -130,8 +130,8 @@ def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
         # Setting corpus dependant paths
         pub_list_file = pub_list_file_base_alias + " " + corpus_year + ".xlsx"
         year_pub_list_folder_path = bibliometer_path / Path(corpus_year) / pub_list_folder_alias
-        out_file_path     = year_pub_list_folder_path / Path(pub_list_file)
-        missing_if_path   = year_pub_list_folder_path / Path(corpus_year + missing_if_base_alias)
+        out_file_path = year_pub_list_folder_path / Path(pub_list_file)
+        missing_if_path = year_pub_list_folder_path / Path(corpus_year + missing_if_base_alias)
         missing_issn_path = year_pub_list_folder_path / Path(corpus_year + missing_issn_base_alias)
 
         # Checking availability of publications-list file of the year
@@ -149,8 +149,8 @@ def _launch_update_pub_if(institute, org_tup, bibliometer_path, datatype,
             split_pub_list_by_doc_type(institute, org_tup, bibliometer_path, corpus_year)
 
             # Saving pub list as final result
-            status_values = len(pg.RESULTS_TO_SAVE) * [False]
-            results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+            status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+            results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
             results_to_save_dict["pub_lists"] = True
             if_analysis_name = None
             _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
@@ -247,7 +247,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
         missing_pub_file_year, if_database_complete, _ = if_tup
         if not missing_pub_file_year:
             print("IFs updated in all consolidated lists of publications")
-            concatenate_pub_lists(institute, org_tup, bibliometer_path, master.years_list)
+            concatenate_pub_lists(bibliometer_path, master.years_list)
             print("Consolidated lists of publications concatenated after IFs update")
             progress_callback(100)
             info_title = '- Information -'
@@ -342,17 +342,17 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     w_sf_min = master.width_sf_min
     h_sf_mm = master.height_sf_mm
     w_sf_mm = master.width_sf_mm
-    eff_etape_font_size = font_size(gg.REF_ETAPE_FONT_SIZE, w_sf_min)
-    eff_launch_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-1, w_sf_min)
-    eff_help_font_size = font_size(gg.REF_ETAPE_FONT_SIZE-2, w_sf_min)
+    eff_etape_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE, w_sf_min)
+    eff_launch_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-1, w_sf_min)
+    eff_help_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-2, w_sf_min)
 
-    if_db_update_x_pos_px = mm_to_px(10 * w_sf_mm, gg.PPI)
-    if_db_update_y_pos_px = mm_to_px(35 * h_sf_mm, gg.PPI)
-    update_if_label_dx_px = mm_to_px( 0 * w_sf_mm, gg.PPI)
-    update_if_label_dy_px = mm_to_px(15 * h_sf_mm, gg.PPI)
-    launch_dx_px = mm_to_px( 0 * w_sf_mm, gg.PPI)
-    launch_dy_px = mm_to_px( 5 * h_sf_mm, gg.PPI)
-    progress_bar_length_px = mm_to_px(75 * w_sf_mm, gg.PPI)
+    if_db_update_x_pos_px = mm_to_px(10 * w_sf_mm, bm_gg.PPI)
+    if_db_update_y_pos_px = mm_to_px(35 * h_sf_mm, bm_gg.PPI)
+    update_if_label_dx_px = mm_to_px( 0 * w_sf_mm, bm_gg.PPI)
+    update_if_label_dy_px = mm_to_px(15 * h_sf_mm, bm_gg.PPI)
+    launch_dx_px = mm_to_px( 0 * w_sf_mm, bm_gg.PPI)
+    launch_dy_px = mm_to_px( 5 * h_sf_mm, bm_gg.PPI)
+    progress_bar_length_px = mm_to_px(75 * w_sf_mm, bm_gg.PPI)
     progress_bar_dx = 40
 
     # Setting common attributs
@@ -360,15 +360,15 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     etape_underline = -1
 
     # Setting useful aliases
-    bdd_multi_annuelle_folder_alias = pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
-    pub_list_folder_alias = pg.ARCHI_YEAR["pub list folder"]
-    pub_list_file_base_alias = pg.ARCHI_YEAR["pub list file name base"]
-    backup_folder_name_alias = pg.ARCHI_BACKUP["root"]
-    if_root_path_alias = pg.ARCHI_IF["root"]
-    if_file_name_alias = pg.ARCHI_IF["all IF"]
-    missing_if_base_alias = pg.ARCHI_IF["missing_if_base"]
-    missing_issn_base_alias = pg.ARCHI_IF["missing_issn_base"]
-    inst_if_file_name_alias = pg.ARCHI_IF["institute_if_all_years"]
+    bdd_multi_annuelle_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
+    pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
+    backup_folder_name_alias = bm_pg.ARCHI_BACKUP["root"]
+    if_root_path_alias = bm_pg.ARCHI_IF["root"]
+    if_file_name_alias = bm_pg.ARCHI_IF["all IF"]
+    missing_if_base_alias = bm_pg.ARCHI_IF["missing_if_base"]
+    missing_issn_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
+    inst_if_file_name_alias = bm_pg.ARCHI_IF["institute_if_all_years"]
 
     # Gettting institute parameters
     org_tup = set_org_params(institute, bibliometer_path)
@@ -377,7 +377,8 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
         if_file_name_alias = institute + inst_if_file_name_alias
 
     # Creating and setting widgets for page title and exit button
-    set_page_title(self, master, page_name, institute, datatype)
+    page_label = bm_gg.PAGES_LABELS[page_name]
+    set_page_title(self, master, page_label, institute, datatype)
     set_exit_button(self, master)
 
     # Initializing progress bar widget
@@ -399,11 +400,11 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     # **************** Mise à jour de la base de données des IFs
 
     # ** Titre
-    if_db_update_font = tkFont.Font(family=gg.FONT_NAME,
+    if_db_update_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=eff_etape_font_size,
                                  weight='bold')
     if_db_update_label = tk.Label(self,
-                                  text=gg.TEXT_ETAPE_5,
+                                  text=bm_gg.TEXT_ETAPE_5,
                                   justify=etape_label_format,
                                   font=if_db_update_font,
                                   underline=etape_underline)
@@ -412,23 +413,23 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                              y=if_db_update_y_pos_px)
 
     # ** Explication
-    help_label_font = tkFont.Font(family=gg.FONT_NAME,
+    help_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                   size=eff_help_font_size)
     help_label = tk.Label(self,
-                          text=gg.HELP_ETAPE_5,
+                          text=bm_gg.HELP_ETAPE_5,
                           justify="left",
                           font=help_label_font)
     place_bellow(if_db_update_label,
                  help_label)
 
     # ** Bouton pour lancer l'étape
-    if_db_update_launch_font = tkFont.Font(family=gg.FONT_NAME,
+    if_db_update_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                            size=eff_launch_font_size)
     if_db_update_launch_button = tk.Button(self,
-                                           text=gg.TEXT_MAJ_BDD_IF,
+                                           text=bm_gg.TEXT_MAJ_BDD_IF,
                                            font=if_db_update_launch_font,
                                            command=_start_launch_update_if_db_try)
-    gg.GUI_BUTTONS.append(if_db_update_launch_button)
+    bm_gg.GUI_BUTTONS.append(if_db_update_launch_button)
     place_bellow(help_label,
                  if_db_update_launch_button,
                  dx=launch_dx_px,
@@ -437,11 +438,11 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
     # **************** Mise à jour des Ifs dans les listes consolidées
 
     # ** Titre
-    update_if_label_font = tkFont.Font(family=gg.FONT_NAME,
+    update_if_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                        size=eff_etape_font_size,
                                        weight='bold')
     update_if_label = tk.Label(self,
-                               text=gg.TEXT_ETAPE_6,
+                               text=bm_gg.TEXT_ETAPE_6,
                                justify="left",
                                font=update_if_label_font)
     place_bellow(if_db_update_launch_button,
@@ -450,23 +451,23 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
                  dy=update_if_label_dy_px)
 
     # ** Explication de l'étape
-    help_label_font = tkFont.Font(family=gg.FONT_NAME,
+    help_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                   size=eff_help_font_size)
     help_label = tk.Label(self,
-                          text=gg.HELP_ETAPE_6,
+                          text=bm_gg.HELP_ETAPE_6,
                           justify="left",
                           font=help_label_font)
     place_bellow(update_if_label,
                  help_label)
 
     # ** Bouton pour lancer la mise à jour des IFs dans les listes consolidées existantes
-    pub_if_update_launch_button_font = tkFont.Font(family=gg.FONT_NAME,
+    pub_if_update_launch_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                                    size=eff_launch_font_size)
     pub_if_update_launch_button = tk.Button(self,
-                                            text=gg.TEXT_MAJ_PUB_IF,
+                                            text=bm_gg.TEXT_MAJ_PUB_IF,
                                             font= pub_if_update_launch_button_font,
                                             command=_start_launch_update_pub_if_try)
-    gg.GUI_BUTTONS.append(pub_if_update_launch_button)
+    bm_gg.GUI_BUTTONS.append(pub_if_update_launch_button)
     place_bellow(help_label,
                  pub_if_update_launch_button,
                  dx=launch_dx_px,
