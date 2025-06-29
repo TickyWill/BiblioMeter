@@ -50,7 +50,11 @@ from bmgui.gui_utils import set_exit_button
 from bmgui.gui_utils import set_page_title 
 
 
-def _set_empl_files_params(bibliometer_path):
+def _set_empl_files_params(wf_path):
+    
+    # Setting folder of the Institute parameters
+    wf_root_path = wf_path.parent
+    
     # Setting useful aliases
     empl_root_alias = bm_eg.EMPLOYEES_ARCHI["root"]
     empl_folder_alias = bm_eg.EMPLOYEES_ARCHI["all_years_employees"]
@@ -58,14 +62,14 @@ def _set_empl_files_params(bibliometer_path):
     empl_upd_folder_alias = bm_eg.EMPLOYEES_ARCHI["complementary_employees"]
 
     # Setting useful paths independent from corpus year
-    empl_root_path = bibliometer_path / Path(empl_root_alias)
+    empl_root_path = wf_root_path / Path(empl_root_alias)
     empl_folder_path = empl_root_path / Path(empl_folder_alias)
     empl_upd_folder_path = empl_root_path / Path(empl_upd_folder_alias)
     empl_file_path = empl_folder_path / Path(empl_file_alias)
     
     return empl_folder_path, empl_upd_folder_path, empl_file_path, empl_file_alias
 
-def _launch_update_employees_try(bibliometer_path, progress_callback):
+def _launch_update_employees_try(wf_path, progress_callback):
     """Launches update of Intitute employees database.
 
     This is done through the `update_employees` function imported from 
@@ -76,12 +80,12 @@ def _launch_update_employees_try(bibliometer_path, progress_callback):
     function.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
     # Setting useful file parameters for employees data
-    return_tup = _set_empl_files_params(bibliometer_path)
+    return_tup = _set_empl_files_params(wf_path)
     empl_folder_path, empl_upd_folder_path, _, _ = return_tup
     if progress_callback:
         progress_bar_state_init = 10
@@ -106,7 +110,7 @@ def _launch_update_employees_try(bibliometer_path, progress_callback):
          sheet_name_error,
          column_error,
          years2add_error,
-         all_years_file_error) = update_employees(bibliometer_path, progress_callback,
+         all_years_file_error) = update_employees(wf_path, progress_callback,
                                                   progress_bar_state_init)
         if not any([files_number_error, sheet_name_error, column_error,
                     years2add_error, all_years_file_error]):
@@ -187,20 +191,20 @@ def _launch_update_employees_try(bibliometer_path, progress_callback):
     return update_status
 
 
-def _set_year_files_params(bibliometer_path, year_select):
+def _set_year_files_params(wf_path, year_select):
     # Setting useful aliases
-    all_years_data_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]   # bdd_multi_annuelle_folder_alias
-    merge_data_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]               # bdd_mensuelle_alias
+    all_years_data_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
+    merge_data_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
     submit_alias = bm_pg.ARCHI_YEAR["submit file name"]
     orphan_alias = bm_pg.ARCHI_YEAR["orphan file name"]
-    homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]               # homonymes_path_alias
+    homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
     homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
-    otp_folder_alias = bm_pg.ARCHI_YEAR["OTP folder"]                            # otp_path_alias
+    otp_folder_alias = bm_pg.ARCHI_YEAR["OTP folder"]
     otp_file_base_alias = bm_pg.ARCHI_YEAR["OTP file name base"]
-    pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]                   # pub_list_path_alias
+    pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
-    missing_if_base_alias = bm_pg.ARCHI_IF["missing_if_base"]               # year_missing_if_base_alias
-    missing_issn_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]           # year_missing_issn_base_alias
+    missing_if_base_alias = bm_pg.ARCHI_IF["missing_if_base"]
+    missing_issn_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
 
     # Setting useful files names dependant on year select
     homonyms_file = homonyms_file_base_alias + f' {year_select}.xlsx'
@@ -209,8 +213,8 @@ def _set_year_files_params(bibliometer_path, year_select):
     missing_issn_file = f'{year_select}_' + missing_issn_base_alias + ".xlsx"
     
     # Setting useful folders paths dependant on year select    
-    corpus_year_path = bibliometer_path / Path(year_select)
-    merge_data_folder_path = corpus_year_path / Path(merge_data_folder_alias) # bdd_mensuelle_path
+    corpus_year_path = wf_path / Path(year_select)
+    merge_data_folder_path = corpus_year_path / Path(merge_data_folder_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
     otp_folder_path = corpus_year_path / Path(otp_folder_alias)
     pub_list_folder_path = corpus_year_path / Path(pub_list_folder_alias)
@@ -231,7 +235,7 @@ def _set_year_files_params(bibliometer_path, year_select):
 
 
 def _launch_recursive_year_search_try(institute, org_tup,
-                                      bibliometer_path,
+                                      wf_path,
                                       datatype,
                                       year_select,
                                       search_depth_init,
@@ -249,7 +253,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         search_depth_init (int): Initial search depth that will be adapted \
@@ -260,13 +264,13 @@ def _launch_recursive_year_search_try(institute, org_tup,
     """
 
     def _recursive_year_search_try(progress_callback, progress_bar_state):
-        dedup_parsing_status = check_dedup_parsing_available(bibliometer_path, year_select)
+        dedup_parsing_status = check_dedup_parsing_available(wf_path, year_select)
         if dedup_parsing_status:
             end_message, orphan_status = recursive_year_search(merge_data_folder_path,
                                                                employees_df,
                                                                institute,
                                                                org_tup,
-                                                               bibliometer_path,
+                                                               wf_path,
                                                                datatype,
                                                                year_select,
                                                                search_depth,
@@ -302,11 +306,11 @@ def _launch_recursive_year_search_try(institute, org_tup,
             messagebox.showwarning(warning_title, warning_text)
 
     # Setting files parameters independant from year selection
-    return_tup = _set_empl_files_params(bibliometer_path)
+    return_tup = _set_empl_files_params(wf_path)
     _, _, empl_file_path, _ = return_tup
 
     # Setting files parameters dependant on year selection
-    return_tup = _set_year_files_params(bibliometer_path, year_select)
+    return_tup = _set_year_files_params(wf_path, year_select)
     files_list, folders_paths_list, files_paths_list = return_tup
     orphan_file = files_list[1]
     submit_path = files_paths_list[0]
@@ -361,7 +365,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
 
 
 def _launch_resolution_homonymies_try(institute, org_tup,
-                                      bibliometer_path,
+                                      wf_path,
                                       year_select,
                                       progress_callback):
     """Launches file creation for resolving homonyms. 
@@ -376,7 +380,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating 
@@ -395,7 +399,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
             progress_callback(80)
             if actual_homonym_status:
                 end_message, actual_homonym_status = set_saved_homonyms(institute, org_tup,
-                                                                        bibliometer_path,
+                                                                        wf_path,
                                                                         year_select,
                                                                         actual_homonym_status)
             print('\n',end_message)
@@ -431,7 +435,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
             messagebox.showwarning(warning_title, warning_text)
 
     # Setting files parameters dependant on year selection
-    return_tup = _set_year_files_params(bibliometer_path, year_select)
+    return_tup = _set_year_files_params(wf_path, year_select)
     files_list, folders_paths_list, files_paths_list = return_tup
     homonyms_file = files_list[2]
     submit_path = files_paths_list[0]
@@ -477,7 +481,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
 
 
 def _launch_add_otp_try(institute, org_tup,
-                        bibliometer_path,
+                        wf_path,
                         year_select,
                         progress_callback):
     """Launches files creation for adding OTP attribute to publications.
@@ -496,7 +500,7 @@ def _launch_add_otp_try(institute, org_tup,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
@@ -505,14 +509,14 @@ def _launch_add_otp_try(institute, org_tup,
     def _add_otp_try(progress_callback):
         if os.path.isfile(homonyms_file_path):
             progress_callback(15)
-            end_message = save_homonyms(institute, org_tup, bibliometer_path, year_select)
+            end_message = save_homonyms(institute, org_tup, wf_path, year_select)
             print('\n',end_message)
             progress_callback(20)
-            end_message = add_otp(institute, org_tup, bibliometer_path,
+            end_message = add_otp(institute, org_tup, wf_path,
                                   homonyms_file_path, otp_folder_path, otp_file_base)
             print(end_message)
             progress_callback(80)
-            end_message = set_saved_otps(institute, org_tup, bibliometer_path, year_select)
+            end_message = set_saved_otps(institute, org_tup, wf_path, year_select)
             print(end_message)
             progress_callback(100)
             info_title = "- Information -"
@@ -535,7 +539,7 @@ def _launch_add_otp_try(institute, org_tup,
             messagebox.showwarning(warning_title, warning_text)
 
     # Setting files parameters dependant on year selection
-    return_tup = _set_year_files_params(bibliometer_path, year_select)
+    return_tup = _set_year_files_params(wf_path, year_select)
     files_list, folders_paths_list, files_paths_list = return_tup
     otp_file_base = files_list[3]
     homonyms_file_path = files_paths_list[2]
@@ -592,7 +596,7 @@ def _launch_add_otp_try(institute, org_tup,
 
 
 def _launch_pub_list_conso_try(institute, org_tup,
-                               bibliometer_path, datatype,
+                               wf_path, datatype,
                                all_years_data_folder,
                                year_select, years_list,
                                progress_callback):
@@ -605,7 +609,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         paths_tup (tup): (full path to folder of files where OTPs \
         have been attributed, full path to folder where file of \
@@ -626,14 +630,14 @@ def _launch_pub_list_conso_try(institute, org_tup,
         if os.path.isdir(otp_folder_path) and os.listdir(otp_folder_path):
             progress_callback(20)
             conso_tup = built_final_pub_list(institute, org_tup,
-                                             bibliometer_path, datatype,
+                                             wf_path, datatype,
                                              otp_folder_path, pub_list_folder_path,
                                              otp_file_base, year_select)
             end_message, pub_nb, split_ratio, if_database_complete = conso_tup
             print(end_message)
             progress_callback(70)
             if bm_pg.LISTES_CONCAT:
-                end_message = concatenate_pub_lists(bibliometer_path, years_list)
+                end_message = concatenate_pub_lists(wf_path, years_list)
                 print('\n',end_message)
             progress_callback(100)
             info_title = "- Information -"
@@ -686,7 +690,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
             messagebox.showwarning(warning_title, warning_text)
 
     # Setting files parameters dependant on year selection
-    return_tup = _set_year_files_params(bibliometer_path, year_select)
+    return_tup = _set_year_files_params(wf_path, year_select)
     files_list, folders_paths_list, files_paths_list = return_tup
     otp_file_base = files_list[3]
     pub_list_file, missing_if_file, missing_issn_file = files_list[4:7]
@@ -728,7 +732,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
         messagebox.showinfo(info_title, info_text)
 
     
-def create_consolidate_corpus(self, master, page_name, institute, bibliometer_path, datatype):
+def create_consolidate_corpus(self, master, page_name, institute, wf_path, datatype):
     """Manages creation and use of widgets for corpus consolidation 
     through merge with Institute employees database.
 
@@ -737,7 +741,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
     """
 
@@ -851,7 +855,8 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
     all_years_data_folder = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
 
     # Getting institute parameters
-    org_tup = set_org_params(institute, bibliometer_path)
+    wf_root_path = wf_path.parent
+    org_tup = set_org_params(institute, wf_root_path)
     
     # initializing parameters
     empl_update_status = False
@@ -884,7 +889,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         """Command of the 'empl_update_button' button.        
         """
         # Trying launch of update of employees file
-        employees_update_status = _launch_update_employees_try(bibliometer_path,
+        employees_update_status = _launch_update_employees_try(wf_path,
                                                                progress_callback)
         progress_bar.place_forget()
 
@@ -919,7 +924,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
         # Trying launch of recursive search for authors in employees file
         _launch_recursive_year_search_try(institute, org_tup,
-                                          bibliometer_path,
+                                          wf_path,
                                           datatype,
                                           year_select,
                                           bm_eg.SEARCH_DEPTH,
@@ -950,7 +955,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
         # Trying launch creation of file for homonymies resolution
         _launch_resolution_homonymies_try(institute,
                                           org_tup,
-                                          bibliometer_path,
+                                          wf_path,
                                           year_select,
                                           progress_callback)
         progress_bar.place_forget()
@@ -978,7 +983,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
         # Trying launch creation of files for OTP attribution
         _launch_add_otp_try(institute, org_tup,
-                            bibliometer_path,
+                            wf_path,
                             year_select,
                             progress_callback)
         progress_bar.place_forget()
@@ -1005,7 +1010,7 @@ def create_consolidate_corpus(self, master, page_name, institute, bibliometer_pa
 
         # Trying launch creation of consolidated publications lists
         _launch_pub_list_conso_try(institute, org_tup,
-                                   bibliometer_path, datatype,
+                                   wf_path, datatype,
                                    all_years_data_folder,
                                    year_select, master.years_list,
                                    progress_callback)

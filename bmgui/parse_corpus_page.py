@@ -153,14 +153,14 @@ def _create_table(self, master, pos_x_init):
     _set_table_item(item_text, pos_x)
 
 
-def _update(self, master, bibliometer_path, pos_tup):
+def _update(self, master, wf_path, pos_tup):
     """Refreshes the current state of the files in the 
     working folder using the `_create_table` internal function.
 
     It also updates the OptionMenu buttons used to select the year.
 
     Args:
-        bibliometer_path (path): The path leading to the working folder.
+        wf_path (path): The path leading to the working folder.
         pos_tup (tup): (x position (int) for widgets location, \
         y position (int) for widgets location, space value (int) \
         for widgets spacing).
@@ -176,7 +176,7 @@ def _update(self, master, bibliometer_path, pos_tup):
     pos_x, pos_y, esp_ligne = pos_tup
 
     # Setting existing corpuses status
-    files_status = existing_corpuses(bibliometer_path)
+    files_status = existing_corpuses(wf_path)
     master.list_corpus_year = files_status[0]
     master.list_wos_rawdata = files_status[1]
     master.list_wos_parsing = files_status[2]
@@ -253,10 +253,10 @@ def _launch_parsing(master, corpus_year, database_type,
         messagebox.showinfo(info_title, info_text)
 
     # Setting parameters from args
-    bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
+    wf_path, institute_affil_file_path, inst_types_file_path = paths_tup
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
+    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
     rawdata_path_dict = config_tup[0]
     parsing_path_dict = config_tup[1]
     item_filename_dict = config_tup[2]
@@ -399,19 +399,19 @@ def _launch_synthese(master, corpus_year, org_tup, datatype,
         progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
                           item_filename_dict, parsing_save_extent,
-                          dedup_infos=(bibliometer_path, datatype, corpus_year))
+                          dedup_infos=(wf_path, datatype, corpus_year))
 
         progress_callback(100)
         return synthese_articles_nb
 
     # Setting parameters from args
-    bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
+    wf_path, institute_affil_file_path, inst_types_file_path = paths_tup
 
     # Setting Institute parameters
     institutions_filter_list = org_tup[3]
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
+    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
     parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
 
     # Setting useful paths for database 'database_type'
@@ -490,7 +490,7 @@ def _launch_synthese(master, corpus_year, org_tup, datatype,
         messagebox.showinfo(info_title, info_text)
 
 
-def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
+def create_parsing_concat(self, master, page_name, institute, wf_path, datatype):
     """Manages creation and use of widgets for corpus parsing.
 
     This is done through the internal functions  `_launch_parsing`, 
@@ -499,12 +499,12 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     Args:
         page_name (str): Name of parsing page.
         institute (str): Institute name.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
     def _launch_parsing_try(progress_callback):
-        paths_tup = (bibliometer_path,
+        paths_tup = (wf_path,
                      institute_affil_file_path,
                      inst_types_file_path)
         parsing_year = self.var_year_pc_1.get()
@@ -534,7 +534,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         threading.Thread(target=_launch_parsing_try,
                          args=(_update_progress,)).start()
         # update files status
-        _update(self, master, bibliometer_path, pos_tup)
+        _update(self, master, wf_path, pos_tup)
 
     def _start_launch_synthese_try():
         disable_buttons(parse_buttons_list)
@@ -544,7 +544,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
         threading.Thread(target=_launch_synthese_try,
                          args=(_update_progress,)).start()
         # update files status
-        _update(self, master, bibliometer_path, pos_tup)
+        _update(self, master, wf_path, pos_tup)
 
 
     # Setting useful local variables for positions modification (globals to create ??)
@@ -585,7 +585,8 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     default_bdd = bm_pg.BDD_LIST[0]
 
     # Getting institute parameters
-    org_tup = set_org_params(institute, bibliometer_path)
+    wf_root_path = wf_path.parent
+    org_tup = set_org_params(institute, wf_root_path)
 
     # Setting useful aliases
     institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
@@ -595,10 +596,10 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
     # Setting useful file names and paths for Institute affiliations
     institute_affil_file = institute + "_" + inst_aff_file_base_alias
     inst_types_file = institute + "_" + inst_types_file_base_alias
-    institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
+    institutions_folder_path = wf_path / Path(institutions_folder_alias)
     institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file)
-    paths_tup = (bibliometer_path,
+    paths_tup = (wf_path,
                  institute_affil_file_path,
                  inst_types_file_path)
 
@@ -638,7 +639,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                              font=font_exist_button,
                              command=lambda: _update(self,
                                                      master,
-                                                     bibliometer_path,
+                                                     wf_path,
                                                      pos_tup))
     bm_gg.GUI_BUTTONS.append(exist_button)
     exist_button.place(x=status_button_x_pos,
@@ -765,7 +766,7 @@ def create_parsing_concat(self, master, page_name, institute, bibliometer_path, 
                 dy=dy_launch)
 
     # **************** Placement de CHECKBOXCORPUSES :
-    _update(self, master, bibliometer_path, pos_tup)
+    _update(self, master, wf_path, pos_tup)
 
     # Setting buttons list for status change
     parse_buttons_list = [exist_button,

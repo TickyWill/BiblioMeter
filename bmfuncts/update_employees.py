@@ -20,7 +20,7 @@ from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import standardize_txt
 
 
-def _set_employees_paths(bibliometer_path):
+def _set_employees_paths(wf_path):
     """Sets the full paths towards employees working folders.
 
     The 4 folders are as follows:
@@ -41,27 +41,29 @@ def _set_employees_paths(bibliometer_path):
     of the active employees file.
 
     Args:
-        bibliometer_path (path): Full path to working folder.    
+        wf_path (path): Full path to working folder.    
     Returns:
         (tup): Tuple of the 4 built full paths.
-    """
+    """    
+    # Setting folder of the Institute parameters
+    wf_root_path = wf_path.parent
 
     # Setting useful aliases
-    root_employees_folder_alias       = bm_eg.EMPLOYEES_ARCHI["root"]
-    all_years_employees_folder_alias  = bm_eg.EMPLOYEES_ARCHI["all_years_employees"]
-    one_year_employees_folder_alias   = bm_eg.EMPLOYEES_ARCHI["one_year_employees"]
+    root_employees_folder_alias = bm_eg.EMPLOYEES_ARCHI["root"]
+    all_years_employees_folder_alias = bm_eg.EMPLOYEES_ARCHI["all_years_employees"]
+    one_year_employees_folder_alias = bm_eg.EMPLOYEES_ARCHI["one_year_employees"]
     months2add_employees_folder_alias = bm_eg.EMPLOYEES_ARCHI["complementary_employees"]
     backup_folder_alias = bm_pg.ARCHI_BACKUP["root"]
 
     # Setting useful paths
-    root_employees_folder_path       = bibliometer_path / Path(root_employees_folder_alias)
+    root_employees_folder_path = wf_root_path / Path(root_employees_folder_alias)
     months2add_employees_folder_path = root_employees_folder_path / \
                                        Path(months2add_employees_folder_alias)
-    all_years_employees_folder_path  = root_employees_folder_path / \
-                                       Path(all_years_employees_folder_alias)
-    one_year_employees_folder_path   = root_employees_folder_path / \
-                                       Path(one_year_employees_folder_alias)
-    backup_folder_path               = bibliometer_path / Path(backup_folder_alias)
+    all_years_employees_folder_path = root_employees_folder_path / \
+                                      Path(all_years_employees_folder_alias)
+    one_year_employees_folder_path = root_employees_folder_path / \
+                                     Path(one_year_employees_folder_alias)
+    backup_folder_path = wf_root_path / Path(backup_folder_alias)
 
     return (months2add_employees_folder_path, all_years_employees_folder_path,
             one_year_employees_folder_path, backup_folder_path)
@@ -501,7 +503,7 @@ def _build_year_month_dpt(year_months_file_path,
     return employees_df, progress_bar_state
 
 
-def update_employees(bibliometer_path, progress_callback=None,
+def update_employees(wf_path, progress_callback=None,
                      progress_bar_state_init=None, replace=True):
     """Updates the file defined by the global 'EMPLOYEES_ARCHI' at key 
     'employees_file_name' using the file defined by the global 
@@ -509,7 +511,7 @@ def update_employees(bibliometer_path, progress_callback=None,
     and the year 'year'.
 
     Args:
-        bibliometer_path (path): The path to the working folder.
+        wf_path (path): The path to the working folder.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
         replace (bool): Optional (default = True); if true, existing sheets \
@@ -529,7 +531,7 @@ def update_employees(bibliometer_path, progress_callback=None,
     (months2add_employees_folder_path,
      all_years_employees_folder_path,
      one_year_employees_folder_path,
-     backup_folder_path) = _set_employees_paths(bibliometer_path)
+     backup_folder_path) = _set_employees_paths(wf_path)
 
     # Setting full paths to useful files
     all_years_file_path = all_years_employees_folder_path / Path(all_years_employees_file_alias)
