@@ -270,7 +270,7 @@ class AppMain(tk.Tk):
             corpi_val.set(corpi_val_to_set)
 
             # Managing analysis launch button
-            SetLaunchButton(self, institute_select, inst_default_wf, datatype_select)
+            SetLaunchButton(self, institute_select, default_wf_path, datatype_select)
 
         def _update_bm_page(*args, institute_widget=None):
             """Gets the selected Institute and 'datatype' widgets parameters.
