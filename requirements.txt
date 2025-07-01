@@ -1,3 +1,4 @@
+auto_py_to_exe==2.42.0
 numpy==1.26.3
 openpyxl==3.1.2
 pandas==2.1.4
