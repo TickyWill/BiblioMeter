@@ -247,7 +247,7 @@ def create_update_ifs(self, master, page_name, institute, bibliometer_path, data
         missing_pub_file_year, if_database_complete, _ = if_tup
         if not missing_pub_file_year:
             print("IFs updated in all consolidated lists of publications")
-            concatenate_pub_lists(institute, org_tup, bibliometer_path, master.years_list)
+            concatenate_pub_lists(bibliometer_path, master.years_list)
             print("Consolidated lists of publications concatenated after IFs update")
             progress_callback(100)
             info_title = '- Information -'
