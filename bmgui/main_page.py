@@ -25,7 +25,8 @@ from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
 from bmgui.update_if_page import create_update_ifs
-from bmgui.gui_utils import existing_corpuses, enable_buttons
+from bmgui.gui_utils import enable_buttons
+from bmgui.gui_utils import existing_corpuses
 from bmgui.gui_utils import font_size
 from bmgui.gui_utils import general_properties
 from bmgui.gui_utils import last_available_years
