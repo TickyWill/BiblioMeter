@@ -45,8 +45,8 @@ def _launch_update_if_db(institute, org_tup, wf_path,
         pub_list_folder_alias (str): Publications-lists folder name.
         corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
-        progress_callback (function): Function for updating ProgressBar tkinter widget status.
-
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
     Returns:
         (bool): Status of impact-factors database.    
     """
@@ -86,6 +86,7 @@ def _launch_update_if_db(institute, org_tup, wf_path,
         messagebox.showwarning(info_title, info_text)
         update_status = False
     return update_status
+
 
 def _launch_update_pub_if(institute, org_tup, wf_path, datatype,
                           aliases_tup, corpus_years_list, progress_callback):
@@ -323,16 +324,16 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
 
     def _start_launch_update_if_db_try():
         disable_buttons(update_if_buttons_list)
-        place_after(if_db_update_launch_button,
-                    progress_bar, dx=progress_bar_dx, dy=0)
+        place_after(if_db_update_launch_button, progress_bar,
+                    dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_update_if_db_try,
                          args=(_update_progress,)).start()
 
     def _start_launch_update_pub_if_try():
         disable_buttons(update_if_buttons_list)
-        place_after(pub_if_update_launch_button,
-                    progress_bar, dx=progress_bar_dx, dy=0)
+        place_after(pub_if_update_launch_button, progress_bar,
+                    dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_update_pub_if_try,
                          args=(_update_progress,)).start()
@@ -352,8 +353,10 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
     update_if_label_dy_px = mm_to_px(15 * h_sf_mm, bm_gg.PPI)
     launch_dx_px = mm_to_px( 0 * w_sf_mm, bm_gg.PPI)
     launch_dy_px = mm_to_px( 5 * h_sf_mm, bm_gg.PPI)
-    progress_bar_length_px = mm_to_px(75 * w_sf_mm, bm_gg.PPI)
-    progress_bar_dx = 40
+    progress_bar_len_px = mm_to_px(bm_gg.PROGRESS_BAR_LEN_MM['if_upd']\
+                                   * master.width_sf_mm, bm_gg.PPI)
+    progress_bar_dx = bm_gg.PROGRESS_BAR_DX_PX['if_upd']  # 40
+    progress_bar_dy = bm_gg.PROGRESS_BAR_DY_PX['if_upd']  # 0
 
     # Setting common attributs
     etape_label_format = 'left'
@@ -386,7 +389,7 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
     progress_bar = ttk.Progressbar(self,
                                    orient="horizontal",
-                                   length=progress_bar_length_px,
+                                   length=progress_bar_len_px,
                                    mode="determinate",
                                    variable=progress_var)
 

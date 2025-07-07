@@ -55,7 +55,6 @@ __all__ = ['ADD_SPACE_MM',
            'REF_VERSION_X_MM',
            'REF_YEAR_BUT_POS_X_MM',
            'REF_YEAR_BUT_POS_Y_MM',
-           'TEXT_BDD_PC',
            'TEXT_CROISEMENT',
            'TEXT_ETAPE_1',
            'TEXT_ETAPE_2',
@@ -64,18 +63,13 @@ __all__ = ['ADD_SPACE_MM',
            'TEXT_ETAPE_5',
            'TEXT_ETAPE_6',
            'TEXT_HOMONYMES',
-           'TEXT_LAUNCH_PARSING',
-           'TEXT_LAUNCH_SYNTHESE',
            'TEXT_MAJ_BDD_IF',
            'TEXT_MAJ_PUB_IF',
            'TEXT_OTP',
-           'TEXT_PARSING',
            'TEXT_PUB_CONSO',
-           'TEXT_STATUT',
-           'TEXT_SYNTHESE',
-           'TEXT_UPDATE_STATUS',
-           'TEXT_YEAR_PC',
-           'TEXT_YEAR_PI',
+           'TEXT_YEAR_PI', # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           'BOX_POS_MM_LIST',
+           'BOX_TABLE_COLS',
            'GUI_BUTTONS',
            'VERSION',
            'APP_COPYRIGHT',
@@ -86,8 +80,16 @@ __all__ = ['ADD_SPACE_MM',
            'EMPL_UPDATE_TXT',
            'EXIT_BUTTON_TXT',
            'INSTITUTE_TXT',
+           'LABELS_POS_Y_MM_REF',
            'LAUNCH_BUTTON_TXT',
+           'LAUNCH_DPOS_MM_LIST',
            'MAIN_PAGE_TITLE',
+           'OPTION_SELECT',
+           'PARSING_LABELS',
+           'PARSING_LAUNCH',
+           'PROGRESS_BAR_DX_PX',
+           'PROGRESS_BAR_DY_PX',
+           'PROGRESS_BAR_LEN_MM',
            'STEP_HELPS_LIST',
            'STEP_LABELS_LIST',
            'STEP_LAUNCHS_LIST',
@@ -318,10 +320,58 @@ YEAR_SELECT_TXT = "Sélection de l'année "
 YEAR_BUT_POS_X_MM_REF = 80 # 10
 YEAR_BUT_POS_Y_MM_REF = 45 # 40
 
-# Parsing page
+# Setting reference progress-bar lengths in mm
+PROGRESS_BAR_LEN_MM = {'parse' : 50,
+                       'conso' : 100,
+                       'if_upd': 75,
+                       'analys': 100}
+
+# Setting relative positions shift in px
+PROGRESS_BAR_DX_PX = {'parse' : -80,
+                      'synth' : 40,
+                      'conso' : 40,
+                      'if_upd': 40,
+                      'analys': 40}
+
+PROGRESS_BAR_DY_PX = {'parse' : 15,
+                      'synth' : 0,
+                      'conso' : 0,
+                      'if_upd': 0,
+                      'analys': 0}
+
+# *************************** Parsing page globals
+BOX_POS_MM_LIST = [70, 40, 10]
+
+BOX_TABLE_COLS = {'raw_wos'     : 'Wos\nDonnées brutes',
+                  'wos_parse'   : 'Wos\nParsing',
+                  'raw_scopus'  : 'Scopus\nDonnées brutes',
+                  'scopus_parse': 'Scopus\nParsing',
+                  'dedup'       : 'Synthèse\nParsing',
+                 }
+
+LAUNCH_DPOS_MM_LIST = [15, 0.2]
+
+STEP_KEYS_LIST = ['status', 'parsing', 'dedup']
+
+LABELS_POS_Y_MM_REF_LIST = [25, 107, 135]
+LABELS_POS_Y_MM_REF = dict(zip(STEP_KEYS_LIST, LABELS_POS_Y_MM_REF_LIST))
+
+LABELS_LIST = ["Statut des fichiers de Parsing",
+               "Construction des fichiers de Parsing par BDD",
+               "Synthèse des fichiers de Parsing de toutes les BDD"]
+PARSING_LABELS = dict(zip(STEP_KEYS_LIST, LABELS_LIST))
+
+LAUNCH_LIST = ["Mettre à jour le statut des fichiers",
+               "Lancer le Parsing",
+               "Lancer la synthèse"]
+PARSING_LAUNCH = dict(zip(STEP_KEYS_LIST, LAUNCH_LIST))
+
+OPTION_SELECT = {'year': "Sélection de l'année ",
+                 'data': "Sélection de la BDD ",
+                }
 
 # - Label STATUT
-TEXT_STATUT = "Statut des fichiers de Parsing"
+STATUT_TXT = "Statut des fichiers de Parsing"
 
 # - Label Parsing
 TEXT_PARSING = "Construction des fichiers de Parsing par BDD"
@@ -336,13 +386,15 @@ TEXT_YEAR_PC = "Sélection de l'année "
 TEXT_BDD_PC = "Sélection de la BDD "
 
 # - Bouton mise à jour du statut des fichiers
-TEXT_UPDATE_STATUS = "Mettre à jour le statut des fichiers"
+UPDATE_STATUS_TXT = "Mettre à jour le statut des fichiers"
 
 # - Bouton lancement parsing
 TEXT_LAUNCH_PARSING = "Lancer le Parsing"
 
 # - Bouton lancement concatenation et deduplication des parsings
 TEXT_LAUNCH_SYNTHESE = "Lancer la synthèse"
+
+
 
 # Consolidation page
 

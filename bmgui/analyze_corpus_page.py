@@ -258,29 +258,29 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
 
     def _start_launch_if_analysis_try():
         disable_buttons(analysis_buttons_list)
-        place_after(if_analysis_launch_button,
-                    progress_bar, dx=progress_bar_dx, dy=0)
+        place_after(if_analysis_launch_button, progress_bar,
+                    dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_if_analysis_try, args=(_update_progress,)).start()
 
     def _start_launch_au_analysis_try():
         disable_buttons(analysis_buttons_list)
-        place_after(au_analysis_launch_button,
-                    progress_bar, dx=progress_bar_dx, dy=0)
+        place_after(au_analysis_launch_button, progress_bar,
+                    dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_au_analysis_try, args=(_update_progress,)).start()
 
     def _start_launch_coupling_analysis_try():
         disable_buttons(analysis_buttons_list)
-        place_after(co_analysis_launch_button,
-                    progress_bar, dx=progress_bar_dx, dy=0)
+        place_after(co_analysis_launch_button, progress_bar,
+                    dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_coupling_analysis_try, args=(_update_progress,)).start()
 
     def _start_launch_kw_analysis_try():
         disable_buttons(analysis_buttons_list)
-        place_after(kw_analysis_launch_button,
-                    progress_bar, dx=progress_bar_dx, dy=0)
+        place_after(kw_analysis_launch_button, progress_bar,
+                    dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_kw_analysis_try, args=(_update_progress,)).start()
 
@@ -298,8 +298,11 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
     eff_help_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-2, master.width_sf_min)
     eff_select_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE, master.width_sf_min)
     eff_buttons_font_size = font_size(bm_gg.REF_ETAPE_FONT_SIZE-3, master.width_sf_min)
-    progress_bar_length_px = mm_to_px(100 * master.width_sf_mm, bm_gg.PPI)
-    progress_bar_dx = 50
+    progress_bar_len_px = mm_to_px(bm_gg.PROGRESS_BAR_LEN_MM['analys']\
+                                   * master.width_sf_mm, bm_gg.PPI)
+    progress_bar_dx = bm_gg.PROGRESS_BAR_DX_PX['analys']  # 40 # 50
+    progress_bar_dy = bm_gg.PROGRESS_BAR_DY_PX['analys']  # 0
+
     if_analysis_x_pos_px = mm_to_px(10 * master.width_sf_mm, bm_gg.PPI)
     if_analysis_y_pos_px = mm_to_px(40 * master.height_sf_mm, bm_gg.PPI)
     title_dy = 20
@@ -382,7 +385,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
     progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
     progress_bar = ttk.Progressbar(self,
                                    orient="horizontal",
-                                   length=progress_bar_length_px,
+                                   length=progress_bar_len_px,
                                    mode="determinate",
                                    variable=progress_var)
 
