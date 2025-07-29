@@ -7,10 +7,10 @@ import os
 import threading
 import tkinter as tk
 import traceback
-from tkinter import messagebox
-from tkinter import font as tkFont
 from functools import partial
 from pathlib import Path
+from tkinter import messagebox
+from tkinter import font as tkFont
 
 # 3rd party imports
 from screeninfo import get_monitors
@@ -32,8 +32,10 @@ from bmgui.gui_utils import general_properties
 from bmgui.gui_utils import last_available_years
 from bmgui.gui_utils import mm_to_px
 from bmgui.gui_utils import place_after
+from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import show_frame
-from bmgui.gui_utils import str_size_mm
+from bmgui.gui_utils import set_pos_tup_px
+from bmgui.gui_utils import set_font_size_tup
 
 
 class AppMain(tk.Tk):
@@ -43,32 +45,56 @@ class AppMain(tk.Tk):
     'wf' stands for working folder.
     """
     def __init__(self):
-        self.datatype_optionbutton_font = None
-        self.datatype_optionbutton = None
+        self.inst_label_font = None
+        self.inst_label = None
+        self.inst_optionbutton_font = None
+        self.inst_optionbutton = None
         self.datatype_label_font = None
         self.datatype_label = None
+        self.datatype_optionbutton_font = None
+        self.datatype_optionbutton = None
 
         # Internal functions
-        def _set_datatype_widgets_param(datatype_val, datatype_list):
+        def _set_institute_widgets(institute_val):
+            """Sets widget parameters for institute selection through 'tk.OptionMenu'."""
+            # Setting label widget for institute selection
+            self.inst_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                               size=select_font_size_tup[0],
+                                               weight='bold')
+            self.inst_label = tk.Label(self,
+                                       text=bm_gg.MAIN_SELECT_LABEL_DICT['institute'],
+                                       font=self.inst_label_font)
+
+            # Setting button for institute selection
+            self.inst_optionbutton_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                                      size=select_font_size_tup[1])
+            self.inst_optionbutton = tk.OptionMenu(self, institute_val,
+                                                   *bm_ig.INSTITUTES_LIST)
+            self.inst_optionbutton.config(font=self.inst_optionbutton_font)
+
+            # Placing widgets for Institute selection
+            self.inst_label.place(x=inst_label_pos_tup[0], y=inst_label_pos_tup[1])
+            place_after(self.inst_label, self.inst_optionbutton, dy=opt_but_dy)
+
+        def _set_datatype_widgets_param(datatype_val):
             """Sets widget parameters for datatype selection through 'tk.OptionMenu'."""
-            # Setting widgets parameters for datatype selection
-            self.datatype_optionbutton_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                                          size=eff_buttons_font_size)
-            self.datatype_optionbutton = tk.OptionMenu(self,
-                                                       datatype_val,
-                                                       *datatype_list)
-            self.datatype_optionbutton.config(font=self.datatype_optionbutton_font,
-                                              width=eff_menu_width)
+            # Setting label widget for datatype selection
             self.datatype_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                                   size=eff_select_font_size,
+                                                   size=select_font_size_tup[0],
                                                    weight='bold')
             self.datatype_label = tk.Label(self,
-                                           text=bm_gg.DATATYPE_TXT,
+                                           text=bm_gg.MAIN_SELECT_LABEL_DICT['datatype'],
                                            font=self.datatype_label_font)
+            self.datatype_label.place(x=datatype_label_pos_tup[0], y=datatype_label_pos_tup[1])
 
-            # Placing widgets for datatype selection
-            self.datatype_label.place(x=datatype_button_x_pos, y=datatype_button_y_pos)
-            place_after(self.datatype_label, self.datatype_optionbutton, dy=dy_datatype)
+            # Setting button widget for datatype selection
+            self.datatype_optionbutton_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                                          size=select_font_size_tup[1])
+            self.datatype_optionbutton = tk.OptionMenu(self, datatype_val,
+                                                       *bm_pg.DATATYPE_LIST)
+            self.datatype_optionbutton.config(font=self.datatype_optionbutton_font,
+                                              width=datatype_width)
+            place_after(self.datatype_label, self.datatype_optionbutton, dy=opt_but_dy)
 
         def _display_path(inst_wf):
             """Shortens wf path for easy display."""
@@ -97,44 +123,41 @@ class AppMain(tk.Tk):
 
             # Updating wf values using new working directory
             _set_wf_widget_param(institute_select, wf_str, datatype_select)
-            _update_corpi(wf_str)
+            _update_corpuses(wf_str)
             wf_path = Path(wf_str)
             SetLaunchButton(self, institute_select, wf_path, datatype_select)
 
         def _set_wf_widget_param(institute_select, inst_wf, datatype_select):
             """Sets 'wf' widgets parameters and values 
             according to the selected Institute."""
-
-            # Setting wf widgets parameters
-            wf_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                   size=eff_wf_font_size,
-                                   weight='bold')
+            # Setting wf label widget
+            wf_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                        size=disp_font_size_tup[0],
+                                        weight='bold')
             wf_label = tk.Label(self,
-                                 text=bm_gg.WF_TXT,
-                                 font=wf_font,)
+                                text=bm_gg.MAIN_DISP_LABEL_DICT['wf'],
+                                font=wf_label_font)
+            wf_label.place(x=wf_pos_tup[0], y=wf_pos_tup[1])
+            
+            # Setting wf value widget
             wf_val = tk.StringVar(self)
-            wf_val2 = tk.StringVar(self)
-            wf_entree2 = tk.Entry(self, textvariable=wf_val2, width=eff_wf_width)
-            wf_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                          size=eff_buttons_font_size)
-            wf_button = tk.Button(self,
-                                   text=bm_gg.WF_CHANGE_TXT,
-                                   font=wf_button_font,
-                                   command=lambda: _get_file(institute_select,
-                                                             datatype_select))
-            # Placing wf widgets
-            wf_label.place(x=eff_wf_pos_x_px,
-                            y=eff_wf_pos_y_px,)
-
-            text_width_mm, _ = str_size_mm(bm_gg.WF_TXT, wf_font, bm_gg.PPI) 
-            eff_path_pos_x_px = mm_to_px(text_width_mm + add_space_mm, bm_gg.PPI)
-            wf_entree2.place(x=eff_path_pos_x_px,
-                              y=eff_wf_pos_y_px,)
-
-            wf_button.place(x=eff_path_pos_x_px,
-                             y=eff_wf_pos_y_px + eff_button_dy_px,)
             wf_val.set(inst_wf)
-            wf_val2.set(_display_path(inst_wf))
+            
+            # Setting wf displayed value widget
+            wf_val_disp = tk.StringVar(self)
+            wf_entry = tk.Entry(self, textvariable=wf_val_disp, width=wf_width)
+            place_after(wf_label, wf_entry, dx=val_disp_dx)
+            wf_val_disp.set(_display_path(inst_wf))
+            
+            # Setting button for changing Wf
+            wf_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                         size=disp_font_size_tup[1])
+            wf_button = tk.Button(self,
+                                  text=bm_gg.MAIN_BUT_LABEL_DICT['wf_change'],
+                                  font=wf_button_font,
+                                  command=lambda: _get_file(institute_select,
+                                                            datatype_select))
+            place_bellow(wf_entry, wf_button, dy=buttons_dy)
 
         def _try_wf_access(wf_path):
             """Returns status of the default working folder as boolean: True, if exists 
@@ -153,9 +176,9 @@ class AppMain(tk.Tk):
         def _create_corpus(inst_wf):
             """Creates a new corpus folder in the working folder through `create_archi` 
             function imported from `bmfuncts.useful_functs` module.             
-            Then, updates 'corpi' widget value with new list of available corpuses."""
+            Then, updates 'corpuses' widget value with new list of available corpuses."""
 
-            corpi_val = _set_corpi_widgets_param(inst_wf)
+            corpuses_val = _set_corpuses_widgets_param(inst_wf)
             wf_path = Path(inst_wf)
             wf_access_status = _try_wf_access(wf_path)
             if wf_access_status:
@@ -171,9 +194,9 @@ class AppMain(tk.Tk):
                 # Getting updated corpuses list
                 corpuses_list = last_available_years(wf_path, corpuses_nb_alias)
 
-                # Setting corpi_val value to corpuses list
-                corpi_val_to_set = str(corpuses_list)
-                corpi_val.set(corpi_val_to_set)
+                # Setting corpuses_val value to corpuses list
+                corpuses_val_to_set = str(corpuses_list)
+                corpuses_val.set(corpuses_val_to_set)
 
                 # Dispaying info
                 extractions_folder_alias = bm_pg.ARCHI_EXTRACT['root']
@@ -184,61 +207,57 @@ class AppMain(tk.Tk):
                              f"correspondantes dans le dossier :\n\n  '{extractions_folder_alias}'.")
                 messagebox.showinfo(info_title, info_text)
             else:
-                corpi_val.set("")
+                corpuses_val.set("")
 
-        def _set_corpi_widgets_param(inst_wf):
-            """Sets 'corpi' widgets parameters and values accordingly 
-            to the working folder and returns tkinter 'corpi' parameter 
-            that is used to set for display the available corpuses list."""
+        def _set_corpuses_widgets_param(inst_wf):
+            """Sets 'corpuses' widgets parameters and values accordingly 
+            to the working folder and returns tkinter 'corpuses' parameter 
+            that is used to set for displaying the available corpuses list."""
 
-            # Setting corpuses widgets parameters
-            corpi_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                     size=eff_corpi_font_size,
+            # Setting corpuses label widget
+            corpuses_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                     size=disp_font_size_tup[0],
                                      weight='bold')
-            corpi_val = tk.StringVar(self)
-            corpi_entry = tk.Entry(self, textvariable=corpi_val, width=eff_list_width)
-            corpi_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                            size=eff_buttons_font_size)
-            corpi_label = tk.Label(self,
-                                   text=bm_gg.CORPUSES_TXT,
-                                   font=corpi_font,)
-            corpi_button = tk.Button(self,
-                                     text=bm_gg.CREATE_CORPUS_BUTTON_TXT,
-                                     font=corpi_button_font,
+            corpuses_label = tk.Label(self,
+                                   text=bm_gg.MAIN_DISP_LABEL_DICT['corpuses'],
+                                   font=corpuses_font)
+            corpuses_label.place(x=corpuses_pos_tup[0],
+                                 y=corpuses_pos_tup[1])
+            
+            # Setting corpuses widgets parameters
+            corpuses_val = tk.StringVar(self)
+            corpuses_entry = tk.Entry(self, textvariable=corpuses_val, width=corpuses_width)
+            place_after(corpuses_label, corpuses_entry, dx=val_disp_dx)
+
+            # Setting button for corpus creation
+            corpuses_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                            size=disp_font_size_tup[1])
+            corpuses_button = tk.Button(self,
+                                     text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
+                                     font=corpuses_button_font,
                                      command=lambda: _create_corpus(inst_wf))
+            place_bellow(corpuses_entry, corpuses_button, dy=buttons_dy)
+            return corpuses_val
 
-            # Placing corpuses widgets
-            corpi_label.place(x=eff_corpi_pos_x_px,
-                              y=eff_corpi_pos_y_px,)
-
-            text_width_mm, _ = str_size_mm(bm_gg.CORPUSES_TXT, corpi_font, bm_gg.PPI)
-            eff_list_pos_x_px = mm_to_px(text_width_mm + add_space_mm, bm_gg.PPI)
-            corpi_entry.place(x=eff_list_pos_x_px,
-                              y=eff_corpi_pos_y_px,)
-
-            corpi_button.place(x=eff_list_pos_x_px,
-                               y=eff_corpi_pos_y_px + eff_button_dy_px,)
-            return corpi_val
-
-        def _update_corpi(inst_wf):
-            """Updates tkinter 'corpi' parameter with the available corpuses list 
+        def _update_corpuses(inst_wf):
+            """Updates tkinter 'corpuses' parameter with the available corpuses list 
             accordingly to working folder."""
 
-            corpi_val = _set_corpi_widgets_param(inst_wf)
-            corpi_val_to_set = ""
+            corpuses_val = _set_corpuses_widgets_param(inst_wf)
+            corpuses_val_to_set = ""
             wf_path = Path(inst_wf)
             wf_access_status = _try_wf_access(wf_path)
             if wf_access_status:
                 # Getting updated corpuses list
                 corpuses_list = last_available_years(wf_path, corpuses_nb_alias)
 
-                # Setting corpi_val value to corpuses list
-                corpi_val_to_set = str(corpuses_list)
-            corpi_val.set(corpi_val_to_set)
+                # Setting corpuses_val value to corpuses list
+                corpuses_val_to_set = str(corpuses_list)
+            corpuses_val.set(corpuses_val_to_set)
 
         def _update_datatype(*args, datatype_widget=None):
             """Gets selected data-type and sets, accordingly, 'wf' widgets parameters, 
-            'corpi' widgets parameters and sets launch button of corpuses analysis."""
+            'corpuses' widgets parameters and sets launch button of corpuses analysis."""
 
             datatype_select = datatype_widget.get()
             self.datatype_optionbutton.configure(state = 'disabled')
@@ -249,10 +268,10 @@ class AppMain(tk.Tk):
             _set_wf_widget_param(institute_select, inst_default_wf, datatype_select)
 
             # Managing corpus list
-            corpi_val = _set_corpi_widgets_param(inst_default_wf)
+            corpuses_val = _set_corpuses_widgets_param(inst_default_wf)
 
             # Setting and displaying corpuses list initial values
-            corpi_val_to_set = ""
+            corpuses_val_to_set = ""
             default_wf_path = Path(inst_default_wf)
             info_title = "- Information -"
             info_text = ("Le test de l'accès au dossier de travail défini "
@@ -267,8 +286,8 @@ class AppMain(tk.Tk):
                              "en choisir un autre.")
                 messagebox.showinfo(info_title, info_text)
                 init_corpuses_list = last_available_years(default_wf_path, corpuses_nb_alias)
-                corpi_val_to_set = str(init_corpuses_list)
-            corpi_val.set(corpi_val_to_set)
+                corpuses_val_to_set = str(init_corpuses_list)
+            corpuses_val.set(corpuses_val_to_set)
 
             # Managing analysis launch button
             SetLaunchButton(self, institute_select, default_wf_path, datatype_select)
@@ -276,18 +295,16 @@ class AppMain(tk.Tk):
         def _update_bm_page(*args, institute_widget=None):
             """Gets the selected Institute and 'datatype' widgets parameters.
             Then, trace change in datatype selection to update page parameters."""
-
             _ = args
             institute_select = institute_widget.get()
 
             # Setting default values for datatype selection
-            datatype_list = bm_pg.DATATYPE_LIST
             default_datatype = " "
             datatype_val = tk.StringVar(self)
             datatype_val.set(default_datatype)
 
             # Creating widgets for datatype selection
-            _set_datatype_widgets_param(datatype_val, datatype_list)
+            _set_datatype_widgets_param(datatype_val)
 
             # Tracing data type selection
             datatype_val.trace('w',
@@ -311,13 +328,10 @@ class AppMain(tk.Tk):
         self.iconbitmap(icon_path)
 
         # Initializing AppMain attributes set after working folder definition
-        AppMain.years_list = []
-        AppMain.list_corpus_year = []
-        AppMain.list_wos_rawdata = []
-        AppMain.list_wos_parsing = []
-        AppMain.list_scopus_rawdata = []
-        AppMain.list_scopus_parsing = []
-        AppMain.list_dedup = []
+        (AppMain.years_list, AppMain.list_corpus_year,
+         AppMain.list_wos_rawdata, AppMain.list_wos_parsing,
+         AppMain.list_scopus_rawdata, AppMain.list_scopus_parsing,
+         AppMain.list_dedup) = ([0],) * 7
 
         # Setting pages classes and pages list
         AppMain.pages = (AnalyzeCorpusPage,
@@ -327,73 +341,51 @@ class AppMain(tk.Tk):
         AppMain.pages_ordered_list = [x.__name__ for x in AppMain.pages][::-1]
 
         # Getting useful screen sizes and scale factors depending on displays properties
-        sizes_tuple = general_properties(self)
-        AppMain.win_width_px = sizes_tuple[0]
-        AppMain.win_height_px = sizes_tuple[1]
-        AppMain.width_sf_px = sizes_tuple[2]
-        AppMain.height_sf_px = sizes_tuple[3]
-        AppMain.width_sf_mm = sizes_tuple[4]
-        AppMain.height_sf_mm = sizes_tuple[5]
+        (AppMain.win_width_px, AppMain.win_height_px,
+         AppMain.width_sf_px, AppMain.height_sf_px,
+         AppMain.width_sf_mm, AppMain.height_sf_mm) = general_properties(self)
         AppMain.width_sf_min = min(AppMain.width_sf_mm, AppMain.width_sf_px)
+        AppMain.mid_x_pos = int(AppMain.win_width_px * 0.5)
+        AppMain.sf_mm_tup = (AppMain.width_sf_mm, AppMain.height_sf_mm)
+        
+        # Setting short names for window factors for positions setting in px
+        w_sf_mm = AppMain.width_sf_mm
+        h_sf_mm = AppMain.height_sf_mm
+        w_sf_min = AppMain.width_sf_min
+        fact_tup = (w_sf_mm, h_sf_mm)
 
         # Setting common parameters for widgets
         corpuses_nb_alias = bm_gg.CORPUSES_NUMBER
-        add_space_mm = bm_gg.ADD_SPACE_MM
-        eff_buttons_font_size = font_size(bm_gg.REF_BUTTON_FONT_SIZE, AppMain.width_sf_min)
+        select_font_size_tup = set_font_size_tup(AppMain,
+                                                 bm_gg.MAIN_FONT_SIZE_DICT['main_select'],
+                                                 ['label', 'button'])
+        disp_font_size_tup = set_font_size_tup(AppMain,
+                                               bm_gg.MAIN_FONT_SIZE_DICT['main_disp'],
+                                               ['label', 'button'])
+        buttons_dy = mm_to_px(bm_gg.MAIN_BUT_DPOS_TUP[1] * h_sf_mm, bm_gg.PPI)
+        val_disp_dx = mm_to_px(bm_gg.VAL_DISPLAY_DX * h_sf_mm, bm_gg.PPI)
+        opt_but_dy = mm_to_px(bm_gg.MAIN_OPT_BUT_DPOS_TUP[1] * h_sf_mm, bm_gg.PPI)
 
-        # Setting widgets parameters for institute selection
-        eff_select_font_size = font_size(bm_gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
-        inst_button_x_pos = mm_to_px(bm_gg.REF_INST_POS_X_MM * AppMain.width_sf_mm, bm_gg.PPI)
-        inst_button_y_pos = mm_to_px(bm_gg.REF_INST_POS_Y_MM * AppMain.height_sf_mm, bm_gg.PPI)
-        dy_inst = -10
+        # Setting widget label positions
+        inst_label_pos_tup = set_pos_tup_px(AppMain, bm_gg.MAIN_SELECT_LABEL_POS_DICT['institute'])
+        datatype_label_pos_tup = set_pos_tup_px(AppMain, bm_gg.MAIN_SELECT_LABEL_POS_DICT['datatype'])
+        wf_pos_tup = set_pos_tup_px(AppMain, bm_gg.MAIN_DISP_LABEL_POS_DICT['work_folder'])
+        corpuses_pos_tup = set_pos_tup_px(AppMain, bm_gg.MAIN_DISP_LABEL_POS_DICT['corpus_list'])
 
-        # Setting widgets parameters for Working-folder selection
-        eff_wf_width = int(bm_gg.REF_ENTRY_NB_CHAR * AppMain.width_sf_min)
-        eff_wf_font_size = font_size(bm_gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
-        eff_wf_pos_x_px = mm_to_px(bm_gg.REF_WF_POS_X_MM * AppMain.height_sf_mm, bm_gg.PPI)
-        eff_wf_pos_y_px = mm_to_px(bm_gg.REF_WF_POS_Y_MM * AppMain.height_sf_mm, bm_gg.PPI)
-        eff_button_dy_px = mm_to_px(bm_gg.REF_BUTTON_DY_MM * AppMain.height_sf_mm, bm_gg.PPI)
-
-        # Setting widgets parameters for corpuses display
-        eff_list_width = int(bm_gg.REF_ENTRY_NB_CHAR * AppMain.width_sf_min)
-        eff_corpi_font_size = font_size(bm_gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
-        eff_corpi_pos_x_px = mm_to_px(bm_gg.REF_CORPI_POS_X_MM * AppMain.height_sf_mm, bm_gg.PPI)
-        eff_corpi_pos_y_px = mm_to_px(bm_gg.REF_CORPI_POS_Y_MM * AppMain.height_sf_mm, bm_gg.PPI)
-
-        # Setting widgets parameters for datatype selection
-        eff_menu_width = int(bm_gg.REF_MENU_NB_CHAR * AppMain.width_sf_min)
-        eff_select_font_size = font_size(bm_gg.REF_SUB_TITLE_FONT_SIZE, AppMain.width_sf_min)
-        datatype_button_x_pos = mm_to_px(bm_gg.REF_DATATYPE_POS_X_MM * AppMain.width_sf_mm, bm_gg.PPI)
-        datatype_button_y_pos = mm_to_px(bm_gg.REF_DATATYPE_POS_Y_MM * AppMain.height_sf_mm, bm_gg.PPI)
-        dy_datatype = -10
+        # Setting widths for displayed information
+        datatype_width = int(bm_gg.MAIN_CHAR_NB_DICT['datatype'] * w_sf_min)
+        wf_width = int(bm_gg.MAIN_CHAR_NB_DICT['work_folder'] * w_sf_min)
+        corpuses_width = int(bm_gg.MAIN_CHAR_NB_DICT['corpus_list'] * w_sf_min)
 
         # Setting and placing widgets for title and copyright
         SetMasterTitle(self)
         SetAuthorCopyright(self)
 
         # Setting default values for Institute selection
-        institutes_list = bm_ig.INSTITUTES_LIST
         default_institute = "   "
         institute_val = tk.StringVar(self)
         institute_val.set(default_institute)
-
-        # Creating widgets for Institute selection
-        self.inst_optionbutton_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                                  size=eff_buttons_font_size)
-        self.inst_optionbutton = tk.OptionMenu(self,
-                                               institute_val,
-                                               *institutes_list)
-        self.inst_optionbutton.config(font = self.inst_optionbutton_font)
-        self.inst_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                           size=eff_select_font_size,
-                                           weight='bold')
-        self.inst_label = tk.Label(self,
-                                   text=bm_gg.INSTITUTE_TXT,
-                                   font=self.inst_label_font)
-
-        # Placing widgets for Institute selection
-        self.inst_label.place(x = inst_button_x_pos, y = inst_button_y_pos)
-        place_after(self.inst_label, self.inst_optionbutton, dy=dy_inst)
+        _set_institute_widgets(institute_val)
 
         # Tracing Institute selection
         institute_val.trace('w', partial(_update_bm_page, institute_widget=institute_val))
@@ -407,56 +399,60 @@ class SetMasterTitle():
     def __init__(self, master):
 
         # Setting widget parameters for page title
-        eff_page_title_font_size = font_size(bm_gg.REF_PAGE_TITLE_FONT_SIZE, master.width_sf_min)
-        eff_page_title_pos_y_px  = mm_to_px(bm_gg.REF_PAGE_TITLE_POS_Y_MM * master.height_sf_mm,
-                                            bm_gg.PPI)
-        mid_page_pos_x_px = master.win_width_px * 0.5
+        page_title_font_size = font_size(bm_gg.MAIN_FONT_SIZE_DICT['main_title'],
+                                         master.width_sf_min)
+        page_title_x_pos = master.mid_x_pos
+        page_title_y_pos = mm_to_px(bm_gg.MAIN_INFO_POS_DICT['main_title'][1]\
+                                    * master.height_sf_mm, bm_gg.PPI)
 
         # Creating widget for page title
         page_title = tk.Label(master,
                               text=bm_gg.MAIN_PAGE_TITLE,
-                              font=(bm_gg.FONT_NAME, eff_page_title_font_size),
+                              font=(bm_gg.FONT_NAME, page_title_font_size),
                               justify="center")
 
         # Placing widget for page title
-        page_title.place(x=mid_page_pos_x_px,
-                         y=eff_page_title_pos_y_px,
+        page_title.place(x=page_title_x_pos,
+                         y=page_title_y_pos,
                          anchor="center")
 
 class SetAuthorCopyright():
     """Displays authors and copyright in main window."""
 
     def __init__(self, master):
+        # Setting short names for window factors  for positions setting in px
+        w_sf_mm = master.width_sf_mm
+        h_sf_mm = master.height_sf_mm
+        w_sf_min = master.width_sf_min
+        fact_tup = (w_sf_mm, h_sf_mm)
 
         # Setting widgets parameters for copyright
-        eff_copyright_font_size = font_size(bm_gg.REF_COPYRIGHT_FONT_SIZE, master.width_sf_min)
-        eff_version_font_size = font_size(bm_gg.REF_VERSION_FONT_SIZE, master.width_sf_min)
-        eff_copyright_x_px = mm_to_px(bm_gg.REF_COPYRIGHT_X_MM * master.width_sf_mm, bm_gg.PPI)
-        eff_copyright_y_px = mm_to_px(bm_gg.REF_COPYRIGHT_Y_MM * master.height_sf_mm, bm_gg.PPI)
-        eff_version_x_px = mm_to_px(bm_gg.REF_VERSION_X_MM * master.width_sf_mm, bm_gg.PPI)
-        eff_version_y_px = mm_to_px(bm_gg.REF_COPYRIGHT_Y_MM * master.height_sf_mm, bm_gg.PPI)
+        copyright_font_size = font_size(bm_gg.MAIN_FONT_SIZE_DICT['copyright'], w_sf_min)
+        version_font_size = font_size(bm_gg.MAIN_FONT_SIZE_DICT['version'], w_sf_min)        
+        copyright_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['copyright'])
+        version_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['version'])
 
         # Creating widgets for copyright
         auteurs_font_label = tkFont.Font(family=bm_gg.FONT_NAME,
-                                         size=eff_copyright_font_size,)
+                                         size=copyright_font_size,)
         auteurs_label = tk.Label(master,
                                  text=bm_gg.APP_COPYRIGHT,
                                  font=auteurs_font_label,
                                  justify="left")
         version_font_label = tkFont.Font(family=bm_gg.FONT_NAME,
-                                         size=eff_version_font_size,
+                                         size=version_font_size,
                                          weight='bold')
         version_label = tk.Label(master,
-                                 text=bm_gg.APP_VERSION,
+                                 text=f"\nVersion {bm_gg.VERSION}",
                                  font=version_font_label,
                                  justify="right")
 
         # Placing widgets for copyright
-        auteurs_label.place(x=eff_copyright_x_px,
-                            y=eff_copyright_y_px,
+        auteurs_label.place(x=copyright_pos_tup[0],
+                            y=copyright_pos_tup[1],
                             anchor="sw")
-        version_label.place(x=eff_version_x_px,
-                            y=eff_version_y_px,
+        version_label.place(x=version_pos_tup[0],
+                            y=version_pos_tup[1],
                             anchor="sw")
 
 class SetLaunchButton(tk.Tk):
@@ -465,26 +461,28 @@ class SetLaunchButton(tk.Tk):
     def __init__(self, master, institute, wf_path, datatype):
 
         # Setting font size for launch button
-        eff_launch_font_size = font_size(bm_gg.REF_LAUNCH_FONT_SIZE, master.width_sf_min)
+        launch_font_size = font_size(bm_gg.MAIN_FONT_SIZE_DICT['main_launch'],
+                                     master.width_sf_min)
 
         # Setting x and y position in pixels for launch button
-        launch_but_pos_x_px = master.win_width_px * 0.5
-        launch_but_pos_y_px = master.win_height_px * 0.8
+        launch_but_x_pos = master.mid_x_pos
+        launch_but_y_pos = mm_to_px(bm_gg.MAIN_BUT_POS_TUP[1]\
+                                    * master.height_sf_mm, bm_gg.PPI)
 
         # Setting launch button
         launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=eff_launch_font_size,
+                                  size=launch_font_size,
                                   weight='bold')
         launch_button = tk.Button(master,
-                                  text=bm_gg.LAUNCH_BUTTON_TXT,
+                                  text=bm_gg.MAIN_BUT_LABEL_DICT['launch'],
                                   font=launch_font,
                                   command=lambda: self._generate_pages(master,
                                                                        institute,
                                                                        wf_path,
                                                                        datatype))
         # Placing launch button
-        launch_button.place(x=launch_but_pos_x_px,
-                            y=launch_but_pos_y_px,
+        launch_button.place(x=launch_but_x_pos,
+                            y=launch_but_y_pos,
                             anchor="s")
 
     def _generate_pages(self, master, institute, wf_path, datatype):
@@ -518,8 +516,10 @@ class SetLaunchButton(tk.Tk):
                 master.list_dedup = files_status[5]
 
             # Creating two frames in the tk window
+            pagebutton_height = mm_to_px(bm_gg.PAGE_BUTTON_HEIGHT\
+                                         * master.height_sf_mm, bm_gg.PPI)
             pagebutton_frame = tk.Frame(master, bg='red',
-                                        height=bm_gg.PAGEBUTTON_HEIGHT_PX)
+                                        height=pagebutton_height)
             pagebutton_frame.pack(side="top", fill="both", expand=False)
 
             page_frame = tk.Frame(master)
@@ -554,11 +554,12 @@ class PageButton(tk.Frame):
         page_num = master.pages_ordered_list.index(page_name)
 
         # Setting widgets parameters for page button
-        eff_button_font_size = font_size(bm_gg.REF_BUTTON_FONT_SIZE, master.width_sf_min)
+        button_font_size = font_size(bm_gg.MAIN_FONT_SIZE_DICT['page_button'],
+                                     master.width_sf_min)
 
         # Creating widgets for page button
         button_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=eff_button_font_size)
+                                  size=button_font_size)
         button = tk.Button(pagebutton_frame,
                            text=label_text,
                            font=button_font,

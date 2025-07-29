@@ -33,7 +33,15 @@ from bmgui.gui_utils import mm_to_px
 from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
+from bmgui.gui_utils import set_font_size_tup
 from bmgui.gui_utils import set_page_title
+from bmgui.gui_utils import set_pos_tup_px
+from bmgui.gui_utils import set_pos_tup_px_list
+from bmgui.gui_utils import set_progress_bar_pos_tup
+from bmgui.pages_utils import set_data_select_widgets
+from bmgui.pages_utils import set_step_label
+from bmgui.pages_utils import set_step_launch_button
+from bmgui.pages_utils import set_year_select_widgets
 
 
 class CheckBoxCorpuses:
@@ -41,11 +49,8 @@ class CheckBoxCorpuses:
 
     Args:
         year (str): Corpus year defined by 4 digits.
-        wos_r_ (bool): Status of WoS raw-data file.
-        wos_p (bool): Status of WoS parsing files.
-        scopus_r (bool): Status of Scopus raw-data file.
-        scopus_p (bool): Status of Scopus parsing files.
-        concat (bool) : Status of concatenation and deduplication files.
+        items_status (dict): Availability of raw data, parsing data \
+        and deduplicated data (keys: type of data (str); values: status (bool)).
     """
 
     def __init__(self, parent, master, year, items_status):
@@ -54,16 +59,13 @@ class CheckBoxCorpuses:
             self.boxes_dict[item] = tk.Checkbutton(parent)
             if items_status[item]:
                 self.boxes_dict[item].select()
-            
-        # Setting useful local variables for positions setting in px
-        w_sf_mm = master.width_sf_mm
-        w_sf_min = master.width_sf_min
 
-        self.check_boxes_sep_space = mm_to_px(bm_gg.REF_CHECK_BOXES_SEP_SPACE * w_sf_mm,
-                                              bm_gg.PPI)
-        header_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF - 3, w_sf_min) # 11
+        self.check_boxes_sep_space = mm_to_px(bm_gg.BOX_SEP_SPACE\
+                                              * master.width_sf_mm, bm_gg.PPI)
+        header_font_size = font_size(bm_gg.PAGE_FONT_SIZE_DICT['box_header'],
+                                     master.width_sf_min)
         table_header_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                           size=header_font_size)
+                                        size=header_font_size)
         self.lab = tk.Label(parent, text=year, font=table_header_font)
         self.boxes_dict = {}
         for item in items_status.keys():
@@ -75,7 +77,8 @@ class CheckBoxCorpuses:
         self.lab.place(x=box_x_pos-a, y=box_y_pos, anchor='center')
         for item in items_status.keys():
             box_x_pos += self.check_boxes_sep_space
-            self.boxes_dict[item].place(x=box_x_pos, y=box_y_pos, anchor='center')
+            self.boxes_dict[item].place(x=box_x_pos, y=box_y_pos,
+                                        anchor='center')
             self.boxes_dict[item].config(state='disabled')
 
     def efface(self):
@@ -96,42 +99,47 @@ def _create_table(self, master, x_pos_init):
         for the first widget location on the parsing page.
     Note:
         The functions 'font_size' and 'mm_to_px' are imported 
-        from the module 'gui_utils' of the package 'bmgui'.        
-        The globals 'FONT_NAME' and 'PPI' are imported from the module 'gui_globals'
-        of the package 'bmgui'.
+        from the module 'gui_utils' of the package 'bmgui'.
     """
     # Internal functions
     def _set_table_item(item_text, item_x_pos):
         item_box = tk.Label(self,
                             text=item_text,
                             font=table_header_font)
-        item_box.place(x=item_x_pos, y=y_pos_ref, anchor='center')
+        item_box.place(x=item_x_pos, y=y_pos, anchor='center')
         self.TABLE.append(item_box)
 
-    # Setting useful local variables for positions setting in px
-    w_sf_mm = master.width_sf_mm
-    h_sf_mm = master.height_sf_mm
-    w_sf_min = master.width_sf_min
-
     # Setting specific font properties
-    header_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF - 3, w_sf_min) # 11
+    header_font_size = font_size(bm_gg.PAGE_FONT_SIZE_DICT['box_header'],
+                                 master.width_sf_min)
     table_header_font = tkFont.Font(family=bm_gg.FONT_NAME,
                               size=header_font_size)
 
-    # Setting useful x position shift and y position reference in pixels
-    x_pos_shift = mm_to_px(25 * w_sf_mm, bm_gg.PPI)
-    y_pos_ref = mm_to_px(30 * h_sf_mm, bm_gg.PPI)
+    # Setting useful x position shift and y position reference
+    x_shift = mm_to_px(bm_gg.BOX_TABLE_POS_DICT['x_shift']\
+                       * master.width_sf_mm, bm_gg.PPI)
+    y_pos = mm_to_px(bm_gg.BOX_TABLE_POS_DICT['y_pos']\
+                     * master.height_sf_mm, bm_gg.PPI)
 
     # Initializing x position in pixels
     x_pos = x_pos_init
 
     # Setting table items
-    for _, item_text in bm_gg.BOX_TABLE_COLS.items():
-        x_pos += x_pos_shift
+    for _, item_text in bm_gg.BOX_TABLE_COLS_DICT.items():
+        x_pos += x_shift
         _set_table_item(item_text, x_pos)
 
 
-def _update(self, master, wf_path, box_pos_tup):
+def _set_box_pos_tup(master):
+    # Setting check box positions
+    box_x_pos = mm_to_px(bm_gg.BOX_POS_TUP[0] * master.width_sf_mm, bm_gg.PPI)
+    box_y_pos = mm_to_px(bm_gg.BOX_POS_TUP[1] * master.height_sf_mm, bm_gg.PPI)
+    box_line_dy = mm_to_px(bm_gg.BOX_Y_DPOS * master.height_sf_mm, bm_gg.PPI)
+    box_pos_tup = (box_x_pos, box_y_pos, box_line_dy)
+    return box_pos_tup
+
+
+def _update_status(self, master, wf_path, box_pos_tup):
     """Refreshes the current state of the files in the 
     working folder using the `_create_table` internal function.
 
@@ -150,7 +158,7 @@ def _update(self, master, wf_path, box_pos_tup):
         The globals FONT_NAME and PPI are imported from the module 'gui_globals'
         of the package 'bmgui'.
     """
-    # Setting parameters from args
+    # Setting check box positions
     x_pos_init, y_pos_init, esp_ligne = box_pos_tup
     box_x_pos_init = x_pos_init
 
@@ -259,8 +267,7 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
     and database raw-data availability. 
     It saves the resulting parsing files using paths set through 
     `set_user_config` function imported from `bmfuncts.config_utils` 
-    module. 
-    It updates the files status using the internal function `_update`.
+    module.
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
@@ -274,9 +281,6 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
     # Internal functions
     def _corpus_parsing(rawdata_path, parsing_path,
                         database_type, progress_callback):
-        if not os.path.exists(parsing_path):
-            os.mkdir(parsing_path)
-        progress_callback(20)
         parsing_tup = bp.biblio_parser(rawdata_path, database_type,
                                        inst_filter_list=None,
                                        country_affiliations_file_path=inst_paths_tup[0],
@@ -311,7 +315,7 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
     
         # Setting parsing files extension for saving
         parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
-        progress_callback(10)
+        progress_callback(20)
 
         # Asking for confirmation of corpus year to parse
         ask_title = "Confirmation de l'année de traitement"
@@ -366,7 +370,7 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
                         "\n\nModifiez le type de BDD sélectionné et relancez le 'parsing'.")
         messagebox.showwarning(warning_title, warning_text)
 
-
+        
 def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
                      inst_paths_tup, progress_callback):
     """Concatenates and deduplicates the parsing from wos or scopus databases.
@@ -378,8 +382,7 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
     It checks if all useful files are available in the working folder. 
     It saves the resulting parsing files using paths set through 
     `set_user_config` function imported from `bmfuncts.config_utils` 
-    module. 
-    It updates the files status using the internal function `_update`.
+    module.
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
@@ -393,16 +396,6 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
     """
     # Internal functions
     def _deduplicate_corpus_parsing(progress_callback):
-        if not os.path.exists(concat_root_path):
-            os.mkdir(concat_root_path)
-        if not os.path.exists(concat_path):
-            os.mkdir(concat_path)
-        if not os.path.exists(dedup_root_path):
-            os.mkdir(dedup_root_path)
-        if not os.path.exists(dedup_path):
-            os.mkdir(dedup_path)
-        progress_callback(15)
-
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
@@ -441,7 +434,7 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
 
     # Setting parsing files extension for saving
     parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
-    progress_callback(10)
+    progress_callback(15)
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
     ask_title = "Confirmation de l'année de traitement"
@@ -532,7 +525,7 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     """Manages creation and use of widgets for corpus parsing.
 
     This is done through the internal functions  `_launch_parsing`, 
-    `_launch_dedup` and `_update`.
+    `_launch_dedup` and `_update_status`.
 
     Args:
         page_name (str): Name of parsing page.
@@ -541,158 +534,16 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
         datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
-    def _set_item_select_widgets(self, item, step_name):
-        """Sets in the page the label and place of the year-selection 
-        label widget and the button and place of the year-selection button.
-        """
-        # Setting item selection label
-        item_label = tk.Label(self,
-                              text=bm_gg.OPTION_SELECT[item],
-                              font=label_select_font)
-        place_bellow(step_label_widget_dict[step_name], item_label,
-                     dx=select_label_dx[item], dy=select_label_dy[item])
-
-        # Setting option button for item selection
-        item_variable = tk.StringVar(self)
-        item_variable.set(select_default[item])
-        item_opt_but = tk.OptionMenu(self, item_variable,
-                                     *select_list[item])
-        item_opt_but.config(font=but_select_font)
-        place_after(item_label, item_opt_but, dx=select_button_dx,
-                    dy=select_button_dy)
-        bm_gg.GUI_BUTTONS.append(item_opt_but)
-        return item_variable, item_opt_but
-
-    def _set_step_label(self, step_name):
-        """Sets the label and place of step-label widget in the page.
-
-        Args:
-            step_name (str): The name of the step in 'bm_gg.STEP_KEYS_LIST' \
-            global.
-        """
-        step_label = tk.Label(self,
-                              text=bm_gg.PARSING_LABELS[step_name],
-                              justify=step_label_format,
-                              font=step_label_font)
-        step_label.place(x=step_label_x_pos,
-                         y=step_label_y_pos_dict[step_name],
-                         anchor="nw")
-        return step_label
-
-    def _set_step_launch_button(self, step_name, step_start_funct,
-                                pos_params):
-        step_launch_button = tk.Button(self,
-                                       text=bm_gg.PARSING_LAUNCH[step_name],
-                                       font=step_launch_font,
-                                       command=step_start_funct)
-        pos_type, widget_ref, x_pos, y_pos, dx, dy = pos_params
-        if pos_type=='bellow':
-            place_bellow(widget_ref, step_launch_button,
-                         dy=dy)
-        elif pos_type=='after':
-            place_after(widget_ref, step_launch_button,
-                        dx=dx, dy=dy)
-        else:    
-            step_launch_button.place(x=x_pos, y=y_pos,
-                                     anchor='n')
-        bm_gg.GUI_BUTTONS.append(step_launch_button)
-        return step_launch_button
+    
     def _update_progress(value):
         progress_var.set(value)
         progress_bar.update_idletasks()
         if value>=100:
-            enable_buttons(parse_buttons_list)
-
-    # Setting useful local variables for positions setting in px
-    w_sf_mm = master.width_sf_mm
-    h_sf_mm = master.height_sf_mm
-    w_sf_min = master.width_sf_min
-
-    # ****************************** STATUS **********************************************
-    # ************************************************************************************
-    # Setting check box positions
-    box_x_pos_px = mm_to_px(bm_gg.BOX_POS_MM_LIST[0] * w_sf_mm, bm_gg.PPI)    #70
-    box_y_pos_px = mm_to_px(bm_gg.BOX_POS_MM_LIST[1] * h_sf_mm, bm_gg.PPI)    #40
-    box_line_dy_px = mm_to_px(bm_gg.BOX_POS_MM_LIST[2] * h_sf_mm, bm_gg.PPI)  #10
-    box_pos_tup = (box_x_pos_px, box_y_pos_px, box_line_dy_px)
-
-    # Setting positions in px for status update
-    status_launch_x_pos = mm_to_px(148 * w_sf_mm, bm_gg.PPI)
-    status_launch_y_pos = mm_to_px(98 * h_sf_mm, bm_gg.PPI)
-    
-    # ****************************** STEP LABEL ******************************************
-    # ************************************************************************************
-    # Setting labels positions in px
-    step_label_x_pos = mm_to_px(bm_gg.STEP_POS_X_MM_REF * w_sf_mm, #10
-                                bm_gg.PPI)
-    step_label_y_pos_list = [mm_to_px( y * master.height_sf_mm, bm_gg.PPI)
-                             for y in bm_gg.LABELS_POS_Y_MM_REF.values()]     #[25, 107, 135]
-    step_label_y_pos_dict = dict(zip(bm_gg.LABELS_POS_Y_MM_REF.keys(),
-                                     step_label_y_pos_list))
-
-    # Setting step-label font
-    step_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF + 2, master.width_sf_min)   #16
-    step_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=step_font_size,
-                                  weight='bold')
-
-    # Setting step-label widgets parameters
-    step_label_format = 'left'
-    step_names_list = bm_gg.STEP_KEYS_LIST
-    step_label_widget_list = [_set_step_label(self, step_name)
-                              for step_name in step_names_list]    
-    step_label_widget_dict = dict(zip(step_names_list, step_label_widget_list))
+            enable_buttons(self.page_buttons_list)
 
 
-    # ****************************** ITEM SELECT *****************************************
-    # ************************************************************************************
-    # Setting position parameters for items selection
-    select_label_dx = {'year': 0,
-                       'data': mm_to_px(70 * w_sf_mm, bm_gg.PPI)}
-    select_label_dy = {'year': mm_to_px(2 * h_sf_mm, bm_gg.PPI),
-                       'data': mm_to_px(2 * h_sf_mm, bm_gg.PPI)}
-    select_button_dx = mm_to_px(1 * w_sf_mm, bm_gg.PPI)
-    select_button_dy = mm_to_px(-2 * h_sf_mm, bm_gg.PPI)
+    # ****************************** GENERAL SETTNGS
 
-    # Setting lists and default values for items selection
-    select_list = {'year': master.years_list,
-                   'data': bm_pg.BDD_LIST}
-
-    select_default = {'year': master.years_list[-1],
-                      'data': bm_pg.BDD_LIST[0]}
-    
-    # Setting select-item label font
-    select_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF - 2, master.width_sf_min) #14
-    label_select_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                    size=select_font_size)
-    # Setting select-item button font
-    button_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF - 3, master.width_sf_min) #11
-    but_select_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=button_font_size)
-
-    # ****************************** STEP LAUNCH *****************************************
-    # ************************************************************************************
-    # Setting buttons positions in px
-    launch_but_dx = mm_to_px(bm_gg.LAUNCH_DPOS_MM_LIST[0] * w_sf_mm, bm_gg.PPI)    #15
-    launch_but_dy = mm_to_px(bm_gg.LAUNCH_DPOS_MM_LIST[1] * h_sf_mm, bm_gg.PPI)    #0.2
-
-    # Setting step-launch font
-    launch_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF - 2, master.width_sf_min) #12
-    step_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                   size=launch_font_size)
-
-    # ****************************** PROGRESS BAR *********************************************
-    # ************************************************************************************
-    # Setting progress_bar parameters in px
-    progress_bar_len_px = mm_to_px(bm_gg.PROGRESS_BAR_LEN_MM['parse']\
-                                   * w_sf_mm, bm_gg.PPI)  # 50
-    progress_bar_parse_dx = bm_gg.PROGRESS_BAR_DX_PX['parse'] # -80
-    progress_bar_parse_dy = bm_gg.PROGRESS_BAR_DY_PX['parse'] # 15
-    progress_bar_synth_dx = bm_gg.PROGRESS_BAR_DX_PX['synth'] # 40
-    progress_bar_synth_dy = bm_gg.PROGRESS_BAR_DY_PX['synth'] # 0
-
-    # ****************************** GENERAL *********************************************
-    # ************************************************************************************
     # Getting institute parameters
     wf_root_path = wf_path.parent
     org_tup = set_org_params(institute, wf_root_path)
@@ -700,11 +551,21 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     # Setting institutions files paths
     inst_paths_tup = _set_parse_inst_params(institute, wf_path)
 
-    # Initializing progress bar widget
-    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
+    # Setting page key and page year
+    self.page_key = bm_gg.KEY_PARSE
+    year_key = bm_gg.KEY_PARSE_YEAR
+    parse_key = bm_gg.KEY_PARSE
+    dedup_key = bm_gg.KEY_DEDUP
+
+    # Setting size and relative positions of widget of progress bars
+    return_tup = set_progress_bar_pos_tup(master, self.page_key)
+    progress_bar_len, progress_bar_dx, progress_bar_dy = return_tup
+
+    # Setting variable to keep track of the progress bar value
+    progress_var = tk.IntVar()  
     progress_bar = ttk.Progressbar(self,
                                    orient="horizontal",
-                                   length=progress_bar_len_px,
+                                   length=progress_bar_len,
                                    mode="determinate",
                                    variable=progress_var)
 
@@ -713,94 +574,136 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     set_page_title(self, master, page_label, institute, datatype)
     set_exit_button(self, master)
 
-    # **************** DISPLAY PARSING-FILES STATUS
-    def _launch_update_try():
-        # update files status
-        _update(self, master, wf_path, box_pos_tup)
+    # Setting all step-label widgets parameters
+    step_label_pos_tup_list = set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])    
+    step_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
+                                           ['step_label', 'step_launch'])
+    step_label_params = (step_font_size_tup, step_label_pos_tup_list)                   
+    steps_number = bm_gg.STEPS_NB_DICT[self.page_key]
+    step_label_widgets_list = [set_step_label(self, step_num, step_label_params)
+                               for step_num in range(steps_number)]
+    step_label_widgets_params = (step_label_widgets_list, step_label_pos_tup_list)
 
+    # ****************************** DISPLAY PARSING-FILES STATUS
+
+    def _launch_update_status_try():
+        # update files status
+        _update_status(self, master, wf_path, box_pos_tup)
+
+    step_num = 0
     # Initializing checkbox parameters as lists
-    # filled in _create_table and _update internal functions
+    # filled in _create_table and _update_status internal functions
     self.CHECK = []
     self.TABLE = []
+    
+    # Setting check box positions
+    box_pos_tup = _set_box_pos_tup(master)
+    
+    # Setting widgets of button for update of parsing-files status 
+    status_button_pos_tup = set_pos_tup_px(master, bm_gg.STATUS_BUT_POS_TUP)     
+    status_button_params = (step_font_size_tup, _launch_update_status_try)
+    status_pos_params = ('place', None, status_button_pos_tup, None)    
+    status_button = set_step_launch_button(self, step_num,
+                                           status_button_params,
+                                           status_pos_params)
 
-    # Setting widgets of button for update of parsing-files status
-    pos_params = ('place', None, status_launch_x_pos, status_launch_y_pos,
-                  None, None)
-    status_button = _set_step_launch_button(self, 'status',
-                                            _launch_update_try,
-                                            pos_params)
+    # Updating check boxes
+    _update_status(self, master, wf_path, box_pos_tup)
 
-    # **************** LAUNCH PARSING    
+
+    # ****************************** YEAR SELECTION
+
+    default_year = master.years_list[-1]
+    self.variable_years = tk.StringVar(self)
+    self.variable_years.set(default_year)
+
+    # Setting widgets for year selection
+    year_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
+                                           ['label', 'button'])
+    year_label_pos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_POS_DICT[year_key])
+    year_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
+    year_select_params = [year_font_size_tup, year_label_pos_tup, year_button_dpos_tup]
+    set_year_select_widgets(self, master, year_select_params)
+
+
+    # ****************************** LAUNCH PARSING    
+
     def _launch_parsing_try(progress_callback):
-        parsing_year = parse_year_var.get()
+        
+        # Getting year selection and database selection 
+        year_select = self.variable_years.get()
         parsing_data = parse_data_var.get()
-        _launch_parsing(master, parsing_year, parsing_data,
+
+        _launch_parsing(master, year_select, parsing_data,
                         wf_path, inst_paths_tup, progress_callback)
         progress_bar.place_forget()
 
     def _start_launch_parsing_try():
-        disable_buttons(parse_buttons_list)
-        place_bellow(parsing_button, progress_bar,
-                     dx=progress_bar_parse_dx,
-                     dy=progress_bar_parse_dy)
+        disable_buttons(self.page_buttons_list)
+        place_after(parsing_button, progress_bar,
+                    dx=progress_bar_dx,
+                    dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_parsing_try,
                          args=(_update_progress,)).start()
         # update files status
-        _update(self, master, wf_path, box_pos_tup)
+        _update_status(self, master, wf_path, box_pos_tup)
 
-    # Setting widgets for corpus year selection for parsing
-    return_tup = _set_item_select_widgets(self, 'year', 'parsing')
-    parse_year_var, parse_year_opt_but = return_tup
-
-    # Setting widgets for database-type selection
-    return_tup = _set_item_select_widgets(self, 'data', 'parsing')
-    parse_data_var, parse_data_opt_but = return_tup
+    step_num = 1
+    # Setting widgets for database selection for parsing
+    data_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['step_select'],
+                                           ['label', 'button'])
+    data_label_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_DPOS_DICT[self.page_key])
+    data_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
+    data_select_params = (data_font_size_tup, data_label_dpos_tup,
+                          data_button_dpos_tup, step_label_widgets_list[step_num])
+    parse_data_var, parse_data_opt_but = set_data_select_widgets(self, data_select_params)
 
     # Setting widgets for launch parsing button
-    pos_params = ('after', parse_data_opt_but, None, None,
-                  launch_but_dx, launch_but_dy)
-    parsing_button = _set_step_launch_button(self, 'parsing',
-                                             _start_launch_parsing_try,
-                                             pos_params)
+    parse_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[parse_key])     
+    parse_launch_button_params = (step_font_size_tup, _start_launch_parsing_try)
+    parse_launch_pos_params = ('after', parse_data_opt_but,
+                               None, parse_button_dpos_tup)    
+    parsing_button = set_step_launch_button(self, step_num,
+                                            parse_launch_button_params,
+                                            parse_launch_pos_params)
 
-    # **************** LAUNCH PARSING DEDUPLICATION
+
+    # ****************************** LAUNCH PARSING DEDUPLICATION
+
     def _launch_dedup_try(progress_callback):
-        dedup_year = dedup_year_var.get()
-        _launch_dedup(master, dedup_year,
+        # Getting year selection
+        year_select = self.variable_years.get()
+        _launch_dedup(master, year_select,
                       org_tup, wf_path, datatype,
                       inst_paths_tup, progress_callback)
         progress_bar.place_forget()
 
     def _start_launch_dedup_try():
-        disable_buttons(parse_buttons_list)
+        disable_buttons(self.page_buttons_list)
         place_after(dedup_button, progress_bar,
-                    dx=progress_bar_synth_dx,
-                    dy=progress_bar_synth_dy)
+                    dx=progress_bar_dx,
+                    dy=progress_bar_dy)
         progress_var.set(0)
         threading.Thread(target=_launch_dedup_try,
                          args=(_update_progress,)).start()
         # update files status
-        _update(self, master, wf_path, box_pos_tup)
+        _update_status(self, master, wf_path, box_pos_tup)
 
-    # Setting widgets for corpus year selection for parsing
-    return_tup = _set_item_select_widgets(self, 'year', 'dedup')
-    dedup_year_var, dedup_year_opt_but = return_tup
+    step_num = 2
+    # Setting widgets for launch deduplication button   
+    dedup_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[dedup_key])     
+    dedup_launch_button_params = (step_font_size_tup, _start_launch_dedup_try)
+    dedup_launch_pos_params = ('bellow', step_label_widgets_list[step_num],
+                               None, dedup_button_dpos_tup)    
+    dedup_button = set_step_launch_button(self, step_num,
+                                          dedup_launch_button_params,
+                                          dedup_launch_pos_params)
 
-    # Setting widgets for launch deduplication button
-    pos_params = ('after', dedup_year_opt_but, None, None,
-                  launch_but_dx, launch_but_dy)
-    dedup_button = _set_step_launch_button(self, 'dedup',
-                                           _start_launch_dedup_try,
-                                           pos_params)
 
-    # **************** UPDATE CHECK BOXES :
-    _update(self, master, wf_path, box_pos_tup)
-
-    # Setting buttons list for status change
-    parse_buttons_list = [status_button,
-                          parse_year_opt_but,
-                          parse_data_opt_but,
-                          dedup_year_opt_but,
-                          parsing_button,
-                          dedup_button]
+    # ****************************** Setting buttons list for status change
+    self.page_buttons_list = [self.years_opt_but,
+                              status_button,
+                              parse_data_opt_but,
+                              parsing_button,
+                              dedup_button]

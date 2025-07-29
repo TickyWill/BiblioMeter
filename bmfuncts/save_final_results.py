@@ -12,6 +12,7 @@ __all__ = ['save_final_countries',
            'save_final_results',
            'save_final_set_homonyms',
            'save_final_submit',
+           'set_result_folder_path',
           ]
 
 
@@ -589,6 +590,23 @@ def save_final_doctypes(bibliometer_path,
     return end_message
 
 
+def set_result_folder_path(bibliometer_path, datatype):
+    # Setting aliases for saving results
+    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
+
+    # Setting paths for saving results
+    results_root_path = bibliometer_path / Path(results_root_alias)
+    results_folder_path = results_root_path / Path(results_folder_alias)
+
+    # Checking availability of required results folders
+    if not os.path.exists(results_root_path):
+        os.makedirs(results_root_path)
+    if not os.path.exists(results_folder_path):
+        os.makedirs(results_folder_path)
+    return results_folder_path
+
+
 def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
                        if_analysis_name, results_to_save_dict, verbose=False):
     """Saves final results of given datatype and corpus year according 
@@ -616,20 +634,8 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
-    # Setting aliases for saving results
-    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
-    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
-
-    # Setting paths for saving results
-    results_root_path = bibliometer_path / Path(results_root_alias)
-    results_folder_path = results_root_path / Path(results_folder_alias)
-
-    # Checking availability of required results folders
-    if not os.path.exists(results_root_path):
-        os.makedirs(results_root_path)
-    if not os.path.exists(results_folder_path):
-        os.makedirs(results_folder_path)
+    # Setting path for saving results
+    results_folder_path = set_result_folder_path(bibliometer_path, datatype)
 
     if results_to_save_dict["hash_ids"]:
         message = save_final_hash_ids(bibliometer_path, corpus_year,

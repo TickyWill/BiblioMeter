@@ -47,7 +47,15 @@ from bmgui.gui_utils import mm_to_px
 from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
 from bmgui.gui_utils import set_exit_button
-from bmgui.gui_utils import set_page_title 
+from bmgui.gui_utils import set_font_size_tup
+from bmgui.gui_utils import set_page_title
+from bmgui.gui_utils import set_pos_tup_px
+from bmgui.gui_utils import set_pos_tup_px_list
+from bmgui.gui_utils import set_progress_bar_pos_tup
+from bmgui.pages_utils import set_step_help_button 
+from bmgui.pages_utils import set_step_label 
+from bmgui.pages_utils import set_step_launch_button 
+from bmgui.pages_utils import set_year_select_widgets
 
 
 def _set_empl_files_params(wf_path):
@@ -123,6 +131,7 @@ def _launch_update_employees_try(wf_path, progress_callback):
          years2add_error,
          all_years_file_error) = update_employees(wf_path, progress_callback,
                                                   progress_bar_state_init)
+        progress_callback(100)
         if not any([files_number_error, sheet_name_error, column_error,
                     years2add_error, all_years_file_error]):
             info_title = "- Information -"
@@ -192,6 +201,7 @@ def _launch_update_employees_try(wf_path, progress_callback):
                 messagebox.showwarning(warning_title, warning_text)
                 update_status = False
     else:
+        progress_callback(100)
         # Cancel employees database update
         warning_title = "- Information -"
         warning_text = ("La mise à jour des effectifs est abandonnée."
@@ -292,7 +302,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                                                                progress_callback,
                                                                progress_bar_state)
             print('\n',end_message)
-
+            progress_callback(100)
             info_title = '- Information -'
             info_text = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
             if orphan_status:
@@ -440,6 +450,7 @@ def _launch_resolution_homonymies_try(institute, org_tup,
             messagebox.showinfo(info_title, info_text)
 
         else:
+            progress_callback(100)
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = ("Le fichier contenant le croisement auteurs-effectifs "
                             f"de l'année {year_select} n'est pas disponible."
@@ -749,123 +760,36 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
-    def _set_year_select_widgets(self):
-        """Sets in the page the label and place of the year-selection 
-        label widget and the button and place of the year-selection button.
-        """
-        # Setting year selection label
-        self.font_Label_years = tkFont.Font(family=bm_gg.FONT_NAME,
-                                            size=eff_year_font_size,
-                                            weight='bold')
-        self.Label_years = tk.Label(self,
-                                    text=bm_gg.YEAR_SELECT_TXT,
-                                    font=self.font_Label_years)
-        self.Label_years.place(x=year_button_x_pos, y=year_button_y_pos)
-
-        # Setting option button for year selection
-        self.font_OptionButton_years = tkFont.Font(family=bm_gg.FONT_NAME,
-                                                   size=eff_buttons_font_size)
-        self.OptionButton_years = tk.OptionMenu(self,
-                                                variable_years,
-                                                *master.years_list)
-        self.OptionButton_years.config(font = self.font_OptionButton_years)
-        place_after(self.Label_years, self.OptionButton_years, dy=dy_year)
-        bm_gg.GUI_BUTTONS.append(self.OptionButton_years)
-
-    def _set_step_label(self, step_num):
-        """Sets the label and place of step-label widget in the page.
-
-        Args:
-            step_num (int): The order of the step in 'STEP_LABELS_LIST' global.
-        """
-        step_label = tk.Label(self,
-                              text=bm_gg.STEP_LABELS_LIST[step_num],
-                              justify=step_label_format,
-                              font=step_label_font,
-                              underline=step_underline)
-        step_label.place(x=step_label_pos_x,
-                   y=step_label_pos_y_list[step_num])
-        return step_label
-
-    def _edit_help(step_num):
-        disable_buttons(consolidate_corpus_buttons_list)
-        info_title = (f"{bm_gg.STEP_LABELS_LIST[step_num].split(' - ')[0]}"
-                      " - Description")
-        info_text = bm_gg.STEP_HELPS_LIST[step_num]
-        messagebox.showinfo(info_title, info_text)
-        enable_buttons(consolidate_corpus_buttons_list)
-    
-    def _set_step_help_button(self, step_num):
-        help_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=eff_help_font_size)
-        help_button = tk.Button(self,
-                                text=bm_gg.HELP_BUTTON,
-                                font=help_label_font,
-                                command=partial(_edit_help, step_num))
-        step_label = step_label_widget[step_num]
-        step_help_dx = help_dx - step_label.winfo_reqwidth()
-        place_after(step_label, help_button,
-                    dx=step_help_dx, dy=help_dy)
-
-    def _set_step_launch_button(self, step_num, step_start_funct):
-        step_launch_button = tk.Button(self,
-                                       text=bm_gg.STEP_LAUNCHS_LIST[step_num],
-                                       font=step_launch_font,
-                                       command=step_start_funct)
-        bm_gg.GUI_BUTTONS.append(step_launch_button)
-
-        place_bellow(step_label_widget[step_num],
-                     step_launch_button,
-                     dy=step_button_dy / 2)
-        return step_launch_button
 
     def _update_progress(value):
         progress_var.set(value)
         progress_bar.update_idletasks()
         if value>=100:
-            enable_buttons(consolidate_corpus_buttons_list)
+            enable_buttons(self.page_buttons_list)
 
-    # ********************* Function start
 
-    # Setting useful local variables for positions modification
-    # numbers are reference values in mm for reference screen
-    eff_step_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF+2, master.width_sf_min)
-    eff_launch_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF-1, master.width_sf_min)
-    eff_help_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF-2, master.width_sf_min)
-    eff_year_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF+3, master.width_sf_min)
-    eff_buttons_font_size = font_size(bm_gg.STEP_FONT_SIZE_REF-3, master.width_sf_min)
-    progress_bar_len_px = mm_to_px(bm_gg.PROGRESS_BAR_LEN_MM['conso']\
-                                   * master.width_sf_mm, bm_gg.PPI)
-    progress_bar_dx = bm_gg.PROGRESS_BAR_DX_PX['conso']  # 40
-    progress_bar_dy = bm_gg.PROGRESS_BAR_DY_PX['conso']  # 0
-    step_label_pos_x = mm_to_px(bm_gg.STEP_POS_X_MM_REF * master.width_sf_mm,
-                                bm_gg.PPI)
-    step_label_pos_y_list = [mm_to_px( y * master.height_sf_mm, bm_gg.PPI)
-                             for y in bm_gg.STEP_POS_Y_MM_REF_LIST]
-    step_button_dx = mm_to_px(bm_gg.STEP_BUT_DX_MM_REF * master.width_sf_mm,
-                              bm_gg.PPI)
-    step_button_dy = mm_to_px(bm_gg.STEP_BUT_DY_MM_REF * master.height_sf_mm,
-                              bm_gg.PPI)
-    year_button_x_pos = mm_to_px(bm_gg.YEAR_BUT_POS_X_MM_REF * master.width_sf_mm,
-                                 bm_gg.PPI)
-    year_button_y_pos = mm_to_px(bm_gg.YEAR_BUT_POS_Y_MM_REF * master.height_sf_mm,
-                                 bm_gg.PPI)
-    dy_year = -6   # -3 ???
-    help_dx = mm_to_px(bm_gg.REF_HELP_BUT_POS_X_MM * master.width_sf_mm, bm_gg.PPI)
-    help_dy = mm_to_px(bm_gg.REF_HELP_BUT_POS_Y_MM * master.width_sf_mm, bm_gg.PPI)
+    # ****************************** GENERAL SETTNGS
 
     # Getting institute parameters
     wf_root_path = wf_path.parent
     org_tup = set_org_params(institute, wf_root_path)
     
-    # initializing parameters
+    # initializing update status of employees data
     empl_update_status = False
 
-    # Initializing progress bar widget
-    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
+    # Setting short_name for page key and year key to use in globals
+    self.page_key = bm_gg.KEY_CONSO
+    year_key = bm_gg.KEY_CONSO_YEAR
+
+    # Setting size and relative positions of widget of progress bars
+    return_tup = set_progress_bar_pos_tup(master, self.page_key)
+    progress_bar_len, progress_bar_dx, progress_bar_dy = return_tup
+
+    # Setting variable to keep track of the progress bar value
+    progress_var = tk.IntVar()  
     progress_bar = ttk.Progressbar(self,
                                    orient="horizontal",
-                                   length=progress_bar_len_px,
+                                   length=progress_bar_len,
                                    mode="determinate",
                                    variable=progress_var)
 
@@ -874,17 +798,21 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     set_page_title(self, master, page_label, institute, datatype)
     set_exit_button(self, master)
 
-    # Setting step-label widgets parameters
-    step_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=eff_step_font_size,
-                                  weight='bold')
-    step_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                   size=eff_launch_font_size)
-    step_label_format = 'left'
-    step_underline = -1
-    steps_number = bm_gg.STEPS_NB
-    step_label_widget = [_set_step_label(self, step_num) 
-                         for step_num in range(steps_number)]
+    # Setting label widgets parameters for all page steps 
+    step_label_pos_tup_list = set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])    
+    step_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
+                                           ['step_label', 'step_launch', 'step_help'])
+    step_label_params = (step_font_size_tup, step_label_pos_tup_list)                   
+    steps_number = bm_gg.STEPS_NB_DICT[self.page_key]
+    step_label_widgets_list = [set_step_label(self, step_num, step_label_params)
+                               for step_num in range(steps_number)]
+    step_label_widgets_params = (step_label_widgets_list, step_label_pos_tup_list)
+    step_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[self.page_key])  
+
+    # Setting parameters of help buttons for all steps
+    help_dpos_ref_tup = set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP)
+    help_button_params = (step_font_size_tup, help_dpos_ref_tup)
+
 
     # *********************** STEP 0: UPDATE EMPLOYEES DATA
     def _launch_update_employees(progress_callback):
@@ -896,7 +824,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         progress_bar.place_forget()
 
     def _start_update_employees():
-        disable_buttons(consolidate_corpus_buttons_list)
+        disable_buttons(self.page_buttons_list)
         place_after(empl_update_button, progress_bar,
                     dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
@@ -905,25 +833,37 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
 
     # Setting widgets for employees-update button
     step_num = 0
-    help_button = _set_step_help_button(self, step_num)
-    empl_update_button = _set_step_launch_button(self, step_num,
-                                                 _start_update_employees)
-  
-    # *********************** YEAR SELECTION
+    empl_help_button = set_step_help_button(self, step_num,
+                                            help_button_params, step_label_widgets_params)
+    empl_launch_button_params = (step_font_size_tup, _start_update_employees)
+    empl_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
+                              None, step_button_dpos_tup) 
+    empl_update_button = set_step_launch_button(self, step_num,
+                                                empl_launch_button_params,
+                                                empl_launch_pos_params)
+
+
+    # ****************************** YEAR SELECTION
+
     default_year = master.years_list[-1]
-    variable_years = tk.StringVar(self)
-    variable_years.set(default_year)
+    self.variable_years = tk.StringVar(self)
+    self.variable_years.set(default_year)
 
     # Setting widgets for year selection
-    _set_year_select_widgets(self)
+    year_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
+                                           ['label', 'button'])
+    year_label_pos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_POS_DICT[year_key])
+    year_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
+    year_select_params = [year_font_size_tup, year_label_pos_tup, year_button_dpos_tup]
+    set_year_select_widgets(self, master, year_select_params)
+
 
     # *********************** STEP 1: MERGE AUTHORS-EMPLOYEES
     def _launch_recursive_year_search(progress_callback):
         """Command of the 'merge_button' button.        
         """
-
         # Getting year selection
-        year_select = variable_years.get()
+        year_select = self.variable_years.get()
 
         # Trying launch of recursive search for authors in employees file
         _launch_recursive_year_search_try(institute, org_tup,
@@ -934,7 +874,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         progress_bar.place_forget()
 
     def _start_launch_recursive_year_search():
-        disable_buttons(consolidate_corpus_buttons_list)
+        disable_buttons(self.page_buttons_list)
         place_after(merge_button, progress_bar,
                     dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
@@ -943,16 +883,23 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
 
     # Setting widgets for authors-employees-merge button
     step_num = 1
-    help_button = _set_step_help_button(self, step_num)
-    merge_button = _set_step_launch_button(self, step_num,
-                                           _start_launch_recursive_year_search)
+    merge_help_button = set_step_help_button(self, step_num,
+                                             help_button_params,
+                                             step_label_widgets_params)     
+    merge_launch_button_params = (step_font_size_tup, _start_update_employees)
+    merge_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
+                               None, step_button_dpos_tup)      
+    merge_button = set_step_launch_button(self, step_num,
+                                          merge_launch_button_params,
+                                          merge_launch_pos_params)
+
 
     # ******************* STEP 2: HOMONYMS RESOLUTION
     def _launch_resolution_homonymies(progress_callback):
         """Command of the 'homonyms_button' button.
         """
         # Renewing year selection
-        year_select = variable_years.get()
+        year_select = self.variable_years.get()
 
         # Trying launch creation of file for homonymies resolution
         _launch_resolution_homonymies_try(institute, org_tup,
@@ -961,7 +908,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         progress_bar.place_forget()
 
     def _start_launch_resolution_homonymies():
-        disable_buttons(consolidate_corpus_buttons_list)
+        disable_buttons(self.page_buttons_list)
         place_after(homonyms_button, progress_bar,
                     dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
@@ -970,9 +917,15 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
 
     # Setting widgets for homonyms-resolution button
     step_num = 2
-    help_button = _set_step_help_button(self, step_num)
-    homonyms_button = _set_step_launch_button(self, step_num,
-                                              _start_launch_resolution_homonymies)
+    homonyms_help_button = set_step_help_button(self, step_num,
+                                                help_button_params,
+                                                step_label_widgets_params)     
+    homonyms_launch_button_params = (step_font_size_tup, _start_launch_resolution_homonymies)
+    homonyms_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
+                                  None, step_button_dpos_tup)      
+    homonyms_button = set_step_launch_button(self, step_num,
+                                             homonyms_launch_button_params,
+                                             homonyms_launch_pos_params)
 
     # ******************* STEP 3: OTPs ATTRIBUTION
     def _launch_add_otp(progress_callback):
@@ -980,7 +933,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         """
 
         # Renewing year selection
-        year_select = variable_years.get()
+        year_select = self.variable_years.get()
 
         # Trying launch creation of files for OTP attribution
         _launch_add_otp_try(institute, org_tup,
@@ -990,7 +943,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         progress_bar.place_forget()
 
     def _start_launch_add_otp():
-        disable_buttons(consolidate_corpus_buttons_list)
+        disable_buttons(self.page_buttons_list)
         place_after(otp_button, progress_bar,
                     dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
@@ -999,16 +952,22 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
 
     # Setting widgets for OTPs attribution button
     step_num = 3
-    help_button = _set_step_help_button(self, step_num)
-    otp_button = _set_step_launch_button(self, step_num,
-                                         _start_launch_add_otp)
+    otp_help_button = set_step_help_button(self, step_num,
+                                           help_button_params,
+                                           step_label_widgets_params)     
+    otp_launch_button_params = (step_font_size_tup, _start_launch_add_otp)
+    otp_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
+                             None, step_button_dpos_tup)      
+    otp_button = set_step_launch_button(self, step_num,
+                                        otp_launch_button_params,
+                                        otp_launch_pos_params)
 
     # ****************** STEP 4: PUBLICATIONS-LIST CONSOLIDATION
     def _launch_pub_list_conso(progress_callback):
         """Command of the 'conso_button' button.
         """
         # Renewing year selection and years
-        year_select = variable_years.get()
+        year_select = self.variable_years.get()
 
         # Trying launch creation of consolidated publications lists
         _launch_pub_list_conso_try(institute, org_tup,
@@ -1017,9 +976,8 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
                                    progress_callback)
         progress_bar.place_forget()
 
-
     def _start_launch_pub_list_conso():
-        disable_buttons(consolidate_corpus_buttons_list)
+        disable_buttons(self.page_buttons_list)
         place_after(conso_button, progress_bar,
                     dx=progress_bar_dx, dy=progress_bar_dy)
         progress_var.set(0)
@@ -1028,13 +986,20 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
 
     # Setting widgets for consolidation of publications list
     step_num = 4
-    help_button = _set_step_help_button(self, step_num)
-    conso_button = _set_step_launch_button(self, step_num,
-                                           _start_launch_pub_list_conso)
+    conso_help_button = set_step_help_button(self, step_num,
+                                             help_button_params,
+                                             step_label_widgets_params)     
+    conso_launch_button_params = (step_font_size_tup, _start_launch_pub_list_conso)
+    conso_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
+                               None, step_button_dpos_tup)      
+    conso_button = set_step_launch_button(self, step_num,
+                                          conso_launch_button_params,
+                                          conso_launch_pos_params)
 
     # Setting buttons list for status change
-    consolidate_corpus_buttons_list = [self.OptionButton_years,
-                                       merge_button,
-                                       homonyms_button,
-                                       otp_button,
-                                       conso_button]
+    self.page_buttons_list = [self.years_opt_but,
+                              empl_update_button,
+                              merge_button,
+                              homonyms_button,
+                              otp_button,
+                              conso_button]
