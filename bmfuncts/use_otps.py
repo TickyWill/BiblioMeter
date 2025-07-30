@@ -129,7 +129,7 @@ def set_pub_otp_df(org_tup, final_col_list, pub_id_col, otp_path, otp_file_base)
     return pub_otp_df
 
 
-def save_otps(institute, org_tup, bibliometer_path, corpus_year,
+def save_otps(institute, org_tup, wf_path, corpus_year,
               otp_path, otp_file_base):
     """Saves the history of the attributed OTPs by the user.
 
@@ -156,7 +156,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         otp_path (path): The full path to the folder where the files \
         with the set OTPs are saved.
@@ -186,7 +186,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
     doi_otp_sheet_alias = bm_pg.SHEET_SAVE_OTP['doi_OTP']
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     history_folder_path = corpus_year_path / Path(history_folder_alias)
@@ -782,7 +782,7 @@ def _get_otps_history(institute, org_tup,
     return lists_tup, cols_tup, doi_otp_history_df
 
 
-def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
+def set_saved_otps(institute, org_tup, wf_path, corpus_year):
     """Attributes the OTPs from the history of the attributed OTPs 
     before submiting to the user the file for attributing the not yet 
     attributed OTPs.
@@ -803,7 +803,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (str): End message giving the status of the OTPs attribution.
@@ -820,7 +820,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     history_folder_path = corpus_year_path / Path(history_folder_alias)
@@ -832,7 +832,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
                                              hash_id_file_path,
                                              kept_otps_file_path)
         if otp_level=="LAB":
-            lab_otps_dict = set_lab_otps(institute, org_tup, bibliometer_path)
+            lab_otps_dict = set_lab_otps(institute, org_tup, wf_path)
             _set_saved_lab_otps(org_tup, otps_history_tup,
                                 otp_folder_path, otp_file_base_alias,
                                 lab_otps_dict)

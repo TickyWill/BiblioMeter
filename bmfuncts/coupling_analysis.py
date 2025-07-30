@@ -236,7 +236,7 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     return countries_df, norm_institutions_df, country_affil_file_path, wrong_affil_types_dict
 
 
-def coupling_analysis(institute, org_tup, bibliometer_path,
+def coupling_analysis(institute, org_tup, wf_path,
                       datatype, year, progress_callback=None, verbose=False):
     """Performs the analysis of countries and authors affiliations of Institute publications 
     of the 'year' corpus.
@@ -262,7 +262,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year (str): 4 digits year of the corpus.
         progress_callback (function): Function for updating ProgressBar \
@@ -277,7 +277,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         to be corrected).
     """
     # Setting input-data path
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+    saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting aliases from globals
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
@@ -289,10 +289,10 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
 
     # Setting useful paths
-    year_folder_path = bibliometer_path / Path(str(year))
+    year_folder_path = wf_path / Path(str(year))
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
-    institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
+    institutions_folder_path = wf_path / Path(institutions_folder_alias)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
 
     # Creating required output folders
@@ -314,7 +314,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, bibliometer_path,
+    inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, wf_path,
                                                          saved_results_path, year, verbose=False,
                                                          progress_param=progress_param)
     if verbose:
@@ -365,7 +365,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         for key in save_keys_list:
             results_to_save_dict[key] = True
         if_analysis_name = None
-        _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year,
+        _ = save_final_results(institute, org_tup, wf_path, datatype, year,
                                if_analysis_name, results_to_save_dict, verbose=False)
     else:
         analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = ("", "", "")

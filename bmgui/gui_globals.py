@@ -68,7 +68,7 @@ from screeninfo import get_monitors
 # ************ GENERAL GLOBALS ************
 # *****************************************
 
-# Setting BiblioMeter version value
+# Setting application version value
 VERSION = '6.2.0'
 
 # Setting the number of corpuses to analyse
@@ -338,7 +338,7 @@ def _set_step_pos_tups(steps_nb, step_x_pos, steps_y_pos_init,
 # Initializing dicts for all pages and page steps
 # -----------------------------------------------
 STEPS_NB_DICT, STEP_POS_TUPS_DICT = {}, {}
-STEPS_LABELS_DICT, STEPS_HELPS_DICT, STEPS_LAUNCHES_DICT = {}, {}, {}  # STEP_LABELS_LIST, STEP_HELPS_LIST, STEP_LAUNCHS_LIST
+STEPS_LABELS_DICT, STEPS_HELPS_DICT, STEPS_LAUNCHES_DICT = {}, {}, {}
 
 
 # Parameters for all parsing-deduplication steps
@@ -376,43 +376,43 @@ STEPS_LABELS_DICT[KEY_CONSO], STEPS_HELPS_DICT[KEY_CONSO], STEPS_LAUNCHES_DICT[K
     # Consolidation step 0
 STEPS_LABELS_DICT[KEY_CONSO].append("Effectifs - Mise à jour des données")
 STEPS_HELPS_DICT[KEY_CONSO].append("Le fichier original des effectifs va être complété "
-                           "avec les données du fichier de mise à jour disponible."
-                           "\n\nCette mise à jour n'a besoin d'être effectuée "
-                           "que si un nouveau fichier de mise à jour est disponible.")
+                                   "avec les données du fichier de mise à jour disponible."
+                                   "\n\nCette mise à jour n'a besoin d'être effectuée "
+                                   "que si un nouveau fichier de mise à jour est disponible.")
 STEPS_LAUNCHES_DICT[KEY_CONSO].append("Lancer la mise à jour")
 
     # Consolidation step 1
 STEPS_LABELS_DICT[KEY_CONSO].append("Étape 1 - Croisement auteurs-efffectifs de l'institut")
 STEPS_HELPS_DICT[KEY_CONSO].append("Deux fichiers avec une ligne par auteur de l'institut "
-                 "et par publication vont être créés à cette étape :"
-                 "\n\n - Un fichier avec les auteurs trouvés dans les effectifs "
-                 "qui permettra de construire la liste consolidée ;"
-                 "\n - Un fichier avec les auteurs non trouvés dans les effectifs "
-                 "dont l'examen permet d'alimenter les fichiers de correction.")
+                                   "et par publication vont être créés à cette étape :"
+                                   "\n\n - Un fichier avec les auteurs trouvés dans les effectifs "
+                                   "qui permettra de construire la liste consolidée ;"
+                                   "\n - Un fichier avec les auteurs non trouvés dans les effectifs "
+                                   "dont l'examen permet d'alimenter les fichiers de correction.")
 STEPS_LAUNCHES_DICT[KEY_CONSO].append("Effectuer le croisement auteurs-efffectifs")
 
     # Consolidation step 2
 STEPS_LABELS_DICT[KEY_CONSO].append("Étape 2 - Résolution des homonymies")
 STEPS_HELPS_DICT[KEY_CONSO].append("Un fichier avec une ligne par auteur de l'institut "
-                 "et par publication va être créé à cette étape indiquant "
-                 "les homonymes à traiter."
-                 "\nL'historique des résolutions va être pris en compte.")
+                                   "et par publication va être créé à cette étape indiquant "
+                                   "les homonymes à traiter."
+                                   "\nL'historique des résolutions va être pris en compte.")
 STEPS_LAUNCHES_DICT[KEY_CONSO].append("Créer le fichier pour la résolution des homonymies")
 
     # Consolidation step 3
 STEPS_LABELS_DICT[KEY_CONSO].append("Étape 3 - Attribution des OTPs")
 STEPS_HELPS_DICT[KEY_CONSO].append("Un fichier par département avec une ligne par publication "
-                 "va être créé à cette étape avec une colonne pour l'attribution des OTPs."
-                 "\nL'historique des attributions va être pris en compte.")
+                                   "va être créé à cette étape avec une colonne pour l'attribution des OTPs."
+                                   "\nL'historique des attributions va être pris en compte.")
 STEPS_LAUNCHES_DICT[KEY_CONSO].append("Créer les fichiers pour l'attribution des OTPs")
 
     # Consolidation step 4
 STEPS_LABELS_DICT[KEY_CONSO].append("Étape 4 - Consolidation de la liste des publications")
 STEPS_HELPS_DICT[KEY_CONSO].append("Un fichier avec avec une ligne par publication avec "
-                 "l'OTP éventuellement attribué et le facteur d'impact trouvé "
-                 "pour le journal dans la base de données des IFs va être créé à cette étape."
-                 "\nDeux fichiers vont être également créés indiquant les informations manquantes "
-                 "dans la base de données des facteurs d'impact.")
+                                   "l'OTP éventuellement attribué et le facteur d'impact trouvé "
+                                   "pour le journal dans la base de données des IFs va être créé à cette étape."
+                                   "\nDeux fichiers vont être également créés indiquant les informations manquantes "
+                                   "dans la base de données des facteurs d'impact.")
 STEPS_LAUNCHES_DICT[KEY_CONSO].append("Créer la liste consolidée des publications")
 
 
@@ -426,18 +426,18 @@ STEPS_LABELS_DICT[KEY_IF], STEPS_HELPS_DICT[KEY_IF], STEPS_LAUNCHES_DICT[KEY_IF]
     # IFs-update step 0
 STEPS_LABELS_DICT[KEY_IF].append("Mise à jour de la base de données des IFs")
 STEPS_HELPS_DICT[KEY_IF].append("La base de données sera mise à jour à partir des 2 fichiers annuels "
-                 "complétés manuellement et contenant, respectivement :"
-                 "\n- La liste des journaux dont l'IF est manquant;"
-                 "\n- La liste des journaux dont l'ISSN est manquant.")
+                                "complétés manuellement et contenant, respectivement :"
+                                "\n- La liste des journaux dont l'IF est manquant;"
+                                "\n- La liste des journaux dont l'ISSN est manquant.")
 STEPS_LAUNCHES_DICT[KEY_IF].append("Lancer la mise à jour de la base de données des IFs")
 
     # IFs-update step 1
 STEPS_LABELS_DICT[KEY_IF].append("Mise à jour des IFs dans les listes consolidées")
 STEPS_HELPS_DICT[KEY_IF].append("Les IFs vont être mis à jour dans les listes consolidées "
-                 "de publications existantes à partir de la base de données "
-                 "des IFs."
-                 "\n Cette opération n'est utile que si la base de données "
-                 "des IFS a été mise à jour.")
+                                "de publications existantes à partir de la base de données "
+                                "des IFs."
+                                "\n Cette opération n'est utile que si la base de données "
+                                "des IFS a été mise à jour.")
 STEPS_LAUNCHES_DICT[KEY_IF].append("Lancer la mise à jour des IFs dans les listes consolidées existantes")
 
 
@@ -451,27 +451,27 @@ STEPS_LABELS_DICT[KEY_ANALYS], STEPS_HELPS_DICT[KEY_ANALYS], STEPS_LAUNCHES_DICT
     # Analysis step 0
 STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des IFs et mise à jour des KPIs")
 STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des IFS est effectuée pour l'année sélectionnée "
-                 "à partir du fichier de la liste consolidée des publications."
-                 "\nLe fichier synthétisant les KPIs de toutes les années sera "
-                 "mis à jour avec les résultats de cette analyse.")
+                                    "à partir du fichier de la liste consolidée des publications."
+                                    "\nLe fichier synthétisant les KPIs de toutes les années sera "
+                                    "mis à jour avec les résultats de cette analyse.")
 STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des IFs")
 
     # Analysis step 1
 STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse de la production des auteurs")
 STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des auteurs est effectuée pour l'année sélectionnée "
-                 "à partir du fichier issu de l'étape de croisement avec les effectifs.")
+                                    "à partir du fichier issu de l'étape de croisement avec les effectifs.")
 STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des auteurs")
 
     # Analysis step 2
 STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des collaborations")
 STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des collaborations est effectuée pour l'année sélectionnée "
-                 "à partir des fichiers issus de l'étape de parsing du corpus.")
+                                    "à partir des fichiers issus de l'étape de parsing du corpus.")
 STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des collaborations")
 
     # Analysis step 3
 STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des mots clefs")
 STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des mots clefs est effectuée pour l'année sélectionnée "
-                 "à partir des fichiers issus de l'étape de parsing du corpus.")
+                                    "à partir des fichiers issus de l'étape de parsing du corpus.")
 STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des mots clefs")
 
 

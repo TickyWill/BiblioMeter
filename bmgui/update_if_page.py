@@ -38,12 +38,13 @@ from bmgui.pages_utils import set_step_label
 from bmgui.pages_utils import set_step_launch_button
 
 
-def _set_if_files_params(wf_path, org_tup):
+def _set_if_files_params(institute, org_tup, wf_path):
     """Sets IFs specific file and folder 
     
     Args:
-        wf_path (path): Full path to working folder.
+        institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
+        wf_path (path): Full path to working folder.
     Returns:
     (publications-lists folder name, \
         base for building names of publications-list files, \
@@ -61,14 +62,14 @@ def _set_if_files_params(wf_path, org_tup):
     missing_issn_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
     inst_if_file_name_alias = bm_pg.ARCHI_IF["institute_if_all_years"]
     
-    if_db_status = org_tup[5]    
+    if_db_status = org_tup[5]
     if if_db_status:
         if_file_name = institute + inst_if_file_name_alias
     
     # Setting useful paths
     backup_if_folder_path = wf_path / Path(backup_folder_name_alias)
     if_root_path = wf_path / Path(if_root_path_alias)
-    if_db_path = if_root_path / Path(if_file_name_alias)
+    if_db_path = if_root_path / Path(if_file_name)
     
     files_list = [if_file_name,
                   pub_list_file_base_alias,
@@ -100,7 +101,7 @@ def _launch_update_if_db(institute, org_tup, wf_path,
         (bool): Status of impact-factors database.    
     """
     # Setting files parameters
-    return_tup = _set_if_files_params(wf_path, org_tup)
+    return_tup = _set_if_files_params(institute, org_tup, wf_path)
     files_list, folders_list, files_paths_list, folders_paths_list = return_tup    
     if_file_name = files_list[0]
     pub_list_folder = folders_list[0]
@@ -118,7 +119,7 @@ def _launch_update_if_db(institute, org_tup, wf_path,
                     f"\n\n '{pub_list_folder}' "
                     f"\n\n des corpus des années \n\n  {corpus_years_list} ."
                     "\n\nCette opération peut prendre quelques secondes."
-                    "\nDans l'attente, ne pas fermer 'BiblioMeter'."
+                    "\nDans l'attente, ne pas fermer l'application."
                     " \n\nEffectuer la mise à jour ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
@@ -227,7 +228,7 @@ def _set_year_files_params(wf_path, corpus_year, names_tup):
 def _update_pub_if(institute, org_tup, wf_path, datatype,
                    corpus_years_list, progress_callback):
     # Setting files parameters
-    return_tup = _set_if_files_params(wf_path, org_tup)
+    return_tup = _set_if_files_params(institute, org_tup, wf_path)
     files_list, folders_list, _, _ = return_tup    
     [_,
      pub_list_file_base,
@@ -350,7 +351,7 @@ def _launch_update_pub_if(institute, org_tup, wf_path, datatype, if_db_update_st
                     "\n\nva être effectuée avec la version de la base de données "
                     "des IFs qui est disponible."
                     "\n\nCette opération peut prendre quelques secondes."
-                    "\nDans l'attente, ne pas fermer 'BiblioMeter'."
+                    "\nDans l'attente, ne pas fermer l'application."
                     " \n\nEffectuer la mise à jour ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:

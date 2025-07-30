@@ -136,14 +136,14 @@ def _build_inst_issn_df(if_db_df, cols_tup):
     return inst_issn_df
 
 
-def get_if_db(institute, org_tup, bibliometer_path):
+def get_if_db(institute, org_tup, wf_path):
     """Builds a dict keyed by years and valued by a dataframe 
     of impact-factor per journal for the Institute.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
     Returns:
         (tup): (impact-factors (dict), \
         available-years of impact-factors in the dict (list), \
@@ -162,7 +162,7 @@ def get_if_db(institute, org_tup, bibliometer_path):
         if_filename_alias = inst_if_filename_alias
 
     # Setting useful paths
-    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
+    if_root_folder_path = wf_path / Path(if_root_folder_alias)
     if_path = if_root_folder_path / Path(if_filename_alias)
 
     # Getting the df of the IFs database
@@ -384,7 +384,7 @@ def _format_and_save_add_if_dfs(dfs_tup, out_cols_tup, empty_kw,
     wb.save(missing_if_path)
 
 
-def _clean_if_dict(institute, org_tup, bibliometer_path, aliases_tup):
+def _clean_if_dict(institute, org_tup, wf_path, aliases_tup):
     # Setting parameters from args
     if_db_status = org_tup[5]
     (empty_kw, issn_col, eissn_col,
@@ -392,7 +392,7 @@ def _clean_if_dict(institute, org_tup, bibliometer_path, aliases_tup):
 
     # Getting the df of the IFs database
     if_dict, if_available_years_list, if_most_recent_year = get_if_db(institute, org_tup,
-                                                                      bibliometer_path)
+                                                                      wf_path)
 
     # Taking care all IF column names in if_dict are set to database_if_col
     if if_db_status:
@@ -467,7 +467,7 @@ def _add_if_cols(corpus_df, if_dict, if_cols_tup, aliases_tup,
     return corpus_df
 
 
-def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
+def add_if(institute, org_tup, wf_path, paths_tup, corpus_year):
     """Adds two new columns containing impact factors to the corpus 
     dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
 
@@ -491,7 +491,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         paths_tup (tup): Tuple = (full path to get the corpus data, \
         full path to save the corpus data with the impact-factors information added, \
         full path to save the missing impact-factors information, \
@@ -538,7 +538,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     aliases_tup = (empty_kw_alias, issn_col_alias, eissn_col_alias, database_if_col_alias)
     more_aliases_tup = aliases_tup + (not_available_if_alias,)
 
-    return_tup = _clean_if_dict(institute, org_tup, bibliometer_path, more_aliases_tup)
+    return_tup = _clean_if_dict(institute, org_tup, wf_path, more_aliases_tup)
     if_dict, if_available_years_list, if_most_recent_year = return_tup
 
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year

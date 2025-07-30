@@ -676,7 +676,7 @@ def _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_
                                otp_col_dic, otp_lab_name_col, dpt)
 
 
-def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_base):
+def add_otp(institute, org_tup, wf_path, in_path, out_path, out_file_base):
     """Creates the files for setting OTP attribute of publications by the user 
     for the Institute departments either among OTPs list at department level 
     or lab level.
@@ -690,7 +690,7 @@ def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_ba
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         in_path (path): Full path to the file where homonyms have been solved.
         out_path (path): Full path to the files for setting OTPs attributes by the user.
         out_file_base (str): Base for building created-files names.
@@ -701,7 +701,7 @@ def add_otp(institute, org_tup, bibliometer_path, in_path, out_path, out_file_ba
     otp_level = org_tup[11]
 
     if otp_level=="LAB":
-        lab_otps_dict = set_lab_otps(institute, org_tup, bibliometer_path)
+        lab_otps_dict = set_lab_otps(institute, org_tup, wf_path)
         _add_lab_otp(institute, org_tup, in_path, out_path, out_file_base, lab_otps_dict)
     else:
         _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base)

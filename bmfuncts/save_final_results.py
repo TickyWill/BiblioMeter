@@ -29,12 +29,12 @@ import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import set_final_col_names
 
 
-def save_final_hash_ids(bibliometer_path, corpus_year,
+def save_final_hash_ids(wf_path, corpus_year,
                         results_folder_path):
     """Saves final results of the hash-IDs of publications for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -53,7 +53,7 @@ def save_final_hash_ids(bibliometer_path, corpus_year,
     year_hash_id_file_alias = corpus_year + " " + hash_id_file_base_alias
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_hash_id_path = origin_corpus_year_path / Path(origin_hash_id_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_hash_id_path = year_target_folder_path / Path(results_sub_folder_alias)
@@ -75,13 +75,13 @@ def save_final_hash_ids(bibliometer_path, corpus_year,
     return end_message
 
 
-def save_final_submit(bibliometer_path, corpus_year,
+def save_final_submit(wf_path, corpus_year,
                       results_folder_path):
     """Saves final results of the list of publications with one row per author 
     for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -100,7 +100,7 @@ def save_final_submit(bibliometer_path, corpus_year,
     year_submit_file_alias = corpus_year + " " + submit_file_base_alias
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_submit_path = origin_corpus_year_path / Path(origin_submit_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_submit_path = year_target_folder_path / Path(results_sub_folder_alias)
@@ -123,13 +123,13 @@ def save_final_submit(bibliometer_path, corpus_year,
     return end_message
 
 
-def save_final_set_homonyms(bibliometer_path, corpus_year,
+def save_final_set_homonyms(wf_path, corpus_year,
                             results_folder_path):
     """Saves final results of the list of publications with one row per author 
     for the corpus year after homonymies resolution.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -147,7 +147,7 @@ def save_final_set_homonyms(bibliometer_path, corpus_year,
     target_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_submit_path = origin_corpus_year_path / Path(origin_submit_homonyms_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_homonyms_path = year_target_folder_path / Path(results_sub_folder_alias)
@@ -169,12 +169,12 @@ def save_final_set_homonyms(bibliometer_path, corpus_year,
     return end_message
 
 
-def save_final_pub_lists(bibliometer_path,
+def save_final_pub_lists(wf_path,
                          corpus_year, results_folder_path):
     """Saves final results of the publications lists for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -193,7 +193,7 @@ def save_final_pub_lists(bibliometer_path,
     year_invalid_pub_file_alias = invalid_pub_file_base_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_pub_list_path = origin_corpus_year_path / Path(origin_pub_list_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_pub_list_path = year_target_folder_path / Path(results_sub_folder_alias)
@@ -234,7 +234,7 @@ def save_final_pub_lists(bibliometer_path,
     return end_message
 
 
-def save_final_ifs(institute, org_tup, bibliometer_path,
+def save_final_ifs(institute, org_tup, wf_path,
                    corpus_year, results_folder_path, if_analysis_name):
     """Saves final results of number of publications per journal 
     with its impact factor for the corpus year.
@@ -242,7 +242,7 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -265,7 +265,7 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     ifs_file_base_alias = f'{if_analysis_name}'
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_ifs_folder_path = origin_analysis_folder_path / Path(origin_ifs_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -292,12 +292,12 @@ def save_final_ifs(institute, org_tup, bibliometer_path,
     return end_message
 
 
-def save_final_authors(bibliometer_path, corpus_year,
+def save_final_authors(wf_path, corpus_year,
                        results_folder_path):
     """Saves final results of publications per author for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -324,7 +324,7 @@ def save_final_authors(bibliometer_path, corpus_year,
     year_authors_stat_file = authors_stat_file_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_authors_path = origin_analysis_folder_path / Path(origin_authors_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -353,14 +353,14 @@ def save_final_authors(bibliometer_path, corpus_year,
     return end_message
 
 
-def save_final_kws(institute, org_tup, bibliometer_path,
+def save_final_kws(institute, org_tup, wf_path,
                    corpus_year, results_folder_path):
     """Saves final results of number of publications per keyword for the corpus year.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -391,7 +391,7 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     origin_kws_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_kws_folder_path = origin_analysis_folder_path / Path(origin_kws_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -418,12 +418,12 @@ def save_final_kws(institute, org_tup, bibliometer_path,
     return end_message
 
 
-def save_final_countries(bibliometer_path,
+def save_final_countries(wf_path,
                          corpus_year, results_folder_path):
     """Saves final results of publications per country for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -442,7 +442,7 @@ def save_final_countries(bibliometer_path,
     year_countries_file_alias = countries_file_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_countries_path = origin_analysis_folder_path / Path(origin_countries_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -468,12 +468,12 @@ def save_final_countries(bibliometer_path,
     return end_message
 
 
-def save_final_continents(bibliometer_path,
+def save_final_continents(wf_path,
                           corpus_year, results_folder_path):
     """Saves final results of publications per continent for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -492,7 +492,7 @@ def save_final_continents(bibliometer_path,
     year_continents_file_alias = continents_file_alias + " " + corpus_year
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_countries_path = origin_analysis_folder_path / Path(origin_countries_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -518,12 +518,12 @@ def save_final_continents(bibliometer_path,
     return end_message
 
 
-def save_final_institutions(bibliometer_path,
+def save_final_institutions(wf_path,
                             corpus_year, results_folder_path):
     """Saves final results of publications per institution for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -540,7 +540,7 @@ def save_final_institutions(bibliometer_path,
     origin_inst_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_inst_folder_path = origin_analysis_folder_path / Path(origin_inst_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -554,12 +554,12 @@ def save_final_institutions(bibliometer_path,
     return end_message
 
 
-def save_final_doctypes(bibliometer_path,
+def save_final_doctypes(wf_path,
                         corpus_year, results_folder_path):
     """Saves final results of number of publications per doctype for the corpus year.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
@@ -576,7 +576,7 @@ def save_final_doctypes(bibliometer_path,
     origin_doctypes_folder_alias = bm_pg.ARCHI_YEAR["doctype analysis"]
 
     # Setting common paths
-    origin_corpus_year_path = bibliometer_path / Path(corpus_year)
+    origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
     origin_doctypes_folder_path = origin_analysis_folder_path / Path(origin_doctypes_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
@@ -590,13 +590,13 @@ def save_final_doctypes(bibliometer_path,
     return end_message
 
 
-def set_result_folder_path(bibliometer_path, datatype):
+def set_result_folder_path(wf_path, datatype):
     # Setting aliases for saving results
     results_root_alias = bm_pg.ARCHI_RESULTS["root"]
     results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
 
     # Setting paths for saving results
-    results_root_path = bibliometer_path / Path(results_root_alias)
+    results_root_path = wf_path / Path(results_root_alias)
     results_folder_path = results_root_path / Path(results_folder_alias)
 
     # Checking availability of required results folders
@@ -607,7 +607,7 @@ def set_result_folder_path(bibliometer_path, datatype):
     return results_folder_path
 
 
-def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
+def save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                        if_analysis_name, results_to_save_dict, verbose=False):
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
@@ -621,7 +621,7 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         if_analysis_name (str): Base for building file names for saving \
@@ -635,71 +635,71 @@ def save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_ye
         the folder where final results have been saved.
     """
     # Setting path for saving results
-    results_folder_path = set_result_folder_path(bibliometer_path, datatype)
+    results_folder_path = set_result_folder_path(wf_path, datatype)
 
     if results_to_save_dict["hash_ids"]:
-        message = save_final_hash_ids(bibliometer_path, corpus_year,
+        message = save_final_hash_ids(wf_path, corpus_year,
                                       results_folder_path)
         if verbose:
             print(message)
 
     if results_to_save_dict["submit"]:
-        message = save_final_submit(bibliometer_path, corpus_year,
+        message = save_final_submit(wf_path, corpus_year,
                                     results_folder_path)
         if verbose:
             print(message)
 
     if results_to_save_dict["homonyms"]:
-        message = save_final_set_homonyms(bibliometer_path, corpus_year,
+        message = save_final_set_homonyms(wf_path, corpus_year,
                                           results_folder_path)
         if verbose:
             print(message)
 
     if results_to_save_dict["pub_lists"]:
-        message = save_final_pub_lists(bibliometer_path, corpus_year,
+        message = save_final_pub_lists(wf_path, corpus_year,
                                        results_folder_path)
         if verbose:
             print(message)
 
     if results_to_save_dict["ifs"]:
-        message = save_final_ifs(institute, org_tup, bibliometer_path,
+        message = save_final_ifs(institute, org_tup, wf_path,
                                  corpus_year, results_folder_path,
                                  if_analysis_name)
         if verbose:
             print("\n",message)
 
     if results_to_save_dict["authors"]:
-        message = save_final_authors(bibliometer_path, corpus_year,
+        message = save_final_authors(wf_path, corpus_year,
                                      results_folder_path)
         if verbose:
             print("\n",message)
 
     if results_to_save_dict["kws"]:
-        message = save_final_kws(institute, org_tup, bibliometer_path,
+        message = save_final_kws(institute, org_tup, wf_path,
                                  corpus_year, results_folder_path)
         if verbose:
             print("\n",message)
 
     if results_to_save_dict["countries"]:
-        message = save_final_countries(bibliometer_path, corpus_year,
+        message = save_final_countries(wf_path, corpus_year,
                                        results_folder_path)
         if verbose:
             print("\n",message)
 
     if results_to_save_dict["continents"]:
-        message = save_final_continents(bibliometer_path, corpus_year,
+        message = save_final_continents(wf_path, corpus_year,
                                         results_folder_path)
         if verbose:
             print("\n",message)
 
     if results_to_save_dict["institutions"]:
-        message = save_final_institutions(bibliometer_path, corpus_year,
+        message = save_final_institutions(wf_path, corpus_year,
                                           results_folder_path)
         if verbose:
             print("\n",message)
 
     if results_to_save_dict["doctypes"]:
-        message = save_final_doctypes(bibliometer_path, corpus_year,
+        message = save_final_doctypes(wf_path, corpus_year,
                                       results_folder_path)
         if verbose:
             print("\n",message)

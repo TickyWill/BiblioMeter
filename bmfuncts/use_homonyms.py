@@ -111,7 +111,7 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
     return end_message, homonyms_status
 
 
-def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
+def save_homonyms(institute, org_tup, wf_path, corpus_year):
     """Saves the history of the resolved homonyms by the user.
 
     First, builds the dataframe to save with the following columns:
@@ -124,7 +124,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (str): End message.
@@ -148,7 +148,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     homonyms_file_alias = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
@@ -193,7 +193,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     return message
 
 
-def set_saved_homonyms(institute, org_tup, bibliometer_path,
+def set_saved_homonyms(institute, org_tup, wf_path,
                        corpus_year, actual_homonym_status):
     """Resolves the homonyms from the history of the resolved homonyms 
     before submiting the file for resolving remaining homonyms to the user.
@@ -206,7 +206,7 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         actual_homonym_status (bool): True if homonyms exists.
     Returns:
@@ -233,7 +233,7 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     homonyms_file_alias = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)

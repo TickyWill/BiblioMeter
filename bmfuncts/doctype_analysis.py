@@ -58,14 +58,14 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
     return analysis_df
 
 
-def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
+def _read_articles_data(wf_path, saved_results_path, corpus_year):
     """Reads saved data of publications list resulting from the parsing step.
 
     It uses the `get_final_dedup` function imported from the 
     the `bmfuncts.useful_functs` module.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
@@ -76,7 +76,7 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(bibliometer_path,
+    dedup_parsing_dict = get_final_dedup(wf_path,
                                          saved_results_path,
                                          corpus_year)
 
@@ -85,7 +85,7 @@ def _read_articles_data(bibliometer_path, saved_results_path, corpus_year):
     return articles_df
 
 
-def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
+def build_doctype_analysis_data(wf_path, datatype, corpus_year,
                                 final_cols_tup, if_col_list=None):
     """Builds the data of publications list to be analyzed for each documents types.
 
@@ -103,7 +103,7 @@ def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
     5. The data thus obtained are split into data of each documents-types items.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         final_cols_tup (tup): (final columns names dict, departments columns list).
@@ -113,7 +113,7 @@ def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
         by the data (dataframe) built for each documents type.
     """
     # Setting input-data path
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+    saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting useful aliases
     journal_norm_col_alias = bp.COL_NAMES['temp_col'][1]
@@ -126,7 +126,7 @@ def build_doctype_analysis_data(bibliometer_path, datatype, corpus_year,
     issn_col = final_col_dic['issn']
 
     # Getting articles data resulting from deduplication parsing
-    parsing_articles_df = _read_articles_data(bibliometer_path,
+    parsing_articles_df = _read_articles_data(wf_path,
                                               saved_results_path, corpus_year)
 
     # Building the dict {journal name : normalized journal name,}
@@ -300,7 +300,7 @@ def _build_dept_df(institute, dept, df):
     return dept_df
 
 
-def _build_and_save_doctype_stat(institute, bibliometer_path, pub_df_dict,
+def _build_and_save_doctype_stat(institute, wf_path, pub_df_dict,
                                  corpus_year, if_analysis_col, final_cols_tup):
     """Builds the statistics data of publications per documents types for each 
     department of the Institute including itself.
@@ -321,7 +321,7 @@ def _build_and_save_doctype_stat(institute, bibliometer_path, pub_df_dict,
     
     Args:
         institute (str): Institute name.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         pub_df_dict (dict): The dict keyed by documents types and valued \
         by the publications list data of each documents type.
         corpus_year (str): 4 digits year of the corpus.
@@ -350,7 +350,7 @@ def _build_and_save_doctype_stat(institute, bibliometer_path, pub_df_dict,
     book_weight_filename_alias = bm_pg.ARCHI_YEAR["book weight file name"] + xlsx_extent
 
     # Setting out-data paths
-    year_folder_path = bibliometer_path / Path(str(corpus_year))
+    year_folder_path = wf_path / Path(str(corpus_year))
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     doctypes_analysis_folder_path = analysis_folder_path / Path(doctypes_analysis_folder_alias)
     sub_folder_path = Path("Departements")
@@ -437,7 +437,7 @@ def _set_analysis_if_cols_list(corpus_year, if_most_recent_year):
     return analysis_if_col_list, if_analysis_col, if_analysis_year
 
 
-def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
+def doctype_analysis(institute, org_tup, wf_path, datatype,
                      corpus_year, if_most_recent_year,
                      progress_callback=None):
     """Performs the analysis per documents-types of the Institute 
@@ -459,7 +459,7 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         if_most_recent_year (str): Most recent year of impact factors.
@@ -484,14 +484,14 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
     analysis_if_col_list, if_analysis_col, if_analysis_year = return_tup
 
     # Building the dataframe of publications data to be analyzed
-    pub_df_dict = build_doctype_analysis_data(bibliometer_path, datatype,
+    pub_df_dict = build_doctype_analysis_data(wf_path, datatype,
                                               corpus_year, final_cols_tup,
                                               if_col_list=analysis_if_col_list)
     if progress_callback:
         progress_callback(20)
 
     # Building and saving statistics for each doctype
-    return_tup = _build_and_save_doctype_stat(institute, bibliometer_path,
+    return_tup = _build_and_save_doctype_stat(institute, wf_path,
                                                pub_df_dict, corpus_year,
                                                if_analysis_col, final_cols_tup)
     by_journal_dict, doctypes_analysis_folder_path = return_tup
@@ -501,7 +501,7 @@ def doctype_analysis(institute, org_tup, bibliometer_path, datatype,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["doctypes"] = True
     if_analysis_name = None
-    _ = save_final_results(institute, org_tup, bibliometer_path, datatype,
+    _ = save_final_results(institute, org_tup, wf_path, datatype,
                            corpus_year, if_analysis_name, results_to_save_dict,
                            verbose=False)
     if progress_callback:

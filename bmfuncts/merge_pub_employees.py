@@ -610,7 +610,7 @@ def _adapt_depth_search(empl_dict, corpus_year, search_depth):
 
 
 def recursive_year_search(out_path, empl_dict, institute, org_tup,
-                          bibliometer_path, datatype, corpus_year, search_depth,
+                          wf_path, datatype, corpus_year, search_depth,
                           progress_callback=None, progress_bar_state=None,
                           set_test_case="No test", set_test_name="No name"):
     """Searches in the employees database of the Institute the information for the authors 
@@ -658,7 +658,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
         and valued by the employees data for each year.
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): Contains the corpus year defined by 4 digits.
         search_depth (int): Depth for search in 'empl_dict' using 'years' list.
@@ -695,11 +695,11 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     # Setting useful paths
     submit_path = out_path / Path(submit_file_name_alias)
     orphan_path = out_path / Path(orphan_file_name_alias)
-    ext_docs_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
-    others_path = bibliometer_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
+    ext_docs_path = wf_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
+    others_path = wf_path / Path(orphan_treat_alias) / Path(adds_file_name_alias)
 
     # Building the articles dataframe
-    pub_df = build_institute_pubs_authors(institute, org_tup, bibliometer_path,
+    pub_df = build_institute_pubs_authors(institute, org_tup, wf_path,
                                           datatype, corpus_year)
 
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
@@ -732,7 +732,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     # Building the initial dataframes
     print("    Initializing cross pub_employees data")
     submit_df, orphan_df = build_submit_df(empl_dict[years[0]],
-                                           pub_df, bibliometer_path,
+                                           pub_df, wf_path,
                                            test_case=set_test_case,
                                            test_name=set_test_name)
 
@@ -760,7 +760,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
         # Updating the dataframes submit_df_add and orphan_df
         submit_df_add, orphan_df = build_submit_df(empl_dict[year],
                                                    orphan_df,
-                                                   bibliometer_path,
+                                                   wf_path,
                                                    test_case=set_test_case,
                                                    test_name=set_test_name)
 

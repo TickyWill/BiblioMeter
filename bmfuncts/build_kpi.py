@@ -488,7 +488,7 @@ def update_kpi_database(institute, saved_results_path,
     return institute_kpi_df
 
 
-def if_analysis(institute, org_tup, bibliometer_path, datatype,
+def if_analysis(institute, org_tup, wf_path, datatype,
                 corpus_year, if_most_recent_year,
                 progress_callback=None, verbose=False):
     """Performs the analysis per document types together with 
@@ -511,7 +511,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         if_most_recent_year (str): Most recent year of impact factors.
@@ -526,14 +526,14 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         of these keys)).
     """
     # Setting input-data path
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+    saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting useful aliases
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
     if_analysis_folder_alias = bm_pg.ARCHI_YEAR["if analysis"]
 
     # Setting analysis-results paths
-    year_folder_path = bibliometer_path / Path(corpus_year)
+    year_folder_path = wf_path / Path(corpus_year)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias)
 
@@ -551,7 +551,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(10)
 
     # Building analysis dicts
-    return_tup = doctype_analysis(institute, org_tup, bibliometer_path,
+    return_tup = doctype_analysis(institute, org_tup, wf_path,
                                   datatype, corpus_year, if_most_recent_year,
                                   progress_callback=progress_callback)
     (pub_df_dict, by_journal_dict, if_analysis_col,
@@ -585,7 +585,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["ifs"] = True
     if_analysis_name = new_if_analysis_col
-    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)

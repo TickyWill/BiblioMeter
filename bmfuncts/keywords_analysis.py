@@ -124,7 +124,7 @@ def _get_clean_kw_data(kw_df, keywords_col):
     return kw_df
 
 
-def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
+def keywords_analysis(institute, org_tup, wf_path, datatype,
                       year, progress_callback=None, verbose=False):
     """ Performs the analysis of publications keywords (KWs) of the 'year' corpus.
 
@@ -146,7 +146,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year (str): 4 digits year of the corpus.
         progress_callback (function): Function for updating ProgressBar \
@@ -158,7 +158,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     print(f"\nKeywords analysis launched for year {year}...")
 
     # Setting input-data path
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+    saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting useful aliases
     auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
@@ -168,7 +168,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     kw_analysis_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting output-data paths
-    year_folder_path = bibliometer_path / Path(str(year))
+    year_folder_path = wf_path / Path(str(year))
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
     if progress_callback:
@@ -194,7 +194,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(15)
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(bibliometer_path, saved_results_path, year)
+    dedup_parsing_dict = get_final_dedup(wf_path, saved_results_path, year)
     if progress_callback:
         progress_callback(25)
 
@@ -239,7 +239,7 @@ def keywords_analysis(institute, org_tup, bibliometer_path, datatype,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["kws"] = True
     if_analysis_name = None
-    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year,
+    _ = save_final_results(institute, org_tup, wf_path, datatype, year,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)

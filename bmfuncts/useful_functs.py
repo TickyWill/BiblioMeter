@@ -145,12 +145,12 @@ def standardize_full_name_order(author):
     return new_author
 
 
-def set_saved_results_path(bibliometer_path, datatype):
+def set_saved_results_path(wf_path, datatype):
     """Sets the specific full path to the folder where results 
     of BiblioMeter are saved for the given case of data type.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
     Returns:
         (path): The full path of the saved results.
@@ -160,7 +160,7 @@ def set_saved_results_path(bibliometer_path, datatype):
     saved_results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
 
     # Setting saved data paths
-    saved_results_root_path = bibliometer_path / Path(saved_results_root_alias)
+    saved_results_root_path = wf_path / Path(saved_results_root_alias)
     saved_results_path = saved_results_root_path / Path(saved_results_folder_alias)
     return saved_results_path
 
@@ -342,11 +342,11 @@ def standardize_txt(text):
     return new_text
 
 
-def check_dedup_parsing_available(bibliometer_path, year):
+def check_dedup_parsing_available(wf_path, year):
     """Checks if deduplication parsing folder exist and not empty.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         year (str): 4 digits year of the corpus.
     Returns:
         (bool): Status of the deduplication parsing folder \
@@ -358,7 +358,7 @@ def check_dedup_parsing_available(bibliometer_path, year):
     dedup_parsing_status = False
 
     # Getting the full paths of the working folder architecture for the corpus "year select"
-    config_tup = set_user_config(bibliometer_path, year, bm_pg.BDD_LIST)
+    config_tup = set_user_config(wf_path, year, bm_pg.BDD_LIST)
     parsing_path_dict = config_tup[1]
 
     # Setting parsing files extension of saved results
@@ -410,7 +410,7 @@ def _get_database_file_path(database_folder_path, database_file_end):
     return database_file_path
 
 
-def _set_database_extract_info(bibliometer_path, datatype, database):
+def _set_database_extract_info(wf_path, datatype, database):
     """Builds the path to database extractions and the file 
     names ending that are specific to the data type 'datatype'.
 
@@ -421,7 +421,7 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     in the module imported as bm_pg.
 
     Args:
-        bibliometer_path (path): The path to the working folder.
+        wf_path (path): The path to the working folder.
         datatype (str): The data type of data combination type \
         from databases.
         database (str): The database selected for the analysis.
@@ -440,13 +440,13 @@ def _set_database_extract_info(bibliometer_path, datatype, database):
     database_file_end = database_file_base + database_file_extent
 
     # Setting useful paths
-    extraction_folder_path = bibliometer_path / Path(extraction_folder)
+    extraction_folder_path = wf_path / Path(extraction_folder)
     database_folder_path = extraction_folder_path / Path(database_folder)
 
     return database_folder_path, database_file_end, empty_file_folder
 
 
-def set_rawdata(bibliometer_path, datatype, years_list, database):
+def set_rawdata(wf_path, datatype, years_list, database):
     """Sets the rawdata to be used for the data type 'datatype' analysis.
 
     It copies the files ending with 'database_file_end' from database folder 
@@ -457,7 +457,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
     empty files ending with 'database_file_end' are used as Scopus rawdata.
 
     Args:
-        bibliometer_path (path): The path to the working folder.
+        wf_path (path): The path to the working folder.
         datatype (str): The data type of data combination type \
         from databases.
         years_list (list): List of corpus years (4 digits str).
@@ -466,14 +466,14 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
         (str): End message recalling the database and data type used.
     """
     # Getting database extractions info
-    return_tup = _set_database_extract_info(bibliometer_path, datatype, database)
+    return_tup = _set_database_extract_info(wf_path, datatype, database)
     database_folder_path, database_file_end, empty_file_folder = return_tup
 
     # Setting specific parameters for Scopus-HAL data
     last_year_database_file_end = database_file_end
     if datatype==bm_pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
         last_year_datatype = bm_pg.DATATYPE_LIST[0]
-        return_tup = _set_database_extract_info(bibliometer_path, last_year_datatype,
+        return_tup = _set_database_extract_info(wf_path, last_year_datatype,
                                                 database)
         _, last_year_database_file_end, _ = return_tup
 
@@ -491,7 +491,7 @@ def set_rawdata(bibliometer_path, datatype, years_list, database):
                 year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                                   last_year_database_file_end)
 
-        rawdata_path_dict, _, _ = set_user_config(bibliometer_path, year, bm_pg.BDD_LIST)
+        rawdata_path_dict, _, _ = set_user_config(wf_path, year, bm_pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
         if os.path.exists(rawdata_path):
             shutil.rmtree(rawdata_path)
@@ -526,14 +526,14 @@ def create_folder(root_path, folder, verbose=False):
     return folder_path
 
 
-def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
+def create_archi(wf_path, corpus_year_folder, verbose=False):
     """Creates a corpus folder with the required architecture.
 
     It uses the global "ARCHI_YEAR" for the names of the sub_folders 
     and the `create_folder` function of the same module.
 
     Args:
-        bibliometer_path (path): The full path of the working folder.
+        wf_path (path): The full path of the working folder.
         corpus_year_folder (str): The name of the folder of the corpus.
         verbose (bool): Optional status of prints (default = False).
     Returns:
@@ -545,7 +545,7 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
     archiv_folder_alias = bm_pg.ARCHI_EXTRACT["archiv"]
 
     # Creating folders for corpus extractions from databases for the corpus year
-    extract_folder_path = bibliometer_path / Path(extract_folder_alias)
+    extract_folder_path = wf_path / Path(extract_folder_alias)
     for bdd in bm_pg.BDD_LIST:
         bdd_extract_folder_alias = bm_pg.ARCHI_EXTRACT[bdd]["root"]
         bdd_extract_folder_path = extract_folder_path / Path(bdd_extract_folder_alias)
@@ -554,7 +554,7 @@ def create_archi(bibliometer_path, corpus_year_folder, verbose=False):
         _ = create_folder(year_bdd_extract_folder_path, archiv_folder_alias, verbose=verbose)
 
     # Creating architecture for corpus-year working-folder
-    corpus_year_folder_path = create_folder(bibliometer_path, corpus_year_folder, verbose=verbose)
+    corpus_year_folder_path = create_folder(wf_path, corpus_year_folder, verbose=verbose)
     _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose=verbose)
     _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose=verbose)
     _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose=verbose)
@@ -623,7 +623,7 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         where the deduplication result are saved).
     """
     # Setting parameters from args
-    bibliometer_path, datatype, corpus_year = dedup_infos
+    wf_path, datatype, corpus_year = dedup_infos
 
     # Setting aliases for final saving deduplication results
     results_root_alias = bm_pg.ARCHI_RESULTS["root"]
@@ -631,7 +631,7 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
 
     # Setting path for final saving deduplication results
-    results_root_path   = bibliometer_path / Path(results_root_alias)
+    results_root_path   = wf_path / Path(results_root_alias)
     results_folder_path = results_root_path / Path(results_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_parsing_path = year_target_folder_path / Path(results_sub_folder_alias)
@@ -737,14 +737,14 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     return parsing_dict
 
 
-def get_final_dedup(bibliometer_path, saved_results_path, corpus_year):
+def get_final_dedup(wf_path, saved_results_path, corpus_year):
     """Reads saved final-parsing data as dict resulting from the parsing step.
 
     It uses the `read_parsing_dict` function of 
     the `bmfuncts.useful_functs` module.
 
     Args:
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
@@ -757,7 +757,7 @@ def get_final_dedup(bibliometer_path, saved_results_path, corpus_year):
     saved_dedup_parsing_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
 
     # Getting the item-filename dict of the user for getting deduplication results
-    config_tup = set_user_config(bibliometer_path, corpus_year, bm_pg.BDD_LIST)
+    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
     item_filename_dict = config_tup[2]
 
     # Setting path of deduplicated parsings

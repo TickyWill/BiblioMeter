@@ -342,7 +342,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
     # *********************** STEP 2: COUPLING ANALYSIS
     def _launch_coupling_analysis_try(progress_callback):
         # Getting year selection
-        year_select = Self.variable_years.get()
+        year_select = self.variable_years.get()
 
         print(f"\nCoupling analysis launched for year {year_select}")
         _launch_coupling_analysis(institute, org_tup,

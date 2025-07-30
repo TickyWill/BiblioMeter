@@ -1,4 +1,4 @@
-""" `gui_utils` module contains useful functions for gui management."""
+"""Module of useful functions for GUI pages management."""
 
 __all__ = ['set_data_select_widgets',
            'set_step_help_button',
@@ -33,16 +33,16 @@ def set_year_select_widgets(self, master, year_select_params):
 
     # Setting year selection label
     self.Label_years_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                        size=year_font_size_tup[0],              # year_font_size
+                                        size=year_font_size_tup[0],
                                         weight='bold')
     self.Label_years = tk.Label(self,
                                 text=bm_gg.PAGE_SELECT_LABEL_DICT['year'],
                                 font=self.Label_years_font)
-    self.Label_years.place(x=year_label_pos_tup[0], y=year_label_pos_tup[1])     #year_label_x_pos, y=year_label_y_pos)
+    self.Label_years.place(x=year_label_pos_tup[0], y=year_label_pos_tup[1])
 
     # Setting option button for year selection
     self.years_opt_but_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                          size=year_font_size_tup[1])            # button_font_size
+                                          size=year_font_size_tup[1])
     self.years_opt_but = tk.OptionMenu(self,
                                        self.variable_years,
                                        *master.years_list)
@@ -61,25 +61,25 @@ def set_data_select_widgets(self, data_select_params):
 
     # Setting data selection label
     data_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=data_font_size_tup[0])      # select_font_size
+                                  size=data_font_size_tup[0])
     data_label = tk.Label(self,
                           text=bm_gg.PAGE_SELECT_LABEL_DICT['data'],
                           font=data_label_font)
-    place_bellow(widget_ref, data_label,                                 # step_label_widget[step_num]
-                 dx=data_label_dpos_tup[0],                              # select_label_dx[item]
-                 dy=data_label_dpos_tup[1])                              # select_label_dy[item]
+    place_bellow(widget_ref, data_label,
+                 dx=data_label_dpos_tup[0],
+                 dy=data_label_dpos_tup[1])
 
     # Setting option button for data selection
     data_variable = tk.StringVar(self)
-    data_variable.set(bm_pg.BDD_LIST[0])                                 # select_default[item]
+    data_variable.set(bm_pg.BDD_LIST[0])
     data_opt_but_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                    size=data_font_size_tup[1])   # button_font_size
+                                    size=data_font_size_tup[1])
     data_opt_but = tk.OptionMenu(self, data_variable,
                                  *bm_pg.BDD_LIST)
     data_opt_but.config(font=data_opt_but_font)
     place_after(data_label, data_opt_but,
-                dx=data_button_dpos_tup[0],                              # select_button_dx
-                dy=data_button_dpos_tup[1])                              # select_button_dy
+                dx=data_button_dpos_tup[0],
+                dy=data_button_dpos_tup[1])
     bm_gg.GUI_BUTTONS.append(data_opt_but)
     return data_variable, data_opt_but
 
@@ -98,7 +98,7 @@ def set_step_label(self, step_num, step_label_params):
 
     # Setting label of step-label widget
     step_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                  size=step_font_size_tup[0],             # built with ['step_label', 'step_launch']
+                                  size=step_font_size_tup[0],
                                   weight='bold')
     step_label = tk.Label(self,
                           text=bm_gg.STEPS_LABELS_DICT[self.page_key][step_num],
@@ -152,7 +152,7 @@ def set_step_launch_button(self, step_num,
     pos_type, widget_ref, pos_tup, dpos_tup = launch_pos_params
 
     # Setting label widget for launch button
-    step_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,    # line  to be integrated in function of launch button
+    step_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                    size=step_font_size_tup[1])
     step_launch_button = tk.Button(self,
                                    text=bm_gg.STEPS_LAUNCHES_DICT[self.page_key][step_num],
@@ -162,7 +162,7 @@ def set_step_launch_button(self, step_num,
     # Placing launch button relatively to 'widget_ref' depending on 'pos_type'
     if pos_type=='bellow':
         place_bellow(widget_ref, step_launch_button,
-                     dx=dpos_tup[0], dy=dpos_tup[1])                           # step_button_dx, step_button_dy
+                     dx=dpos_tup[0], dy=dpos_tup[1])
     elif pos_type=='after':
         place_after(widget_ref, step_launch_button,
                     dx=dpos_tup[0], dy=dpos_tup[1])

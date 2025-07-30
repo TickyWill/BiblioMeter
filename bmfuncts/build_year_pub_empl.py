@@ -103,11 +103,11 @@ def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
     print('  Employees lastnames list:', eff_lastnames_spec)
 
 
-def _set_match_test_info(bibliometer_path, test_case):
+def _set_match_test_info(wf_path, test_case):
     """Sets the info for the test of the matching results.
 
     Args: 
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         test_case (str): The case for the test selected \
         among the keys of the test dict.
     Returns:
@@ -121,7 +121,7 @@ def _set_match_test_info(bibliometer_path, test_case):
                  'No test'               : [False, False, False, False, False]
                  }
     test_states = test_dict[test_case]
-    checks_path = Path(bibliometer_path) / Path('Temp_checks')
+    checks_path = Path(wf_path) / Path('Temp_checks')
     if test_states[4]:
         # Creating temporary output folder
         if not os.path.exists(checks_path):
@@ -166,7 +166,7 @@ def _reduce_orphan_df(orphan_lastname, eff_lastname):
     return lastname_match_list
 
 
-def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test_name="No name"):
+def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No name"):
     """Builds a dataframe of the merged employees information with the publications 
     list with one row per author.
 
@@ -184,7 +184,7 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
     Args:
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute publications list with one row per author. 
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         test_case (str): Optional test case for testing the function (default = "No test").
         test_name (str): Optional author's last-name for testing the function \
         (default = "No name").
@@ -216,7 +216,7 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
     # Setting the useful info for testing the function
     # Setting a dict keyed by type of test with values for test states and
     # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
-    test_states, checks_path = _set_match_test_info(bibliometer_path, test_case)
+    test_states, checks_path = _set_match_test_info(wf_path, test_case)
 
     # Building submit_df and orphan_df dataframes
     for _, pub_df_row in pub_df.iterrows():

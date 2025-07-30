@@ -1,6 +1,7 @@
 """ `gui_utils` module contains useful functions for gui management."""
 
-__all__ = ['disable_buttons',
+__all__ = ['change_tup_value',
+           'disable_buttons',
            'enable_buttons',
            'existing_corpuses',
            'font_size',
@@ -9,8 +10,10 @@ __all__ = ['disable_buttons',
            'mm_to_px',
            'place_after',
            'place_bellow',
+           'set_display_width',
            'set_exit_button',
            'set_font_size_tup',
+           'set_item_pos',
            'set_page_title',
            'set_pos_tup_px',
            'set_pos_tup_px_list',
@@ -36,6 +39,13 @@ import bmgui.gui_globals as bm_gg
 from bmfuncts.config_utils import set_user_config
 
 
+def change_tup_value(init_tup, chg_idx, new_value):
+    tup_to_list = list(init_tup)
+    tup_to_list[chg_idx] = new_value
+    new_tup = tuple(tup_to_list)
+    return new_tup
+
+
 def disable_buttons(buttons_list):
     """Disables use of tkinter widgets listed in 'buttons_list'."""
     for button in buttons_list:
@@ -54,8 +64,12 @@ def show_frame(self, page_name):
 
 
 def set_pos_tup_px(master, pos_tup):
-    pos_px_tup = tuple([mm_to_px(pos_tup[idx] * master.sf_mm_tup[idx],
-                                 bm_gg.PPI) for idx in [0,1]])
+    idx_list = [0,1]
+    if pos_tup[0]=="mid_page":
+        pos_px_tup = (None, mm_to_px(pos_tup[1] * master.sf_mm_tup[1], bm_gg.PPI))
+    else:
+        pos_px_tup = tuple([mm_to_px(pos_tup[idx] * master.sf_mm_tup[idx],
+                                     bm_gg.PPI) for idx in [0,1]])
     return pos_px_tup
 
 
@@ -68,7 +82,17 @@ def set_pos_tup_px_list(master, pos_tup_list):
 def set_font_size_tup(master, font_dict, items):
     font_size_list = [font_size(font_dict[item], master.width_sf_min)
                       for item in items]
-    return tuple(font_size_list)    #set_font_size('label'), set_font_size('button')
+    return tuple(font_size_list)
+
+        
+def set_item_pos(master, value_mm, fact_idx):
+    item_pos = mm_to_px(value_mm * master.sf_mm_tup[fact_idx], bm_gg.PPI)
+    return item_pos
+
+       
+def set_display_width(master, item):
+    item_width = int(bm_gg.MAIN_CHAR_NB_DICT[item] * master.width_sf_min)
+    return item_width
 
 
 def set_progress_bar_pos_tup(master, page_key):

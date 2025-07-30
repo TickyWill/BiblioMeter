@@ -119,7 +119,7 @@ def _launch_update_employees_try(wf_path, progress_callback):
                 "avec les nouvelles données disponibles dans le dossier :"
                 f"\n\n '{empl_upd_folder_path}'."
                 "\n\nCette opération peut prendre quelques minutes."
-                "\nDans l'attente, ne pas fermer 'BiblioMeter'."
+                "\nDans l'attente, ne pas fermer l'application."
                 "\n\nAvant de lancer les traitements annuels, "
                 "confirmez la mise à jour ?")
     answer_1 = messagebox.askokcancel(ask_title, ask_text)
@@ -361,7 +361,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                     f"\nCe croisement se fera {status} la mise à jour "
                     "du fichier des effectifs."
                     "\n\nCette opération peut prendre quelques minutes."
-                    "\nDans l'attente, ne pas fermer 'BiblioMeter'."
+                    "\nDans l'attente, ne pas fermer l'application."
                     "\n\nContinuer ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
@@ -886,7 +886,8 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     merge_help_button = set_step_help_button(self, step_num,
                                              help_button_params,
                                              step_label_widgets_params)     
-    merge_launch_button_params = (step_font_size_tup, _start_update_employees)
+    merge_launch_button_params = (step_font_size_tup,
+                                  _start_launch_recursive_year_search)
     merge_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
                                None, step_button_dpos_tup)      
     merge_button = set_step_launch_button(self, step_num,
@@ -920,7 +921,8 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     homonyms_help_button = set_step_help_button(self, step_num,
                                                 help_button_params,
                                                 step_label_widgets_params)     
-    homonyms_launch_button_params = (step_font_size_tup, _start_launch_resolution_homonymies)
+    homonyms_launch_button_params = (step_font_size_tup,
+                                     _start_launch_resolution_homonymies)
     homonyms_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
                                   None, step_button_dpos_tup)      
     homonyms_button = set_step_launch_button(self, step_num,
@@ -955,7 +957,8 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     otp_help_button = set_step_help_button(self, step_num,
                                            help_button_params,
                                            step_label_widgets_params)     
-    otp_launch_button_params = (step_font_size_tup, _start_launch_add_otp)
+    otp_launch_button_params = (step_font_size_tup,
+                                _start_launch_add_otp)
     otp_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
                              None, step_button_dpos_tup)      
     otp_button = set_step_launch_button(self, step_num,
@@ -989,7 +992,8 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     conso_help_button = set_step_help_button(self, step_num,
                                              help_button_params,
                                              step_label_widgets_params)     
-    conso_launch_button_params = (step_font_size_tup, _start_launch_pub_list_conso)
+    conso_launch_button_params = (step_font_size_tup,
+                                  _start_launch_pub_list_conso)
     conso_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
                                None, step_button_dpos_tup)      
     conso_button = set_step_launch_button(self, step_num,
