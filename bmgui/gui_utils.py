@@ -112,7 +112,6 @@ def set_page_title(self, master, page_label, institute, datatype=None):
     """Sets the page title of the 'page_name' page.
 
     Args:
-        self (instense): Instense where is located 'page_name' page.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of 'page_name' page.
         institute (str): Institute name.
@@ -164,7 +163,6 @@ def set_exit_button(self, master):
     """Sets exit button on any page of 'master'.
 
     Args:
-        self (instense): Instense where is located 'master'.
         master (class): `bmgui.main_page.AppMain` class.
     """
     # Internal functions

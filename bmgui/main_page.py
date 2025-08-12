@@ -24,11 +24,12 @@ from bmgui.pages_classes import ParseCorpusPage
 from bmgui.gui_utils import change_tup_value
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import general_properties
-from bmgui.gui_utils import set_display_width
 from bmgui.gui_utils import set_font_size_tup
-from bmgui.gui_utils import set_item_pos
 from bmgui.gui_utils import set_pos_tup_px
+from bmgui.main_utils import set_common_params
+from bmgui.main_utils import set_displays_widths
 from bmgui.main_utils import set_institute_widgets
+from bmgui.main_utils import set_labels_pos
 from bmgui.main_utils import update_app_page
 
 
@@ -82,30 +83,13 @@ class AppMain(tk.Tk):
         AppMain.sf_mm_tup = (AppMain.width_sf_mm, AppMain.height_sf_mm)
 
         # Setting common parameters for widgets of main page
-        self.select_font_size_tup = set_font_size_tup(AppMain,
-                                                      bm_gg.MAIN_FONT_SIZE_DICT['main_select'],
-                                                      ['label', 'button'])
-        self.disp_font_size_tup = set_font_size_tup(AppMain,
-                                                    bm_gg.MAIN_FONT_SIZE_DICT['main_disp'],
-                                                    ['label', 'button'])
-        self.val_disp_dx = set_item_pos(AppMain, bm_gg.VAL_DISPLAY_DX, 0)
-        self.buttons_dy = set_item_pos(AppMain, bm_gg.MAIN_BUT_DPOS_TUP[1], 1)
-        self.opt_but_dy = set_item_pos(AppMain, bm_gg.MAIN_OPT_BUT_DPOS_TUP[1], 1)
+        set_common_params(self, AppMain)
 
         # Setting widget label positions in main page
-        self.inst_label_pos_tup = set_pos_tup_px(AppMain,
-                                                 bm_gg.MAIN_SELECT_LABEL_POS_DICT['institute'])
-        self.datatype_label_pos_tup = set_pos_tup_px(AppMain,
-                                                     bm_gg.MAIN_SELECT_LABEL_POS_DICT['datatype'])
-        self.wf_pos_tup = set_pos_tup_px(AppMain,
-                                         bm_gg.MAIN_DISP_LABEL_POS_DICT['work_folder'])
-        self.corpuses_pos_tup = set_pos_tup_px(AppMain,
-                                               bm_gg.MAIN_DISP_LABEL_POS_DICT['corpus_list'])
+        set_labels_pos(self, AppMain)
 
         # Setting widths for displayed information
-        self.datatype_width =  set_display_width(AppMain, 'datatype')
-        self.wf_width = set_display_width(AppMain, 'work_folder')
-        self.corpuses_width = set_display_width(AppMain, 'corpus_list')
+        set_displays_widths(self, AppMain)
 
         # Setting and placing widgets for title and copyright
         SetMasterTitle(self)

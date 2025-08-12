@@ -33,9 +33,11 @@ from bmgui.gui_utils import set_page_title
 from bmgui.gui_utils import set_pos_tup_px
 from bmgui.gui_utils import set_pos_tup_px_list
 from bmgui.gui_utils import set_progress_bar_pos_tup
+from bmgui.pages_utils import set_progress_bar_params
 from bmgui.pages_utils import set_step_help_button
 from bmgui.pages_utils import set_step_label
 from bmgui.pages_utils import set_step_launch_button
+from bmgui.pages_utils import set_steps_widgets_param
 
 
 def _set_if_files_params(institute, org_tup, wf_path):
@@ -46,10 +48,10 @@ def _set_if_files_params(institute, org_tup, wf_path):
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
     Returns:
-    (publications-lists folder name, \
+        (tup):(publications-lists folder name, \
         base for building names of publications-list files, \
         base for building names of missing-IFs files, \
-        name for building names of missing-ISSNs files)
+        name for building names of missing-ISSNs files).
     """
     # Setting useful aliases
     bdd_multi_annuelle_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
@@ -165,6 +167,22 @@ def _launch_update_if_db(institute, org_tup, wf_path,
 
 
 def _missing_pub_file_year_check(wf_path, corpus_years_list, if_tup, progress_callback):
+    """Launches updating impact-factors database of the Institute.
+
+    This is done through the `update_inst_if_database` function 
+    imported from `bmfuncts.update_impact_factors` module.
+
+    Args:
+        wf_path (path): Full path to working folder.
+        corpus_years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        if_tup (tup): (year of the missing publications list (str),\
+        status of IFs database (bool), unused parameter).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
+    Returns:
+        (bool): Status of impact-factors database.    
+    """
         missing_pub_file_year, if_database_complete, _ = if_tup
         if not missing_pub_file_year:
             print("IFs updated in all consolidated lists of publications")
@@ -227,6 +245,24 @@ def _set_year_files_params(wf_path, corpus_year, names_tup):
 
 def _update_pub_if(institute, org_tup, wf_path, datatype,
                    corpus_years_list, progress_callback):
+    """Updates impact factors of publications final list of the corpuses years.
+
+    This is done through the `add_if` function imported from 
+    `bmfuncts.consolidate_pub_list` module after check of availability 
+    of the corresponding file of the publications list.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains Institute parameters.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+        corpus_years_list (list): List of available corpus years \
+        (each item defined by a string of 4 digits).
+        progress_callback (function): Function for updating \
+        ProgressBar tkinter widget status.
+    Returns:
+        (bool): Status of impact-factors database. 
+    """
     # Setting files parameters
     return_tup = _set_if_files_params(institute, org_tup, wf_path)
     files_list, folders_list, _, _ = return_tup    
@@ -311,30 +347,21 @@ def _update_pub_if(institute, org_tup, wf_path, datatype,
 
 def _launch_update_pub_if(institute, org_tup, wf_path, datatype, if_db_update_status,
                           corpus_years_list, progress_callback):
-    """Launches updating impact factors of publications final list of the year.
+    """Launches updating impact factors of publications final list of the corpuses years.
 
-    This is done through the `add_if` function imported from 
-    `bmfuncts.consolidate_pub_list` module after check of availability 
-    of the corresponding file of the publications list.
+    This is done through the `_update_pub_if` internal function.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        if_db_update_status (bool) : #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        aliases_tup (tup): (publications-lists folder name, \
-        base for building names of publications-list files, \
-        base for building names of missing-IFs files, \
-        name for building names of missing-ISSNs files).
+        if_db_update_status (bool) : True if IFs database has been \
+        updated.
         corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status. 
-    Returns:
-        (tup): (year of missing publications file (string of 4 digits), \
-        completion status of impact-factors database (bool), \
-        progress-bar status (int)).    
+        ProgressBar tkinter widget status.  
     """
     if if_db_update_status:            
         _update_pub_if(institute, org_tup, wf_path, datatype,
@@ -374,7 +401,6 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
     and `_launch_update_pub_if`.
 
     Args:
-        self (instense): Instense where consolidation page will be created.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
@@ -384,56 +410,34 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
     # Internal functions
 
     def _update_progress(value):
-        progress_var.set(value)
-        progress_bar.update_idletasks()
+        self.progress_var.set(value)
+        self.progress_bar.update_idletasks()
         if value>=100:
             enable_buttons(self.page_buttons_list)
 
 
     # ****************************** GENERAL SETTNGS
 
-    # Getting institute parameters
-    wf_root_path = wf_path.parent
-    org_tup = set_org_params(institute, wf_root_path)
-
     # Initializing update status of IFs database
     if_db_update_status = False
-
-    # Setting short_name for page key to use in globals
-    self.page_key = bm_gg.KEY_IF
-
-    # Setting size and relative positions of widget of progress bars
-    return_tup = set_progress_bar_pos_tup(master, self.page_key)
-    progress_bar_len, progress_bar_dx, progress_bar_dy = return_tup
-
-    # Setting variable to keep track of the progress bar value
-    progress_var = tk.IntVar()  
-    progress_bar = ttk.Progressbar(self,
-                                   orient="horizontal",
-                                   length=progress_bar_len,
-                                   mode="determinate",
-                                   variable=progress_var)
 
     # Creating and setting widgets for page title and exit button
     page_label = bm_gg.PAGES_LABELS[page_name]
     set_page_title(self, master, page_label, institute, datatype)
     set_exit_button(self, master)
 
-    # Setting label widgets parameters for all page steps 
-    step_label_pos_tup_list = set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])    
-    step_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
-                                           ['step_label', 'step_launch', 'step_help'])
-    step_label_params = (step_font_size_tup, step_label_pos_tup_list)                   
-    steps_number = bm_gg.STEPS_NB_DICT[self.page_key]
-    step_label_widgets_list = [set_step_label(self, step_num, step_label_params)
-                               for step_num in range(steps_number)]
-    step_label_widgets_params = (step_label_widgets_list, step_label_pos_tup_list)
-    step_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[self.page_key])  
+    # Getting institute parameters
+    wf_root_path = wf_path.parent
+    org_tup = set_org_params(institute, wf_root_path)
 
-    # Setting parameters of help buttons for all steps
-    help_dpos_ref_tup = set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP)
-    help_button_params = (step_font_size_tup, help_dpos_ref_tup)
+    # Setting short_name for page key to use in globals
+    self.page_key = bm_gg.KEY_IF
+    
+    # Setting progress bars parameters
+    set_progress_bar_params(self, master)
 
+    # Setting steps widgets parameters
+    set_steps_widgets_param(self, master)
 
     # *********************** STEP 0: UPDATE IF DATABASE       
     def _launch_update_if_db_try(progress_callback):
@@ -448,26 +452,22 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
                                                            progress_callback)
         # Setting status of IFs database update
         globals()['if_db_update_status'] = new_if_db_update_status
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_update_if_db_try():
         disable_buttons(self.page_buttons_list)
-        place_bellow(if_db_update_button, progress_bar,
-                     dx=progress_bar_dx, dy=progress_bar_dy)
-        progress_var.set(0)
+        place_bellow(if_db_update_button, self.progress_bar,
+                     dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_update_if_db_try,
                          args=(_update_progress,)).start()
 
-    # Setting widgets of button for IF-database update 
+    # Setting widgets of buttons for IF-database update 
     step_num = 0
-    if_db_help_button = set_step_help_button(self, step_num,
-                                             help_button_params, step_label_widgets_params)
-    if_db_launch_button_params = (step_font_size_tup, _start_launch_update_if_db_try)
-    if_db_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
-                               None, step_button_dpos_tup) 
+    if_db_help_button = set_step_help_button(self, step_num)
     if_db_update_button = set_step_launch_button(self, step_num,
-                                                 if_db_launch_button_params,
-                                                 if_db_launch_pos_params)
+                                                 _start_launch_update_if_db_try,
+                                                 'bellow')
 
     # *********************** STEP 1: UPDATE IF IN CONSOLIDATED LISTS OF PUBLICATIONS 
 
@@ -479,27 +479,22 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
 
         # Re-initializing status of IFs database update
         globals()['if_db_update_status'] = False
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_update_pub_if_try():
         disable_buttons(self.page_buttons_list)
-        place_bellow(pub_if_update_button, progress_bar,
-                     dx=progress_bar_dx, dy=progress_bar_dy)
-        progress_var.set(0)
+        place_bellow(pub_if_update_button, self.progress_bar,
+                     dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_update_pub_if_try,#
                          args=(_update_progress,)).start()
 
-    # Setting widgets of button for IF_update in publications lists
+    # Setting widgets of buttons for IF_update in publications lists
     step_num = 1
-    pub_if_help_button = set_step_help_button(self, step_num,
-                                             help_button_params, step_label_widgets_params)
-    pub_if_launch_button_params = (step_font_size_tup, _start_launch_update_pub_if_try)
-    pub_if_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
-                                None, step_button_dpos_tup) 
+    pub_if_help_button = set_step_help_button(self, step_num)
     pub_if_update_button = set_step_launch_button(self, step_num,
-                                                  pub_if_launch_button_params,
-                                                  pub_if_launch_pos_params)
-
+                                                  _start_launch_update_pub_if_try,
+                                                  'bellow')
     # Setting buttons list for status change
     self.page_buttons_list = [if_db_update_button,
                               pub_if_update_button]

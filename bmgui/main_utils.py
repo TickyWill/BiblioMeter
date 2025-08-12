@@ -2,7 +2,10 @@
 
 __all__ = ['set_corpuses_widgets_param',
            'set_datatype_widgets_param',
+           'set_common_params',
+           'set_displays_widths',
            'set_institute_widgets',
+           'set_labels_pos',
            'set_wf_widget_param',
            'update_app_page',
           ]
@@ -28,6 +31,42 @@ from bmgui.pages_classes import SetLaunchButton
 from bmgui.gui_utils import last_available_years
 from bmgui.gui_utils import place_after
 from bmgui.gui_utils import place_bellow
+from bmgui.gui_utils import set_display_width
+from bmgui.gui_utils import set_font_size_tup
+from bmgui.gui_utils import set_item_pos
+from bmgui.gui_utils import set_pos_tup_px
+
+
+def set_common_params(self, master):
+    """Sets common parameters for widgets of main page."""
+    self.select_font_size_tup = set_font_size_tup(master,
+                                                  bm_gg.MAIN_FONT_SIZE_DICT['main_select'],
+                                                  ['label', 'button'])
+    self.disp_font_size_tup = set_font_size_tup(master,
+                                                bm_gg.MAIN_FONT_SIZE_DICT['main_disp'],
+                                                ['label', 'button'])
+    self.val_disp_dx = set_item_pos(master, bm_gg.VAL_DISPLAY_DX, 0)
+    self.buttons_dy = set_item_pos(master, bm_gg.MAIN_BUT_DPOS_TUP[1], 1)
+    self.opt_but_dy = set_item_pos(master, bm_gg.MAIN_OPT_BUT_DPOS_TUP[1], 1)
+
+
+def set_labels_pos(self, master):
+    """Sets widget label positions in main page."""
+    self.inst_label_pos_tup = set_pos_tup_px(master,
+                                             bm_gg.MAIN_SELECT_LABEL_POS_DICT['institute'])
+    self.datatype_label_pos_tup = set_pos_tup_px(master,
+                                                 bm_gg.MAIN_SELECT_LABEL_POS_DICT['datatype'])
+    self.wf_pos_tup = set_pos_tup_px(master,
+                                     bm_gg.MAIN_DISP_LABEL_POS_DICT['work_folder'])
+    self.corpuses_pos_tup = set_pos_tup_px(master,
+                                           bm_gg.MAIN_DISP_LABEL_POS_DICT['corpus_list'])
+
+
+def set_displays_widths(self, master):
+    """Sets widths for displayed information in main page."""
+    self.datatype_width =  set_display_width(master, 'datatype')
+    self.wf_width = set_display_width(master, 'work_folder')
+    self.corpuses_width = set_display_width(master, 'corpus_list')
 
 
 def set_institute_widgets(self, institute_val):

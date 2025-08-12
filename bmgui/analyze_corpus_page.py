@@ -36,9 +36,11 @@ from bmgui.gui_utils import set_pos_tup_px
 from bmgui.gui_utils import set_pos_tup_px_list
 from bmgui.gui_utils import set_progress_bar_pos_tup
 from bmgui.pages_utils import set_data_select_widgets
+from bmgui.pages_utils import set_progress_bar_params
 from bmgui.pages_utils import set_step_help_button
 from bmgui.pages_utils import set_step_label
 from bmgui.pages_utils import set_step_launch_button
+from bmgui.pages_utils import set_steps_widgets_param
 from bmgui.pages_utils import set_year_select_widgets
 
 
@@ -216,13 +218,17 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
     # Internal functions
 
     def _update_progress(value):
-        progress_var.set(value)
-        progress_bar.update_idletasks()
+        self.progress_var.set(value)
+        self.progress_bar.update_idletasks()
         if value>=100:
             enable_buttons(self.page_buttons_list)
 
+    # ****************************** GENERAL SETTNGS
 
-# ****************************** GENERAL SETTNGS
+    # Creating and setting widgets for page title and exit button
+    page_label = bm_gg.PAGES_LABELS[page_name]
+    set_page_title(self, master, page_label, institute, datatype)
+    set_exit_button(self, master)
 
     # Getting institute parameters
     wf_root_path = wf_path.parent
@@ -230,40 +236,13 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
 
     # Setting short_name for page key and year key to use in globals
     self.page_key = bm_gg.KEY_ANALYS
-    year_key = bm_gg.KEY_ANALYS_YEAR
+    self.year_key = bm_gg.KEY_ANALYS_YEAR
+    
+    # Setting progress bars parameters
+    set_progress_bar_params(self, master)
 
-    # Setting size and relative positions of widget of progress bars
-    return_tup = set_progress_bar_pos_tup(master, self.page_key)
-    progress_bar_len, progress_bar_dx, progress_bar_dy = return_tup
-
-    # Setting variable to keep track of the progress bar value
-    progress_var = tk.IntVar()  
-    progress_bar = ttk.Progressbar(self,
-                                   orient="horizontal",
-                                   length=progress_bar_len,
-                                   mode="determinate",
-                                   variable=progress_var)
-
-    # Creating and setting widgets for page title and exit button
-    page_label = bm_gg.PAGES_LABELS[page_name]
-    set_page_title(self, master, page_label, institute, datatype)
-    set_exit_button(self, master)
-
-    # Setting label widgets parameters for all page steps 
-    step_label_pos_tup_list = set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])    
-    step_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
-                                           ['step_label', 'step_launch', 'step_help'])
-    step_label_params = (step_font_size_tup, step_label_pos_tup_list)                   
-    steps_number = bm_gg.STEPS_NB_DICT[self.page_key]
-    step_label_widgets_list = [set_step_label(self, step_num, step_label_params)
-                               for step_num in range(steps_number)]
-    step_label_widgets_params = (step_label_widgets_list, step_label_pos_tup_list)
-    step_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[self.page_key])  
-
-    # Setting parameters of help buttons for all steps
-    help_dpos_ref_tup = set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP)
-    help_button_params = (step_font_size_tup, help_dpos_ref_tup)
-
+    # Setting steps widgets parameters
+    set_steps_widgets_param(self, master)
   
     # *********************** YEAR SELECTION
 
@@ -272,12 +251,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
     self.variable_years.set(default_year)
 
     # Setting widgets for year selection
-    year_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
-                                           ['label', 'button'])
-    year_label_pos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_POS_DICT[year_key])
-    year_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
-    year_select_params = [year_font_size_tup, year_label_pos_tup, year_button_dpos_tup]
-    set_year_select_widgets(self, master, year_select_params)
+    set_year_select_widgets(self, master)
 
     # *********************** STEP 0: IMPACT-FACTORS ANALYSIS
     def _launch_if_analysis_try(progress_callback):
@@ -287,27 +261,22 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         print(f"\nIFs analysis launched for year {year_select}")
         _launch_if_analysis(institute, org_tup, wf_path, datatype,
                             year_select, progress_callback)
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_if_analysis_try():
         disable_buttons(self.page_buttons_list)
-        place_after(if_analysis_button, progress_bar,
-                    dx=progress_bar_dx, dy=progress_bar_dy)
-        progress_var.set(0)
+        place_after(if_analysis_button, self.progress_bar,
+                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_if_analysis_try,
                          args=(_update_progress,)).start()
 
     # Setting widgets of button for IF analysis
     step_num = 0
-    if_analysis_help_button = set_step_help_button(self, step_num,
-                                                   help_button_params,
-                                                   step_label_widgets_params)     
-    if_analysis_launch_button_params = (step_font_size_tup, _start_launch_if_analysis_try)
-    if_analysis_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
-                                     None, step_button_dpos_tup)      
+    if_analysis_help_button = set_step_help_button(self, step_num)     
     if_analysis_button = set_step_launch_button(self, step_num,
-                                                if_analysis_launch_button_params,
-                                                if_analysis_launch_pos_params)
+                                                _start_launch_if_analysis_try,
+                                                'bellow')
 
     # *********************** STEP 1: AUTHORS-PRODUCTION ANALYSIS
     def _launch_au_analysis_try(progress_callback):
@@ -317,27 +286,22 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         print(f"\nAuthors analysis launched for year {year_select}")
         _launch_au_analysis(institute, org_tup, wf_path, datatype,
                             year_select, progress_callback)
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_au_analysis_try():
         disable_buttons(self.page_buttons_list)
-        place_after(au_analysis_button, progress_bar,
-                    dx=progress_bar_dx, dy=progress_bar_dy)
-        progress_var.set(0)
+        place_after(au_analysis_button, self.progress_bar,
+                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_au_analysis_try,
                          args=(_update_progress,)).start()
 
     # Setting widgets of button for IF analysis
     step_num = 1
-    au_analysis_help_button = set_step_help_button(self, step_num,
-                                                   help_button_params,
-                                                   step_label_widgets_params)     
-    au_analysis_launch_button_params = (step_font_size_tup, _start_launch_au_analysis_try)
-    au_analysis_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
-                                     None, step_button_dpos_tup)      
+    au_analysis_help_button = set_step_help_button(self, step_num)    
     au_analysis_button = set_step_launch_button(self, step_num,
-                                                au_analysis_launch_button_params,
-                                                au_analysis_launch_pos_params)
+                                                _start_launch_au_analysis_try,
+                                                'bellow')
 
     # *********************** STEP 2: COUPLING ANALYSIS
     def _launch_coupling_analysis_try(progress_callback):
@@ -349,27 +313,22 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
                                   wf_path,
                                   datatype, year_select,
                                   progress_callback)
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_coupling_analysis_try():
         disable_buttons(self.page_buttons_list)
-        place_after(co_analysis_button, progress_bar,
-                    dx=progress_bar_dx, dy=progress_bar_dy)
-        progress_var.set(0)
+        place_after(co_analysis_button, self.progress_bar,
+                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_coupling_analysis_try,
                          args=(_update_progress,)).start()
 
-    # Setting widgets of button for IF analysis
+    # Setting widgets of buttons for IF analysis
     step_num = 2
-    co_analysis_help_button = set_step_help_button(self, step_num,
-                                                   help_button_params,
-                                                   step_label_widgets_params)     
-    co_analysis_launch_button_params = (step_font_size_tup, _start_launch_coupling_analysis_try)
-    co_analysis_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
-                                     None, step_button_dpos_tup)
+    co_analysis_help_button = set_step_help_button(self, step_num)
     co_analysis_button = set_step_launch_button(self, step_num,
-                                                co_analysis_launch_button_params,
-                                                co_analysis_launch_pos_params)
+                                                _start_launch_coupling_analysis_try,
+                                                'bellow')
 
     # *********************** STEP 3: KEYWORDS ANALYSIS
     def _launch_kw_analysis_try(progress_callback):
@@ -379,27 +338,22 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         print(f"\nKeywords analysis launched for year {year_select}")
         _launch_kw_analysis(institute, org_tup, wf_path, datatype,
                             year_select, progress_callback)
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_kw_analysis_try():
         disable_buttons(self.page_buttons_list)
-        place_after(kw_analysis_button, progress_bar,
-                    dx=progress_bar_dx, dy=progress_bar_dy)
-        progress_var.set(0)
+        place_after(kw_analysis_button, self.progress_bar,
+                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_kw_analysis_try,
                          args=(_update_progress,)).start()
 
-    # Setting widgets of button for IF analysis
+    # Setting widgets of buttons for IF analysis
     step_num = 3
-    kw_analysis_help_button = set_step_help_button(self, step_num,
-                                                   help_button_params,
-                                                   step_label_widgets_params)     
-    kw_analysis_launch_button_params = (step_font_size_tup, _start_launch_kw_analysis_try)
-    kw_analysis_launch_pos_params = ('bellow',  step_label_widgets_list[step_num],
-                                     None, step_button_dpos_tup)      
+    kw_analysis_help_button = set_step_help_button(self, step_num)    
     kw_analysis_button = set_step_launch_button(self, step_num,
-                                                kw_analysis_launch_button_params,
-                                                kw_analysis_launch_pos_params)
+                                                _start_launch_kw_analysis_try,
+                                                'bellow')
 
     # Setting buttons list for status change
     self.page_buttons_list = [self.years_opt_but,

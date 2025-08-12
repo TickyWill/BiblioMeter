@@ -39,8 +39,11 @@ from bmgui.gui_utils import set_pos_tup_px
 from bmgui.gui_utils import set_pos_tup_px_list
 from bmgui.gui_utils import set_progress_bar_pos_tup
 from bmgui.pages_utils import set_data_select_widgets
+from bmgui.pages_utils import set_progress_bar_params
+from bmgui.pages_utils import set_step_help_button
 from bmgui.pages_utils import set_step_label
 from bmgui.pages_utils import set_step_launch_button
+from bmgui.pages_utils import set_steps_widgets_param
 from bmgui.pages_utils import set_year_select_widgets
 
 
@@ -536,76 +539,57 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     # Internal functions
     
     def _update_progress(value):
-        progress_var.set(value)
-        progress_bar.update_idletasks()
+        self.progress_var.set(value)
+        self.progress_bar.update_idletasks()
         if value>=100:
             enable_buttons(self.page_buttons_list)
 
 
     # ****************************** GENERAL SETTNGS
 
-    # Getting institute parameters
-    wf_root_path = wf_path.parent
-    org_tup = set_org_params(institute, wf_root_path)
-
     # Setting institutions files paths
     inst_paths_tup = _set_parse_inst_params(institute, wf_path)
 
-    # Setting page key and page year
-    self.page_key = bm_gg.KEY_PARSE
-    year_key = bm_gg.KEY_PARSE_YEAR
-    parse_key = bm_gg.KEY_PARSE
-    dedup_key = bm_gg.KEY_DEDUP
-
-    # Setting size and relative positions of widget of progress bars
-    return_tup = set_progress_bar_pos_tup(master, self.page_key)
-    progress_bar_len, progress_bar_dx, progress_bar_dy = return_tup
-
-    # Setting variable to keep track of the progress bar value
-    progress_var = tk.IntVar()  
-    progress_bar = ttk.Progressbar(self,
-                                   orient="horizontal",
-                                   length=progress_bar_len,
-                                   mode="determinate",
-                                   variable=progress_var)
+    # Getting institute parameters
+    wf_root_path = wf_path.parent
+    org_tup = set_org_params(institute, wf_root_path)
 
     # Creating and setting widgets for page title and exit button
     page_label = bm_gg.PAGES_LABELS[page_name]
     set_page_title(self, master, page_label, institute, datatype)
     set_exit_button(self, master)
 
-    # Setting all step-label widgets parameters
-    step_label_pos_tup_list = set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])    
-    step_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
-                                           ['step_label', 'step_launch'])
-    step_label_params = (step_font_size_tup, step_label_pos_tup_list)                   
-    steps_number = bm_gg.STEPS_NB_DICT[self.page_key]
-    step_label_widgets_list = [set_step_label(self, step_num, step_label_params)
-                               for step_num in range(steps_number)]
-    step_label_widgets_params = (step_label_widgets_list, step_label_pos_tup_list)
+    # Setting page key and page year
+    self.page_key = bm_gg.KEY_PARSE
+    self.parse_key = bm_gg.KEY_PARSE
+    self.dedup_key = bm_gg.KEY_DEDUP
+    self.year_key = bm_gg.KEY_PARSE_YEAR
+    
+    # Setting progress bars parameters
+    set_progress_bar_params(self, master)
+
+    # Setting steps widgets parameters
+    set_steps_widgets_param(self, master, parse=True)
+
+    # Initializing checkbox parameters as lists
+    # filled in _create_table and _update_status internal functions
+    self.CHECK, self.TABLE = [], []
+    
+    # Setting check box positions
+    box_pos_tup = _set_box_pos_tup(master)
 
     # ****************************** DISPLAY PARSING-FILES STATUS
 
     def _launch_update_status_try():
         # update files status
         _update_status(self, master, wf_path, box_pos_tup)
-
-    step_num = 0
-    # Initializing checkbox parameters as lists
-    # filled in _create_table and _update_status internal functions
-    self.CHECK = []
-    self.TABLE = []
-    
-    # Setting check box positions
-    box_pos_tup = _set_box_pos_tup(master)
     
     # Setting widgets of button for update of parsing-files status 
-    status_button_pos_tup = set_pos_tup_px(master, bm_gg.STATUS_BUT_POS_TUP)     
-    status_button_params = (step_font_size_tup, _launch_update_status_try)
-    status_pos_params = ('place', None, status_button_pos_tup, None)    
+    step_num = 0
+    status_help_button = set_step_help_button(self, step_num, pos_type='bellow')  
     status_button = set_step_launch_button(self, step_num,
-                                           status_button_params,
-                                           status_pos_params)
+                                           _launch_update_status_try,
+                                           'place', parse=True)
 
     # Updating check boxes
     _update_status(self, master, wf_path, box_pos_tup)
@@ -618,12 +602,7 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     self.variable_years.set(default_year)
 
     # Setting widgets for year selection
-    year_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
-                                           ['label', 'button'])
-    year_label_pos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_POS_DICT[year_key])
-    year_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
-    year_select_params = [year_font_size_tup, year_label_pos_tup, year_button_dpos_tup]
-    set_year_select_widgets(self, master, year_select_params)
+    set_year_select_widgets(self, master)
 
 
     # ****************************** LAUNCH PARSING    
@@ -636,37 +615,31 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
 
         _launch_parsing(master, year_select, parsing_data,
                         wf_path, inst_paths_tup, progress_callback)
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_parsing_try():
         disable_buttons(self.page_buttons_list)
-        place_after(parsing_button, progress_bar,
-                    dx=progress_bar_dx,
-                    dy=progress_bar_dy)
-        progress_var.set(0)
+        place_after(parsing_button, self.progress_bar,
+                    dx=self.progress_bar_dx,
+                    dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_parsing_try,
                          args=(_update_progress,)).start()
         # update files status
         _update_status(self, master, wf_path, box_pos_tup)
 
-    step_num = 1
+    # Setting widgets of buttons for parsing
+    step_num = 1    
+    parse_help_button = set_step_help_button(self, step_num)
+    
     # Setting widgets for database selection for parsing
-    data_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['step_select'],
-                                           ['label', 'button'])
-    data_label_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_DPOS_DICT[self.page_key])
-    data_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
-    data_select_params = (data_font_size_tup, data_label_dpos_tup,
-                          data_button_dpos_tup, step_label_widgets_list[step_num])
-    parse_data_var, parse_data_opt_but = set_data_select_widgets(self, data_select_params)
+    parse_data_var, parse_data_opt_but = set_data_select_widgets(self, step_num)
 
-    # Setting widgets for launch parsing button
-    parse_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[parse_key])     
-    parse_launch_button_params = (step_font_size_tup, _start_launch_parsing_try)
-    parse_launch_pos_params = ('after', parse_data_opt_but,
-                               None, parse_button_dpos_tup)    
+    # Setting widgets of buttons for parsing launch button  
     parsing_button = set_step_launch_button(self, step_num,
-                                            parse_launch_button_params,
-                                            parse_launch_pos_params)
+                                            _start_launch_parsing_try,
+                                            'after', parse=True,
+                                            widget_ref=parse_data_opt_but)
 
 
     # ****************************** LAUNCH PARSING DEDUPLICATION
@@ -677,28 +650,25 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
         _launch_dedup(master, year_select,
                       org_tup, wf_path, datatype,
                       inst_paths_tup, progress_callback)
-        progress_bar.place_forget()
+        self.progress_bar.place_forget()
 
     def _start_launch_dedup_try():
         disable_buttons(self.page_buttons_list)
-        place_after(dedup_button, progress_bar,
-                    dx=progress_bar_dx,
-                    dy=progress_bar_dy)
-        progress_var.set(0)
+        place_after(dedup_button, self.progress_bar,
+                    dx=self.progress_bar_dx,
+                    dy=self.progress_bar_dy)
+        self.progress_var.set(0)
         threading.Thread(target=_launch_dedup_try,
                          args=(_update_progress,)).start()
         # update files status
         _update_status(self, master, wf_path, box_pos_tup)
 
-    step_num = 2
-    # Setting widgets for launch deduplication button   
-    dedup_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[dedup_key])     
-    dedup_launch_button_params = (step_font_size_tup, _start_launch_dedup_try)
-    dedup_launch_pos_params = ('bellow', step_label_widgets_list[step_num],
-                               None, dedup_button_dpos_tup)    
+    # Setting widgets of buttons for deduplication  
+    step_num = 2    
+    dedup_help_button = set_step_help_button(self, step_num)
     dedup_button = set_step_launch_button(self, step_num,
-                                          dedup_launch_button_params,
-                                          dedup_launch_pos_params)
+                                          _start_launch_dedup_try,
+                                          'bellow', parse=True)
 
 
     # ****************************** Setting buttons list for status change

@@ -283,7 +283,10 @@ EXIT_BUT_POS_TUP = (198, 150)
 HELP_LABEL = "Description"
 
 # Reference positions of help buttons
-HELP_BUT_DPOS_TUP = (185, -2)
+HELP_BUT_DPOS_TUP = {'status': (10, 10),
+                     'other' : (185, -2),
+                    }
+
 
 # Labels of items selection
 PAGE_SELECT_LABEL_DICT = {'year': "Sélection de l'année ",
@@ -296,7 +299,7 @@ PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR : (10, 100),
                              }
 
 # Relative positions of label for items selection 
-PAGE_SELECT_LABEL_DPOS_DICT = {KEY_PARSE: (10, 2),}       # {'parse_data': (10, 2),}
+PAGE_SELECT_LABEL_DPOS_DICT = {KEY_PARSE: (10, 2),}
 
 PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE : (1, -2),
                              KEY_CONSO : (0, -1.2),
@@ -351,17 +354,24 @@ STEPS_LABELS_DICT[KEY_PARSE], STEPS_HELPS_DICT[KEY_PARSE], STEPS_LAUNCHES_DICT[K
 
     # Parsing step 0
 STEPS_LABELS_DICT[KEY_PARSE].append("Statut des fichiers")
-STEPS_HELPS_DICT[KEY_PARSE].append("Indisponible")
+STEPS_HELPS_DICT[KEY_PARSE].append("La disponibilté des fichiers bruts et des fichiers "
+                                   "issus de leur analyse élémentaire va être examinée."
+                                   "\n\nL'affichage va être mis à jour avec le résultat "
+                                   "de cet examen.")
 STEPS_LAUNCHES_DICT[KEY_PARSE].append("Mise à jour")
 
     # Parsing step 1
 STEPS_LABELS_DICT[KEY_PARSE].append("Analyse élémentaire des extractions")
-STEPS_HELPS_DICT[KEY_PARSE].append("Indisponible")
+STEPS_HELPS_DICT[KEY_PARSE].append("Les données extraites de la base de donnée sélectionnée "
+                                   "vont être analysées et les informations redistribuées "
+                                   "par type dans plusieurs fichiers.")
 STEPS_LAUNCHES_DICT[KEY_PARSE].append("Lancer l'analyse")
 
     # Parsing step 2
 STEPS_LABELS_DICT[KEY_PARSE].append("Synthèse de l'analyse élémentaire")
-STEPS_HELPS_DICT[KEY_PARSE].append("Indisponible")
+STEPS_HELPS_DICT[KEY_PARSE].append("Les résultats de l'analyse des données extraites "
+                                   "des différentes bases de données vont être concaténés "
+                                   "et dédupliqués par type d'information")
 STEPS_LAUNCHES_DICT[KEY_PARSE].append("Lancer la synthèse")
 
 
