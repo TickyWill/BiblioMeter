@@ -18,16 +18,15 @@ __all__ = ['create_consolidate_corpus']
 import os
 import threading
 import tkinter as tk
-from functools import partial
 from pathlib import Path
-from tkinter import font as tkFont
 from tkinter import messagebox
-from tkinter import ttk
 
 # Local imports
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
+import bmgui.gui_utils as bm_gu
+import bmgui.pages_utils as bm_pu
 from bmfuncts.add_otps import add_otp
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import built_final_pub_list
@@ -40,24 +39,6 @@ from bmfuncts.use_homonyms import set_saved_homonyms
 from bmfuncts.use_homonyms import solving_homonyms
 from bmfuncts.use_otps import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
-from bmgui.gui_utils import disable_buttons
-from bmgui.gui_utils import enable_buttons
-from bmgui.gui_utils import font_size
-from bmgui.gui_utils import mm_to_px
-from bmgui.gui_utils import place_after
-from bmgui.gui_utils import place_bellow
-from bmgui.gui_utils import set_exit_button
-from bmgui.gui_utils import set_font_size_tup
-from bmgui.gui_utils import set_page_title
-from bmgui.gui_utils import set_pos_tup_px
-from bmgui.gui_utils import set_pos_tup_px_list
-from bmgui.gui_utils import set_progress_bar_pos_tup
-from bmgui.pages_utils import set_progress_bar_params
-from bmgui.pages_utils import set_step_help_button 
-from bmgui.pages_utils import set_step_label 
-from bmgui.pages_utils import set_step_launch_button 
-from bmgui.pages_utils import set_year_select_widgets
-from bmgui.pages_utils import set_steps_widgets_param
 
 
 def _set_empl_files_params(wf_path):
@@ -74,7 +55,7 @@ def _set_empl_files_params(wf_path):
     """
     # Setting folder of the Institute parameters
     wf_root_path = wf_path.parent
-    
+
     # Setting useful aliases
     empl_root_alias = bm_eg.EMPLOYEES_ARCHI["root"]
     empl_folder_alias = bm_eg.EMPLOYEES_ARCHI["all_years_employees"]
@@ -86,7 +67,7 @@ def _set_empl_files_params(wf_path):
     empl_folder_path = empl_root_path / Path(empl_folder_alias)
     empl_upd_folder_path = empl_root_path / Path(empl_upd_folder_alias)
     empl_file_path = empl_folder_path / Path(empl_file_alias)
-    
+
     return empl_folder_path, empl_upd_folder_path, empl_file_path, empl_file_alias
 
 
@@ -97,17 +78,19 @@ def _launch_update_employees_try(wf_path, progress_callback):
     `bmfuncts.update_employees` module after check of available 
     files for update (should be single) and check of Institute 
     employees database file. 
-    Useful path are set through the `_set_empl_files_params` internal 
-    function.
+    Useful files parameters are set through the `_set_empl_files_params`
+    internal function.
 
     Args:
         wf_path (path): Full path to working folder.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
+    Returns:
+        (bool): Update status of the employees data. 
     """
     # Setting useful file parameters for employees data
     return_tup = _set_empl_files_params(wf_path)
-    empl_folder_path, empl_upd_folder_path, _, _ = return_tup
+    empl_folder_path, empl_upd_folder_path, _, empl_file_name = return_tup
     if progress_callback:
         progress_bar_state_init = 10
         progress_callback(progress_bar_state_init)
@@ -141,17 +124,19 @@ def _launch_update_employees_try(wf_path, progress_callback):
                          f"pour l'année {employees_year}.")
             messagebox.showinfo(info_title, info_text)
             update_status = True
+            print("File of employees-data updated")
         elif all_years_file_error:
             info_title = "- Information -"
             info_text = ("La mise à jour des effectifs a été effectuée "
                          f"pour l'année {employees_year}."
                          "\nMais le fichier des effectifs consolidés "
-                         f"'{effectifs_file_name}' "
+                         f"'{empl_file_name}' "
                          "non disponible a été créé dans le dossier :"
                          f"\n '{empl_folder_path}'.\n"
                          f"\nErreur précise retournée :\n '{all_years_file_error}'.")
             messagebox.showinfo(info_title, info_text)
             update_status = True
+            print("File of employees data created")
         else:
             warning_title = "!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!"
             if files_number_error:
@@ -202,15 +187,17 @@ def _launch_update_employees_try(wf_path, progress_callback):
                                 "dans le dossier successivement.")
                 messagebox.showwarning(warning_title, warning_text)
                 update_status = False
+            print("Update of employees data aborted (error in the provided file for update)")
     else:
         progress_callback(100)
         # Cancel employees database update
         warning_title = "- Information -"
         warning_text = ("La mise à jour des effectifs est abandonnée."
-                        f"\n\nLes croisement auteurs-effectifs de chaque l'année"
+                        "\n\nLes croisement auteurs-effectifs de chaque l'année"
                         "se fera avec le fichier des effectifs sans sa mise à jour.")
         messagebox.showwarning(warning_title, warning_text)
         update_status = False
+        print("Update of employees data canceled")
     return update_status
 
 
@@ -244,8 +231,8 @@ def _set_conso_year_files_params(wf_path, year_select):
     pub_list_file = pub_list_file_base_alias + f' {year_select}.xlsx'
     missing_if_file = f'{year_select}_' + missing_if_base_alias + ".xlsx"
     missing_issn_file = f'{year_select}_' + missing_issn_base_alias + ".xlsx"
-    
-    # Setting useful folders paths dependant on year select    
+
+    # Setting useful folders paths dependant on year select
     corpus_year_path = wf_path / Path(year_select)
     merge_data_folder_path = corpus_year_path / Path(merge_data_folder_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
@@ -257,7 +244,7 @@ def _set_conso_year_files_params(wf_path, year_select):
     orphan_path = merge_data_folder_path / Path(orphan_alias)
     homonyms_file_path = homonyms_folder_path / Path(homonyms_file)
     pub_list_file_path = pub_list_folder_path / Path(pub_list_file)
-    
+
     # Setting returned lists
     files_list = [submit_alias, orphan_alias, homonyms_file, otp_file_base_alias,
                   pub_list_file, missing_if_file, missing_issn_file]
@@ -748,13 +735,12 @@ def _launch_pub_list_conso_try(institute, org_tup,
                      f"de l'année {year_select} est annulée.")
         messagebox.showinfo(info_title, info_text)
 
-    
+
 def create_consolidate_corpus(self, master, page_name, institute, wf_path, datatype):
     """Manages creation and use of widgets for corpus consolidation 
     through merge with Institute employees database.
 
     Args:
-        self (instense): Instense where consolidation page will be created.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
@@ -767,13 +753,13 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         self.progress_var.set(value)
         self.progress_bar.update_idletasks()
         if value>=100:
-            enable_buttons(self.page_buttons_list)
+            bm_gu.enable_buttons(self.page_buttons_list)
 
 
     # ****************************** GENERAL SETTNGS
-    
+
     # initializing update status of employees data
-    empl_update_status = False
+    self.empl_update_status = False
 
     # Getting institute parameters
     wf_root_path = wf_path.parent
@@ -781,42 +767,44 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
 
     # Creating and setting widgets for page title and exit button
     page_label = bm_gg.PAGES_LABELS[page_name]
-    set_page_title(self, master, page_label, institute, datatype)
-    set_exit_button(self, master)
+    bm_gu.set_page_title(self, master, page_label, institute, datatype)
+    bm_gu.set_exit_button(self, master)
 
     # Setting short_name for page key and year key to use in globals
     self.page_key = bm_gg.KEY_CONSO
     self.year_key = bm_gg.KEY_CONSO_YEAR
-    
+
     # Setting progress bars parameters
-    set_progress_bar_params(self, master)
+    bm_pu.set_progress_bar_params(self, master)
 
     # Setting steps widgets parameters
-    set_steps_widgets_param(self, master)
+    bm_pu.set_steps_widgets_param(self, master)
 
     # *********************** STEP 0: UPDATE EMPLOYEES DATA
     def _launch_update_employees(progress_callback):
         """Command of the 'empl_update_button' button.        
         """
+        print("\nTrying update of employees data...")
+
         # Trying launch of update of employees file
-        employees_update_status = _launch_update_employees_try(wf_path,
+        self.empl_update_status = _launch_update_employees_try(wf_path,
                                                                progress_callback)
         self.progress_bar.place_forget()
 
     def _start_update_employees():
-        disable_buttons(self.page_buttons_list)
-        place_after(empl_update_button, self.progress_bar,
-                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(empl_update_button, self.progress_bar,
+                          dx=self.progress_bar_dx, dy=self.progress_bar_dy)
         self.progress_var.set(0)
         threading.Thread(target=_launch_update_employees,
                          args=(_update_progress,)).start()
 
     # Setting widgets of buttons for employees-update
     step_num = 0
-    empl_help_button = set_step_help_button(self, step_num)
-    empl_update_button = set_step_launch_button(self, step_num,
-                                                _start_update_employees,
-                                                'bellow')
+    empl_help_button = bm_pu.set_step_help_button(self, step_num)
+    empl_update_button = bm_pu.set_step_launch_button(self, step_num,
+                                                      _start_update_employees,
+                                                      'bellow')
 
 
     # ****************************** YEAR SELECTION
@@ -824,7 +812,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     default_year = master.years_list[-1]
     self.variable_years = tk.StringVar(self)
     self.variable_years.set(default_year)
-    set_year_select_widgets(self, master)
+    bm_pu.set_year_select_widgets(self, master)
 
 
     # *********************** STEP 1: MERGE AUTHORS-EMPLOYEES
@@ -838,24 +826,25 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         _launch_recursive_year_search_try(institute, org_tup,
                                           wf_path, datatype,
                                           year_select, bm_eg.SEARCH_DEPTH,
-                                          empl_update_status,
+                                          self.empl_update_status,
                                           progress_callback)
+        self.empl_update_status = False
         self.progress_bar.place_forget()
 
     def _start_launch_recursive_year_search():
-        disable_buttons(self.page_buttons_list)
-        place_after(merge_button, self.progress_bar,
-                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(merge_button, self.progress_bar,
+                          dx=self.progress_bar_dx, dy=self.progress_bar_dy)
         self.progress_var.set(0)
         threading.Thread(target=_launch_recursive_year_search,
                          args=(_update_progress,)).start()
 
     # Setting widgets for authors-employees-merge button
     step_num = 1
-    merge_help_button = set_step_help_button(self, step_num)     
-    merge_button = set_step_launch_button(self, step_num,
-                                          _start_launch_recursive_year_search,
-                                          'bellow')
+    merge_help_button = bm_pu.set_step_help_button(self, step_num)
+    merge_button = bm_pu.set_step_launch_button(self, step_num,
+                                                _start_launch_recursive_year_search,
+                                                'bellow')
 
 
     # ******************* STEP 2: HOMONYMS RESOLUTION
@@ -872,19 +861,19 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         self.progress_bar.place_forget()
 
     def _start_launch_resolution_homonymies():
-        disable_buttons(self.page_buttons_list)
-        place_after(homonyms_button, self.progress_bar,
-                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(homonyms_button, self.progress_bar,
+                          dx=self.progress_bar_dx, dy=self.progress_bar_dy)
         self.progress_var.set(0)
         threading.Thread(target=_launch_resolution_homonymies,
                          args=(_update_progress,)).start()
 
     # Setting widgets for homonyms-resolution button
     step_num = 2
-    homonyms_help_button = set_step_help_button(self, step_num)    
-    homonyms_button = set_step_launch_button(self, step_num,
-                                             _start_launch_resolution_homonymies,
-                                             'bellow')
+    homonyms_help_button = bm_pu.set_step_help_button(self, step_num)
+    homonyms_button = bm_pu.set_step_launch_button(self, step_num,
+                                                   _start_launch_resolution_homonymies,
+                                                   'bellow')
 
     # ******************* STEP 3: OTPs ATTRIBUTION
     def _launch_add_otp(progress_callback):
@@ -902,19 +891,19 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         self.progress_bar.place_forget()
 
     def _start_launch_add_otp():
-        disable_buttons(self.page_buttons_list)
-        place_after(otp_button, self.progress_bar,
-                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(otp_button, self.progress_bar,
+                          dx=self.progress_bar_dx, dy=self.progress_bar_dy)
         self.progress_var.set(0)
         threading.Thread(target=_launch_add_otp,
                          args=(_update_progress,)).start()
 
     # Setting widgets for OTPs attribution button
     step_num = 3
-    otp_help_button = set_step_help_button(self, step_num)      
-    otp_button = set_step_launch_button(self, step_num,
-                                        _start_launch_add_otp,
-                                        'bellow')
+    otp_help_button = bm_pu.set_step_help_button(self, step_num)
+    otp_button = bm_pu.set_step_launch_button(self, step_num,
+                                              _start_launch_add_otp,
+                                              'bellow')
 
     # ****************** STEP 4: PUBLICATIONS-LIST CONSOLIDATION
     def _launch_pub_list_conso(progress_callback):
@@ -931,24 +920,29 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         self.progress_bar.place_forget()
 
     def _start_launch_pub_list_conso():
-        disable_buttons(self.page_buttons_list)
-        place_after(conso_button, self.progress_bar,
-                    dx=self.progress_bar_dx, dy=self.progress_bar_dy)
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(conso_button, self.progress_bar,
+                          dx=self.progress_bar_dx, dy=self.progress_bar_dy)
         self.progress_var.set(0)
         threading.Thread(target=_launch_pub_list_conso,
                          args=(_update_progress,)).start()
 
     # Setting widgets for consolidation of publications list
     step_num = 4
-    conso_help_button = set_step_help_button(self, step_num)      
-    conso_button = set_step_launch_button(self, step_num,
-                                          _start_launch_pub_list_conso,
-                                          'bellow')
+    conso_help_button = bm_pu.set_step_help_button(self, step_num)
+    conso_button = bm_pu.set_step_launch_button(self, step_num,
+                                                _start_launch_pub_list_conso,
+                                                'bellow')
 
     # Setting buttons list for status change
     self.page_buttons_list = [self.years_opt_but,
+                              empl_help_button,
                               empl_update_button,
+                              merge_help_button,
                               merge_button,
+                              homonyms_help_button,
                               homonyms_button,
+                              otp_help_button,
                               otp_button,
+                              conso_help_button,
                               conso_button]

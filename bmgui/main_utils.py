@@ -19,9 +19,6 @@ from pathlib import Path
 from tkinter import messagebox
 from tkinter import font as tkFont
 
-# 3rd party imports
-from screeninfo import get_monitors
-
 # Local imports
 import bmgui.gui_globals as bm_gg
 import bmfuncts.institute_globals as bm_ig

@@ -398,12 +398,12 @@ def _set_if_files_param(institute, wf_path):
     # Setting useful paths
     if_root_folder_path = wf_path / Path(if_root_folder_alias)
     inst_all_if_path = if_root_folder_path / Path(inst_all_if_filename_alias)
-    
+
     # Setting returns
     files_list = [missing_if_filename_base_alias, missing_issn_filename_base_alias]
     folders_list = [pub_list_folder_alias]
     paths_list = [inst_all_if_path]
-    
+
     return files_list, folders_list, paths_list
 
 
@@ -434,7 +434,7 @@ def _set_years_lists(if_db_dict, corpi_years_list):
     # Setting the list of corpus years not part of the years of available IFs
     off_if_db_years_list = sorted(list(set(corpi_years_list)\
                                        - set(if_db_years_list)))
-    
+
     # Setting returned tuple
     if_db_years_tup = (if_db_years_list, off_if_db_years_list,
                        kept_if_db_years_list)
@@ -476,7 +476,7 @@ def update_inst_if_database(institute, org_tup, wf_path,
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     journal_cols_list = [final_col_dic['journal'], final_col_dic['issn'],
                          bm_pg.COL_NAMES_BONUS['e-ISSN']]
-    
+
     # Setting IFs files parameters
     files_list, folders_list, paths_list = _set_if_files_param(institute, wf_path)
     if_params_list = sum([folders_list, files_list], [])

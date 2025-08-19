@@ -22,10 +22,10 @@ sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmfuncts"))
 sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmgui"))
 
 
-project = 'BiblioMeter'
-release = '6.1.0'
-authors = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
-copyright = '2021, BiblioMeter team, Liten, Leti, CEA'
+PROJECT = 'BiblioMeter'
+RELEASE = '6.1.0'
+AUTHORS = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
+COPYRIGHT = '2021, BiblioMeter team, Liten, Leti, CEA'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -60,13 +60,13 @@ latex_elements = {
     'maketitle': f'''
         \\begin{{titlepage}}
             \\begin{{center}}
-                {{\\Huge \\textbf{{{project}}}}} \\\\
+                {{\\Huge \\textbf{{{PROJECT}}}}} \\\\
                 \\vspace{{0.5cm}}
-                {{\\large Version: {release}}} \\\\
+                {{\\large Version: {RELEASE}}} \\\\
                 \\vspace{{1cm}}
-                {{\\Large \\textbf{{Author(s): {authors}}}}} \\\\
+                {{\\Large \\textbf{{Author(s): {AUTHORS}}}}} \\\\
                 \\vspace{{0.5cm}}
-                {{\\small \\textcopyright\\ {copyright}}}
+                {{\\small \\textcopyright\\ {COPYRIGHT}}}
             \\end{{center}}
         \\end{{titlepage}}
     '''

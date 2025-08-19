@@ -18,7 +18,6 @@ from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
 from bmgui.update_if_page import create_update_ifs
-from bmgui.gui_utils import change_tup_value
 from bmgui.gui_utils import existing_corpuses
 from bmgui.gui_utils import last_available_years
 from bmgui.gui_utils import show_frame
@@ -37,9 +36,6 @@ class SetLaunchButton(tk.Tk):
 
         # Setting x and y position in pixels for launch button
         launch_but_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_BUT_POS_TUP)
-        if not launch_but_pos_tup[0]:
-            launch_but_pos_tup = change_tup_value(launch_but_pos_tup,
-                                                  0, master.mid_x_pos)
 
         # Setting launch button
         launch_font = tkFont.Font(family=bm_gg.FONT_NAME,

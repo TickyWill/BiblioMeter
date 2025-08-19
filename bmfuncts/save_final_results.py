@@ -591,6 +591,8 @@ def save_final_doctypes(wf_path,
 
 
 def set_result_folder_path(wf_path, datatype):
+    """Sets the path to the folder where the final results
+    will be saved given the datatype."""
     # Setting aliases for saving results
     results_root_alias = bm_pg.ARCHI_RESULTS["root"]
     results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]

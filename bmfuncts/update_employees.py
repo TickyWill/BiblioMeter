@@ -44,7 +44,7 @@ def _set_employees_paths(wf_path):
         wf_path (path): Full path to working folder.    
     Returns:
         (tup): Tuple of the 4 built full paths.
-    """    
+    """
     # Setting folder of the Institute parameters
     wf_root_path = wf_path.parent
 
@@ -164,8 +164,8 @@ def _update_months_history(months2add_file_path,
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
         (optional, default = None).
     Returns:
-        (tup): Tuple of 5 strings = (year, year_months_file_path, \
-        sheet_name_message, col_message, years2add_message).
+        (tup): Tuple of 5 strings and 1 integer = (year, year_months_file_path, \
+        sheet_name_message, col_message, years2add_message, progress_bar_state).
     """
     df_months_to_add = pd.read_excel(months2add_file_path, sheet_name=None)
     months_to_add = list(df_months_to_add.keys())
@@ -178,11 +178,11 @@ def _update_months_history(months2add_file_path,
         tup = _check_sheet_month(df_months_to_add[month], month)
         month_year, month_sheet_name_error, month_col_error = tup[0], tup[1], tup[2]
         if month_sheet_name_error:
-            return (None, None, month_sheet_name_error, None, None)
+            return None, None, month_sheet_name_error, None, None, progress_bar_state
         if month_col_error:
-            return (None, None, None, month_col_error, None)
+            return None, None, None, month_col_error, None, progress_bar_state
         if month_year is None:
-            return (None, None, month_sheet_name_error, None, None)
+            return None, None, month_sheet_name_error, None, None, progress_bar_state
         years_list.append(month_year)
         if progress_callback:
             progress_bar_state += step
@@ -192,7 +192,7 @@ def _update_months_history(months2add_file_path,
     if len(years_list)>1:
         years2add_error = ('Too many years covered by the file of months '
                            'to add while expected only one.')
-        return None, None, None, None, years2add_error
+        return None, None, None, None, years2add_error, progress_bar_state
 
     year = years_list[0]
     file_name = f'{year}' + one_year_employees_base_name
@@ -461,7 +461,7 @@ def _build_year_month_dpt(year_months_file_path,
             month_empl_df[col_keep_history] = month_empl_df[col_keep_history].\
                                               apply(_set_tup(month, year))
 
-        month_empl_df_list.append(month_empl_df)        
+        month_empl_df_list.append(month_empl_df)
         if progress_callback:
             progress_bar_state += step
             progress_callback(progress_bar_state)
@@ -494,7 +494,7 @@ def _build_year_month_dpt(year_months_file_path,
     employees_df = _add_column_full_name(employees_df)
     employees_df = _select_employee_dpt_and_serv(employees_df)
 
-    employees_df = employees_df[useful_col_list + add_col_list]        
+    employees_df = employees_df[useful_col_list + add_col_list]
     if progress_callback:
         progress_bar_state += 10
         progress_callback(progress_bar_state)
@@ -593,7 +593,8 @@ def update_employees(wf_path, progress_callback=None,
         all_years_file_error  = f"The file '{all_years_file_path}' has been "
         all_years_file_error += f"created with a sheet named '{employees_year}'"
     if progress_callback:
-        progress_callback(95)
+        progress_bar_left = 100 - progress_bar_state_2
+        progress_callback(progress_bar_state_2 + progress_bar_left * 0.5)
 
     # Copying the all-years employees file updated to the backup folder
     shutil.copy(all_years_file_path, backup_folder_path)
@@ -621,7 +622,7 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
         list of available years of employees data).    
     """
     print(f"Setting the adequate selection of employees data for {corpus_year} corpus...")
-    
+
     # Setting useful columns aliases
     last_name_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['name']
     full_name_col_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']

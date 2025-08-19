@@ -21,7 +21,6 @@ from bmgui.pages_classes import AnalyzeCorpusPage
 from bmgui.pages_classes import UpdateIfPage
 from bmgui.pages_classes import ConsolidateCorpusPage
 from bmgui.pages_classes import ParseCorpusPage
-from bmgui.gui_utils import change_tup_value
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import general_properties
 from bmgui.gui_utils import set_font_size_tup
@@ -49,7 +48,7 @@ class AppMain(tk.Tk):
 
         # Setting the link between "self" and "tk.Tk"
         tk.Tk.__init__(self)
-        
+
         # Setting useful paths
         app_functs_path = Path(__file__).parent.parent / Path('bmfuncts')
         config_path = app_functs_path / Path(bm_pg.CONFIG_FOLDER)
@@ -117,8 +116,6 @@ class SetMasterTitle():
         page_title_font_size_tup = set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
                                                      ['main_title'])
         page_title_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['main_title'])
-        if not page_title_pos_tup[0]:
-            page_title_pos_tup = change_tup_value(page_title_pos_tup, 0, master.mid_x_pos)
 
         # Creating widget for page title
         page_title = tk.Label(master,
@@ -138,7 +135,7 @@ class SetAuthorCopyright():
     def __init__(self, master):
         # Setting widgets parameters for copyright
         au_cop_font_size_tup = set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                ['copyright', 'version'])        
+                                                ['copyright', 'version'])
         copyright_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['copyright'])
         version_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['version'])
 

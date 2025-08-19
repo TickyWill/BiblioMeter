@@ -22,7 +22,7 @@ ROOT_FOLDERS_DICT = {'Liten': ("S:\\130-LITEN\\130.1-Direction\\130.1.2-Directio
                      'Leti' : "S:\\120-LETI\\120.38-BiblioMeter\\Bibliometry",
                     }
 
-WORKING_FOLDERS_DICT = dict(zip(INSTITUTES_LIST, [ROOT_FOLDERS_DICT[inst] + "\\" + FILES_FOLDER 
+WORKING_FOLDERS_DICT = dict(zip(INSTITUTES_LIST, [ROOT_FOLDERS_DICT[inst] + "\\" + FILES_FOLDER
                                                   for inst in INSTITUTES_LIST]))
 
 CONFIG_JSON_FILES_DICT = {}

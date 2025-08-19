@@ -33,7 +33,6 @@ __all__ = ['build_pub_ids_lists',
 
 # Standard library imports
 import json
-import re
 import os
 import shutil
 from pathlib import Path

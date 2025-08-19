@@ -6,11 +6,10 @@ __all__ = ['APP_WIN_TITLE',
            'BM_GUI_DISP',
            'CORPUSES_NUMBER',
            'FONT_NAME',
+           'BOX_DPOS_TUP',
            'BOX_POS_TUP',
-           'BOX_SEP_SPACE',
            'BOX_TABLE_COLS_DICT',
            'BOX_TABLE_POS_DICT',
-           'BOX_Y_DPOS',
            'EXIT_BUT_POS_TUP',
            'EXIT_LABEL',
            'GUI_BUTTONS',
@@ -130,7 +129,7 @@ BM_GUI_DISP = 0
 # Getting display resolution in pixels per inch
 PPI = DISPLAYS[BM_GUI_DISP]['ppi']
 
-# 
+# Setting display reference sizes in pixels and mm
 TK_SIZES_REF = {'display_px': (1920, 1080),
                 'display_mm': (467, 267),
                 'window_mm' : (219, 173),
@@ -167,7 +166,7 @@ FONT_NAME = "Helvetica"
 # *********** MAIN PAGE GLOBALS ***********
 # *****************************************
 
-# Font size per widget type 
+# Font size per widget type
 # (title, parameter selection, information display, button)
 MAIN_FONT_SIZE_DICT = {'copyright'     : 12,
                        'main_title'    : 30,
@@ -207,7 +206,7 @@ MAIN_SELECT_LABEL_POS_DICT = {'institute': (10, 40),
 # Relative positions of option-buttons for items selection
 MAIN_OPT_BUT_DPOS_TUP = (0, -2)
 
-# Labels of command buttons 
+# Labels of command buttons
 MAIN_BUT_LABEL_DICT = {'wf_change' : "Changer de dossier de travail",
                        'corpus_add': "Créer un nouveau dossier de corpus annuel",
                        'launch'    : "Lancer l'application",}
@@ -240,7 +239,7 @@ PAGE_BUTTON_HEIGHT = 13
 # **** JOINT GLOBALS OF SECONDARY-PAGES ****
 # ******************************************
 
-# Font size per page-widget type 
+# Font size per page-widget type
 # (title, parameter selection, information display, button)
 PAGE_FONT_SIZE_DICT = {'box_header'    : 11,
                        'exit_button'   : 12,
@@ -269,7 +268,7 @@ PROGRESS_BAR_DPOS_DICT = {KEY_PARSE : (10, 0.5),
                           KEY_ANALYS: (10, 0.5),
                          }
 
-PAGE_TITLE_POS_DICT = {'page_title'    : ("mid_page", 7), 
+PAGE_TITLE_POS_DICT = {'page_title'    : ("mid_page", 7),
                        'page_sub_title': ("mid_page", 17),
                       }
 
@@ -298,7 +297,7 @@ PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR : (10, 100),
                               KEY_ANALYS_YEAR: (10, 26),
                              }
 
-# Relative positions of label for items selection 
+# Relative positions of label for items selection
 PAGE_SELECT_LABEL_DPOS_DICT = {KEY_PARSE: (10, 2),}
 
 PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE : (1, -2),
@@ -330,7 +329,7 @@ def _set_step_pos_tups(steps_nb, step_x_pos, steps_y_pos_init,
         step_pos_tups_part = [(step_x_pos, step_y_pos)
                               for step_y_pos in step_y_pos_list]
         step_pos_tups = sum([[step0_pos_tup], step_pos_tups_part], [])
-        
+
     else:
         step_y_pos_list = [steps_y_pos_init + n * steps_dy
                            for n in range(steps_nb)]
@@ -491,8 +490,7 @@ STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des mots clefs")
 
 # Parameters for display of parsing files status
 BOX_POS_TUP = (70, 40)
-BOX_Y_DPOS = 10
-BOX_SEP_SPACE = 25
+BOX_DPOS_TUP = (25, 10)
 
 BOX_TABLE_COLS_DICT = {'raw_wos'     : 'Wos\nDonnées',
                        'wos_parse'   : 'Wos\nAnalyse',

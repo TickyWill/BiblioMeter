@@ -292,7 +292,7 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
         journal_pub_nb = len([x for x in pub_ids_list if x in journal_pub_ids_list])
         proceedings_pub_nb = len([x for x in pub_ids_list if x in proceedings_pub_ids_list])
         book_pub_nb = len([x for x in pub_ids_list if x in books_pub_ids_list])
-        
+
         pub_ids_list_str = "; ".join(pub_ids_list)
 
         init_inst_list = country_df[inst_list_col].to_list()

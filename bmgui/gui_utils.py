@@ -1,7 +1,6 @@
 """ `gui_utils` module contains useful functions for gui management."""
 
-__all__ = ['change_tup_value',
-           'disable_buttons',
+__all__ = ['disable_buttons',
            'enable_buttons',
            'existing_corpuses',
            'font_size',
@@ -18,6 +17,7 @@ __all__ = ['change_tup_value',
            'set_pos_tup_px',
            'set_pos_tup_px_list',
            'set_progress_bar_pos_tup',
+           'set_table_header_font',
            'show_frame',
            ]
 
@@ -39,13 +39,6 @@ import bmgui.gui_globals as bm_gg
 from bmfuncts.config_utils import set_user_config
 
 
-def change_tup_value(init_tup, chg_idx, new_value):
-    tup_to_list = list(init_tup)
-    tup_to_list[chg_idx] = new_value
-    new_tup = tuple(tup_to_list)
-    return new_tup
-
-
 def disable_buttons(buttons_list):
     """Disables use of tkinter widgets listed in 'buttons_list'."""
     for button in buttons_list:
@@ -63,48 +56,143 @@ def show_frame(self, page_name):
     frame.tkraise()
 
 
+def font_size(size, scale_factor):
+    """Sets the font-size based on scale_factor.
+    
+    If the font-size is less than minimum_size, 
+    it is set to the minimum size.
+    """
+    fontsize = int(size * scale_factor)
+    fontsize = max(fontsize, 8)
+    return fontsize
+
+
+def set_font_size_tup(master, font_dict, items):
+    """Sets adapted font sizes for a list of items given the standard 
+    font sizes specified.
+
+    The adaptation is obtained through the `font_size` internal function.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        font_dict (dict): The standard font size given per item.
+        items (list): List of items selected among the keys of font_dict dict.
+    Returns:
+        (tuple): Adapted font-sizes.
+    """
+    font_size_list = [font_size(font_dict[item], master.width_sf_min)
+                      for item in items]
+    return tuple(font_size_list)
+
+
+def set_table_header_font(master):
+    """Sets font for the headers of the box table.
+
+    The adapted font size is obtained through the `set_font_size_tup` 
+    internal function.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+    Returns:
+        (tkFont): Font of the table headers.
+    """
+    header_font_size = set_font_size_tup(master,
+                                         bm_gg.PAGE_FONT_SIZE_DICT,
+                                         ['box_header'])[0]
+    table_header_font = tkFont.Font(family=bm_gg.FONT_NAME,
+                                    size=header_font_size)
+    return table_header_font
+
+
+def mm_to_px(value_mm, ppi, fact=1.0):
+    """The `mm_to_px` function converts a value in mm to a value in pixels
+    using the display resolution and a factor fact to adjust the result if needed.
+
+    Args:
+        value_mm (float): The value in mm to be converted.
+        ppi (float): The display resolution in pixels per inch.
+        fact (float): Adjusting factor (default= 1).
+    Returns:
+        (int): Upper integer value of the conversion to pixels.
+    """
+    value_px = math.ceil((value_mm * fact / bm_gg.IN_TO_MM) * ppi)
+    return value_px
+
+
+def set_item_pos(master, pos_mm, axis_idx):
+    """Sets the position in pixels given the position in mm using 
+    the display resolution and the fitting factor for the position 
+    type (x-axis or y-axis).
+
+    The useful fitting factors are defined in the 'AppMain' 
+    class of the 'bmgui.main_page' module.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pos_mm (float): x-axis or y-axis position in mm.
+        axis_idx (int): Index (0 or 1) of the factor to be \
+        used in the tuple of scale factors in mm defined \
+        in the 'master' class.
+    Returns:
+        (int): The position in pixels.
+    """
+    item_pos_px = mm_to_px(pos_mm, bm_gg.PPI, fact=master.sf_mm_tup[axis_idx])
+    return item_pos_px
+
+
 def set_pos_tup_px(master, pos_tup):
-    idx_list = [0,1]
+    """Sets position coordinates in pixels given the coordinates in mm.
+
+    The conversion is done through the `set_item_pos` internal function. 
+    If x-axis position must be set at mid_page the corresponding pixel 
+    value is set to 'mid_x_pos' defined in `AppMain` class
+    of `bmgui.main_page` module.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pos_tup (tuple): (x-axis, y-axis) positions in mm.
+    Returns:
+        (tuple): (x-axis, y_axis) positions in pixels.
+    """
     if pos_tup[0]=="mid_page":
-        pos_px_tup = (None, mm_to_px(pos_tup[1] * master.sf_mm_tup[1], bm_gg.PPI))
+        pos_px_tup = (master.mid_x_pos,
+                      set_item_pos(master, pos_tup[1], 1))
     else:
-        pos_px_tup = tuple([mm_to_px(pos_tup[idx] * master.sf_mm_tup[idx],
-                                     bm_gg.PPI) for idx in [0,1]])
+        pos_px_tup = (set_item_pos(master, pos_tup[0], 0),
+                      set_item_pos(master, pos_tup[1], 1))
     return pos_px_tup
 
 
 def set_pos_tup_px_list(master, pos_tup_list):
+    """Sets position coordinates in pixels given 
+    the coordinates in mm for a list of coordinates.
+
+    The conversion is done through the `set_pos_tup_px` internal 
+    function.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pos_tup_list (list): The list of (x-axis, y-axis) \
+        positions in mm.
+    Returns:
+        (list): The list of (x-axis, y_axis) positions in pixels.
+    """
     pos_px_tup_list = [set_pos_tup_px(master, pos_tup)
                        for pos_tup in pos_tup_list]
     return pos_px_tup_list
 
 
-def set_font_size_tup(master, font_dict, items):
-    font_size_list = [font_size(font_dict[item], master.width_sf_min)
-                      for item in items]
-    return tuple(font_size_list)
-
-        
-def set_item_pos(master, value_mm, fact_idx):
-    item_pos = mm_to_px(value_mm * master.sf_mm_tup[fact_idx], bm_gg.PPI)
-    return item_pos
-
-       
 def set_display_width(master, item):
+    """Sets the width of the item given its number of characters."""
     item_width = int(bm_gg.MAIN_CHAR_NB_DICT[item] * master.width_sf_min)
     return item_width
 
 
 def set_progress_bar_pos_tup(master, page_key):
+    """Sets the parameters for placing the progress-bar widget in the given GUI page."""
     # Setting progress_bar parameters in px
-    bar_len = mm_to_px(bm_gg.PROGRESS_BAR_LEN_DICT[page_key]\
-                       * master.width_sf_mm, bm_gg.PPI)
-
-    bar_dx = mm_to_px(bm_gg.PROGRESS_BAR_DPOS_DICT[page_key][0]\
-                      * master.width_sf_mm, bm_gg.PPI)
-
-    bar_dy = mm_to_px(bm_gg.PROGRESS_BAR_DPOS_DICT[page_key][1]\
-                      * master.width_sf_mm, bm_gg.PPI)
+    bar_len = set_item_pos(master, bm_gg.PROGRESS_BAR_LEN_DICT[page_key], 0)
+    (bar_dx, bar_dy) = set_pos_tup_px(master, bm_gg.PROGRESS_BAR_DPOS_DICT[page_key])
     return bar_len, bar_dx, bar_dy
 
 
@@ -119,26 +207,25 @@ def set_page_title(self, master, page_label, institute, datatype=None):
         (default = None).        
     """
     # internal functions
-    def _set_title_widgets(item):        
+    def _set_title_widgets(item):
         title_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                        size=title_font_size[item])
         self.label = tk.Label(self,
                               text=page_title[item],
                               font=title_label_font)
-        self.label.place(x=title_x_pos,
-                         y=title_y_pos[item],
+        self.label.place(x=title_pos_tup[item][0],
+                         y=title_pos_tup[item][1],
                          anchor="center")
 
     sub_title_add = ""
     if datatype:
         sub_title_add = f" - {datatype}"
-    
-    # Setting page titles
-    page_title = {'page_title'     : f"{page_label}",
-                  'page_sub_title' : f"{institute}{sub_title_add}"}
 
-    # Setting short names for window factors for positions setting in px
-    h_sf_mm = master.height_sf_mm
+    # Setting page titles
+    page_title = {'page_title'    : f"{page_label}",
+                  'page_sub_title': f"{institute}{sub_title_add}"}
+
+    # Setting short name for window factor for font sizes setting
     w_sf_min = master.width_sf_min
 
     # Setting font size for page titles
@@ -146,11 +233,12 @@ def set_page_title(self, master, page_label, institute, datatype=None):
                                                    w_sf_min),
                        'page_sub_title': font_size(bm_gg.PAGE_FONT_SIZE_DICT['page_sub_title'],
                                                    w_sf_min),}
-    title_x_pos = master.mid_x_pos
-    title_y_pos = {'page_title'    : mm_to_px(bm_gg.PAGE_TITLE_POS_DICT['page_title'][1]\
-                                              * h_sf_mm, bm_gg.PPI),
-                   'page_sub_title': mm_to_px(bm_gg.PAGE_TITLE_POS_DICT['page_sub_title'][1]\
-                                              * h_sf_mm, bm_gg.PPI),}
+
+    title_pos_tup = {'page_title'    : set_pos_tup_px(master,
+                                                      bm_gg.PAGE_TITLE_POS_DICT['page_title']),
+                     'page_sub_title': set_pos_tup_px(master,
+                                                      bm_gg.PAGE_TITLE_POS_DICT['page_sub_title']),
+                    }
 
     # Creating title widget
     _set_title_widgets('page_title')
@@ -178,10 +266,7 @@ def set_exit_button(self, master):
     # numbers are reference values in mm for reference screen
     exit_font_size = font_size(bm_gg.PAGE_FONT_SIZE_DICT['exit_button'],
                                master.width_sf_min)
-    exit_x_pos = mm_to_px(bm_gg.EXIT_BUT_POS_TUP[0]\
-                          * master.width_sf_mm, bm_gg.PPI)
-    exit_y_pos = mm_to_px(bm_gg.EXIT_BUT_POS_TUP[1]\
-                          * master.height_sf_mm, bm_gg.PPI)
+    exit_pos_tup = set_pos_tup_px(master, bm_gg.EXIT_BUT_POS_TUP)
 
     # Setting widget for exit button
     button_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -190,8 +275,8 @@ def set_exit_button(self, master):
                              text=bm_gg.EXIT_LABEL,
                              font=button_font,
                              command=_launch_exit)
-    button_label.place(x=exit_x_pos,
-                       y=exit_y_pos,
+    button_label.place(x=exit_pos_tup[0],
+                       y=exit_pos_tup[1],
                        anchor='n')
 
 
@@ -366,32 +451,6 @@ def place_bellow(haut, bas, dx=0, dy=5):
     bas.place(x=x, y=y)
 
 
-def font_size(size, scale_factor):
-    """Sets the font-size based on scale_factor.
-    
-    If the font-size is less than minimum_size, 
-    it is set to the minimum size.
-    """
-    fontsize = int(size * scale_factor)
-    fontsize = max(fontsize, 8)
-    return fontsize
-
-
-def mm_to_px(size_mm, ppi, fact=1.0):
-    """The `mm_to_px` function converts a value in mm to a value in pixels
-    using the display resolution and a factor fact to adjust the result if needed.
-
-    Args:
-        size_mm (float): The value in mm to be converted.
-        ppi (float): The display resolution in pixels per inch.
-        fact (float): Adjusting factor (default= 1).
-    Returns:
-        (int): Upper integer value of the conversion to pixels.
-    """
-    size_px = math.ceil((size_mm * fact / bm_gg.IN_TO_MM) * ppi)
-    return size_px
-
-
 def _window_properties(screen_width_px, screen_height_px):
     """Computes useful values for adapting tkinter windows 
     and widgets positions to the display resolution using reference 
@@ -408,10 +467,6 @@ def _window_properties(screen_width_px, screen_height_px):
         scale factor on width in mm, \
         scale factor on height in mm).
     """
-
-    # Getting number of pixels per inch screen resolution from imported global DISPLAYS
-    ppi = bm_gg.DISPLAYS[bm_gg.BM_GUI_DISP]["ppi"]
-
     # Setting screen effective sizes in mm from imported global DISPLAYS
     screen_width_mm = bm_gg.DISPLAYS[bm_gg.BM_GUI_DISP]["width_mm"]
     screen_height_mm = bm_gg.DISPLAYS[bm_gg.BM_GUI_DISP]["height_mm"]
@@ -435,8 +490,8 @@ def _window_properties(screen_width_px, screen_height_px):
     scale_factor_height_mm = screen_height_mm / ref_height_mm
 
     # Computing secondary window sizes in pixels depending on scale factors
-    win_width_px = mm_to_px(ref_window_width_mm * scale_factor_width_mm, ppi)
-    win_height_px = mm_to_px(ref_window_height_mm * scale_factor_height_mm, ppi)
+    win_width_px = mm_to_px(ref_window_width_mm * scale_factor_width_mm, bm_gg.PPI)
+    win_height_px = mm_to_px(ref_window_height_mm * scale_factor_height_mm, bm_gg.PPI)
 
     sizes_tuple = (win_width_px, win_height_px,
                    scale_factor_width_px, scale_factor_height_px,
