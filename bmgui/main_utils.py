@@ -127,7 +127,7 @@ def _display_path(inst_wf):
 def _get_file(self, institute_select, datatype_select):
     """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
     Updates 'wf' widgets parameters and values accordingly to the working 
-    folder got and sets launch button of corpuses analysis."""
+    folder got and sets launch button of corpora analysis."""
 
     # Getting new working directory
     dialog_title = "Choisir un nouveau dossier de travail"
@@ -195,7 +195,7 @@ def _try_wf_access(wf_path):
 def _create_corpus(self, inst_wf):
     """Creates a new corpus folder in the working folder through `create_archi` 
     function imported from `bmfuncts.useful_functs` module.             
-    Then, updates 'corpuses' widget value with new list of available corpuses."""
+    Then, updates 'corpuses' widget value with new list of available corpora."""
 
     corpuses_val = set_corpuses_widgets_param(self, inst_wf)
     wf_path = Path(inst_wf)
@@ -210,14 +210,14 @@ def _create_corpus(self, inst_wf):
         message = create_archi(wf_path, new_corpus_year_folder, verbose=False)
         print("\n",message)
 
-        # Getting updated corpuses list
+        # Getting updated corpora list
         corpuses_list = last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
 
-        # Setting corpuses_val value to corpuses list
+        # Setting corpuses_val value to corpora list
         corpuses_val_to_set = str(corpuses_list)
         corpuses_val.set(corpuses_val_to_set)
 
-        # Dispaying info
+        # Displaying info
         extractions_folder_alias = bm_pg.ARCHI_EXTRACT['root']
         info_title = "- Information -"
         info_text = (f"L'architecture du dossier pour l'année {new_corpus_year_folder} "
@@ -231,9 +231,9 @@ def _create_corpus(self, inst_wf):
 def set_corpuses_widgets_param(self, inst_wf):
     """Sets 'corpuses' widgets parameters and values accordingly 
     to the working folder and returns tkinter 'corpuses' parameter 
-    that is used to set for displaying the available corpuses list."""
+    that is used to set for displaying the available corpora list."""
 
-    # Setting corpuses label widget
+    # Setting corpora label widget
     corpuses_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                 size=self.disp_font_size_tup[0],
                                 weight='bold')
@@ -243,7 +243,7 @@ def set_corpuses_widgets_param(self, inst_wf):
     corpuses_label.place(x=self.corpuses_pos_tup[0],
                          y=self.corpuses_pos_tup[1])
 
-    # Setting corpuses widgets parameters
+    # Setting corpora widgets parameters
     corpuses_val = tk.StringVar(self)
     corpuses_entry = tk.Entry(self, textvariable=corpuses_val,
                               width=self.corpuses_width)
@@ -260,7 +260,7 @@ def set_corpuses_widgets_param(self, inst_wf):
     return corpuses_val
 
 def _update_corpuses(self, inst_wf):
-    """Updates tkinter 'corpuses' parameter with the available corpuses list 
+    """Updates tkinter 'corpuses' parameter with the available corpora list
     accordingly to working folder."""
 
     corpuses_val = set_corpuses_widgets_param(self, inst_wf)
@@ -268,16 +268,16 @@ def _update_corpuses(self, inst_wf):
     wf_path = Path(inst_wf)
     wf_access_status = _try_wf_access(wf_path)
     if wf_access_status:
-        # Getting updated corpuses list
+        # Getting updated corpora list
         corpuses_list = last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
 
-        # Setting corpuses_val value to corpuses list
+        # Setting corpuses_val value to corpora list
         corpuses_val_to_set = str(corpuses_list)
     corpuses_val.set(corpuses_val_to_set)
 
 def _update_datatype(self, *args, datatype_widget=None):
     """Gets selected data-type and sets, accordingly, 'wf' widgets parameters, 
-    'corpuses' widgets parameters and sets launch button of corpuses analysis."""
+    'corpuses' widgets parameters and sets launch button of corpora analysis."""
 
     datatype_select = datatype_widget.get()
     self.datatype_optionbutton.configure(state = 'disabled')
@@ -290,7 +290,7 @@ def _update_datatype(self, *args, datatype_widget=None):
     # Managing corpus list
     corpuses_val = set_corpuses_widgets_param(self, inst_default_wf)    # !!!!!!!
 
-    # Setting and displaying corpuses list initial values
+    # Setting and displaying corpora list initial values
     corpuses_val_to_set = ""
     default_wf_path = Path(inst_default_wf)
     info_title = "- Information -"

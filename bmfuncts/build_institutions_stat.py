@@ -35,14 +35,14 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
 
     Args:
         norm_institutions_df (dataframe): Data of the normalized institutions per publication.
-        institutions_col (str): Column name of the normalizedinstitutions list in \
+        institutions_col (str): Column name of the normalized institutions list in \
         the 'norm-institution_df' dataframe.
         inst_types_list (list): Institution types that are used as column names in the built data.
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
     Returns:
-        (dataframe): The built data with distributed normalized institutions per intitution \
+        (dataframe): The built data with distributed normalized institutions per institution \
         type and per publication.
     """
     if progress_param:
@@ -93,7 +93,7 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
     Args:
         institute (str): Institute name.
         distrib_institutions_df (dataframe): data with distributed normalized \
-        institutions per intitution type and per publication.
+        institutions per institution type and per publication.
         cols_list (list): The columns names (str) list used to build the data.
         institute_pub_ids_list (list): All publication IDs (str) of the institute.
     Returns:
@@ -284,7 +284,8 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
     # Building stat per country for given inst_type
     data_cols_list = [country_col, inst_nb_col, inst_list_col, journal_nb_col,
                       proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
-    country_inst_pub_df = pd.DataFrame(columns=data_cols_list)
+    # TODO remove the following line after tests (redundancy)
+    # country_inst_pub_df = pd.DataFrame(columns=data_cols_list)
     data = []
     for country, country_df in pub_country_inst_df.groupby(country_col):
         pub_ids_list = list(set(country_df[pub_id_col].to_list()))
@@ -325,7 +326,7 @@ def _build_inst_stat_data(institute, distrib_institutions_df,
     Args:
         institute (str): Institute name.
         distrib_institutions_df (dataframe): data with distributed normalized \
-        institutions per intitution type and per publication.
+        institutions per institution type and per publication.
         common_cols_list (list): The  names (str) list of the common columns \
         used to build the data.
         stat_cols_list (list): The names (str) list of the specific columns \
@@ -421,9 +422,7 @@ def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
 
     Args:
         institute (str): Institute name.
-        norm_institutions_df (dataframe): Data of the normalized institutions \
-        per publication.
-        inst_types_file_path (path): The full path to the institutions-types file.
+        distrib_institutions_df (pd.DataFrame)
         inst_analysis_folder_path (path); The full path to the folder \
         where the results of the institutions analysis are saved.
         pub_ids_lists (tuple): (list of all publication IDs (str) of the institute, \

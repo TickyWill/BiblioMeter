@@ -44,6 +44,7 @@ def disable_buttons(buttons_list):
     for button in buttons_list:
         button.config(state=tk.DISABLED)
 
+
 def enable_buttons(buttons_list):
     """Enables use of tkinter widgets listed in 'buttons_list'."""
     for button in buttons_list:
@@ -200,10 +201,11 @@ def set_page_title(self, master, page_label, institute, datatype=None):
     """Sets the page title of the 'page_name' page.
 
     Args:
+        self
         master (class): `bmgui.main_page.AppMain` class.
-        page_name (str): Name of 'page_name' page.
+        page_label (str)
         institute (str): Institute name.
-        datatype (str): Optional data combination type from corpuses \
+        datatype (str): Optional data combination type from corpora \
         (default = None).        
     """
     # internal functions
@@ -243,7 +245,7 @@ def set_page_title(self, master, page_label, institute, datatype=None):
     # Creating title widget
     _set_title_widgets('page_title')
 
-    # Creating sub-title widget
+    # Creating subtitle widget
     _set_title_widgets('page_sub_title')
 
 
@@ -251,6 +253,7 @@ def set_exit_button(self, master):
     """Sets exit button on any page of 'master'.
 
     Args:
+        self
         master (class): `bmgui.main_page.AppMain` class.
     """
     # Internal functions
@@ -282,22 +285,23 @@ def set_exit_button(self, master):
 
 def last_available_years(wf_path, year_number):
     """Returns a list of up to 'year_number' number 
-    of the most-recent years of available corpuses 
-    in the working folder targetted by 'wf_path'.
+    of the most-recent years of available corpora
+    in the working folder targeted by 'wf_path'.
 
     Args:
         wf_path (path): Full path to working folder.
-        year_number (int): Data combination type from corpuses databases.
+        year_number (int): Data combination type from corpora databases.
     Returns:
-        (list): List of 'year_number' length of available corpuses \
+        (list): List of 'year_number' length of available corpora \
         as strings of 4 digits.    
     """
     # Setting warning parameters
-    warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-    warning_text = (f"L'accès au dossier {wf_path} est impossible."
-                    "\nChoisissez un autre dossier de travail.")
+    # TODO Remove these lines (redundant)
+    # warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
+    # warning_text = (f"L'accès au dossier {wf_path} est impossible."
+    #                "\nChoisissez un autre dossier de travail.")
 
-    # Get list of available corpuses
+    # Get list of available corpora
     try:
         list_dir = sorted(os.listdir(wf_path))
         years_full_list = []
@@ -329,7 +333,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
     """Returns a list of lists of booleans displaying True
     if rawdata and parsing results are available, and False otherwise.
 
-    This is done for each of the available corpuses.        
+    This is done for each of the available corpora.
         ex: If only 2023 files are not present, the returned tuple of lists contains
 
         - Years list                          = ["2018", "2019", "2020", "2021", "2022", "2023"]
@@ -341,7 +345,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
     Args:
         wf_path (path):  Full path to working folder.
-        corpuses_number (int): The number of corpuses to be checked \
+        corpuses_number (int): The number of corpora to be checked \
         (default: CORPUSES_NUMBER global).
     Returns:
         (tup of lists): (Years list, WoS raw-data boolean list, \
@@ -351,7 +355,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
     # internal functions
     def _get_rawdata_file_path(rawdata_path, rawdata_extent):
-        """Returns the name of the rawdata file with 'rawdata_extent' extention
+        """Returns the name of the rawdata file with 'rawdata_extent' extension
         pointed by the full path 'rawdata_path'.
         """
 
@@ -433,7 +437,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
 def place_after(gauche, droite, dx=5, dy=0):
     """Places widget 'droite' after widget 'gauche' 
-    by dx shift in pixels on x axis without shift on y axis.
+    by dx shift in pixels on x-axis without shift on y-axis.
     """
     gauche_info = gauche.place_info()
     x = int(gauche_info['x']) + gauche.winfo_reqwidth() + dx
@@ -443,7 +447,7 @@ def place_after(gauche, droite, dx=5, dy=0):
 
 def place_bellow(haut, bas, dx=0, dy=5):
     """Places widget 'bas' after widget 'haut' 
-    by dy shift in pixels on y axis without shift on x axis.
+    by dy shift in pixels on y-axis without shift on x-axis.
     """
     haut_info = haut.place_info()
     x = int(haut_info['x']) + dx
@@ -508,7 +512,7 @@ def general_properties(self):
     These globals are defined locally in the module imported as bm_gg.
 
     Args:
-        self (instense): Instense where application launch window is created.
+        self (instance): Instance where application launch window is created.
     Returns:
         (tup): (width of reference window converted to px, \
         height of reference window converted to px, \
@@ -518,7 +522,7 @@ def general_properties(self):
         scale factor on height in mm).
     """
 
-    # Getting screen effective sizes in pixels for window "root" (not woring for Darwin platform)
+    # Getting screen effective sizes in pixels for window "root" (not working for Darwin platform)
     screen_width_px  = self.winfo_screenwidth()
     screen_height_px = self.winfo_screenheight()
 

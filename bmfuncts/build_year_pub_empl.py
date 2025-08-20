@@ -202,11 +202,11 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
     pub_df = keep_initials(pub_df, bm_pg.COL_NAMES_BM['First_name'])
 
     # Initializing a Data frame that will contain all matches
-    # between 'pub_df' author-name and 'empl_df' emmployee-name
+    # between 'pub_df' author-name and 'empl_df' employee-name
     submit_df = pd.DataFrame()
 
     # Initializing a Data frame that will contain all 'pub_df' author-names
-    # which do not match with any of the 'empl_df' emmployee-names
+    # which do not match with any of the 'empl_df' employee-names
     orphan_df = pd.DataFrame(columns=list(pub_df.columns))
 
     # Building the set of lastnames (without duplicates) of the dataframe 'empl_df'
@@ -240,7 +240,9 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
             _test_full_match(empl_pub_match_df, pub_lastname)
 
         if len(empl_pub_match_df)==0: # No match found
-            flag_lastname_match = False
+            # TODO remove the following line after tests (redundancy)
+            # flag_lastname_match = False
+
             # Checking for a similarity
             lastname_match_list = _reduce_orphan_df(pub_lastname, eff_lastnames)
 

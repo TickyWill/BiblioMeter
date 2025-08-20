@@ -52,12 +52,10 @@ def _build_effective_config(db_list, parsing_folder_dict_init):
         parsing_folder_dict_init (hierarchical dict): The architecture of the parsing \
         folder to be used for each database of the database list 'db_list'.
     Returns:
-        (hierarchical dict): The hierachical dict giving the architecture \
+        (hierarchical dict): The hierarchical dict giving the architecture \
         of the parsing folder for each database.
     """
-    parsing_folder_dict = {}
-    parsing_folder_dict['folder_root'] = parsing_folder_dict_init['folder_root']
-    parsing_folder_dict['corpus'] = {}
+    parsing_folder_dict = {'folder_root': parsing_folder_dict_init['folder_root'], 'corpus': {}}
     parsing_folder_dict['corpus']['corpus_root'] = parsing_folder_dict_init['corpus']['corpus_root']
     parsing_folder_dict['corpus']['concat'] = parsing_folder_dict_init['corpus']['concat']
     parsing_folder_dict['corpus']['dedup'] = parsing_folder_dict_init['corpus']['dedup']
@@ -84,7 +82,7 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
         year (str): The name of the corpus folder defined by 4 digits \
         corresponding to the corpus year.
         db_list (list): The list of the database string names.
-        parsing_folder_dict (hierachical dict): The architecture of the parsing folder \
+        parsing_folder_dict (hierarchical dict): The architecture of the parsing folder \
         used to set the full paths.
     Returns:
         (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata \
@@ -93,15 +91,15 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
     """
 
     # Internal functions
-    def _get_folder_attributes(parsing_folder_dict, keys_list, folder_root):
-        key_dict = parsing_folder_dict
-        for key in keys_list:
+    def _get_folder_attributes(_parsing_folder_dict, _keys_list, folder_root):
+        key_dict = _parsing_folder_dict
+        for key in _keys_list:
             key_dict = key_dict[key]
         folder_name = key_dict
         folder_path = folder_root / Path(folder_name)
         if not os.path.exists(folder_path):
             os.mkdir(folder_path)
-        return (folder_path, folder_name)
+        return folder_path, folder_name
 
     # Updating 'parsing_folder_dict' using the list of databases 'db_list'
     parsing_folder_dict = _build_effective_config(db_list, parsing_folder_dict)
@@ -109,7 +107,7 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
     # Getting the year folder attributes
     year_files_path = wf_path / Path(str(year))
 
-    # Getting the corpuses folder attributes
+    # Getting the corpora folder attributes
     keys_list = ['corpus', 'corpus_root']
     corpus_folder_path, _ = _get_folder_attributes(parsing_folder_dict,
                                                    keys_list, year_files_path)
@@ -156,7 +154,7 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
                                                    keys_list, dedup_root_path)
     parsing_path_dict['dedup'] = dedup_parsing_path
 
-    return (rawdata_path_dict, parsing_path_dict)
+    return rawdata_path_dict, parsing_path_dict
 
 
 def set_user_config(wf_path, year, db_list):
@@ -195,7 +193,7 @@ def set_user_config(wf_path, year, db_list):
     # Getting the filenames for each parsing item
     item_filename_dict = config_dict['PARSING_FILE_NAMES']
 
-    return (rawdata_path_dict, parsing_path_dict, item_filename_dict)
+    return rawdata_path_dict, parsing_path_dict, item_filename_dict
 
 
 def _get_insitute_config(institute, wf_path):
@@ -211,7 +209,7 @@ def _get_insitute_config(institute, wf_path):
     of the `bmfuncts` package.
 
 Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         wf_path (path): The full path to the working folder.
     Returns:
         (dict): The dict resulting from the parsing of the json file.
@@ -248,17 +246,17 @@ def set_org_params(institute, wf_path):
     - index 8 = the status of the combination of the tuples at index 3.
     - index 9 = the status of splitting the file of list of publications with one row per author \
     that has not been identified as Institute employee.
-    - index 10 = the status of droping particular affiliation authors in the file of list of \
+    - index 10 = the status of dropping particular affiliation authors in the file of list of \
     publications with one row per author that has not been identified as Institute employee.
     - index 11 = the level at which the OTPs are predefined before final set by the user.
-    - index 12 = the name of the database file of OTPs per departement, service and labs.
+    - index 12 = the name of the database file of OTPs per department, service and labs.
     - index 13 = the name of the sheet to be read in the database file of OTPs.
     - index 14 = the lines number of the header in the database file of OTPs.
     - index 15 = the column names to be read in the database file of OTPs.
     - index 16 = the list of departments that have not lab-OTPs available.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         wf_path (path): The full path to the working folder.
     Returns:
         (tup): A tuple of the 9 set parameters. 

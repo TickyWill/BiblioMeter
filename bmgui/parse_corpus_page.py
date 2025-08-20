@@ -39,10 +39,10 @@ class CheckBoxCorpuses:
 
     def __init__(self, parent, master, year, items_status, col_space):
 
-        def _set_item_status(self, item):
-            self.boxes_dict[item] = tk.Checkbutton(parent)
-            if items_status[item]:
-                self.boxes_dict[item].select()
+        def _set_item_status(_self, _item):
+            _self.boxes_dict[_item] = tk.Checkbutton(parent)
+            if items_status[_item]:
+                _self.boxes_dict[_item].select()
 
         self.check_boxes_sep_space = col_space
         table_header_font = bm_gu.set_table_header_font(master)
@@ -52,7 +52,7 @@ class CheckBoxCorpuses:
             _set_item_status(self, item)
 
     def boxes_place(self, box_x_pos_init, box_y_pos, items_status):
-        """Places the check boxes for displaying files status."""
+        """Places the checkboxes for displaying files status."""
         box_x_pos = box_x_pos_init
         a = self.lab.winfo_reqwidth()
         self.lab.place(x=box_x_pos-a, y=box_y_pos, anchor='center')
@@ -63,7 +63,7 @@ class CheckBoxCorpuses:
             self.boxes_dict[item].config(state='disabled')
 
     def efface(self):
-        """Erases the check boxes of the files status."""
+        """Erases the checkboxes of the files status."""
         self.lab.place_forget()
         for value in self.boxes_dict.values():
             value.place_forget()
@@ -85,9 +85,9 @@ def _create_table(self, master, x_pos_init):
         from the module 'gui_utils' of the package 'bmgui'.
     """
     # Internal functions
-    def _set_table_item(item_text, item_x_pos):
+    def _set_table_item(_item_text, item_x_pos):
         item_box = tk.Label(self,
-                            text=item_text,
+                            text=_item_text,
                             font=table_header_font)
         item_box.place(x=item_x_pos, y=y_pos, anchor='center')
         self.TABLE.append(item_box)
@@ -213,25 +213,25 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
         ProgressBar tkinter widget status.
     """
     # Internal functions
-    def _corpus_parsing(rawdata_path, parsing_path,
-                        database_type, progress_callback):
-        parsing_tup = bp.biblio_parser(rawdata_path, database_type,
+    def _corpus_parsing(raw_data_path, _parsing_path,
+                        _database_type, _progress_callback):
+        parsing_tup = bp.biblio_parser(raw_data_path, _database_type,
                                        inst_filter_list=None,
                                        country_affiliations_file_path=inst_paths_tup[0],
                                        inst_types_file_path=inst_paths_tup[1])
         parsing_dict, dic_failed = parsing_tup
-        progress_callback(80)
-        save_parsing_dict(parsing_dict, parsing_path,
+        _progress_callback(80)
+        save_parsing_dict(parsing_dict, _parsing_path,
                           item_filename_dict, parsing_save_extent)
-        progress_callback(90)
-        save_fails_dict(dic_failed, parsing_path)
-        progress_callback(100)
+        _progress_callback(90)
+        save_fails_dict(dic_failed, _parsing_path)
+        _progress_callback(100)
 
         articles_number = dic_failed["number of article"]
-        info_title = "Information"
-        info_text = (f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
+        _info_title = "Information"
+        _info_text = (f"'Parsing' de '{_database_type}' effectué pour l'année {corpus_year}."
                      f"\n\n  Nombre d'articles du corpus : {articles_number}")
-        messagebox.showinfo(info_title, info_text)
+        messagebox.showinfo(_info_title, _info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
@@ -324,36 +324,36 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
         corpus_year (str): Corpus year defined by 4 digits.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         inst_paths_tup (tup): (full path to institute-affiliations file, \
         full path to institutions-types file).
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
     # Internal functions
-    def _deduplicate_corpus_parsing(progress_callback):
+    def _deduplicate_corpus_parsing(_progress_callback):
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
-        progress_callback(30)
+        _progress_callback(30)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
                                                      inst_filter_list=org_tup[3])
-        progress_callback(50)
+        _progress_callback(50)
         save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)
-        progress_callback(60)
+        _progress_callback(60)
         dedup_parsing_dict = bp.deduplicate_parsing(concat_parsing_dict,
                                                     norm_inst_status=False,
                                                     inst_types_file_path=inst_paths_tup[0],
                                                     country_affiliations_file_path=inst_paths_tup[1])
-        dedup_articles_nb = len(dedup_parsing_dict["articles"])
-        progress_callback(90)
+        _dedup_articles_nb = len(dedup_parsing_dict["articles"])
+        _progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_path,
                           item_filename_dict, parsing_save_extent,
                           dedup_infos=(wf_path, datatype, corpus_year))
-        progress_callback(100)
-        return dedup_articles_nb
+        _progress_callback(100)
+        return _dedup_articles_nb
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
@@ -463,11 +463,12 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     `_launch_dedup` and `_update_status`.
 
     Args:
+        self
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of parsing page.
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
     """
     # Internal functions
 

@@ -30,10 +30,10 @@ def _set_if_files_params(institute, org_tup, wf_path):
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
     Returns:
-        (tup):(publications-lists folder name, \
+        (tup): publications-lists folder name, \
         base for building names of publications-list files, \
         base for building names of missing-IFs files, \
-        name for building names of missing-ISSNs files).
+        name for building names of missing-ISSNs files.
     """
     # Setting useful aliases
     all_years_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
@@ -231,7 +231,7 @@ def _set_year_files_params(wf_path, corpus_year, names_tup):
 
 def _update_pub_if(institute, org_tup, wf_path, datatype,
                    corpus_years_list, progress_callback):
-    """Updates impact factors of publications final list of the corpuses years.
+    """Updates impact factors of publications final list of the corpora years.
 
     This is done through the `add_if` function imported from 
     `bmfuncts.consolidate_pub_list` module after check of availability 
@@ -241,7 +241,7 @@ def _update_pub_if(institute, org_tup, wf_path, datatype,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         corpus_years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
         progress_callback (function): Function for updating \
@@ -335,7 +335,7 @@ def _update_pub_if(institute, org_tup, wf_path, datatype,
 
 def _launch_update_pub_if(institute, org_tup, wf_path, datatype, if_db_update_status,
                           corpus_years_list, progress_callback):
-    """Launches updating impact factors of publications final list of the corpuses years.
+    """Launches updating impact factors of publications final list of the corpora years.
 
     This is done through the `_update_pub_if` internal function.
 
@@ -343,7 +343,7 @@ def _launch_update_pub_if(institute, org_tup, wf_path, datatype, if_db_update_st
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         if_db_update_status (bool) : True if IFs database has been \
         updated.
         corpus_years_list (list): List of available corpus years \
@@ -389,11 +389,12 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
     and `_launch_update_pub_if`.
 
     Args:
+        self
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
     """
     # Internal functions
 

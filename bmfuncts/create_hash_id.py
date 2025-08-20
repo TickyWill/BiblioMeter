@@ -25,7 +25,7 @@ def _my_hash(text:str):
     with a fixed prime numbers to mix up the bits.
 
     Args:
-        text (str): The text for which the Hash Id is built.
+        text (str): The text for which the Hash ID is built.
     Returns:
         (int): The built Hash ID.
     """
@@ -41,10 +41,10 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     """Cleans data from publications with same hash ID.
 
     Args:
-        dfs_tup (tup): (data (dataframe) of publications list with one row \
-        per institute author and attributes as employee, \
-        data (dataframe) of publications list with one row per author not found \
-        in the employees database, data of Hash IDs with related publication IDs).
+        dfs_tup (tup): data (dataframe) of publications list with one row \
+        per institute author and attributes as employee data (dataframe) \
+        of publications list with one row per author not found \
+        in the employees database, data of Hash IDs with related publication IDs.
         cols_tup (tup): The name of useful columns.
     Returns:
         (tup): (The cleaned data (dataframe) of publications list with one row \

@@ -40,7 +40,7 @@ def add_data_val(ws, data_val, df_len, col_letter, xl_idx_base):
         `bmfuncts.format_files` module.
         df_len (int): Number of rows of dataframe composing 'ws' (excludes column \
         headers). 
-        col_letter (str): Letter (or couple of letters) targetting the column
+        col_letter (str): Letter (or a couple of letters) targeting the column
         to be added with validation data list in each cell.
         xl_idx_base (int): Base of row indexes in openpyxl objects.
     Returns:
@@ -66,11 +66,11 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict):
         otp_col_dict (dict): The final columns names of the dataframes \
         for OTPs attribution by the user.
     returns:
-        (tup): (End message (str), modifyed data (dataframe)).
+        (tup): (End message (str), modified data (dataframe)).
     """
     # Internal functions
-    def _set_dpt(dpt_label_list):
-        return lambda x: 1 if x in dpt_label_list else 0
+    def _set_dpt(_dpt_label_list):
+        return lambda x: 1 if x in _dpt_label_list else 0
 
     # Setting institute parameters
     dpt_attributs_dict = org_tup[2]
@@ -115,7 +115,7 @@ def _set_otps_dept_affil(org_tup, in_df, otp_col_dict):
     # Renaming the 'otp_dept_col' as 'dpt_col'
     out_df = out_df.rename(columns={otp_dept_col: dpt_col})
 
-    end_message = ("Column with department for OTPs atribution and columns "
+    end_message = ("Column with department for OTPs attribution and columns "
                    "for each department of the institute added")
     return end_message, out_df
 
@@ -126,14 +126,14 @@ def _add_authors_name_list(institute, org_tup, in_df):
     The columns contain respectively the full name of each author as "NAME, Firstname" 
     and the institute co-authors list with attributes of each author in a string as follows:
 
-        - "NAME1, Firstame1 (matricule,job type,department affiliation, \
+        - "NAME1, Firstname1 (matricule,job type,department affiliation, \
         service affiliation,laboratoire affiliation);
-        - NAME2, Firstame2 (matricule,job type,department affiliation, \
+        - NAME2, Firstname2 (matricule,job type,department affiliation, \
         service affiliation,laboratoire affiliation);
         - ...".
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): Contains Institute parameters.
         in_df (dataframe): Data of the publications list \
         with a row per Institute author and their attributes columns.
@@ -256,10 +256,10 @@ def _save_dpt_otp_file(dpt, dpt_df, dpt_otp_list,
     Then the dataframe is formatted as an openpyxl workbook through 
     the `format_page` function imported from `bmfuncts.format_files` 
     module. 
-    The letter targetting the 'otp_alias' column in an openpyxl object 
+    The letter targeting the 'otp_alias' column in an openpyxl object
     is got through the `get_col_letter` function imported from 
     the `bmfuncts.format_files` module. 
-    The list-data-validation rule is added to each cells of the column 
+    The list-data-validation rule is added to each cell of the column
     'otp_alias' through the `add_data_val` function of this module. 
     Finally, the built openpyxl workbook is saved using the full path 
     'xl_dpt_path'.
@@ -353,7 +353,7 @@ def _add_dept_otp(institute, org_tup, in_path, out_path, out_file_base):
         out_df = concat_dfs([out_df, dg.iloc[:1]])
 
     # Removing possible spaces in dept name
-    out_df[dpt_alias] = out_df[dpt_alias].apply(lambda x: x.strip())
+    out_df[dpt_alias] = out_df[dpt_alias].apply(lambda _x: _x.strip())
 
     # Configuring an Excel file per department with the list of OTPs
     for dpt in sorted(dpt_list):
@@ -391,10 +391,10 @@ def _save_dpt_lab_otp_file(institute, dpt_df, dpt_otp_dict, xl_dpt_path,
     Then the dataframe is formatted as a multisheet openpxl workbook through 
     the `format_wb_sheet` function imported from `bmfuncts.format_files` 
     module. 
-    The letter targetting the 'otp_alias' column in an openpyxl object 
+    The letter targeting the 'otp_alias' column in an openpyxl object
     is got through the `get_col_letter` function imported from 
     the `bmfuncts.format_files` module. 
-    The list-data-validation rule is added to each cells of the column 
+    The list-data-validation rule is added to each cell of the column
     'otp_alias' through the `add_data_val` function of this module. 
     Finally, the built openpyxl workbook is saved using the full path 
     'xl_dpt_path'.
@@ -589,7 +589,7 @@ def _set_full_pub_df(init_pub_df, cols_list, dpt_list):
         dpt_list (list): The departments names of the Institute \
         used as column names.
     Returns:
-        (dataframe): The modifyed data of publications.
+        (dataframe): The modified data of publications.
     """
     pub_id_col, idx_author_col, dpt_col = cols_list
     full_pub_df = pd.DataFrame()
@@ -601,7 +601,7 @@ def _set_full_pub_df(init_pub_df, cols_list, dpt_list):
         full_pub_df = concat_dfs([full_pub_df, dg.iloc[:1]])
 
     # Removing possible spaces in dept name
-    full_pub_df[dpt_col] = full_pub_df[dpt_col].apply(lambda x: x.strip())
+    full_pub_df[dpt_col] = full_pub_df[dpt_col].apply(lambda _x: _x.strip())
     return full_pub_df
 
 

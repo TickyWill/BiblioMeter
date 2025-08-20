@@ -38,7 +38,7 @@ from bmfuncts.useful_functs import concat_dfs
 
 
 def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
-    """Gets the publications list of the a department 
+    """Gets the publications list of the department
     from the xlsx files where the user has set the OTPs.
 
     The name of the file is build using the file-name base 
@@ -46,7 +46,7 @@ def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
     this file exists in the folder of files. 
     Then the file is read as a multisheet xlsx file. 
     The final publication list of the department results from 
-    the concatenation of the containt of all the existing sheets.  
+    the concatenation of the content of all the existing sheets.
 
     Args:
         dpt_label (str): Label of the department.
@@ -479,8 +479,8 @@ def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
     through the `_set_lab_otp_ws` internal function.
 
     Args:
-        dpt_pub_dict (dict): The data of the department keyed by laboratory \
-        names (str) and valued by publications data (dataframe).
+        dpt_pub_dict (dict): The data of the department keyed by laboratory names (str)
+        and valued by publications data (dataframe).
         dpt_lab_otps_dict (dict): The data of the department keyed \
         by laboratory names (str) and valued by OTPs lists (list). 
         dpt_otp_file_name_path (path): Full path to where the workbook is saved.
@@ -524,7 +524,7 @@ def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
         # Setting OTPs list for "lab" laboratory
         lab_otp_list = dpt_lab_otps_dict[lab]
 
-        # Formatting the worksheet for "lab" lboratory of the department
+        # Formatting the worksheet for "lab" laboratory of the department
         wb, _ = _set_lab_otp_ws(lab, dfs_tup, lab_otp_list,
                                 wb, first, common_args_tup)
         first = False
@@ -537,7 +537,7 @@ def _set_saved_lab_otps(org_tup, otps_history_tup,
                         otp_folder_path, otp_file_base,
                         lab_otps_dict):
     """Attributes the OTPs from the history of the attributed OTPs 
-    before submiting to the user the file for attributing the not yet 
+    before submitting to the user the file for attributing the not yet
     attributed OTPs.
 
     Loops on department to:
@@ -660,7 +660,7 @@ def _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
 def _set_saved_dept_otps(org_tup, otps_history_tup,
                          otp_folder_path, otp_file_base):
     """Attributes the OTPs from the history of the attributed OTPs 
-    at department level before submiting to the user the file 
+    at department level before submitting to the user the file
     for attributing the not-yet attributed OTPs.
 
     Loops on department to:
@@ -727,8 +727,8 @@ def _get_otps_history(institute, org_tup,
         kept_otps_file_path (path): the full path to the history of \
         the set OTPs.
     Returns:
-        (tup): (Tuple of lists of infos for using previoulsly set OTPs, \
-        Tuple of useful columns names, The data of the the history \
+        (tup): (Tuple of lists of infos for using previously set OTPs, \
+        Tuple of useful columns names, The data of the history \
         of previously set OTPs by DOI).
     """
     # Setting useful col names
@@ -784,7 +784,7 @@ def _get_otps_history(institute, org_tup,
 
 def set_saved_otps(institute, org_tup, wf_path, corpus_year):
     """Attributes the OTPs from the history of the attributed OTPs 
-    before submiting to the user the file for attributing the not yet 
+    before submitting to the user the file for attributing the not yet
     attributed OTPs.
 
     First, it gets the history of the previously set OTPs through \
@@ -793,11 +793,11 @@ def set_saved_otps(institute, org_tup, wf_path, corpus_year):
 
     1. The data of OTPs data given by laboratory of each department are set \
     through `set_lab_otps` function imported from the `bmfuncts.build_otps_info` module.
-    2. The history of the attributed OTPs is used to built the files to be submitted \
+    2. The history of the attributed OTPs is used to build the files to be submitted \
     to the user through the `_set_saved_lab_otps` internal function.
 
     Otherwise, The level is kept to the department. Then, the history of the attributed \
-    OTPs is used to built the files to be submitted to the user through \
+    OTPs is used to build the files to be submitted to the user through \
     the `_set_saved_dept_otps` internal function.
 
     Args:

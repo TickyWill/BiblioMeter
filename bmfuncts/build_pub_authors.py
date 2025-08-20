@@ -81,7 +81,6 @@ def _check_added_dois_affil(institute, org_tup, wf_path, corpus_year, dfs_tup):
         institute (str): The institute name.
         org_tup (tup): Contains parameters of the institute.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
         corpus_year (str): Contains the corpus year defined by 4 digits.
         dfs_tup (tup): (The publications data (dataframe), \
         The addresses data (dataframe), \
@@ -161,7 +160,7 @@ def _retain_firstname_initials(txt):
         txt (str): The raw initials of the author's \
         first name.
     returns:
-        (str): The modifyed initials.
+        (str): The modified initials.
     """
     txt = txt.replace('-',' ')
     initials = ''.join(txt.split(' '))
@@ -503,7 +502,7 @@ def _get_input_data(institute, org_tup, wf_path, datatype, corpus_year):
         institute (str): The institute name.
         org_tup (tup): Contains parameters of the institute .
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         corpus_year (str): Contains the corpus year defined by 4 digits.
     Returns:
         (tup): (The built data of articles, The built data of authors, \
@@ -553,7 +552,7 @@ def _get_input_data(institute, org_tup, wf_path, datatype, corpus_year):
 def _recasting_authors_df(authors_df, bm_cols_list):
     """Recasts the data with one row per Institute author 
     for each publication by formatting the authors full names and their 
-    redistribution into last names and firsnames initials.
+    redistribution into last names and firstnames initials.
 
     Args:
         authors_df (dataframe): Data of publication IDs list \
@@ -661,7 +660,7 @@ def build_institute_pubs_authors(institute, org_tup, wf_path, datatype, year):
     2. The authors data resulting from the parsing step are recast to split \
     authors full name into last name and firstname initials through \
     the `_recasting_inst_merged_df` internal function.
-    3. The misspelling of authors name in the recast authors data are corrrected \
+    3. The misspelling of authors name in the recast authors data are corrected \
     through the `_check_names_spelling` internal function. 
     4. The data of full list of authors per publications are built through the \
     `_build_authors_full_list` internal function.
@@ -681,7 +680,7 @@ def build_institute_pubs_authors(institute, org_tup, wf_path, datatype, year):
         institute (str): The institute name.
         org_tup (tup): Contains parameters of the institute .
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         year (str): Contains the corpus year defined by 4 digits.
     Returns:
         (dataframe): Publications list with one row per author with correction \

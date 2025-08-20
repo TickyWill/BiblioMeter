@@ -51,7 +51,7 @@ def get_col_letter(df, col, xl_idx_base):
         xl_idx_base (int): Base of columns and row indexes \
         in openpyxl objects.
     Returns:
-        (str): Letter (or couple of letters) targetting the column
+        (str): Letter (or a couple of letters) targeting the column
         in openpyxl.
     """
     df_col_index = list(df.columns).index(col)
@@ -429,12 +429,12 @@ def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
         (optional, default = 1).
     Returns:
         (dict): The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str)).
+        by the width (int) and the horizontal alignement (str).
     """
     # Computing number of other columns than first and last ones
     cols_nb = len(cols_list)
     first_and_last_cols_nb = 1 + last_cols_nb
-    other_cols_nb = cols_nb - (first_and_last_cols_nb)
+    other_cols_nb = cols_nb - first_and_last_cols_nb
 
     # Setting first column alignement
     first_col_width = widths_list[0]
@@ -555,7 +555,7 @@ def _set_kw_attributes(cols_list):
     """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
     for formatting the analysis results to be saved for the 
-    keywords data.
+    keywords' data.
 
     The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
@@ -933,7 +933,7 @@ def format_page(df, df_title, wb=None, header=True,
         cell_colors (list): List of openpyxl.PatternFill objects \
         (default = None).
         idx_wrap (int): The optional maximum index of the rows \
-        for which text is wraped in the last column.
+        for which text is wrapped in the last column.
     Returns:
         (tup): (worbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).
@@ -950,7 +950,7 @@ def format_page(df, df_title, wb=None, header=True,
     attrib_tup = set_df_attributes(df_title, df_cols_list)
     col_attr_dict, row_heights_dict, col_idx_init = attrib_tup
 
-    # Initialize wb as a openpyxl workbook and ws its active worksheet
+    # Initialize wb as an openpyxl workbook and ws its active worksheet
     if not wb:
         wb = openpyxl_Workbook()
         header = True
@@ -1000,7 +1000,7 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first, idx_wrap=None):
         wb (openpyxl workbook): Workbook to be updated with the 'sheet_name' sheet.
         first (bool): True if the sheet to add is the first of the workbook.
         idx_wrap (int): The optional maximum index of the rows \
-        for which text is wraped in the last column.
+        for which text is wrapped in the last column.
     Returns:
         (openpyxl workbook): The updated workbook with the 'sheet_name' sheet.
     """
@@ -1028,7 +1028,7 @@ def save_formatted_df_to_xlsx(save_path, item_filename, item_df,
         global defined in `bmfuncts.pub_globals` module.
         sheet_name (str): 4-digits IFs sheet-name. 
         idx_wrap (int): The optional maximum index of the rows \
-        for which text is wraped in the last column.
+        for which text is wrapped in the last column.
     """
     item_xlsx_file = item_filename
     item_xlsx_path = save_path / Path(item_xlsx_file)

@@ -107,7 +107,7 @@ class AppMain(tk.Tk):
         # Handling exception
         threading.excepthook = _except_hook
 
-class SetMasterTitle():
+class SetMasterTitle:
     """Displays title in main page."""
 
     def __init__(self, master):
@@ -129,7 +129,7 @@ class SetMasterTitle():
                          anchor="center")
 
 
-class SetAuthorCopyright():
+class SetAuthorCopyright:
     """Displays authors and copyright in main page."""
 
     def __init__(self, master):

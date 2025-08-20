@@ -70,7 +70,7 @@ from screeninfo import get_monitors
 # Setting application version value
 VERSION = '6.2.0'
 
-# Setting the number of corpuses to analyse
+# Setting the number of corpora to analyse
 CORPUSES_NUMBER = 6
 
 # Setting the title of the application main window

@@ -32,13 +32,13 @@ def _create_if_column(issn_column, if_dict, if_empty_kw):
     The 'nan' values in the column 'if_column' are replaced by 'empty_word'.
 
     Args:
-        issn_column (pandas serie): The column of the dataframe of interest \
+        issn_column (pandas series): The column of the dataframe of interest \
         that contains the ISSNs values.
         if_dict (dict): The dict which keys are ISSNs and values are IFs.
         if_empty_kw (str): The word that will replace nan values in \
         the returned column.
     Returns:
-        (pandas serie): The column of the dataframe of interest \
+        (pandas series): The column of the dataframe of interest \
         that contains the IFs values.
     """
     if_column = issn_column.map(if_dict)
@@ -232,7 +232,7 @@ def _get_id(issn_df, journal_name, journal_col, id_col, empty_kw):
     id_upper = empty_kw
     if not id_upper_df.empty:
         id_upper = id_upper_df.to_list()[0]
-    journal_id = list(set([id_lower,id_upper]) - set([empty_kw]))[0]
+    journal_id = list({id_lower, id_upper} - {empty_kw})[0]
     return journal_id
 
 
@@ -246,7 +246,7 @@ def _format_missing_df(results_df, common_args_tup, empty_kw, add_cols):
         ISSN, eISNN, number of publications, impact-factors year, ISSN in \
         'result_df' dataframe).
         empty_kw (str): Value of empty ISSN or eISSN in 'results_df' dataframe.
-        add_cols (bool): True if suplementary columns for ISSN and eISSN are to be \
+        add_cols (bool): True if supplementary columns for ISSN and eISSN are to be \
         filled with empty_kw values.
     Returns:
         (dataframe): Formatted dataframe.
@@ -286,7 +286,7 @@ def _format_missing_df(results_df, common_args_tup, empty_kw, add_cols):
 
 def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
     """Builds a dataframe by keeping only rows which doc type has usually 
-    an IF then droping the doc type column.
+    an IF then dropping the doc type column.
     """
     # Setting global aliase
     doc_type_dict_alias = bm_pg.DOC_TYPE_DICT
@@ -296,7 +296,7 @@ def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
     no_if_doctype = sum([doc_type_dict_alias[x] for x in no_if_doctype_keys_list] , [])
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
-    # then droping the doc type column
+    # then dropping the doc type column
     doctype_to_drop_list = [x.upper() for x in no_if_doctype]
 
     articles_df = pd.DataFrame(columns=pub_df.columns)
@@ -309,7 +309,7 @@ def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
 
 def _build_issn_df(article_df, cols_tup):
     """Builds a dataframe by keeping one row for each issn adding a column 
-    with number of related articles then droping "Pub_id" column.
+    with number of related articles then dropping "Pub_id" column.
     """
     pub_id_col, journal_col, journal_upper_col, pub_id_nb_col, issn_col = cols_tup
     if_df = pd.DataFrame(columns=article_df.columns.to_list() [1:] \
@@ -499,7 +499,7 @@ def add_if(institute, org_tup, wf_path, paths_tup, corpus_year):
         corpus_year (str): Year (4 digits) of the corpus to be appended with the two \
         new impact-factors columns.
     Returns:
-        (tup): (message indicating which file has been mofified and how, \
+        (tup): (message indicating which file has been modified and how, \
         completion status of the impact-factors database).
     """
 
@@ -575,12 +575,12 @@ def add_if(institute, org_tup, wf_path, paths_tup, corpus_year):
     year_pub_if_df = corpus_df[subsetcols].copy()
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
-    # then droping the doc type column
+    # then dropping the doc type column
     year_article_if_df = _build_only_if_doctype_df(org_tup, year_pub_if_df, doctype_col_alias)
 
     # Building 'year_if_df' by keeping one row for each issn
     # adding a column with number of related articles
-    # then droping "Pub_id" column
+    # then dropping "Pub_id" column
     year_if_cols_tup = (pub_id_col_alias, journal_col_alias, journal_upper_col,
                         pub_id_nb_col_alias, issn_col_alias)
     year_if_df = _build_issn_df(year_article_if_df, year_if_cols_tup)

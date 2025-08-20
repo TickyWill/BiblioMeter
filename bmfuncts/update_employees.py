@@ -1,4 +1,4 @@
-"""Module of functions for the update of the employees database.
+"""Module of functions for the update of the employees' database.
 """
 __all__ = ['set_employees_data',
            'update_employees',]
@@ -36,7 +36,7 @@ def _set_employees_paths(wf_path):
     the annual employees Excel files which names are built \
     by adding the year value to the string given by the global \
     'EMPLOYEES_ARCHI' at key 'one_year_employees_filebase'.
-    - 'backup_folder_path' - The folder hosting the back-up file \
+    - 'backup_folder_path' - The folder hosting the backup file \
     of the employees EXCEL file in case of a potential corruption \
     of the active employees file.
 
@@ -73,7 +73,7 @@ def _check_sheet_month(df, sheet_name):
     """Checks if the mandatory column names are present in the dataframe 
     'df' and if the sheet name is correctly formatted.
 
-    The shhet name should be formatted as mmyyyy where yyyy stands for 
+    The sheet name should be formatted as mmyyyy where yyyy stands for
     the 'year' and mm stands for the month (always written with two digits). 
     It returns messages related to the check status. 
     The year returned is None if the sheet name is not correctly formatted 
@@ -157,8 +157,8 @@ def _update_months_history(months2add_file_path,
         the files gathering the employees per year.
         one_year_employees_base_name (path): Base for building the file \
         name of the file gathering the employees for a year.
-        replace (bool): If true, existing sheets are replaced in the Ecxel \
-        file (default: True).
+        replace (bool): If true, existing sheets are replaced in the Excel \
+            file (default: True).
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (optional, default = None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
@@ -241,7 +241,7 @@ def _add_column_keep_history(df):
 
         - the column of key 'months_list' contains \
         ['01', '02', '03', '04', '05', '06', '07', '08', '09'] \
-        - and the colummn of key dpts_list' contains \
+        - and the column of key dpts_list' contains \
         ['DTCH', 'DTCH', 'DTCH', 'DTNM', 'DTNM', 'DTNM', 'DTNM', 'DTNM', 'DTNM'].
 
     The function uses the columns defined by the global `EMPLOYEES_USEFUL_COLS`
@@ -324,7 +324,7 @@ def _add_column_full_name(df):
     composed by the last name and the first name initials.
 
     It uses the columns defined by the global `EMPLOYEES_USEFUL_COLS` at key 'name' 
-    that contains the last name for each employee and it uses the previously added column 
+    that contains the last name for each employee, and it uses the previously added column
     defined by the global `EMPLOYEES_ADD_COLS` at key 'first_name_initials':
 
         ex: if last name is SIMONATO and first name initials are JP --> full name is SIMONATO JP.
@@ -424,8 +424,8 @@ def _build_year_month_dpt(year_months_file_path,
     """
 
     # Internal functions
-    def _set_tup(month, year):
-        return lambda x: (month, year, x)
+    def _set_tup(_month, _year):
+        return lambda x: (_month, _year, x)
 
     # Setting lists of columns
     useful_col_list = list(bm_eg.EMPLOYEES_USEFUL_COLS.values())
@@ -438,7 +438,7 @@ def _build_year_month_dpt(year_months_file_path,
     matricule_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['matricule']
     serv_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['serv']
 
-    # Reading the sheets from the excel file as a dict
+    # Reading the sheets from the Excel file as a dict
     # {sheet-name: sheet-content dataframe}
     year_empl_dict = pd.read_excel(year_months_file_path,
                                    sheet_name=None,
@@ -514,6 +514,7 @@ def update_employees(wf_path, progress_callback=None,
         wf_path (path): The path to the working folder.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
+        progress_bar_state_init (int)
         replace (bool): Optional (default = True); if true, existing sheets \
         are replaced in employees EXCEL files specific to a year.
     Returns:
@@ -615,8 +616,7 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
         empl_file_path (path): Full path to file of Institute \
         employees data.
         search_depth (int): Initial search depth.
-        progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.
+
     Returns:
         (tup): (employees data (df), adapted search depth (int), \
         list of available years of employees data).    
@@ -669,4 +669,4 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
                          "\n1- Complétez le fichier des effectifs de l'Institut ;"
                          "\n2- Puis relancer le croisement auteurs-effectifs.")
         messagebox.showwarning(warning_title, warning_text)
-    return (new_employees_dict, search_depth, annees_verifiees)
+    return new_employees_dict, search_depth, annees_verifiees

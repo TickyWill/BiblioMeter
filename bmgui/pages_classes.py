@@ -26,7 +26,7 @@ from bmgui.gui_utils import set_item_pos
 from bmgui.gui_utils import set_pos_tup_px
 
 class SetLaunchButton(tk.Tk):
-    """Displays corpuses analysis launch button in main window."""
+    """Displays corpora analysis launch button in main window."""
 
     def __init__(self, master, institute, wf_path, datatype):
 
@@ -74,7 +74,7 @@ class SetLaunchButton(tk.Tk):
                     _ = set_rawdata(wf_path, datatype,
                                     master.years_list, database)
 
-                # Setting existing corpuses status
+                # Setting existing corpora status
                 files_status = existing_corpuses(wf_path)
                 master.list_corpus_year = files_status[0]
                 master.list_wos_rawdata = files_status[1]
@@ -105,7 +105,7 @@ class SetLaunchButton(tk.Tk):
                                  institute, wf_path)
                 self.frames[page_name] = frame
 
-                # Putting all of the pages in the same location
+                # Putting all the pages in the same location
                 # The one visible is the one on the top of the stacking order
                 frame.grid(row=0, column=0, sticky="nsew")
             master.frames = self.frames
@@ -155,7 +155,7 @@ class ParseCorpusPage(tk.Frame):
 
 
 class ConsolidateCorpusPage(tk.Frame):
-    """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function 
+    """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function
     imported from `bmgui.consolidate_corpus_page` module."""
 
     def __init__(self, master, pagebutton_frame, page_frame, institute, wf_path, datatype):

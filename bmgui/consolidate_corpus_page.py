@@ -9,7 +9,7 @@ Then it provides xlsx files to the user for:
 - Publications OTPs setting;
 - Completion of impact-factors database.
 
-Finally it saves the consolidated publications list in a dedicated directory.
+Finally, it saves the consolidated publications list in a dedicated directory.
 """
 __all__ = ['create_consolidate_corpus']
 
@@ -62,7 +62,7 @@ def _set_empl_files_params(wf_path):
     empl_file_alias = bm_eg.EMPLOYEES_ARCHI["employees_file_name"]
     empl_upd_folder_alias = bm_eg.EMPLOYEES_ARCHI["complementary_employees"]
 
-    # Setting useful paths independent from corpus year
+    # Setting useful paths independent of corpus year
     empl_root_path = wf_root_path / Path(empl_root_alias)
     empl_folder_path = empl_root_path / Path(empl_folder_alias)
     empl_upd_folder_path = empl_root_path / Path(empl_upd_folder_alias)
@@ -72,7 +72,7 @@ def _set_empl_files_params(wf_path):
 
 
 def _launch_update_employees_try(wf_path, progress_callback):
-    """Launches update of Intitute employees database.
+    """Launches update of Institute employees database.
 
     This is done through the `update_employees` function imported from 
     `bmfuncts.update_employees` module after check of available 
@@ -86,7 +86,7 @@ def _launch_update_employees_try(wf_path, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     Returns:
-        (bool): Update status of the employees data. 
+        (bool): Update status of the employees' data.
     """
     # Setting useful file parameters for employees data
     return_tup = _set_empl_files_params(wf_path)
@@ -183,7 +183,7 @@ def _launch_update_employees_try(wf_path, progress_callback):
                                 "\n 1- Séparez les feuilles d'années différentes "
                                 "en fichiers d'effectifs additionnels différents;"
                                 "\n 2- Relancer la mise à jour des effectifs "
-                                "\n    pour chacun des fichiers créés en les positionant seul "
+                                "\n    pour chacun des fichiers créés en les positionnant seul "
                                 "dans le dossier successivement.")
                 messagebox.showwarning(warning_title, warning_text)
                 update_status = False
@@ -226,13 +226,13 @@ def _set_conso_year_files_params(wf_path, year_select):
     missing_if_base_alias = bm_pg.ARCHI_IF["missing_if_base"]
     missing_issn_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
 
-    # Setting useful files names dependant on year select
+    # Setting useful files names dependent on year select
     homonyms_file = homonyms_file_base_alias + f' {year_select}.xlsx'
     pub_list_file = pub_list_file_base_alias + f' {year_select}.xlsx'
     missing_if_file = f'{year_select}_' + missing_if_base_alias + ".xlsx"
     missing_issn_file = f'{year_select}_' + missing_issn_base_alias + ".xlsx"
 
-    # Setting useful folders paths dependant on year select
+    # Setting useful folders paths dependent on year select
     corpus_year_path = wf_path / Path(year_select)
     merge_data_folder_path = corpus_year_path / Path(merge_data_folder_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
@@ -271,7 +271,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         year_select (str): Corpus year defined by 4 digits.
         search_depth_init (int): Initial search depth that will be adapted \
         depending on available years in Institute employees database.
@@ -281,25 +281,25 @@ def _launch_recursive_year_search_try(institute, org_tup,
         widget status.
     """
 
-    def _recursive_year_search_try(progress_callback, progress_bar_state):
+    def _recursive_year_search_try(_progress_callback, progress_bar_state):
         dedup_parsing_status = check_dedup_parsing_available(wf_path, year_select)
         if dedup_parsing_status:
             end_message, orphan_status = recursive_year_search(merge_data_folder_path,
                                                                employees_df, institute,
                                                                org_tup, wf_path, datatype,
                                                                year_select, search_depth,
-                                                               progress_callback,
+                                                               _progress_callback,
                                                                progress_bar_state)
             print('\n',end_message)
-            progress_callback(100)
-            info_title = '- Information -'
-            info_text = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
+            _progress_callback(100)
+            _info_title = '- Information -'
+            _info_text = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
             if orphan_status:
-                info_text += ("\n\nTous les auteurs de l'Institut ont été "
+                _info_text += ("\n\nTous les auteurs de l'Institut ont été "
                               "identifiés dans les effectifs."
                               "\n\nLa résolution des homonymes peut être lancée.")
             else:
-                info_text += ("\n\nMais, des auteurs affiiés à l'Institut "
+                _info_text += ("\n\nMais, des auteurs affiiés à l'Institut "
                               "n'ont pas été identifiés dans les effectifs."
                               f"\n1- Ouvrez le fichier {orphan_file} "
                               f"du dossier :\n  {merge_data_folder_path} ;"
@@ -308,10 +308,10 @@ def _launch_recursive_year_search_try(institute, org_tup,
                               "\n\nNéanmoins, la résolution des homonymes "
                               "peut être lancée sans cette opération, "
                               "mais la liste consolidée des publications sera incomplète.")
-            messagebox.showinfo(info_title, info_text)
+            messagebox.showinfo(_info_title, _info_text)
 
         else:
-            progress_callback(100)
+            _progress_callback(100)
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = (f"La synthèse de l'année {year_select} n'est pas disponible."
                             "\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
@@ -319,7 +319,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
                             "\n3- Puis relancez le croisement pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
-    # Setting files parameters independant from year selection
+    # Setting files parameters independent of year selection
     return_tup = _set_empl_files_params(wf_path)
     _, _, empl_file_path, _ = return_tup
 
@@ -399,32 +399,32 @@ def _launch_resolution_homonymies_try(institute, org_tup,
         ProgressBar tkinter widget status.   
     """
 
-    def _resolution_homonymies_try(progress_callback):
+    def _resolution_homonymies_try(_progress_callback):
         if os.path.isfile(submit_path):
-            progress_callback(20)
-            return_tup = solving_homonyms(institute, org_tup,
-                                          submit_path, homonyms_file_path)
-            end_message, actual_homonym_status = return_tup
+            _progress_callback(20)
+            _return_tup = solving_homonyms(institute, org_tup,
+                                           submit_path, homonyms_file_path)
+            end_message, actual_homonym_status = _return_tup
             print(end_message)
             print('\n Actual homonyms status before setting saved homonyms:',
                   actual_homonym_status)
-            progress_callback(80)
+            _progress_callback(80)
             if actual_homonym_status:
-                return_tup = set_saved_homonyms(institute, org_tup,
-                                                wf_path, year_select,
-                                                actual_homonym_status)
-                end_message, actual_homonym_status = return_tup
+                _return_tup = set_saved_homonyms(institute, org_tup,
+                                                 wf_path, year_select,
+                                                 actual_homonym_status)
+                end_message, actual_homonym_status = _return_tup
             print('\n',end_message)
             print('\n Actual homonyms status after setting saved homonyms:',
                   actual_homonym_status)
-            progress_callback(100)
-            info_title = "- Information -"
-            info_text = ("Le fichier pour la résolution des homonymies "
+            _progress_callback(100)
+            _info_title = "- Information -"
+            _info_text = ("Le fichier pour la résolution des homonymies "
                          f"de l'année {year_select} a été créé "
                          f"dans le dossier :\n\n  '{homonyms_folder_path}' "
                          f"\n\nsous le nom :  '{homonyms_file}'.")
             if actual_homonym_status:
-                info_text += ("\n\nDes homonymes existent parmi "
+                _info_text += ("\n\nDes homonymes existent parmi "
                               "les auteurs dans les effectifs."
                               "\n\n1- Ouvrez ce fichier, "
                               "\n2- Supprimez manuellement les lignes "
@@ -433,13 +433,13 @@ def _launch_resolution_homonymies_try(institute, org_tup,
                               "\n\nDès que le fichier est traité, "
                               "\nl'affectation des OTPs peut être lancée.")
             else:
-                info_text += ("\n\nAucun homonyme n'est trouvé parmi "
+                _info_text += ("\n\nAucun homonyme n'est trouvé parmi "
                               "les auteurs dans les effectifs."
                               "\n\nL'affectation des OTPs peut être lancée.")
-            messagebox.showinfo(info_title, info_text)
+            messagebox.showinfo(_info_title, _info_text)
 
         else:
-            progress_callback(100)
+            _progress_callback(100)
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = ("Le fichier contenant le croisement auteurs-effectifs "
                             f"de l'année {year_select} n'est pas disponible."
@@ -518,21 +518,21 @@ def _launch_add_otp_try(institute, org_tup,
         ProgressBar tkinter widget status.   
     """
 
-    def _add_otp_try(progress_callback):
+    def _add_otp_try(_progress_callback):
         if os.path.isfile(homonyms_file_path):
-            progress_callback(15)
+            _progress_callback(15)
             end_message = save_homonyms(institute, org_tup, wf_path, year_select)
             print('\n',end_message)
-            progress_callback(20)
+            _progress_callback(20)
             end_message = add_otp(institute, org_tup, wf_path,
                                   homonyms_file_path, otp_folder_path, otp_file_base)
             print(end_message)
-            progress_callback(80)
+            _progress_callback(80)
             end_message = set_saved_otps(institute, org_tup, wf_path, year_select)
             print(end_message)
-            progress_callback(100)
-            info_title = "- Information -"
-            info_text = (f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
+            _progress_callback(100)
+            _info_title = "- Information -"
+            _info_text = (f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
                          f"ont été créés dans le dossier : \n\n'{otp_folder_path}' "
                          "\n\n1- Ouvrez le fichier du département ad-hoc, "
                          "\n2- Attribuez manuellement à chacune des publications un OTP, "
@@ -540,9 +540,9 @@ def _launch_add_otp_try(institute, org_tup,
                          "\n\nDès que les fichiers de tous les départements "
                          "sont traités, la liste consolidée des publications "
                          f"de l'année {year_select} peut être créée.")
-            messagebox.showinfo(info_title, info_text)
+            messagebox.showinfo(_info_title, _info_text)
         else:
-            progress_callback(100)
+            _progress_callback(100)
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = ("Le fichier contenant la résolution des homonymies "
                             f"de l'année {year_select} n'est pas disponible."
@@ -621,7 +621,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         year_select (str): Corpus year defined by 4 digits.
         years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
@@ -629,30 +629,30 @@ def _launch_pub_list_conso_try(institute, org_tup,
         ProgressBar tkinter widget status.  
     """
 
-    def _consolidate_pub_list(progress_callback):
+    def _consolidate_pub_list(_progress_callback):
         if os.path.isdir(otp_folder_path) and os.listdir(otp_folder_path):
-            progress_callback(20)
+            _progress_callback(20)
             conso_tup = built_final_pub_list(institute, org_tup,
                                              wf_path, datatype,
                                              otp_folder_path, pub_list_folder_path,
                                              otp_file_base, year_select)
             end_message, pub_nb, split_ratio, if_database_complete = conso_tup
             print(end_message)
-            progress_callback(70)
+            _progress_callback(70)
             if bm_pg.LISTES_CONCAT:
                 end_message = concatenate_pub_lists(wf_path, years_list)
                 print('\n',end_message)
-            progress_callback(100)
-            info_title = "- Information -"
-            info_text = (f"Une liste consolidée de {pub_nb} publications a été créée "
+            _progress_callback(100)
+            _info_title = "- Information -"
+            _info_text = (f"Une liste consolidée de {pub_nb} publications a été créée "
                          f"pour l'année {year_select} dans le dossier :\n\n '{pub_list_file_path}' "
                          f"\n\nsous le nom :   '{pub_list_file}'."
                          "\n\nLes IFs disponibles ont été automatiquement attribués.")
             if if_database_complete:
-                info_text += ("\n\nLa base de données des facteurs d'impact étant complète, "
+                _info_text += ("\n\nLa base de données des facteurs d'impact étant complète, "
                               "les listes des journaux avec IFs ou ISSNs inconnus sont vides.")
             else:
-                info_text += ("\n\nAttention, les listes des journaux avec IFs ou ISSNs inconnus "
+                _info_text += ("\n\nAttention, les listes des journaux avec IFs ou ISSNs inconnus "
                               "ont été créées dans le même dossier sous les noms :"
                               f"\n\n '{missing_if_file}' "
                               f"\n\n '{missing_issn_file}' "
@@ -665,7 +665,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
                               "\n3- Puis sauvegardez les fichiers sous le même nom ;"
                               "\n4- Pour prendre en compte ces compléments, allez à la page "
                               "de mise à jour des IFs.")
-            info_text += ("\n\nPar ailleurs, cette liste consolidée des publications "
+            _info_text += ("\n\nPar ailleurs, cette liste consolidée des publications "
                           f"a été décomposée à {split_ratio} % "
                           "en trois fichiers disponibles dans le même dossier "
                           "correspondant aux différentes "
@@ -675,15 +675,15 @@ def _launch_pub_list_conso_try(institute, org_tup,
                           "dans le même dossier.")
             if bm_pg.LISTES_CONCAT:
                 all_years_data_folder = bm_pg.ARCHI_BDD_MULTI_ANNUELLE
-                info_text += ("\n\nEnfin, la concaténation des listes consolidées des publications "
+                _info_text += ("\n\nEnfin, la concaténation des listes consolidées des publications "
                               "disponibles, a été créée dans le dossier :"
                               f"\n\n '{all_years_data_folder}' "
                               "\n\nsous un nom vous identifiant ainsi que la liste des années "
                               "prises en compte et caractérisé par la date et l'heure de la création.")
-            messagebox.showinfo(info_title, info_text)
+            messagebox.showinfo(_info_title, _info_text)
 
         else:
-            progress_callback(100)
+            _progress_callback(100)
             warning_title = "!!! ATTENTION : fichiers manquants !!!"
             warning_text = ("Les fichiers d'attribution des OTPs "
                             f"de l'année {year_select} ne sont pas disponibles."
@@ -741,11 +741,12 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     through merge with Institute employees database.
 
     Args:
+        self
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
     """
     # Internal functions
 

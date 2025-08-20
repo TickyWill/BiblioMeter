@@ -34,8 +34,10 @@ def set_step_label(self, step_num, step_label_params):
     """Sets the label and place of step-label widget in the page.
 
     Args:
+        self
         step_num (int): The order of the step in 'STEPS_LABELS_DICT' global \
         at 'page_key' key.
+        step_label_params
     Returns:
         (tk widget): The widget of the step label.
     """

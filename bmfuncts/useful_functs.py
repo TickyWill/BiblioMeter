@@ -150,7 +150,7 @@ def set_saved_results_path(wf_path, datatype):
 
     Args:
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
     Returns:
         (path): The full path of the saved results.
     """
@@ -226,7 +226,7 @@ def keep_initials(df, initials_col_base, missing_fill=None):
 
 
 def save_xlsx_file(root_path, df, file_name):
-    """Saves data as an xlsx file that is one sheet and not formatted.
+    """Saves data as a xlsx file that is one sheet and not formatted.
 
     Args:
         root_path (path): The path to the folder where the Excel file is saved.
@@ -248,11 +248,11 @@ def set_year_pub_id(df, year, pub_id_col):
     Returns:
         (pandas.DataFrame): The data with its changed column.
     """
-    def _rename_pub_id(old_pub_id, year):
+    def _rename_pub_id(old_pub_id, _year):
         pub_id_str = str(int(old_pub_id))
         while len(pub_id_str)<3:
             pub_id_str = "0" + pub_id_str
-        new_pub_id = str(int(year)) + '_' + pub_id_str
+        new_pub_id = str(int(_year)) + '_' + pub_id_str
         return new_pub_id
     df[pub_id_col] = df[pub_id_col].apply(lambda x: _rename_pub_id(x, year))
     return df
@@ -615,7 +615,7 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         save_extent (str): The extent for building the name of the file for saving \
         the data.
         dedup_infos (tup): (The full path to the working folder (path), \
-        Data combination type from corpuses databases (str), \
+        Data combination type from corpora databases (str), \
         4 digits year of the corpus (str)).
     Returns:
         (tup): (4 digits year of the corpus (str), The full path to the folder \
@@ -655,7 +655,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
                       item_filename_dict, save_extent,
                       dedup_infos=None):
     """Saves the data passed through the dict of parsing results 
-    as files of a specifyed type.
+    as files of a specified type.
 
     It may manage the final saving of the parsing-deduplication results 
     depending on the optional argument 'dedup_infos'.
@@ -669,10 +669,10 @@ def save_parsing_dict(parsing_dict, parsing_path,
         item_filename_dict (dict): Dict keyed by the parsing items \
         and valued by the file names for saving the parsing results.
         save_extent (str): File type given by file extension without \
-        the dot seprator (ex: "xlsx" for Excel file type).
+        the dot separator (ex: "xlsx" for Excel file type).
         dedup_infos (tup): Optional tuple for final saving of deduplication \
         results = (Full path to working folder (path), \
-        Data combination type from corpuses databases (str), \
+        Data combination type from corpora databases (str), \
         4 digits year of the corpus (str)) (default = None).
     """
     parsing_items_nb = len(parsing_dict.keys())
@@ -695,15 +695,15 @@ def save_parsing_dict(parsing_dict, parsing_path,
 
 
 def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
-    """Reads the dataframes of the parsing results from files of a specifyed type.
+    """Reads the dataframes of the parsing results from files of a specified type.
 
     Args:
-        parsing_path (path): Full path to the folder where the the parsing \
+        parsing_path (path): Full path to the folder where the parsing \
         results are located.
         item_filename_dict (dict): Dict keyed by the parsing items and valued \
         by the file names of the parsing results.
-        save_extent (str): File type given by file extension without the dot \
-        seprator (ex: "xlsx" for Excel file type).
+        save_extent (str): File type given by file extension without the dot separator \
+        (ex: "xlsx" for Excel file type).
     Returns:
         (dict): Parsing results keyed by parsing items \
         given by 'PARSING_ITEMS_LIST' global imported from \
@@ -773,7 +773,7 @@ def read_final_submit_data(saved_results_path, corpus_year):
     """Reads saved publications list with one row per Institute author 
     and its attributes.
     
-    This data have been initially built through the `resursive_year_search` 
+    This data have been initially built through the `recursive_year_search`
     function of the `bmfuncts.merge_pub_employees` module.
 
     Args:

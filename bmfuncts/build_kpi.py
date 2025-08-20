@@ -236,7 +236,8 @@ def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
     """
     # Setting parameters from args
     journal_col, if_analysis_col = cols_list[0], cols_list[3]
-    new_if_col = cols_list[4]
+    # TODO remove the following line after tests (redundancy)
+    # new_if_col = cols_list[4]
 
     # Selecting useful columns from 'dept_articles_df' dataframe
     dept_if_df = dept_by_journal_df[cols_list[0:4]]
@@ -429,6 +430,7 @@ def update_kpi_database(institute, saved_results_path,
         including itself and valued with KPIs dict of these keys.
         if_key (str): Column name of the analyzed impact factors (either those of \
         the publication year or the last available ones).
+        final_cols_tup
         verbose (bool): Status of prints (default = False).
     Returns:
         (dataframe): Institute KPIs data.
@@ -512,7 +514,7 @@ def if_analysis(institute, org_tup, wf_path, datatype,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        datatype (str): Data combination type from corpora databases.
         corpus_year (str): 4 digits year of the corpus.
         if_most_recent_year (str): Most recent year of impact factors.
         progress_callback (function): Function for updating ProgressBar \
