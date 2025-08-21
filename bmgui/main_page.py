@@ -15,21 +15,14 @@ from tkinter import font as tkFont
 from screeninfo import get_monitors
 
 # Local imports
-import bmgui.gui_globals as bm_gg
 import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
+import bmgui.gui_utils as bm_gu
+import bmgui.main_utils as bm_mu
 from bmgui.pages_classes import AnalyzeCorpusPage
 from bmgui.pages_classes import UpdateIfPage
 from bmgui.pages_classes import ConsolidateCorpusPage
 from bmgui.pages_classes import ParseCorpusPage
-from bmgui.gui_utils import enable_buttons
-from bmgui.gui_utils import general_properties
-from bmgui.gui_utils import set_font_size_tup
-from bmgui.gui_utils import set_pos_tup_px
-from bmgui.main_utils import set_common_params
-from bmgui.main_utils import set_displays_widths
-from bmgui.main_utils import set_institute_widgets
-from bmgui.main_utils import set_labels_pos
-from bmgui.main_utils import update_app_page
 
 
 class AppMain(tk.Tk):
@@ -44,7 +37,7 @@ class AppMain(tk.Tk):
         def _except_hook(args):
             messagebox.showerror("Error", args)
             messagebox.showerror("Exception", traceback.format_exc())
-            enable_buttons(bm_gg.GUI_BUTTONS)
+            bm_gu.enable_buttons(bm_gg.GUI_BUTTONS)
 
         # Setting the link between "self" and "tk.Tk"
         tk.Tk.__init__(self)
@@ -76,19 +69,19 @@ class AppMain(tk.Tk):
         # Getting useful screen sizes and scale factors depending on displays properties
         (AppMain.win_width_px, AppMain.win_height_px,
          AppMain.width_sf_px, AppMain.height_sf_px,
-         AppMain.width_sf_mm, AppMain.height_sf_mm) = general_properties(self)
+         AppMain.width_sf_mm, AppMain.height_sf_mm) = bm_gu.general_properties(self)
         AppMain.width_sf_min = min(AppMain.width_sf_mm, AppMain.width_sf_px)
         AppMain.mid_x_pos = int(AppMain.win_width_px * 0.5)
         AppMain.sf_mm_tup = (AppMain.width_sf_mm, AppMain.height_sf_mm)
 
         # Setting common parameters for widgets of main page
-        set_common_params(self, AppMain)
+        bm_mu.set_common_params(self, AppMain)
 
         # Setting widget label positions in main page
-        set_labels_pos(self, AppMain)
+        bm_mu.set_labels_pos(self, AppMain)
 
         # Setting widths for displayed information
-        set_displays_widths(self, AppMain)
+        bm_mu.set_displays_widths(self, AppMain)
 
         # Setting and placing widgets for title and copyright
         SetMasterTitle(self)
@@ -98,10 +91,10 @@ class AppMain(tk.Tk):
         default_institute = "   "
         institute_val = tk.StringVar(self)
         institute_val.set(default_institute)
-        set_institute_widgets(self, institute_val)
+        bm_mu.set_institute_widgets(self, institute_val)
 
         # Tracing Institute selection
-        institute_val.trace('w', partial(update_app_page, self,
+        institute_val.trace('w', partial(bm_mu.update_app_page, self,
                                          institute_widget=institute_val))
 
         # Handling exception
@@ -113,9 +106,9 @@ class SetMasterTitle:
     def __init__(self, master):
 
         # Setting widget parameters for page title
-        page_title_font_size_tup = set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                     ['main_title'])
-        page_title_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['main_title'])
+        page_title_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
+                                                           ['main_title'])
+        page_title_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['main_title'])
 
         # Creating widget for page title
         page_title = tk.Label(master,
@@ -134,10 +127,10 @@ class SetAuthorCopyright:
 
     def __init__(self, master):
         # Setting widgets parameters for copyright
-        au_cop_font_size_tup = set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                ['copyright', 'version'])
-        copyright_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['copyright'])
-        version_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['version'])
+        au_cop_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
+                                                       ['copyright', 'version'])
+        copyright_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['copyright'])
+        version_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['version'])
 
         # Creating widgets for copyright
         auteurs_font_label = tkFont.Font(family=bm_gg.FONT_NAME,

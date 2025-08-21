@@ -20,6 +20,8 @@ from tkinter import ttk
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
+import bmgui.gui_utils as bm_gu
+
 from bmgui.gui_utils import disable_buttons
 from bmgui.gui_utils import enable_buttons
 from bmgui.gui_utils import place_after
@@ -34,10 +36,11 @@ def set_step_label(self, step_num, step_label_params):
     """Sets the label and place of step-label widget in the page.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         step_num (int): The order of the step in 'STEPS_LABELS_DICT' global \
         at 'page_key' key.
-        step_label_params
+        step_label_params (tup): (fonts of step widgets (tup), \
+        x-axis and y-axis positions of step widgets (list of tup)).
     Returns:
         (tk widget): The widget of the step label.
     """
@@ -79,33 +82,33 @@ def set_progress_bar_params(self, master):
 def set_steps_widgets_param(self, master, parse=False):
     """Sets label widgets and help buttons parameters for all page steps."""
     # Setting label widgets parameters for all page steps
-    step_label_pos_tup_list = set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])
-    self.step_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
-                                                ['step_label', 'step_launch', 'step_help'])
+    step_label_pos_tup_list = bm_gu.set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])
+    self.step_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
+                                                      ['step_label', 'step_launch', 'step_help'])
     step_label_params = (self.step_font_size_tup, step_label_pos_tup_list)
     steps_number = bm_gg.STEPS_NB_DICT[self.page_key]
     self.step_label_widgets_list = [set_step_label(self, step_num, step_label_params)
                                     for step_num in range(steps_number)]
     self.step_label_widgets_params = (self.step_label_widgets_list, step_label_pos_tup_list)
     if parse:
-        self.step_button_pos_tup = set_pos_tup_px(master, bm_gg.STATUS_BUT_POS_TUP)
-        self.step_button_dpos_tup_list = [set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[key])
+        self.step_button_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.STATUS_BUT_POS_TUP)
+        self.step_button_dpos_tup_list = [bm_gu.set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[key])
                                           for key in [self.parse_key, self.dedup_key]]
 
-        data_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['step_select'],
-                                               ['label', 'button'])
-        data_label_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_DPOS_DICT[self.page_key])
-        data_button_dpos_tup = set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
+        data_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['step_select'],
+                                                     ['label', 'button'])
+        data_label_dpos_tup = bm_gu.set_pos_tup_px(master, bm_gg.PAGE_SELECT_LABEL_DPOS_DICT[self.page_key])
+        data_button_dpos_tup = bm_gu.set_pos_tup_px(master, bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
         self.data_select_params = (data_font_size_tup, data_label_dpos_tup,
                                    data_button_dpos_tup)
 
         # Setting parameters of help buttons for all page steps
-        help_dpos_ref_tup_list = [set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP[key])
+        help_dpos_ref_tup_list = [bm_gu.set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP[key])
                                   for key in ['status', 'other', 'other']]
     else:
-        self.step_button_dpos_tup = set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[self.page_key])
+        self.step_button_dpos_tup = bm_gu.set_pos_tup_px(master, bm_gg.STEP_BUT_DPOS_DICT[self.page_key])
         # Setting parameters of help buttons for all page steps
-        dpos_ref_tup = set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP['other'])
+        dpos_ref_tup = bm_gu.set_pos_tup_px(master, bm_gg.HELP_BUT_DPOS_TUP['other'])
         help_dpos_ref_tup_list = sum([[dpos_ref_tup] * steps_number], [])
     self.help_button_params = (self.step_font_size_tup, help_dpos_ref_tup_list)
 
@@ -115,12 +118,12 @@ def set_year_select_widgets(self, master):
     label widget and the button and place of the year-selection button.
     """
     # Setting parameters
-    year_font_size_tup = set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
-                                           ['label', 'button'])
-    year_label_pos_tup = set_pos_tup_px(master,
-                                        bm_gg.PAGE_SELECT_LABEL_POS_DICT[self.year_key])
-    year_button_dpos_tup = set_pos_tup_px(master,
-                                          bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
+    year_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
+                                                 ['label', 'button'])
+    year_label_pos_tup = bm_gu.set_pos_tup_px(master,
+                                              bm_gg.PAGE_SELECT_LABEL_POS_DICT[self.year_key])
+    year_button_dpos_tup = bm_gu.set_pos_tup_px(master,
+                                                bm_gg.PAGE_SELECT_BUT_DPOS_DICT[self.page_key])
 
     # Setting year selection label
     self.Label_years_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -138,7 +141,7 @@ def set_year_select_widgets(self, master):
                                        self.variable_years,
                                        *master.years_list)
     self.years_opt_but.config(font=self.years_opt_but_font)
-    place_after(self.Label_years, self.years_opt_but, dy=year_button_dpos_tup[1])
+    bm_gu.place_after(self.Label_years, self.years_opt_but, dy=year_button_dpos_tup[1])
     bm_gg.GUI_BUTTONS.append(self.years_opt_but)
 
 
@@ -157,9 +160,9 @@ def set_data_select_widgets(self, step_num):
     data_label = tk.Label(self,
                           text=bm_gg.PAGE_SELECT_LABEL_DICT['data'],
                           font=data_label_font)
-    place_bellow(widget_ref, data_label,
-                 dx=data_label_dpos_tup[0],
-                 dy=data_label_dpos_tup[1])
+    bm_gu.place_bellow(widget_ref, data_label,
+                       dx=data_label_dpos_tup[0],
+                       dy=data_label_dpos_tup[1])
 
     # Setting option button for data selection
     data_variable = tk.StringVar(self)
@@ -169,20 +172,20 @@ def set_data_select_widgets(self, step_num):
     data_opt_but = tk.OptionMenu(self, data_variable,
                                  *bm_pg.BDD_LIST)
     data_opt_but.config(font=data_opt_but_font)
-    place_after(data_label, data_opt_but,
-                dx=data_button_dpos_tup[0],
-                dy=data_button_dpos_tup[1])
+    bm_gu.place_after(data_label, data_opt_but,
+                      dx=data_button_dpos_tup[0],
+                      dy=data_button_dpos_tup[1])
     bm_gg.GUI_BUTTONS.append(data_opt_but)
     return data_variable, data_opt_but
 
 
 def _edit_help(self, step_num):
-    disable_buttons(self.page_buttons_list)
+    bm_gu.disable_buttons(self.page_buttons_list)
     info_title = (f"{bm_gg.STEPS_LABELS_DICT[self.page_key][step_num].split(' - ')[0]}"
                   f" - {bm_gg.HELP_LABEL}")
     info_text = bm_gg.STEPS_HELPS_DICT[self.page_key][step_num]
     messagebox.showinfo(info_title, info_text)
-    enable_buttons(self.page_buttons_list)
+    bm_gu.enable_buttons(self.page_buttons_list)
 
 
 def set_step_help_button(self, step_num, pos_type=None):
@@ -204,14 +207,14 @@ def set_step_help_button(self, step_num, pos_type=None):
     if pos_type=='bellow':
         step_help_dx = help_dpos_ref_tup_list[step_num][0]
         step_help_dy = help_dpos_ref_tup_list[step_num][1]
-        place_bellow(step_label, help_button,
-                    dx=step_help_dx, dy=step_help_dy)
+        bm_gu.place_bellow(step_label, help_button,
+                           dx=step_help_dx, dy=step_help_dy)
     else:
         step_x_pos, _ = step_label_pos_tup_list[step_num]
         step_help_dx = help_dpos_ref_tup_list[step_num][0] - step_label.winfo_reqwidth() - step_x_pos
         step_help_dy = help_dpos_ref_tup_list[step_num][1]
-        place_after(step_label, help_button,
-                    dx=step_help_dx, dy=step_help_dy)
+        bm_gu.place_after(step_label, help_button,
+                          dx=step_help_dx, dy=step_help_dy)
     return help_button
 
 
@@ -236,10 +239,10 @@ def set_step_launch_button(self, step_num, step_start_funct, pos_type,
         else:
             dpos_tup = self.step_button_dpos_tup
         if pos_type=='bellow':
-            place_bellow(self.step_label_widgets_list[step_num], step_launch_button,
-                         dx=dpos_tup[0], dy=dpos_tup[1])
+            bm_gu.place_bellow(self.step_label_widgets_list[step_num], step_launch_button,
+                               dx=dpos_tup[0], dy=dpos_tup[1])
         elif pos_type=='after':
-            place_after(widget_ref, step_launch_button,
-                        dx=dpos_tup[0], dy=dpos_tup[1])
+            bm_gu.place_after(widget_ref, step_launch_button,
+                              dx=dpos_tup[0], dy=dpos_tup[1])
     bm_gg.GUI_BUTTONS.append(step_launch_button)
     return step_launch_button

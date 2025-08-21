@@ -158,7 +158,7 @@ def _update_months_history(months2add_file_path,
         one_year_employees_base_name (path): Base for building the file \
         name of the file gathering the employees for a year.
         replace (bool): If true, existing sheets are replaced in the Excel \
-            file (default: True).
+        file (default: True).
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (optional, default = None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
@@ -514,7 +514,7 @@ def update_employees(wf_path, progress_callback=None,
         wf_path (path): The path to the working folder.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
-        progress_bar_state_init (int)
+        progress_bar_state_init (int): Initial value of the progress bar.
         replace (bool): Optional (default = True); if true, existing sheets \
         are replaced in employees EXCEL files specific to a year.
     Returns:
@@ -616,7 +616,6 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
         empl_file_path (path): Full path to file of Institute \
         employees data.
         search_depth (int): Initial search depth.
-
     Returns:
         (tup): (employees data (df), adapted search depth (int), \
         list of available years of employees data).    

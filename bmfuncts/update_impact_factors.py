@@ -405,13 +405,13 @@ def _set_if_files_param(institute, wf_path):
     return files_list, folders_list, paths_list
 
 
-def _set_years_lists(if_db_dict, corpi_years_list):
+def _set_years_lists(if_db_dict, corpus_years_list):
     """Sets the list of years of various kinds depending 
     on years of available IFs and on years of available corpuses.
 
     Args:
         if_db_dict (dict): The IFs data keyed by years.
-        corpi_years_list (list): The list of years (str) \
+        corpus_years_list (list): The list of years (str) \
         of available corpuses.
     Returns:
         (tup): (The list of years (str) of available IFs part of corpus years, \
@@ -423,14 +423,14 @@ def _set_years_lists(if_db_dict, corpi_years_list):
 
     # Setting list of years of available IFs part of corpus years
     if_db_years_list = sorted(list(set(full_if_db_years_list)\
-                                   .intersection(set(corpi_years_list))))
+                                   .intersection(set(corpus_years_list))))
 
     # Setting the list of available IFs not part of corpus years
     kept_if_db_years_list = sorted(list(set(full_if_db_years_list)\
                                         - set(if_db_years_list)))
 
     # Setting the list of corpus years not part of the years of available IFs
-    off_if_db_years_list = sorted(list(set(corpi_years_list)\
+    off_if_db_years_list = sorted(list(set(corpus_years_list)\
                                        - set(if_db_years_list)))
 
     # Setting returned tuple
@@ -441,7 +441,7 @@ def _set_years_lists(if_db_dict, corpi_years_list):
 
 
 def update_inst_if_database(institute, org_tup, wf_path,
-                            corpi_years_list, progress_callback=None):
+                            corpus_years_list, progress_callback=None):
     """Updates the impact-factors (IFs) database of the Institute using the files 
     where IFs have been added by the user for each existing corpuses.
 
@@ -462,7 +462,8 @@ def update_inst_if_database(institute, org_tup, wf_path,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        corpi_years_list (list)
+        corpus_years_list (list): The list of years (str) \
+        of available corpuses.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
     Returns:
@@ -485,7 +486,7 @@ def update_inst_if_database(institute, org_tup, wf_path,
 
     # Getting the IFs database content and its IFs available years list
     if_db_dict = pd.read_excel(inst_all_if_path, sheet_name=None)
-    if_db_years_tup = _set_years_lists(if_db_dict, corpi_years_list)
+    if_db_years_tup = _set_years_lists(if_db_dict, corpus_years_list)
     (if_db_years_list, off_if_db_years_list, kept_if_db_years_list)= if_db_years_tup
 
     # Setting most recent year of available IFs

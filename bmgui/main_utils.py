@@ -20,50 +20,44 @@ from tkinter import messagebox
 from tkinter import font as tkFont
 
 # Local imports
-import bmgui.gui_globals as bm_gg
 import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
+import bmgui.gui_utils as bm_gu
 from bmfuncts.useful_functs import create_archi
 from bmgui.pages_classes import SetLaunchButton
-from bmgui.gui_utils import last_available_years
-from bmgui.gui_utils import place_after
-from bmgui.gui_utils import place_bellow
-from bmgui.gui_utils import set_display_width
-from bmgui.gui_utils import set_font_size_tup
-from bmgui.gui_utils import set_item_pos
-from bmgui.gui_utils import set_pos_tup_px
 
 
 def set_common_params(self, master):
     """Sets common parameters for widgets of main page."""
-    self.select_font_size_tup = set_font_size_tup(master,
-                                                  bm_gg.MAIN_FONT_SIZE_DICT['main_select'],
-                                                  ['label', 'button'])
-    self.disp_font_size_tup = set_font_size_tup(master,
-                                                bm_gg.MAIN_FONT_SIZE_DICT['main_disp'],
-                                                ['label', 'button'])
-    self.val_disp_dx = set_item_pos(master, bm_gg.VAL_DISPLAY_DX, 0)
-    self.buttons_dy = set_item_pos(master, bm_gg.MAIN_BUT_DPOS_TUP[1], 1)
-    self.opt_but_dy = set_item_pos(master, bm_gg.MAIN_OPT_BUT_DPOS_TUP[1], 1)
+    self.select_font_size_tup = bm_gu.set_font_size_tup(master,
+                                                        bm_gg.MAIN_FONT_SIZE_DICT['main_select'],
+                                                        ['label', 'button'])
+    self.disp_font_size_tup = bm_gu.set_font_size_tup(master,
+                                                      bm_gg.MAIN_FONT_SIZE_DICT['main_disp'],
+                                                      ['label', 'button'])
+    self.val_disp_dx = bm_gu.set_item_pos(master, bm_gg.VAL_DISPLAY_DX, 0)
+    self.buttons_dy = bm_gu.set_item_pos(master, bm_gg.MAIN_BUT_DPOS_TUP[1], 1)
+    self.opt_but_dy = bm_gu.set_item_pos(master, bm_gg.MAIN_OPT_BUT_DPOS_TUP[1], 1)
 
 
 def set_labels_pos(self, master):
     """Sets widget label positions in main page."""
-    self.inst_label_pos_tup = set_pos_tup_px(master,
-                                             bm_gg.MAIN_SELECT_LABEL_POS_DICT['institute'])
-    self.datatype_label_pos_tup = set_pos_tup_px(master,
-                                                 bm_gg.MAIN_SELECT_LABEL_POS_DICT['datatype'])
-    self.wf_pos_tup = set_pos_tup_px(master,
-                                     bm_gg.MAIN_DISP_LABEL_POS_DICT['work_folder'])
-    self.corpuses_pos_tup = set_pos_tup_px(master,
-                                           bm_gg.MAIN_DISP_LABEL_POS_DICT['corpus_list'])
+    self.inst_label_pos_tup = bm_gu.set_pos_tup_px(master,
+                                                   bm_gg.MAIN_SELECT_LABEL_POS_DICT['institute'])
+    self.datatype_label_pos_tup = bm_gu.set_pos_tup_px(master,
+                                                       bm_gg.MAIN_SELECT_LABEL_POS_DICT['datatype'])
+    self.wf_pos_tup = bm_gu.set_pos_tup_px(master,
+                                           bm_gg.MAIN_DISP_LABEL_POS_DICT['work_folder'])
+    self.corpuses_pos_tup = bm_gu.set_pos_tup_px(master,
+                                                 bm_gg.MAIN_DISP_LABEL_POS_DICT['corpus_list'])
 
 
 def set_displays_widths(self, master):
     """Sets widths for displayed information in main page."""
-    self.datatype_width =  set_display_width(master, 'datatype')
-    self.wf_width = set_display_width(master, 'work_folder')
-    self.corpuses_width = set_display_width(master, 'corpus_list')
+    self.datatype_width =  bm_gu.set_display_width(master, 'datatype')
+    self.wf_width = bm_gu.set_display_width(master, 'work_folder')
+    self.corpuses_width = bm_gu.set_display_width(master, 'corpus_list')
 
 
 def set_institute_widgets(self, institute_val):
@@ -86,7 +80,7 @@ def set_institute_widgets(self, institute_val):
     self.inst_optionbutton.config(font=self.inst_optionbutton_font)
 
     # Placing widgets for Institute selection
-    place_after(self.inst_label, self.inst_optionbutton, dy=self.opt_but_dy)
+    bm_gu.place_after(self.inst_label, self.inst_optionbutton, dy=self.opt_but_dy)
 
 
 def set_datatype_widgets_param(self, datatype_val):
@@ -108,7 +102,7 @@ def set_datatype_widgets_param(self, datatype_val):
                                                *bm_pg.DATATYPE_LIST)
     self.datatype_optionbutton.config(font=self.datatype_optionbutton_font,
                                       width=self.datatype_width)
-    place_after(self.datatype_label, self.datatype_optionbutton, dy=self.opt_but_dy)
+    bm_gu.place_after(self.datatype_label, self.datatype_optionbutton, dy=self.opt_but_dy)
 
 
 def _display_path(inst_wf):
@@ -163,7 +157,7 @@ def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
     # Setting wf displayed value widget
     wf_val_disp = tk.StringVar(self)
     wf_entry = tk.Entry(self, textvariable=wf_val_disp, width=self.wf_width)
-    place_after(wf_label, wf_entry, dx=self.val_disp_dx)
+    bm_gu.place_after(wf_label, wf_entry, dx=self.val_disp_dx)
     wf_val_disp.set(_display_path(inst_wf))
 
     # Setting button for changing Wf
@@ -174,7 +168,7 @@ def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
                           font=wf_button_font,
                           command=lambda: _get_file(self, institute_select,
                                                     datatype_select))
-    place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
+    bm_gu.place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
 
 
 def _try_wf_access(wf_path):
@@ -202,7 +196,7 @@ def _create_corpus(self, inst_wf):
     wf_access_status = _try_wf_access(wf_path)
     if wf_access_status:
         # Setting new corpus year folder name
-        corpuses_list = last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
+        corpuses_list = bm_gu.last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
         last_corpus_year = corpuses_list[-1]
         new_corpus_year_folder = str(int(last_corpus_year) + 1)
 
@@ -211,7 +205,7 @@ def _create_corpus(self, inst_wf):
         print("\n",message)
 
         # Getting updated corpuses list
-        corpuses_list = last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
+        corpuses_list = bm_gu.last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
 
         # Setting corpuses_val value to corpuses list
         corpuses_val_to_set = str(corpuses_list)
@@ -247,7 +241,7 @@ def set_corpuses_widgets_param(self, inst_wf):
     corpuses_val = tk.StringVar(self)
     corpuses_entry = tk.Entry(self, textvariable=corpuses_val,
                               width=self.corpuses_width)
-    place_after(corpuses_label, corpuses_entry, dx=self.val_disp_dx)
+    bm_gu.place_after(corpuses_label, corpuses_entry, dx=self.val_disp_dx)
 
     # Setting button for corpus creation
     corpuses_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -256,7 +250,7 @@ def set_corpuses_widgets_param(self, inst_wf):
                              text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
                              font=corpuses_button_font,
                              command=lambda: _create_corpus(self, inst_wf))
-    place_bellow(corpuses_entry, corpuses_button, dy=self.buttons_dy)
+    bm_gu.place_bellow(corpuses_entry, corpuses_button, dy=self.buttons_dy)
     return corpuses_val
 
 def _update_corpuses(self, inst_wf):
@@ -269,7 +263,7 @@ def _update_corpuses(self, inst_wf):
     wf_access_status = _try_wf_access(wf_path)
     if wf_access_status:
         # Getting updated corpuses list
-        corpuses_list = last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
+        corpuses_list = bm_gu.last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
 
         # Setting corpuses_val value to corpuses list
         corpuses_val_to_set = str(corpuses_list)
@@ -305,7 +299,7 @@ def _update_datatype(self, *args, datatype_widget=None):
                      "par défaut est autorisé mais vous pouvez "
                      "en choisir un autre.")
         messagebox.showinfo(info_title, info_text)
-        init_corpuses_list = last_available_years(default_wf_path, bm_gg.CORPUSES_NUMBER)
+        init_corpuses_list = bm_gu.last_available_years(default_wf_path, bm_gg.CORPUSES_NUMBER)
         corpuses_val_to_set = str(init_corpuses_list)
     corpuses_val.set(corpuses_val_to_set)
 

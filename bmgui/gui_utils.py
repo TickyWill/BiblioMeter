@@ -198,12 +198,12 @@ def set_progress_bar_pos_tup(master, page_key):
 
 
 def set_page_title(self, master, page_label, institute, datatype=None):
-    """Sets the page title of the 'page_name' page.
+    """Sets the page title of the page.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
-        page_label (str)
+        page_label (str): Name of the page to be used for the page title widget.
         institute (str): Institute name.
         datatype (str): Optional data combination type from corpuses \
         (default = None).        
@@ -253,7 +253,7 @@ def set_exit_button(self, master):
     """Sets exit button on any page of 'master'.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
     """
     # Internal functions
@@ -295,12 +295,6 @@ def last_available_years(wf_path, year_number):
         (list): List of 'year_number' length of available corpuses \
         as strings of 4 digits.    
     """
-    # Setting warning parameters
-    # TODO Remove these lines (redundant)
-    # warning_title = "!!! ATTENTION : Dossier de travail inaccessible !!!"
-    # warning_text = (f"L'accès au dossier {wf_path} est impossible."
-    #                "\nChoisissez un autre dossier de travail.")
-
     # Get list of available corpuses
     try:
         list_dir = sorted(os.listdir(wf_path))
@@ -355,10 +349,9 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
     # internal functions
     def _get_rawdata_file_path(rawdata_path, rawdata_extent):
-        """Returns the name of the rawdata file with 'rawdata_extent' extension
+        """Returns the name of the rawdata file with 'rawdata_extent' extension 
         pointed by the full path 'rawdata_path'.
         """
-
         filenames_list = []
         for _, _, files in os.walk(rawdata_path):
             filenames_list.extend(file for file in files if file.endswith("." + rawdata_extent))
@@ -522,7 +515,8 @@ def general_properties(self):
         scale factor on height in mm).
     """
 
-    # Getting screen effective sizes in pixels for window "root" (not working for Darwin platform)
+    # Getting screen effective sizes in pixels for window "root"
+    # (not working for Darwin platform)
     screen_width_px  = self.winfo_screenwidth()
     screen_height_px = self.winfo_screenheight()
 

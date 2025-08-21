@@ -185,7 +185,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
     and `_launch_kw_analysis`.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of analysis page (`AnalyzeCorpusPage` class \
         of bmgui.main_page module).
@@ -237,7 +237,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         # Getting year selection
         year_select = self.variable_years.get()
 
-        print(f"\nIFs analysis launched for year {year_select}")
+        print(f"\nIFs analysis launched for year {year_select}...")
         _launch_if_analysis(institute, org_tup, wf_path, datatype,
                             year_select, progress_callback)
         self.progress_bar.place_forget()
@@ -262,7 +262,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         # Getting year selection
         year_select = self.variable_years.get()
 
-        print(f"\nAuthors analysis launched for year {year_select}")
+        print(f"\nAuthors analysis launched for year {year_select}...")
         _launch_au_analysis(institute, org_tup, wf_path, datatype,
                             year_select, progress_callback)
         self.progress_bar.place_forget()
@@ -287,7 +287,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         # Getting year selection
         year_select = self.variable_years.get()
 
-        print(f"\nCoupling analysis launched for year {year_select}")
+        print(f"\nCoupling analysis launched for year {year_select}...")
         _launch_coupling_analysis(institute, org_tup,
                                   wf_path,
                                   datatype, year_select,
@@ -314,7 +314,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         # Getting year selection
         year_select = self.variable_years.get()
 
-        print(f"\nKeywords analysis launched for year {year_select}")
+        print(f"\nKeywords analysis launched for year {year_select}...")
         _launch_kw_analysis(institute, org_tup, wf_path, datatype,
                             year_select, progress_callback)
         self.progress_bar.place_forget()

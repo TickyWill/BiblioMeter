@@ -552,7 +552,7 @@ def _get_input_data(institute, org_tup, wf_path, datatype, corpus_year):
 def _recasting_authors_df(authors_df, bm_cols_list):
     """Recasts the data with one row per Institute author 
     for each publication by formatting the authors full names and their 
-    redistribution into last names and firstnames initials.
+    redistribution into last names and first-names initials.
 
     Args:
         authors_df (dataframe): Data of publication IDs list \

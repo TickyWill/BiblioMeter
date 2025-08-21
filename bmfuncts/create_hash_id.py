@@ -41,15 +41,15 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     """Cleans data from publications with same hash ID.
 
     Args:
-        dfs_tup (tup): data (dataframe) of publications list with one row \
-        per institute author and attributes as employee data (dataframe) \
+        dfs_tup (tup): 3 dataframes = (data of publications list with one row \
+        per institute author and attributes as employee, data \
         of publications list with one row per author not found \
-        in the employees database, data of Hash IDs with related publication IDs.
+        in the employees database, data of Hash IDs with related publication IDs).
         cols_tup (tup): The name of useful columns.
     Returns:
-        (tup): (The cleaned data (dataframe) of publications list with one row \
+        (tup): 3 dataframes = (The cleaned data of publications list with one row \
         per institute author and attributes as employee, \
-        The cleaned data (dataframe) of publications list with one row per author not found \
+        The cleaned data of publications list with one row per author not found \
         in the employees database, The cleaned data of Hash IDs with related publication IDs).
     """
     # Setting parameters from args

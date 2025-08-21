@@ -240,8 +240,6 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
             _test_full_match(empl_pub_match_df, pub_lastname)
 
         if len(empl_pub_match_df)==0: # No match found
-            # TODO remove the following line after tests (redundancy)
-            # flag_lastname_match = False
 
             # Checking for a similarity
             lastname_match_list = _reduce_orphan_df(pub_lastname, eff_lastnames)

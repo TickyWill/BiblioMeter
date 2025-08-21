@@ -11,19 +11,15 @@ from tkinter import messagebox
 from tkinter import font as tkFont
 
 # Local imports
-import bmgui.gui_globals as bm_gg
 import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
+import bmgui.gui_utils as bm_gu
 from bmfuncts.useful_functs import set_rawdata
 from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
 from bmgui.update_if_page import create_update_ifs
-from bmgui.gui_utils import existing_corpuses
-from bmgui.gui_utils import last_available_years
-from bmgui.gui_utils import show_frame
-from bmgui.gui_utils import set_font_size_tup
-from bmgui.gui_utils import set_item_pos
-from bmgui.gui_utils import set_pos_tup_px
+
 
 class SetLaunchButton(tk.Tk):
     """Displays corpuses analysis launch button in main window."""
@@ -31,11 +27,11 @@ class SetLaunchButton(tk.Tk):
     def __init__(self, master, institute, wf_path, datatype):
 
         # Setting font size for launch button
-        launch_but_font_size_tup = set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                 ['main_launch'])
+        launch_but_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
+                                                           ['main_launch'])
 
         # Setting x and y position in pixels for launch button
-        launch_but_pos_tup = set_pos_tup_px(master, bm_gg.MAIN_BUT_POS_TUP)
+        launch_but_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_BUT_POS_TUP)
 
         # Setting launch button
         launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -65,8 +61,8 @@ class SetLaunchButton(tk.Tk):
 
         else:
             # Setting years list
-            master.years_list = last_available_years(wf_path,
-                                                     bm_gg.CORPUSES_NUMBER)
+            master.years_list = bm_gu.last_available_years(wf_path,
+                                                           bm_gg.CORPUSES_NUMBER)
 
             if datatype:
                 # Setting rawdata for datatype
@@ -75,7 +71,7 @@ class SetLaunchButton(tk.Tk):
                                     master.years_list, database)
 
                 # Setting existing corpuses status
-                files_status = existing_corpuses(wf_path)
+                files_status = bm_gu.existing_corpuses(wf_path)
                 master.list_corpus_year = files_status[0]
                 master.list_wos_rawdata = files_status[1]
                 master.list_wos_parsing = files_status[2]
@@ -84,7 +80,7 @@ class SetLaunchButton(tk.Tk):
                 master.list_dedup = files_status[5]
 
             # Creating two frames in the tk window
-            pagebutton_height = set_item_pos(master, bm_gg.PAGE_BUTTON_HEIGHT, 1)
+            pagebutton_height = bm_gu.set_item_pos(master, bm_gg.PAGE_BUTTON_HEIGHT, 1)
             pagebutton_frame = tk.Frame(master, bg='red',
                                         height=pagebutton_height)
             pagebutton_frame.pack(side="top", fill="both", expand=False)
@@ -121,8 +117,8 @@ class PageButton(tk.Frame):
         page_num = master.pages_ordered_list.index(page_name)
 
         # Setting widgets parameters for page button
-        button_font_size_tup = set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                 ['page_button'])
+        button_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
+                                                       ['page_button'])
 
         # Creating widgets for page button
         button_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -130,7 +126,7 @@ class PageButton(tk.Frame):
         button = tk.Button(pagebutton_frame,
                            text=label_text,
                            font=button_font,
-                           command=lambda: show_frame(master, page_name))
+                           command=lambda: bm_gu.show_frame(master, page_name))
 
         # Placing widgets for page button
         button.grid(row=0, column=page_num)
@@ -155,7 +151,7 @@ class ParseCorpusPage(tk.Frame):
 
 
 class ConsolidateCorpusPage(tk.Frame):
-    """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function
+    """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function 
     imported from `bmgui.consolidate_corpus_page` module."""
 
     def __init__(self, master, pagebutton_frame, page_frame, institute, wf_path, datatype):

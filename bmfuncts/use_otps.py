@@ -479,7 +479,7 @@ def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
     through the `_set_lab_otp_ws` internal function.
 
     Args:
-        dpt_pub_dict (dict): The data of the department keyed by laboratory names (str)
+        dpt_pub_dict (dict): The data of the department keyed by laboratory names (str) \
         and valued by publications data (dataframe).
         dpt_lab_otps_dict (dict): The data of the department keyed \
         by laboratory names (str) and valued by OTPs lists (list). 

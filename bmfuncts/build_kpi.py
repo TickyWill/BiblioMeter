@@ -236,8 +236,6 @@ def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
     """
     # Setting parameters from args
     journal_col, if_analysis_col = cols_list[0], cols_list[3]
-    # TODO remove the following line after tests (redundancy)
-    # new_if_col = cols_list[4]
 
     # Selecting useful columns from 'dept_articles_df' dataframe
     dept_if_df = dept_by_journal_df[cols_list[0:4]]
@@ -412,7 +410,7 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
 
 def update_kpi_database(institute, saved_results_path,
                         corpus_year, kpi_dict, if_key,
-                        final_cols_tup, verbose=False):
+                        depts_col_list, verbose=False):
     """Updates the database of the key performance indicators (KPIs) with the KPIs data 
     of the given corpus.
 
@@ -430,7 +428,7 @@ def update_kpi_database(institute, saved_results_path,
         including itself and valued with KPIs dict of these keys.
         if_key (str): Column name of the analyzed impact factors (either those of \
         the publication year or the last available ones).
-        final_cols_tup
+        depts_col_list (list): The list of the Institute departments.
         verbose (bool): Status of prints (default = False).
     Returns:
         (dataframe): Institute KPIs data.
@@ -448,7 +446,6 @@ def update_kpi_database(institute, saved_results_path,
         os.makedirs(results_kpis_folder_path)
 
     # Setting useful column names aliases
-    _, depts_col_list = final_cols_tup
     corpus_year_row_alias = bm_pg.KPI_KEYS_ORDER_DICT[0]
     ordered_keys = list(bm_pg.KPI_KEYS_ORDER_DICT.values())
 
@@ -576,9 +573,10 @@ def if_analysis(institute, org_tup, wf_path, datatype,
         progress_callback(75)
 
     # Updating the KPIs database
+    final_depts_col_list = final_cols_tup[1]
     institute_kpi_df = update_kpi_database(institute, saved_results_path,
                                            corpus_year, kpi_dict, new_if_analysis_col,
-                                           final_cols_tup, verbose=verbose)
+                                           final_depts_col_list, verbose=verbose)
     if progress_callback:
         progress_callback(90)
 

@@ -140,7 +140,7 @@ def _add_biblio_list(in_path, out_path):
     'pub_title_alias', 'pub_first_author_alias', 'pub_year_alias', 
     'pub_journal_alias' and 'pub_doi_alias', respectively. 
     The name of the new column is given by 'pub_full_ref_alias'. 
-    The updated publications list is saved as a xlsx file.
+    The updated publications list is saved as an xlsx file.
 
     Args:
         in_path (path): Full path to the xlsx file of the publications list.
@@ -192,7 +192,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
     name is given by 'ext_docs_sheet_name_alias'. 
     The row of the added PhD students is dropped in the publications list 
     with one row per author that has not been identified as Institute employee. 
-    The new publications lists are saved as a xlsx files.
+    The new publications lists are saved as an xlsx files.
 
     Args:
         submit_path (path): Full path to the xlsx file of the publications list \
@@ -317,7 +317,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path):
 
     # Dropping orphan_drop_df rows from init_orphan_df
     # TODO Either change the type of the 'keep' param or use a string value
-    new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep=False)
+    new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of init_orphan_df
     col_invert_rename_dic = {firstname_initials_col_base_alias + "_x": \
@@ -342,7 +342,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
     name is given by 'others_sheet_name_alias'. 
     The row of the added employees is dropped in the publications list 
     with one row per author that has not been identified as Institute employee. 
-    The new publications lists are saved as a xlsx files.
+    The new publications lists are saved as an xlsx files.
 
     Args:
         submit_path (path): Full path to the xlsx file of the publications list \
@@ -468,7 +468,7 @@ def _add_other_ext(submit_path, orphan_path, others_path):
 
     # Dropping orphan_drop_df rows from init_orphan_df
     # TODO Either change the type of the 'keep' param or use a string value
-    new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep=False)
+    new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of init_orphan_df
     col_invert_rename_dic = {firstname_initials_col_base_alias + "_x": \
@@ -550,7 +550,7 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
 
     # Internal function
     def _save_inst_col_df(_inst_col, df_to_save):
-        if _inst_col== "all_undrop":
+        if _inst_col=="all_undrop":
             file_path = orphan_path
         else:
             file_name = _inst_col + "_" + orphan_file_name
@@ -572,7 +572,7 @@ def _split_orphan(org_tup, working_folder_path, orphan_file_name, verbose=False)
     orphan_path = working_folder_path / Path(orphan_file_name)
     orphan_df = pd.read_excel(orphan_path, converters=converters_alias, keep_default_na=False)
 
-    # Creating, and saving as a xlsx file, orphan authors for each Institute subdivision
+    # Creating, and saving as an xlsx file, orphan authors for each Institute subdivision
     institute_df = orphan_df.copy()
     new_orphan_df = orphan_df.copy()
     droped_indexes = set()
@@ -650,7 +650,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
     internal function.
     9. Column names are changed in the two files which full path are given by respectively, \
     'submit_path' and 'orphan_path' through the `_change_col_names` internal function.    
-    10. A xlsx file containing the unique hash ID built for each publication \
+    10. An xlsx file containing the unique hash ID built for each publication \
     is created through the `create_hash_id` function imported from "bmfuncts.create_hash_id" \
     module.
 

@@ -77,6 +77,7 @@ def _create_table(self, master, x_pos_init):
     and the general properties of tkinter window as 'master' class variables.
 
     Args:
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         x_pos_init (int): The horizontal position in pixels to be used \
         for the first widget location on the parsing page.
@@ -131,6 +132,7 @@ def _update_status(self, master, wf_path, box_pos_params):
     working folder using the `_create_table` internal function.
 
     Args:
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         box_pos_params (tup): ((x-axis position (int) for top-boxes location, \
         y-axis position (int) for boxes location), \
@@ -463,7 +465,7 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     `_launch_dedup` and `_update_status`.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of parsing page.
         institute (str): Institute name.

@@ -389,7 +389,7 @@ def create_update_ifs(self, master, page_name, institute, wf_path, datatype):
     and `_launch_update_pub_if`.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.

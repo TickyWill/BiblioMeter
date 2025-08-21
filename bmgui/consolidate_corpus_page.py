@@ -182,9 +182,9 @@ def _launch_update_employees_try(wf_path, progress_callback):
                                 f"\n\n '{empl_upd_folder_path}'.\n"
                                 "\n 1- Séparez les feuilles d'années différentes "
                                 "en fichiers d'effectifs additionnels différents;"
-                                "\n 2- Relancer la mise à jour des effectifs "
-                                "\n    pour chacun des fichiers créés en les positionnant seul "
-                                "dans le dossier successivement.")
+                                "\n 2- Relancer la mise à jour des effectifs pour "
+                                "chacun des fichiers créés en le positionnant seul "
+                                "dans le dossier.")
                 messagebox.showwarning(warning_title, warning_text)
                 update_status = False
             print("Update of employees data aborted (error in the provided file for update)")
@@ -741,7 +741,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
     through merge with Institute employees database.
 
     Args:
-        self
+        self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of consolidation page.
         institute (str): Institute name.

@@ -284,8 +284,6 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
     # Building stat per country for given inst_type
     data_cols_list = [country_col, inst_nb_col, inst_list_col, journal_nb_col,
                       proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
-    # TODO remove the following line after tests (redundancy)
-    # country_inst_pub_df = pd.DataFrame(columns=data_cols_list)
     data = []
     for country, country_df in pub_country_inst_df.groupby(country_col):
         pub_ids_list = list(set(country_df[pub_id_col].to_list()))
@@ -422,11 +420,12 @@ def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
 
     Args:
         institute (str): Institute name.
-        distrib_institutions_df (pd.DataFrame)
-        inst_analysis_folder_path (path); The full path to the folder \
+        distrib_institutions_df (pd.DataFrame): The data with distributed \
+        normalized institutions per institution type and per publication.
+        inst_analysis_folder_path (path): The full path to the folder \
         where the results of the institutions analysis are saved.
-        pub_ids_lists (tuple): (list of all publication IDs (str) of the institute, \
-        list of the IDs (str) of publications in journals, \
+        pub_ids_lists (tuple): (list of all publication IDs (str) of \
+        the institute, list of the IDs (str) of publications in journals, \
         list of the IDs (str) of publications in conference proceedings, \
         list of the IDs (str) of publications in books).
     """

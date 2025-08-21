@@ -226,7 +226,7 @@ def keep_initials(df, initials_col_base, missing_fill=None):
 
 
 def save_xlsx_file(root_path, df, file_name):
-    """Saves data as a xlsx file that is one sheet and not formatted.
+    """Saves data as an xlsx file that is one sheet and not formatted.
 
     Args:
         root_path (path): The path to the folder where the Excel file is saved.
@@ -297,14 +297,17 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
                               ignore_index=concat_ignore_index)
 
     if dedup:
+        keep_type = keep
+        if keep=='False':
+            keep_type = False
         # Removing duplicates
         full_col_list = list(concat_df.columns)
         if dedup_cols and all(i in full_col_list for i in dedup_cols):
             concat_df = concat_df.drop_duplicates(subset=dedup_cols,
-                                                  keep=keep,
+                                                  keep=keep_type,
                                                   ignore_index=drop_ignore_index)
         else:
-            concat_df = concat_df.drop_duplicates(keep=keep,
+            concat_df = concat_df.drop_duplicates(keep=keep_type,
                                                   ignore_index=drop_ignore_index)
     return concat_df
 
@@ -773,7 +776,7 @@ def read_final_submit_data(saved_results_path, corpus_year):
     """Reads saved publications list with one row per Institute author 
     and its attributes.
     
-    This data have been initially built through the `recursive_year_search`
+    This data have been initially built through the `recursive_year_search` 
     function of the `bmfuncts.merge_pub_employees` module.
 
     Args:
