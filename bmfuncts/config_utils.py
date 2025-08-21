@@ -107,7 +107,7 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
     # Getting the year folder attributes
     year_files_path = wf_path / Path(str(year))
 
-    # Getting the corpora folder attributes
+    # Getting the corpuses folder attributes
     keys_list = ['corpus', 'corpus_root']
     corpus_folder_path, _ = _get_folder_attributes(parsing_folder_dict,
                                                    keys_list, year_files_path)

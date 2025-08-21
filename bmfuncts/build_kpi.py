@@ -514,7 +514,7 @@ def if_analysis(institute, org_tup, wf_path, datatype,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         if_most_recent_year (str): Most recent year of impact factors.
         progress_callback (function): Function for updating ProgressBar \

@@ -32,7 +32,7 @@ def _launch_au_analysis(institute, org_tup, wf_path, datatype,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
@@ -59,7 +59,7 @@ def _launch_kw_analysis(institute, org_tup, wf_path,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
@@ -86,7 +86,7 @@ def _launch_coupling_analysis(institute, org_tup, wf_path, datatype,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.    
@@ -143,7 +143,7 @@ def _launch_if_analysis(institute, org_tup, wf_path, datatype,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.  
@@ -191,7 +191,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         of bmgui.main_page module).
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
     """
 
     # Internal functions

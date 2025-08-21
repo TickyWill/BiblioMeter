@@ -502,7 +502,7 @@ def _get_input_data(institute, org_tup, wf_path, datatype, corpus_year):
         institute (str): The institute name.
         org_tup (tup): Contains parameters of the institute .
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         corpus_year (str): Contains the corpus year defined by 4 digits.
     Returns:
         (tup): (The built data of articles, The built data of authors, \
@@ -680,7 +680,7 @@ def build_institute_pubs_authors(institute, org_tup, wf_path, datatype, year):
         institute (str): The institute name.
         org_tup (tup): Contains parameters of the institute .
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year (str): Contains the corpus year defined by 4 digits.
     Returns:
         (dataframe): Publications list with one row per author with correction \

@@ -661,7 +661,7 @@ def recursive_year_search(out_path, empl_dict, institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         corpus_year (str): Contains the corpus year defined by 4 digits.
         search_depth (int): Depth for search in 'empl_dict' using 'years' list.
         progress_callback (function): Function for updating ProgressBar \

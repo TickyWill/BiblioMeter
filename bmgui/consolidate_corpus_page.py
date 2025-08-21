@@ -271,7 +271,7 @@ def _launch_recursive_year_search_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         search_depth_init (int): Initial search depth that will be adapted \
         depending on available years in Institute employees database.
@@ -621,7 +621,7 @@ def _launch_pub_list_conso_try(institute, org_tup,
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         year_select (str): Corpus year defined by 4 digits.
         years_list (list): List of available corpus years \
         (each item defined by a string of 4 digits).
@@ -746,7 +746,7 @@ def create_consolidate_corpus(self, master, page_name, institute, wf_path, datat
         page_name (str): Name of consolidation page.
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
 

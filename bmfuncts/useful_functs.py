@@ -150,7 +150,7 @@ def set_saved_results_path(wf_path, datatype):
 
     Args:
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
     Returns:
         (path): The full path of the saved results.
     """
@@ -615,7 +615,7 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         save_extent (str): The extent for building the name of the file for saving \
         the data.
         dedup_infos (tup): (The full path to the working folder (path), \
-        Data combination type from corpora databases (str), \
+        Data combination type from corpuses databases (str), \
         4 digits year of the corpus (str)).
     Returns:
         (tup): (4 digits year of the corpus (str), The full path to the folder \
@@ -672,7 +672,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
         the dot separator (ex: "xlsx" for Excel file type).
         dedup_infos (tup): Optional tuple for final saving of deduplication \
         results = (Full path to working folder (path), \
-        Data combination type from corpora databases (str), \
+        Data combination type from corpuses databases (str), \
         4 digits year of the corpus (str)) (default = None).
     """
     parsing_items_nb = len(parsing_dict.keys())

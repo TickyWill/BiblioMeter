@@ -324,7 +324,7 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
         corpus_year (str): Corpus year defined by 4 digits.
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
         inst_paths_tup (tup): (full path to institute-affiliations file, \
         full path to institutions-types file).
         progress_callback (function): Function for updating \
@@ -468,7 +468,7 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
         page_name (str): Name of parsing page.
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpora databases.
+        datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
 

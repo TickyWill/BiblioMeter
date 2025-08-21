@@ -205,7 +205,7 @@ def set_page_title(self, master, page_label, institute, datatype=None):
         master (class): `bmgui.main_page.AppMain` class.
         page_label (str)
         institute (str): Institute name.
-        datatype (str): Optional data combination type from corpora \
+        datatype (str): Optional data combination type from corpuses \
         (default = None).        
     """
     # internal functions
@@ -285,14 +285,14 @@ def set_exit_button(self, master):
 
 def last_available_years(wf_path, year_number):
     """Returns a list of up to 'year_number' number 
-    of the most-recent years of available corpora
+    of the most-recent years of available corpuses
     in the working folder targeted by 'wf_path'.
 
     Args:
         wf_path (path): Full path to working folder.
-        year_number (int): Data combination type from corpora databases.
+        year_number (int): Data combination type from corpuses databases.
     Returns:
-        (list): List of 'year_number' length of available corpora \
+        (list): List of 'year_number' length of available corpuses \
         as strings of 4 digits.    
     """
     # Setting warning parameters
@@ -301,7 +301,7 @@ def last_available_years(wf_path, year_number):
     # warning_text = (f"L'accès au dossier {wf_path} est impossible."
     #                "\nChoisissez un autre dossier de travail.")
 
-    # Get list of available corpora
+    # Get list of available corpuses
     try:
         list_dir = sorted(os.listdir(wf_path))
         years_full_list = []
@@ -333,7 +333,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
     """Returns a list of lists of booleans displaying True
     if rawdata and parsing results are available, and False otherwise.
 
-    This is done for each of the available corpora.
+    This is done for each of the available corpuses.
         ex: If only 2023 files are not present, the returned tuple of lists contains
 
         - Years list                          = ["2018", "2019", "2020", "2021", "2022", "2023"]
@@ -345,7 +345,7 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
     Args:
         wf_path (path):  Full path to working folder.
-        corpuses_number (int): The number of corpora to be checked \
+        corpuses_number (int): The number of corpuses to be checked \
         (default: CORPUSES_NUMBER global).
     Returns:
         (tup of lists): (Years list, WoS raw-data boolean list, \

@@ -146,7 +146,7 @@ def _update_year_if_database(wf_path, corpus_year,
         if_params_list (list): [publications-list folder name (str), \
         base for building missing-IFs file name (str), \
         base for building missing-ISSNs file name (str)].
-        add_corpus_years_list (list): List of corpora of which the filled \
+        add_corpus_years_list (list): List of corpuses of which the filled \
         missing-IFs and missing-ISSNs data have to be added to the ones of \
         the "corpus_year" corpus corresponding to the "if_most_recent_year" year.
     Returns:
@@ -407,12 +407,12 @@ def _set_if_files_param(institute, wf_path):
 
 def _set_years_lists(if_db_dict, corpi_years_list):
     """Sets the list of years of various kinds depending 
-    on years of available IFs and on years of available corpora.
+    on years of available IFs and on years of available corpuses.
 
     Args:
         if_db_dict (dict): The IFs data keyed by years.
         corpi_years_list (list): The list of years (str) \
-        of available corpora.
+        of available corpuses.
     Returns:
         (tup): (The list of years (str) of available IFs part of corpus years, \
         The list of corpus years (str) not part of the years of available IFs, \
@@ -443,7 +443,7 @@ def _set_years_lists(if_db_dict, corpi_years_list):
 def update_inst_if_database(institute, org_tup, wf_path,
                             corpi_years_list, progress_callback=None):
     """Updates the impact-factors (IFs) database of the Institute using the files 
-    where IFs have been added by the user for each existing corpora.
+    where IFs have been added by the user for each existing corpuses.
 
     1. Gets the initial all-years database which full path is given by \
     'inst_all_if_path'.

@@ -26,7 +26,7 @@ from bmgui.gui_utils import set_item_pos
 from bmgui.gui_utils import set_pos_tup_px
 
 class SetLaunchButton(tk.Tk):
-    """Displays corpora analysis launch button in main window."""
+    """Displays corpuses analysis launch button in main window."""
 
     def __init__(self, master, institute, wf_path, datatype):
 
@@ -74,7 +74,7 @@ class SetLaunchButton(tk.Tk):
                     _ = set_rawdata(wf_path, datatype,
                                     master.years_list, database)
 
-                # Setting existing corpora status
+                # Setting existing corpuses status
                 files_status = existing_corpuses(wf_path)
                 master.list_corpus_year = files_status[0]
                 master.list_wos_rawdata = files_status[1]
