@@ -386,6 +386,16 @@ def _build_recent_year_if_df(wf_path, if_db_dict,
 
 
 def _set_if_files_param(institute, wf_path):
+    """Sets list of useful files parameters for impact-factors update.
+
+    Args:
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+    Returns:
+       (tup): (Name bases (list of str) of files of missing IFs and missing ISSN, \
+       Folder Name (str in list) of publications list, Full path (path in list) \
+       to the IFs database).
+    """
     # Setting useful aliases
     if_root_folder_alias = bm_pg.ARCHI_IF["root"]
     missing_if_filename_base_alias = bm_pg.ARCHI_IF["missing_if_base"]

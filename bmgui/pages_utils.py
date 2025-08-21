@@ -65,7 +65,12 @@ def set_step_label(self, step_num, step_label_params):
 
 def set_progress_bar_params(self, master):
     """Sets size and relative positions of widget of progress bar in page 
-    and variable to keep track of the progress bar value."""
+    and variable to keep track of the progress bar value.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+    """
     # Setting size and relative positions of widget of progress bar
     return_tup = set_progress_bar_pos_tup(master, self.page_key)
     progress_bar_len, self.progress_bar_dx, self.progress_bar_dy = return_tup
@@ -80,7 +85,14 @@ def set_progress_bar_params(self, master):
 
 
 def set_steps_widgets_param(self, master, parse=False):
-    """Sets label widgets and help buttons parameters for all page steps."""
+    """Sets label widgets and help buttons parameters for all page steps.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+        parse (bool): Optional, specify if the calling page \
+        is the parsing page (default=False).
+    """
     # Setting label widgets parameters for all page steps
     step_label_pos_tup_list = bm_gu.set_pos_tup_px_list(master, bm_gg.STEP_POS_TUPS_DICT[self.page_key])
     self.step_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT,
@@ -116,6 +128,10 @@ def set_steps_widgets_param(self, master, parse=False):
 def set_year_select_widgets(self, master):
     """Sets in the page the label and place of the year-selection 
     label widget and the button and place of the year-selection button.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
     """
     # Setting parameters
     year_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.PAGE_FONT_SIZE_DICT['year_select'],
@@ -148,6 +164,13 @@ def set_year_select_widgets(self, master):
 def set_data_select_widgets(self, step_num):
     """Sets in the page the label and place of the data-selection 
     label widget and the button and place of the data-selection button.
+
+    Args:
+        self (instance): Instance of the calling page.
+        step_num (int): Index of the step.
+    Returns:
+        (tup): (variable (tk.StringVar) for tracking value of selected data, \
+        data selection button (tk.OptionMenu)).
     """
     # Setting parameters from args
     (data_font_size_tup, data_label_dpos_tup,
@@ -180,6 +203,12 @@ def set_data_select_widgets(self, step_num):
 
 
 def _edit_help(self, step_num):
+    """Edits help menu.
+
+    Args:
+        self (instance): Instance of the calling page.
+        step_num (int): Index of the step.
+    """
     bm_gu.disable_buttons(self.page_buttons_list)
     info_title = (f"{bm_gg.STEPS_LABELS_DICT[self.page_key][step_num].split(' - ')[0]}"
                   f" - {bm_gg.HELP_LABEL}")
@@ -189,7 +218,17 @@ def _edit_help(self, step_num):
 
 
 def set_step_help_button(self, step_num, pos_type=None):
-    """Sets widget parameters and place for help button of a given step."""
+    """Sets widget parameters and place for help button of a given step.
+
+    Args:
+        self (instance): Instance of the calling page.
+        step_num (int): Index of the step.
+        pos_type (str): Optional, if set to 'bellow' \
+        the button is placed bellow the step label, \
+        else it is placed after on the same line (default=None).
+    Returns:
+        (tk.Button): The set button for editing help message.
+    """
     # Setting parameters from args
     step_font_size_tup, help_dpos_ref_tup_list = self.help_button_params
     step_label_widget, step_label_pos_tup_list = self.step_label_widgets_params
@@ -220,7 +259,24 @@ def set_step_help_button(self, step_num, pos_type=None):
 
 def set_step_launch_button(self, step_num, step_start_funct, pos_type,
                            parse=False, widget_ref=None):
-    """Sets launch button for a given step"""
+    """Sets launch button for a given step
+
+    Args:
+        self (instance): Instance of the calling page.
+        step_num (int): Index of the step.
+        step_start_funct (str): Name of the function \
+        to be used for the button command.
+        pos_type (str): {'place', 'bellow', 'after'}, \
+        'place' = button placed at absolute position, \
+        'bellow' = button is placed bellow the step label, \
+        'after' = button is placed after a specifyed reference widget.
+        parse (bool): Optional, specify if the calling page \
+        is the parsing page (default=False).
+        widget_ref (tk widget): Optional, specify the reference \
+        widget when posètype is set to 'after'.
+    Returns:
+        (tk.Button): The set button for launching the step.
+    """
     # Setting label widget for launch button
     step_launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                    size=self.step_font_size_tup[1])
@@ -229,8 +285,9 @@ def set_step_launch_button(self, step_num, step_start_funct, pos_type,
                                    font=step_launch_font,
                                    command=step_start_funct)
 
-    # Placing launch button relatively to label widget depending on 'pos_type'
+    # Placing launch button depending on 'pos_type'
     if pos_type=='place':
+        # Absolute position
         pos_tup = self.step_button_pos_tup
         step_launch_button.place(x=pos_tup[0], y=pos_tup[1])
     else:
@@ -239,9 +296,11 @@ def set_step_launch_button(self, step_num, step_start_funct, pos_type,
         else:
             dpos_tup = self.step_button_dpos_tup
         if pos_type=='bellow':
+            # Bellow the step label
             bm_gu.place_bellow(self.step_label_widgets_list[step_num], step_launch_button,
                                dx=dpos_tup[0], dy=dpos_tup[1])
         elif pos_type=='after':
+            # On the same line, after the specified widget as reference
             bm_gu.place_after(widget_ref, step_launch_button,
                               dx=dpos_tup[0], dy=dpos_tup[1])
     bm_gg.GUI_BUTTONS.append(step_launch_button)

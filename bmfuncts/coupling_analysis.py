@@ -364,7 +364,7 @@ def coupling_analysis(institute, org_tup, wf_path,
         save_keys_list = ["countries", "continents", "institutions"]
         for key in save_keys_list:
             results_to_save_dict[key] = True
-        if_analysis_name = None
+        if_analysis_name = "None"
         _ = save_final_results(institute, org_tup, wf_path, datatype, year,
                                if_analysis_name, results_to_save_dict, verbose=False)
     else:

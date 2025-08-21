@@ -356,7 +356,7 @@ def authors_analysis(institute, org_tup, wf_path, datatype,
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
-    if_analysis_name = None
+    if_analysis_name = "None"
     _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:

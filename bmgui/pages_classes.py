@@ -22,7 +22,14 @@ from bmgui.update_if_page import create_update_ifs
 
 
 class SetLaunchButton(tk.Tk):
-    """Displays corpuses analysis launch button in main window."""
+    """Displays corpuses analysis launch button in main window.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    """
 
     def __init__(self, master, institute, wf_path, datatype):
 
@@ -50,7 +57,14 @@ class SetLaunchButton(tk.Tk):
                             anchor="s")
 
     def _generate_pages(self, master, institute, wf_path, datatype):
-        """Generates pages after working folder setting."""
+        """Generates pages after working folder setting.
+
+        Args:
+            master (class): `bmgui.main_page.AppMain` class.
+            institute (str): Institute name.
+            wf_path (path): Full path to working folder.
+            datatype (str): Data combination type from corpuses databases.
+        """
 
         if wf_path=='':
             warning_title = "!!! Attention !!!"
@@ -108,7 +122,13 @@ class SetLaunchButton(tk.Tk):
 
 
 class PageButton(tk.Frame):
-    """Sets button of 'page_name' page."""
+    """Sets button of 'page_name' page.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Page name.
+        pagebutton_frame (tk.Frame): Frame of pages buttons.
+    """
 
     def __init__(self, master, page_name, pagebutton_frame):
 
@@ -134,7 +154,16 @@ class PageButton(tk.Frame):
 
 class ParseCorpusPage(tk.Frame):
     """Sets parsing page widgets through `create_parsing_concat` function 
-    imported from `bmgui.parse_corpus_page` module."""
+    imported from `bmgui.parse_corpus_page` module.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pagebutton_frame (tk.Frame): Frame of pages buttons.
+        page_frame (tk.Frame): Frame of master page.
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    """
 
     def __init__(self, master, pagebutton_frame, page_frame, institute, wf_path, datatype):
         super().__init__(page_frame)
@@ -152,7 +181,16 @@ class ParseCorpusPage(tk.Frame):
 
 class ConsolidateCorpusPage(tk.Frame):
     """Sets corpuses-consolidation page widgets through `create_consolidate_corpus` function 
-    imported from `bmgui.consolidate_corpus_page` module."""
+    imported from `bmgui.consolidate_corpus_page` module.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pagebutton_frame (tk.Frame): Frame of pages buttons.
+        page_frame (tk.Frame): Frame of master page.
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    """
 
     def __init__(self, master, pagebutton_frame, page_frame, institute, wf_path, datatype):
         super().__init__(page_frame)
@@ -170,7 +208,16 @@ class ConsolidateCorpusPage(tk.Frame):
 
 class UpdateIfPage(tk.Frame):
     """Sets impact-factors-update page widgets through `create_update_ifs` function 
-    imported from `bmgui.update_if_page` module."""
+    imported from `bmgui.update_if_page` module.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pagebutton_frame (tk.Frame): Frame of pages buttons.
+        page_frame (tk.Frame): Frame of master page.
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    """
 
     def __init__(self, master, pagebutton_frame, page_frame, institute, wf_path, datatype):
         super().__init__(page_frame)
@@ -188,7 +235,16 @@ class UpdateIfPage(tk.Frame):
 
 class AnalyzeCorpusPage(tk.Frame):
     """Sets corpuses-analysis page widgets through `create_analysis` function 
-    imported from `bmgui.analyze_corpus_page` module."""
+    imported from `bmgui.analyze_corpus_page` module.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        pagebutton_frame (tk.Frame): Frame of pages buttons.
+        page_frame (tk.Frame): Frame of master page.
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    """
 
     def __init__(self, master, pagebutton_frame, page_frame, institute, wf_path, datatype):
         super().__init__(page_frame)

@@ -29,7 +29,12 @@ from bmgui.pages_classes import SetLaunchButton
 
 
 def set_common_params(self, master):
-    """Sets common parameters for widgets of main page."""
+    """Sets common parameters for widgets of main page.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+    """
     self.select_font_size_tup = bm_gu.set_font_size_tup(master,
                                                         bm_gg.MAIN_FONT_SIZE_DICT['main_select'],
                                                         ['label', 'button'])
@@ -42,7 +47,12 @@ def set_common_params(self, master):
 
 
 def set_labels_pos(self, master):
-    """Sets widget label positions in main page."""
+    """Sets widget label positions in main page.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+    """
     self.inst_label_pos_tup = bm_gu.set_pos_tup_px(master,
                                                    bm_gg.MAIN_SELECT_LABEL_POS_DICT['institute'])
     self.datatype_label_pos_tup = bm_gu.set_pos_tup_px(master,
@@ -54,14 +64,24 @@ def set_labels_pos(self, master):
 
 
 def set_displays_widths(self, master):
-    """Sets widths for displayed information in main page."""
+    """Sets widths for displayed information in main page.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+    """
     self.datatype_width =  bm_gu.set_display_width(master, 'datatype')
     self.wf_width = bm_gu.set_display_width(master, 'work_folder')
     self.corpuses_width = bm_gu.set_display_width(master, 'corpus_list')
 
 
 def set_institute_widgets(self, institute_val):
-    """Sets widget parameters for institute selection through 'tk.OptionMenu'."""
+    """Sets widget parameters for institute selection through 'tk.OptionMenu'.
+
+    Args:
+        self (instance): Instance of the calling page.
+        institute_val (tk.StringVar): For tracking value in 'tk.OptionMenu'.
+    """
     # Setting label widget for institute selection
     self.inst_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                        size=self.select_font_size_tup[0],
@@ -84,7 +104,12 @@ def set_institute_widgets(self, institute_val):
 
 
 def set_datatype_widgets_param(self, datatype_val):
-    """Sets widget parameters for datatype selection through 'tk.OptionMenu'."""
+    """Sets widget parameters for datatype selection through 'tk.OptionMenu'.
+
+    Args:
+        self (instance): Instance of the calling page.
+        datatype_val (tk.StringVar): For tracking value in 'tk.OptionMenu'.
+    """
     # Setting label widget for datatype selection
     self.datatype_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                            size=self.select_font_size_tup[0],
@@ -106,8 +131,13 @@ def set_datatype_widgets_param(self, datatype_val):
 
 
 def _display_path(inst_wf):
-    """Shortens wf path for easy display."""
+    """Shortens wf path for easy display.
 
+    Args:
+        inst_wf (str): Full path as string to the working folder.
+    Returns:
+        (str): The shortened path to the working folder to be displayed.
+    """
     p = Path(inst_wf)
     if len(p.parts)<=4:
         p_disp = p
@@ -121,8 +151,13 @@ def _display_path(inst_wf):
 def _get_file(self, institute_select, datatype_select):
     """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
     Updates 'wf' widgets parameters and values accordingly to the working 
-    folder got and sets launch button of corpuses analysis."""
+    folder got and sets launch button of corpuses analysis.
 
+    Args:
+        self (instance): Instance of the calling page.
+        institute_select (str): Selected Institute name.
+        datatype_select (str): Selected datatype.
+    """
     # Getting new working directory
     dialog_title = "Choisir un nouveau dossier de travail"
     wf_str = tk.filedialog.askdirectory(title=dialog_title)
@@ -140,7 +175,14 @@ def _get_file(self, institute_select, datatype_select):
 
 def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
     """Sets 'wf' widgets parameters and values 
-    according to the selected Institute."""
+    according to the selected Institute.
+
+    Args:
+        self (instance): Instance of the calling page.
+        institute_select (str): Selected Institute name.
+        inst_wf (str): Full path as string to the working folder.
+        datatype_select (str): Selected datatype.
+    """
     # Setting wf label widget
     wf_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                 size=self.disp_font_size_tup[0],
@@ -173,8 +215,13 @@ def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
 
 def _try_wf_access(wf_path):
     """Returns status of the default working folder as boolean: True, if exists 
-    and access is authorized to the user; False, otherwise."""
+    and access is authorized to the user; False, otherwise.
 
+    Args:
+        wf_path (path): Full path to the working folder.
+    Returns:
+        (bool): Status of the access to the working folder.
+    """
     wf_access_status = False
     if os.access(wf_path, os.F_OK | os.R_OK | os.W_OK):
         wf_access_status = True
@@ -189,8 +236,12 @@ def _try_wf_access(wf_path):
 def _create_corpus(self, inst_wf):
     """Creates a new corpus folder in the working folder through `create_archi` 
     function imported from `bmfuncts.useful_functs` module.             
-    Then, updates 'corpuses' widget value with new list of available corpuses."""
+    Then, updates 'corpuses' widget value with new list of available corpuses.
 
+    Args:
+        self (instance): Instance of the calling page.
+        inst_wf (str): Full path as string to the working folder.
+    """
     corpuses_val = set_corpuses_widgets_param(self, inst_wf)
     wf_path = Path(inst_wf)
     wf_access_status = _try_wf_access(wf_path)
@@ -222,10 +273,16 @@ def _create_corpus(self, inst_wf):
     else:
         corpuses_val.set("")
 
+
 def set_corpuses_widgets_param(self, inst_wf):
     """Sets 'corpuses' widgets parameters and values accordingly 
     to the working folder and returns tkinter 'corpuses' parameter 
-    that is used to set for displaying the available corpuses list."""
+    that is used to set for displaying the available corpuses list.
+
+    Args:
+        self (instance): Instance of the calling page.
+        inst_wf (str): Full path as string to the working folder.
+    """
 
     # Setting corpuses label widget
     corpuses_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -253,9 +310,15 @@ def set_corpuses_widgets_param(self, inst_wf):
     bm_gu.place_bellow(corpuses_entry, corpuses_button, dy=self.buttons_dy)
     return corpuses_val
 
+
 def _update_corpuses(self, inst_wf):
     """Updates tkinter 'corpuses' parameter with the available corpuses list
-    accordingly to working folder."""
+    accordingly to working folder.
+
+    Args:
+        self (instance): Instance of the calling page.
+        inst_wf (str): Full path as string to the working folder.
+    """
 
     corpuses_val = set_corpuses_widgets_param(self, inst_wf)
     corpuses_val_to_set = ""
@@ -269,9 +332,15 @@ def _update_corpuses(self, inst_wf):
         corpuses_val_to_set = str(corpuses_list)
     corpuses_val.set(corpuses_val_to_set)
 
+
 def _update_datatype(self, *args, datatype_widget=None):
     """Gets selected data-type and sets, accordingly, 'wf' widgets parameters, 
-    'corpuses' widgets parameters and sets launch button of corpuses analysis."""
+    'corpuses' widgets parameters and sets launch button of corpuses analysis.
+
+    Args:
+        self (instance): Instance of the calling page.
+        datatype_widget (tk.StringVar): For tracking value of datatype selection.
+    """
 
     datatype_select = datatype_widget.get()
     self.datatype_optionbutton.configure(state = 'disabled')
@@ -282,7 +351,7 @@ def _update_datatype(self, *args, datatype_widget=None):
     set_wf_widget_param(self, institute_select, inst_default_wf, datatype_select)
 
     # Managing corpus list
-    corpuses_val = set_corpuses_widgets_param(self, inst_default_wf)    # !!!!!!!
+    corpuses_val = set_corpuses_widgets_param(self, inst_default_wf)
 
     # Setting and displaying corpuses list initial values
     corpuses_val_to_set = ""
@@ -306,10 +375,15 @@ def _update_datatype(self, *args, datatype_widget=None):
     # Managing analysis launch button
     SetLaunchButton(self, institute_select, default_wf_path, datatype_select)
 
+
 def update_app_page(self, *args, institute_widget=None):
     """Gets the selected Institute and 'datatype' widgets parameters.
-    Then, trace change in datatype selection to update page parameters."""
-    _ = args
+    Then, trace change in datatype selection to update page parameters.
+
+    Args:
+        self (instance): Instance of the calling page.
+        institute_widget (tk.StringVar): For tracking value of Institute selection.
+    """
     institute_select = institute_widget.get()
 
     # Setting default values for datatype selection
