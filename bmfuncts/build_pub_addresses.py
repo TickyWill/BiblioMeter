@@ -232,12 +232,12 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
     return inst_pub_addresses_df, save_num
 
 
-def _set_save_folder_path(wf_path, year):
+def _set_save_folder_path(wf_path, corpus_year):
     """ Sets the full path to the folder where intermediate results are saved.
 
     Args:
         wf_path (path): Full path to working folder.
-        year (str): 4 digits year of the corpus.
+        corpus_year (str): 4 digits year of the corpus.
     Returns:
         (path): The set full path.
     """
@@ -246,7 +246,7 @@ def _set_save_folder_path(wf_path, year):
     inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
 
     # Setting root for saving intermediate results
-    year_folder_path = wf_path / Path(year)
+    year_folder_path = wf_path / Path(corpus_year)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     save_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
     return save_folder_path
@@ -281,7 +281,7 @@ def _read_addresses_data(wf_path, saved_results_path,
 
 
 def _build_institute_authors_addresses(institute, org_tup,
-                                       saved_results_path, year):
+                                       saved_results_path, corpus_year):
     """Builds data of addresses per publication and author of the institute.
 
     Args:
@@ -289,7 +289,7 @@ def _build_institute_authors_addresses(institute, org_tup,
         org_tup (tup): Contains the parameters of the institute.
         saved_results_path (path): Full path to the folder \
         where final results are saved.
-        year (str): 4 digits year of the corpus.
+        corpus_year (str): 4 digits year of the corpus.
     Returns:
         (tup): (Data of addresses per publication and author of the institute \
         (dataframe), Publications IDs (str) of the institute (list), \
@@ -303,7 +303,7 @@ def _build_institute_authors_addresses(institute, org_tup,
     bm_cols_list = [bm_pub_id_col, bm_author_id_col, bm_address_col]
 
     # Building the dict of institute-authors IDs per publications
-    submit_df = read_final_submit_data(saved_results_path, year)
+    submit_df = read_final_submit_data(saved_results_path, corpus_year)
     sub_submit_df = submit_df[bm_cols_list]
 
     institute_author_addresses_df = pd.DataFrame()
@@ -321,8 +321,7 @@ def _build_institute_authors_addresses(institute, org_tup,
     return institute_author_addresses_df, inst_pud_ids_list, bm_cols_list
 
 
-def _build_init_institute_addresses_df(institute, org_tup, wf_path,
-                                       saved_results_path, year, progress_param=None):
+def _build_init_institute_addresses_df(addresses_params, progress_param=None):
     """Selects from the addresses data obtained at the parsing step the ones 
     that corresponds to the consolidated publications list of the institute.
 
@@ -341,12 +340,11 @@ def _build_init_institute_addresses_df(institute, org_tup, wf_path,
     imported from the `BiblioParsing` package.
 
     Args:
-        institute (str): The institute name.
-        org_tup (tup): Contains parameters of the institute.
-        wf_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
-        where final results are saved.
-        year (str): 4 digits year of the corpus.
+        addresses_params (list): The institute name (str), \
+        a tuple that contains parameters of the institute (tup), \
+        the full path to the working folder (path), the full path \
+        to the folder where final results are saved (path), \
+        4 digits year of the corpus (str).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
@@ -356,6 +354,9 @@ def _build_init_institute_addresses_df(institute, org_tup, wf_path,
         All useful column names (str) specific to 'BiblioMeter' (list), \
         Info for renaming 'BiblioParsing' columns into 'BiblioMeter' ones (dict)).
     """
+    # Setting parameters values from addresses_params
+    institute, org_tup, wf_path, saved_results_path, corpus_year = addresses_params
+
     # Setting parameters from optional arg
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param
@@ -369,7 +370,7 @@ def _build_init_institute_addresses_df(institute, org_tup, wf_path,
 
     # Getting the institute-authors IDs per publications of the institute
     return_tup = _build_institute_authors_addresses(institute, org_tup,
-                                                    saved_results_path, year)
+                                                    saved_results_path, corpus_year)
     return_df, inst_pud_ids_list, bm_cols_list = return_tup
     bm_pub_id_col, bm_author_id_col, bm_address_col = bm_cols_list
     return_df[bm_address_col] = return_df[bm_address_col].apply(bp.standardize_address)
@@ -385,8 +386,8 @@ def _build_init_institute_addresses_df(institute, org_tup, wf_path,
     bp2bm_rename_cols_dict = dict(zip(bp_init_cols_list, bm_final_cols_list))
 
     # Setting the addresses data from the deduplication results of the parsing step
-    all_address_df = _read_addresses_data(wf_path, saved_results_path, year)
-    all_address_df = set_year_pub_id(all_address_df, year, bp_pub_id_alias)
+    all_address_df = _read_addresses_data(wf_path, saved_results_path, corpus_year)
+    all_address_df = set_year_pub_id(all_address_df, corpus_year, bp_pub_id_alias)
     all_address_df[bp_address_alias] = all_address_df[bp_address_alias].apply(bp.standardize_address)
     all_address_df.rename(columns=bp2bm_rename_cols_dict, inplace=True)
     if progress_param:
@@ -405,8 +406,7 @@ def _build_init_institute_addresses_df(institute, org_tup, wf_path,
     return return_tup
 
 
-def build_institute_addresses_df(institute, org_tup, wf_path,
-                                 saved_results_path, year, verbose=False,
+def build_institute_addresses_df(addresses_params, verbose=False,
                                  progress_param=None):
     """Builds the data of addresses with one row per address 
     and per publication ID for the institute.
@@ -417,12 +417,11 @@ def build_institute_addresses_df(institute, org_tup, wf_path,
     function imported from `bmfuncts.useful_functs` and the use of 'verbose' arg.
 
     Args:
-        institute (str): The institute name.
-        org_tup (tup): Contains parameters of the institute.
-        wf_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
-        where final results are saved.
-        year (str): 4 digits year of the corpus.
+        addresses_params (list): The institute name (str), \
+        a tuple that contains parameters of the institute (tup), \
+        the full path to the working folder (path), the full path \
+        to the folder where final results are saved (path), \
+        4 digits year of the corpus (str).
         verbose (bool): Status of prints (optional, default = False).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
@@ -430,6 +429,9 @@ def build_institute_addresses_df(institute, org_tup, wf_path,
     Returns:
         (dataframe): The built data.
     """
+    # Setting params values from addresses_params
+    institute, org_tup, wf_path, saved_results_path, corpus_year = addresses_params
+    
     # Setting parameters from optional arg
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param
@@ -446,8 +448,7 @@ def build_institute_addresses_df(institute, org_tup, wf_path,
     if progress_param:
         inter_progress_1 = init_progress + (final_progress - init_progress) * 0.20
         inter_progress_param_1 = (progress_callback, init_progress, inter_progress_1)
-    return_tup = _build_init_institute_addresses_df(institute, org_tup, wf_path,
-                                                    saved_results_path, year,
+    return_tup = _build_init_institute_addresses_df(addresses_params,
                                                     progress_param=inter_progress_param_1)
     (inst_pub_addresses_init_df, institute_author_addresses_df,
      bm_full_cols_list, bp2bm_rename_cols_dict) = return_tup
@@ -458,7 +459,7 @@ def build_institute_addresses_df(institute, org_tup, wf_path,
         print("    inst_pub_addresses_init_df, institute_author_addresses_df "
               "and bm_full_cols_list built")
         # - saving intermediate results
-        save_folder_path = _set_save_folder_path(wf_path, year)
+        save_folder_path = _set_save_folder_path(wf_path, corpus_year)
         save_num += 1
         save_xlsx_file(save_folder_path, inst_pub_addresses_init_df,
                        str(save_num) + "-inst_pub_addresses_init_df.xlsx")

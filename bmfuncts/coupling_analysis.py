@@ -236,8 +236,48 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     return countries_df, norm_institutions_df, country_affil_file_path, wrong_affil_types_dict
 
 
-def coupling_analysis(institute, org_tup, wf_path,
-                      datatype, year, progress_callback=None, verbose=False):
+def _set_co_files_params(institute, wf_path, corpus_year):
+    """Sets IFs specific file and folder 
+    
+    Args:
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (tup): publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files.
+    """
+    # Setting aliases from globals
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
+    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
+
+    # Setting useful file names
+    inst_types_file_alias = institute + "_" + inst_types_file_base_alias
+
+    # Setting useful paths
+    year_folder_path = wf_path / Path(corpus_year)
+    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
+    inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
+    institutions_folder_path = wf_path / Path(institutions_folder_alias)
+    inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
+
+    # Creating required output folders
+    if not os.path.exists(analysis_folder_path):
+        os.makedirs(analysis_folder_path)
+    if not os.path.exists(inst_analysis_folder_path):
+        os.makedirs(inst_analysis_folder_path)
+
+    folders_list = [analysis_folder_alias, inst_analysis_folder_alias]
+    paths_list = [analysis_folder_path, inst_analysis_folder_path,
+                  institutions_folder_path, inst_types_file_path]
+    return folders_list, paths_list
+
+
+def coupling_analysis(params_list, progress_callback=None, verbose=False):
     """Performs the analysis of countries and authors affiliations of Institute publications 
     of the 'year' corpus.
 
@@ -260,11 +300,10 @@ def coupling_analysis(institute, org_tup, wf_path,
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
-        year (str): 4 digits year of the corpus.
+        params_list (list):  The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute organization, \
+        the full path to working folder (path), the data combination type \
+        of corpuses databases (str) and the 4 digits year of the corpus (str).
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
         verbose (bool): Status of prints (default = False).
@@ -276,32 +315,19 @@ def coupling_analysis(institute, org_tup, wf_path,
         The dict keyed by countries and valued by the list of normalyzed affiliation types \
         to be corrected).
     """
+    # Setting parameters values from params_list
+    institute, org_tup, wf_path, datatype, corpus_year = params_list
+
     # Setting input-data path
     saved_results_path = set_saved_results_path(wf_path, datatype)
 
-    # Setting aliases from globals
-    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
-    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
-    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
-
-    # Setting useful file names
-    inst_types_file_alias = institute + "_" + inst_types_file_base_alias
-
     # Setting useful paths
-    year_folder_path = wf_path / Path(str(year))
-    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
-    inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
-    institutions_folder_path = wf_path / Path(institutions_folder_alias)
-    inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
+    folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year)
+    analysis_folder_name, inst_analysis_folder_name = folders_list
+    (analysis_folder_path, inst_analysis_folder_path,
+     institutions_folder_path, inst_types_file_path) = paths_list
 
-    # Creating required output folders
-    if not os.path.exists(analysis_folder_path):
-        os.makedirs(analysis_folder_path)
-    if not os.path.exists(inst_analysis_folder_path):
-        os.makedirs(inst_analysis_folder_path)
-
-    # Setting useful column names aliases
+    # Setting useful column names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     final_pub_id_col = final_col_dic['pub_id']
     final_doctype_col = final_col_dic['doc_type']
@@ -314,8 +340,8 @@ def coupling_analysis(institute, org_tup, wf_path,
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, wf_path,
-                                                         saved_results_path, year, verbose=False,
+    addresses_params = [institute, org_tup, wf_path, saved_results_path, corpus_year]
+    inst_pub_addresses_df = build_institute_addresses_df(addresses_params, verbose=False,
                                                          progress_param=progress_param)
     if verbose:
         print("    Addresses of Institute publications selected.")
@@ -325,7 +351,7 @@ def coupling_analysis(institute, org_tup, wf_path,
         progress_param = (progress_callback, inter_progress_1, inter_progress_2)
     paths_tup = (institutions_folder_path, inst_types_file_path)
     return_tup = _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
-                                              inst_analysis_folder_path, year,
+                                              inst_analysis_folder_path, corpus_year,
                                               final_pub_id_col, paths_tup,
                                               progress_param=progress_param,
                                               verbose=verbose)
@@ -341,18 +367,18 @@ def coupling_analysis(institute, org_tup, wf_path,
             inter_progress_3 = 93
             progress_param = (progress_callback, inter_progress_2, inter_progress_3)
         pub_doctype_cols_list = [final_pub_id_col, final_doctype_col]
-        pub_ids_lists = build_pub_ids_lists(saved_results_path, year, pub_doctype_cols_list)
+        pub_ids_lists = build_pub_ids_lists(saved_results_path, corpus_year, pub_doctype_cols_list)
         build_and_save_institutions_stat(institute, norm_institutions_df,
                                          inst_types_file_path,
-                                         inst_analysis_folder_path, year,
+                                         inst_analysis_folder_path, corpus_year,
                                          pub_ids_lists,
                                          progress_param=progress_param)
         if verbose:
             print("    Distributed institutions and institutions stat built and saved.")
 
         # Building and saving geo stat dataframes
-        geo_analysis_folder_alias = build_and_save_geo_stat(countries_df, analysis_folder_path,
-                                                            year)
+        geo_analysis_folder_name = build_and_save_geo_stat(countries_df, analysis_folder_path,
+                                                            corpus_year)
         if verbose:
             print("    Geo stat built and saved.")
         if progress_callback:
@@ -365,12 +391,12 @@ def coupling_analysis(institute, org_tup, wf_path,
         for key in save_keys_list:
             results_to_save_dict[key] = True
         if_analysis_name = "None"
-        _ = save_final_results(institute, org_tup, wf_path, datatype, year,
+        _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                if_analysis_name, results_to_save_dict, verbose=False)
     else:
-        analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = ("", "", "")
+        analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name = ("", "", "")
     if progress_callback:
         progress_callback(100)
-    return_tup = (analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias,
+    return_tup = (analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name,
                   country_affil_file_path, wrong_affil_types_dict)
     return return_tup

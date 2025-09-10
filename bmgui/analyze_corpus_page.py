@@ -1,5 +1,5 @@
-"""The `analysis_corpus_page` module allows to perform 
-impact factors, keywords and coupling analysis.
+"""The `analysis_corpus_page` module allows to perform analysis of 
+impact factors, keywords and coupling.
 """
 
 __all__ = ['create_analysis']
@@ -23,23 +23,20 @@ from bmfuncts.keywords_analysis import keywords_analysis
 from bmfuncts.save_final_results import set_result_folder_path
 
 
-def _launch_au_analysis(institute, org_tup, wf_path, datatype,
-                        year_select, progress_callback):
+def _launch_au_analysis(master, year_select, progress_callback):
     """Launches authors production analysis through `authors_analysis` 
     function imported from `bmfuncts.authors_analysis` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    auth_analysis_folder_path = authors_analysis(institute, org_tup,
-                                                 wf_path,
-                                                 datatype, year_select,
+    # Setting params values selected by the user
+    params_list = [master.institute, master.org_tup, master.wf_path,
+                   master.datatype, year_select]
+    auth_analysis_folder_path = authors_analysis(params_list,
                                                  progress_callback)
 
     info_title = "- Information -"
@@ -50,24 +47,20 @@ def _launch_au_analysis(institute, org_tup, wf_path, datatype,
     messagebox.showinfo(info_title, info_text)
 
 
-def _launch_kw_analysis(institute, org_tup, wf_path,
-                        datatype, year_select, progress_callback):
+def _launch_kw_analysis(master, year_select, progress_callback):
     """Launches keywords analysis through `keywords_analysis` function 
     imported from `bmfuncts.pub_analysis` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    kw_analysis_folder_path = keywords_analysis(institute, org_tup,
-                                                wf_path,
-                                                datatype, year_select,
-                                                progress_callback,
+    # Setting params values selected by the user
+    params_list = [master.institute, master.org_tup, master.wf_path,
+                   master.datatype, year_select]
+    kw_analysis_folder_path = keywords_analysis(params_list, progress_callback,
                                                 verbose=False)
 
     info_title = "- Information -"
@@ -77,20 +70,19 @@ def _launch_kw_analysis(institute, org_tup, wf_path,
     messagebox.showinfo(info_title, info_text)
 
 
-def _launch_coupling_analysis(institute, org_tup, wf_path, datatype,
-                              year_select, progress_callback):
+def _launch_coupling_analysis(master, year_select, progress_callback):
     """Launches coupling analysis through `coupling_analysis` function 
     imported from `bmfuncts.pub_analysis` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.    
     """
+    # Setting params values selected by the user
+    params_list = [master.institute, master.org_tup, master.wf_path,
+                   master.datatype, year_select]
 
     ask_title = "- Confirmation de l'analyse des collaborations -"
     ask_text = ("L'analyse des collaborations a été lancée "
@@ -99,10 +91,7 @@ def _launch_coupling_analysis(institute, org_tup, wf_path, datatype,
                 "\n\nContinuer ?")
     answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
-        return_tup = coupling_analysis(institute, org_tup,
-                                       wf_path,
-                                       datatype, year_select,
-                                       progress_callback,
+        return_tup = coupling_analysis(params_list, progress_callback,
                                        verbose=True)
         (analysis_folder, geo_analysis_folder, inst_analysis_folder,
          country_affil_file_path, wrong_affil_types_dict) = return_tup
@@ -133,34 +122,34 @@ def _launch_coupling_analysis(institute, org_tup, wf_path, datatype,
         messagebox.showinfo(info_title, info_text)
 
 
-def _launch_if_analysis(institute, org_tup, wf_path, datatype,
-                        year_select, progress_callback):
+def _launch_if_analysis(master, year_select, progress_callback):
     """Launches impact-factors analysis through `if_analysis` function 
     imported from `bmfuncts.pub_analysis` module after 
     getting year of most-recent impact factors.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.  
     """
+    # Setting params values selected by the user
+    params_list = [master.institute, master.org_tup, master.wf_path,
+                   master.datatype, year_select]
+
     # Setting path for saving results
-    results_folder_path = set_result_folder_path(wf_path, datatype)
+    results_folder_path = set_result_folder_path(master.wf_path, master.datatype)
 
     # Getting year of most recent IFs
-    _, _, if_most_recent_year = get_if_db(institute, org_tup, wf_path)
+    _, _, if_most_recent_year = get_if_db(master.institute, master.org_tup,
+                                          master.wf_path)
 
     analysis_if = "IF " + if_most_recent_year
     if bm_pg.ANALYSIS_IF==bm_pg.COL_NAMES_BONUS['IF année publi']:
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 
-    return_tup = if_analysis(institute, org_tup, wf_path,
-                             datatype, year_select, if_most_recent_year,
+    return_tup = if_analysis(params_list, if_most_recent_year,
                              progress_callback, verbose=False)
     doctypes_analysis_folder_path, if_analysis_folder_path, _, _ = return_tup
     info_title = "- Information -"
@@ -179,7 +168,7 @@ def _launch_if_analysis(institute, org_tup, wf_path, datatype,
     messagebox.showinfo(info_title, info_text)
 
 
-def create_analysis(self, master, page_name, institute, wf_path, datatype):
+def create_analysis(self, master, page_name):
     """Manages creation and use of widgets for corpus analysis through internal 
     functions  `_launch_if_analysis`, `_launch_au_analysis`, `_launch_coupling_analysis` 
     and `_launch_kw_analysis`.
@@ -189,9 +178,6 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of analysis page (`AnalyzeCorpusPage` class \
         of bmgui.main_page module).
-        institute (str): Institute name.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
     """
 
     # Internal functions
@@ -206,12 +192,8 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
 
     # Creating and setting widgets for page title and exit button
     page_label = bm_gg.PAGES_LABELS[page_name]
-    bm_gu.set_page_title(self, master, page_label, institute, datatype)
+    bm_gu.set_page_title(self, master, page_label)
     bm_gu.set_exit_button(self, master)
-
-    # Getting institute parameters
-    wf_root_path = wf_path.parent
-    org_tup = set_org_params(institute, wf_root_path)
 
     # Setting short_name for page key and year key to use in globals
     self.page_key = bm_gg.KEY_ANALYS
@@ -238,8 +220,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         year_select = self.variable_years.get()
 
         print(f"\nIFs analysis launched for year {year_select}...")
-        _launch_if_analysis(institute, org_tup, wf_path, datatype,
-                            year_select, progress_callback)
+        _launch_if_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
     def _start_launch_if_analysis_try():
@@ -263,8 +244,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         year_select = self.variable_years.get()
 
         print(f"\nAuthors analysis launched for year {year_select}...")
-        _launch_au_analysis(institute, org_tup, wf_path, datatype,
-                            year_select, progress_callback)
+        _launch_au_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
     def _start_launch_au_analysis_try():
@@ -288,10 +268,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         year_select = self.variable_years.get()
 
         print(f"\nCoupling analysis launched for year {year_select}...")
-        _launch_coupling_analysis(institute, org_tup,
-                                  wf_path,
-                                  datatype, year_select,
-                                  progress_callback)
+        _launch_coupling_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
     def _start_launch_coupling_analysis_try():
@@ -315,8 +292,7 @@ def create_analysis(self, master, page_name, institute, wf_path, datatype):
         year_select = self.variable_years.get()
 
         print(f"\nKeywords analysis launched for year {year_select}...")
-        _launch_kw_analysis(institute, org_tup, wf_path, datatype,
-                            year_select, progress_callback)
+        _launch_kw_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
     def _start_launch_kw_analysis_try():

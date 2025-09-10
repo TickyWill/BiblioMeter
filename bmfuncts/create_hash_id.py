@@ -95,12 +95,12 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     return new_submit_df, new_orphan_df, new_hash_id_df
 
 
-def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
-    """Creates a dataframe which columns are given by 'hash_id_col_alias' and 'pub_id_alias'.
+def create_hash_id(institute, org_tup, files_paths):
+    """Creates a dataframe which columns are given by 'hash_id_alias' and 'pub_id_alias'.
 
     The content of these columns is as follows:
 
-    - The 'hash_id_col_alias' column contains the unique hash ID built for each publication \
+    - The 'hash_id_alias' column contains the unique hash ID built for each publication \
     through the `_my_hash` internal function on the basis of the values of 'year_alias', \
     'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns.
     - The 'pub_id_alias' column contains the publication order number in the publications list.
@@ -111,73 +111,66 @@ def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        working_folder_path (path): Full path to working folder.
-        file_names_tup (tup): (File name (str) of the Excel file of the publications list \
-        with one row per Institute author with one row per author that has been identified \
-        as Institute employee, File name (str) of the Excel file of the publications list \
-        with one row per author that has not been identified as Institute employee).
+        files_paths (list): Full paths (path) to (1) the publications list \
+        with one row per Institute authorthat has been identified \
+        as Institute employee, (2) the publications list with one row per author that has not \
+        been identified as Institute employee and (3) for saving the created Hash-IDs data.
     Returns:
         (str): End message recalling path to the saved file.        
     """
-    # Setting parameters from args
-    submit_file_name, orphan_file_name = file_names_tup
+    # Setting paths from args
+    submit_path, orphan_path, hash_id_path = files_paths
 
     # Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
+    pub_id_col = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
+    year_col = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
+    first_auth_col = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]
+    doi_col = submit_col_rename_dic[bp.COL_NAMES['articles'][6]]
+    title_col = submit_col_rename_dic[bp.COL_NAMES['articles'][9]]
+    issn_col = submit_col_rename_dic[bp.COL_NAMES['articles'][10]]
 
-    # Setting useful aliases
-    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
-    hash_id_col_alias = bm_pg.COL_HASH['hash_id']
-    pub_id_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
-    year_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
-    first_auth_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]
-    doi_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][6]]
-    title_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][9]]
-    issn_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][10]]
-
-    # Setting useful paths
-    submit_file_path = working_folder_path / Path(submit_file_name)
-    orphan_file_path = working_folder_path / Path(orphan_file_name)
-    hash_id_file_path = working_folder_path / Path(hash_id_file_alias)
+    # Setting useful aliases    
+    hash_id_alias = bm_pg.COL_HASH['hash_id']
 
     # Setting useful columns list
-    useful_cols = [pub_id_alias, year_alias, first_auth_alias,
-                   title_alias, issn_alias, doi_alias]
+    useful_cols = [pub_id_col, year_col, first_auth_col,
+                   title_col, issn_col, doi_col]
 
     # Getting dataframes to hash
-    submit_df = pd.read_excel(submit_file_path)
-    orphan_df = pd.read_excel(orphan_file_path)
+    submit_df = pd.read_excel(submit_path)
+    orphan_df = pd.read_excel(orphan_path)
 
     # Concatenate de dataframes to hash
     submit_to_hash = submit_df[useful_cols].copy()
     orphan_to_hash = orphan_df[useful_cols].copy()
     dg_to_hash = concat_dfs([submit_to_hash, orphan_to_hash],
-                            dedup_cols=[pub_id_alias], drop_ignore_index=True)
+                            dedup_cols=[pub_id_col], drop_ignore_index=True)
 
     hash_id_df = pd.DataFrame()
     for idx in range(len(dg_to_hash)):
-        pub_id = dg_to_hash.loc[idx, pub_id_alias]
-        text   = (f"{str(dg_to_hash.loc[idx, year_alias])}"
-                  f"{str(dg_to_hash.loc[idx, first_auth_alias])}"
-                  f"{str(dg_to_hash.loc[idx, title_alias])}"
-                  f"{str(dg_to_hash.loc[idx, issn_alias])}"
-                  f"{str(dg_to_hash.loc[idx, doi_alias])}")
+        pub_id = dg_to_hash.loc[idx, pub_id_col]
+        text   = (f"{str(dg_to_hash.loc[idx, year_col])}"
+                  f"{str(dg_to_hash.loc[idx, first_auth_col])}"
+                  f"{str(dg_to_hash.loc[idx, title_col])}"
+                  f"{str(dg_to_hash.loc[idx, issn_col])}"
+                  f"{str(dg_to_hash.loc[idx, doi_col])}")
         hash_id = _my_hash(text)
-        hash_id_df.loc[idx, hash_id_col_alias] = str(hash_id)
-        hash_id_df.loc[idx, pub_id_alias] = pub_id
+        hash_id_df.loc[idx, hash_id_alias] = str(hash_id)
+        hash_id_df.loc[idx, pub_id_col] = pub_id
 
     # Cleaning dataframe from publications with same hash ID
     dfs_tup = (submit_df, orphan_df, hash_id_df)
-    cols_tup = (pub_id_alias, hash_id_col_alias)
+    cols_tup = (pub_id_col, hash_id_alias)
     new_submit_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
 
     # Saving the data
-    new_submit_df.to_excel(submit_file_path, index=False)
-    new_orphan_df.to_excel(orphan_file_path, index=False)
-    new_hash_id_df.to_excel(hash_id_file_path, index=False)
+    new_submit_df.to_excel(submit_path, index=False)
+    new_orphan_df.to_excel(orphan_path, index=False)
+    new_hash_id_df.to_excel(hash_id_path, index=False)
     hash_id_nb = len(new_hash_id_df)
     print(f"{hash_id_nb} hash IDs of publications created")
     message = (f"{hash_id_nb} hash IDs of publications created and saved in file: ",
-               "\n  {hash_id_file_path}")
+               f"\n  {hash_id_path}")
     return message

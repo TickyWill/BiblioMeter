@@ -23,7 +23,7 @@ from bmfuncts.useful_functs import read_final_pub_list_data
 from bmfuncts.useful_functs import set_saved_results_path
 
 
-def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_tup,
+def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df, cols_tup,
                              kw_analysis_folder_path, verbose=False):
     """Creates publications-keywords (KW) data for the 'kw_type' KW type 
     for each department of the Institute including itself.
@@ -43,7 +43,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
 
     Args:
         institute (str): Institute name.
-        year (str): 4 digits year of the corpus.
+        corpus_year (str): 4 digits year of the corpus.
         analysis_df (dataframe): Publications list to be analyzed.
         kw_type (str): Type of keyword to be analyzed.
         kw_df (dataframe): Keywords list of 'kw_type' type to be analyzed.
@@ -61,7 +61,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
     # Analyzing the keywords for each of the department in 'depts_col_list'
     for dept in [institute] + depts_col_list:
         # Collecting and normalizing all the Pub_ids of the department 'dept'
-        # by removing the 4 first characters corresponding to the corpus "year"
+        # by removing the 4 first characters corresponding to the corpus year
         # in order to make them comparable to 'parsing_pub_id_col' values
         if dept != institute:
             raw_pub_id_list = analysis_df[analysis_df[dept] == 1][final_pub_id_col].tolist()
@@ -94,7 +94,7 @@ def _create_kw_analysis_data(institute, year, analysis_df, kw_type, kw_df, cols_
                   f"among {len(dept_kw_set_to_list)} {kw_type} ones of {institute}")
 
         # Saving the keywords dataframe as EXCEL file
-        dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {year}-{kw_type}.xlsx')
+        dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {corpus_year}-{kw_type}.xlsx')
         kw_df_title = bm_pg.DF_TITLES_LIST[7]
         wb, ws = format_page(dept_kw_df, kw_df_title)
         ws.title = dept + ' ' + kw_type
@@ -124,9 +124,48 @@ def _get_clean_kw_data(kw_df, keywords_col):
     return kw_df
 
 
-def keywords_analysis(institute, org_tup, wf_path, datatype,
-                      year, progress_callback=None, verbose=False):
-    """ Performs the analysis of publications keywords (KWs) of the 'year' corpus.
+def _set_kw_files_params(wf_path, corpus_year):
+    """Sets IFs specific file and folder 
+    
+    Args:
+        wf_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (tup): publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files.
+    """
+    # Setting useful aliases
+    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
+    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
+    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    kw_analysis_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
+
+    # Setting useful filenames dict
+    kw_items_dict = {'AK': auth_kw_item_alias,
+                     'IK': index_kw_item_alias,
+                     'TK': title_kw_item_alias,
+                    }
+
+    # Setting output-data paths
+    year_folder_path = wf_path / Path(corpus_year)
+    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
+    kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
+
+    # Creating required output folders
+    if not os.path.exists(analysis_folder_path):
+        os.makedirs(analysis_folder_path)
+    if not os.path.exists(kw_analysis_folder_path):
+        os.makedirs(kw_analysis_folder_path)
+
+    return kw_items_dict, kw_analysis_folder_path
+
+                            
+
+def keywords_analysis(params_list, progress_callback=None, verbose=False):
+    """ Performs the analysis of publications keywords (KWs) of the corpus.
 
     This is done through the following steps:
 
@@ -144,39 +183,24 @@ def keywords_analysis(institute, org_tup, wf_path, datatype,
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
-        year (str): 4 digits year of the corpus.
+        params_list (list):  The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute organization, \
+        the full path to working folder (path), the data combination type \
+        of corpuses databases (str) and the 4 digits year of the corpus (str).
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
         verbose (bool): Status of prints (default = False).
     Returns:
         (path): Full path to the folder where results of keywords analysis are saved.
     """
+    # Setting parameters values from params_list
+    institute, org_tup, wf_path, datatype, corpus_year = params_list
+
     # Setting input-data path
     saved_results_path = set_saved_results_path(wf_path, datatype)
-
-    # Setting useful aliases
-    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
-    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
-    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    kw_analysis_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
-
-    # Setting output-data paths
-    year_folder_path = wf_path / Path(str(year))
-    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
-    kw_analysis_folder_path = analysis_folder_path / Path(kw_analysis_folder_alias)
-    if progress_callback:
-        progress_callback(5)
-
-    # Creating required output folders
-    if not os.path.exists(analysis_folder_path):
-        os.makedirs(analysis_folder_path)
-    if not os.path.exists(kw_analysis_folder_path):
-        os.makedirs(kw_analysis_folder_path)
+        
+    # Setting useful files params
+    kw_items_dict, kw_analysis_folder_path = _set_kw_files_params(wf_path, corpus_year)
     if progress_callback:
         progress_callback(10)
 
@@ -192,7 +216,7 @@ def keywords_analysis(institute, org_tup, wf_path, datatype,
         progress_callback(15)
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(wf_path, saved_results_path, year)
+    dedup_parsing_dict = get_final_dedup(wf_path, saved_results_path, corpus_year)
     if progress_callback:
         progress_callback(25)
 
@@ -207,7 +231,7 @@ def keywords_analysis(institute, org_tup, wf_path, datatype,
     # Building the dataframe to be analysed
     cols_list = [final_pub_id_col] + depts_col_list
     pub_df = read_final_pub_list_data(saved_results_path,
-                                         year, cols_list)
+                                      corpus_year, cols_list)
     if progress_callback:
         progress_callback(30)
 
@@ -224,7 +248,7 @@ def keywords_analysis(institute, org_tup, wf_path, datatype,
         # Creating keywords-analysis data and saving them as xlsx files
         cols_tup = (depts_col_list, final_pub_id_col, parsing_pub_id_col_alias,
                     keywords_col_alias, weight_col_alias)
-        _create_kw_analysis_data(institute, year, pub_df, kw_type, kw_df, cols_tup,
+        _create_kw_analysis_data(institute, corpus_year, pub_df, kw_type, kw_df, cols_tup,
                                  kw_analysis_folder_path, verbose=verbose)
 
         # Updating progress bar state
@@ -237,7 +261,7 @@ def keywords_analysis(institute, org_tup, wf_path, datatype,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["kws"] = True
     if_analysis_name = None
-    _ = save_final_results(institute, org_tup, wf_path, datatype, year,
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)

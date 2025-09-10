@@ -617,9 +617,9 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         for saving the item data.
         save_extent (str): The extent for building the name of the file for saving \
         the data.
-        dedup_infos (tup): (The full path to the working folder (path), \
-        Data combination type from corpuses databases (str), \
-        4 digits year of the corpus (str)).
+        dedup_infos (list): The full path to the working folder (path), \
+        Data combination type from corpuses databases (str) and \
+        4 digits year of the corpus (str).
     Returns:
         (tup): (4 digits year of the corpus (str), The full path to the folder \
         where the deduplication result are saved).

@@ -1,12 +1,14 @@
 """Module of useful functions for GUI main management."""
 
-__all__ = ['set_corpuses_widgets_param',
+__all__ = ['except_hook',
+           'set_corpuses_widgets_param',
            'set_datatype_widgets_param',
            'set_common_params',
            'set_displays_widths',
            'set_institute_widgets',
            'set_labels_pos',
            'set_wf_widget_param',
+           'try_wf_access',
            'update_app_page',
           ]
 
@@ -14,6 +16,7 @@ __all__ = ['set_corpuses_widgets_param',
 # Standard library imports
 import os
 import tkinter as tk
+import traceback
 from functools import partial
 from pathlib import Path
 from tkinter import messagebox
@@ -26,6 +29,12 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 from bmfuncts.useful_functs import create_archi
 from bmgui.pages_classes import SetLaunchButton
+
+
+def except_hook(args):
+    messagebox.showerror("Error", args)
+    messagebox.showerror("Exception", traceback.format_exc())
+    bm_gu.enable_buttons(bm_gg.GUI_BUTTONS)
 
 
 def set_common_params(self, master):
@@ -213,7 +222,7 @@ def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
     bm_gu.place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
 
 
-def _try_wf_access(wf_path):
+def try_wf_access(wf_path):
     """Returns status of the default working folder as boolean: True, if exists 
     and access is authorized to the user; False, otherwise.
 
@@ -244,7 +253,7 @@ def _create_corpus(self, inst_wf):
     """
     corpuses_val = set_corpuses_widgets_param(self, inst_wf)
     wf_path = Path(inst_wf)
-    wf_access_status = _try_wf_access(wf_path)
+    wf_access_status = try_wf_access(wf_path)
     if wf_access_status:
         # Setting new corpus year folder name
         corpuses_list = bm_gu.last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
@@ -323,7 +332,7 @@ def _update_corpuses(self, inst_wf):
     corpuses_val = set_corpuses_widgets_param(self, inst_wf)
     corpuses_val_to_set = ""
     wf_path = Path(inst_wf)
-    wf_access_status = _try_wf_access(wf_path)
+    wf_access_status = try_wf_access(wf_path)
     if wf_access_status:
         # Getting updated corpuses list
         corpuses_list = bm_gu.last_available_years(wf_path, bm_gg.CORPUSES_NUMBER)
@@ -361,7 +370,7 @@ def _update_datatype(self, *args, datatype_widget=None):
                  "par défaut peut prendre un peu de temps."
                  "\n\nMerci de patienter.")
     messagebox.showinfo(info_title, info_text)
-    wf_access_status = _try_wf_access(default_wf_path)
+    wf_access_status = try_wf_access(default_wf_path)
     if wf_access_status:
         info_title = "- Information -"
         info_text = ("L'accès au dossier de travail défini "

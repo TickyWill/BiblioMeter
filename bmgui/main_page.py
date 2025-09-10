@@ -5,10 +5,10 @@ __all__ = ['AppMain']
 # Standard library imports
 import threading
 import tkinter as tk
-import traceback
+#import traceback
 from functools import partial
 from pathlib import Path
-from tkinter import messagebox
+#from tkinter import messagebox
 from tkinter import font as tkFont
 
 # 3rd party imports
@@ -20,9 +20,11 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.main_utils as bm_mu
 from bmgui.pages_classes import AnalyzeCorpusPage
-from bmgui.pages_classes import UpdateIfPage
 from bmgui.pages_classes import ConsolidateCorpusPage
 from bmgui.pages_classes import ParseCorpusPage
+from bmgui.pages_classes import UpdateIfPage
+from bmgui.pages_classes import SetAuthorCopyright
+from bmgui.pages_classes import SetMasterTitle
 
 
 class AppMain(tk.Tk):
@@ -32,12 +34,6 @@ class AppMain(tk.Tk):
     'wf' stands for working folder.
     """
     def __init__(self):
-
-        # Internal function
-        def _except_hook(args):
-            messagebox.showerror("Error", args)
-            messagebox.showerror("Exception", traceback.format_exc())
-            bm_gu.enable_buttons(bm_gg.GUI_BUTTONS)
 
         # Setting the link between "self" and "tk.Tk"
         tk.Tk.__init__(self)
@@ -59,12 +55,13 @@ class AppMain(tk.Tk):
          AppMain.list_scopus_rawdata, AppMain.list_scopus_parsing,
          AppMain.list_dedup) = ([0],) * 7
 
-        # Setting pages classes and pages list
+        # Setting pages classes, pages list and pages labels
         AppMain.pages = (AnalyzeCorpusPage,
                          UpdateIfPage,
                          ConsolidateCorpusPage,
                          ParseCorpusPage,)
         AppMain.pages_ordered_list = [x.__name__ for x in AppMain.pages][::-1]
+        AppMain.pages_labels = bm_gg.PAGES_LABELS
 
         # Getting useful screen sizes and scale factors depending on displays properties
         (AppMain.win_width_px, AppMain.win_height_px,
@@ -84,6 +81,9 @@ class AppMain(tk.Tk):
         bm_mu.set_displays_widths(self, AppMain)
 
         # Setting and placing widgets for title and copyright
+        AppMain.main_page_title = bm_gg.MAIN_PAGE_TITLE
+        AppMain.app_copyright = bm_gg.APP_COPYRIGHT
+        AppMain.app_version = bm_gg.VERSION
         SetMasterTitle(self)
         SetAuthorCopyright(self)
 
@@ -98,59 +98,4 @@ class AppMain(tk.Tk):
                                          institute_widget=institute_val))
 
         # Handling exception
-        threading.excepthook = _except_hook
-
-class SetMasterTitle:
-    """Displays title in main page."""
-
-    def __init__(self, master):
-
-        # Setting widget parameters for page title
-        page_title_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                           ['main_title'])
-        page_title_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['main_title'])
-
-        # Creating widget for page title
-        page_title = tk.Label(master,
-                              text=bm_gg.MAIN_PAGE_TITLE,
-                              font=(bm_gg.FONT_NAME, page_title_font_size_tup[0]),
-                              justify="center")
-
-        # Placing widget for page title
-        page_title.place(x=page_title_pos_tup[0],
-                         y=page_title_pos_tup[1],
-                         anchor="center")
-
-
-class SetAuthorCopyright:
-    """Displays authors and copyright in main page."""
-
-    def __init__(self, master):
-        # Setting widgets parameters for copyright
-        au_cop_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
-                                                       ['copyright', 'version'])
-        copyright_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['copyright'])
-        version_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.MAIN_INFO_POS_DICT['version'])
-
-        # Creating widgets for copyright
-        auteurs_font_label = tkFont.Font(family=bm_gg.FONT_NAME,
-                                         size=au_cop_font_size_tup[0])
-        auteurs_label = tk.Label(master,
-                                 text=bm_gg.APP_COPYRIGHT,
-                                 font=auteurs_font_label,
-                                 justify="left")
-        version_font_label = tkFont.Font(family=bm_gg.FONT_NAME,
-                                         size=au_cop_font_size_tup[1],
-                                         weight='bold')
-        version_label = tk.Label(master,
-                                 text=f"\nVersion {bm_gg.VERSION}",
-                                 font=version_font_label,
-                                 justify="right")
-
-        # Placing widgets for copyright
-        auteurs_label.place(x=copyright_pos_tup[0],
-                            y=copyright_pos_tup[1],
-                            anchor="sw")
-        version_label.place(x=version_pos_tup[0],
-                            y=version_pos_tup[1],
-                            anchor="sw")
+        threading.excepthook = bm_mu.except_hook

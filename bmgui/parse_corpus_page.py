@@ -127,7 +127,7 @@ def _set_box_pos_params(master):
     return box_pos_tup, box_dpos_tup
 
 
-def _update_status(self, master, wf_path, box_pos_params):
+def _update_status(self, master, box_pos_params):
     """Refreshes the current state of the files in the 
     working folder using the `_create_table` internal function.
 
@@ -150,7 +150,7 @@ def _update_status(self, master, wf_path, box_pos_params):
         check.efface()
 
     # Setting existing corpuses status
-    files_status = bm_gu.existing_corpuses(wf_path)
+    files_status = bm_gu.existing_corpuses(master.wf_path)
     master.list_corpus_year = files_status[0]
     master.list_wos_rawdata = files_status[1]
     master.list_wos_parsing = files_status[2]
@@ -193,7 +193,7 @@ def _get_dedup_data_status(master, corpus_year):
     return dedup_status_tup
 
 
-def _launch_parsing(master, corpus_year, database_type, wf_path,
+def _launch_parsing(master, corpus_year, database_type,
                     inst_paths_tup, progress_callback):
     """Launches parsing of raw-data of 'database_type' database.
 
@@ -208,7 +208,6 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
         master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
         database_type (str): Database name (ex: 'wos' or 'scopus').
-        wf_path (path): Full path to working folder.
         inst_paths_tup (tup): (full path to institute-affiliations \
         file, full path to institutions-types file).
         progress_callback (function): Function for updating \
@@ -236,7 +235,7 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
         messagebox.showinfo(_info_title, _info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
+    config_tup = set_user_config(master.wf_path, corpus_year, bm_pg.BDD_LIST)
     rawdata_path_dict, parsing_path_dict, item_filename_dict = config_tup[0:3]
 
     # Setting parsing files extension for saving
@@ -308,8 +307,7 @@ def _launch_parsing(master, corpus_year, database_type, wf_path,
         messagebox.showwarning(warning_title, warning_text)
 
 
-def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
-                     inst_paths_tup, progress_callback):
+def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
     """Concatenates and deduplicates the parsing from wos or scopus databases.
 
     This is done through the functions `concatenate_parsing` 
@@ -324,9 +322,6 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
     Args:
         master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
         inst_paths_tup (tup): (full path to institute-affiliations file, \
         full path to institutions-types file).
         progress_callback (function): Function for updating \
@@ -340,7 +335,7 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
                                              parsing_save_extent)
         _progress_callback(30)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
-                                                     inst_filter_list=org_tup[3])
+                                                     inst_filter_list=master.org_tup[3])
         _progress_callback(50)
         save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)
@@ -353,12 +348,12 @@ def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
         _progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_path,
                           item_filename_dict, parsing_save_extent,
-                          dedup_infos=(wf_path, datatype, corpus_year))
+                          dedup_infos=(master.wf_path, master.datatype, corpus_year))
         _progress_callback(100)
         return _dedup_articles_nb
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
+    config_tup = set_user_config(master.wf_path, corpus_year, bm_pg.BDD_LIST)
     parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
 
     # Setting useful paths for corpus deduplication
@@ -458,7 +453,7 @@ def _set_parse_inst_params(institute, wf_path):
     return inst_paths_tup
 
 
-def create_parsing_concat(self, master, page_name, institute, wf_path, datatype):
+def create_parsing_concat(self, master, page_name):
     """Manages creation and use of widgets for corpus parsing.
 
     This is done through the internal functions  `_launch_parsing`, 
@@ -468,9 +463,6 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
         self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         page_name (str): Name of parsing page.
-        institute (str): Institute name.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
     """
     # Internal functions
 
@@ -484,15 +476,11 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     # ****************************** GENERAL SETTNGS
 
     # Setting institutions files paths
-    inst_paths_tup = _set_parse_inst_params(institute, wf_path)
-
-    # Getting institute parameters
-    wf_root_path = wf_path.parent
-    org_tup = set_org_params(institute, wf_root_path)
+    inst_paths_tup = _set_parse_inst_params(master.institute, master.wf_path)
 
     # Creating and setting widgets for page title and exit button
     page_label = bm_gg.PAGES_LABELS[page_name]
-    bm_gu.set_page_title(self, master, page_label, institute, datatype)
+    bm_gu.set_page_title(self, master, page_label)
     bm_gu.set_exit_button(self, master)
 
     # Setting page key and page year
@@ -518,7 +506,7 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
 
     def _launch_update_status_try():
         # update files status
-        _update_status(self, master, wf_path, box_pos_params)
+        _update_status(self, master, box_pos_params)
 
     # Setting widgets of button for update of parsing-files status
     step_num = 0
@@ -528,7 +516,7 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
                                                  'place', parse=True)
 
     # Updating check boxes
-    _update_status(self, master, wf_path, box_pos_params)
+    _update_status(self, master, box_pos_params)
 
 
     # ****************************** YEAR SELECTION
@@ -550,9 +538,9 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
         parsing_data = parse_data_var.get()
 
         _launch_parsing(master, year_select, parsing_data,
-                        wf_path, inst_paths_tup, progress_callback)
+                        inst_paths_tup, progress_callback)
         # update files status
-        _update_status(self, master, wf_path, box_pos_params)
+        _update_status(self, master, box_pos_params)
         self.progress_bar.place_forget()
 
     def _start_launch_parsing_try():
@@ -583,11 +571,9 @@ def create_parsing_concat(self, master, page_name, institute, wf_path, datatype)
     def _launch_dedup_try(progress_callback):
         # Getting year selection
         year_select = self.variable_years.get()
-        _launch_dedup(master, year_select,
-                      org_tup, wf_path, datatype,
-                      inst_paths_tup, progress_callback)
+        _launch_dedup(master, year_select, inst_paths_tup, progress_callback)
         # update files status
-        _update_status(self, master, wf_path, box_pos_params)
+        _update_status(self, master, box_pos_params)
         self.progress_bar.place_forget()
 
     def _start_launch_dedup_try():

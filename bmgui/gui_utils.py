@@ -197,16 +197,13 @@ def set_progress_bar_pos_tup(master, page_key):
     return bar_len, bar_dx, bar_dy
 
 
-def set_page_title(self, master, page_label, institute, datatype=None):
+def set_page_title(self, master, page_label):
     """Sets the page title of the page.
 
     Args:
         self (instance): Instance of the calling page.
         master (class): `bmgui.main_page.AppMain` class.
         page_label (str): Name of the page to be used for the page title widget.
-        institute (str): Institute name.
-        datatype (str): Optional data combination type from corpuses \
-        (default = None).        
     """
     # internal functions
     def _set_title_widgets(item):
@@ -220,12 +217,12 @@ def set_page_title(self, master, page_label, institute, datatype=None):
                          anchor="center")
 
     sub_title_add = ""
-    if datatype:
-        sub_title_add = f" - {datatype}"
+    if master.datatype:
+        sub_title_add = f" - {master.datatype}"
 
     # Setting page titles
     page_title = {'page_title'    : f"{page_label}",
-                  'page_sub_title': f"{institute}{sub_title_add}"}
+                  'page_sub_title': f"{master.institute}{sub_title_add}"}
 
     # Setting short name for window factor for font sizes setting
     w_sf_min = master.width_sf_min

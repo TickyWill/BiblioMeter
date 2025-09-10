@@ -1,6 +1,7 @@
 """Module of useful functions for GUI pages management."""
 
 __all__ = ['set_data_select_widgets',
+           'set_general_params',
            'set_progress_bar_params',
            'set_step_help_button',
            'set_step_label',
@@ -30,6 +31,12 @@ from bmgui.gui_utils import set_font_size_tup
 from bmgui.gui_utils import set_pos_tup_px
 from bmgui.gui_utils import set_pos_tup_px_list
 from bmgui.gui_utils import set_progress_bar_pos_tup
+
+
+def set_general_params(master, institute, wf_path, datatype):
+    master.institute = institute
+    master.wf_path = wf_path
+    master.datatype = datatype
 
 
 def set_step_label(self, step_num, step_label_params):

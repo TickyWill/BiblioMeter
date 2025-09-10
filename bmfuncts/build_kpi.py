@@ -408,8 +408,31 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
     return dept_kpi_df
 
 
-def update_kpi_database(institute, saved_results_path,
-                        corpus_year, kpi_dict, if_key,
+def _set_kpi_files_params(saved_results_path):
+    """Sets IFs specific file and folder 
+    
+    Args:
+        saved_results_path (path): Full path to working folder.
+    Returns:
+        (tup): publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files.
+    """
+    # Setting aliases for updating KPIs database
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["kpis"]
+    kpi_file_base_alias = bm_pg.ARCHI_RESULTS["kpis file name base"]
+
+    # Setting paths for saving results
+    results_kpis_folder_path = saved_results_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required results folder
+    if not os.path.exists(results_kpis_folder_path):
+        os.makedirs(results_kpis_folder_path)
+    return kpi_file_base_alias, results_kpis_folder_path
+
+
+def update_kpi_database(kpi_params, kpi_dict, if_key,
                         depts_col_list, verbose=False):
     """Updates the database of the key performance indicators (KPIs) with the KPIs data 
     of the given corpus.
@@ -433,17 +456,11 @@ def update_kpi_database(institute, saved_results_path,
     Returns:
         (dataframe): Institute KPIs data.
     """
+    # Setting parameters values from kpi_params
+    institute, saved_results_path, corpus_year = kpi_params
 
-    # Setting aliases for updating KPIs database
-    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["kpis"]
-    kpi_file_base_alias = bm_pg.ARCHI_RESULTS["kpis file name base"]
-
-    # Setting paths for saving results
-    results_kpis_folder_path = saved_results_path / Path(results_sub_folder_alias)
-
-    # Checking availability of required results folder
-    if not os.path.exists(results_kpis_folder_path):
-        os.makedirs(results_kpis_folder_path)
+    # Setting file name and path for saving results
+    kpi_file_base, results_kpis_folder_path = _set_kpi_files_params(saved_results_path)
 
     # Setting useful column names aliases
     corpus_year_row_alias = bm_pg.KPI_KEYS_ORDER_DICT[0]
@@ -459,7 +476,7 @@ def update_kpi_database(institute, saved_results_path,
                                            corpus_year, corpus_year_row_alias)
 
         # Reading as a dataframe the KPI file of 'dept' if it exists else creating it
-        filename = dept + "_" + kpi_file_base_alias + ".xlsx"
+        filename = dept + "_" + kpi_file_base + ".xlsx"
         file_path = results_kpis_folder_path / Path(filename)
         if os.path.isfile(file_path):
             db_dept_kpi_df = pd.read_excel(file_path)
@@ -487,8 +504,37 @@ def update_kpi_database(institute, saved_results_path,
     return institute_kpi_df
 
 
-def if_analysis(institute, org_tup, wf_path, datatype,
-                corpus_year, if_most_recent_year,
+def _set_if_files_params(wf_path, corpus_year):
+    """Sets IFs specific file and folder 
+    
+    Args:
+        wf_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (tup): publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files.
+    """
+
+    # Setting useful aliases
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    if_analysis_folder_alias = bm_pg.ARCHI_YEAR["if analysis"]
+
+    # Setting analysis-results paths
+    year_folder_path = wf_path / Path(corpus_year)
+    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
+    if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias)
+
+    # Creating required output folders
+    if not os.path.exists(analysis_folder_path):
+        os.makedirs(analysis_folder_path)
+    if not os.path.exists(if_analysis_folder_path):
+        os.makedirs(if_analysis_folder_path)
+    return if_analysis_folder_path
+
+
+def if_analysis(params_list, if_most_recent_year,
                 progress_callback=None, verbose=False):
     """Performs the analysis per document types together with 
     the analysis of the journals impact-factors (IFs) and update 
@@ -508,11 +554,10 @@ def if_analysis(institute, org_tup, wf_path, datatype,
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
-        corpus_year (str): 4 digits year of the corpus.
+        params_list (list):  The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute organization, \
+        the full path to working folder (path), the data combination type \
+        of corpuses databases (str) and the 4 digits year of the corpus (str).
         if_most_recent_year (str): Most recent year of impact factors.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
@@ -524,28 +569,19 @@ def if_analysis(institute, org_tup, wf_path, datatype,
         departments of the Institute including itself and valued with KPIs dict \
         of these keys)).
     """
+    # Setting params values from params_list
+    institute, org_tup, wf_path, datatype, corpus_year = params_list
+
     # Setting input-data path
     saved_results_path = set_saved_results_path(wf_path, datatype)
 
-    # Setting useful aliases
-    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    if_analysis_folder_alias = bm_pg.ARCHI_YEAR["if analysis"]
-
-    # Setting analysis-results paths
-    year_folder_path = wf_path / Path(corpus_year)
-    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
-    if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias)
-
-    # Setting useful columns info
-    final_cols_tup = set_final_col_names(institute, org_tup)
+    # Setting useful folder path
+    if_analysis_folder_path =  _set_if_files_params(wf_path, corpus_year)
     if progress_callback:
         progress_callback(5)
 
-    # Creating required output folders
-    if not os.path.exists(analysis_folder_path):
-        os.makedirs(analysis_folder_path)
-    if not os.path.exists(if_analysis_folder_path):
-        os.makedirs(if_analysis_folder_path)
+    # Setting useful columns info
+    final_cols_tup = set_final_col_names(institute, org_tup)
     if progress_callback:
         progress_callback(10)
 
@@ -574,8 +610,8 @@ def if_analysis(institute, org_tup, wf_path, datatype,
 
     # Updating the KPIs database
     final_depts_col_list = final_cols_tup[1]
-    institute_kpi_df = update_kpi_database(institute, saved_results_path,
-                                           corpus_year, kpi_dict, new_if_analysis_col,
+    kpi_params = [institute, saved_results_path, corpus_year]
+    institute_kpi_df = update_kpi_database(kpi_params, kpi_dict, new_if_analysis_col,
                                            final_depts_col_list, verbose=verbose)
     if progress_callback:
         progress_callback(90)
@@ -585,7 +621,7 @@ def if_analysis(institute, org_tup, wf_path, datatype,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["ifs"] = True
     if_analysis_name = new_if_analysis_col
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,                       # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)

@@ -266,8 +266,45 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
     return author_employee_df, pub_nb_per_auth_df
 
 
-def authors_analysis(institute, org_tup, wf_path, datatype,
-                     corpus_year, progress_callback=None):
+def _set_au_files_params(wf_path, corpus_year):
+    """Sets IFs specific file and folder 
+    
+    Args:
+        wf_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+    Returns:
+        (tup): publications-lists folder name, \
+        base for building names of publications-list files, \
+        base for building names of missing-IFs files, \
+        name for building names of missing-ISSNs files.
+    """
+    # Setting useful aliases
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    au_analysis_folder_alias = bm_pg.ARCHI_YEAR["authors analysis"]
+    au_file_alias = bm_pg.ARCHI_YEAR["authors file name"]
+    au_stat_file_alias = bm_pg.ARCHI_YEAR["authors weight file name"]
+
+    # Setting useful files names
+    year_au_file = au_file_alias + " " + corpus_year + ".xlsx"
+    year_au_stat_file = au_stat_file_alias + " " + corpus_year + ".xlsx"
+
+    # Setting useful paths
+    year_folder_path = wf_path / Path(corpus_year)
+    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
+    au_analysis_folder_path = analysis_folder_path / Path(au_analysis_folder_alias)
+    au_empl_xlsx_file_path = Path(au_analysis_folder_path) / Path(year_au_file)
+    au_stat_xlsx_file_path = Path(au_analysis_folder_path) / Path(year_au_stat_file)
+
+    # Creating required output folders
+    if not os.path.exists(analysis_folder_path):
+        os.makedirs(analysis_folder_path)
+    if not os.path.exists(au_analysis_folder_path):
+        os.makedirs(au_analysis_folder_path)
+
+    return au_analysis_folder_path, au_empl_xlsx_file_path, au_stat_xlsx_file_path
+
+
+def authors_analysis(params_list, progress_callback=None):
     """Performs the analysis of authors data of the 'corpus_year' corpus.
 
     This is done through the following steps:
@@ -288,35 +325,23 @@ def authors_analysis(institute, org_tup, wf_path, datatype,
     with the results of this analysis through the `_update_kpi_database` internal function.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
-        corpus_year (str): 4 digits year of the corpus.
+        params_list (list):  The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute organization, \
+        the full path to working folder (path), the data combination type \
+        of corpuses databases (str) and the 4 digits year of the corpus (str).
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
     Returns:
         (path): Full path to the folder where results of authors analysis \
         are saved.
     """
-    # Setting useful aliases
-    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    auth_analysis_folder_alias = bm_pg.ARCHI_YEAR["authors analysis"]
-    authors_file_alias = bm_pg.ARCHI_YEAR["authors file name"]
-    authors_stat_file_alias = bm_pg.ARCHI_YEAR["authors weight file name"]
-    year_authors_file = authors_file_alias + " " + corpus_year
-    year_authors_stat_file = authors_stat_file_alias + " " + corpus_year
+    # Setting parameters values from params_list
+    institute, org_tup, wf_path, datatype, corpus_year = params_list
 
     # Setting useful paths
-    year_folder_path = wf_path / Path(corpus_year)
-    analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
-    auth_analysis_folder_path = analysis_folder_path / Path(auth_analysis_folder_alias)
-
-    # Creating required output folders
-    if not os.path.exists(analysis_folder_path):
-        os.makedirs(analysis_folder_path)
-    if not os.path.exists(auth_analysis_folder_path):
-        os.makedirs(auth_analysis_folder_path)
+    return_tup = _set_au_files_params(wf_path, corpus_year)
+    (au_analysis_folder_path, au_empl_xlsx_file_path,
+     au_stat_xlsx_file_path) = return_tup
     if progress_callback:
         progress_callback(10)
 
@@ -335,20 +360,18 @@ def authors_analysis(institute, org_tup, wf_path, datatype,
         progress_callback(60)
 
     # Saving the author-employee dataframe as EXCEL file
-    author_employee_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_file + ".xlsx")
     auth_df_title = bm_pg.DF_TITLES_LIST[4]
     wb, ws = format_page(author_employee_df, auth_df_title)
     ws.title = 'Auteurs ' + corpus_year
-    wb.save(author_employee_xlsx_file_path)
+    wb.save(au_empl_xlsx_file_path)
     if progress_callback:
         progress_callback(70)
 
     # Saving the author-statistics dataframe as EXCEL file
-    author_stat_xlsx_file_path = Path(auth_analysis_folder_path) / Path(year_authors_stat_file + ".xlsx")
     auth_stat_df_title = bm_pg.DF_TITLES_LIST[5]
     wb, ws = format_page(pub_nb_per_author_df, auth_stat_df_title)
     ws.title = 'Stat auteurs ' + corpus_year
-    wb.save(author_stat_xlsx_file_path)
+    wb.save(au_stat_xlsx_file_path)
     if progress_callback:
         progress_callback(80)
 
@@ -357,9 +380,11 @@ def authors_analysis(institute, org_tup, wf_path, datatype,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
     if_analysis_name = "None"
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,                       # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                            if_analysis_name, results_to_save_dict, verbose=False)
+#    _ = save_final_results(params_list, if_analysis_name,
+#                           results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)
 
-    return auth_analysis_folder_path
+    return au_analysis_folder_path

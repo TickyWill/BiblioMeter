@@ -83,6 +83,7 @@ XL_INDEX_BASE = 1
 
 LISTES_CONCAT = False
 
+# Setting if the full list of authors is based on the corrected author names
 AUTHORS_FULL_LIST_NAME_CORRECTION = False
 
 ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
