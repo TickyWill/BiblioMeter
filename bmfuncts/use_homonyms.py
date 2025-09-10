@@ -21,8 +21,8 @@ from openpyxl.utils.dataframe import dataframe_to_rows \
 from openpyxl.styles import PatternFill as openpyxl_PatternFill
 
 # Local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.pub_globals as pg
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.useful_functs import concat_dfs
@@ -47,14 +47,14 @@ def _save_shaped_homonyms_file(homonyms_df, out_path):
     wb = openpyxl_Workbook()
     ws = wb.active
     ws.title = 'Consolidation Homonymes'
-    yellow_ft = openpyxl_PatternFill(fgColor=pg.ROW_COLORS['highlight'],
+    yellow_ft = openpyxl_PatternFill(fgColor=bm_pg.ROW_COLORS['highlight'],
                                      fill_type="solid")
 
     for indice, r in enumerate(openpyxl_dataframe_to_rows(homonyms_df,
                                                           index=False, header=True)):
         ws.append(r)
         last_row = ws[ws.max_row]
-        if r[col_homonyms.index(homonym_alias)]==pg.HOMONYM_FLAG and indice>0:
+        if r[col_homonyms.index(homonym_alias)]==bm_pg.HOMONYM_FLAG and indice>0:
             cell = last_row[col_homonyms.index(name_alias)]
             cell.fill = yellow_ft
             cell = last_row[col_homonyms.index(firstname_alias)]
@@ -101,7 +101,7 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
 
     # Setting homonyms status
     homonyms_status = False
-    if pg.HOMONYM_FLAG in df_homonyms[homonym_col_alias].to_list():
+    if bm_pg.HOMONYM_FLAG in df_homonyms[homonym_col_alias].to_list():
         homonyms_status = True
 
     # Saving shaped df_homonyms
@@ -111,7 +111,7 @@ def solving_homonyms(institute, org_tup, in_path, out_path):
     return end_message, homonyms_status
 
 
-def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
+def save_homonyms(institute, org_tup, wf_path, corpus_year):
     """Saves the history of the resolved homonyms by the user.
 
     First, builds the dataframe to save with the following columns:
@@ -124,7 +124,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (str): End message.
@@ -135,20 +135,20 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     submit_col_rename_dic = col_rename_tup[1]
     pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
     author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
-    homonyms_col_alias = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    homonyms_col_alias = submit_col_rename_dic[bm_pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['matricule']]
 
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    homonyms_folder_alias = pg.ARCHI_YEAR["homonymes folder"]
-    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
-    history_folder_alias = pg.ARCHI_YEAR["history folder"]
-    kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
+    bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
+    homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
+    history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
+    kept_homonyms_file_alias = bm_pg.ARCHI_YEAR["kept homonyms file name"]
+    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
     homonyms_file_alias = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
@@ -163,7 +163,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     pub_df = pd.read_excel(homonyms_file_path)
 
     # Building dataframe of pub_id and kept personal numbers for solved homonyms
-    temp_df = pub_df[pub_df[homonyms_col_alias]==pg.HOMONYM_FLAG]
+    temp_df = pub_df[pub_df[homonyms_col_alias]==bm_pg.HOMONYM_FLAG]
     homonyms_df = pd.DataFrame(columns=temp_df.columns)
     for _, pub_id_df in temp_df.groupby(pub_id_col_alias):
         for _, author_df in pub_id_df.groupby(author_idx_col_alias):
@@ -193,7 +193,7 @@ def save_homonyms(institute, org_tup, bibliometer_path, corpus_year):
     return message
 
 
-def set_saved_homonyms(institute, org_tup, bibliometer_path,
+def set_saved_homonyms(institute, org_tup, wf_path,
                        corpus_year, actual_homonym_status):
     """Resolves the homonyms from the history of the resolved homonyms 
     before submiting the file for resolving remaining homonyms to the user.
@@ -206,7 +206,7 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         actual_homonym_status (bool): True if homonyms exists.
     Returns:
@@ -219,21 +219,21 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
     submit_col_rename_dic = col_rename_tup[1]
     pub_id_col_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
     author_idx_col_alias = submit_col_rename_dic[bp.COL_NAMES["authors"][1]]
-    homonyms_col_alias = submit_col_rename_dic[pg.COL_NAMES_BONUS['homonym']]
-    matricule_col_alias = submit_col_rename_dic[eg.EMPLOYEES_USEFUL_COLS['matricule']]
-    hash_id_col_alias = pg.COL_HASH['hash_id']
+    homonyms_col_alias = submit_col_rename_dic[bm_pg.COL_NAMES_BONUS['homonym']]
+    matricule_col_alias = submit_col_rename_dic[bm_eg.EMPLOYEES_USEFUL_COLS['matricule']]
+    hash_id_col_alias = bm_pg.COL_HASH['hash_id']
 
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    homonyms_folder_alias = pg.ARCHI_YEAR["homonymes folder"]
-    homonyms_file_base_alias = pg.ARCHI_YEAR["homonymes file name base"]
-    history_folder_alias = pg.ARCHI_YEAR["history folder"]
-    kept_homonyms_file_alias = pg.ARCHI_YEAR["kept homonyms file name"]
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
+    bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
+    homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
+    history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
+    kept_homonyms_file_alias = bm_pg.ARCHI_YEAR["kept homonyms file name"]
+    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
     homonyms_file_alias = homonyms_file_base_alias + ' ' + corpus_year + ".xlsx"
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
@@ -290,7 +290,7 @@ def set_saved_homonyms(institute, org_tup, bibliometer_path,
 
         # Setting actual homonyms status
         actual_homonym_status = False
-        if pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list():
+        if bm_pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col_alias].to_list():
             actual_homonym_status = True
         # Saving updated homonyms_df
         _save_shaped_homonyms_file(homonyms_df_new, homonyms_file_path)

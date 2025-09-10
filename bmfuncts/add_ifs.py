@@ -16,7 +16,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import set_if_col_names
@@ -32,13 +32,13 @@ def _create_if_column(issn_column, if_dict, if_empty_kw):
     The 'nan' values in the column 'if_column' are replaced by 'empty_word'.
 
     Args:
-        issn_column (pandas serie): The column of the dataframe of interest \
+        issn_column (pandas series): The column of the dataframe of interest \
         that contains the ISSNs values.
         if_dict (dict): The dict which keys are ISSNs and values are IFs.
         if_empty_kw (str): The word that will replace nan values in \
         the returned column.
     Returns:
-        (pandas serie): The column of the dataframe of interest \
+        (pandas series): The column of the dataframe of interest \
         that contains the IFs values.
     """
     if_column = issn_column.map(if_dict)
@@ -136,14 +136,14 @@ def _build_inst_issn_df(if_db_df, cols_tup):
     return inst_issn_df
 
 
-def get_if_db(institute, org_tup, bibliometer_path):
+def get_if_db(institute, org_tup, wf_path):
     """Builds a dict keyed by years and valued by a dataframe 
     of impact-factor per journal for the Institute.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
     Returns:
         (tup): (impact-factors (dict), \
         available-years of impact-factors in the dict (list), \
@@ -154,15 +154,15 @@ def get_if_db(institute, org_tup, bibliometer_path):
     if_db_status = org_tup[5]
 
     # Setting useful aliases
-    if_root_folder_alias = pg.ARCHI_IF["root"]
-    if_filename_alias = pg.ARCHI_IF["all IF"]
-    inst_if_filename_alias = institute + pg.ARCHI_IF["institute_if_all_years"]
+    if_root_folder_alias = bm_pg.ARCHI_IF["root"]
+    if_filename_alias = bm_pg.ARCHI_IF["all IF"]
+    inst_if_filename_alias = institute + bm_pg.ARCHI_IF["institute_if_all_years"]
 
     if if_db_status:
         if_filename_alias = inst_if_filename_alias
 
     # Setting useful paths
-    if_root_folder_path = bibliometer_path / Path(if_root_folder_alias)
+    if_root_folder_path = wf_path / Path(if_root_folder_alias)
     if_path = if_root_folder_path / Path(if_filename_alias)
 
     # Getting the df of the IFs database
@@ -232,7 +232,7 @@ def _get_id(issn_df, journal_name, journal_col, id_col, empty_kw):
     id_upper = empty_kw
     if not id_upper_df.empty:
         id_upper = id_upper_df.to_list()[0]
-    journal_id = list(set([id_lower,id_upper]) - set([empty_kw]))[0]
+    journal_id = list({id_lower, id_upper} - {empty_kw})[0]
     return journal_id
 
 
@@ -246,7 +246,7 @@ def _format_missing_df(results_df, common_args_tup, empty_kw, add_cols):
         ISSN, eISNN, number of publications, impact-factors year, ISSN in \
         'result_df' dataframe).
         empty_kw (str): Value of empty ISSN or eISSN in 'results_df' dataframe.
-        add_cols (bool): True if suplementary columns for ISSN and eISSN are to be \
+        add_cols (bool): True if supplementary columns for ISSN and eISSN are to be \
         filled with empty_kw values.
     Returns:
         (dataframe): Formatted dataframe.
@@ -286,17 +286,17 @@ def _format_missing_df(results_df, common_args_tup, empty_kw, add_cols):
 
 def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
     """Builds a dataframe by keeping only rows which doc type has usually 
-    an IF then droping the doc type column.
+    an IF then dropping the doc type column.
     """
     # Setting global aliase
-    doc_type_dict_alias = pg.DOC_TYPE_DICT
+    doc_type_dict_alias = bm_pg.DOC_TYPE_DICT
 
     # Setting list of document types to drop (usually no IF attributed)
     no_if_doctype_keys_list = org_tup[6]
     no_if_doctype = sum([doc_type_dict_alias[x] for x in no_if_doctype_keys_list] , [])
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
-    # then droping the doc type column
+    # then dropping the doc type column
     doctype_to_drop_list = [x.upper() for x in no_if_doctype]
 
     articles_df = pd.DataFrame(columns=pub_df.columns)
@@ -309,7 +309,7 @@ def _build_only_if_doctype_df(org_tup, pub_df, doctype_col):
 
 def _build_issn_df(article_df, cols_tup):
     """Builds a dataframe by keeping one row for each issn adding a column 
-    with number of related articles then droping "Pub_id" column.
+    with number of related articles then dropping "Pub_id" column.
     """
     pub_id_col, journal_col, journal_upper_col, pub_id_nb_col, issn_col = cols_tup
     if_df = pd.DataFrame(columns=article_df.columns.to_list() [1:] \
@@ -366,25 +366,25 @@ def _format_and_save_add_if_dfs(dfs_tup, out_cols_tup, empty_kw,
         year_missing_if_df, out_cols_tup, empty_kw, add_cols=False)
 
     # Formatting and saving 'corpus_df' as openpyxl file at full path 'out_file_path'
-    corpus_df_title = pg.DF_TITLES_LIST[0]
+    corpus_df_title = bm_pg.DF_TITLES_LIST[0]
     wb, ws = format_page(corpus_df, corpus_df_title)
     ws.title = "Publications " +  corpus_year
     wb.save(out_file_path)
 
     # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
-    missing_issn_df_title = pg.DF_TITLES_LIST[18]
+    missing_issn_df_title = bm_pg.DF_TITLES_LIST[18]
     wb, ws = format_page(sorted_year_missing_issn_df, missing_issn_df_title)
     ws.title = "ISSNs manquants " +  corpus_year
     wb.save(missing_issn_path)
 
     # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
-    missing_if_df_title = pg.DF_TITLES_LIST[18]
+    missing_if_df_title = bm_pg.DF_TITLES_LIST[18]
     wb, ws = format_page(sorted_year_missing_if_df, missing_if_df_title)
     ws.title = "IFs manquants " +  corpus_year
     wb.save(missing_if_path)
 
 
-def _clean_if_dict(institute, org_tup, bibliometer_path, aliases_tup):
+def _clean_if_dict(institute, org_tup, wf_path, aliases_tup):
     # Setting parameters from args
     if_db_status = org_tup[5]
     (empty_kw, issn_col, eissn_col,
@@ -392,7 +392,7 @@ def _clean_if_dict(institute, org_tup, bibliometer_path, aliases_tup):
 
     # Getting the df of the IFs database
     if_dict, if_available_years_list, if_most_recent_year = get_if_db(institute, org_tup,
-                                                                      bibliometer_path)
+                                                                      wf_path)
 
     # Taking care all IF column names in if_dict are set to database_if_col
     if if_db_status:
@@ -467,7 +467,7 @@ def _add_if_cols(corpus_df, if_dict, if_cols_tup, aliases_tup,
     return corpus_df
 
 
-def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
+def add_if(institute, org_tup, wf_path, paths_tup, corpus_year):
     """Adds two new columns containing impact factors to the corpus 
     dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
 
@@ -491,7 +491,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         paths_tup (tup): Tuple = (full path to get the corpus data, \
         full path to save the corpus data with the impact-factors information added, \
         full path to save the missing impact-factors information, \
@@ -499,7 +499,7 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
         corpus_year (str): Year (4 digits) of the corpus to be appended with the two \
         new impact-factors columns.
     Returns:
-        (tup): (message indicating which file has been mofified and how, \
+        (tup): (message indicating which file has been modified and how, \
         completion status of the impact-factors database).
     """
 
@@ -521,24 +521,24 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     otp_col_alias = final_col_dic['otp']
     current_if_col_alias = if_maj_col_dic['current_if']
     corpus_year_if_col_alias = if_maj_col_dic['pub_year_if']
-    corpus_issn_col_alias = pg.COL_NAMES_BONUS["database ISSN"]
-    database_if_col_alias = pg.COL_NAMES_BONUS['IF clarivate']
-    eissn_col_alias = pg.COL_NAMES_BONUS['e-ISSN']
-    otp_col_new_alias = pg.COL_NAMES_BONUS['final OTP']
-    pub_id_nb_col_alias = pg.COL_NAMES_BONUS['pub number']
+    corpus_issn_col_alias = bm_pg.COL_NAMES_BONUS["database ISSN"]
+    database_if_col_alias = bm_pg.COL_NAMES_BONUS['IF clarivate']
+    eissn_col_alias = bm_pg.COL_NAMES_BONUS['e-ISSN']
+    otp_col_new_alias = bm_pg.COL_NAMES_BONUS['final OTP']
+    pub_id_nb_col_alias = bm_pg.COL_NAMES_BONUS['pub number']
 
     # Setting globals aliases
-    not_available_if_alias = pg.NOT_AVAILABLE_IF
-    if_empty_kw_alias = pg.FILL_EMPTY_KEY_WORD
-    empty_kw_alias = pg.FILL_EMPTY_KEY_WORD
-    outside_if_analysis_alias = pg.OUTSIDE_ANALYSIS
+    not_available_if_alias = bm_pg.NOT_AVAILABLE_IF
+    if_empty_kw_alias = bm_pg.FILL_EMPTY_KEY_WORD
+    empty_kw_alias = bm_pg.FILL_EMPTY_KEY_WORD
+    outside_if_analysis_alias = bm_pg.OUTSIDE_ANALYSIS
 
     # Setting tuples for passing args
     cols_tup = (journal_col_alias, issn_col_alias, eissn_col_alias)
     aliases_tup = (empty_kw_alias, issn_col_alias, eissn_col_alias, database_if_col_alias)
     more_aliases_tup = aliases_tup + (not_available_if_alias,)
 
-    return_tup = _clean_if_dict(institute, org_tup, bibliometer_path, more_aliases_tup)
+    return_tup = _clean_if_dict(institute, org_tup, wf_path, more_aliases_tup)
     if_dict, if_available_years_list, if_most_recent_year = return_tup
 
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year
@@ -575,12 +575,12 @@ def add_if(institute, org_tup, bibliometer_path, paths_tup, corpus_year):
     year_pub_if_df = corpus_df[subsetcols].copy()
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
-    # then droping the doc type column
+    # then dropping the doc type column
     year_article_if_df = _build_only_if_doctype_df(org_tup, year_pub_if_df, doctype_col_alias)
 
     # Building 'year_if_df' by keeping one row for each issn
     # adding a column with number of related articles
-    # then droping "Pub_id" column
+    # then dropping "Pub_id" column
     year_if_cols_tup = (pub_id_col_alias, journal_col_alias, journal_upper_col,
                         pub_id_nb_col_alias, issn_col_alias)
     year_if_df = _build_issn_df(year_article_if_df, year_if_cols_tup)

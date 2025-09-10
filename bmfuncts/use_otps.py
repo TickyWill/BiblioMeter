@@ -19,8 +19,8 @@ import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
 # Local imports
-import bmfuncts.institute_globals as ig
-import bmfuncts.pub_globals as pg
+import bmfuncts.institute_globals as bm_ig
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.add_otps import add_data_val
 from bmfuncts.build_otps_info import set_lab_otps
 from bmfuncts.format_files import align_cell
@@ -38,7 +38,7 @@ from bmfuncts.useful_functs import concat_dfs
 
 
 def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
-    """Gets the publications list of the a department 
+    """Gets the publications list of the department
     from the xlsx files where the user has set the OTPs.
 
     The name of the file is build using the file-name base 
@@ -46,7 +46,7 @@ def _set_dpt_otp_df(dpt_label, in_file_base, in_path):
     this file exists in the folder of files. 
     Then the file is read as a multisheet xlsx file. 
     The final publication list of the department results from 
-    the concatenation of the containt of all the existing sheets.  
+    the concatenation of the content of all the existing sheets.
 
     Args:
         dpt_label (str): Label of the department.
@@ -129,7 +129,7 @@ def set_pub_otp_df(org_tup, final_col_list, pub_id_col, otp_path, otp_file_base)
     return pub_otp_df
 
 
-def save_otps(institute, org_tup, bibliometer_path, corpus_year,
+def save_otps(institute, org_tup, wf_path, corpus_year,
               otp_path, otp_file_base):
     """Saves the history of the attributed OTPs by the user.
 
@@ -156,7 +156,7 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         otp_path (path): The full path to the folder where the files \
         with the set OTPs are saved.
@@ -175,18 +175,18 @@ def save_otps(institute, org_tup, bibliometer_path, corpus_year,
     otp_list_col = final_col_dic['otp']
 
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    history_folder_alias = pg.ARCHI_YEAR["history folder"]
-    kept_otps_file_alias = pg.ARCHI_YEAR["kept OTPs file name"]
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
+    bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
+    kept_otps_file_alias = bm_pg.ARCHI_YEAR["kept OTPs file name"]
+    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
 
     # Setting useful column name aliases
-    otp_col_alias = pg.COL_NAMES_BONUS['final OTP']
-    hash_otp_sheet_alias = pg.SHEET_SAVE_OTP['hash_OTP']
-    doi_otp_sheet_alias = pg.SHEET_SAVE_OTP['doi_OTP']
+    otp_col_alias = bm_pg.COL_NAMES_BONUS['final OTP']
+    hash_otp_sheet_alias = bm_pg.SHEET_SAVE_OTP['hash_OTP']
+    doi_otp_sheet_alias = bm_pg.SHEET_SAVE_OTP['doi_OTP']
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     history_folder_path = corpus_year_path / Path(history_folder_alias)
@@ -439,7 +439,7 @@ def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, common_args_tup):
 
     # Formatting the openpyxl workbook
     sheet_name = lab
-    new_lab_df_title = pg.DF_TITLES_LIST[2]
+    new_lab_df_title = bm_pg.DF_TITLES_LIST[2]
     wb = format_wb_sheet(sheet_name, new_lab_df,
                          new_lab_df_title, wb, first)
     ws = wb.active
@@ -479,8 +479,8 @@ def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
     through the `_set_lab_otp_ws` internal function.
 
     Args:
-        dpt_pub_dict (dict): The data of the department keyed by laboratory \
-        names (str) and valued by publications data (dataframe).
+        dpt_pub_dict (dict): The data of the department keyed by laboratory names (str) \
+        and valued by publications data (dataframe).
         dpt_lab_otps_dict (dict): The data of the department keyed \
         by laboratory names (str) and valued by OTPs lists (list). 
         dpt_otp_file_name_path (path): Full path to where the workbook is saved.
@@ -488,7 +488,7 @@ def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
         data of OTPs set by DOI (dataframe).
     """
     # Setting num of first col and first row in EXCEL files
-    xl_idx_base = pg.XL_INDEX_BASE
+    xl_idx_base = bm_pg.XL_INDEX_BASE
 
     # Setting cell colors
     cell_colors = build_cell_fill_patterns()
@@ -524,7 +524,7 @@ def _re_save_labs_otp_file(dpt_pub_dict, dpt_lab_otps_dict,
         # Setting OTPs list for "lab" laboratory
         lab_otp_list = dpt_lab_otps_dict[lab]
 
-        # Formatting the worksheet for "lab" lboratory of the department
+        # Formatting the worksheet for "lab" laboratory of the department
         wb, _ = _set_lab_otp_ws(lab, dfs_tup, lab_otp_list,
                                 wb, first, common_args_tup)
         first = False
@@ -537,7 +537,7 @@ def _set_saved_lab_otps(org_tup, otps_history_tup,
                         otp_folder_path, otp_file_base,
                         lab_otps_dict):
     """Attributes the OTPs from the history of the attributed OTPs 
-    before submiting to the user the file for attributing the not yet 
+    before submitting to the user the file for attributing the not yet
     attributed OTPs.
 
     Loops on department to:
@@ -604,7 +604,7 @@ def _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
         dpt_otp_sheet_name (str): Name of the openpyxl sheet of the workbook.
     """
     # Setting num of first col and first row in EXCEL files
-    xl_idx_base = pg.XL_INDEX_BASE
+    xl_idx_base = bm_pg.XL_INDEX_BASE
 
     # Setting cell colors
     cell_colors = build_cell_fill_patterns()
@@ -614,7 +614,7 @@ def _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
     otp_list_col = cols_tup[4]
 
     # Setting formatting attributes
-    dpt_df_title = pg.DF_TITLES_LIST[2]
+    dpt_df_title = bm_pg.DF_TITLES_LIST[2]
 
     # Building validation list of OTP for the department
     validation_list, data_val = build_data_val(dpt_otp_list)
@@ -660,7 +660,7 @@ def _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
 def _set_saved_dept_otps(org_tup, otps_history_tup,
                          otp_folder_path, otp_file_base):
     """Attributes the OTPs from the history of the attributed OTPs 
-    at department level before submiting to the user the file 
+    at department level before submitting to the user the file
     for attributing the not-yet attributed OTPs.
 
     Loops on department to:
@@ -694,7 +694,7 @@ def _set_saved_dept_otps(org_tup, otps_history_tup,
         dpt_otp_file_name_path = otp_folder_path / Path(dpt_otp_file_name)
 
         # Setting the sheet name of the EXCEl file for the 'dpt' department
-        dpt_otp_sheet_name = pg.OTP_SHEET_NAME_BASE + " " +  dpt
+        dpt_otp_sheet_name = bm_pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
         # Getting the pub list for department dpt
         dpt_df = pd.read_excel(dpt_otp_file_name_path)
@@ -708,7 +708,7 @@ def _set_saved_dept_otps(org_tup, otps_history_tup,
             dfs_tup = _use_doi_set_otps(dpt_df, otps_history_tup, dfs_tup)
 
         # Setting the list of OTPs for the 'dpt' department
-        dpt_otp_list = dpt_attributs_dict[dpt][ig.DPT_OTP_KEY]
+        dpt_otp_list = dpt_attributs_dict[dpt][bm_ig.DPT_OTP_KEY]
 
         # Resetting validation list for OTPs when not already set and saving the file
         _re_save_dpt_otp_file(dfs_tup, cols_tup, dpt_otp_list,
@@ -727,8 +727,8 @@ def _get_otps_history(institute, org_tup,
         kept_otps_file_path (path): the full path to the history of \
         the set OTPs.
     Returns:
-        (tup): (Tuple of lists of infos for using previoulsly set OTPs, \
-        Tuple of useful columns names, The data of the the history \
+        (tup): (Tuple of lists of infos for using previously set OTPs, \
+        Tuple of useful columns names, The data of the history \
         of previously set OTPs by DOI).
     """
     # Setting useful col names
@@ -736,14 +736,14 @@ def _get_otps_history(institute, org_tup,
     all_col_rename_dic = col_rename_tup[2]
 
     # Setting useful column and sheet names aliases
-    hash_id_col_alias = pg.COL_HASH['hash_id']
+    hash_id_col_alias = bm_pg.COL_HASH['hash_id']
     pub_id_alias = all_col_rename_dic[bp.COL_NAMES['pub_id']]
     author_col_alias = all_col_rename_dic[bp.COL_NAMES['articles'][1]]
     doi_col_alias = all_col_rename_dic[bp.COL_NAMES['articles'][6]]
-    otp_list_col_alias = all_col_rename_dic[pg.COL_NAMES_BONUS['list OTP']]
-    otp_col_alias = pg.COL_NAMES_BONUS['final OTP']
-    hash_otp_sheet_alias = pg.SHEET_SAVE_OTP['hash_OTP']
-    doi_otp_sheet_alias = pg.SHEET_SAVE_OTP['doi_OTP']
+    otp_list_col_alias = all_col_rename_dic[bm_pg.COL_NAMES_BONUS['list OTP']]
+    otp_col_alias = bm_pg.COL_NAMES_BONUS['final OTP']
+    hash_otp_sheet_alias = bm_pg.SHEET_SAVE_OTP['hash_OTP']
+    doi_otp_sheet_alias = bm_pg.SHEET_SAVE_OTP['doi_OTP']
 
     # Getting the hash_id dataframe
     hash_id_df = pd.read_excel(hash_id_file_path)
@@ -782,9 +782,9 @@ def _get_otps_history(institute, org_tup,
     return lists_tup, cols_tup, doi_otp_history_df
 
 
-def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
+def set_saved_otps(institute, org_tup, wf_path, corpus_year):
     """Attributes the OTPs from the history of the attributed OTPs 
-    before submiting to the user the file for attributing the not yet 
+    before submitting to the user the file for attributing the not yet
     attributed OTPs.
 
     First, it gets the history of the previously set OTPs through \
@@ -793,17 +793,17 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
 
     1. The data of OTPs data given by laboratory of each department are set \
     through `set_lab_otps` function imported from the `bmfuncts.build_otps_info` module.
-    2. The history of the attributed OTPs is used to built the files to be submitted \
+    2. The history of the attributed OTPs is used to build the files to be submitted \
     to the user through the `_set_saved_lab_otps` internal function.
 
     Otherwise, The level is kept to the department. Then, the history of the attributed \
-    OTPs is used to built the files to be submitted to the user through \
+    OTPs is used to build the files to be submitted to the user through \
     the `_set_saved_dept_otps` internal function.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
         (str): End message giving the status of the OTPs attribution.
@@ -812,15 +812,15 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
     otp_level = org_tup[11]
 
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias = pg.ARCHI_YEAR["bdd mensuelle"]
-    otp_folder_alias = pg.ARCHI_YEAR["OTP folder"]
-    otp_file_base_alias = pg.ARCHI_YEAR["OTP file name base"]
-    history_folder_alias = pg.ARCHI_YEAR["history folder"]
-    kept_otps_file_alias = pg.ARCHI_YEAR["kept OTPs file name"]
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
+    bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    otp_folder_alias = bm_pg.ARCHI_YEAR["OTP folder"]
+    otp_file_base_alias = bm_pg.ARCHI_YEAR["OTP file name base"]
+    history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
+    kept_otps_file_alias = bm_pg.ARCHI_YEAR["kept OTPs file name"]
+    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
 
     # Setting useful paths
-    corpus_year_path = bibliometer_path / Path(corpus_year)
+    corpus_year_path = wf_path / Path(corpus_year)
     bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     history_folder_path = corpus_year_path / Path(history_folder_alias)
@@ -832,7 +832,7 @@ def set_saved_otps(institute, org_tup, bibliometer_path, corpus_year):
                                              hash_id_file_path,
                                              kept_otps_file_path)
         if otp_level=="LAB":
-            lab_otps_dict = set_lab_otps(institute, org_tup, bibliometer_path)
+            lab_otps_dict = set_lab_otps(institute, org_tup, wf_path)
             _set_saved_lab_otps(org_tup, otps_history_tup,
                                 otp_folder_path, otp_file_base_alias,
                                 lab_otps_dict)

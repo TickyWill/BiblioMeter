@@ -14,8 +14,8 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.employees_globals as eg
-import bmfuncts.pub_globals as pg
+import bmfuncts.employees_globals as bm_eg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import keep_initials
 
@@ -33,9 +33,9 @@ def _test_full_match(empl_pub_match_df, pub_lastname):
         print('\nMatch found for author lastname:', pub_lastname)
         print(' Nb of matches:', len(empl_pub_match_df))
         print(' Employee matricule:',
-              empl_pub_match_df[eg.EMPLOYEES_USEFUL_COLS['matricule']].to_list()[0])
+              empl_pub_match_df[bm_eg.EMPLOYEES_USEFUL_COLS['matricule']].to_list()[0])
         print(' Employee lastname:',
-              empl_pub_match_df[eg.EMPLOYEES_USEFUL_COLS['name']].to_list()[0])
+              empl_pub_match_df[bm_eg.EMPLOYEES_USEFUL_COLS['name']].to_list()[0])
     else:
         print('\nNo match for author lastname:', pub_lastname)
         print('  Nb first matches:', len(empl_pub_match_df))
@@ -59,13 +59,13 @@ def _test_similarity(empl_pub_match_df, pub_lastname,
     print('  Nb similarities by orphan reduction:', len(lastname_match_list))
     print('  List of lastnames with similarities:', lastname_match_list)
     print('  Employee matricules:',
-          empl_pub_match_df[eg.EMPLOYEES_USEFUL_COLS['matricule']].to_list())
+          empl_pub_match_df[bm_eg.EMPLOYEES_USEFUL_COLS['matricule']].to_list())
     print('  Employee lastnames:',
-          empl_pub_match_df[eg.EMPLOYEES_USEFUL_COLS['name']].to_list())
+          empl_pub_match_df[bm_eg.EMPLOYEES_USEFUL_COLS['name']].to_list())
     print('  Employee firstnames:',
-          empl_pub_match_df[eg.EMPLOYEES_USEFUL_COLS['first_name']].to_list())
+          empl_pub_match_df[bm_eg.EMPLOYEES_USEFUL_COLS['first_name']].to_list())
     print('  Employee fullnames:',
-          empl_pub_match_df[eg.EMPLOYEES_ADD_COLS['employee_full_name']].to_list())
+          empl_pub_match_df[bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']].to_list())
 
 
 def _test_no_similarity(pub_df_row, pub_lastname, lastname_match_list,
@@ -85,9 +85,9 @@ def _test_no_similarity(pub_df_row, pub_lastname, lastname_match_list,
     print('  Lastname flag match:', flag_lastname_match)
     print('  Nb similarities by orphan reduction:', len(lastname_match_list))
     print('  Orphan full author name:', pub_df_row[bp.COL_NAMES['authors'][2]])
-    print('  Orphan author lastname:', pub_df_row[pg.COL_NAMES_BM['Last_name']])
+    print('  Orphan author lastname:', pub_df_row[bm_pg.COL_NAMES_BM['Last_name']])
     print('  Orphan author firstname initials:',
-          pub_df_row[pg.COL_NAMES_BM['First_name']])
+          pub_df_row[bm_pg.COL_NAMES_BM['First_name']])
 
 
 def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
@@ -103,11 +103,11 @@ def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
     print('  Employees lastnames list:', eff_lastnames_spec)
 
 
-def _set_match_test_info(bibliometer_path, test_case):
+def _set_match_test_info(wf_path, test_case):
     """Sets the info for the test of the matching results.
 
     Args: 
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         test_case (str): The case for the test selected \
         among the keys of the test dict.
     Returns:
@@ -121,7 +121,7 @@ def _set_match_test_info(bibliometer_path, test_case):
                  'No test'               : [False, False, False, False, False]
                  }
     test_states = test_dict[test_case]
-    checks_path = Path(bibliometer_path) / Path('Temp_checks')
+    checks_path = Path(wf_path) / Path('Temp_checks')
     if test_states[4]:
         # Creating temporary output folder
         if not os.path.exists(checks_path):
@@ -166,7 +166,7 @@ def _reduce_orphan_df(orphan_lastname, eff_lastname):
     return lastname_match_list
 
 
-def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test_name="No name"):
+def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No name"):
     """Builds a dataframe of the merged employees information with the publications 
     list with one row per author.
 
@@ -179,12 +179,12 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
     `_test_no_similarity` internal functions. The results are saved through the 
     `_save_spec_dfs` internal function.
     Found homonyms are tagged by 'HOMONYM_FLAG' global imported from globals 
-    module imported as pg.
+    module imported as bm_pg.
 
     Args:
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute publications list with one row per author. 
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         test_case (str): Optional test case for testing the function (default = "No test").
         test_name (str): Optional author's last-name for testing the function \
         (default = "No name").
@@ -199,24 +199,24 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
         imported from `bmfuncts.useful_functs` module.
     """
     # Replace in "pub_df" NaN values "NA" in first name initials
-    pub_df = keep_initials(pub_df, pg.COL_NAMES_BM['First_name'])
+    pub_df = keep_initials(pub_df, bm_pg.COL_NAMES_BM['First_name'])
 
     # Initializing a Data frame that will contain all matches
-    # between 'pub_df' author-name and 'empl_df' emmployee-name
+    # between 'pub_df' author-name and 'empl_df' employee-name
     submit_df = pd.DataFrame()
 
     # Initializing a Data frame that will contain all 'pub_df' author-names
-    # which do not match with any of the 'empl_df' emmployee-names
+    # which do not match with any of the 'empl_df' employee-names
     orphan_df = pd.DataFrame(columns=list(pub_df.columns))
 
     # Building the set of lastnames (without duplicates) of the dataframe 'empl_df'
-    eff_lastnames = set(empl_df[eg.EMPLOYEES_USEFUL_COLS['name']].to_list())
+    eff_lastnames = set(empl_df[bm_eg.EMPLOYEES_USEFUL_COLS['name']].to_list())
     eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
 
     # Setting the useful info for testing the function
     # Setting a dict keyed by type of test with values for test states and
     # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
-    test_states, checks_path = _set_match_test_info(bibliometer_path, test_case)
+    test_states, checks_path = _set_match_test_info(wf_path, test_case)
 
     # Building submit_df and orphan_df dataframes
     for _, pub_df_row in pub_df.iterrows():
@@ -229,18 +229,18 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
         flag_lastname_match = True
 
         # Getting the lastname from pub_df_row row of the dataframe pub_df
-        pub_lastname = pub_df_row[pg.COL_NAMES_BM['Last_name']]
+        pub_lastname = pub_df_row[bm_pg.COL_NAMES_BM['Last_name']]
 
         # Building the dataframe 'empl_pub_match_df' with rows of dataframe empl_df
         # where item at EMPLOYEES_USEFUL_COLS['name'] matches author lastname 'pub_lastname'
-        empl_pub_match_df = empl_df[empl_df[eg.EMPLOYEES_USEFUL_COLS['name']]==pub_lastname].copy()
+        empl_pub_match_df = empl_df[empl_df[bm_eg.EMPLOYEES_USEFUL_COLS['name']]==pub_lastname].copy()
 
         # Test of lastname full match
         if pub_lastname==test_name and test_states[0]:
             _test_full_match(empl_pub_match_df, pub_lastname)
 
         if len(empl_pub_match_df)==0: # No match found
-            flag_lastname_match = False
+
             # Checking for a similarity
             lastname_match_list = _reduce_orphan_df(pub_lastname, eff_lastnames)
 
@@ -250,12 +250,12 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
                 # corresponding to each of the found similarities by orphan reduction
                 frames = []
                 for lastname_match in lastname_match_list:
-                    temp_df = empl_df[empl_df[eg.EMPLOYEES_USEFUL_COLS['name']]\
+                    temp_df = empl_df[empl_df[bm_eg.EMPLOYEES_USEFUL_COLS['name']]\
                                       ==lastname_match].copy()
                     # Replacing the employee last name by the publication last name
                     # for 'pub_emp_join_df' building
-                    temp_df[eg.EMPLOYEES_ADD_COLS['employee_full_name']]=\
-                        pub_lastname + ' ' + temp_df[pg.COL_NAMES_BM['First_name']]
+                    temp_df[bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']]=\
+                        pub_lastname + ' ' + temp_df[bm_pg.COL_NAMES_BM['First_name']]
                     frames.append(temp_df)
 
                 empl_pub_match_df = concat_dfs(frames, concat_ignore_index=True)
@@ -282,11 +282,11 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
         if flag_lastname_match:
 
             # Finding the author name initials for the current publication
-            pub_firstname = pub_df_row[pg.COL_NAMES_BM['First_name']]
+            pub_firstname = pub_df_row[bm_pg.COL_NAMES_BM['First_name']]
 
             # List of firstnames initials of a given name in the employees data
-            eff_firstnames = empl_pub_match_df[pg.COL_NAMES_BM['First_name']].to_list()
-            eff_lastnames_spec = empl_pub_match_df[eg.EMPLOYEES_USEFUL_COLS['name']].to_list()
+            eff_firstnames = empl_pub_match_df[bm_pg.COL_NAMES_BM['First_name']].to_list()
+            eff_lastnames_spec = empl_pub_match_df[bm_eg.EMPLOYEES_USEFUL_COLS['name']].to_list()
 
             # Building the list of index of first names initials
             list_idx = []
@@ -307,8 +307,8 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
                 # at column COL_NAMES_BM['Homonym']
                 # when several matches on firstname initials are found
                 temp_df = pub_df_row.to_frame().T
-                temp_df[pg.COL_NAMES_BM['Homonym']]=\
-                    pg.HOMONYM_FLAG if len(list_idx) > 1 else '_'
+                temp_df[bm_pg.COL_NAMES_BM['Homonym']]=\
+                    bm_pg.HOMONYM_FLAG if len(list_idx) > 1 else '_'
 
                 # Saving specific dataframes 'temp_df' and 'empl_pub_match_df' for function testing
                 if pub_lastname==test_name and test_states[4]:
@@ -321,8 +321,8 @@ def build_submit_df(empl_df, pub_df, bibliometer_path, test_case="No test", test
                 pub_emp_join_df = pd.merge(temp_df,
                                            empl_pub_match_df,
                                            how='left',
-                                           left_on=[pg.COL_NAMES_BM['Full_name']],
-                                           right_on=[eg.EMPLOYEES_ADD_COLS['employee_full_name']])
+                                           left_on=[bm_pg.COL_NAMES_BM['Full_name']],
+                                           right_on=[bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']])
 
                 # Appending to the dataframe 'submit_df' the dataframe 'pub_emp_join_df'
                 # which is specific to a given publication

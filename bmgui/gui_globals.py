@@ -1,94 +1,59 @@
 """The `gui_globals` module  defines the global parameters useful for the GUI settings.
 """
 
-__all__ = ['ADD_SPACE_MM',
-           'ANALYSIS_TEXT_DICT',
+__all__ = ['APP_WIN_TITLE',
+           'APP_COPYRIGHT',
            'BM_GUI_DISP',
            'CORPUSES_NUMBER',
-           'ETAPE_LABEL_TEXT_LIST',
            'FONT_NAME',
-           'HELP_ETAPE_5',
-           'HELP_ETAPE_6',
-           'IN_TO_MM',
-           'PAGEBUTTON_HEIGHT_PX',
-           'PAGES_LABELS',
-           'PPI',
-           'REF_BMF_FONT_SIZE',
-           'REF_BMF_POS_X_MM',
-           'REF_BMF_POS_Y_MM',
-           'REF_BUTTON_DX_MM',
-           'REF_BUTTON_DY_MM',
-           'REF_BUTTON_FONT_SIZE',
-           'REF_CHECK_BOXES_SEP_SPACE',
-           'REF_COPYRIGHT_FONT_SIZE',
-           'REF_COPYRIGHT_X_MM',
-           'REF_COPYRIGHT_Y_MM',
-           'REF_CORPI_POS_X_MM',
-           'REF_CORPI_POS_Y_MM',
-           'REF_DATATYPE_POS_X_MM',
-           'REF_DATATYPE_POS_Y_MM',
-           'REF_ENTRY_NB_CHAR',
-           'REF_ETAPE_BUT_DX_MM',
-           'REF_ETAPE_BUT_DY_MM',
-           'REF_ETAPE_CHECK_DY_MM',
-           'REF_ETAPE_FONT_SIZE',
-           'REF_ETAPE_POS_X_MM',
-           'REF_ETAPE_POS_Y_MM_LIST',
-           'REF_EXIT_BUT_POS_X_MM',
-           'REF_EXIT_BUT_POS_Y_MM',
-           'REF_INST_POS_X_MM',
-           'REF_INST_POS_Y_MM',
-           'REF_LABEL_DX_Y_MM',
-           'REF_LABEL_FONT_SIZE',
-           'REF_LABEL_POS_Y_MM',
-           'REF_LAUNCH_FONT_SIZE',
-           'REF_PAGE_TITLE_FONT_SIZE',
-           'REF_PAGE_TITLE_POS_Y_MM',
-           'REF_SCREEN_WIDTH_PX',
-           'REF_SCREEN_HEIGHT_PX',
-           'REF_SCREEN_WIDTH_MM',
-           'REF_SCREEN_HEIGHT_MM',
-           'REF_SUB_TITLE_FONT_SIZE',
-           'REF_WINDOW_WIDTH_MM',
-           'REF_WINDOW_HEIGHT_MM',
-           'REF_VERSION_FONT_SIZE',
-           'REF_VERSION_X_MM',
-           'REF_YEAR_BUT_POS_X_MM',
-           'REF_YEAR_BUT_POS_Y_MM',
-           'TEXT_BDD_PC',
-           'TEXT_BMF',
-           'TEXT_BMF_CHANGE',
-           'TEXT_BOUTON_CREATION_CORPUS',
-           'TEXT_BOUTON_LANCEMENT',
-           'TEXT_COPYRIGHT',
-           'TEXT_CORPUSES',
-           'TEXT_CROISEMENT',
-           'TEXT_DATATYPE',
-           'TEXT_ETAPE_1',
-           'TEXT_ETAPE_2',
-           'TEXT_ETAPE_3',
-           'TEXT_ETAPE_4',
-           'TEXT_ETAPE_5',
-           'TEXT_ETAPE_6',
-           'TEXT_HOMONYMES',
-           'TEXT_INSTITUTE',
-           'TEXT_LAUNCH_PARSING',
-           'TEXT_LAUNCH_SYNTHESE',
-           'TEXT_MAJ_BDD_IF',
-           'TEXT_MAJ_EFFECTIFS',
-           'TEXT_MAJ_PUB_IF',
-           'TEXT_OTP',
-           'TEXT_PAUSE',
-           'TEXT_PARSING',
-           'TEXT_PUB_CONSO',
-           'TEXT_STATUT',
-           'TEXT_SYNTHESE',
-           'TEXT_TITLE',
-           'TEXT_UPDATE_STATUS',
-           'TEXT_VERSION',
-           'TEXT_YEAR_PC',
-           'TEXT_YEAR_PI',
+           'BOX_DPOS_TUP',
+           'BOX_POS_TUP',
+           'BOX_TABLE_COLS_DICT',
+           'BOX_TABLE_POS_DICT',
+           'EXIT_BUT_POS_TUP',
+           'EXIT_LABEL',
            'GUI_BUTTONS',
+           'HELP_BUT_DPOS_TUP',
+           'HELP_LABEL',
+           'IN_TO_MM',
+           'KEY_ANALYS',
+           'KEY_ANALYS_YEAR',
+           'KEY_CONSO',
+           'KEY_CONSO_YEAR',
+           'KEY_IF',
+           'KEY_PARSE',
+           'KEY_PARSE_YEAR', 
+           'MAIN_BUT_LABEL_DICT',
+           'MAIN_BUT_DPOS_TUP',
+           'MAIN_BUT_POS_TUP',
+           'MAIN_CHAR_NB_DICT',
+           'MAIN_DISP_LABEL_POS_DICT',
+           'MAIN_FONT_SIZE_DICT',
+           'MAIN_INFO_POS_DICT',
+           'MAIN_OPT_BUT_DPOS_TUP',
+           'MAIN_PAGE_TITLE',
+           'MAIN_SELECT_LABEL_DICT',
+           'MAIN_SELECT_LABEL_POS_DICT',
+           'PAGE_BUTTON_HEIGHT',
+           'PAGE_FONT_SIZE_DICT',
+           'PAGE_SELECT_LABEL_DICT',
+           'PAGES_LABELS',
+           'PAGE_SELECT_BUT_DPOS_DICT',
+           'PAGE_SELECT_LABEL_DPOS_DICT',
+           'PAGE_SELECT_LABEL_POS_DICT',
+           'PAGE_TITLE_POS_DICT',
+           'PPI',
+           'PROGRESS_BAR_DPOS_DICT',
+           'PROGRESS_BAR_LEN_DICT',
+           'STATUS_BUT_POS_TUP',
+           'STEP_BUT_DPOS_DICT',
+           'STEPS_HELPS_DICT',
+           'STEPS_LABELS_DICT',
+           'STEPS_LAUNCHES_DICT',
+           'STEPS_NB_DICT',
+           'STEP_POS_TUPS_DICT',
+           'TK_SIZES_REF',
+           'VAL_DISPLAY_DX',
            'VERSION',
            ]
 
@@ -102,19 +67,18 @@ from screeninfo import get_monitors
 # ************ GENERAL GLOBALS ************
 # *****************************************
 
-# Setting BiblioMeter version value (internal)
+# Setting application version value
 VERSION = '6.2.0'
 
 # Setting the number of corpuses to analyse
 CORPUSES_NUMBER = 6
 
-# Setting the title of the application main window (internal)
-APPLICATION_WINDOW_TITLE = "BiblioMeter - Analyse de la production scientifique d'un institut"
+# Setting the title of the application main window
+APP_WIN_TITLE = "Analyse de la production scientifique d'un institut"
 
 # *****************************************
 # ************ DISPLAY GLOBALS ************
 # *****************************************
-
 
 def _get_displays(in_to_mm):
     """ The function `get_displays` allows to identify the set of displays
@@ -165,86 +129,18 @@ BM_GUI_DISP = 0
 # Getting display resolution in pixels per inch
 PPI = DISPLAYS[BM_GUI_DISP]['ppi']
 
-# Setting display reference sizes in pixels and mm (internal)
-REF_SCREEN_WIDTH_PX = 1920
-REF_SCREEN_HEIGHT_PX = 1080
-REF_SCREEN_WIDTH_MM = 467
-REF_SCREEN_HEIGHT_MM = 267
+# Setting display reference sizes in pixels and mm
+TK_SIZES_REF = {'display_px': (1920, 1080),
+                'display_mm': (467, 267),
+                'window_mm' : (219, 173),
+               }
 
-# Application window reference sizes in mm for the display reference sizes (internal)
-REF_WINDOW_WIDTH_MM = 219
-REF_WINDOW_HEIGHT_MM = 173
+# *****************************************
+# ********** PAGES JOINT GLOBALS **********
+# *****************************************
 
-# ************* PAGES GLOBALS *************
-
-# Setting general globals for text edition
-FONT_NAME = "Helvetica"
-
-# **** REFERENCE COORDINATES FOR PAGES ****
-
-# Number of characters reference for editing the entered files-folder path
-REF_ENTRY_NB_CHAR = 110
-
-# Font size references for page label and button
-REF_SUB_TITLE_FONT_SIZE = 15
-REF_PAGE_TITLE_FONT_SIZE = 30
-REF_LAUNCH_FONT_SIZE = 25
-REF_BMF_FONT_SIZE = 15
-REF_COPYRIGHT_FONT_SIZE = 12
-REF_VERSION_FONT_SIZE = 12
-
-# Y position reference in mm for page label
-REF_PAGE_TITLE_POS_Y_MM = 20
-
-# Positions reference in mm for institute selection button
-REF_INST_POS_X_MM = 5
-REF_INST_POS_Y_MM = 40
-
-# Positions reference in mm for data type selection button
-REF_DATATYPE_POS_X_MM = 110
-REF_DATATYPE_POS_Y_MM = 40
-
-# Positions reference in mm for bmf label and button
-REF_BMF_POS_X_MM = 5
-REF_BMF_POS_Y_MM = 55
-REF_BUTTON_DX_MM = -147
-REF_BUTTON_DY_MM = 10
-
-# Positions reference in mm for corpus creation button
-REF_CORPI_POS_X_MM = 5
-REF_CORPI_POS_Y_MM = 85
-
-# Space between label and value
-ADD_SPACE_MM = 10
-
-# Setting X and Y positions reference in mm for copyright
-REF_COPYRIGHT_X_MM = 5
-REF_COPYRIGHT_Y_MM = 170
-REF_VERSION_X_MM = 185
-
-# Font size references for page label and button
-REF_LABEL_FONT_SIZE = 25
-REF_ETAPE_FONT_SIZE = 14
-REF_BUTTON_FONT_SIZE = 10
-
-# Positions reference in mm for pages widgets
-REF_LABEL_POS_Y_MM = 7
-REF_LABEL_DX_Y_MM  = 10
-REF_ETAPE_POS_X_MM = 10
-REF_ETAPE_POS_Y_MM_LIST = [40, 74, 101, 129]
-REF_ETAPE_BUT_DX_MM = 5
-REF_ETAPE_BUT_DY_MM = 5
-REF_ETAPE_CHECK_DY_MM = -8
-REF_EXIT_BUT_POS_X_MM = 198
-REF_EXIT_BUT_POS_Y_MM = 150
-REF_YEAR_BUT_POS_X_MM = 10
-REF_YEAR_BUT_POS_Y_MM = 26
-
-# Separation space in mm for check boxes
-REF_CHECK_BOXES_SEP_SPACE = 25
-
-# Container button height in pixels
-PAGEBUTTON_HEIGHT_PX = 50
+# Initialization of the List of all the buttons
+GUI_BUTTONS = []
 
 # Setting label for each gui page
 PAGES_LABELS = {'ParseCorpusPage': "Analyse élémentaire des corpus",
@@ -252,142 +148,358 @@ PAGES_LABELS = {'ParseCorpusPage': "Analyse élémentaire des corpus",
                 'UpdateIfPage': "Mise à jour des facteurs d'impact",
                 'AnalyzeCorpusPage': "Analyse et KPIs", }
 
-# *************** MAIN PAGE ***************
+# Short_names for dict keys appearing multiple times
+KEY_MAIN = 'main'
+KEY_PARSE = 'parse'
+KEY_PARSE_YEAR = 'parse_year'
+KEY_DEDUP = 'dedup'
+KEY_CONSO = 'conso'
+KEY_CONSO_YEAR = 'conso_year'
+KEY_IF = 'if_upd'
+KEY_ANALYS = 'analys'
+KEY_ANALYS_YEAR = 'analys_year'
 
-# Titre de la page
-TEXT_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
+# Font name for all characters
+FONT_NAME = "Helvetica"
 
-# Choix de l'Institut
-TEXT_INSTITUTE = "Sélection de l'Institut"
+# *****************************************
+# *********** MAIN PAGE GLOBALS ***********
+# *****************************************
 
-# Titre du dossier de travail
-TEXT_BMF = "Dossier de travail "
-
-# Titre bouton changement de dossier de travail
-TEXT_BMF_CHANGE = "Changer de dossier de travail"
-
-# Titre liste des corpus analysés
-TEXT_CORPUSES = "Liste des corpus "
-
-# Titre bouton création d'un nouveau dossier de corpus
-TEXT_BOUTON_CREATION_CORPUS = "Créer un nouveau dossier de corpus annuel"
-
-# Choix du type de données brutes
-TEXT_DATATYPE = "Type de données"
-
-# Titre bouton de lancement
-TEXT_BOUTON_LANCEMENT = "Lancer l'analyse"
+# Font size per widget type
+# (title, parameter selection, information display, button)
+MAIN_FONT_SIZE_DICT = {'copyright'     : 12,
+                       'main_title'    : 30,
+                       'main_select'   : {'label' : 18,
+                                          'button': 14,},
+                       'main_disp'     : {'label' : 16,
+                                          'button': 14,},
+                       'main_launch'   : 25,
+                       'page_button'   : 11,
+                       'version'       : 12,
+                      }
 
 # Copyright and contacts
-TEXT_COPYRIGHT = "Contributeurs et contacts :"
-TEXT_COPYRIGHT += "\n- Amal Chabli : amal.chabli@orange.fr"
-TEXT_COPYRIGHT += "\n- François Bertin : francois.bertin7@wanadoo.fr"
-TEXT_COPYRIGHT += "\n- Baptiste Refalo : baptiste.refalo@cea.fr"
-TEXT_COPYRIGHT += "\n- Ludovic Desmeuzes"
-TEXT_VERSION = f"\nVersion {VERSION}"
+APP_COPYRIGHT = ("Contributeurs et contacts :"
+                 "\n- Amal Chabli : amal.chabli@orange.fr"
+                 "\n- François Bertin : francois.bertin7@wanadoo.fr"
+                 "\n- Baptiste Refalo : baptiste.refalo@cea.fr"
+                 "\n- Ludovic Desmeuzes")
 
-# ************ SECONDARY PAGES ************
+# Title of main page
+MAIN_PAGE_TITLE = "- BiblioMeter -\nInitialisation de l'analyse"
 
-# Common to secondary pages
-TEXT_PAUSE = "Quitter"
-
-# Parsing page
-
-# - Label STATUT
-TEXT_STATUT = "Statut des fichiers de Parsing"
-
-# - Label Parsing
-TEXT_PARSING = "Construction des fichiers de Parsing par BDD"
-
-# - Label SYNTHESE
-TEXT_SYNTHESE = "Synthèse des fichiers de Parsing de toutes les BDD"
-
-# - Label ANNEE
-TEXT_YEAR_PC = "Sélection de l'année "
-
-# -Label choix de BDD
-TEXT_BDD_PC = "Sélection de la BDD "
-
-# - Bouton mise à jour du statut des fichiers
-TEXT_UPDATE_STATUS = "Mettre à jour le statut des fichiers"
-
-# - Bouton lancement parsing
-TEXT_LAUNCH_PARSING = "Lancer le Parsing"
-
-# - Bouton lancement concatenation et deduplication des parsings
-TEXT_LAUNCH_SYNTHESE = "Lancer la synthèse"
-
-# Consolidation page
-
-# - Choix de l'année de travail
-TEXT_YEAR_PI = "Sélection de l'année "
-
-# - Etape 1
-TEXT_ETAPE_1 = "Etape 1 : Croisement auteurs-efffectifs de l'institut"
-TEXT_MAJ_EFFECTIFS = "Mettre à jour les effectifs de l'institut avant le croisement (coché = OUI) ?"
-TEXT_CROISEMENT = "Effectuer le croisement auteurs-efffectifs"
-
-# - Etape 2
-TEXT_ETAPE_2 = "Etape 2 : Résolution des homonymies"
-TEXT_HOMONYMES = "Créer le fichier pour la résolution des homonymies"
-
-# - Etape 3
-TEXT_ETAPE_3 = "Etape 3 : Attribution des OTPs"
-TEXT_OTP = "Créer les fichiers pour l'attribution des OTPs"
-
-# - Etape 4
-TEXT_ETAPE_4 = "Etape 4 : Consolidation de la liste des publications"
-TEXT_MAJ_DB_IF = " Mettre à jour la base de données IF avant la consolidation (coché = OUI) ?"
-TEXT_PUB_CONSO = "Créer la liste consolidée des publications"
-
-ETAPE_LABEL_TEXT_LIST = [TEXT_ETAPE_1, TEXT_ETAPE_2, TEXT_ETAPE_3, TEXT_ETAPE_4]
-
-# Impact-factors update page
-
-# - Etape 5
-TEXT_ETAPE_5 = "Mise à jour de la base de données des IFs"
-HELP_ETAPE_5 = " La base de données sera mise à jour à partir des fichiers : "
-HELP_ETAPE_5 += "\n  'IF manquants.xlsx' et 'ISSN manquants.xlsx' annuels"
-HELP_ETAPE_5 += "\ncomplétés manuellement."
-TEXT_MAJ_BDD_IF = "Lancer la mise à jour de la base de données des IFs"
-
-# - Etape 6
-TEXT_ETAPE_6 = "Mise à jour des IFs dans les listes consolidées"
-HELP_ETAPE_6 = " Dans cette partie, vous pouvez mettre à jour les IFs"
-HELP_ETAPE_6 += " dans les listes consolidées de publications existantes."
-TEXT_MAJ_PUB_IF = "Lancer la mise à jour des IFs dans les listes consolidées existantes"
-
-# Analysis page
-
-# - Etape IF
-if_analysis_title = "Analyse des IFs et mise à jour des KPIs"
-if_analysis_help = " L'analyse des IFS est effectuée à partir des fichiers"
-if_analysis_help += " des listes consolidées des publications."
-if_analysis_launch = "Lancer l'analyse des IFs"
-
-# - Etape AU
-au_analysis_title = "Analyse des auteurs"
-au_analysis_help = " L'analyse des auteurs est effectuée à partir des fichiers"
-au_analysis_help += " issus de l'étape de croisement avec les effectifs."
-au_analysis_launch = "Lancer l'analyse des auteurs"
-
-# - Etape CO
-co_analysis_title = "Analyse des collaborations"
-co_analysis_help = " L'analyse des collaborations est effectuée à partir des fichiers"
-co_analysis_help += " issus de l'étape de parsing des corpus."
-co_analysis_launch = "Lancer l'analyse des collaborations"
-
-# - Etape KW
-kw_analysis_title = "Analyse des mots clefs"
-kw_analysis_help = " L'analyse des mots clefs est effectuée à partir des fichiers"
-kw_analysis_help += " issus de l'étape de parsing des corpus."
-kw_analysis_launch = "Lancer l'analyse des mots clefs"
-
-ANALYSIS_TEXT_DICT = {"if": [if_analysis_title, if_analysis_help, if_analysis_launch],
-                      "au": [au_analysis_title, au_analysis_help, au_analysis_launch],
-                      "co": [co_analysis_title, co_analysis_help, co_analysis_launch],
-                      "kw": [kw_analysis_title, kw_analysis_help, kw_analysis_launch],
+# Positions of application information
+MAIN_INFO_POS_DICT = {'main_title': ("mid_page", 20),
+                      'copyright' : (5, 170),
+                      'version'   : (185, 170),
                      }
 
-# List of all the buttons
-GUI_BUTTONS = []
+# Labels of items selection
+MAIN_SELECT_LABEL_DICT = {'institute': "Institut ",
+                          'datatype' : "Type de données ",}
+
+# Positions of labels for items selection
+MAIN_SELECT_LABEL_POS_DICT = {'institute': (10, 40),
+                              'datatype' : (100, 40),}
+
+# Relative positions of option-buttons for items selection
+MAIN_OPT_BUT_DPOS_TUP = (0, -2)
+
+# Labels of command buttons
+MAIN_BUT_LABEL_DICT = {'wf_change' : "Changer de dossier de travail",
+                       'corpus_add': "Créer un nouveau dossier de corpus annuel",
+                       'launch'    : "Lancer l'application",}
+
+# Positions of command buttons
+MAIN_BUT_POS_TUP = ("mid_page", 135) # Application launch button
+MAIN_BUT_DPOS_TUP = (0, 4)
+
+# Labels of display fields
+MAIN_DISP_LABEL_DICT = {'wf'      : "Dossier de travail",
+                        'corpuses': "Liste des corpus",}
+
+# Number of characters for display fields
+MAIN_CHAR_NB_DICT = {'work_folder': 110,
+                     'datatype'   : 30,
+                     'corpus_list': 110,
+                    }
+
+# Positions of display fields
+MAIN_DISP_LABEL_POS_DICT = {'work_folder': (10, 60),
+                            'corpus_list': (10, 90),}
+
+# Space between label and display field
+VAL_DISPLAY_DX = 10
+
+# Container button height
+PAGE_BUTTON_HEIGHT = 13
+
+# ******************************************
+# **** JOINT GLOBALS OF SECONDARY-PAGES ****
+# ******************************************
+
+# Font size per page-widget type
+# (title, parameter selection, information display, button)
+PAGE_FONT_SIZE_DICT = {'box_header'    : 11,
+                       'exit_button'   : 12,
+                       'page_title'    : 25,
+                       'page_sub_title': 17,
+                       'step_help'     : 12,
+                       'step_label'    : 16,
+                       'step_launch'   : 14,
+                       'step_select'   : {'label' : 14,
+                                          'button': 11,},
+                       'year_select'   : {'label' : 17,
+                                          'button': 11,},
+                      }
+
+# Progress-bar lengths
+PROGRESS_BAR_LEN_DICT = {KEY_PARSE : 80,
+                         KEY_CONSO : 80,
+                         KEY_IF    : 100,
+                         KEY_ANALYS: 90,
+                        }
+
+# Relative positions of progress-bar
+PROGRESS_BAR_DPOS_DICT = {KEY_PARSE : (10, 0.5),
+                          KEY_CONSO : (10, 0.5),
+                          KEY_IF    : (20, 10),
+                          KEY_ANALYS: (10, 0.5),
+                         }
+
+PAGE_TITLE_POS_DICT = {'page_title'    : ("mid_page", 7),
+                       'page_sub_title': ("mid_page", 17),
+                      }
+
+# Label of exit buttons
+EXIT_LABEL = "Quitter"
+
+# Positions of exit buttons
+EXIT_BUT_POS_TUP = (198, 150)
+
+# Label of help buttons
+HELP_LABEL = "Description"
+
+# Reference positions of help buttons
+HELP_BUT_DPOS_TUP = {'status': (10, 10),
+                     'other' : (185, -2),
+                    }
+
+
+# Labels of items selection
+PAGE_SELECT_LABEL_DICT = {'year': "Sélection de l'année ",
+                          'data': "Données ",}
+
+# Positions of labels for items selection
+PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR : (10, 100),
+                              KEY_CONSO_YEAR : (80, 48),
+                              KEY_ANALYS_YEAR: (10, 26),
+                             }
+
+# Relative positions of label for items selection
+PAGE_SELECT_LABEL_DPOS_DICT = {KEY_PARSE: (10, 2),}
+
+PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE : (1, -2),
+                             KEY_CONSO : (0, -1.2),
+                             KEY_ANALYS: (0, -1.2),
+                            }
+
+# Relative positions for step-launch buttons
+STEP_BUT_DPOS_DICT = {KEY_PARSE : (15, 0.2),
+                      KEY_DEDUP : (20, 0.2),
+                      KEY_CONSO : (5, 2),
+                      KEY_IF    : (10, 4),
+                      KEY_ANALYS: (10, 2),
+                     }
+
+# Reference of positions and sizes
+STEP_X_POS_REF = 15
+
+# ******************************************
+# **** STEPS GLOBALS OF SECONDARY-PAGES ****
+# ******************************************
+
+# Internal function
+def _set_step_pos_tups(steps_nb, step_x_pos, steps_y_pos_init,
+                       steps_dy, step0_pos_tup=None):
+    if step0_pos_tup:
+        step_y_pos_list = [steps_y_pos_init + n * steps_dy
+                           for n in range(steps_nb-1)]
+        step_pos_tups_part = [(step_x_pos, step_y_pos)
+                              for step_y_pos in step_y_pos_list]
+        step_pos_tups = sum([[step0_pos_tup], step_pos_tups_part], [])
+
+    else:
+        step_y_pos_list = [steps_y_pos_init + n * steps_dy
+                           for n in range(steps_nb)]
+        step_pos_tups = [(step_x_pos, step_y_pos)
+                         for step_y_pos in step_y_pos_list]
+    return step_pos_tups
+
+# Initializing dicts for all pages and page steps
+# -----------------------------------------------
+STEPS_NB_DICT, STEP_POS_TUPS_DICT = {}, {}
+STEPS_LABELS_DICT, STEPS_HELPS_DICT, STEPS_LAUNCHES_DICT = {}, {}, {}
+
+
+# Parameters for all parsing-deduplication steps
+# ----------------------------------------------
+STEPS_NB_DICT[KEY_PARSE] = 3
+STEP_POS_TUPS_DICT[KEY_PARSE] = _set_step_pos_tups(STEPS_NB_DICT[KEY_PARSE], STEP_X_POS_REF,
+                                                   steps_y_pos_init=111, steps_dy=24,
+                                                   step0_pos_tup=(10, 25))
+STEPS_LABELS_DICT[KEY_PARSE], STEPS_HELPS_DICT[KEY_PARSE], STEPS_LAUNCHES_DICT[KEY_PARSE] = [], [], []
+
+    # Parsing step 0
+STEPS_LABELS_DICT[KEY_PARSE].append("Statut des fichiers")
+STEPS_HELPS_DICT[KEY_PARSE].append("La disponibilté des fichiers bruts et des fichiers "
+                                   "issus de leur analyse élémentaire va être examinée."
+                                   "\n\nL'affichage va être mis à jour avec le résultat "
+                                   "de cet examen.")
+STEPS_LAUNCHES_DICT[KEY_PARSE].append("Mise à jour")
+
+    # Parsing step 1
+STEPS_LABELS_DICT[KEY_PARSE].append("Analyse élémentaire des extractions")
+STEPS_HELPS_DICT[KEY_PARSE].append("Les données extraites de la base de donnée sélectionnée "
+                                   "vont être analysées et les informations redistribuées "
+                                   "par type dans plusieurs fichiers.")
+STEPS_LAUNCHES_DICT[KEY_PARSE].append("Lancer l'analyse")
+
+    # Parsing step 2
+STEPS_LABELS_DICT[KEY_PARSE].append("Synthèse de l'analyse élémentaire")
+STEPS_HELPS_DICT[KEY_PARSE].append("Les résultats de l'analyse des données extraites "
+                                   "des différentes bases de données vont être concaténés "
+                                   "et dédupliqués par type d'information")
+STEPS_LAUNCHES_DICT[KEY_PARSE].append("Lancer la synthèse")
+
+
+# Parameters for all consolidation steps
+# -------------------------------------
+STEPS_NB_DICT[KEY_CONSO] = 5
+STEP_POS_TUPS_DICT[KEY_CONSO] = _set_step_pos_tups(STEPS_NB_DICT[KEY_CONSO], STEP_X_POS_REF,
+                                                   steps_y_pos_init=60, steps_dy=24,
+                                                   step0_pos_tup=(10, 25))
+STEPS_LABELS_DICT[KEY_CONSO], STEPS_HELPS_DICT[KEY_CONSO], STEPS_LAUNCHES_DICT[KEY_CONSO] = [], [], []
+
+    # Consolidation step 0
+STEPS_LABELS_DICT[KEY_CONSO].append("Effectifs - Mise à jour des données")
+STEPS_HELPS_DICT[KEY_CONSO].append("Le fichier original des effectifs va être complété "
+                                   "avec les données du fichier de mise à jour disponible."
+                                   "\n\nCette mise à jour n'a besoin d'être effectuée "
+                                   "que si un nouveau fichier de mise à jour est disponible.")
+STEPS_LAUNCHES_DICT[KEY_CONSO].append("Lancer la mise à jour")
+
+    # Consolidation step 1
+STEPS_LABELS_DICT[KEY_CONSO].append("Étape 1 - Croisement auteurs-efffectifs de l'institut")
+STEPS_HELPS_DICT[KEY_CONSO].append("Deux fichiers avec une ligne par auteur de l'institut "
+                                   "et par publication vont être créés à cette étape :"
+                                   "\n\n - Un fichier avec les auteurs trouvés dans les effectifs "
+                                   "qui permettra de construire la liste consolidée ;"
+                                   "\n - Un fichier avec les auteurs non trouvés dans les effectifs "
+                                   "dont l'examen permet d'alimenter les fichiers de correction.")
+STEPS_LAUNCHES_DICT[KEY_CONSO].append("Effectuer le croisement auteurs-efffectifs")
+
+    # Consolidation step 2
+STEPS_LABELS_DICT[KEY_CONSO].append("Étape 2 - Résolution des homonymies")
+STEPS_HELPS_DICT[KEY_CONSO].append("Un fichier avec une ligne par auteur de l'institut "
+                                   "et par publication va être créé à cette étape indiquant "
+                                   "les homonymes à traiter."
+                                   "\nL'historique des résolutions va être pris en compte.")
+STEPS_LAUNCHES_DICT[KEY_CONSO].append("Créer le fichier pour la résolution des homonymies")
+
+    # Consolidation step 3
+STEPS_LABELS_DICT[KEY_CONSO].append("Étape 3 - Attribution des OTPs")
+STEPS_HELPS_DICT[KEY_CONSO].append("Un fichier par département avec une ligne par publication "
+                                   "va être créé à cette étape avec une colonne pour l'attribution des OTPs."
+                                   "\nL'historique des attributions va être pris en compte.")
+STEPS_LAUNCHES_DICT[KEY_CONSO].append("Créer les fichiers pour l'attribution des OTPs")
+
+    # Consolidation step 4
+STEPS_LABELS_DICT[KEY_CONSO].append("Étape 4 - Consolidation de la liste des publications")
+STEPS_HELPS_DICT[KEY_CONSO].append("Un fichier avec avec une ligne par publication avec "
+                                   "l'OTP éventuellement attribué et le facteur d'impact trouvé "
+                                   "pour le journal dans la base de données des IFs va être créé à cette étape."
+                                   "\nDeux fichiers vont être également créés indiquant les informations manquantes "
+                                   "dans la base de données des facteurs d'impact.")
+STEPS_LAUNCHES_DICT[KEY_CONSO].append("Créer la liste consolidée des publications")
+
+
+# Parameters for all IFs-update steps
+# -----------------------------------
+STEPS_NB_DICT[KEY_IF] = 2
+STEP_POS_TUPS_DICT[KEY_IF] = _set_step_pos_tups(STEPS_NB_DICT[KEY_IF], STEP_X_POS_REF,
+                                                steps_y_pos_init=35, steps_dy=50)
+STEPS_LABELS_DICT[KEY_IF], STEPS_HELPS_DICT[KEY_IF], STEPS_LAUNCHES_DICT[KEY_IF] = [], [], []
+
+    # IFs-update step 0
+STEPS_LABELS_DICT[KEY_IF].append("Mise à jour de la base de données des IFs")
+STEPS_HELPS_DICT[KEY_IF].append("La base de données sera mise à jour à partir des 2 fichiers annuels "
+                                "complétés manuellement et contenant, respectivement :"
+                                "\n- La liste des journaux dont l'IF est manquant;"
+                                "\n- La liste des journaux dont l'ISSN est manquant.")
+STEPS_LAUNCHES_DICT[KEY_IF].append("Lancer la mise à jour de la base de données des IFs")
+
+    # IFs-update step 1
+STEPS_LABELS_DICT[KEY_IF].append("Mise à jour des IFs dans les listes consolidées")
+STEPS_HELPS_DICT[KEY_IF].append("Les IFs vont être mis à jour dans les listes consolidées "
+                                "de publications existantes à partir de la base de données "
+                                "des IFs."
+                                "\n Cette opération n'est utile que si la base de données "
+                                "des IFS a été mise à jour.")
+STEPS_LAUNCHES_DICT[KEY_IF].append("Lancer la mise à jour des IFs dans les listes consolidées existantes")
+
+
+# Parameters for all analysis steps
+# ---------------------------------
+STEPS_NB_DICT[KEY_ANALYS] = 4
+STEP_POS_TUPS_DICT[KEY_ANALYS] = _set_step_pos_tups(STEPS_NB_DICT[KEY_ANALYS], STEP_X_POS_REF,
+                                                    steps_y_pos_init=45, steps_dy=28)
+STEPS_LABELS_DICT[KEY_ANALYS], STEPS_HELPS_DICT[KEY_ANALYS], STEPS_LAUNCHES_DICT[KEY_ANALYS] = [], [], []
+
+    # Analysis step 0
+STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des IFs et mise à jour des KPIs")
+STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des IFS est effectuée pour l'année sélectionnée "
+                                    "à partir du fichier de la liste consolidée des publications."
+                                    "\nLe fichier synthétisant les KPIs de toutes les années sera "
+                                    "mis à jour avec les résultats de cette analyse.")
+STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des IFs")
+
+    # Analysis step 1
+STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse de la production des auteurs")
+STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des auteurs est effectuée pour l'année sélectionnée "
+                                    "à partir du fichier issu de l'étape de croisement avec les effectifs.")
+STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des auteurs")
+
+    # Analysis step 2
+STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des collaborations")
+STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des collaborations est effectuée pour l'année sélectionnée "
+                                    "à partir des fichiers issus de l'étape de parsing du corpus.")
+STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des collaborations")
+
+    # Analysis step 3
+STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des mots clefs")
+STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des mots clefs est effectuée pour l'année sélectionnée "
+                                    "à partir des fichiers issus de l'étape de parsing du corpus.")
+STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des mots clefs")
+
+
+# ******************************************
+# **** SPECIFIC GLOBALS OF PARSING PAGE ****
+# ******************************************
+
+# Parameters for display of parsing files status
+BOX_POS_TUP = (70, 40)
+BOX_DPOS_TUP = (25, 10)
+
+BOX_TABLE_COLS_DICT = {'raw_wos'     : 'Wos\nDonnées',
+                       'wos_parse'   : 'Wos\nAnalyse',
+                       'raw_scopus'  : 'Scopus\nDonnées',
+                       'scopus_parse': 'Scopus\nAnalyse',
+                       KEY_DEDUP     : 'Synthèse\n',
+                      }
+
+BOX_TABLE_POS_DICT = {'x_shift': 25,
+                      'y_pos'  : 30,}
+
+STATUS_BUT_POS_TUP = (20, 62)

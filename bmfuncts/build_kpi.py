@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.doctype_analysis import doctype_analysis
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
@@ -74,12 +74,12 @@ def _build_dept_doctype_kpi(doctype, dept_doctype_df, items_nb_col_alias):
         items_per_doctype_max = round(dept_doctype_df[items_nb_col_alias].max())
 
     # Building the dict of doctype KPIs (ToDo: import from pg)
-    keys_list = pg.KPI_KEYS_DICT[doctype]
+    keys_list = bm_pg.KPI_KEYS_DICT[doctype]
     dept_doctype_kpi_dict = {
-        pg.KPI_KEYS_ORDER_DICT[keys_list[0]]: nb_doctypes,
-        pg.KPI_KEYS_ORDER_DICT[keys_list[1]]: nb_items,
-        pg.KPI_KEYS_ORDER_DICT[keys_list[2]]: items_per_doctype,
-        pg.KPI_KEYS_ORDER_DICT[keys_list[3]]: items_per_doctype_max,
+        bm_pg.KPI_KEYS_ORDER_DICT[keys_list[0]]: nb_doctypes,
+        bm_pg.KPI_KEYS_ORDER_DICT[keys_list[1]]: nb_items,
+        bm_pg.KPI_KEYS_ORDER_DICT[keys_list[2]]: items_per_doctype,
+        bm_pg.KPI_KEYS_ORDER_DICT[keys_list[3]]: items_per_doctype_max,
     }
     return dept_doctype_kpi_dict
 
@@ -112,7 +112,7 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
     institute, depts_col_list, journal_col = params_tup
 
     # Setting new col names and related parameters
-    items_nb_col_alias = pg.COL_NAMES_IF_ANALYSIS['articles_nb']
+    items_nb_col_alias = bm_pg.COL_NAMES_IF_ANALYSIS['articles_nb']
 
     # Setting useful col names tup
     cols_tup = (journal_col, items_nb_col_alias)
@@ -178,10 +178,10 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     params_tup = (institute, depts_col_list, journal_col_alias)
 
     # Setting useful KPI dict keys
-    pub_nb_key = pg.KPI_KEYS_ORDER_DICT[1]
-    art_proc_nb_key = pg.KPI_KEYS_ORDER_DICT[2]
-    proc_ratio_key = pg.KPI_KEYS_ORDER_DICT[15]
-    chapt_ratio_key = pg.KPI_KEYS_ORDER_DICT[16]
+    pub_nb_key = bm_pg.KPI_KEYS_ORDER_DICT[1]
+    art_proc_nb_key = bm_pg.KPI_KEYS_ORDER_DICT[2]
+    proc_ratio_key = bm_pg.KPI_KEYS_ORDER_DICT[15]
+    chapt_ratio_key = bm_pg.KPI_KEYS_ORDER_DICT[16]
 
     # Initializing useful dicts
     init_kpi_dict = {}
@@ -192,7 +192,7 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     for doctype in doctypes_list:
         doctype_kpi_dict = _build_doctype_kpi(doctype, pub_df_dict[doctype], params_tup)
         init_kpi_dict[doctype] = doctype_kpi_dict
-        items_nb_key_dict[doctype] = pg.KPI_KEYS_ORDER_DICT[pg.KPI_KEYS_DICT[doctype][1]]
+        items_nb_key_dict[doctype] = bm_pg.KPI_KEYS_ORDER_DICT[bm_pg.KPI_KEYS_DICT[doctype][1]]
 
     # Building the full KPIs dict covering all departments and all doctypes
     kpi_dict = {}
@@ -236,7 +236,6 @@ def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
     """
     # Setting parameters from args
     journal_col, if_analysis_col = cols_list[0], cols_list[3]
-    new_if_col = cols_list[4]
 
     # Selecting useful columns from 'dept_articles_df' dataframe
     dept_if_df = dept_by_journal_df[cols_list[0:4]]
@@ -244,7 +243,7 @@ def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
     # Cleaning the 'dept_if_df' dataframe
     new_if_col = "IF " + if_analysis_year
     dept_if_df = dept_if_df.rename(columns={if_analysis_col: new_if_col})
-    dept_if_df[new_if_col] = dept_if_df[new_if_col].replace(pg.NOT_AVAILABLE_IF, 0)
+    dept_if_df[new_if_col] = dept_if_df[new_if_col].replace(bm_pg.NOT_AVAILABLE_IF, 0)
     dept_if_df = dept_if_df.sort_values(by=[new_if_col, journal_col],
                                         ascending=False)
     dept_if_df = dept_if_df.reset_index().drop(columns=["index"])
@@ -294,7 +293,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
     issn_col = final_col_dic['issn']
 
     # Setting useful column names aliases
-    articles_nb_col_alias = pg.COL_NAMES_DOCTYPE_ANALYSIS["articles_nb"]
+    articles_nb_col_alias = bm_pg.COL_NAMES_DOCTYPE_ANALYSIS["articles_nb"]
 
     # Setting name of the column of IFs in the IFs analysis results
     new_if_analysis_col = "IF " + if_analysis_year
@@ -313,7 +312,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
 
         # Computing IF KPIs values for 'dept'
         dept_kpi_dict = kpi_dict[dept]
-        nb_articles = dept_kpi_dict['articles'][pg.KPI_KEYS_ORDER_DICT[3]]
+        nb_articles = dept_kpi_dict['articles'][bm_pg.KPI_KEYS_ORDER_DICT[3]]
         dept_if_sub_df = dept_if_df[dept_if_df[new_if_analysis_col]!=0]
         if_moyen = 0
         if nb_articles:
@@ -329,11 +328,11 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
 
         # Completing the KPIs dict with IF KPIs values
         dept_if_kpi_dict = {
-            pg.KPI_KEYS_ORDER_DICT[18]: round(if_max, 1),
-            pg.KPI_KEYS_ORDER_DICT[19]: round(if_min, 1),
-            pg.KPI_KEYS_ORDER_DICT[20]: round(if_moyen, 1),
-            pg.KPI_KEYS_ORDER_DICT[21]: round(nb_art_wo_if),
-            pg.KPI_KEYS_ORDER_DICT[22]: round(wo_if_ratio)
+            bm_pg.KPI_KEYS_ORDER_DICT[18]: round(if_max, 1),
+            bm_pg.KPI_KEYS_ORDER_DICT[19]: round(if_min, 1),
+            bm_pg.KPI_KEYS_ORDER_DICT[20]: round(if_moyen, 1),
+            bm_pg.KPI_KEYS_ORDER_DICT[21]: round(nb_art_wo_if),
+            bm_pg.KPI_KEYS_ORDER_DICT[22]: round(wo_if_ratio)
         }
         dept_kpi_dict[new_if_analysis_col] = dept_if_kpi_dict
 
@@ -343,7 +342,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_year,
         # Saving after formatting the updated dataframe as openpyxl workbook
         file_name = f'{new_if_analysis_col}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
-        if_anal_df_title = pg.DF_TITLES_LIST[10]
+        if_anal_df_title = bm_pg.DF_TITLES_LIST[10]
         wb, ws = format_page(dept_if_df, if_anal_df_title)
         ws.title = dept + ' IFs '
         wb.save(dept_xlsx_file_path)
@@ -382,7 +381,7 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
     # specified by 'ordered_keys'
     dept_basic_kpi_dict = {k: new_dept_kpi_dict[k] for k in ordered_keys[1:17]}
     part_dept_if_kpi_dict = {k: new_dept_kpi_dict[k] for k in ordered_keys[18:23]}
-    dept_if_kpi_dict = dict({pg.KPI_KEYS_ORDER_DICT[17]: if_key}, **part_dept_if_kpi_dict)
+    dept_if_kpi_dict = dict({bm_pg.KPI_KEYS_ORDER_DICT[17]: if_key}, **part_dept_if_kpi_dict)
 
     # Building 'dept_pub_df' using keys of 'dept_pub_dict' as indexes
     # and setting the name of the values column to 'corpus_year'
@@ -411,7 +410,7 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
 
 def update_kpi_database(institute, saved_results_path,
                         corpus_year, kpi_dict, if_key,
-                        final_cols_tup, verbose=False):
+                        depts_col_list, verbose=False):
     """Updates the database of the key performance indicators (KPIs) with the KPIs data 
     of the given corpus.
 
@@ -429,14 +428,15 @@ def update_kpi_database(institute, saved_results_path,
         including itself and valued with KPIs dict of these keys.
         if_key (str): Column name of the analyzed impact factors (either those of \
         the publication year or the last available ones).
+        depts_col_list (list): The list of the Institute departments.
         verbose (bool): Status of prints (default = False).
     Returns:
         (dataframe): Institute KPIs data.
     """
 
     # Setting aliases for updating KPIs database
-    results_sub_folder_alias = pg.ARCHI_RESULTS["kpis"]
-    kpi_file_base_alias = pg.ARCHI_RESULTS["kpis file name base"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["kpis"]
+    kpi_file_base_alias = bm_pg.ARCHI_RESULTS["kpis file name base"]
 
     # Setting paths for saving results
     results_kpis_folder_path = saved_results_path / Path(results_sub_folder_alias)
@@ -446,9 +446,8 @@ def update_kpi_database(institute, saved_results_path,
         os.makedirs(results_kpis_folder_path)
 
     # Setting useful column names aliases
-    _, depts_col_list = final_cols_tup
-    corpus_year_row_alias = pg.KPI_KEYS_ORDER_DICT[0]
-    ordered_keys = list(pg.KPI_KEYS_ORDER_DICT.values())
+    corpus_year_row_alias = bm_pg.KPI_KEYS_ORDER_DICT[0]
+    ordered_keys = list(bm_pg.KPI_KEYS_ORDER_DICT.values())
 
     # Initializing return dataframe
     institute_kpi_df = pd.DataFrame()
@@ -473,7 +472,7 @@ def update_kpi_database(institute, saved_results_path,
             db_dept_kpi_df = dept_kpi_df
 
         # Saving after formatting the updated dataframe
-        kpi_df_title = pg.DF_TITLES_LIST[6]
+        kpi_df_title = bm_pg.DF_TITLES_LIST[6]
         wb, ws = format_page(db_dept_kpi_df, kpi_df_title)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
@@ -488,7 +487,7 @@ def update_kpi_database(institute, saved_results_path,
     return institute_kpi_df
 
 
-def if_analysis(institute, org_tup, bibliometer_path, datatype,
+def if_analysis(institute, org_tup, wf_path, datatype,
                 corpus_year, if_most_recent_year,
                 progress_callback=None, verbose=False):
     """Performs the analysis per document types together with 
@@ -511,7 +510,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
         if_most_recent_year (str): Most recent year of impact factors.
@@ -526,14 +525,14 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         of these keys)).
     """
     # Setting input-data path
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+    saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting useful aliases
-    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    if_analysis_folder_alias = pg.ARCHI_YEAR["if analysis"]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    if_analysis_folder_alias = bm_pg.ARCHI_YEAR["if analysis"]
 
     # Setting analysis-results paths
-    year_folder_path = bibliometer_path / Path(corpus_year)
+    year_folder_path = wf_path / Path(corpus_year)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     if_analysis_folder_path = analysis_folder_path / Path(if_analysis_folder_alias)
 
@@ -551,7 +550,7 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(10)
 
     # Building analysis dicts
-    return_tup = doctype_analysis(institute, org_tup, bibliometer_path,
+    return_tup = doctype_analysis(institute, org_tup, wf_path,
                                   datatype, corpus_year, if_most_recent_year,
                                   progress_callback=progress_callback)
     (pub_df_dict, by_journal_dict, if_analysis_col,
@@ -574,18 +573,19 @@ def if_analysis(institute, org_tup, bibliometer_path, datatype,
         progress_callback(75)
 
     # Updating the KPIs database
+    final_depts_col_list = final_cols_tup[1]
     institute_kpi_df = update_kpi_database(institute, saved_results_path,
                                            corpus_year, kpi_dict, new_if_analysis_col,
-                                           final_cols_tup, verbose=verbose)
+                                           final_depts_col_list, verbose=verbose)
     if progress_callback:
         progress_callback(90)
 
     # Saving IFs analysis as final result
-    status_values = len(pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["ifs"] = True
     if_analysis_name = new_if_analysis_col
-    _ = save_final_results(institute, org_tup, bibliometer_path, datatype, corpus_year,
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)

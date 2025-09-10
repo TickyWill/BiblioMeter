@@ -14,7 +14,7 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_geo_stat import build_and_save_geo_stat
 from bmfuncts.build_institutions_stat import build_and_save_institutions_stat
 from bmfuncts.build_pub_addresses import build_institute_addresses_df
@@ -145,11 +145,11 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     countries_alias = bp.COL_NAMES['country'][2]
 
     # Setting aliases from globals
-    norm_inst_filename_alias = pg.ARCHI_YEAR["norm inst file name"] + xlsx_extent
-    raw_inst_filename_alias = pg.ARCHI_YEAR["raw inst file name"] + xlsx_extent
-    country_affiliations_file_base_alias = pg.ARCHI_INSTITUTIONS["affiliations_base"]
-    country_towns_file_base_alias = pg.ARCHI_INSTITUTIONS["country_towns_base"]
-    country_unkept_inst_file_base_alias = pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
+    norm_inst_filename_alias = bm_pg.ARCHI_YEAR["norm inst file name"] + xlsx_extent
+    raw_inst_filename_alias = bm_pg.ARCHI_YEAR["raw inst file name"] + xlsx_extent
+    country_affiliations_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["affiliations_base"]
+    country_towns_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["country_towns_base"]
+    country_unkept_inst_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
 
     # Setting useful file names
     country_affil_file_alias = institute + "_" + country_affiliations_file_base_alias
@@ -220,11 +220,11 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
             progress_callback(inter_progress_3)
 
         # Saving formatted df of normalized and raw institutions
-        inst_df_title = pg.DF_TITLES_LIST[9]
+        inst_df_title = bm_pg.DF_TITLES_LIST[9]
         sheet_name = 'Norm Inst ' + year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_filename_alias,
                                   norm_institutions_df, inst_df_title, sheet_name)
-        inst_df_title = pg.DF_TITLES_LIST[16]
+        inst_df_title = bm_pg.DF_TITLES_LIST[16]
         sheet_name = 'Raw Inst ' + year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias,
                                   raw_institutions_df, inst_df_title, sheet_name)
@@ -236,7 +236,7 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     return countries_df, norm_institutions_df, country_affil_file_path, wrong_affil_types_dict
 
 
-def coupling_analysis(institute, org_tup, bibliometer_path,
+def coupling_analysis(institute, org_tup, wf_path,
                       datatype, year, progress_callback=None, verbose=False):
     """Performs the analysis of countries and authors affiliations of Institute publications 
     of the 'year' corpus.
@@ -262,7 +262,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        bibliometer_path (path): Full path to working folder.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         year (str): 4 digits year of the corpus.
         progress_callback (function): Function for updating ProgressBar \
@@ -277,22 +277,22 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         to be corrected).
     """
     # Setting input-data path
-    saved_results_path = set_saved_results_path(bibliometer_path, datatype)
+    saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting aliases from globals
-    analysis_folder_alias = pg.ARCHI_YEAR["analyses"]
-    inst_analysis_folder_alias = pg.ARCHI_YEAR["institutions analysis"]
-    institutions_folder_alias = pg.ARCHI_INSTITUTIONS["root"]
-    inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
+    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
 
     # Setting useful file names
     inst_types_file_alias = institute + "_" + inst_types_file_base_alias
 
     # Setting useful paths
-    year_folder_path = bibliometer_path / Path(str(year))
+    year_folder_path = wf_path / Path(str(year))
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
-    institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
+    institutions_folder_path = wf_path / Path(institutions_folder_alias)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
 
     # Creating required output folders
@@ -314,7 +314,7 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, bibliometer_path,
+    inst_pub_addresses_df = build_institute_addresses_df(institute, org_tup, wf_path,
                                                          saved_results_path, year, verbose=False,
                                                          progress_param=progress_param)
     if verbose:
@@ -359,13 +359,13 @@ def coupling_analysis(institute, org_tup, bibliometer_path,
             progress_callback(98)
 
         # Saving coupling analysis as final result
-        status_values = len(pg.RESULTS_TO_SAVE) * [False]
-        results_to_save_dict = dict(zip(pg.RESULTS_TO_SAVE, status_values))
+        status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+        results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
         save_keys_list = ["countries", "continents", "institutions"]
         for key in save_keys_list:
             results_to_save_dict[key] = True
-        if_analysis_name = None
-        _ = save_final_results(institute, org_tup, bibliometer_path, datatype, year,
+        if_analysis_name = "None"
+        _ = save_final_results(institute, org_tup, wf_path, datatype, year,
                                if_analysis_name, results_to_save_dict, verbose=False)
     else:
         analysis_folder_alias, geo_analysis_folder_alias, inst_analysis_folder_alias = ("", "", "")

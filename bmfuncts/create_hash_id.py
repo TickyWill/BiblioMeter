@@ -14,7 +14,7 @@ import pandas as pd
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
@@ -25,7 +25,7 @@ def _my_hash(text:str):
     with a fixed prime numbers to mix up the bits.
 
     Args:
-        text (str): The text for which the Hash Id is built.
+        text (str): The text for which the Hash ID is built.
     Returns:
         (int): The built Hash ID.
     """
@@ -41,15 +41,15 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     """Cleans data from publications with same hash ID.
 
     Args:
-        dfs_tup (tup): (data (dataframe) of publications list with one row \
-        per institute author and attributes as employee, \
-        data (dataframe) of publications list with one row per author not found \
+        dfs_tup (tup): 3 dataframes = (data of publications list with one row \
+        per institute author and attributes as employee, data \
+        of publications list with one row per author not found \
         in the employees database, data of Hash IDs with related publication IDs).
         cols_tup (tup): The name of useful columns.
     Returns:
-        (tup): (The cleaned data (dataframe) of publications list with one row \
+        (tup): 3 dataframes = (The cleaned data of publications list with one row \
         per institute author and attributes as employee, \
-        The cleaned data (dataframe) of publications list with one row per author not found \
+        The cleaned data of publications list with one row per author not found \
         in the employees database, The cleaned data of Hash IDs with related publication IDs).
     """
     # Setting parameters from args
@@ -127,8 +127,8 @@ def create_hash_id(institute, org_tup, working_folder_path, file_names_tup):
     submit_col_rename_dic = col_rename_tup[1]
 
     # Setting useful aliases
-    hash_id_file_alias = pg.ARCHI_YEAR["hash_id file name"]
-    hash_id_col_alias = pg.COL_HASH['hash_id']
+    hash_id_file_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
+    hash_id_col_alias = bm_pg.COL_HASH['hash_id']
     pub_id_alias = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
     year_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
     first_auth_alias = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]

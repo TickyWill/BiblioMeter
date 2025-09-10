@@ -6,177 +6,151 @@ __all__ = ['create_parsing_concat']
 
 
 # Standard library imports
-import os
 import threading
 import tkinter as tk
 from pathlib import Path
-from tkinter import font as tkFont
 from tkinter import messagebox
-from tkinter import ttk
 
 # 3rd party imports
 import BiblioParsing as bp
 
 # Local imports
-import bmfuncts.pub_globals as pg
-import bmgui.gui_globals as gg
+import bmfuncts.pub_globals as bm_pg
+import bmgui.gui_globals as bm_gg
+import bmgui.gui_utils as bm_gu
+import bmgui.pages_utils as bm_pu
 from bmfuncts.config_utils import set_org_params
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.useful_functs import save_fails_dict
 from bmfuncts.useful_functs import save_parsing_dict
-from bmgui.gui_utils import disable_buttons
-from bmgui.gui_utils import enable_buttons
-from bmgui.gui_utils import existing_corpuses
-from bmgui.gui_utils import font_size
-from bmgui.gui_utils import mm_to_px
-from bmgui.gui_utils import place_after
-from bmgui.gui_utils import place_bellow
-from bmgui.gui_utils import set_exit_button
-from bmgui.gui_utils import set_page_title
 
 
 class CheckBoxCorpuses:
     """Displays status of parsing files through Checkbutton tkinter widgets.
 
     Args:
+        master (class): `bmgui.main_page.AppMain` class.
         year (str): Corpus year defined by 4 digits.
-        wos_r (bool): Status of WoS raw-data file.
-        wos_p (bool): Status of WoS parsing files.
-        scopus_r (bool): Status of Scopus raw-data file.
-        scopus_p (bool): Status of Scopus parsing files.
-        concat (bool) : Status of concatenation and deduplication files.
+        items_status (dict): Availability of raw data, parsing data \
+        and deduplicated data (keys: type of data (str); values: status (bool)).
+        col_space (int): The space value (int) for boxes columns spacing. 
     """
 
-    def __init__(self, parent, master, year, wos_r, wos_p,
-                 scopus_r, scopus_p, concat):
+    def __init__(self, parent, master, year, items_status, col_space):
 
-        self.check_boxes_sep_space = mm_to_px(gg.REF_CHECK_BOXES_SEP_SPACE * master.width_sf_mm,
-                                              gg.PPI)
-        font = tkFont.Font(family=gg.FONT_NAME, size=font_size(11, master.width_sf_min))
-        self.lab = tk.Label(parent,
-                            text='Année ' + year,
-                            font=font)
+        def _set_item_status(_self, _item):
+            _self.boxes_dict[_item] = tk.Checkbutton(parent)
+            if items_status[_item]:
+                _self.boxes_dict[_item].select()
 
-        self.wos_r = tk.Checkbutton(parent)
-        if wos_r:
-            self.wos_r.select()
-        self.wos_p = tk.Checkbutton(parent)
-        if wos_p:
-            self.wos_p.select()
-        self.scopus_r = tk.Checkbutton(parent)
-        if scopus_r:
-            self.scopus_r.select()
-        self.scopus_p = tk.Checkbutton(parent)
-        if scopus_p:
-            self.scopus_p.select()
-        self.concat = tk.Checkbutton(parent)
-        if concat:
-            self.concat.select()
+        self.check_boxes_sep_space = col_space
+        table_header_font = bm_gu.set_table_header_font(master)
+        self.lab = tk.Label(parent, text=year, font=table_header_font)
+        self.boxes_dict = {}
+        for item in items_status.keys():
+            _set_item_status(self, item)
 
-    def place(self, x, y):
+    def boxes_place(self, box_x_pos_init, box_y_pos, items_status):
+        """Places the checkboxes for displaying files status."""
+        box_x_pos = box_x_pos_init
         a = self.lab.winfo_reqwidth()
-        self.lab.place(x=x-a, y=y, anchor='center')
-        self.wos_r.place(x=x+self.check_boxes_sep_space, y=y, anchor='center')
-        self.wos_r.config(state='disabled')
-        self.wos_p.place(x=x+2*self.check_boxes_sep_space, y=y, anchor='center')
-        self.wos_p.config(state='disabled')
-        self.scopus_r.place(x=x+3*self.check_boxes_sep_space, y=y, anchor='center')
-        self.scopus_r.config(state='disabled')
-        self.scopus_p.place(x=x+4*self.check_boxes_sep_space, y=y, anchor='center')
-        self.scopus_p.config(state='disabled')
-        self.concat.place(x=x+5*self.check_boxes_sep_space, y=y, anchor='center')
-        self.concat.config(state='disabled')
+        self.lab.place(x=box_x_pos-a, y=box_y_pos, anchor='center')
+        for item in items_status.keys():
+            box_x_pos += self.check_boxes_sep_space
+            self.boxes_dict[item].place(x=box_x_pos, y=box_y_pos,
+                                        anchor='center')
+            self.boxes_dict[item].config(state='disabled')
 
     def efface(self):
-        for x in (self.lab, self.wos_r, self.wos_p, self.scopus_r, self.scopus_p, self.concat):
-            x.place_forget()
+        """Erases the checkboxes of the files status."""
+        self.lab.place_forget()
+        for value in self.boxes_dict.values():
+            value.place_forget()
 
 
-def _create_table(self, master, pos_x_init):
+def _create_table(self, master, x_pos_init):
     """Creates the column names of the table displaying which files 
     of the parsing step are available in the working folder.
 
-    The positions of the table items are set using the argument 'pos_x_init', 
+    The positions of the table items are set using the argument 'x_pos_init', 
     and the general properties of tkinter window as 'master' class variables.
 
     Args:
-        pos_x_init (int): The initial horizontal position in pixels to be used \
-        for widgets location on the parsing page.
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+        x_pos_init (int): The horizontal position in pixels to be used \
+        for the first widget location on the parsing page.
     Note:
-        The functions 'font_size' and 'mm_to_px' are imported 
-        from the module 'gui_utils' of the package 'bmgui'.        
-        The globals 'FONT_NAME' and 'PPI' are imported from the module 'gui_globals'
-        of the package 'bmgui'.
+        The functions 'set_table_header_font' and 'set_item_pos' are imported 
+        from the module 'gui_utils' of the package 'bmgui'.
     """
-
     # Internal functions
-    def _set_table_item(item_text, item_pos_x):
-        item_case = tk.Label(self,
-                             text=item_text,
-                             font=header_font)
-        item_case.place(x=item_pos_x, y=pos_y_ref, anchor='center')
-        self.TABLE.append(item_case)
+    def _set_table_item(_item_text, item_x_pos):
+        item_box = tk.Label(self,
+                            text=_item_text,
+                            font=table_header_font)
+        item_box.place(x=item_x_pos, y=y_pos, anchor='center')
+        self.TABLE.append(item_box)
 
     # Setting specific font properties
-    ref_font_size = 11
-    local_font_size = font_size(ref_font_size, master.width_sf_min)
-    header_font = tkFont.Font(family=gg.FONT_NAME,
-                              size=local_font_size)
+    table_header_font = bm_gu.set_table_header_font(master)
 
-    # Setting useful x position shift and y position reference in pixels
-    pos_x_shift = mm_to_px(25 * master.width_sf_mm, gg.PPI)
-    pos_y_ref = mm_to_px(30 * master.height_sf_mm, gg.PPI)
+    # Setting useful x position shift and y position reference
+    x_shift = bm_gu.set_item_pos(master, bm_gg.BOX_TABLE_POS_DICT['x_shift'], 0)
+    y_pos = bm_gu.set_item_pos(master, bm_gg.BOX_TABLE_POS_DICT['y_pos'], 1)
 
     # Initializing x position in pixels
-    pos_x = pos_x_init
+    x_pos = x_pos_init
 
-    # Mise en page tableau
-    item_text = 'Wos\nDonnées brutes'
-    pos_x += pos_x_shift
-    _set_table_item(item_text, pos_x)
-
-    item_text = 'Wos\nParsing'
-    pos_x += pos_x_shift
-    _set_table_item(item_text, pos_x)
-
-    item_text = 'Scopus\nDonnées brutes'
-    pos_x += pos_x_shift
-    _set_table_item(item_text, pos_x)
-
-    item_text = 'Scopus\nParsing'
-    pos_x += pos_x_shift
-    _set_table_item(item_text, pos_x)
-
-    item_text = 'Synthèse du\nparsing des BDD'
-    pos_x += pos_x_shift
-    _set_table_item(item_text, pos_x)
+    # Setting table items
+    for _, item_text in bm_gg.BOX_TABLE_COLS_DICT.items():
+        x_pos += x_shift
+        _set_table_item(item_text, x_pos)
 
 
-def _update(self, master, bibliometer_path, pos_tup):
+def _set_box_pos_params(master):
+    """Sets the x-axis and y-axis positions of top boxes and separation 
+    of boxes lines in pixels.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+    Returns:
+        (tuple): ((x-axis position (int) for top-boxes location, \
+        y-axis position (int) for boxes location), \
+        (space value (int) for boxes columns spacing, space value (int) \
+        for boxes lines spacing)).
+    """
+    # Setting check box positions
+    box_pos_tup = bm_gu.set_pos_tup_px(master, bm_gg.BOX_POS_TUP)
+    box_dpos_tup = bm_gu.set_pos_tup_px(master, bm_gg.BOX_DPOS_TUP)
+    return box_pos_tup, box_dpos_tup
+
+
+def _update_status(self, master, wf_path, box_pos_params):
     """Refreshes the current state of the files in the 
     working folder using the `_create_table` internal function.
 
-    It also updates the OptionMenu buttons used to select the year.
-
     Args:
-        bibliometer_path (path): The path leading to the working folder.
-        pos_tup (tup): (x position (int) for widgets location, \
-        y position (int) for widgets location, space value (int) \
-        for widgets spacing).
-    Note:
-        The function 'mm_to_px' is imported from the module 'gui_utils'
-        of the package 'bmgui'.
-        The functions 'existing_corpuses', 'font_size' and 'place_after'
-        are imported from the module 'gui_utils' of the package 'bmgui'.
-        The globals FONT_NAME and PPI are imported from the module 'gui_globals'
-        of the package 'bmgui'.
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+        box_pos_params (tup): ((x-axis position (int) for top-boxes location, \
+        y-axis position (int) for boxes location), \
+        (space value (int) for boxes columns spacing, space value (int) \
+        for boxes lines spacing)).
     """
-    # Setting parameters from args
-    pos_x, pos_y, esp_ligne = pos_tup
+    # Setting check box positions
+    box_pos_tup, box_dpos_tup = box_pos_params
+    x_pos_init, y_pos_init = box_pos_tup
+    col_space, line_space = box_dpos_tup
+    box_x_pos_init = x_pos_init
+
+    # Clearing all check boxes
+    for _, check in enumerate(self.CHECK):
+        check.efface()
 
     # Setting existing corpuses status
-    files_status = existing_corpuses(bibliometer_path)
+    files_status = bm_gu.existing_corpuses(wf_path)
     master.list_corpus_year = files_status[0]
     master.list_wos_rawdata = files_status[1]
     master.list_wos_parsing = files_status[2]
@@ -184,101 +158,101 @@ def _update(self, master, bibliometer_path, pos_tup):
     master.list_scopus_parsing = files_status[4]
     master.list_dedup = files_status[5]
 
-    # ????
-    for i, check in enumerate(self.CHECK):
-        check.efface()
-
-    for i, annee in enumerate(master.list_corpus_year):
-        tmp = CheckBoxCorpuses(self,
-                               master,
-                               annee,
-                               master.list_wos_rawdata[i],
-                               master.list_wos_parsing[i],
-                               master.list_scopus_rawdata[i],
-                               master.list_scopus_parsing[i],
-                               master.list_dedup[i])
-        tmp.place(x=pos_x,
-                  y=i * esp_ligne + pos_y)
+    for year_idx, year in enumerate(master.list_corpus_year):
+        items_status = {'wos_r'   : master.list_wos_rawdata[year_idx],
+                        'wos_p'   : master.list_wos_parsing[year_idx],
+                        'scopus_r': master.list_scopus_rawdata[year_idx],
+                        'scopus_p': master.list_scopus_parsing[year_idx],
+                        'dedup'   : master.list_dedup[year_idx]
+                       }
+        tmp = CheckBoxCorpuses(self, master, year, items_status, col_space)
+        box_y_pos = y_pos_init + year_idx * line_space
+        tmp.boxes_place(box_x_pos_init, box_y_pos, items_status)
         self.CHECK.append(tmp)
 
-    _create_table(self, master, pos_x)
+    _create_table(self, master, x_pos_init)
 
 
-def _launch_parsing(master, corpus_year, database_type,
-                    paths_tup, progress_callback):
+def _get_parse_data_status(master, database_type, corpus_year):
+    rawdata_status = False
+    parsing_status = False
+    if database_type==bp.WOS:
+        rawdata_status = master.list_wos_rawdata[master.list_corpus_year.index(corpus_year)]
+        parsing_status = master.list_wos_parsing[master.list_corpus_year.index(corpus_year)]
+    if database_type==bp.SCOPUS:
+        rawdata_status = master.list_scopus_rawdata[master.list_corpus_year.index(corpus_year)]
+        parsing_status = master.list_scopus_parsing[master.list_corpus_year.index(corpus_year)]
+    return rawdata_status, parsing_status
+
+
+def _get_dedup_data_status(master, corpus_year):
+    wos_parse_status = _get_parse_data_status(master, bp.WOS, corpus_year)[1]
+    scopus_parse_status = _get_parse_data_status(master, bp.SCOPUS, corpus_year)[1]
+    dedup_parse_status = master.list_dedup[master.list_corpus_year.index(corpus_year)]
+    dedup_status_tup = (wos_parse_status, scopus_parse_status, dedup_parse_status)
+    return dedup_status_tup
+
+
+def _launch_parsing(master, corpus_year, database_type, wf_path,
+                    inst_paths_tup, progress_callback):
     """Launches parsing of raw-data of 'database_type' database.
 
     This is done through `biblio_parser` function imported from 
     3rd party package imported as bp after check of database name 
-    and database raw-data availability.
-
+    and database raw-data availability. 
     It saves the resulting parsing files using paths set through 
     `set_user_config` function imported from `bmfuncts.config_utils` 
     module.
 
-    It updates the files status using the internal function `_update`.
-
     Args:
+        master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
         database_type (str): Database name (ex: 'wos' or 'scopus').
-        paths_tup (tup): (full path to working folder, 
-        full path to institute-affiliations file, \
-        full path to institutions-types file).
+        wf_path (path): Full path to working folder.
+        inst_paths_tup (tup): (full path to institute-affiliations \
+        file, full path to institutions-types file).
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
-
     # Internal functions
-    def _corpus_parsing(rawdata_path, parsing_path,
-                        database_type, progress_callback):
-        progress_callback(20)
-        if not os.path.exists(parsing_path):
-            os.mkdir(parsing_path)
-        parsing_tup = bp.biblio_parser(rawdata_path, database_type,
+    def _corpus_parsing(raw_data_path, _parsing_path,
+                        _database_type, _progress_callback):
+        parsing_tup = bp.biblio_parser(raw_data_path, _database_type,
                                        inst_filter_list=None,
-                                       country_affiliations_file_path=institute_affil_file_path,
-                                       inst_types_file_path=inst_types_file_path)
+                                       country_affiliations_file_path=inst_paths_tup[0],
+                                       inst_types_file_path=inst_paths_tup[1])
         parsing_dict, dic_failed = parsing_tup
-        progress_callback(80)
-        save_parsing_dict(parsing_dict, parsing_path,
+        _progress_callback(80)
+        save_parsing_dict(parsing_dict, _parsing_path,
                           item_filename_dict, parsing_save_extent)
-        progress_callback(90)
-        save_fails_dict(dic_failed, parsing_path)
-        progress_callback(100)
+        _progress_callback(90)
+        save_fails_dict(dic_failed, _parsing_path)
+        _progress_callback(100)
 
         articles_number = dic_failed["number of article"]
-        info_title = "Information"
-        info_text = (f"'Parsing' de '{database_type}' effectué pour l'année {corpus_year}."
+        _info_title = "Information"
+        _info_text = (f"'Parsing' de '{_database_type}' effectué pour l'année {corpus_year}."
                      f"\n\n  Nombre d'articles du corpus : {articles_number}")
-        messagebox.showinfo(info_title, info_text)
-
-    # Setting parameters from args
-    bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
+        messagebox.showinfo(_info_title, _info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
-    rawdata_path_dict = config_tup[0]
-    parsing_path_dict = config_tup[1]
-    item_filename_dict = config_tup[2]
-
-    # Setting useful paths for database 'database_type'
-    rawdata_path = rawdata_path_dict[database_type]
-    parsing_path = parsing_path_dict[database_type]
+    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
+    rawdata_path_dict, parsing_path_dict, item_filename_dict = config_tup[0:3]
 
     # Setting parsing files extension for saving
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
-    progress_callback(10)
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
 
-    # Getting files status for corpus parsing
-    if database_type in pg.BDD_LIST:
-        rawdata_status = False
-        parsing_status = False
-        if database_type==bp.WOS:
-            rawdata_status = master.list_wos_rawdata[master.list_corpus_year.index(corpus_year)]
-            parsing_status = master.list_wos_parsing[master.list_corpus_year.index(corpus_year)]
-        if database_type==bp.SCOPUS:
-            rawdata_status = master.list_scopus_rawdata[master.list_corpus_year.index(corpus_year)]
-            parsing_status = master.list_scopus_parsing[master.list_corpus_year.index(corpus_year)]
+    # Setting dialog for parsing corpus
+    if database_type in bm_pg.BDD_LIST:
+
+        # Setting useful paths for database 'database_type'
+        rawdata_path = rawdata_path_dict[database_type]
+        parsing_path = parsing_path_dict[database_type]
+
+        # Getting files status for corpus parsing
+        rawdata_status, parsing_status = _get_parse_data_status(master, database_type,
+                                                                corpus_year)
+        progress_callback(20)
 
         # Asking for confirmation of corpus year to parse
         ask_title = "Confirmation de l'année de traitement"
@@ -297,8 +271,6 @@ def _launch_parsing(master, corpus_year, database_type,
                                 "et relancez le 'parsing'.")
                 messagebox.showwarning(warning_title, warning_text)
             else:
-                if not os.path.exists(parsing_path):
-                    os.mkdir(parsing_path)
                 if parsing_status==1:
                     # Ask to carry on with parsing if already done
                     ask_title = "Confirmation de traitement"
@@ -326,7 +298,6 @@ def _launch_parsing(master, corpus_year, database_type,
             info_title = "Information"
             info_text = "Modifiez vos choix et relancez le 'parsing'."
             messagebox.showinfo(info_title, info_text)
-
     else:
         progress_callback(100)
         warning_title = "Attention : Erreur sur type de BDD"
@@ -337,99 +308,70 @@ def _launch_parsing(master, corpus_year, database_type,
         messagebox.showwarning(warning_title, warning_text)
 
 
-def _launch_synthese(master, corpus_year, org_tup, datatype,
-                     paths_tup, progress_callback):
+def _launch_dedup(master, corpus_year, org_tup, wf_path, datatype,
+                     inst_paths_tup, progress_callback):
     """Concatenates and deduplicates the parsing from wos or scopus databases.
 
     This is done through the functions `concatenate_parsing` 
     and `deduplicate_parsing` imported from 3rd party package 
     imported as bp.
 
-    It checks if all useful files are available in the working folder.
-
+    It checks if all useful files are available in the working folder. 
     It saves the resulting parsing files using paths set through 
     `set_user_config` function imported from `bmfuncts.config_utils` 
     module.
 
-    It updates the files status using the internal function `_update`.
-
     Args:
+        master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
         org_tup (tup): Contains Institute parameters.
+        wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
-        paths_tup (tup): (full path to working folder, \
-        full path to institute-affiliations file, \
+        inst_paths_tup (tup): (full path to institute-affiliations file, \
         full path to institutions-types file).
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
-
     # Internal functions
-    def _deduplicate_corpus_parsing(progress_callback):
-        if not os.path.exists(concat_root_folder):
-            os.mkdir(concat_root_folder)
-        if not os.path.exists(concat_parsing_path):
-            os.mkdir(concat_parsing_path)
-        if not os.path.exists(dedup_root_folder):
-            os.mkdir(dedup_root_folder)
-        if not os.path.exists(dedup_parsing_path):
-            os.mkdir(dedup_parsing_path)
-
-        progress_callback(15)
-
-        scopus_parsing_dict = read_parsing_dict(scopus_parsing_path, item_filename_dict,
+    def _deduplicate_corpus_parsing(_progress_callback):
+        scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
-        wos_parsing_dict = read_parsing_dict(wos_parsing_path, item_filename_dict,
+        wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
-        progress_callback(30)
+        _progress_callback(30)
         concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
-                                                     inst_filter_list=institutions_filter_list)
-        progress_callback(50)
-        save_parsing_dict(concat_parsing_dict, concat_parsing_path,
+                                                     inst_filter_list=org_tup[3])
+        _progress_callback(50)
+        save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)
-        progress_callback(60)
-        file_path_0 = inst_types_file_path
-        file_path_1 = institute_affil_file_path
+        _progress_callback(60)
         dedup_parsing_dict = bp.deduplicate_parsing(concat_parsing_dict,
                                                     norm_inst_status=False,
-                                                    inst_types_file_path=file_path_0,
-                                                    country_affiliations_file_path=file_path_1)
-
-        synthese_articles_nb = len(dedup_parsing_dict["articles"])
-        progress_callback(90)
-        save_parsing_dict(dedup_parsing_dict, dedup_parsing_path,
+                                                    inst_types_file_path=inst_paths_tup[0],
+                                                    country_affiliations_file_path=inst_paths_tup[1])
+        _dedup_articles_nb = len(dedup_parsing_dict["articles"])
+        _progress_callback(90)
+        save_parsing_dict(dedup_parsing_dict, dedup_path,
                           item_filename_dict, parsing_save_extent,
-                          dedup_infos=(bibliometer_path, datatype, corpus_year))
-
-        progress_callback(100)
-        return synthese_articles_nb
-
-    # Setting parameters from args
-    bibliometer_path, institute_affil_file_path, inst_types_file_path = paths_tup
-
-    # Setting Institute parameters
-    institutions_filter_list = org_tup[3]
+                          dedup_infos=(wf_path, datatype, corpus_year))
+        _progress_callback(100)
+        return _dedup_articles_nb
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
-    config_tup = set_user_config(bibliometer_path, corpus_year, pg.BDD_LIST)
+    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
     parsing_path_dict, item_filename_dict = config_tup[1], config_tup[2]
 
-    # Setting useful paths for database 'database_type'
-    scopus_parsing_path = parsing_path_dict["scopus"]
-    wos_parsing_path = parsing_path_dict["wos"]
-    concat_root_folder = parsing_path_dict["concat_root"]
-    concat_parsing_path = parsing_path_dict["concat"]
-    dedup_root_folder = parsing_path_dict["dedup_root"]
-    dedup_parsing_path = parsing_path_dict["dedup"]
-
-    # Setting parsing files extension for saving
-    parsing_save_extent = pg.TSV_SAVE_EXTENT
+    # Setting useful paths for corpus deduplication
+    scopus_parse_path, wos_parse_path = parsing_path_dict["scopus"], parsing_path_dict["wos"]
+    concat_path, dedup_path = parsing_path_dict["concat"], parsing_path_dict["dedup"]
 
     # Getting files status for corpus concatenation and deduplication
-    wos_parsing_status = master.list_wos_parsing[master.list_corpus_year.index(corpus_year)]
-    scopus_parsing_status = master.list_scopus_parsing[master.list_corpus_year.index(corpus_year)]
-    dedup_parsing_status = master.list_dedup[master.list_corpus_year.index(corpus_year)]
-    progress_callback(10)
+    dedup_status_tup = _get_dedup_data_status(master, corpus_year)
+    wos_parse_status, scopus_parse_status, dedup_parse_status = dedup_status_tup
+
+    # Setting parsing files extension for saving
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
+    progress_callback(15)
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
     ask_title = "Confirmation de l'année de traitement"
@@ -437,40 +379,39 @@ def _launch_synthese(master, corpus_year, org_tup, datatype,
                 "\n\nConfirmer ce choix ?")
     answer_1 = messagebox.askokcancel(ask_title, ask_text)
     if answer_1:
-
         # Checking availability of parsing files
-        if not wos_parsing_status:
+        if not wos_parse_status:
             progress_callback(100)
             warning_title = "Attention ! Fichiers manquants"
             warning_text = ("Le 'parsing' de 'wos' "
                             f"de l'année {corpus_year} n'est pas disponible."
                             "\nLa synthèse correspondante ne peut pas encore être construite !"
-                            "\n\n-1 Lancez le 'parsing' manquant;"
+                            "\n\n-1 Lancez le 'parsing' manquant ;"
                             "\n-2 Relancez la synthèse.")
             messagebox.showwarning(warning_title, warning_text)
 
-        if not scopus_parsing_status:
+        if not scopus_parse_status:
             progress_callback(100)
             warning_title = "Attention ! Fichiers manquants"
             warning_text = ("Le 'parsing' de 'scopus' "
                             f"de l'année {corpus_year} n'est pas disponible."
                             "\nLa synthèse correspondante ne peut pas encore être construite !"
-                            "\n\n-1 Lancez le 'parsing' manquant;"
+                            "\n\n-1 Lancez le 'parsing' manquant ;"
                             "\n-2 Relancez la synthèse.")
             messagebox.showwarning(warning_title, warning_text)
 
-        if wos_parsing_status and scopus_parsing_status:
-            if dedup_parsing_status:
+        if wos_parse_status and scopus_parse_status:
+            if dedup_parse_status:
                 # Ask to carry on with concatenation and deduplication if already available
                 ask_title = "Reconstruction de la synthèse"
                 ask_text = (f"La synthèse pour l'année {corpus_year} est déjà disponible."
                             "\n\nReconstruire la synthèse ?")
                 answer_2 = messagebox.askokcancel(ask_title, ask_text)
                 if answer_2:
-                    synthese_articles_nb = _deduplicate_corpus_parsing(progress_callback)
+                    dedup_articles_nb = _deduplicate_corpus_parsing(progress_callback)
                     info_title = "Information"
                     info_text = (f"La synthèse pour l'année {corpus_year} a été reconstruite."
-                                 f"\n\nNombre d'articles de synthèse : {synthese_articles_nb}.")
+                                 f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}.")
                     messagebox.showinfo(info_title, info_text)
                 else:
                     progress_callback(100)
@@ -478,298 +419,200 @@ def _launch_synthese(master, corpus_year, org_tup, datatype,
                     info_text = "La synthèse dejà disponible est conservée."
                     messagebox.showinfo(info_title, info_text)
             else:
-                _deduplicate_corpus_parsing(progress_callback)
+                dedup_articles_nb = _deduplicate_corpus_parsing(progress_callback)
                 info_title = "Information"
-                info_text = ("La construction de la synthèse pour "
-                             f"l'année {corpus_year} est terminée.")
+                info_text = (f"La synthèse pour l'année {corpus_year} a été construite."
+                             f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}.")
                 messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)
         info_title = "Information"
-        info_text = f"La synthèse pour l'année {corpus_year} est annulée."
+        info_text = f"La synthèse pour l'année {corpus_year} est abandonnée."
         messagebox.showinfo(info_title, info_text)
 
 
-def create_parsing_concat(self, master, page_name, institute, bibliometer_path, datatype):
-    """Manages creation and use of widgets for corpus parsing.
-
-    This is done through the internal functions  `_launch_parsing`, 
-    `_launch_synthese` and `_update`.
+def _set_parse_inst_params(institute, wf_path):
+    """Sets files paths to institutions data.
 
     Args:
-        page_name (str): Name of parsing page.
         institute (str): Institute name.
-        bibliometer_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
+        wf_path (path): Full path to working folder.
+    Returns:
+        (tup): (full path to institute-affiliations file, \
+        full path to institutions-types file).
     """
-    # Internal functions
-    def _launch_parsing_try(progress_callback):
-        paths_tup = (bibliometer_path,
-                     institute_affil_file_path,
-                     inst_types_file_path)
-        parsing_year = self.var_year_pc_1.get()
-        parsing_bdd = var_bdd_pc_1.get()
-        _launch_parsing(master, parsing_year, parsing_bdd,
-                        paths_tup, progress_callback)
-        progress_bar.place_forget()
-
-    def _launch_synthese_try(progress_callback):
-        synthese_year = self.var_year_pc_2.get()
-        _launch_synthese(master, synthese_year,
-                         org_tup, datatype,
-                         paths_tup, progress_callback)
-        progress_bar.place_forget()
-
-    def _update_progress(value):
-        progress_var.set(value)
-        progress_bar.update_idletasks()
-        if value>=100:
-            enable_buttons(parse_buttons_list)
-
-    def _start_launch_parsing_try():
-        disable_buttons(parse_buttons_list)
-        place_bellow(parsing_launch_button,
-                     progress_bar, dx=-80, dy=15)
-        progress_var.set(0)
-        threading.Thread(target=_launch_parsing_try,
-                         args=(_update_progress,)).start()
-        # update files status
-        _update(self, master, bibliometer_path, pos_tup)
-
-    def _start_launch_synthese_try():
-        disable_buttons(parse_buttons_list)
-        place_after(synthese_launch_button,
-                    progress_bar, dx=40, dy=0)
-        progress_var.set(0)
-        threading.Thread(target=_launch_synthese_try,
-                         args=(_update_progress,)).start()
-        # update files status
-        _update(self, master, bibliometer_path, pos_tup)
-
-
-    # Setting useful local variables for positions modification (globals to create ??)
-    # numbers are reference values in mm for reference screen
-    w_sf_mm = master.width_sf_mm
-    h_sf_mm = master.height_sf_mm
-    w_sf_min = master.width_sf_min
-    position_selon_x_check = mm_to_px(70 * w_sf_mm, gg.PPI)
-    position_selon_y_check = mm_to_px(40 * h_sf_mm, gg.PPI)
-    espace_entre_ligne_check = mm_to_px(10 * h_sf_mm, gg.PPI)
-    labels_x_pos = mm_to_px(10 * w_sf_mm, gg.PPI)
-    labels_y_space = mm_to_px(10 * h_sf_mm, gg.PPI)
-    status_label_y_pos = mm_to_px(25 * h_sf_mm, gg.PPI)
-    parsing_label_y_pos = mm_to_px(107 * h_sf_mm, gg.PPI)
-    synthese_label_y_pos = mm_to_px(135 * h_sf_mm, gg.PPI)
-    status_button_x_pos = mm_to_px(148 * w_sf_mm, gg.PPI)
-    status_button_y_pos = mm_to_px(98 * h_sf_mm, gg.PPI)
-    dx_year_select = mm_to_px(1 * w_sf_mm, gg.PPI)
-    dy_year_select = mm_to_px(1 * h_sf_mm, gg.PPI)
-    dx_bdd_select = mm_to_px(12 * w_sf_mm, gg.PPI)
-    dy_bdd_select = mm_to_px(1 * h_sf_mm, gg.PPI)
-    dx_launch = mm_to_px(15 * w_sf_mm, gg.PPI)
-    dy_launch = mm_to_px(0.2 * h_sf_mm, gg.PPI)
-    progress_bar_length_px = mm_to_px(50 * w_sf_mm, gg.PPI)
-    eff_labels_font_size = font_size(14, w_sf_min)
-    eff_select_font_size = font_size(12, w_sf_min)
-    eff_buttons_font_size = font_size(11, w_sf_min)
-
-    year_x_pos = labels_x_pos
-    parsing_year_y_pos = parsing_label_y_pos + labels_y_space
-    synthese_year_y_pos = synthese_label_y_pos + labels_y_space
-    pos_tup = (position_selon_x_check,
-               position_selon_y_check,
-               espace_entre_ligne_check)
-
-    # Setting useful local variables for default selection items in selection lists
-    default_year = master.list_corpus_year[-1]
-    default_bdd = pg.BDD_LIST[0]
-
-    # Getting institute parameters
-    org_tup = set_org_params(institute, bibliometer_path)
-
     # Setting useful aliases
-    institutions_folder_alias = pg.ARCHI_INSTITUTIONS["root"]
-    inst_aff_file_base_alias = pg.ARCHI_INSTITUTIONS["institute_affil_base"]
-    inst_types_file_base_alias = pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
+    inst_aff_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["institute_affil_base"]
+    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
 
     # Setting useful file names and paths for Institute affiliations
     institute_affil_file = institute + "_" + inst_aff_file_base_alias
     inst_types_file = institute + "_" + inst_types_file_base_alias
-    institutions_folder_path = bibliometer_path / Path(institutions_folder_alias)
+    institutions_folder_path = wf_path / Path(institutions_folder_alias)
     institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file)
-    paths_tup = (bibliometer_path,
-                 institute_affil_file_path,
-                 inst_types_file_path)
+
+    # Setting return tup
+    inst_paths_tup = (institute_affil_file_path, inst_types_file_path)
+    return inst_paths_tup
+
+
+def create_parsing_concat(self, master, page_name, institute, wf_path, datatype):
+    """Manages creation and use of widgets for corpus parsing.
+
+    This is done through the internal functions  `_launch_parsing`, 
+    `_launch_dedup` and `_update_status`.
+
+    Args:
+        self (instance): Instance of the calling page.
+        master (class): `bmgui.main_page.AppMain` class.
+        page_name (str): Name of parsing page.
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    """
+    # Internal functions
+
+    def _update_progress(value):
+        self.progress_var.set(value)
+        self.progress_bar.update_idletasks()
+        if value>=100:
+            bm_gu.enable_buttons(self.page_buttons_list)
+
+
+    # ****************************** GENERAL SETTNGS
+
+    # Setting institutions files paths
+    inst_paths_tup = _set_parse_inst_params(institute, wf_path)
+
+    # Getting institute parameters
+    wf_root_path = wf_path.parent
+    org_tup = set_org_params(institute, wf_root_path)
 
     # Creating and setting widgets for page title and exit button
-    set_page_title(self, master, page_name, institute, datatype)
-    set_exit_button(self, master)
+    page_label = bm_gg.PAGES_LABELS[page_name]
+    bm_gu.set_page_title(self, master, page_label, institute, datatype)
+    bm_gu.set_exit_button(self, master)
 
-    # Initializing progress bar widget
-    progress_var = tk.IntVar()  # Variable to keep track of the progress bar value
-    progress_bar = ttk.Progressbar(self,
-                                   orient="horizontal",
-                                   length=progress_bar_length_px,
-                                   mode="determinate",
-                                   variable=progress_var)
+    # Setting page key and page year
+    self.page_key = bm_gg.KEY_PARSE
+    self.parse_key = bm_gg.KEY_PARSE
+    self.dedup_key = bm_gg.KEY_DEDUP
+    self.year_key = bm_gg.KEY_PARSE_YEAR
 
-    # **************** Zone Statut des fichiers de "parsing"
-    # Liste des checkbox des corpuses
-    self.CHECK = []
-    self.TABLE = []
+    # Setting progress bars parameters
+    bm_pu.set_progress_bar_params(self, master)
 
-    font_statut = tkFont.Font(family=gg.FONT_NAME,
-                              size=eff_labels_font_size,
-                              weight='bold')
-    label_statut = tk.Label(self,
-                            text=gg.TEXT_STATUT,
-                            font=font_statut)
-    label_statut.place(x=labels_x_pos,
-                       y=status_label_y_pos,
-                       anchor="nw")
+    # Setting steps widgets parameters
+    bm_pu.set_steps_widgets_param(self, master, parse=True)
 
-    # **************** Bouton pour actualiser la zone de stockage
-    font_exist_button = tkFont.Font(family=gg.FONT_NAME,
-                                    size=eff_buttons_font_size)
-    exist_button = tk.Button(self,
-                             text=gg.TEXT_UPDATE_STATUS,
-                             font=font_exist_button,
-                             command=lambda: _update(self,
-                                                     master,
-                                                     bibliometer_path,
-                                                     pos_tup))
-    gg.GUI_BUTTONS.append(exist_button)
-    exist_button.place(x=status_button_x_pos,
-                       y=status_button_y_pos,
-                       anchor='n')
+    # Initializing checkbox parameters as lists
+    # filled in _create_table and _update_status internal functions
+    self.CHECK, self.TABLE = [], []
 
-    # **************** Zone Construction des fichiers de "parsing" par BDD
-    font_parsing = tkFont.Font(family=gg.FONT_NAME,
-                               size=eff_labels_font_size,
-                               weight='bold')
-    label_parsing = tk.Label(self,
-                             text=gg.TEXT_PARSING,
-                             font=font_parsing)
-    label_parsing.place(x=labels_x_pos,
-                        y=parsing_label_y_pos, anchor="nw")
+    # Setting check box positions
+    box_pos_params = _set_box_pos_params(master)
 
-    # Choix de l'année
-    font_year_pc_1 = tkFont.Font(family=gg.FONT_NAME,
-                                 size=eff_select_font_size)
-    self.label_year_pc_1 = tk.Label(self,
-                                    text=gg.TEXT_YEAR_PC,
-                                    font=font_year_pc_1)
-    self.label_year_pc_1.place(x=year_x_pos,
-                               y=parsing_year_y_pos,
-                               anchor="nw")
+    # ****************************** DISPLAY PARSING-FILES STATUS
 
-    self.var_year_pc_1 = tk.StringVar(self)
-    self.var_year_pc_1.set(default_year)
-    self.om_year_pc_1 = tk.OptionMenu(self,
-                                      self.var_year_pc_1,
-                                      *master.list_corpus_year)
-    font_year_pc_1 = tkFont.Font(family=gg.FONT_NAME,
-                                 size=eff_buttons_font_size)
-    self.om_year_pc_1.config(font=font_year_pc_1)
-    gg.GUI_BUTTONS.append(self.om_year_pc_1)
-    place_after(self.label_year_pc_1,
-                self.om_year_pc_1,
-                dx=+ dx_year_select,
-                dy=- dy_year_select)
+    def _launch_update_status_try():
+        # update files status
+        _update_status(self, master, wf_path, box_pos_params)
 
-    # Choix de la BDD
-    font_bdd_pc_1 = tkFont.Font(family=gg.FONT_NAME,
-                                size=eff_select_font_size)
-    label_bdd_pc_1 = tk.Label(self,
-                              text=gg.TEXT_BDD_PC,
-                              font =font_bdd_pc_1)
-    place_after(self.om_year_pc_1,
-                label_bdd_pc_1,
-                dx=dx_bdd_select,
-                dy=dy_bdd_select)
+    # Setting widgets of button for update of parsing-files status
+    step_num = 0
+    status_help_button = bm_pu.set_step_help_button(self, step_num, pos_type='bellow')
+    status_button = bm_pu.set_step_launch_button(self, step_num,
+                                                 _launch_update_status_try,
+                                                 'place', parse=True)
 
-    var_bdd_pc_1 = tk.StringVar(self)
-    var_bdd_pc_1.set(default_bdd)
-    om_bdd_pc_1 = tk.OptionMenu(self,
-                                var_bdd_pc_1,
-                                *pg.BDD_LIST)
-    font_bdd_pc_1 = tkFont.Font(family=gg.FONT_NAME,
-                                size=eff_buttons_font_size)
-    om_bdd_pc_1.config(font=font_bdd_pc_1)
-    place_after(label_bdd_pc_1,
-                om_bdd_pc_1,
-                dx=+ dx_year_select,
-                dy=- dy_year_select)
+    # Updating check boxes
+    _update_status(self, master, wf_path, box_pos_params)
 
-    # Lancement du parsing
-    parsing_launch_font = tkFont.Font(family=gg.FONT_NAME,
-                                      size=eff_buttons_font_size)
-    parsing_launch_button = tk.Button(self,
-                                      text=gg.TEXT_LAUNCH_PARSING,
-                                      font=parsing_launch_font,
-                                      command=_start_launch_parsing_try)
-    gg.GUI_BUTTONS.append(parsing_launch_button)
-    place_after(om_bdd_pc_1,
-                parsing_launch_button,
-                dx=dx_launch,
-                dy=dy_launch)
 
-    # **************** Zone Synthèse des fichiers de parsing de toutes les BDD
-    font_synthese = tkFont.Font(family=gg.FONT_NAME,
-                                size=eff_labels_font_size,
-                                weight='bold')
-    label_synthese = tk.Label(self,
-                              text =gg.TEXT_SYNTHESE,
-                              font=font_synthese)
-    label_synthese.place(x=labels_x_pos,
-                         y=synthese_label_y_pos,
-                         anchor="nw")
+    # ****************************** YEAR SELECTION
 
-    # Choix de l'année
-    font_year_pc_2 = tkFont.Font(family=gg.FONT_NAME,
-                                 size=eff_select_font_size)
-    self.label_year_pc_2 = tk.Label(self,
-                                    text=gg.TEXT_YEAR_PC,
-                                    font=font_year_pc_2)
-    self.label_year_pc_2.place(x=year_x_pos,
-                               y=synthese_year_y_pos,
-                               anchor="nw")
+    default_year = master.years_list[-1]
+    self.variable_years = tk.StringVar(self)
+    self.variable_years.set(default_year)
 
-    self.var_year_pc_2 = tk.StringVar(self)
-    self.var_year_pc_2.set(master.list_corpus_year[-1])
-    self.om_year_pc_2 = tk.OptionMenu(self,
-                                      self.var_year_pc_2,
-                                      *master.list_corpus_year)
-    font_year_pc_2 = tkFont.Font(family=gg.FONT_NAME,
-                                 size=eff_buttons_font_size)
-    self.om_year_pc_2.config(font=font_year_pc_2)
-    gg.GUI_BUTTONS.append(self.om_year_pc_2)
-    place_after(self.label_year_pc_2,
-                self.om_year_pc_2,
-                dx=+ dx_year_select,
-                dy=- dy_year_select)
+    # Setting widgets for year selection
+    bm_pu.set_year_select_widgets(self, master)
 
-    # Lancement de la synthèse
-    synthese_launch_font = tkFont.Font(family=gg.FONT_NAME,
-                                       size=eff_buttons_font_size)
-    synthese_launch_button = tk.Button(self,
-                                     text=gg.TEXT_LAUNCH_SYNTHESE,
-                                     font=synthese_launch_font,
-                                     command=_start_launch_synthese_try)
-    gg.GUI_BUTTONS.append(synthese_launch_button)
-    place_after(self.om_year_pc_2,
-                synthese_launch_button,
-                dx=dx_launch,
-                dy=dy_launch)
 
-    # **************** Placement de CHECKBOXCORPUSES :
-    _update(self, master, bibliometer_path, pos_tup)
+    # ****************************** LAUNCH PARSING
 
-    # Setting buttons list for status change
-    parse_buttons_list = [exist_button,
-                          self.om_year_pc_1,
-                          om_bdd_pc_1,
-                          self.om_year_pc_2,
-                          parsing_launch_button,
-                          synthese_launch_button]
+    def _launch_parsing_try(progress_callback):
+
+        # Getting year selection and database selection
+        year_select = self.variable_years.get()
+        parsing_data = parse_data_var.get()
+
+        _launch_parsing(master, year_select, parsing_data,
+                        wf_path, inst_paths_tup, progress_callback)
+        # update files status
+        _update_status(self, master, wf_path, box_pos_params)
+        self.progress_bar.place_forget()
+
+    def _start_launch_parsing_try():
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(parsing_button, self.progress_bar,
+                          dx=self.progress_bar_dx,
+                          dy=self.progress_bar_dy)
+        self.progress_var.set(0)
+        threading.Thread(target=_launch_parsing_try,
+                         args=(_update_progress,)).start()
+
+    # Setting widgets of buttons for parsing
+    step_num = 1
+    parse_help_button = bm_pu.set_step_help_button(self, step_num)
+
+    # Setting widgets for database selection for parsing
+    parse_data_var, parse_data_opt_but = bm_pu.set_data_select_widgets(self, step_num)
+
+    # Setting widgets of buttons for parsing launch button
+    parsing_button = bm_pu.set_step_launch_button(self, step_num,
+                                                  _start_launch_parsing_try,
+                                                  'after', parse=True,
+                                                  widget_ref=parse_data_opt_but)
+
+
+    # ****************************** LAUNCH PARSING DEDUPLICATION
+
+    def _launch_dedup_try(progress_callback):
+        # Getting year selection
+        year_select = self.variable_years.get()
+        _launch_dedup(master, year_select,
+                      org_tup, wf_path, datatype,
+                      inst_paths_tup, progress_callback)
+        # update files status
+        _update_status(self, master, wf_path, box_pos_params)
+        self.progress_bar.place_forget()
+
+    def _start_launch_dedup_try():
+        bm_gu.disable_buttons(self.page_buttons_list)
+        bm_gu.place_after(dedup_button, self.progress_bar,
+                          dx=self.progress_bar_dx,
+                          dy=self.progress_bar_dy)
+        self.progress_var.set(0)
+        threading.Thread(target=_launch_dedup_try,
+                         args=(_update_progress,)).start()
+
+    # Setting widgets of buttons for deduplication
+    step_num = 2
+    dedup_help_button = bm_pu.set_step_help_button(self, step_num)
+    dedup_button = bm_pu.set_step_launch_button(self, step_num,
+                                                _start_launch_dedup_try,
+                                                'bellow', parse=True)
+
+
+    # ****************************** Setting buttons list for status change
+    self.page_buttons_list = [self.years_opt_but,
+                              status_help_button,
+                              status_button,
+                              parse_help_button,
+                              parse_data_opt_but,
+                              parsing_button,
+                              dedup_help_button,
+                              dedup_button]

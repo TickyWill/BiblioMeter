@@ -6,7 +6,7 @@ of `main_page` module of `bmgui` package.
 # Local imports
 from bmgui.main_page import AppMain
 
-def run_bibliometer():
+def run_application():
     """
     Main function used for starting the BiblioMeter application
     """
@@ -17,4 +17,4 @@ def run_bibliometer():
         print(err)
 
 if __name__ == "__main__":
-    run_bibliometer()
+    run_application()

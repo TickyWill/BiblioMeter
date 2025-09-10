@@ -15,7 +15,7 @@ import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
 # Local imports
-import bmfuncts.pub_globals as pg
+import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.useful_functs import concat_dfs
@@ -35,14 +35,14 @@ def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_type
 
     Args:
         norm_institutions_df (dataframe): Data of the normalized institutions per publication.
-        institutions_col (str): Column name of the normalizedinstitutions list in \
+        institutions_col (str): Column name of the normalized institutions list in \
         the 'norm-institution_df' dataframe.
         inst_types_list (list): Institution types that are used as column names in the built data.
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
     Returns:
-        (dataframe): The built data with distributed normalized institutions per intitution \
+        (dataframe): The built data with distributed normalized institutions per institution \
         type and per publication.
     """
     if progress_param:
@@ -93,7 +93,7 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
     Args:
         institute (str): Institute name.
         distrib_institutions_df (dataframe): data with distributed normalized \
-        institutions per intitution type and per publication.
+        institutions per institution type and per publication.
         cols_list (list): The columns names (str) list used to build the data.
         institute_pub_ids_list (list): All publication IDs (str) of the institute.
     Returns:
@@ -284,7 +284,6 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
     # Building stat per country for given inst_type
     data_cols_list = [country_col, inst_nb_col, inst_list_col, journal_nb_col,
                       proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
-    country_inst_pub_df = pd.DataFrame(columns=data_cols_list)
     data = []
     for country, country_df in pub_country_inst_df.groupby(country_col):
         pub_ids_list = list(set(country_df[pub_id_col].to_list()))
@@ -292,7 +291,7 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
         journal_pub_nb = len([x for x in pub_ids_list if x in journal_pub_ids_list])
         proceedings_pub_nb = len([x for x in pub_ids_list if x in proceedings_pub_ids_list])
         book_pub_nb = len([x for x in pub_ids_list if x in books_pub_ids_list])
-        
+
         pub_ids_list_str = "; ".join(pub_ids_list)
 
         init_inst_list = country_df[inst_list_col].to_list()
@@ -325,7 +324,7 @@ def _build_inst_stat_data(institute, distrib_institutions_df,
     Args:
         institute (str): Institute name.
         distrib_institutions_df (dataframe): data with distributed normalized \
-        institutions per intitution type and per publication.
+        institutions per institution type and per publication.
         common_cols_list (list): The  names (str) list of the common columns \
         used to build the data.
         stat_cols_list (list): The names (str) list of the specific columns \
@@ -340,9 +339,9 @@ def _build_inst_stat_data(institute, distrib_institutions_df,
         global and valued by the built data (dataframe) of the statistical results.
     """
     institute_pub_ids_list = pub_ids_lists[0]
-    stat_keys_alias = list(pg.STAT_FILE_DICT.keys())
+    stat_keys_alias = list(bm_pg.STAT_FILE_DICT.keys())
     inst_type_data_dict = {}
-    for inst_type in pg.STAT_INST_TYPES_LIST:
+    for inst_type in bm_pg.STAT_INST_TYPES_LIST:
         inst_type_data_dict[inst_type] = {}
 
         # Setting useful columns list
@@ -388,7 +387,7 @@ def _save_inst_stat_data(inst_type_data_dict, inst_stat_path):
         results are saved.
     """
     inst_types_list = inst_type_data_dict.keys()
-    for stat_key, value_tup in pg.STAT_FILE_DICT.items():
+    for stat_key, value_tup in bm_pg.STAT_FILE_DICT.items():
         stat_file, df_title_idx = value_tup
         # Initialize parameters for saving results as multisheet workbook
         first = True
@@ -399,7 +398,7 @@ def _save_inst_stat_data(inst_type_data_dict, inst_stat_path):
             inst_type_stat_df = inst_type_data_dict[inst_type][stat_key]
 
             inst_sheet_name = inst_type
-            inst_stat_title = pg.DF_TITLES_LIST[df_title_idx]
+            inst_stat_title = bm_pg.DF_TITLES_LIST[df_title_idx]
             wb = format_wb_sheet(inst_sheet_name, inst_type_stat_df,
                                  inst_stat_title, wb, first)
             first = False
@@ -421,28 +420,27 @@ def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
 
     Args:
         institute (str): Institute name.
-        norm_institutions_df (dataframe): Data of the normalized institutions \
-        per publication.
-        inst_types_file_path (path): The full path to the institutions-types file.
-        inst_analysis_folder_path (path); The full path to the folder \
+        distrib_institutions_df (pd.DataFrame): The data with distributed \
+        normalized institutions per institution type and per publication.
+        inst_analysis_folder_path (path): The full path to the folder \
         where the results of the institutions analysis are saved.
-        pub_ids_lists (tuple): (list of all publication IDs (str) of the institute, \
-        list of the IDs (str) of publications in journals, \
+        pub_ids_lists (tuple): (list of all publication IDs (str) of \
+        the institute, list of the IDs (str) of publications in journals, \
         list of the IDs (str) of publications in conference proceedings, \
         list of the IDs (str) of publications in books).
     """
     # Setting useful column alias
     pub_id_col_alias = bp.COL_NAMES['pub_id']
     bp_country_col_alias = bp.COL_NAMES['address_inst'][3]
-    pg_country_col_alias = pg.COL_NAMES_BONUS['country']
-    inst_col_alias = pg.COL_NAMES_BONUS['institution']
-    pub_nb_col_alias = pg.COL_NAMES_BONUS["pub number"]
-    pub_ids_col_alias = pg.COL_NAMES_BONUS["pub_ids list"]
-    inst_nb_col_alias = pg.COL_NAMES_BONUS["inst number"]
-    inst_list_col_alias = pg.COL_NAMES_BONUS["inst list"]
-    journal_nb_col_alias = pg.COL_NAMES_BONUS['journal_pub_nb']
-    proc_nb_col_alias = pg.COL_NAMES_BONUS['proceedings_pub_nb']
-    book_nb_col_alias = pg.COL_NAMES_BONUS['book_pub_nb']
+    pg_country_col_alias = bm_pg.COL_NAMES_BONUS['country']
+    inst_col_alias = bm_pg.COL_NAMES_BONUS['institution']
+    pub_nb_col_alias = bm_pg.COL_NAMES_BONUS["pub number"]
+    pub_ids_col_alias = bm_pg.COL_NAMES_BONUS["pub_ids list"]
+    inst_nb_col_alias = bm_pg.COL_NAMES_BONUS["inst number"]
+    inst_list_col_alias = bm_pg.COL_NAMES_BONUS["inst list"]
+    journal_nb_col_alias = bm_pg.COL_NAMES_BONUS['journal_pub_nb']
+    proc_nb_col_alias = bm_pg.COL_NAMES_BONUS['proceedings_pub_nb']
+    book_nb_col_alias = bm_pg.COL_NAMES_BONUS['book_pub_nb']
 
     # Setting useful columns list
     common_cols_list = [pub_id_col_alias, bp_country_col_alias]
@@ -505,10 +503,10 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
 
     # Setting useful column names aliases
     inst_type_abbr_col = bp.INST_TYPES_USECOLS[1]
-    institutions_col = pg.COL_NAMES_BONUS['institution']
+    institutions_col = bm_pg.COL_NAMES_BONUS['institution']
 
     # Setting folder and file names aliases
-    distrib_inst_filename_alias = pg.ARCHI_YEAR["institutions distribution file name"] + xlsx_extent
+    distrib_inst_filename_alias = bm_pg.ARCHI_YEAR["institutions distribution file name"] + xlsx_extent
 
     # Getting institutions types data
     inst_types_df = pd.read_excel(inst_types_file_path, usecols = bp.INST_TYPES_USECOLS)
@@ -522,7 +520,7 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
                                                          progress_param=inter_progress_param)
 
     # Saving formatted df of distributed institutions
-    distrib_inst_df_title = pg.DF_TITLES_LIST[11]
+    distrib_inst_df_title = bm_pg.DF_TITLES_LIST[11]
     sheet_name = 'Distributed Inst ' + year
     save_formatted_df_to_xlsx(inst_analysis_folder_path, distrib_inst_filename_alias,
                               distrib_institutions_df, distrib_inst_df_title,
