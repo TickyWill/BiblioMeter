@@ -5,11 +5,8 @@ __all__ = ['AppMain']
 # Standard library imports
 import threading
 import tkinter as tk
-#import traceback
 from functools import partial
 from pathlib import Path
-#from tkinter import messagebox
-from tkinter import font as tkFont
 
 # 3rd party imports
 from screeninfo import get_monitors

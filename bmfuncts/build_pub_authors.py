@@ -37,7 +37,7 @@ def _set_useful_bp_cols():
     """
     pub_id_alias = bp.COL_NAMES['pub_id']
     auth_idx_alias = bp.COL_NAMES['authors'][1]
-    co_auth_alias = bp.COL_NAMES['authors'][2]    
+    co_auth_alias = bp.COL_NAMES['authors'][2]
     doi_alias = bp.COL_NAMES['articles'][6]
     address_alias = bp.COL_NAMES['auth_inst'][2]
     norm_inst_alias = bp.COL_NAMES['auth_inst'][4]
@@ -55,11 +55,11 @@ def _set_useful_bm_cols():
     corpus_year_alias = bm_pg.COL_NAMES_BONUS['corpus_year']
     authors_list_alias = bm_pg.COL_NAMES_BONUS['liste auteurs']
     bm_bonus_cols_list = [corpus_year_alias, authors_list_alias]
-    
+
     fullname_alias = bm_pg.COL_NAMES_BM['Full_name']
     lastname_alias = bm_pg.COL_NAMES_BM['Last_name']
-    firstname_alias = bm_pg.COL_NAMES_BM['First_name']   
-    bm_auth_names_list = [fullname_alias, lastname_alias, firstname_alias]   
+    firstname_alias = bm_pg.COL_NAMES_BM['First_name']
+    bm_auth_names_list = [fullname_alias, lastname_alias, firstname_alias]
 
     ortho_lastname_init_alias = bm_pg.COL_NAMES_ORTHO['last name init']
     ortho_initials_init_alias = bm_pg.COL_NAMES_ORTHO['initials init']
@@ -80,7 +80,7 @@ def _set_useful_bm_cols():
     outliers_lastname_col_alias = bm_pg.COL_NAMES_EXT['last name']
     outliers_initials_col_alias = bm_pg.COL_NAMES_EXT['initials']
     bm_outliers_cols_list = [outliers_lastname_col_alias, outliers_initials_col_alias]
-    
+
     return_tup = (bm_bonus_cols_list, bm_auth_names_list, bm_ortho_cols_list,
                   bm_compl_cols_list, bm_outliers_cols_list)
     return return_tup
@@ -304,7 +304,7 @@ def _set_correction_file_params(institute, wf_path):
 
     # Setting useful aliases
     orphan_treat_root = bm_pg.ARCHI_ORPHAN["root"]
-    orthograph_file_name = bm_pg.ARCHI_ORPHAN["orthograph file"]    
+    orthograph_file_name = bm_pg.ARCHI_ORPHAN["orthograph file"]
     complements_file_name = bm_pg.ARCHI_ORPHAN["complementary file"]
     replace_sheet = bm_pg.SHEET_NAMES_ORPHAN['to replace']
     remove_sheet = bm_pg.SHEET_NAMES_ORPHAN["to remove"] + institute
@@ -312,7 +312,7 @@ def _set_correction_file_params(institute, wf_path):
     # Setting useful path
     ortho_path = wf_path / Path(orphan_treat_root) / Path(orthograph_file_name)
     complements_path = wf_path / Path(orphan_treat_root) / Path(complements_file_name)
-    
+
     return ortho_path, complements_path, replace_sheet, remove_sheet
 
 
@@ -576,7 +576,7 @@ def _get_input_data(params_list, bp_cols_list):
         The built data of authors with affiliations).
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
+    wf_path, datatype, corpus_year = params_list[2:]
 
     # Setting useful aliases
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
@@ -637,7 +637,7 @@ def _recasting_authors_df(authors_df, recast_cols_list):
 
     # Transforming to uppercase the Institute author name
     # which is in column 'co_auth_col'
-    authors_df[col] = authors_df[co_auth_col].str.upper()
+    authors_df[co_auth_col] = authors_df[co_auth_col].str.upper()
 
     # Splitting the Institute author name to firstname initials and lastname
     # and putting them as a tuple in column 'fullname_col'
@@ -761,12 +761,12 @@ def build_institute_pubs_authors(params_list):
         to the Institute.
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
+    institute, org_tup, wf_path, _, corpus_year = params_list
 
     # Setting useful cols lists
-    bp_cols_list = _set_useful_bp_cols
+    bp_cols_list = _set_useful_bp_cols()
     (bm_bonus_cols_list, bm_auth_names_list, bm_ortho_cols_list,
-     bm_compl_cols_list, bm_outliers_cols_list) = _set_useful_bm_cols
+     bm_compl_cols_list, bm_outliers_cols_list) = _set_useful_bm_cols()
 
     # Setting useful col names
     pub_id_col, auth_idx_col, co_auth_col = bp_cols_list[0:3]

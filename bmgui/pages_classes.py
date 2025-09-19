@@ -81,7 +81,7 @@ class SetAuthorCopyright:
                             anchor="sw")
 
 
-class SetLaunchButton(tk.Tk):
+class SetLaunchButton:
     """Displays corpuses analysis launch button in main window.
 
     Args:
@@ -121,7 +121,6 @@ class SetLaunchButton(tk.Tk):
         Args:
             master (class): `bmgui.main_page.AppMain` class.
         """
-        
         if master.wf_path=='':
             warning_title = "!!! Attention !!!"
             warning_text =  ("Chemin non renseigné."

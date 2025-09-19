@@ -19,7 +19,6 @@ import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
-from bmfuncts.config_utils import set_org_params
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.useful_functs import save_fails_dict

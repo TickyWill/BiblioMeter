@@ -162,7 +162,6 @@ def _set_kw_files_params(wf_path, corpus_year):
 
     return kw_items_dict, kw_analysis_folder_path
 
-                            
 
 def keywords_analysis(params_list, progress_callback=None, verbose=False):
     """ Performs the analysis of publications keywords (KWs) of the corpus.
@@ -198,7 +197,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
 
     # Setting input-data path
     saved_results_path = set_saved_results_path(wf_path, datatype)
-        
+
     # Setting useful files params
     kw_items_dict, kw_analysis_folder_path = _set_kw_files_params(wf_path, corpus_year)
     if progress_callback:
@@ -217,14 +216,6 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
 
     # Getting the dict of deduplication results
     dedup_parsing_dict = get_final_dedup(wf_path, saved_results_path, corpus_year)
-    if progress_callback:
-        progress_callback(25)
-
-    # Setting useful filenames dict
-    kw_items_dict = {'AK': auth_kw_item_alias,
-                     'IK': index_kw_item_alias,
-                     'TK': title_kw_item_alias,
-                    }
     if progress_callback:
         progress_callback(25)
 

@@ -15,7 +15,6 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.add_ifs import add_if
-from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.consolidate_pub_list import split_pub_list_by_doc_type
 from bmfuncts.save_final_results import save_final_results

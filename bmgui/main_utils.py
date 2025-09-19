@@ -32,6 +32,7 @@ from bmgui.pages_classes import SetLaunchButton
 
 
 def except_hook(args):
+    """Displays raised exceptions."""
     messagebox.showerror("Error", args)
     messagebox.showerror("Exception", traceback.format_exc())
     bm_gu.enable_buttons(bm_gg.GUI_BUTTONS)

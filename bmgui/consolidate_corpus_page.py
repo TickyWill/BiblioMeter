@@ -28,15 +28,13 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.add_otps import add_otp
-from bmfuncts.config_utils import set_org_params
 from bmfuncts.consolidate_pub_list import built_final_pub_list
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.merge_pub_employees import recursive_year_search
 from bmfuncts.update_employees import set_employees_data
 from bmfuncts.update_employees import update_employees
-from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.use_homonyms import set_saved_homonyms
-from bmfuncts.use_homonyms import solving_homonyms
+from bmfuncts.use_homonyms import solve_homonyms
 from bmfuncts.use_otps import set_saved_otps
 from bmfuncts.useful_functs import check_dedup_parsing_available
 
@@ -113,13 +111,19 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
         progress_callback(100)
         if not any([files_number_error, sheet_name_error, column_error,
                     years2add_error, all_years_file_error]):
+            update_status = True
+            print("File of employees-data updated")
+
+            # Displaying the status of the update of employees data
             info_title = "- Information -"
             info_text = ("La mise à jour des effectifs a été effectuée "
                          f"pour l'année {employees_year}.")
             messagebox.showinfo(info_title, info_text)
-            update_status = True
-            print("File of employees-data updated")
         elif all_years_file_error:
+            update_status = True
+            print("File of employees data created")
+
+            # Displaying the status of the update of employees data
             info_title = "- Information -"
             info_text = ("La mise à jour des effectifs a été effectuée "
                          f"pour l'année {employees_year}."
@@ -129,9 +133,11 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                          f"\n '{self.empl_folder_path}'.\n"
                          f"\nErreur précise retournée :\n '{all_years_file_error}'.")
             messagebox.showinfo(info_title, info_text)
-            update_status = True
-            print("File of employees data created")
         else:
+            update_status = False
+            print("Update of employees data aborted (error in the provided file for update)")
+
+            # Displaying the status of the update of employees data
             warning_title = "!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!"
             if files_number_error:
                 warning_text = ("Absence de fichier ou plus d'un fichier "
@@ -142,7 +148,6 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                                 "\n\nou bien lancez les traitements "
                                 "annuel sans mise à jour des effectifs.")
                 messagebox.showwarning(warning_title, warning_text)
-                update_status = False
             if sheet_name_error:
                 warning_text = ("Un nom de feuille est de format incorrect "
                                 "dans le fichier des effectifs additionnels du dossier :"
@@ -155,7 +160,6 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                                 "\n 3- Sauvegardez le ficher;"
                                 "\n 4- Relancez la mise à jour des effectifs.")
                 messagebox.showwarning(warning_title, warning_text)
-                update_status = False
             if column_error:
                 warning_text = ("Une colonne est manquante ou mal nommée dans une feuille "
                                 "dans le fichier des effectifs additionnels du dossier :"
@@ -168,7 +172,6 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                                 "\n 3- Sauvegardez le ficher."
                                 "\n 4- Relancez la mise à jour des effectifs.")
                 messagebox.showwarning(warning_title, warning_text)
-                update_status = False
             if years2add_error:
                 warning_text = ("Le fichier des effectifs additionnels "
                                 "couvre plusieurs années "
@@ -180,18 +183,17 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                                 "chacun des fichiers créés en le positionnant seul "
                                 "dans le dossier.")
                 messagebox.showwarning(warning_title, warning_text)
-                update_status = False
-            print("Update of employees data aborted (error in the provided file for update)")
     else:
         progress_callback(100)
-        # Cancel employees database update
+        update_status = False
+        print("Update of employees data canceled")
+
+        # Displaying the status of the update of employees data
         warning_title = "- Information -"
         warning_text = ("La mise à jour des effectifs est abandonnée."
                         "\n\nLes croisement auteurs-effectifs de chaque l'année"
                         "se fera avec le fichier des effectifs sans sa mise à jour.")
         messagebox.showwarning(warning_title, warning_text)
-        update_status = False
-        print("Update of employees data canceled")
     return update_status
 
 
@@ -224,7 +226,7 @@ def _set_merge_year_files_param(wf_path, year_select):
     submit_path = merge_folder_path / Path(submit_alias)
     orphan_path = merge_folder_path / Path(orphan_alias)
     hash_id_path = merge_folder_path / Path(hash_id_alias)
-    
+
     merge_files = [submit_alias, orphan_alias]
     merge_paths = [merge_folder_path, submit_path, orphan_path, hash_id_path]
 
@@ -251,16 +253,18 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
     def _recursive_year_search_try(_progress_callback, progress_bar_state):
         dedup_parsing_status = check_dedup_parsing_available(master.wf_path, year_select)
         if dedup_parsing_status:
-            # Setting params values selected by the user
+            # Setting the list of useful params values selected by the user
             params_list = [master.institute, master.org_tup, master.wf_path,
                            master.datatype, year_select]
 
-            # Recursive search 
-            end_message, orphan_status = recursive_year_search(merge_files, merge_paths, employees_dict,
+            # Searching recursively the authors in the employees data
+            end_message, orphan_status = recursive_year_search(orphan_file, merge_paths, employees_dict,
                                                                params_list, search_depth,
                                                                _progress_callback, progress_bar_state)
             print('\n',end_message)
             _progress_callback(100)
+
+            # Displaying the status of the resursive search of authors
             _info_title = '- Information -'
             _info_text = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
             if orphan_status:
@@ -281,6 +285,8 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
 
         else:
             _progress_callback(100)
+
+            # Displaying the status of the resursive search of authors
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = (f"La synthèse de l'année {year_select} n'est pas disponible."
                             "\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
@@ -330,12 +336,16 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                     _recursive_year_search_try(progress_callback, progress_bar_state_init)
                 else:
                     progress_callback(100)
+
+                    # Displaying the status of the resursive search of authors
                     info_title = "- Information -"
                     info_text = (f"Le croisement auteurs-effectifs de l'année {year_select} "
                                  "dejà disponible est conservé.")
                     messagebox.showinfo(info_title, info_text)
         else:
             progress_callback(100)
+
+            # Displaying the status of the resursive search of authors
             info_title = "- Information -"
             info_text = (f"Le croisement auteurs-effectifs de l'année {year_select} "
                          "est annulé.")
@@ -369,19 +379,19 @@ def _set_homonymies_year_files_param(wf_path, year_select):
     # Setting useful files paths dependant on year select
     submit_path = merge_data_folder_path / Path(submit_alias)
     homonyms_file_path = homonyms_folder_path / Path(homonyms_file)
-    
+
     return submit_path, homonyms_file_path, homonyms_folder_path, homonyms_file
 
 
 def _launch_resolution_homonymies_try(master, year_select, progress_callback):
     """Launches file creation for resolving homonyms. 
 
-    This is done through the `solving_homonyms` function imported from 
-    `bmfuncts.consolidate_pub_list` module after check of status of 
+    This is done through the `solve_homonyms` function imported from 
+    `bmfuncts.use_homonyms` module after check of status of 
     publications-employees merge step. 
-    The Created file is filled with previously resolved homonyms 
+    The created file is filled with previously resolved homonyms 
     through `set_saved_homonyms` function imported from 
-    `bmfuncts.use_pub_attributes` module.
+    `bmfuncts.use_homonyms` module.
 
     Args:
         master (class): `bmgui.main_page.AppMain` class.
@@ -393,7 +403,9 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
     def _resolution_homonymies_try(_progress_callback):
         if os.path.isfile(submit_path):
             _progress_callback(20)
-            _return_tup = solving_homonyms(master.institute, master.org_tup,
+
+            # Creating the files for homonyms resolution by the user
+            _return_tup = solve_homonyms(master.institute, master.org_tup,
                                            submit_path, homonyms_file_path)
             end_message, actual_homonym_status = _return_tup
             print(end_message)
@@ -401,14 +413,21 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
                   actual_homonym_status)
             _progress_callback(80)
             if actual_homonym_status:
-                _return_tup = set_saved_homonyms(master.institute, master.org_tup,
-                                                 master.wf_path, year_select,
+                # Setting the list of useful params values selected by the user
+                sub_params_list = [master.institute, master.org_tup,
+                                   master.wf_path, year_select]
+
+                # Using the available history of homonyms resolution by the user
+                # in the files for homonyms resolution
+                _return_tup = set_saved_homonyms(sub_params_list,
                                                  actual_homonym_status)
                 end_message, actual_homonym_status = _return_tup
             print('\n',end_message)
             print('\n Actual homonyms status after setting saved homonyms:',
                   actual_homonym_status)
             _progress_callback(100)
+
+            # Displaying the status of the homonyms step
             _info_title = "- Information -"
             _info_text = ("Le fichier pour la résolution des homonymies "
                          f"de l'année {year_select} a été créé "
@@ -431,6 +450,8 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
 
         else:
             _progress_callback(100)
+
+            # Displaying the status of the homonyms step
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = ("Le fichier contenant le croisement auteurs-effectifs "
                             f"de l'année {year_select} n'est pas disponible."
@@ -468,12 +489,16 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
                 _resolution_homonymies_try(progress_callback)
             else:
                 progress_callback(100)
+
+                # Displaying the status of the homonyms step
                 info_title = "- Information -"
                 info_text = ("Le fichier pour la résolution des homonymies "
                              f"de l'année {year_select} dejà disponible est conservé.")
                 messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)
+
+        # Displaying the status of the homonyms step
         info_title = "- Information -"
         info_text = ("La création du fichier pour la résolution "
                      f"des homonymies de l'année {year_select} est annulée.")
@@ -514,12 +539,8 @@ def _launch_add_otp_try(master, year_select, progress_callback):
     """Launches files creation for adding OTP attribute to publications.
 
     This is done through the `add_otp` function imported from 
-    `bmfuncts.add_otps` module after:
-
-    - check of status of homonyms resolution step 
-    - saving the resolved homonyms through `save_homonyms` function \
-    imported from `bmfuncts.use_pub_attributes` module.
-
+    `bmfuncts.add_otps` module after checking of status of 
+    homonyms resolution step. 
     The created files are filled with previously set OTPs through 
     `set_saved_otps` function imported from `bmfuncts.use_otps` 
     module. 
@@ -533,17 +554,24 @@ def _launch_add_otp_try(master, year_select, progress_callback):
 
     def _add_otp_try(_progress_callback):
         if os.path.isfile(homonyms_file_path):
-            _progress_callback(15)
-            end_message = save_homonyms(master.institute, master.org_tup, master.wf_path, year_select)
-            print('\n',end_message)
+            # Setting the list of useful params values selected by the user
+            sub_params_list = [master.institute, master.org_tup,
+                               master.wf_path, year_select]
             _progress_callback(20)
-            end_message = add_otp(master.institute, master.org_tup, master.wf_path,
-                                  homonyms_file_path, otp_folder_path, otp_file_base)
+
+            # Creating the files for OTPs attribution by the user
+            end_message = add_otp(sub_params_list, homonyms_file_path,
+                                  otp_folder_path, otp_file_base)
             print(end_message)
             _progress_callback(80)
-            end_message = set_saved_otps(master.institute, master.org_tup, master.wf_path, year_select)
+
+            # Using the available history of OTPs setting by the user
+            # in the files for OTPs attribution
+            end_message = set_saved_otps(sub_params_list)
             print(end_message)
             _progress_callback(100)
+
+            # Displaying the status of the OTPs step
             _info_title = "- Information -"
             _info_text = (f"Les fichiers de l'année {year_select} pour l'attribution des OTPs "
                          f"ont été créés dans le dossier : \n\n'{otp_folder_path}' "
@@ -556,6 +584,8 @@ def _launch_add_otp_try(master, year_select, progress_callback):
             messagebox.showinfo(_info_title, _info_text)
         else:
             _progress_callback(100)
+
+            # Displaying up the status of the OTPs step
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = ("Le fichier contenant la résolution des homonymies "
                             f"de l'année {year_select} n'est pas disponible."
@@ -602,6 +632,8 @@ def _launch_add_otp_try(master, year_select, progress_callback):
                     _add_otp_try(progress_callback)
                 else:
                     progress_callback(100)
+
+                    # Displaying up the status of the OTPs step
                     info_title = "- Information -"
                     info_text = ("Les fichiers pour l'attribution des OTPs "
                                  f"de l'année {year_select} dejà disponibles sont conservés.")
@@ -611,6 +643,8 @@ def _launch_add_otp_try(master, year_select, progress_callback):
             _add_otp_try(progress_callback)
     else:
         progress_callback(100)
+
+        # Displaying up the status of the OTPs step
         info_title = "- Information -"
         info_text = ("La création des fichiers pour l'attribution des OTPs "
                      f"de l'année {year_select} est annulée.")
@@ -630,16 +664,15 @@ def _set_conso_year_files_params(wf_path, year_select):
     """
     # Setting useful aliases
     otp_folder_alias = bm_pg.ARCHI_YEAR["OTP folder"]
-    otp_file_base_alias = bm_pg.ARCHI_YEAR["OTP file name base"]
     pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
     missing_if_base_alias = bm_pg.ARCHI_IF["missing_if_base"]
     missing_issn_base_alias = bm_pg.ARCHI_IF["missing_issn_base"]
 
     # Setting useful files names dependent on year select
-    pub_list_file = pub_list_file_base_alias + f' {year_select}.xlsx'
-    missing_if_file = f'{year_select}_' + missing_if_base_alias + ".xlsx"
-    missing_issn_file = f'{year_select}_' + missing_issn_base_alias + ".xlsx"
+    pub_list_file =  f'{pub_list_file_base_alias} {year_select}.xlsx'
+    missing_if_file = f'{year_select}{missing_if_base_alias}'
+    missing_issn_file = f'{year_select}{missing_issn_base_alias}'
 
     # Setting useful folders paths dependent on year select
     corpus_year_path = wf_path / Path(year_select)
@@ -648,12 +681,11 @@ def _set_conso_year_files_params(wf_path, year_select):
 
     # Setting useful files paths dependant on year select
     pub_list_file_path = pub_list_folder_path / Path(pub_list_file)
-    
+
     # Setting returned lists
-    files_list = [otp_file_base_alias, pub_list_file,
-                  missing_if_file, missing_issn_file]
+    files_list = [pub_list_file, missing_if_file, missing_issn_file]
     paths_list = [otp_folder_path, pub_list_folder_path, pub_list_file_path]
-    
+
     return files_list, paths_list
 
 
@@ -674,20 +706,25 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
     def _consolidate_pub_list(_progress_callback):
         if os.path.isdir(otp_folder_path) and os.listdir(otp_folder_path):
             _progress_callback(20)
-            conso_tup = built_final_pub_list(master.institute, master.org_tup,
-                                             master.wf_path, master.datatype,
-                                             otp_folder_path, pub_list_folder_path,
-                                             otp_file_base, year_select)
+            # Setting the list of useful params values selected by the user
+            params_list = [master.institute, master.org_tup, master.wf_path,
+                           master.datatype, year_select]
+
+            # Consolidating publications list
+            conso_tup = built_final_pub_list(params_list)
             end_message, pub_nb, split_ratio, if_database_complete = conso_tup
             print(end_message)
             _progress_callback(70)
             if bm_pg.LISTES_CONCAT:
+                # Concatenating all available publications lists
                 end_message = concatenate_pub_lists(master.wf_path, master.years_list)
                 print('\n',end_message)
             _progress_callback(100)
+
+            # Displaying the status of the consolidation step of the publications list
             _info_title = "- Information -"
             _info_text = (f"Une liste consolidée de {pub_nb} publications a été créée "
-                         f"pour l'année {year_select} dans le dossier :\n\n '{pub_list_file_path}' "
+                         f"pour l'année {year_select} dans le dossier :\n\n '{pub_list_folder_path}' "
                          f"\n\nsous le nom :   '{pub_list_file}'."
                          "\n\nLes IFs disponibles ont été automatiquement attribués.")
             if if_database_complete:
@@ -726,6 +763,8 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
 
         else:
             _progress_callback(100)
+
+            # Displaying the status of the consolidation step of the publications list
             warning_title = "!!! ATTENTION : fichiers manquants !!!"
             warning_text = ("Les fichiers d'attribution des OTPs "
                             f"de l'année {year_select} ne sont pas disponibles."
@@ -737,7 +776,7 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
 
     # Setting files parameters dependent on year selection
     files_list, paths_list = _set_conso_year_files_params(master.wf_path, year_select)
-    (otp_file_base, pub_list_file, missing_if_file, missing_issn_file) = files_list
+    (pub_list_file, missing_if_file, missing_issn_file) = files_list
     otp_folder_path, pub_list_folder_path, pub_list_file_path = paths_list
 
     # Setting dialogs and checking answers
@@ -762,12 +801,16 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
                 _consolidate_pub_list(progress_callback)
             else:
                 progress_callback(100)
+
+                # Displaying the status of the consolidation step of the publications list
                 info_title = "- Information -"
                 info_text = ("Le fichier de la liste consolidée des publications "
                              f"de l'année {year_select} dejà disponible est conservé.")
                 messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)
+
+        # Displaying the status of the consolidation step of the publications list
         info_title = "- Information -"
         info_text = ("La création du fichier de la liste consolidée des publications "
                      f"de l'année {year_select} est annulée.")

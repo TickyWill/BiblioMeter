@@ -318,7 +318,7 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
     return dept_otps_dict
 
 
-def set_lab_otps(institute, org_tup, wf_path):
+def set_lab_otps(set_otp_params_list):
     """Builds the dict that gives the OTPs list to be used for each lab 
     of each department of the Institute.
 
@@ -335,13 +335,15 @@ def set_lab_otps(institute, org_tup, wf_path):
     and `_build_dept_otps_dict`.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
+        set_otp_params_list (list): The list composed of the Institute \
+        name (str), the org_tup (tup) that contains parameters of Institute \
+        organization and the full path to working folder (path).
     Returns:
         (dict): OTPs hierarchical dict keyed by departments \
         and valued by dicts keyed by labs and valued by OTPs lists.    
     """
+    # Setting params values from set_otp_params_list
+    institute, org_tup, wf_path = set_otp_params_list
 
     # Seting useful aliases
     unknown_alias = bp.UNKNOWN
@@ -359,7 +361,7 @@ def set_lab_otps(institute, org_tup, wf_path):
     otps_otp_col = otps_cols[1]
 
     # Setting useful paths
-    config_root_path = wf_path / Path(config_root_alias)
+    config_root_path = wf_path / Path(config_root_alias)               # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     otps_bdd_path = config_root_path / Path(otps_bdd_file)
 
     # Getting the OTPs infos from OTPs source file

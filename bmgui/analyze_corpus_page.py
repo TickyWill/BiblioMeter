@@ -17,7 +17,6 @@ import bmgui.pages_utils as bm_pu
 from bmfuncts.add_ifs import get_if_db
 from bmfuncts.authors_analysis import authors_analysis
 from bmfuncts.build_kpi import if_analysis
-from bmfuncts.config_utils import set_org_params
 from bmfuncts.coupling_analysis import coupling_analysis
 from bmfuncts.keywords_analysis import keywords_analysis
 from bmfuncts.save_final_results import set_result_folder_path

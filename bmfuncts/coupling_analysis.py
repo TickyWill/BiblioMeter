@@ -340,7 +340,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    addresses_params = [institute, org_tup, wf_path, saved_results_path, corpus_year]
+    addresses_params = [institute, wf_path, corpus_year]
     inst_pub_addresses_df = build_institute_addresses_df(addresses_params, verbose=False,
                                                          progress_param=progress_param)
     if verbose:
@@ -391,7 +391,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         for key in save_keys_list:
             results_to_save_dict[key] = True
         if_analysis_name = "None"
-        _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                                if_analysis_name, results_to_save_dict, verbose=False)
     else:
         analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name = ("", "", "")

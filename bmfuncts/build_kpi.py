@@ -243,7 +243,7 @@ def _build_dept_if_df(dept_by_journal_df, if_analysis_year, cols_list):
     # Cleaning the 'dept_if_df' dataframe
     new_if_col = "IF " + if_analysis_year
     dept_if_df = dept_if_df.rename(columns={if_analysis_col: new_if_col})
-    dept_if_df[new_if_col] = dept_if_df[new_if_col].replace(bm_pg.NOT_AVAILABLE_IF, 0)
+    dept_if_df[new_if_col] = dept_if_df[new_if_col].replace(bm_pg.NOT_AVAILABLE, 0)
     dept_if_df = dept_if_df.sort_values(by=[new_if_col, journal_col],
                                         ascending=False)
     dept_if_df = dept_if_df.reset_index().drop(columns=["index"])
@@ -586,8 +586,7 @@ def if_analysis(params_list, if_most_recent_year,
         progress_callback(10)
 
     # Building analysis dicts
-    return_tup = doctype_analysis(institute, org_tup, wf_path,
-                                  datatype, corpus_year, if_most_recent_year,
+    return_tup = doctype_analysis(params_list, if_most_recent_year,
                                   progress_callback=progress_callback)
     (pub_df_dict, by_journal_dict, if_analysis_col,
      if_analysis_year, doctypes_analysis_folder_path) = return_tup
@@ -621,7 +620,7 @@ def if_analysis(params_list, if_most_recent_year,
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["ifs"] = True
     if_analysis_name = new_if_analysis_col
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,                       # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                            if_analysis_name, results_to_save_dict, verbose=False)
     if progress_callback:
         progress_callback(100)

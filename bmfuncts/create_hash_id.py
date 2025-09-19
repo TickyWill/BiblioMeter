@@ -6,9 +6,6 @@ that is independent of the extraction from the external databases.
 __all__ = ['create_hash_id']
 
 
-# Standard Library imports
-from pathlib import Path
-
 # 3rd party imports
 import pandas as pd
 import BiblioParsing as bp
@@ -131,7 +128,7 @@ def create_hash_id(institute, org_tup, files_paths):
     title_col = submit_col_rename_dic[bp.COL_NAMES['articles'][9]]
     issn_col = submit_col_rename_dic[bp.COL_NAMES['articles'][10]]
 
-    # Setting useful aliases    
+    # Setting useful aliases
     hash_id_alias = bm_pg.COL_HASH['hash_id']
 
     # Setting useful columns list

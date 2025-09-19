@@ -22,18 +22,20 @@ from tkinter import ttk
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
-
-from bmgui.gui_utils import disable_buttons
-from bmgui.gui_utils import enable_buttons
-from bmgui.gui_utils import place_after
-from bmgui.gui_utils import place_bellow
-from bmgui.gui_utils import set_font_size_tup
-from bmgui.gui_utils import set_pos_tup_px
-from bmgui.gui_utils import set_pos_tup_px_list
 from bmgui.gui_utils import set_progress_bar_pos_tup
 
 
 def set_general_params(master, institute, wf_path, datatype):
+    """Sets selected paramaters by the user as attributes 
+    of the main_page.
+
+    Args:
+        master (class): `bmgui.main_page.AppMain` class.
+        institute (str): The name of the Institute.
+        wf_path (path): The full path to the working folder.
+        datatype (str): The data combination type \
+        of corpuses databases.
+    """
     master.institute = institute
     master.wf_path = wf_path
     master.datatype = datatype

@@ -267,7 +267,7 @@ def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
 
 
 def _set_au_files_params(wf_path, corpus_year):
-    """Sets IFs specific file and folder 
+    """Sets authors analysis specific files and folder paths. 
     
     Args:
         wf_path (path): Full path to working folder.
@@ -325,7 +325,7 @@ def authors_analysis(params_list, progress_callback=None):
     with the results of this analysis through the `_update_kpi_database` internal function.
 
     Args:
-        params_list (list):  The list composed of the Institute name (str), \
+        params_list (list): The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute organization, \
         the full path to working folder (path), the data combination type \
         of corpuses databases (str) and the 4 digits year of the corpus (str).
@@ -380,7 +380,7 @@ def authors_analysis(params_list, progress_callback=None):
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
     if_analysis_name = "None"
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,                       # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
                            if_analysis_name, results_to_save_dict, verbose=False)
 #    _ = save_final_results(params_list, if_analysis_name,
 #                           results_to_save_dict, verbose=False)

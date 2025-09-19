@@ -34,7 +34,7 @@ __all__ = ['ANALYSIS_IF',
            'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
            'LISTES_CONCAT',
-           'NOT_AVAILABLE_IF',
+           'NOT_AVAILABLE',
            'OTHER_DOCTYPE',
            'OTP_SHEET_NAME_BASE',
            'OUTSIDE_ANALYSIS',
@@ -233,7 +233,7 @@ DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + \
 OTHER_DOCTYPE = 'Others'
 
 FILL_EMPTY_KEY_WORD = 'unknown'
-NOT_AVAILABLE_IF    = 'Not available'
+NOT_AVAILABLE       = 'Not available'
 OUTSIDE_ANALYSIS    = 'Not analysed'
 HOMONYM_FLAG        = "HOMONYM"
 

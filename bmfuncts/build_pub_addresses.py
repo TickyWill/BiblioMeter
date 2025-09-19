@@ -418,9 +418,7 @@ def build_institute_addresses_df(addresses_params, verbose=False,
 
     Args:
         addresses_params (list): The institute name (str), \
-        a tuple that contains parameters of the institute (tup), \
-        the full path to the working folder (path), the full path \
-        to the folder where final results are saved (path), \
+        the full path to the working folder (path), \
         4 digits year of the corpus (str).
         verbose (bool): Status of prints (optional, default = False).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
@@ -430,8 +428,8 @@ def build_institute_addresses_df(addresses_params, verbose=False,
         (dataframe): The built data.
     """
     # Setting params values from addresses_params
-    institute, org_tup, wf_path, saved_results_path, corpus_year = addresses_params
-    
+    institute, wf_path, corpus_year = addresses_params
+
     # Setting parameters from optional arg
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param

@@ -55,15 +55,15 @@ def _add_author_job_type(in_path, out_path, empl_dict, years, cols_list):
         the modified publications list.
     """
     # internal functions:
-    def _get_mat_author_type(_col_name, _dic):
+    def _get_mat_author_type(_col_name, _dic, _year_mat_df, _set_author_type):
         mat_value = ""
-        if not year_mat_df[_col_name].empty:
-            mat_value = list(year_mat_df[_col_name])[0]
+        if not _year_mat_df[_col_name].empty:
+            mat_value = list(_year_mat_df[_col_name])[0]
         for key, values_list in _dic.items():
             values_status = [True for value in values_list if value in mat_value]
             if any(values_status):
-                set_author_type = key
-        return set_author_type
+                _set_author_type = key
+        return _set_author_type
 
 
     def _search_mat_author_type(_mat):
@@ -75,26 +75,27 @@ def _add_author_job_type(in_path, out_path, empl_dict, years, cols_list):
             year_empl_df = empl_dict[years[year_idx]]
             year_mat_df = year_empl_df[year_empl_df[mat_col]==str(_mat)]
             for col_name, dic in author_types_dic.items():
-                set_author_type = _get_mat_author_type(col_name, dic)
+                set_author_type = _get_mat_author_type(col_name, dic,
+                                                       year_mat_df, set_author_type)
             year_idx += 1
         author_type = set_author_type
         return author_type
 
 
-    def _get_ext_author_type(_mat_value, _dic):
+    def _get_ext_author_type(_mat_value, _dic, _author_type):
         for key, values_list in _dic.items():
             values_status = [True for value in values_list if value in _mat_value]
             if any(values_status):
-                author_type = key
+                _author_type = key
                 break
-        return author_type
+        return _author_type
 
 
-    def _search_ext_author_type():
+    def _search_ext_author_type(_row):
         author_type = 'Coll'
         for col_name, dic in author_types_dic.items():
-            mat_value = row[col_name]
-            author_type = _get_ext_author_type(mat_value, dic)
+            mat_value = _row[col_name]
+            author_type = _get_ext_author_type(mat_value, dic, author_type)
             if author_type!='Coll':
                 break
         return author_type
@@ -105,7 +106,7 @@ def _add_author_job_type(in_path, out_path, empl_dict, years, cols_list):
         if mat!="externe":
             author_type = _search_mat_author_type(mat)
         else:
-            author_type = _search_ext_author_type()
+            author_type = _search_ext_author_type(row)
         return author_type
 
     # Setting col names from cols_list
@@ -192,7 +193,7 @@ def _add_biblio_list(in_path, out_path, cols_list):
     articles_plus_full_ref_df.to_excel(out_path, index=False)
 
     end_message = f"Column with full reference of publication added in file: \n  '{out_path}'"
-    return end_message 
+    return end_message
 
 
 def _add_ext_docs(submit_path, orphan_path, ext_docs_path, cols_list):
@@ -326,7 +327,6 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path, cols_list):
     new_submit_df = new_submit_df.sort_values([pub_id_col, author_id_col])
 
     # Dropping orphan_drop_df rows from init_orphan_df
-    # TODO Either change the type of the 'keep' param or use a string value
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of init_orphan_df
@@ -475,7 +475,6 @@ def _add_other_ext(submit_path, orphan_path, others_path, cols_list):
     new_submit_df = new_submit_df.sort_values([pub_id_col, author_id_col])
 
     # Dropping orphan_drop_df rows from init_orphan_df
-    # TODO Either change the type of the 'keep' param or use a string value
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of init_orphan_df
@@ -639,7 +638,7 @@ def _set_merge_cols_lists():
     author_type_col, full_ref_col = (bm_pg.COL_NAMES_BONUS['author_type'],
                                      bm_pg.COL_NAMES_BONUS['liste biblio'])
 
-    # Setting the names of IDs columns 
+    # Setting the names of IDs columns
     pub_id_col, author_id_col, mat_col = (bp.COL_NAMES['pub_id'],
                                           bp.COL_NAMES['authors'][1],
                                           bm_eg.EMPLOYEES_USEFUL_COLS['matricule'])
@@ -664,10 +663,10 @@ def _set_merge_cols_lists():
     lastname_cols_list = [bm_pg.COL_NAMES_BM['Last_name'],
                           bm_pg.COL_NAMES_PUB_NAMES['last name']]
 
-    # Setting the names of columns of initials of first names in data    
+    # Setting the names of columns of initials of first names in data
     short_firstname_cols_list = [bm_eg.EMPLOYEES_ADD_COLS['first_name_initials'],
                                  bm_pg.COL_NAMES_PUB_NAMES['initials']]
-    
+
     # Building the useful lists of column names for the module functions
     reshape_cols_list = [pub_id_col, mat_col, short_firstname_cols_list[0]]
     add_ext_cols_list = ([pub_id_col, author_id_col] + fullname_cols_list
@@ -699,6 +698,7 @@ def _config_empl(empl_dict, years, initials_col, mat_col):
     Returns:
         (dict): The modified dict.
     """
+    new_empl_dict = {}
     for year in years:
         new_empl_dict[year] = keep_initials(empl_dict[year], initials_col,
                                             missing_fill=bp.UNKNOWN)
@@ -706,7 +706,7 @@ def _config_empl(empl_dict, years, initials_col, mat_col):
     return new_empl_dict
 
 
-def recursive_year_search(merge_files, merge_paths, empl_dict, params_list, search_depth,
+def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, search_depth,
                           progress_callback=None, progress_bar_state=None,
                           set_test_case="No test", set_test_name="No name"):
     """Searches in the employees database of the Institute the information for the authors 
@@ -749,10 +749,8 @@ def recursive_year_search(merge_files, merge_paths, empl_dict, params_list, sear
     module.
 
     Args:
-        merge_files (list): The file names for saving the built data of (1) the publications list \
-        with one row per Institute author that has been identified as Institute employee, \
-        (2) the publications list with one row per author that has not been identified as \
-        Institute employee.
+        orphan_file (str): The file name for saving the built data of the publications list \
+        with one row per author that has not been identified as Institute employee.
         merge_paths (list): The full paths to (1) the folder where the built data are saved and \
         (2, 3 and 4) the files of the built data including the Hash-IDs data.
         empl_dict (dict): The employees database as a dict keyed by the years \
@@ -778,20 +776,18 @@ def recursive_year_search(merge_files, merge_paths, empl_dict, params_list, sear
         that are set to NaN by default through the `keep_initials` function \
         imported from "bmfuncts.useful_functs" internal module.
     """
+    # Setting parameters values from params_list
+    institute, org_tup, wf_path, _, corpus_year = params_list
     print(f"\nMerge publications and employees information launched for year {corpus_year}...")
 
-    # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
-
     # Setting useful params of merge files from args
-    submit_file, orphan_file = merge_files
     merge_folder_path, submit_path, orphan_path = merge_paths[:3]
 
     # Setting path to the file of external employees
     ext_empl_path = _set_ext_files_paths(wf_path)
 
     # Setting useful parameters for setting col names
-    cols_param_tup = _set_merge_cols_lists
+    cols_param_tup = _set_merge_cols_lists()
     (reshape_cols_list, add_ext_cols_list,
      add_job_cols_list, add_ref_cols_list) = cols_param_tup
     pub_id_col, mat_col, initials_col = reshape_cols_list
@@ -810,7 +806,7 @@ def recursive_year_search(merge_files, merge_paths, empl_dict, params_list, sear
 
     # Replace in "empl_dict" NaN values by UNKNOWN string except in first name initials
     # and set type of employees IDs to string
-    empl_dict_config_empl(empl_dict, years, initials_col, mat_col)
+    empl_dict = _config_empl(empl_dict, years, initials_col, mat_col)
     if progress_callback:
         step = (100 - progress_bar_state) / 100
         progress_callback(progress_bar_state + step * 10)
