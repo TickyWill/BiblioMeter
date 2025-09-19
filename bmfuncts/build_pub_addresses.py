@@ -340,11 +340,11 @@ def _build_init_institute_addresses_df(addresses_params, progress_param=None):
     imported from the `BiblioParsing` package.
 
     Args:
-        addresses_params (list): The institute name (str), \
-        a tuple that contains parameters of the institute (tup), \
-        the full path to the working folder (path), the full path \
-        to the folder where final results are saved (path), \
-        4 digits year of the corpus (str).
+        addresses_params (list): Composed of the institute name (str), \
+        of the tuple that contains parameters of the institute (tup), \
+        of the full path to the working folder (path), of the 4 digits \
+        year of the corpus (str) and of the full path to the folder \
+        where final results are saved (path).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
@@ -355,7 +355,7 @@ def _build_init_institute_addresses_df(addresses_params, progress_param=None):
         Info for renaming 'BiblioParsing' columns into 'BiblioMeter' ones (dict)).
     """
     # Setting parameters values from addresses_params
-    institute, org_tup, wf_path, saved_results_path, corpus_year = addresses_params
+    institute, org_tup, wf_path, corpus_year, saved_results_path = addresses_params
 
     # Setting parameters from optional arg
     if progress_param:
@@ -427,8 +427,8 @@ def build_institute_addresses_df(addresses_params, verbose=False,
     Returns:
         (dataframe): The built data.
     """
-    # Setting params values from addresses_params
-    institute, wf_path, corpus_year = addresses_params
+    # Setting useful parameters values from addresses_params
+    institute, _, wf_path, corpus_year, _ = addresses_params
 
     # Setting parameters from optional arg
     if progress_param:

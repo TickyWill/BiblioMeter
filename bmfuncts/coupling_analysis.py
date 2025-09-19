@@ -340,7 +340,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    addresses_params = [institute, wf_path, corpus_year]
+    addresses_params = [institute, org_tup, wf_path, corpus_year, saved_results_path]
     inst_pub_addresses_df = build_institute_addresses_df(addresses_params, verbose=False,
                                                          progress_param=progress_param)
     if verbose:

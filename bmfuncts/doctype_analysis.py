@@ -123,9 +123,9 @@ def build_doctype_analysis_data(data_params_list,
 
     # Setting useful column names
     final_col_dic, depts_col_list = final_cols_tup
-    col_keys = ['journal', 'doc_type', 'issn']
+    col_keys = ['pub_id', 'journal', 'doc_type', 'issn']
     final_col_list = [final_col_dic[col_key] for col_key in col_keys]
-    journal_col, doctype_col, issn_col = final_col_list
+    journal_col, doctype_col, issn_col = final_col_list[1:]
 
     # Getting articles data resulting from deduplication parsing
     parsing_articles_df = _read_articles_data(wf_path,
