@@ -17,6 +17,22 @@ from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
 
 
+def _set_hash_id_cols_dic(institute, org_tup):
+
+    col_rename_tup = build_col_conversion_dic(institute, org_tup)
+    submit_col_rename_dic = col_rename_tup[1]
+
+    hash_id_cols_dic = {'pub_id_col'    : submit_col_rename_dic[bp.COL_NAMES["pub_id"]],
+                        'year_col'      : submit_col_rename_dic[bp.COL_NAMES['articles'][2]],
+                        'first_auth_col': submit_col_rename_dic[bp.COL_NAMES['articles'][1]],
+                        'doi_col'       : submit_col_rename_dic[bp.COL_NAMES['articles'][6]],
+                        'title_col'     : submit_col_rename_dic[bp.COL_NAMES['articles'][9]],
+                        'issn_col'      : submit_col_rename_dic[bp.COL_NAMES['articles'][10]],
+                        'hash_id_col'   : bm_pg.COL_HASH['hash_id']
+                       }
+    return hash_id_cols_dic
+
+
 def _my_hash(text:str):
     """Builds hash given the string 'text' 
     with a fixed prime numbers to mix up the bits.
@@ -119,17 +135,11 @@ def create_hash_id(institute, org_tup, files_paths):
     submit_path, orphan_path, hash_id_path = files_paths
 
     # Setting useful col names
-    col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    submit_col_rename_dic = col_rename_tup[1]
-    pub_id_col = submit_col_rename_dic[bp.COL_NAMES["pub_id"]]
-    year_col = submit_col_rename_dic[bp.COL_NAMES['articles'][2]]
-    first_auth_col = submit_col_rename_dic[bp.COL_NAMES['articles'][1]]
-    doi_col = submit_col_rename_dic[bp.COL_NAMES['articles'][6]]
-    title_col = submit_col_rename_dic[bp.COL_NAMES['articles'][9]]
-    issn_col = submit_col_rename_dic[bp.COL_NAMES['articles'][10]]
-
-    # Setting useful aliases
-    hash_id_alias = bm_pg.COL_HASH['hash_id']
+    hash_id_cols_dic = _set_hash_id_cols_dic(institute, org_tup)
+    col_keys = ['pub_id_col', 'year_col', 'first_auth_col', 'title_col',
+                'issn_col', 'doi_col', 'hash_id_col']
+    (pub_id_col, year_col, first_auth_col, doi_col,
+     title_col, issn_col, hash_id_col) = [hash_id_cols_dic[key] for key in col_keys]
 
     # Setting useful columns list
     useful_cols = [pub_id_col, year_col, first_auth_col,
@@ -154,12 +164,12 @@ def create_hash_id(institute, org_tup, files_paths):
                   f"{str(dg_to_hash.loc[idx, issn_col])}"
                   f"{str(dg_to_hash.loc[idx, doi_col])}")
         hash_id = _my_hash(text)
-        hash_id_df.loc[idx, hash_id_alias] = str(hash_id)
+        hash_id_df.loc[idx, hash_id_col] = str(hash_id)
         hash_id_df.loc[idx, pub_id_col] = pub_id
 
     # Cleaning dataframe from publications with same hash ID
     dfs_tup = (submit_df, orphan_df, hash_id_df)
-    cols_tup = (pub_id_col, hash_id_alias)
+    cols_tup = (pub_id_col, hash_id_col)
     new_submit_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
 
     # Saving the data

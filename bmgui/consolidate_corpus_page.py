@@ -567,7 +567,7 @@ def _launch_add_otp_try(master, year_select, progress_callback):
 
             # Using the available history of OTPs setting by the user
             # in the files for OTPs attribution
-            end_message = set_saved_otps(sub_params_list)
+            end_message = set_saved_otps(sub_params_list, master.wf_root_path)
             print(end_message)
             _progress_callback(100)
 

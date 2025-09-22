@@ -274,6 +274,8 @@ COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
                    'journal_pub_nb'    : "Nombre de publications de journal",
                    'proceedings_pub_nb': "Nombre de publications d'actes de conférence",
                    'book_pub_nb'       : "Nombre d'ouvrages ou de chapitres",
+                   'name_as_auth'      : "Nom d'auteur",
+                   'name_as_empl'      : "Nom de salarié",
                   }
 
 

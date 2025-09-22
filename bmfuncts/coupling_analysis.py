@@ -25,6 +25,23 @@ from bmfuncts.useful_functs import build_pub_ids_lists
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import set_saved_results_path
 
+
+def _set_co_cols_dic(institute, org_tup):
+
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+
+    co_cols_dic = {'pub_id_col'       : bp.COL_NAMES['pub_id'],
+                   'address_col'      : bp.COL_NAMES['address'][2],
+                   'address_id_col'   : bp.COL_NAMES['institution'][1],
+                   'institutions_col' : bp.COL_NAMES['institution'][2],
+                   'countries_col'    : bp.COL_NAMES['country'][2],
+                   'raw_affil_col'    : "Raw affiliations",
+                   'final_pub_id_col' : final_col_dic['pub_id'],
+                   'final_doctype_col': final_col_dic['doc_type'],
+                  }
+    return co_cols_dic
+
+
 def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, cols_list):
     """Removes the affiliation items given in the file pointed by 'country_unkept_affil_file_path' 
     path from the raw-institutions data.
@@ -80,9 +97,8 @@ def _copy_dg_col_to_df(df, dg, cols_list, copy_col):
     return df
 
 
-def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
-                                 inst_analysis_folder_path, year,
-                                 final_pub_id, paths_tup,
+def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
+                                 co_cols_dic, files_list, sub_paths_list,
                                  progress_param=None, verbose=False):
     """Builds the data of countries, normalized institutions and raw institutions.
 
@@ -109,13 +125,12 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     `save_formatted_df_to_xlsx` function imported from the `bmfuncts.format_files` module.
 
     Args:
-        institute (str): Institute name.
         inst_pub_addresses_df (dataframe): Data of addresses related only to publications \
         of the Institute.
-        inst_analysis_folder_path (path): The full path to the folder wher the build data \
+        inst_analysis_folder_path (path): The full path to the folder where the build data \
         are saved.
-        year (str): 4 digits year of the corpus.
-        final_pub_id (str): Final name of publication ID columns. 
+        corpus_year (str): 4 digits year of the corpus.
+        co_cols_dic (dict): The dict giving the col names for coupling analysis process. 
         paths_tup (tup): (the full path to the folder where useful institutions info \
         are stored, the full path to the file of institutions types definition).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
@@ -131,34 +146,16 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     """
     print("    Building normalized and raw affiliations data...")
 
-    # Setting local parameters
-    xlsx_extent = ".xlsx"
-
-    # Setting parameters from args
-    institutions_folder_path, inst_types_file_path = paths_tup
-
     # Setting useful column names aliases
-    pub_id_alias = bp.COL_NAMES['pub_id']
-    address_alias = bp.COL_NAMES['address'][2]
-    idx_address_alias = bp.COL_NAMES['institution'][1]
-    institutions_alias = bp.COL_NAMES['institution'][2]
-    countries_alias = bp.COL_NAMES['country'][2]
+    col_keys = ['pub_id_col', 'address_col', 'address_id_col', 'institutions_col',
+                'countries_col', 'final_pub_id_col', 'raw_affil_col']
+    (pub_id_col, address_col, address_id_col, institutions_col,
+     countries_col, final_pub_id_col, raw_affil_col) = [co_cols_dic[key] for key in col_keys]
 
-    # Setting aliases from globals
-    norm_inst_filename_alias = bm_pg.ARCHI_YEAR["norm inst file name"] + xlsx_extent
-    raw_inst_filename_alias = bm_pg.ARCHI_YEAR["raw inst file name"] + xlsx_extent
-    country_affiliations_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["affiliations_base"]
-    country_towns_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["country_towns_base"]
-    country_unkept_inst_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
-
-    # Setting useful file names
-    country_affil_file_alias = institute + "_" + country_affiliations_file_base_alias
-    country_towns_file_alias = institute + "_" + country_towns_file_base_alias
-    country_unkept_affil_file_alias = institute + "_" + country_unkept_inst_file_base_alias
-
-    # Setting useful paths
-    country_affil_file_path = institutions_folder_path / Path(country_affil_file_alias)
-    country_unkept_affil_file_path = institutions_folder_path / Path(country_unkept_affil_file_alias)
+    # Setting parameters values from 'files_lis' and 'sub_paths_list'
+    country_towns_file, norm_inst_file, raw_inst_file = files_list
+    (inst_analysis_folder_path, institutions_folder_path, inst_types_file_path,
+     country_affil_file_path, country_unkept_affil_file_path) = sub_paths_list
 
     # Setting parameters from optional arg
     if progress_param:
@@ -169,7 +166,7 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
     # Building countries, normalized institutions and not normalized institutions data
     file_path_0 = inst_types_file_path
     file_path_1 = country_affil_file_path
-    file_path_2 = country_towns_file_alias
+    file_path_2 = country_towns_file
     file_path_3 = institutions_folder_path
     inter_progress_param = None
     if progress_param:
@@ -190,13 +187,13 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
                   "institutions data built")
 
         # Adding countries column to normalized institutions and not normalized institutions data
-        norm_cols_list = [final_pub_id, idx_address_alias, countries_alias, institutions_alias]
+        norm_cols_list = [final_pub_id_col, address_id_col, countries_col, institutions_col]
         norm_institutions_df = _copy_dg_col_to_df(norm_institutions_df, countries_df,
-                                                  norm_cols_list, countries_alias)
-        raw_cols_list = [final_pub_id, idx_address_alias, countries_alias,
-                         address_alias, institutions_alias]
+                                                  norm_cols_list, countries_col)
+        raw_cols_list = [final_pub_id_col, address_id_col, countries_col,
+                         address_col, institutions_col]
         raw_institutions_df = _copy_dg_col_to_df(raw_institutions_df, countries_df,
-                                                 raw_cols_list, countries_alias)
+                                                 raw_cols_list, countries_col)
         if verbose:
             print("      Countries column added to normalized institutions "
                   "and not-yet-normalized institutions data")
@@ -205,13 +202,12 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
             progress_callback(inter_progress_2)
 
         # Removing unkept institutions from 'raw_institutions_df'
-        raw_affil_col = 'Raw affiliations'
-        cols_list = [countries_alias, raw_affil_col, institutions_alias]
+        cols_list = [countries_col, raw_affil_col, institutions_col]
         raw_institutions_df = _clean_unkept_affil(raw_institutions_df,
                                                   country_unkept_affil_file_path,
                                                   cols_list)
-        raw_institutions_df = raw_institutions_df.sort_values(by=[pub_id_alias,
-                                                                  idx_address_alias])
+        raw_institutions_df = raw_institutions_df.sort_values(by=[pub_id_col,
+                                                                  address_id_col])
         if verbose:
             print("      Unkept institutions removed from not-yet-normalized "
                   "institutions data")
@@ -221,19 +217,19 @@ def _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
 
         # Saving formatted df of normalized and raw institutions
         inst_df_title = bm_pg.DF_TITLES_LIST[9]
-        sheet_name = 'Norm Inst ' + year
-        save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_filename_alias,
+        sheet_name = 'Norm Inst ' + corpus_year
+        save_formatted_df_to_xlsx(inst_analysis_folder_path, norm_inst_file,
                                   norm_institutions_df, inst_df_title, sheet_name)
         inst_df_title = bm_pg.DF_TITLES_LIST[16]
-        sheet_name = 'Raw Inst ' + year
-        save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_filename_alias,
+        sheet_name = 'Raw Inst ' + corpus_year
+        save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_file,
                                   raw_institutions_df, inst_df_title, sheet_name)
         if verbose:
             print("      Normalized institutions and not-yet-normalized "
                   "institutions data saved")
         if progress_param:
             progress_callback(final_progress)
-    return countries_df, norm_institutions_df, country_affil_file_path, wrong_affil_types_dict
+    return countries_df, norm_institutions_df, wrong_affil_types_dict
 
 
 def _set_co_files_params(institute, wf_path, corpus_year):
@@ -252,18 +248,30 @@ def _set_co_files_params(institute, wf_path, corpus_year):
     # Setting aliases from globals
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
     inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    norm_inst_file_base_alias = bm_pg.ARCHI_YEAR["norm inst file name"]
+    raw_inst_file_base_alias = bm_pg.ARCHI_YEAR["raw inst file name"]
     institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
     inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    country_affiliations_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["affiliations_base"]
+    country_towns_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["country_towns_base"]
+    country_unkept_inst_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["unkept_affil_base"]
 
     # Setting useful file names
-    inst_types_file_alias = institute + "_" + inst_types_file_base_alias
+    norm_inst_file = norm_inst_file_base_alias + '.xlsx'
+    raw_inst_file = raw_inst_file_base_alias + '.xlsx'
+    inst_types_file = institute + "_" + inst_types_file_base_alias
+    country_affil_file = institute + "_" + country_affiliations_file_base_alias
+    country_towns_file = institute + "_" + country_towns_file_base_alias
+    country_unkept_affil_file = institute + "_" + country_unkept_inst_file_base_alias
 
     # Setting useful paths
     year_folder_path = wf_path / Path(corpus_year)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     inst_analysis_folder_path = analysis_folder_path / Path(inst_analysis_folder_alias)
     institutions_folder_path = wf_path / Path(institutions_folder_alias)
-    inst_types_file_path = institutions_folder_path / Path(inst_types_file_alias)
+    inst_types_file_path = institutions_folder_path / Path(inst_types_file)
+    country_affil_file_path = institutions_folder_path / Path(country_affil_file)
+    country_unkept_affil_file_path = institutions_folder_path / Path(country_unkept_affil_file)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
@@ -271,10 +279,12 @@ def _set_co_files_params(institute, wf_path, corpus_year):
     if not os.path.exists(inst_analysis_folder_path):
         os.makedirs(inst_analysis_folder_path)
 
+    files_list = [country_towns_file, norm_inst_file, raw_inst_file]
     folders_list = [analysis_folder_alias, inst_analysis_folder_alias]
     paths_list = [analysis_folder_path, inst_analysis_folder_path,
-                  institutions_folder_path, inst_types_file_path]
-    return folders_list, paths_list
+                  institutions_folder_path, inst_types_file_path,
+                  country_affil_file_path, country_unkept_affil_file_path]
+    return files_list, folders_list, paths_list
 
 
 def coupling_analysis(params_list, progress_callback=None, verbose=False):
@@ -322,15 +332,15 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     saved_results_path = set_saved_results_path(wf_path, datatype)
 
     # Setting useful paths
-    folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year)
+    files_list, folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year)
     analysis_folder_name, inst_analysis_folder_name = folders_list
-    (analysis_folder_path, inst_analysis_folder_path,
-     institutions_folder_path, inst_types_file_path) = paths_list
+    (analysis_folder_path, inst_analysis_folder_path, institutions_folder_path,
+     inst_types_file_path, country_affil_file_path) = paths_list[0:5]
 
     # Setting useful column names
-    final_col_dic, _ = set_final_col_names(institute, org_tup)
-    final_pub_id_col = final_col_dic['pub_id']
-    final_doctype_col = final_col_dic['doc_type']
+    co_cols_dic = _set_co_cols_dic(institute, org_tup)
+    final_pub_id_col = co_cols_dic['final_pub_id_col']
+    final_doctype_col = co_cols_dic['final_doctype_col']
 
     # Building only addresses of Institute publications
     progress_param = None
@@ -349,14 +359,12 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(inter_progress_1)
         inter_progress_2 = 83
         progress_param = (progress_callback, inter_progress_1, inter_progress_2)
-    paths_tup = (institutions_folder_path, inst_types_file_path)
-    return_tup = _build_and_save_norm_raw_dfs(institute, inst_pub_addresses_df,
-                                              inst_analysis_folder_path, corpus_year,
-                                              final_pub_id_col, paths_tup,
+    sub_paths_list = paths_list[1:]
+    return_tup = _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
+                                              co_cols_dic, files_list, sub_paths_list,
                                               progress_param=progress_param,
                                               verbose=verbose)
-    (countries_df, norm_institutions_df,
-     country_affil_file_path, wrong_affil_types_dict) = return_tup
+    (countries_df, norm_institutions_df, wrong_affil_types_dict) = return_tup
     if not wrong_affil_types_dict:
         if verbose:
             print("    normalized and raw institutions built and saved.")
@@ -378,7 +386,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
         # Building and saving geo stat dataframes
         geo_analysis_folder_name = build_and_save_geo_stat(countries_df, analysis_folder_path,
-                                                            corpus_year)
+                                                           corpus_year)
         if verbose:
             print("    Geo stat built and saved.")
         if progress_callback:

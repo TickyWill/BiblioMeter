@@ -267,7 +267,7 @@ def _update_pub_if(self, master, progress_callback):
                                              paths_tup, corpus_year)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-            split_pub_list_by_doc_type(master.institute, master.org_tup, master.wf_path, corpus_year)
+            split_pub_list_by_doc_type(master.wf_path, corpus_year)
 
             # Saving pub list as final result
             status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]

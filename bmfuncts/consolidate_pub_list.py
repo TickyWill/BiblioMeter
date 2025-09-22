@@ -32,6 +32,17 @@ from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
 
 
+def _set_pub_list_cols_dic(institute, org_tup):
+    final_col_dic, _ = set_final_col_names(institute, org_tup)
+
+    pub_list_cols_dic = {'pub_id_col'   : final_col_dic['pub_id'],
+                         'doc_type_col' : final_col_dic['doc_type'],
+                         'otps_list_col': final_col_dic['otp'],
+                         'otp_col'      : bm_pg.COL_NAMES_BONUS['final OTP'],
+                        }
+    return pub_list_cols_dic
+
+
 def _set_year_file_paths(wf_path, file_folder, file_base, corpus_year,
                          add_key=None):
     """Sets useful full paths to a publications list file for a corpus year.
@@ -96,7 +107,7 @@ def _set_split_pub_files_params(wf_path, corpus_year):
     return pub_list_file_path, doctype_split_paths
 
 
-def split_pub_list_by_doc_type(sub_params_list):
+def split_pub_list_by_doc_type(sub_params_list, pub_list_cols_dic=None):
     """Splits the dataframe of the publications final list into dataframes 
     corresponding to different documents types.
 
@@ -105,25 +116,31 @@ def split_pub_list_by_doc_type(sub_params_list):
     imported from `bmfuncts.format_files` module. 
     The useful full paths are set through the `_set_split_pub_files_params` 
     internal function.
+    The useful col names are set either through the 'pub_list_cols_dic' arg 
+    or through the `_set_pub_list_cols_dic` internal function. 
 
     Args:
         sub_params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path) and the 4 digits year of the corpus (str).
+        of the org_tup (tup) that contains parameters of Institute organization, \
+        of the full path to working folder (path) and of the 4 digits year of \
+        the corpus (str).
+        pub_list_cols_dic (dict): Optional dict giving col names \
+        for the process of building final publications list (default=None).
     Returns:
         (tup): (split ratio in % of the publications final list (int), 
         consolidated publications number (int)).
     """
-    # Setting parameters values from params_list
+    # Setting parameters values from 'sub_params_list'
     institute, org_tup, wf_path, corpus_year = sub_params_list
 
     # Setting useful parameters for use of 'format_page' function
     common_df_title = bm_pg.DF_TITLES_LIST[0]
 
     # Setting useful column names
-    final_col_dic, _ = set_final_col_names(institute, org_tup)
-    pub_id_col = final_col_dic['pub_id']
-    doc_type_col = final_col_dic['doc_type']
+    if not pub_list_cols_dic:
+        pub_list_cols_dic = _set_pub_list_cols_dic(institute, org_tup)
+    pub_id_col = pub_list_cols_dic['pub_id_col']
+    doc_type_col = pub_list_cols_dic['doc_type_col']
 
     # Setting useful paths
     return_tup = _set_split_pub_files_params(wf_path, corpus_year)
@@ -235,7 +252,9 @@ def built_final_pub_list(params_list):
     imported from the `bmfuncts.save_final_results` module.
 
     The useful full paths are set through the `_set_build_pub_files_params` 
-    internal function.
+    internal function. 
+    The useful col names are set through the `_set_pub_list_cols_dic` 
+    internal function. 
 
     Args:
         params_list (list):  The list composed of the Institute name (str), \
@@ -252,10 +271,9 @@ def built_final_pub_list(params_list):
     sub_params_list = [institute, org_tup, wf_path, corpus_year]
 
     # Setting useful column names
-    final_col_dic, _ = set_final_col_names(institute, org_tup)
-    pub_id_col = final_col_dic['pub_id']
-    otp_col = final_col_dic['otp'] # Choix de l'OTP
-    otp_col_new_alias = bm_pg.COL_NAMES_BONUS['final OTP'] # OTP
+    pub_list_cols_dic = _set_pub_list_cols_dic(institute, org_tup)
+    col_keys = ['pub_id_col', 'otps_list_col', 'otp_col' ]
+    pub_id_col, otps_list_col, otp_col = [pub_list_cols_dic[key] for key in col_keys]
 
     # Setting files params
     paths_list = _set_build_pub_files_params(wf_path, corpus_year)
@@ -270,10 +288,10 @@ def built_final_pub_list(params_list):
     consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_col)
 
     # Droping invalid publications by pub Id as index
-    invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_col]\
+    invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otps_list_col]\
                                                 !=bm_ig.INVALIDE].index
     invalids_df = consolidate_pub_list_df.drop(index=invalids_idx_list)
-    valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otp_col]\
+    valids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otps_list_col]\
                                                          ==bm_ig.INVALIDE].index
     consolidate_pub_list_df = consolidate_pub_list_df.drop(index=valids_idx_list)
 
@@ -288,7 +306,7 @@ def built_final_pub_list(params_list):
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
     invalids_df_title = bm_pg.DF_TITLES_LIST[17]
-    invalids_df = invalids_df.rename(columns={otp_col: otp_col_new_alias})
+    invalids_df = invalids_df.rename(columns={otps_list_col: otp_col})
     wb, ws = format_page(invalids_df, invalids_df_title)
     ws.title = "Invalides " +  corpus_year
     wb.save(invalids_file_path)
@@ -300,7 +318,8 @@ def built_final_pub_list(params_list):
     _, if_database_complete = add_if(sub_params_list, add_if_paths_list)
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio, pub_nb = split_pub_list_by_doc_type(sub_params_list)
+    split_ratio, pub_nb = split_pub_list_by_doc_type(sub_params_list,
+                                                     pub_list_cols_dic)
 
     # Saving pub list and hash-IDs as final results
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]

@@ -54,48 +54,43 @@ def _read_authors_data(wf_path, saved_results_path,
     return authors_df
 
 
-def _set_useful_cols(institute, org_tup):
-    """Sets the column names  useful for building authors analysis data.
+def _set_au_analysis_cols(institute, org_tup):
+    """Builds a dict setting selected columns names for the process 
+    of building authors analysis data.
 
-    It uses 'set_homonym_col_names' function imported from 
-    'bmfuncts.rename_cols' module.
-
+    This is done through the `set_homonym_col_names` function imported from the 
+    `bmfuncts.rename_cols` module.
+    
     Args:
         institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        org_tup (tup): Contains parameters of Institute organization.
     Returns:
-        (tup): (list of useful cols returned by 'set_homonym_col_names' function \
-        at seconde position of the returned tuple, list of cols to be added).
+        (dict): The built dict.
     """
-
-    #  Setting useful col names alias
+    # Setting useful column names from homonyms file
     homonyms_col_dic = set_homonym_col_names(institute, org_tup)
 
-    pub_id_col_alias = homonyms_col_dic['pub_id']
-    author_idx_col_alias = homonyms_col_dic['author_id']
-    inst_author_col_alias = homonyms_col_dic['inst_author']
-    first_author_col_alias = homonyms_col_dic['first_author']
-    mat_col_alias = homonyms_col_dic['matricul']
-    type_col_alias = homonyms_col_dic['author_type']
-    employee_col_alias = homonyms_col_dic['empl_full_name']
-    nb_auth_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb']
-    is_first_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author']
-    is_last_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author']
-    nb_pub_col_alias = bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb']
-    pub_list_col_alias = bm_pg.COL_NAMES_BONUS['pub_ids list']
+    au_analysis_cols_dic = {'pub_id_col'       : homonyms_col_dic['pub_id'],
+                            'au_id_col'        : homonyms_col_dic['author_id'],
+                            'inst_au_col'      : homonyms_col_dic['inst_author'],
+                            'first_au_col'     : homonyms_col_dic['first_author'],
+                            'mat_col'          : homonyms_col_dic['matricul'],
+                            'type_col'         : homonyms_col_dic['author_type'],
+                            'empl_col'         : homonyms_col_dic['empl_full_name'],
+                            'nb_au_col'        : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb'],
+                            'is_first_col'     : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author'],
+                            'is_last_col'      : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author'],
+                            'nb_pub_col'       : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb'],
+                            'pub_list_col'     : bm_pg.COL_NAMES_BONUS['pub_ids list'],
+                            "final_inst_au_col": bm_pg.COL_NAMES_BONUS['name_as_auth'],
+                            "final_empl_col"   : bm_pg.COL_NAMES_BONUS['name_as_empl'],
+                           }
 
-    # Building cols lists
-    homonyms_useful_cols = [pub_id_col_alias, author_idx_col_alias,
-                            inst_author_col_alias, first_author_col_alias,
-                            mat_col_alias, type_col_alias, employee_col_alias]
-    add_cols = [nb_auth_col_alias, is_first_col_alias, is_last_col_alias,
-                nb_pub_col_alias, pub_list_col_alias]
-
-    return homonyms_useful_cols, add_cols
+    return au_analysis_cols_dic
 
 
 def _build_auth_nb_per_pub(wf_path, saved_results_path,
-                           corpus_year, cols_tup):
+                           corpus_year, cols_list):
     """Builds the data of authors number per publications.
 
     It uses the `_read_authors_data` internal function to get 
@@ -106,12 +101,13 @@ def _build_auth_nb_per_pub(wf_path, saved_results_path,
         saved_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
-        cols_tup (tup): (Pub-ID column name, authors-number column name).
+        cols_list (list):  Composed of Pub-ID column name (str) and \
+        of authors-number column name (str).
     Returns:
         (dataframe): The dataframe of the authors number per publications.
     """
     # Setting useful col list from args
-    pub_id_col, nb_auth_col = cols_tup
+    pub_id_col, nb_au_col = cols_list
 
     # Getting the authors per pub-ID file from parsing results
     authors_df = _read_authors_data(wf_path, saved_results_path,
@@ -121,7 +117,7 @@ def _build_auth_nb_per_pub(wf_path, saved_results_path,
     count_auth_df = pd.DataFrame()
     for _, pub_df in authors_df.groupby(pub_id_col):
         pub_count_auth_df = pub_df[pub_id_col].value_counts().to_frame()
-        pub_count_auth_df = pub_count_auth_df.rename(columns={"count": nb_auth_col})
+        pub_count_auth_df = pub_count_auth_df.rename(columns={"count": nb_au_col})
         pub_count_auth_df = pub_count_auth_df.reset_index()
         count_auth_df = concat_dfs([count_auth_df, pub_count_auth_df])
 
@@ -129,8 +125,7 @@ def _build_auth_nb_per_pub(wf_path, saved_results_path,
     return count_auth_df
 
 
-def _build_author_employee_df(wf_path, datatype,
-                              corpus_year, all_cols_tup):
+def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_dic):
     """Builds data of authors per publication with corresponding employee name, 
     number of authors, author position in the authors list.
 
@@ -146,40 +141,34 @@ def _build_author_employee_df(wf_path, datatype,
         wf_path (path): Full path to working folder.
         datatype (str): Data combination type from corpuses databases.
         corpus_year (str): 4 digits year of the corpus.
-        all_cols_tup (tup): (list of useful cols of the publications list \
-        with one row per Institute author and its attributes, list of cols \
-        to be added).
+        au_analysis_cols_dic (dict): The dict giving the columns names for the \
+        process of building authors analysis data.
     Returns:
         (dataframe): The dataframe of the authors data per publications.
     """
     # Setting input-data path
     saved_results_path = set_saved_results_path(wf_path, datatype)
 
-    # Setting useful columns names
-    homonyms_select_cols, add_cols_list = all_cols_tup
-    pub_id_col = homonyms_select_cols[0]
-    author_idx_col = homonyms_select_cols[1]
-    inst_author_col = homonyms_select_cols[2]
-    first_author_col = homonyms_select_cols[3]
-    mat_col = homonyms_select_cols[4]
-    type_col = homonyms_select_cols[5]
-    employee_col = homonyms_select_cols[6]
-    nb_auth_col = add_cols_list[0]
-    is_first_col = add_cols_list[1]
-    is_last_col = add_cols_list[2]
+    # Setting useful columns names from 'au_analysis_cols_dic'
+    col_keys = ['pub_id_col', 'au_id_col', 'inst_au_col', 'first_au_col',
+                'mat_col', 'type_col', 'empl_col', 'nb_au_col',
+                'is_first_col', 'is_last_col']
+    au_empl_cols = [au_analysis_cols_dic[key] for key in col_keys]
+    homonyms_select_cols = au_empl_cols[0:7]
+    (pub_id_col, au_id_col, inst_au_col, first_au_col, mat_col, type_col,
+     empl_col, nb_au_col, is_first_col, is_last_col) = au_empl_cols
 
     # Getting the publications list with one row per Institute author
     # and its attributes columns
     set_homonyms_df = read_final_set_homonyms_data(saved_results_path, corpus_year)
 
     # Getting the number of authors per pub-ID from parsing results
-    select_cols_tup = (pub_id_col, nb_auth_col)
+    count_select_cols = [pub_id_col, nb_au_col]
     count_auth_df = _build_auth_nb_per_pub(wf_path, saved_results_path,
-                                           corpus_year, select_cols_tup)
+                                           corpus_year, count_select_cols)
 
     # Initializing dataframe to build
-    add_select_cols_list = [nb_auth_col, is_first_col, is_last_col]
-    author_employee_df = pd.DataFrame(columns=homonyms_select_cols + add_select_cols_list)
+    author_employee_df = pd.DataFrame(columns=au_empl_cols)
     for col in homonyms_select_cols:
         author_employee_df[col] = set_homonyms_df[col].copy()
     author_employee_df[is_first_col] = 0
@@ -188,80 +177,82 @@ def _build_author_employee_df(wf_path, datatype,
     for idx, row in author_employee_df.iterrows():
         # Setting useful values
         pub_id = row[pub_id_col]
-        author_pos = row[author_idx_col] + 1
-        authors_nb = count_auth_df[count_auth_df[pub_id_col]==pub_id][nb_auth_col][0]
+        author_pos = row[au_id_col] + 1
+        authors_nb = count_auth_df[count_auth_df[pub_id_col]==pub_id][nb_au_col][0]
 
         # Completing row
-        author_employee_df.loc[idx, nb_auth_col] = authors_nb
+        author_employee_df.loc[idx, nb_au_col] = authors_nb
         if author_pos==1:
             author_employee_df.loc[idx, is_first_col] = 1
         if author_pos==authors_nb:
             author_employee_df.loc[idx, is_last_col] = 1
 
-    author_employee_df = author_employee_df.sort_values(by=[pub_id_col, author_idx_col],
+    author_employee_df = author_employee_df.sort_values(by=[pub_id_col, au_id_col],
                                                         axis=0)
-    cols_order = [pub_id_col, nb_auth_col, author_idx_col, inst_author_col,
-                  first_author_col, employee_col, mat_col, type_col, is_first_col, is_last_col]
+    cols_order = [pub_id_col, nb_au_col, au_id_col, inst_au_col,
+                  first_au_col, empl_col, mat_col, type_col, is_first_col, is_last_col]
     author_employee_df = author_employee_df[cols_order]
 
     # Capitalize names
-    author_employee_df[inst_author_col] = author_employee_df[inst_author_col].\
+    author_employee_df[inst_au_col] = author_employee_df[inst_au_col].\
     apply(name_capwords)
 
-    author_employee_df[employee_col] = author_employee_df[employee_col].\
+    author_employee_df[empl_col] = author_employee_df[empl_col].\
     apply(name_capwords)
 
     return author_employee_df
 
 
-def _build_pub_nb_per_author_df(author_employee_df, all_cols_tup):
+def _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic):
     """Builds the data of publications number per author.
 
     Args:
         author_employee_df (dataframe): The dataframe of the authors \
         data per publications.
-        all_cols_tup (tup): (list of useful cols of the excel file targetted \
-        by 'in_path', list of cols to be added).
+        au_analysis_cols_dic (dict): The dict giving the columns names for the \
+        process of building authors analysis data.
     Returns:
         (dataframe): The data of publications number per author.
     """
     # Setting useful columns names
-    homonyms_select_cols, add_cols_list = all_cols_tup
-    pub_id_col = homonyms_select_cols[0]
-    inst_author_col = homonyms_select_cols[2]
-    mat_col = homonyms_select_cols[4]
-    type_col = homonyms_select_cols[5]
-    employee_col = homonyms_select_cols[6]
-    nb_pub_col = add_cols_list[3]
-    pub_list_col = add_cols_list[4]
+
+    # Setting useful columns names from 'au_analysis_cols_dic'
+    col_keys = ['pub_id_col', 'inst_au_col', 'mat_col', 'type_col',
+                'empl_col', 'nb_pub_col', 'pub_list_col']
+    au_pub_cols = [au_analysis_cols_dic[key] for key in col_keys]
+    (pub_id_col, inst_au_col, mat_col, type_col,
+     empl_col, nb_pub_col, pub_list_col) = au_pub_cols
 
     # Selecting useful columns in author_employee_df
-    sub_author_employee_df = author_employee_df[[pub_id_col, employee_col, mat_col,
-                                                 type_col, inst_author_col]].copy()
+    sub_au_empl_cols = [pub_id_col, empl_col, mat_col,
+                        type_col, inst_au_col]
+    sub_author_employee_df = author_employee_df[sub_au_empl_cols].copy()
 
     # Initializing the dataframe to built with useful columns
-    useful_cols_list = [mat_col, type_col, employee_col,
-                        inst_author_col, nb_pub_col, pub_list_col]
-    pub_nb_per_auth_df = pd.DataFrame(columns = useful_cols_list)
+    au_pub_select_cols = [mat_col, type_col, empl_col,
+                          inst_au_col, nb_pub_col, pub_list_col]
+    pub_nb_per_auth_df = pd.DataFrame(columns = au_pub_select_cols)
 
     # Building the targetted dataframe
-    for _, empl_df in sub_author_employee_df.groupby(employee_col):
+    for _, empl_df in sub_author_employee_df.groupby(empl_col):
         pub_id_list = list(empl_df[pub_id_col])
-        author_names_list = list(set(list(empl_df[inst_author_col])))
+        author_names_list = list(set(list(empl_df[inst_au_col])))
         author_names = author_names_list[0]
         if len(author_names_list)>1:
             author_names = "; ".join(author_names_list)
-        empl_df[inst_author_col] = author_names
+        empl_df[inst_au_col] = author_names
         empl_df[nb_pub_col] = len(pub_id_list)
         empl_df[pub_list_col] = "; ".join(pub_id_list)
-        empl_df = empl_df[useful_cols_list]
+        empl_df = empl_df[au_pub_select_cols]
         empl_df.drop_duplicates()
         pub_nb_per_auth_df = concat_dfs([pub_nb_per_auth_df, empl_df])
     pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
     # Renaming cols
-    author_employee_df.rename(columns={employee_col: "Nom effectif"})
-    pub_nb_per_auth_df.rename(columns={employee_col: "Nom effectif"})
+    rename_dic = {empl_col   : au_analysis_cols_dic['final_empl_col'],
+                  inst_au_col: au_analysis_cols_dic['final_inst_au_col']}
+    author_employee_df = author_employee_df.rename(columns=rename_dic)
+    pub_nb_per_auth_df = pub_nb_per_auth_df.rename(columns=rename_dic)
 
     return author_employee_df, pub_nb_per_auth_df
 
@@ -345,16 +336,17 @@ def authors_analysis(params_list, progress_callback=None):
     if progress_callback:
         progress_callback(10)
 
-    useful_col_tup = _set_useful_cols(institute, org_tup)
+    # Setting dict giving column names
+    au_analysis_cols_dic = _set_au_analysis_cols(institute, org_tup)
 
     # Building author_employee_df
-    author_employee_df = _build_author_employee_df(wf_path, datatype,
-                                                   corpus_year, useful_col_tup)
+    author_employee_df = _build_author_employee_df(wf_path, datatype, corpus_year,
+                                                   au_analysis_cols_dic)
     if progress_callback:
         progress_callback(50)
 
     # Building pub_nb_per_author_df
-    return_tup = _build_pub_nb_per_author_df(author_employee_df, useful_col_tup)
+    return_tup = _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic)
     author_employee_df, pub_nb_per_author_df = return_tup
     if progress_callback:
         progress_callback(60)

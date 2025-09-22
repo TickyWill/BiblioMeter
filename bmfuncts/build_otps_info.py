@@ -227,7 +227,7 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None
 
 
 def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
-                         otps_cols, dept_otps_dict,
+                         build_otps_cols_dic, dept_otps_dict,
                          serv_otps_list, unknown):
     """Updates the OTPs dict for each laboratory of a given service of a given 
     department different from the department direction.
@@ -237,7 +237,8 @@ def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
         for the given service of the given department.
         otps_serv (str): The service label to be used for OTPs selection.
         otps_dept (str): The department label to be used for OTPs selection.
-        otps_cols (list): The names (str) of the useful cols.
+        build_otps_cols_dic (dict): The dict giving the columns names \
+        of the OTPs data.
         dept_otps_dict (dict): The hierarchical dict to be updated.
         serv_otps_list (list): The list of OTPs to be used for the service.
         unknown (str): The string used to represent unknown values.
@@ -247,8 +248,8 @@ def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
         valued by OTPs list.
     """
     # Setting useful col names of the OTPs source file
-    otps_otp_col = otps_cols[1]
-    otps_lab_col = otps_cols[3]
+    otps_otp_col = build_otps_cols_dic['otps_otp_col']
+    otps_lab_col = build_otps_cols_dic['otps_lab_col']
 
     dept_otps_dict[otps_dept][otps_serv] = {}
     labs_list = _set_sorted_list2(otps_serv_df, otps_lab_col)
@@ -270,7 +271,7 @@ def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
     return dept_otps_dict
 
 
-def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
+def _build_dept_otps_dict(otps_dept, otps_dept_df, build_otps_cols_dic,
                           dept_otps_dict, unknown):
     """Updates the OTPs dict for each lab of each service of a department  
      different from the Institute and different from 'CLINATEC'.
@@ -281,7 +282,8 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
         otps_dept (str): The department label to be used for OTPs selection.
         otps_dept_df (dataframe): The OTPs info got from the OTPs database \
         for the given department.
-        otps_cols (list): The names (str) of the useful cols.
+        build_otps_cols_dic (dict): The dict giving the columns names \
+        of the OTPs data
         dept_otps_dict (dict): The hierarchical dict to be updated.
         unknown (str): The string used to represent unknown values.
     Returns:
@@ -290,8 +292,8 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
         valued by OTPs list.
     """
     # Setting useful col names of the OTPs source file
-    otps_otp_col = otps_cols[1]
-    otps_serv_col = otps_cols[2]
+    otps_otp_col = build_otps_cols_dic['otps_otp_col']
+    otps_serv_col = build_otps_cols_dic['otps_serv_col']
 
     dept_otps_dict[otps_dept] = {}
     for otps_serv, otps_serv_df in otps_dept_df.groupby(otps_serv_col):
@@ -313,9 +315,105 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, otps_cols,
                                             srv=serv, dpt=None)
         else:
             dept_otps_dict = _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
-                                                  otps_cols, dept_otps_dict,
+                                                  build_otps_cols_dic, dept_otps_dict,
                                                   serv_otps_list, unknown)
     return dept_otps_dict
+
+
+def _build_special_depts_labels(otps_data_df, otps_dept_col, inst_dir):
+    """Builds a dict keyyed by special labels of OTPS departments and 
+    valued for each key by a tuple composed of the department label 
+    and service label to be used for the OTPs attribution.
+
+    The label 'CLINATEC' is considered as a possible special department 
+    label in the OTPs data and it is attributed the tuple value 
+    '("CLINATEC", "SCLIN")'. 
+    In addition to the 'inst_dir' label, the labels containing the string 
+    'DIR' are considered as special departments labels that are attributed 
+    the tuple value '("DIR", inst_dir)'.
+
+    Args:
+        otps_data_df (dataframe): The data of OTPS got through \
+        the `_read_otps_data` internal function.
+        otps_dept_col (str): The name of the column of departments \
+        in the data of OTPS.
+        inst_dir (str): The label used for the part of the \
+        Institute external to all the Institute departments.
+    Returns:
+        (dict): The built dict.
+    """
+    # Setting the list of departments in the OTPs data
+    otps_depts_list = list(otps_data_df[otps_dept_col])
+
+    # Setting list of departments with "DIR" in their label
+    sub_otps_depts_list = [otps_dept for otps_dept in otps_depts_list if "DIR" in otps_dept]
+    dir_nb = len(sub_otps_depts_list)
+
+    # Setting the list of keys and values of the dict to build
+    special_otps_depts_keys = ["CLINATEC"] + [inst_dir] + sub_otps_depts_list
+    special_otps_depts_values = [("CLINATEC", "SCLIN")] + [("DIR", inst_dir)] * (dir_nb + 1)
+
+    # Building the dict
+    special_otps_depts_attr_dic = dict(zip(special_otps_depts_keys, special_otps_depts_values))
+    return special_otps_depts_attr_dic
+
+
+def _set_build_otps_cols(otps_cols):
+    """Build a dict setting selected columns names for the process 
+    of building OTPs information.
+
+    Args:
+        otps_cols (list):  The list of columns names of OTPs data \
+        as given by the parameters tuple of Institute organization.
+    Returns:
+        (dict): The built dict.
+    """
+    build_otps_cols_dic = {'otps_dept_col': otps_cols[0],
+                           'otps_otp_col' : otps_cols[1],
+                           'otps_serv_col': otps_cols[2],
+                           'otps_lab_col' : otps_cols[3]
+                          }
+    return build_otps_cols_dic
+
+
+def _read_otps_data(org_tup, wf_root_path, unknown_kw):
+    """Reads the file of data of OTPs using the parameters 
+    of the Institute organization.
+
+    Args:
+        org_tup (tuple): Contains parameters of Institute organization.
+        wf_root_path (path): The full path to the root folder \
+        of the working folder where the OTPs data should be available.
+        unknown_kw (str): The word for replacing NaN values \
+        in the OTPs data.
+    Returns:
+        (tuple): (The OTPs data (dataframe), The dict giving the columns \
+        names of the OTPs data (dict) as built by the `_set_build_otps_cols` \
+        internal function).
+    """
+
+    # Setting useful Institute config parameters for OTPs
+    otps_data_file = org_tup[12]
+    otps_sheet = org_tup[13]
+    otps_header = org_tup[14]
+    otps_cols = org_tup[15]
+
+    # Building the dict giving the columns names of the OTPs data
+    build_otps_cols_dic = _set_build_otps_cols(otps_cols)
+
+    # Seting useful aliases for OTPs source file
+    config_root_alias = bm_eg.EMPLOYEES_ARCHI["root"]
+
+    # Setting useful paths for OTPs source file
+    config_root_path = wf_root_path / Path(config_root_alias)
+    otps_data_path = config_root_path / Path(otps_data_file)
+
+    # Getting the OTPs infos from OTPs source file
+    otps_data_df = pd.read_excel(otps_data_path, sheet_name=otps_sheet,
+                                 header=otps_header, usecols=otps_cols)
+    otps_data_df = otps_data_df.fillna(unknown_kw)
+
+    return otps_data_df, build_otps_cols_dic
 
 
 def set_lab_otps(set_otp_params_list):
@@ -329,72 +427,60 @@ def set_lab_otps(set_otp_params_list):
     internal function. It also builds the final dict of OTPs \
     specifically for the 'Leti' institute taking care of \
     the effective structure of the Institute through the \
-    `_set_final_otps_dict` internal function. For seek of clarity, \
+    `_set_final_otps_dict` internal function. For seek of code clarity, \
     it uses several other internal functions that are: `_try_init_dict`, \
     `_set_sorted_list1`, `_set_sorted_list2`, `_set_dir`, `_set_full` \
     and `_build_dept_otps_dict`.
 
     Args:
         set_otp_params_list (list): The list composed of the Institute \
-        name (str), the org_tup (tup) that contains parameters of Institute \
-        organization and the full path to working folder (path).
+        name (str), of the org_tup (tup) that contains parameters of \
+        Institute organization and of the full path (path) to the root \
+        folder of the working folder where the OTPs data should be available.
     Returns:
         (dict): OTPs hierarchical dict keyed by departments \
         and valued by dicts keyed by labs and valued by OTPs lists.    
     """
     # Setting params values from set_otp_params_list
-    institute, org_tup, wf_path = set_otp_params_list
+    institute, org_tup, wf_root_path = set_otp_params_list
+
+    # Setting the label used for the part of the Institute
+    # external to all the Institute departments
+    inst_dir = _set_dir(institute.upper())
 
     # Seting useful aliases
     unknown_alias = bp.UNKNOWN
-    config_root_alias = bm_eg.EMPLOYEES_ARCHI["root"]
 
-    # Setting useful Institute config parameters
-    otps_bdd_file = org_tup[12]
-    otps_sheet = org_tup[13]
-    otps_header = org_tup[14]
-    otps_cols = org_tup[15]
-    inst_dir = _set_dir(institute.upper())
+    # Getting the OTPs infos from OTPs source file)
+    otps_data_df, build_otps_cols_dic = _read_otps_data(org_tup, wf_root_path,
+                                                        unknown_alias)
 
-    # Setting useful col names of the OTPs source file
-    otps_dept_col = otps_cols[0]
-    otps_otp_col = otps_cols[1]
+    # Setting useful col names
+    otps_dept_col = build_otps_cols_dic['otps_dept_col']
+    otps_otp_col = build_otps_cols_dic['otps_otp_col']
 
-    # Setting useful paths
-    config_root_path = wf_path / Path(config_root_alias)               # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    otps_bdd_path = config_root_path / Path(otps_bdd_file)
-
-    # Getting the OTPs infos from OTPs source file
-    otps_bdd_df = pd.read_excel(otps_bdd_path, sheet_name=otps_sheet,
-                                header=otps_header, usecols=otps_cols)
-    otps_bdd_df = otps_bdd_df.fillna(unknown_alias)
+    # Setting special departments labels
+    special_otps_depts_attr_dic = _build_special_depts_labels(otps_data_df,
+                                                              otps_dept_col, inst_dir)
 
     # Filling initial OTPs dict with infos provided by OTPs source file
     # The dict is a hierarchical dict keyed by department, services and labs
     # as they are defined in the source file but not as defined
     # in the Instiute config file.
     dept_otps_dict = {}
-    for otps_dept, otps_dept_df in otps_bdd_df.groupby(otps_dept_col):
+    for otps_dept, otps_dept_df in otps_data_df.groupby(otps_dept_col):
         dept_otps_list = _set_sorted_list2(otps_dept_df, otps_otp_col)
 
-        if otps_dept=="CLINATEC":
-            dept = otps_dept
-            serv = "SCLIN"
-            lab = _set_dir(serv)
-            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
-                                            serv, lab, dept_otps_list,
-                                            srv=serv, dpt=dept)
-        elif "DIR" in otps_dept or otps_dept==inst_dir:
-            dept = "DIR"
-            serv = inst_dir
-            lab = _set_dir(serv)
-            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
-                                            serv, lab, dept_otps_list,
-                                            srv=serv, dpt=dept)
-        else:
+        if not otps_dept in special_otps_depts_attr_dic.keys():
             dept_otps_dict = _build_dept_otps_dict(otps_dept, otps_dept_df,
-                                                   otps_cols, dept_otps_dict,
+                                                   build_otps_cols_dic, dept_otps_dict,
                                                    unknown_alias)
+        else:
+            dept, serv = special_otps_depts_attr_dic[otps_dept]
+            lab = _set_dir(serv)
+            dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
+                                            serv, lab, dept_otps_list,
+                                            srv=serv, dpt=dept)
 
     # Reorganizing dict of OTPs by removing services keys
     lab_otps_dict = _set_lab_otps_dict(dept_otps_dict, inst_dir)

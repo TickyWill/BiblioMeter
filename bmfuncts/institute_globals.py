@@ -5,6 +5,7 @@
 __all__ = ['CONFIG_JSON_FILES_DICT',
            'DPT_LABEL_KEY',
            'DPT_OTP_KEY',
+           'INSTITUTE_GEO',
            'INSTITUTES_LIST',
            'INVALIDE',
            'WORKING_FOLDERS_DICT',
@@ -13,6 +14,10 @@ __all__ = ['CONFIG_JSON_FILES_DICT',
 
 # Setting institute names list
 INSTITUTES_LIST = ["Liten", "Leti"]
+
+# Setting institutes country
+INSTITUTE_GEO = {'country'  : 'France',
+                 'continent': 'Europe',}
 
 # Setting default working folder of each institute
 FILES_FOLDER = "BiblioMeter_Files"

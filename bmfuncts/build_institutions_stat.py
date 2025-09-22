@@ -21,6 +21,29 @@ from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.useful_functs import concat_dfs
 
 
+def _set_inst_stat_cols():
+    """Builds a dict setting selected columns names for the process 
+    of building institutions statistics.
+
+    Returns:
+        (dict): The built dict.
+    """
+    inst_stat_cols_dic = {'pub_id_col'       : bp.COL_NAMES['pub_id'],
+                          'country_col'      : bp.COL_NAMES['country'][2],
+                          'final_country_col': bm_pg.COL_NAMES_BONUS['country'],
+                          'inst_col'         : bm_pg.COL_NAMES_BONUS['institution'],
+                          'pub_nb_col'       : bm_pg.COL_NAMES_BONUS["pub number"],
+                          'pub_ids_col'      : bm_pg.COL_NAMES_BONUS["pub_ids list"],
+                          'inst_nb_col'      : bm_pg.COL_NAMES_BONUS["inst number"],
+                          'inst_list_col'    : bm_pg.COL_NAMES_BONUS["inst list"],
+                          'journal_nb_col'   : bm_pg.COL_NAMES_BONUS['journal_pub_nb'],
+                          'proc_nb_col'      : bm_pg.COL_NAMES_BONUS['proceedings_pub_nb'],
+                          'book_nb_col'      : bm_pg.COL_NAMES_BONUS['book_pub_nb'],
+                        }
+
+    return inst_stat_cols_dic
+
+
 def _build_distributed_inst_df(norm_institutions_df, institutions_col, inst_types_list,
                                progress_param=None):
     """Distributes the column that contains the list of the normalized institutions 
@@ -85,8 +108,8 @@ def _set_inst_names_list(inst_names):
     return final_inst_names_list
 
 
-def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
-                               institute_pub_ids_list):
+def _build_pub_id_inst_type_df(institute, distrib_institutions_df,
+                               institute_pub_ids_list, cols_list):
     """Builds the data with one row per institution name and its country 
     for each publication for a given type of institutions.
 
@@ -94,13 +117,13 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
         institute (str): Institute name.
         distrib_institutions_df (dataframe): data with distributed normalized \
         institutions per institution type and per publication.
-        cols_list (list): The columns names (str) list used to build the data.
         institute_pub_ids_list (list): All publication IDs (str) of the institute.
+        cols_list (list): The columns names (str) list used to build the data.
     Returns:
         (dataframe): The built data. 
     """
     # Setting useful column names
-    pub_id_col, bp_country_col, inst_type_col = cols_list
+    pub_id_col, country_col, inst_type_col = cols_list
 
     # Setting out of stat institutions
     out_inst = institute.upper() + " Rto"
@@ -108,11 +131,12 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
     # Building the dataframe with one row per list of institutions of type
     # 'inst_type' set through 'inst_type_col' per country for each publication
     full_inst_list = []
-    pub_id_inst_type_df = pd.DataFrame(columns=cols_list)
+    data_cols = cols_list
+    pub_id_inst_type_df = pd.DataFrame(columns=data_cols)
     for pub_id, pub_id_df in distrib_institutions_df.groupby(pub_id_col):
         if pub_id in institute_pub_ids_list:
             data = []
-            for country, country_df in pub_id_df.groupby(bp_country_col):
+            for country, country_df in pub_id_df.groupby(country_col):
                 pub_id_inst_list = []
                 for _, row in country_df.iterrows():
                     inst_names = row[inst_type_col]
@@ -122,14 +146,14 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
                 pub_id_inst_list = list(set(pub_id_inst_list))
                 full_inst_list += pub_id_inst_list
                 data.append([pub_id, country, str(pub_id_inst_list)])
-            pub_inst_df = pd.DataFrame(data, columns=cols_list)
+            pub_inst_df = pd.DataFrame(data, columns=data_cols)
             pub_id_inst_type_df = concat_dfs([pub_id_inst_type_df, pub_inst_df])
     full_inst_list = list(set(full_inst_list))
     corrected_inst_list = [x for x in full_inst_list if x!=out_inst]
 
     # Building the dataframe with one row per institution name and country
     # for each publication
-    final_pub_id_inst_type_df = pd.DataFrame(columns=cols_list)
+    final_pub_id_inst_type_df = pd.DataFrame(columns=data_cols)
     for inst_name in corrected_inst_list:
         for _, row in pub_id_inst_type_df.iterrows():
             inst_names = row[inst_type_col]
@@ -139,17 +163,16 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df, cols_list,
                 data = []
                 if inst_name in inst_names_list:
                     pub_id = row[pub_id_col]
-                    country = row[bp_country_col]
+                    country = row[country_col]
                     data.append([pub_id, country, inst_name])
                 if data:
-                    pub_id_inst_name_df = pd.DataFrame(data, columns=cols_list)
+                    pub_id_inst_name_df = pd.DataFrame(data, columns=data_cols)
                     final_pub_id_inst_type_df = concat_dfs([final_pub_id_inst_type_df,
                                                             pub_id_inst_name_df])
     return final_pub_id_inst_type_df
 
 
-def _build_inst_type_inst_df(final_pub_id_inst_type_df,
-                             input_cols_list, stat_cols_list, pub_ids_lists):
+def _build_inst_type_inst_df(final_pub_id_inst_type_df, sub_pub_ids_lists, cols_list):
     """Builds data with one row per institution and attached country, 
     number of publications and list of publications IDs for a given type 
     of institutions.
@@ -158,38 +181,33 @@ def _build_inst_type_inst_df(final_pub_id_inst_type_df,
         final_pub_id_inst_type_df (dataframe): The data with one row \
         per institution name and its country for each publication \
         for a given type of institutions.
-        input_cols_list (list): The columns names (str) list used from \
-        the 'final_pub_id_inst_type_df' input data. 
-        stat_cols_list (list): The columns names (str) list used to build \
-        the statistics data.
-        pub_ids_lists (tuple): (list of all publication IDs (str) of the institute, \
-        list of the IDs (str) of publications in journals, \
-        list of the IDs (str) of publications in conference proceedings, \
-        list of the IDs (str) of publications in books).
+        sub_pub_ids_lists (tuple): (list of the IDs (str) of publications \
+        in journals, list of the IDs (str) of publications in conference \
+        proceedings, list of the IDs (str) of publications in books).
+        cols_list (list): The columns names (str) list used to build the data.
     Returns:
         (dataframe): The built data.
     """
-    # Setting col names from args
-    pub_id_col, bp_country_col, inst_type_col = input_cols_list
-    (pg_country_col, inst_col, _, _, journal_nb_col,
-     proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col) = stat_cols_list
-
     # Setting pub_ids lists
-    _, journal_pub_ids_list, proceedings_pub_ids_list, books_pub_ids_list = pub_ids_lists
+    journal_pub_ids_list, proceedings_pub_ids_list, books_pub_ids_list = sub_pub_ids_lists
+
+    # Setting col names from 'inst_type_inst_cols'
+    (pub_id_col, country_col, final_country_col, inst_col, journal_nb_col, proc_nb_col,
+     book_nb_col, pub_nb_col, pub_ids_col, inst_type_col) = cols_list
 
     # Building the dataframe with the statistics data per institution
     # for a given type of institutions
-    data_cols = [inst_col, pg_country_col, journal_nb_col,
+    data_cols = [inst_col, final_country_col, journal_nb_col,
                  proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
     inst_type_inst_df = pd.DataFrame(columns=data_cols)
     for inst_name, inst_name_df in final_pub_id_inst_type_df.groupby(inst_type_col):
-        countries_list = sorted(inst_name_df[bp_country_col].to_list())
+        countries_list = sorted(inst_name_df[country_col].to_list())
         for idx_row, row in inst_name_df.iterrows():
-            country = row[bp_country_col]
+            country = row[country_col]
             if country==bp.UNKNOWN:
-                inst_name_df.loc[idx_row, bp_country_col] = countries_list[0]
+                inst_name_df.loc[idx_row, country_col] = countries_list[0]
         data = []
-        for country, country_df in inst_name_df.groupby(bp_country_col):
+        for country, country_df in inst_name_df.groupby(country_col):
             pub_ids_list = country_df[pub_id_col].to_list()
             pub_nb = len(pub_ids_list)
             journal_pub_nb = len([x for x in pub_ids_list if x in journal_pub_ids_list])
@@ -204,14 +222,13 @@ def _build_inst_type_inst_df(final_pub_id_inst_type_df,
 
     # Sorting the built dataframe by publications number for each country
     sorted_inst_type_inst_df = pd.DataFrame(columns=data_cols)
-    for country, country_df in inst_type_inst_df.groupby(pg_country_col):
+    for country, country_df in inst_type_inst_df.groupby(final_country_col):
         country_df = country_df.sort_values(by=[pub_nb_col], ascending=False)
         sorted_inst_type_inst_df = concat_dfs([sorted_inst_type_inst_df, country_df])
     return sorted_inst_type_inst_df
 
 
-def _build_inst_type_pub_id_df(final_pub_id_inst_type_df, input_cols_list,
-                               stat_cols_list):
+def _build_inst_type_pub_id_df(final_pub_id_inst_type_df, cols_list):
     """Builds data with one row per publication and country with attached 
     number of institutions and list of institutions for a given type of 
     institutions.
@@ -220,39 +237,33 @@ def _build_inst_type_pub_id_df(final_pub_id_inst_type_df, input_cols_list,
         final_pub_id_inst_type_df (dataframe): The data with one row \
         per institution name and its country for each publication \
         for a given type of institutions.
-        input_cols_list (list): The columns names (str) list used from \
-        the 'final_pub_id_inst_type_df' input data.
-        stat_cols_list (list): The columns names (str) list used to build \
-        the statistics data.
+        cols_list (list): The columns names (str) list used to build the data.
     Returns:
         (dataframe): The built data.
     """
-    # Setting col names from args
-    pub_id_col, bp_country_col, inst_type_col = input_cols_list
-    pg_country_col, _, inst_nb_col, inst_list_col, _, _, _, _, _ = stat_cols_list
+    # Setting col names from 'cols_list'
+    (pub_id_col, country_col, final_country_col,
+     inst_nb_col, inst_list_col, inst_type_col) = cols_list
 
     # Building stat per country for given inst_type
-    institutions_cols_list = [pub_id_col, pg_country_col,
-                              inst_nb_col, inst_list_col]
-    institutions_data = []
+    data_cols = [pub_id_col, final_country_col,
+                 inst_nb_col, inst_list_col]
+    data = []
     for pub_id, pub_id_df in final_pub_id_inst_type_df.groupby(pub_id_col):
-        for country, country_df in pub_id_df.groupby(bp_country_col):
+        for country, country_df in pub_id_df.groupby(country_col):
             institutions_list = list(set(country_df[inst_type_col].to_list()))
             institutions_nb = len(institutions_list)
             institutions_list_str = "; ".join(institutions_list)
-            institutions_data.append([pub_id, country, institutions_nb,
-                                      institutions_list_str])
-    pub_country_inst_df = pd.DataFrame(institutions_data,
-                                       columns=institutions_cols_list)
+            data.append([pub_id, country, institutions_nb, institutions_list_str])
+    pub_country_inst_df = pd.DataFrame(data, columns=data_cols)
 
     # Sorting the built dataframe by pub_id_col and by country
     pub_country_inst_df = pub_country_inst_df.sort_values(by=[pub_id_col,
-                                                              pg_country_col])
+                                                              final_country_col])
     return pub_country_inst_df
 
 
-def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
-                                stat_cols_list, pub_ids_lists):
+def _build_inst_type_country_df(pub_country_inst_df, sub_pub_ids_lists, cols_list):
     """Builds data with one row per country with attached number of 
     publications and list of publications IDs for a given type of institutions.
 
@@ -260,30 +271,24 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
         pub_country_inst_df (dataframe): The data with one row per publication \
         and country with attached number of institutions and list of institutions \
         as built through the `_build_inst_type_pub_id_df` internal function \
-        for the given type of institutions. 
-        input_cols_list (list): The  names (str) list of the basic columns \
-        used to build the data.
-        stat_cols_list (list): The names (str) list of the specific columns \
-        that will contain the statistics results in the built data.
-        pub_ids_lists (tuple): (list of all publication IDs (str) of the institute, \
-        list of the IDs (str) of publications in journals, \
+        for the given type of institutions.
+        sub_pub_ids_lists (tuple): (list of the IDs (str) of publications in journals, \
         list of the IDs (str) of publications in conference proceedings, \
         list of the IDs (str) of publications in books).
+        cols_list (list): The columns names (str) list used to build the data.
     Returns:
         (dataframe): The built data.
     """
-
-    # Setting col names from args
-    pub_id_col, _, _ = input_cols_list
-    (country_col, _, inst_nb_col, inst_list_col, journal_nb_col,
-     proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col) = stat_cols_list
-
     # Setting pub_ids lists
-    _, journal_pub_ids_list, proceedings_pub_ids_list, books_pub_ids_list = pub_ids_lists
+    journal_pub_ids_list, proceedings_pub_ids_list, books_pub_ids_list = sub_pub_ids_lists
+
+    # Setting col names from 'cols_list'
+    (pub_id_col, country_col, inst_nb_col, inst_list_col, journal_nb_col, proc_nb_col,
+     book_nb_col, pub_nb_col, pub_ids_col) = cols_list
 
     # Building stat per country for given inst_type
-    data_cols_list = [country_col, inst_nb_col, inst_list_col, journal_nb_col,
-                      proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
+    data_cols = [country_col, inst_nb_col, inst_list_col, journal_nb_col,
+                 proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
     data = []
     for country, country_df in pub_country_inst_df.groupby(country_col):
         pub_ids_list = list(set(country_df[pub_id_col].to_list()))
@@ -303,12 +308,34 @@ def _build_inst_type_country_df(pub_country_inst_df, input_cols_list,
         data.append([country, institutions_nb, institutions_list_str,
                      journal_pub_nb, proceedings_pub_nb, book_pub_nb,
                      pub_ids_nb, pub_ids_list_str])
-    country_inst_pub_df = pd.DataFrame(data, columns=data_cols_list)
+    country_inst_pub_df = pd.DataFrame(data, columns=data_cols)
     return country_inst_pub_df
 
 
-def _build_inst_stat_data(institute, distrib_institutions_df,
-                          common_cols_list, stat_cols_list, pub_ids_lists):
+def _build_useful_cols_lists(inst_stat_cols_dic):
+
+    # Setting col names from 'inst_stat_cols_dic'
+    col_keys = ['pub_id_col', 'country_col', 'final_country_col',
+                'inst_col', 'inst_nb_col', 'inst_list_col', 
+                'journal_nb_col', 'proc_nb_col', 'book_nb_col',
+                'pub_nb_col', 'pub_ids_col']
+    (pub_id_col, country_col, final_country_col,
+     inst_col, inst_nb_col, inst_list_col,
+     journal_nb_col, proc_nb_col, book_nb_col,
+     pub_nb_col, pub_ids_col) = [inst_stat_cols_dic[key] for key in col_keys]
+
+    # Setting col lists
+    cols_list_1 = [pub_id_col, country_col]
+    cols_list_2 = [pub_id_col, country_col, final_country_col, inst_col,
+                   journal_nb_col, proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
+    cols_list_3 = [pub_id_col, country_col, final_country_col, inst_nb_col, inst_list_col]
+    cols_list_4 = [pub_id_col, final_country_col, inst_nb_col, inst_list_col,
+                   journal_nb_col, proc_nb_col, book_nb_col, pub_nb_col, pub_ids_col]
+
+    return cols_list_1, cols_list_2, cols_list_3, cols_list_4
+
+
+def _build_inst_stat_data(institute, distrib_institutions_df, pub_ids_lists, inst_stat_cols_dic):
     """Builds 3 dataframes of institutions statistics for each institution type.
 
     This done through the cycling on the list of the institutions type 
@@ -338,33 +365,29 @@ def _build_inst_stat_data(institute, distrib_institutions_df,
         by dicts keyed by the statistical keys (str) given by the 'STAT_FILE_DICT' \
         global and valued by the built data (dataframe) of the statistical results.
     """
-    institute_pub_ids_list = pub_ids_lists[0]
-    stat_keys_alias = list(bm_pg.STAT_FILE_DICT.keys())
+    # Setting useful columns list
+    lists_tup = _build_useful_cols_lists(inst_stat_cols_dic)
+    (base_cols_list, inst_type_inst_cols, inst_type_pub_id_cols, inst_type_country_cols) = lists_tup
+
+    stat_keys = list(bm_pg.STAT_FILE_DICT.keys())
     inst_type_data_dict = {}
     for inst_type in bm_pg.STAT_INST_TYPES_LIST:
         inst_type_data_dict[inst_type] = {}
 
-        # Setting useful columns list
-        input_cols_list = common_cols_list + [inst_type]
-
         # Building data for inst_type stat computing
-        final_pub_id_inst_type_df = _build_pub_id_inst_type_df(institute,
-                                                               distrib_institutions_df,
-                                                               input_cols_list,
-                                                               institute_pub_ids_list)
-        inst_type_inst_df = _build_inst_type_inst_df(final_pub_id_inst_type_df,
-                                                     input_cols_list, stat_cols_list,
-                                                     pub_ids_lists)
+        final_pub_id_inst_type_df = _build_pub_id_inst_type_df(institute, distrib_institutions_df,
+                                                               pub_ids_lists[0], base_cols_list + [inst_type])
+        inst_type_inst_df = _build_inst_type_inst_df(final_pub_id_inst_type_df, pub_ids_lists[1:],
+                                                     inst_type_inst_cols + [inst_type])
         pub_country_inst_df = _build_inst_type_pub_id_df(final_pub_id_inst_type_df,
-                                                         input_cols_list, stat_cols_list)
-        country_inst_pub_df = _build_inst_type_country_df(pub_country_inst_df,
-                                                          input_cols_list, stat_cols_list,
-                                                          pub_ids_lists)
+                                                         inst_type_pub_id_cols + [inst_type])
+        country_inst_pub_df = _build_inst_type_country_df(pub_country_inst_df, pub_ids_lists[1:],
+                                                          inst_type_country_cols)
 
         # Setting 'inst_type_dict' at 'inst_type' key
-        inst_type_data_dict[inst_type][stat_keys_alias[0]] = inst_type_inst_df
-        inst_type_data_dict[inst_type][stat_keys_alias[1]] = pub_country_inst_df
-        inst_type_data_dict[inst_type][stat_keys_alias[2]] = country_inst_pub_df
+        inst_type_data_dict[inst_type][stat_keys[0]] = inst_type_inst_df
+        inst_type_data_dict[inst_type][stat_keys[1]] = pub_country_inst_df
+        inst_type_data_dict[inst_type][stat_keys[2]] = country_inst_pub_df
     return inst_type_data_dict
 
 
@@ -406,56 +429,6 @@ def _save_inst_stat_data(inst_type_data_dict, inst_stat_path):
         wb.save(inst_stat_xlsx_path)
 
 
-def _build_and_save_inst_stat_data(institute, distrib_institutions_df,
-                                   inst_analysis_folder_path, pub_ids_lists):
-    """Builds and saves data of institutions statistics into  
-    multisheet openpyxl workbooks with a sheet per institution type.
-
-    This done through the following steps:
-
-    1. For each inst_type, 3 dataframes of institutions statistics 
-    are built through the `_build_inst_stat_data` internal function.
-    2. The data are saved as multisheet openpyxl workbooks through 
-    the `_save_inst_stat_data` internal function.
-
-    Args:
-        institute (str): Institute name.
-        distrib_institutions_df (pd.DataFrame): The data with distributed \
-        normalized institutions per institution type and per publication.
-        inst_analysis_folder_path (path): The full path to the folder \
-        where the results of the institutions analysis are saved.
-        pub_ids_lists (tuple): (list of all publication IDs (str) of \
-        the institute, list of the IDs (str) of publications in journals, \
-        list of the IDs (str) of publications in conference proceedings, \
-        list of the IDs (str) of publications in books).
-    """
-    # Setting useful column alias
-    pub_id_col_alias = bp.COL_NAMES['pub_id']
-    bp_country_col_alias = bp.COL_NAMES['address_inst'][3]
-    pg_country_col_alias = bm_pg.COL_NAMES_BONUS['country']
-    inst_col_alias = bm_pg.COL_NAMES_BONUS['institution']
-    pub_nb_col_alias = bm_pg.COL_NAMES_BONUS["pub number"]
-    pub_ids_col_alias = bm_pg.COL_NAMES_BONUS["pub_ids list"]
-    inst_nb_col_alias = bm_pg.COL_NAMES_BONUS["inst number"]
-    inst_list_col_alias = bm_pg.COL_NAMES_BONUS["inst list"]
-    journal_nb_col_alias = bm_pg.COL_NAMES_BONUS['journal_pub_nb']
-    proc_nb_col_alias = bm_pg.COL_NAMES_BONUS['proceedings_pub_nb']
-    book_nb_col_alias = bm_pg.COL_NAMES_BONUS['book_pub_nb']
-
-    # Setting useful columns list
-    common_cols_list = [pub_id_col_alias, bp_country_col_alias]
-    stat_cols_list = [pg_country_col_alias, inst_col_alias, inst_nb_col_alias,
-                      inst_list_col_alias, journal_nb_col_alias, proc_nb_col_alias,
-                      book_nb_col_alias, pub_nb_col_alias, pub_ids_col_alias]
-
-    inst_type_data_dict = _build_inst_stat_data(institute,
-                                                distrib_institutions_df,
-                                                common_cols_list,
-                                                stat_cols_list,
-                                                pub_ids_lists)
-    _save_inst_stat_data(inst_type_data_dict, inst_analysis_folder_path)
-
-
 def build_and_save_institutions_stat(institute, norm_institutions_df,
                                      inst_types_file_path,
                                      inst_analysis_folder_path, year,
@@ -492,6 +465,9 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
     """
     print("    Computing institutions statistics")
 
+    inst_stat_cols_dic = _set_inst_stat_cols()
+    institutions_col = inst_stat_cols_dic['inst_col']
+
     # Setting local parameters
     xlsx_extent = ".xlsx"
 
@@ -527,6 +503,8 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
                               sheet_name)
 
     # Building and saving as multisheet openpyxl files the data of institutions statistics
-    _build_and_save_inst_stat_data(institute, distrib_institutions_df, inst_analysis_folder_path, pub_ids_lists)
+    inst_type_data_dict = _build_inst_stat_data(institute, distrib_institutions_df,
+                                                pub_ids_lists, inst_stat_cols_dic)
+    _save_inst_stat_data(inst_type_data_dict, inst_analysis_folder_path)
     if progress_param:
         progress_callback(final_progress)
