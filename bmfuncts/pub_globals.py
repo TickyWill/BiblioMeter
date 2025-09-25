@@ -215,19 +215,19 @@ ROW_COLORS = {'odd'      : '0000FFFF',
              }
 
 
-DOC_TYPE_DICT = {'Articles'   : ['Article', 'Article; Early Access', 'Correction',
+DOC_TYPE_DICT = {'articles'   : ['Article', 'Article; Early Access', 'Correction',
                                  'Correction; Early Access', 'Data Paper', 'Erratum',
                                  'Letter', 'Note', 'Review', 'Review; Early Access',
                                  'Short Survey'],
-                 'Books'      : ['Article; Book Chapter', 'Book', 'Book Chapter',
+                 'books'      : ['Article; Book Chapter', 'Book', 'Book Chapter',
                                  'Biographical-Item', 'Editorial', 'Editorial Material'],
-                 'Proceedings': ['Conference Paper', 'Meeting Abstract',
+                 'proceedings': ['Conference Paper', 'Meeting Abstract',
                                  'Article; Proceedings Paper'],
                 }
 
-DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['Articles'] + \
-                                                   DOC_TYPE_DICT['Proceedings'],
-                        'Books & Editorials'     : DOC_TYPE_DICT['Books'],
+DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['articles'] + \
+                                                   DOC_TYPE_DICT['proceedings'],
+                        'Books & Editorials'     : DOC_TYPE_DICT['books'],
                        }
 
 OTHER_DOCTYPE = 'Others'
@@ -342,11 +342,12 @@ COL_NAMES_AUTHOR_ANALYSIS = {'author_nb'       : "Nombre d'auteurs",
                              'pub_nb'          : "Nombre de publications",
                             }
 
-COL_NAMES_DOCTYPE_ANALYSIS = {'articles'   : "Journal",
-                              'proceedings': "Actes de conférence",
-                              'books'      : "Ouvrage",
-                              'articles_nb': "Nombre d'articles",
-                              'chapters_nb': "Nombre de chapitres",
+COL_NAMES_DOCTYPE_ANALYSIS = {'articles'   : {'doctype_col': "Journal",
+                                              'weight_col' : "Nombre d'articles"},
+                              'proceedings': {'doctype_col': "Actes de conférence",
+                                              'weight_col' : "Nombre d'articles"},
+                              'books'      : {'doctype_col': "Ouvrage",
+                                              'weight_col' : "Nombre de chapitres"},
                              }
 
 KPI_KEYS_ORDER_DICT = {0  : "Année de publication",

@@ -218,7 +218,7 @@ def _set_build_pub_files_params(wf_path, corpus_year):
     missing_issn_path = pub_list_folder_path / Path(missing_issn_file)
 
     paths_list = [pub_list_file_path, invalids_file_path,
-                  missing_if_path, missing_issn_path]
+                  missing_issn_path, missing_if_path]
 
     return paths_list
 
@@ -278,7 +278,7 @@ def built_final_pub_list(params_list):
     # Setting files params
     paths_list = _set_build_pub_files_params(wf_path, corpus_year)
     (pub_list_file_path, invalids_file_path,
-     missing_if_path, missing_issn_path) = paths_list
+     missing_issn_path, missing_if_path) = paths_list
 
     # Saving the OTPs set by user
     return_tup = save_otps(sub_params_list)

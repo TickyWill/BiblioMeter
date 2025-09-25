@@ -891,9 +891,9 @@ def build_pub_ids_lists(saved_results_path, year, cols_list):
     pub_type_df = read_final_pub_list_data(saved_results_path, year, cols_list)
     pub_type_df[final_doctype_col] = pub_type_df.apply(set_capwords_lambda(final_doctype_col), axis=1)
 
-    journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['Articles'])]
-    proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['Proceedings'])]
-    books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['Books'])]
+    journal_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['articles'])]
+    proceedings_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['proceedings'])]
+    books_pub_id_df = pub_type_df[pub_type_df[final_doctype_col].isin(bm_pg.DOC_TYPE_DICT['books'])]
     institute_pub_ids_list = pub_type_df[final_pub_id_col].to_list()
     journal_pub_ids_list = journal_pub_id_df[final_pub_id_col].to_list()
     proceedings_pub_ids_list = proceedings_pub_id_df[final_pub_id_col].to_list()

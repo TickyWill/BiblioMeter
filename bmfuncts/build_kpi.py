@@ -43,7 +43,7 @@ def _set_build_kpi_cols(institute, org_tup, if_analysis_col, if_analysis_year):
     build_kpi_cols_dic = {'depts_col_list' : depts_col_list,
                           'journal_col'    : final_col_dic['journal'],
                           'issn_col'       : final_col_dic['issn'],
-                          'articles_nb_col': bm_pg.COL_NAMES_DOCTYPE_ANALYSIS["articles_nb"],
+                          'articles_nb_col': bm_pg.COL_NAMES_DOCTYPE_ANALYSIS["articles"]['weight_col'],
                           'items_nb_col'   : bm_pg.COL_NAMES_IF_ANALYSIS['articles_nb'],
                           'init_if_col'    : if_analysis_col,
                           'new_if_col'     : 'IF ' + if_analysis_year,
@@ -113,7 +113,7 @@ def _build_dept_doctype_kpi(doctype, dept_doctype_df, items_nb_col):
     return dept_doctype_kpi_dict
 
 
-def _build_doctype_kpi(doctype, doctype_df, params_tup):
+def _build_doctype_kpi(doctype, doctype_df, institute, build_kpi_cols_dic):
     """Builds the key performance indicators (KPIs) dict of a given 
     document-type for each department of the Institute including itself.
 
@@ -136,12 +136,9 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
         (dict): Hierarchical dict keyed by departments and valued at each \
         key by KPIs dict of the department for the given document type.
     """
-
-    # Setting useful parameters from args
-    institute, depts_col_list, journal_col = params_tup
-
-    # Setting new col names and related parameters
-    items_nb_col = bm_pg.COL_NAMES_IF_ANALYSIS['articles_nb']
+    # Setting parameters values from 'build_kpi_cols_dic'
+    col_keys = ['depts_col_list', 'journal_col', 'items_nb_col']
+    depts_col_list, journal_col, items_nb_col = [build_kpi_cols_dic[key] for key in col_keys]
 
     # Setting useful col names tup
     cols_tup = (journal_col, items_nb_col)
@@ -166,7 +163,7 @@ def _build_doctype_kpi(doctype, doctype_df, params_tup):
     return doctype_kpi_dict
 
 
-def _build_basic_kpi(institute, org_tup, pub_df_dict):
+def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic):
     """Builds the basic key performance indicators (KPIs) 
     data of each department of the Institute including itself.
 
@@ -190,7 +187,6 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
 
     Args:
         institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
         pub_df_dict (dataframe): Articles data to be analyzed.
     Returns:
         (hierarchical dict): The dict keyed by departments of \
@@ -199,12 +195,8 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     """
     print("    Building of basic KPIs")
 
-    # Setting useful column names aliases
-    final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)
-    journal_col = final_col_dic['journal']
-
-    # Setting useful tuple args
-    params_tup = (institute, depts_col_list, journal_col)
+    # Setting useful columns infos
+    depts_col_list = build_kpi_cols_dic['depts_col_list']
 
     # Setting useful KPI dict keys
     pub_nb_key = bm_pg.KPI_KEYS_ORDER_DICT[1]
@@ -219,7 +211,8 @@ def _build_basic_kpi(institute, org_tup, pub_df_dict):
     # Building KPIs dict for all doctypes
     doctypes_list = list(pub_df_dict.keys())
     for doctype in doctypes_list:
-        doctype_kpi_dict = _build_doctype_kpi(doctype, pub_df_dict[doctype], params_tup)
+        doctype_kpi_dict = _build_doctype_kpi(doctype, pub_df_dict[doctype],
+                                              institute, build_kpi_cols_dic)
         init_kpi_dict[doctype] = doctype_kpi_dict
         items_nb_key_dict[doctype] = bm_pg.KPI_KEYS_ORDER_DICT[bm_pg.KPI_KEYS_DICT[doctype][1]]
 
@@ -316,8 +309,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
     (depts_col_list, journal_col, issn_col, articles_nb_col,
      init_if_col, new_if_col) = [build_kpi_cols_dic[key] for key in col_keys]
 
-    # Setting useful tuple
-#    cols_list = [journal_col, init_if_col, new_if_col]
+    # Setting useful columns list
     cols_list = [journal_col, issn_col, articles_nb_col,
                  init_if_col, new_if_col]
 
@@ -613,7 +605,7 @@ def if_analysis(params_list, if_most_recent_year,
         progress_callback(60)
 
     # Building the basic KPIs
-    kpi_dict = _build_basic_kpi(institute, org_tup, pub_df_dict)
+    kpi_dict = _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic)
     if progress_callback:
         progress_callback(70)
 

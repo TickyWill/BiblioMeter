@@ -427,8 +427,8 @@ def _build_only_if_doctype_df(org_tup, corpus_df, add_ifs_col_dic):
     doc_type_dict_alias = bm_pg.DOC_TYPE_DICT
 
     # Setting list of document types to drop (usually no IF attributed)
-    no_if_doctype_keys_list = org_tup[6]
-    no_if_doctype = sum([doc_type_dict_alias[x] for x in no_if_doctype_keys_list], [])
+    no_if_doctype_keys_list = [x.upper() for x in org_tup[6]]
+    no_if_doctype = sum([doc_type_dict_alias[x.lower()] for x in no_if_doctype_keys_list], [])
 
     # Building 'year_article_if_df' by keeping only rows which doc type has usually an IF
     # then dropping the doc type column

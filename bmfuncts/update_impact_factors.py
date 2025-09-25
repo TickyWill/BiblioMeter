@@ -450,8 +450,7 @@ def _set_years_lists(if_db_dict, corpus_years_list):
     return if_db_years_tup
 
 
-def update_inst_if_database(institute, org_tup, wf_path,
-                            corpus_years_list, progress_callback=None):
+def update_inst_if_database(update_db_params_list, progress_callback=None):
     """Updates the impact-factors (IFs) database of the Institute using the files 
     where IFs have been added by the user for each existing corpuses.
 
@@ -481,6 +480,8 @@ def update_inst_if_database(institute, org_tup, wf_path,
         of the IFs database (str), List of IFs-database years (4-digits strings)).
     """
     print("\nUpdate of IF database launched...")
+    # Setting parameters values from 
+    institute, org_tup, wf_path, corpus_years_list = update_db_params_list
 
     # Setting useful columns names
     final_col_dic, _ = set_final_col_names(institute, org_tup)

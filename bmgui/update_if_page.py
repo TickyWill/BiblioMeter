@@ -100,10 +100,9 @@ def _launch_update_if_db(self, master,
         if answer:
             progress_callback(15)
             # Mise à jour de la base de données des IFs
-            _, if_years_list = update_inst_if_database(master.institute,
-                                                       master.org_tup,
-                                                       master.wf_path,
-                                                       master.years_list,
+            update_db_params_list = [master.institute, master.org_tup,
+                                     master.wf_path, master.years_list]
+            _, if_years_list = update_inst_if_database(update_db_params_list,
                                                        progress_callback)
             print("IFs database updated")
             progress_callback(100)
@@ -263,11 +262,12 @@ def _update_pub_if(self, master, progress_callback):
             # this also for saving results files to complete IFs database
             paths_tup = (pub_list_file_path, pub_list_file_path,
                          missing_if_path, missing_issn_path)
-            _, if_database_complete = add_if(master.institute, master.org_tup, master.wf_path,
-                                             paths_tup, corpus_year)
+            sub_params_list = [master.institute, master.org_tup,
+                               master.wf_path, corpus_year]
+            _, if_database_complete = add_if(sub_params_list, paths_tup)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-            split_pub_list_by_doc_type(master.wf_path, corpus_year)
+            split_pub_list_by_doc_type(sub_params_list)
 
             # Saving pub list as final result
             status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
