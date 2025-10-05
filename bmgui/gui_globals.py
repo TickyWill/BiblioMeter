@@ -20,6 +20,8 @@ __all__ = ['APP_WIN_TITLE',
            'KEY_ANALYS_YEAR',
            'KEY_CONSO',
            'KEY_CONSO_YEAR',
+           'KEY_CORRECT',
+           'KEY_CORRECT_YEAR',
            'KEY_IF',
            'KEY_PARSE',
            'KEY_PARSE_YEAR', 
@@ -158,6 +160,8 @@ KEY_CONSO_YEAR = 'conso_year'
 KEY_IF = 'if_upd'
 KEY_ANALYS = 'analys'
 KEY_ANALYS_YEAR = 'analys_year'
+KEY_CORRECT = 'correct'
+KEY_CORRECT_YEAR = 'correct_year'
 
 # Font name for all characters
 FONT_NAME = "Helvetica"
@@ -255,17 +259,19 @@ PAGE_FONT_SIZE_DICT = {'box_header'    : 11,
                       }
 
 # Progress-bar lengths
-PROGRESS_BAR_LEN_DICT = {KEY_PARSE : 80,
-                         KEY_CONSO : 80,
-                         KEY_IF    : 100,
-                         KEY_ANALYS: 90,
+PROGRESS_BAR_LEN_DICT = {KEY_PARSE  : 80,
+                         KEY_CONSO  : 80,
+                         KEY_IF     : 100,
+                         KEY_ANALYS : 90,
+                         KEY_CORRECT: 90,
                         }
 
 # Relative positions of progress-bar
-PROGRESS_BAR_DPOS_DICT = {KEY_PARSE : (10, 0.5),
-                          KEY_CONSO : (10, 0.5),
-                          KEY_IF    : (20, 10),
-                          KEY_ANALYS: (10, 0.5),
+PROGRESS_BAR_DPOS_DICT = {KEY_PARSE  : (10, 0.5),
+                          KEY_CONSO  : (10, 0.5),
+                          KEY_IF     : (20, 10),
+                          KEY_ANALYS : (10, 0.5),
+                          KEY_CORRECT: (10, 0.5),
                          }
 
 PAGE_TITLE_POS_DICT = {'page_title'    : ("mid_page", 7),
@@ -292,25 +298,28 @@ PAGE_SELECT_LABEL_DICT = {'year': "Sélection de l'année ",
                           'data': "Données ",}
 
 # Positions of labels for items selection
-PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR : (10, 100),
-                              KEY_CONSO_YEAR : (80, 48),
-                              KEY_ANALYS_YEAR: (10, 26),
+PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR  : (10, 100),
+                              KEY_CONSO_YEAR  : (80, 48),
+                              KEY_ANALYS_YEAR : (10, 26),
+                              KEY_CORRECT_YEAR: (10, 26),
                              }
 
 # Relative positions of label for items selection
 PAGE_SELECT_LABEL_DPOS_DICT = {KEY_PARSE: (10, 2),}
 
-PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE : (1, -2),
-                             KEY_CONSO : (0, -1.2),
-                             KEY_ANALYS: (0, -1.2),
+PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE  : (1, -2),
+                             KEY_CONSO  : (0, -1.2),
+                             KEY_ANALYS : (0, -1.2),
+                             KEY_CORRECT: (0, -1.2),
                             }
 
 # Relative positions for step-launch buttons
-STEP_BUT_DPOS_DICT = {KEY_PARSE : (15, 0.2),
-                      KEY_DEDUP : (20, 0.2),
-                      KEY_CONSO : (5, 2),
-                      KEY_IF    : (10, 4),
-                      KEY_ANALYS: (10, 2),
+STEP_BUT_DPOS_DICT = {KEY_PARSE  : (15, 0.2),
+                      KEY_DEDUP  : (20, 0.2),
+                      KEY_CONSO  : (5, 2),
+                      KEY_IF     : (10, 4),
+                      KEY_ANALYS : (10, 2),
+                      KEY_CORRECT: (10, 2),
                      }
 
 # Reference of positions and sizes
@@ -482,6 +491,32 @@ STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des mots clefs")
 STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des mots clefs est effectuée pour l'année sélectionnée "
                                     "à partir des fichiers issus de l'étape de parsing du corpus.")
 STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des mots clefs")
+
+
+# Parameters for all correct-scopus steps
+# ---------------------------------
+STEPS_NB_DICT[KEY_CORRECT] = 2
+STEP_POS_TUPS_DICT[KEY_CORRECT] = _set_step_pos_tups(STEPS_NB_DICT[KEY_CORRECT], STEP_X_POS_REF,
+                                                    steps_y_pos_init=45, steps_dy=28)
+STEPS_LABELS_DICT[KEY_CORRECT], STEPS_HELPS_DICT[KEY_CORRECT], STEPS_LAUNCHES_DICT[KEY_CORRECT] = [], [], []
+
+    # Correct scopus step 0
+STEPS_LABELS_DICT[KEY_CORRECT].append("Correction automatique des données de publications avec DOIs")
+STEPS_HELPS_DICT[KEY_CORRECT].append("La correction est effectuée pour l'année sélectionnée "
+                                    "à partir des DOIs de l'extraction sur requête en utilisant "
+                                     "le paquet ScopusApyJson de PyPi."
+                                    "\nDeux séries de données seront créées et sauvegardées aux formats csv et xlsx :"
+                                    "\n    - Les données scopus corrigées pour les publications avec DOIs;"
+                                    "\n    - Les données initiales pour les publications sans DOIs.")
+STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la correction")
+
+    # Correct scopus step 1
+STEPS_LABELS_DICT[KEY_CORRECT].append("Correction manuelle guidée des données de publications sans DOIs ")
+STEPS_HELPS_DICT[KEY_CORRECT].append("La correction est effectuée pour l'année sélectionnée "
+                                     "à partir des données initiales sauvegardées au format xlsx à l'étape précédente."
+                                     "\nLes données scopus corrigées pour les publications avec DOIs seront complétées "
+                                     "avec les données corrigées manuellement et sauvegardées aux formats csv et xlsx.")
+STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la correction")
 
 
 # ******************************************

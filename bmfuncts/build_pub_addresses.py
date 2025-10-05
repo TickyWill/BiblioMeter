@@ -344,7 +344,8 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
         progress_status = init_progress
         progress_callback(progress_status)
 
-    if institute.upper()=="LITEN":        # Building "pubid_addid_authid_addresse_df"
+    if institute.upper()=="LITEN":
+        # Building "pubid_addid_authid_addresse_df"
         return_df = _build_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
                                                           institute_author_addresses_df,
                                                           bm_full_cols_list)
@@ -356,7 +357,7 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
             save_params_dic['save_num'] = _save_step_df(save_params_dic,
                                                         pubid_addid_authid_addresse_df)
 
-        # Building  corrected "pubid_addid_authid_addresse_df"
+        # Building corrected "pubid_addid_authid_addresse_df"
         corr_pubid_addid_authid_addresse_df = _correct_inst_address(pubid_addid_authid_addresse_df,
                                                                     bm_full_cols_list)
         if progress_param:

@@ -158,7 +158,7 @@ def _display_path(inst_wf):
     return p_disp
 
 
-def _get_file(self, institute_select, datatype_select):
+def _get_file(self, institute_select, datatype_select, set_inst_param):
     """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
     Updates 'wf' widgets parameters and values accordingly to the working 
     folder got and sets launch button of corpuses analysis.
@@ -177,13 +177,16 @@ def _get_file(self, institute_select, datatype_select):
         messagebox.showwarning(warning_title, warning_text)
 
     # Updating wf values using new working directory
-    set_wf_widget_param(self, institute_select, wf_str, datatype_select)
+    set_wf_widget_param(self, institute_select, wf_str, datatype_select,
+                        set_inst_param)
     _update_corpuses(self, wf_str)
     wf_path = Path(wf_str)
-    SetLaunchButton(self, institute_select, wf_path, datatype_select)
+    SetLaunchButton(self, institute_select, wf_path, datatype_select,
+                    set_inst_param)
 
 
-def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
+def set_wf_widget_param(self, institute_select, inst_wf,
+                        datatype_select, set_inst_param):
     """Sets 'wf' widgets parameters and values 
     according to the selected Institute.
 
@@ -219,7 +222,7 @@ def set_wf_widget_param(self, institute_select, inst_wf, datatype_select):
                           text=bm_gg.MAIN_BUT_LABEL_DICT['wf_change'],
                           font=wf_button_font,
                           command=lambda: _get_file(self, institute_select,
-                                                    datatype_select))
+                                                    datatype_select, set_inst_param))
     bm_gu.place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
 
 
@@ -353,12 +356,14 @@ def _update_datatype(self, *args, datatype_widget=None):
     """
 
     datatype_select = datatype_widget.get()
-    self.datatype_optionbutton.configure(state = 'disabled')
+    self.datatype_optionbutton.configure(state='disabled')
 
     # Managing working folder
     institute_select = args[0]
+    set_inst_param = args[1]
     inst_default_wf = bm_ig.WORKING_FOLDERS_DICT[institute_select] + "-" + bm_gg.VERSION
-    set_wf_widget_param(self, institute_select, inst_default_wf, datatype_select)
+    set_wf_widget_param(self, institute_select, inst_default_wf,
+                        datatype_select, set_inst_param)
 
     # Managing corpus list
     corpuses_val = set_corpuses_widgets_param(self, inst_default_wf)
@@ -378,12 +383,14 @@ def _update_datatype(self, *args, datatype_widget=None):
                      "par défaut est autorisé mais vous pouvez "
                      "en choisir un autre.")
         messagebox.showinfo(info_title, info_text)
-        init_corpuses_list = bm_gu.last_available_years(default_wf_path, bm_gg.CORPUSES_NUMBER)
+        init_corpuses_list = bm_gu.last_available_years(default_wf_path,
+                                                        bm_gg.CORPUSES_NUMBER)
         corpuses_val_to_set = str(init_corpuses_list)
     corpuses_val.set(corpuses_val_to_set)
 
     # Managing analysis launch button
-    SetLaunchButton(self, institute_select, default_wf_path, datatype_select)
+    SetLaunchButton(self, institute_select, default_wf_path,
+                    datatype_select, set_inst_param)
 
 
 def update_app_page(self, *args, institute_widget=None):
@@ -405,6 +412,7 @@ def update_app_page(self, *args, institute_widget=None):
     set_datatype_widgets_param(self, datatype_val)
 
     # Tracing data type selection
+    set_inst_param = True
     datatype_val.trace('w',
-                       partial(_update_datatype, self, institute_select,
+                       partial(_update_datatype, self, institute_select, set_inst_param,
                                datatype_widget=datatype_val))

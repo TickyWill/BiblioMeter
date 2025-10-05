@@ -25,7 +25,7 @@ import bmgui.gui_utils as bm_gu
 from bmgui.gui_utils import set_progress_bar_pos_tup
 
 
-def set_general_params(master, institute, wf_path, datatype):
+def set_general_params(master, institute, wf_path, datatype, set_inst_param):
     """Sets selected paramaters by the user as attributes 
     of the main_page.
 
@@ -39,6 +39,7 @@ def set_general_params(master, institute, wf_path, datatype):
     master.institute = institute
     master.wf_path = wf_path
     master.datatype = datatype
+    master.set_inst_param = set_inst_param
 
 
 def set_step_label(self, step_num, step_label_params):

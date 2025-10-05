@@ -13,6 +13,7 @@ from tkinter import messagebox
 from tkinter import font as tkFont
 
 # Local imports
+import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
@@ -89,11 +90,13 @@ class SetLaunchButton:
         institute (str): The name of the selected Institute.
         wf_path (path): The full path to the selected working folder.
         datatype (str): The selected type of Data combination of corpuses databases.
+        set_inst_param (bool): Parameter for getting rid of setting \
+        Institute parameters if False.
     """
 
-    def __init__(self, master, institute, wf_path, datatype):
+    def __init__(self, master, institute, wf_path, datatype, set_inst_param):
         # setting common general parameters common to all pages
-        bm_pu.set_general_params(master, institute, wf_path, datatype)
+        bm_pu.set_general_params(master, institute, wf_path, datatype, set_inst_param)
 
         # Setting font size for launch button
         launch_but_font_size_tup = bm_gu.set_font_size_tup(master, bm_gg.MAIN_FONT_SIZE_DICT,
@@ -115,7 +118,7 @@ class SetLaunchButton:
                             y=launch_but_pos_tup[1],
                             anchor="s")
 
-    def _generate_pages(self, master):
+    def _generate_pages(self, master,):
         """Generates pages after working folder setting.
 
         Args:
@@ -129,9 +132,10 @@ class SetLaunchButton:
             messagebox.showwarning(warning_title, warning_text)
 
         else:
-            # Getting Institute parameters
             master.wf_root_path = master.wf_path.parent
-            master.org_tup = set_org_params(master.institute, master.wf_root_path)
+            if master.set_inst_param:
+                # Getting Institute parameters
+                master.org_tup = set_org_params(master.institute, master.wf_root_path)
 
             # Setting years list
             master.years_list = bm_gu.last_available_years(master.wf_path,

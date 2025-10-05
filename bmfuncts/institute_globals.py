@@ -8,6 +8,7 @@ __all__ = ['CONFIG_JSON_FILES_DICT',
            'INSTITUTE_GEO',
            'INSTITUTES_LIST',
            'INVALIDE',
+           'ROOT_FOLDERS_DICT',
            'WORKING_FOLDERS_DICT',
           ]
 
