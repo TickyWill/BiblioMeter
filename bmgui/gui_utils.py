@@ -493,7 +493,7 @@ def _window_properties(screen_width_px, screen_height_px):
     return sizes_tuple
 
 
-def general_properties(self):
+def general_properties(self, win_title):
     """The function `general_properties` calculate the window sizes
     and useful scale factors for the application launch window through
     `_window_properties` internal function.
@@ -503,6 +503,7 @@ def general_properties(self):
 
     Args:
         self (instance): Instance where application launch window is created.
+        win_title (str): Title of the application window.
     Returns:
         (tup): (width of reference window converted to px, \
         height of reference window converted to px, \
@@ -526,5 +527,5 @@ def general_properties(self):
     self.resizable(False, False)
 
     # Setting title window
-    self.title(bm_gg.APP_WIN_TITLE)
+    self.title(win_title)
     return sizes_tuple
