@@ -445,7 +445,7 @@ STEPS_LABELS_DICT[KEY_IF], STEPS_HELPS_DICT[KEY_IF], STEPS_LAUNCHES_DICT[KEY_IF]
 STEPS_LABELS_DICT[KEY_IF].append("Mise à jour de la base de données des IFs")
 STEPS_HELPS_DICT[KEY_IF].append("La base de données sera mise à jour à partir des 2 fichiers annuels "
                                 "complétés manuellement et contenant, respectivement :"
-                                "\n- La liste des journaux dont l'IF est manquant;"
+                                "\n- La liste des journaux dont l'IF est manquant ;"
                                 "\n- La liste des journaux dont l'ISSN est manquant.")
 STEPS_LAUNCHES_DICT[KEY_IF].append("Lancer la mise à jour de la base de données des IFs")
 
@@ -495,29 +495,38 @@ STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des mots clefs")
 
 # Parameters for all correct-scopus steps
 # ---------------------------------
-STEPS_NB_DICT[KEY_CORRECT] = 2
+STEPS_NB_DICT[KEY_CORRECT] = 3
 STEP_POS_TUPS_DICT[KEY_CORRECT] = _set_step_pos_tups(STEPS_NB_DICT[KEY_CORRECT], STEP_X_POS_REF,
                                                     steps_y_pos_init=45, steps_dy=28)
 STEPS_LABELS_DICT[KEY_CORRECT], STEPS_HELPS_DICT[KEY_CORRECT], STEPS_LAUNCHES_DICT[KEY_CORRECT] = [], [], []
 
     # Correct scopus step 0
-STEPS_LABELS_DICT[KEY_CORRECT].append("Correction automatique des données de publications avec DOIs")
+STEPS_LABELS_DICT[KEY_CORRECT].append("Correction automatique des données de publications avec DOI")
 STEPS_HELPS_DICT[KEY_CORRECT].append("La correction est effectuée pour l'année sélectionnée "
-                                    "à partir des DOIs de l'extraction sur requête en utilisant "
+                                     "à partir des DOIs de l'extraction sur requête en utilisant "
                                      "le paquet ScopusApyJson de PyPi."
-                                    "\nDeux séries de données seront créées et sauvegardées aux formats csv et xlsx :"
-                                    "\n    - Les données scopus corrigées pour les publications avec DOIs;"
-                                    "\n    - Les données initiales pour les publications sans DOIs.")
-STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la correction")
+                                     "\nDeux séries de données seront créées et sauvegardées aux formats csv et xlsx :"
+                                     "\n    - Les données scopus corrigées pour les publications avec DOI ;"
+                                     "\n    - Les données initiales pour les publications sans DOI.")
+STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la correction automatique")
 
     # Correct scopus step 1
-STEPS_LABELS_DICT[KEY_CORRECT].append("Correction manuelle guidée des données de publications sans DOIs ")
-STEPS_HELPS_DICT[KEY_CORRECT].append("La correction est effectuée pour l'année sélectionnée "
-                                     "à partir des données initiales sauvegardées au format xlsx à l'étape précédente."
-                                     "\nLes données scopus corrigées pour les publications avec DOIs seront complétées "
-                                     "avec les données corrigées manuellement et sauvegardées aux formats csv et xlsx.")
-STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la correction")
+STEPS_LABELS_DICT[KEY_CORRECT].append("Correction guidée des données de publications sans DOI ")
+STEPS_HELPS_DICT[KEY_CORRECT].append("Deux fichiers au format xlsx pour accompagner la correction par l'utilisateur "
+                                     "sont créés pour l'année sélectionnée à partir des données initiales "
+                                     "des publications sans DOI identifiées à l'étape 1. Ces deux fichiers contiennent :"
+                                     "\n    - Les données scopus où les noms d'auteurs ont été mises au format ad-hoc pour BiblioMeter ;"
+                                     "\n    - Les données préparées pour corriger l'affiliation de chaque auteur des publications sans DOI.")
+STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la création des fichiers pour la correction manuelle")
 
+
+    # Correct scopus step 2
+STEPS_LABELS_DICT[KEY_CORRECT].append("Consolider la correction des données de Scopus")
+STEPS_HELPS_DICT[KEY_CORRECT].append("La correction des affiliations définie par l'utilisateur dans le fichier "
+                                     "créé à l'étape 2 est prise en compte pour compléter les données corrigées "
+                                     "automatiquement à l'étape 1."
+                                     "\nLes données scopus corrigées complètes sont sauvegardées aux formats csv.")
+STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la consolidation de la correction")
 
 # ******************************************
 # **** SPECIFIC GLOBALS OF PARSING PAGE ****
