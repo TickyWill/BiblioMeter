@@ -31,3 +31,4 @@ from bmfuncts.keywords_analysis import *
 from bmfuncts.doctype_analysis import *
 from bmfuncts.build_kpi import *
 from bmfuncts.save_final_results import *
+from bmfuncts.read_final_results import *

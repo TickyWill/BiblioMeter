@@ -17,13 +17,13 @@ import BiblioParsing as bp
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import save_formatted_df_to_xlsx
+from bmfuncts.read_final_results import read_final_dedup
+from bmfuncts.read_final_results import read_final_pub_list_data
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
+from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import set_capwords_lambda
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import get_final_dedup
-from bmfuncts.useful_functs import read_final_pub_list_data
-from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _set_doctype_files_params(wf_path, corpus_year):
@@ -200,15 +200,15 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
     return analysis_df
 
 
-def _read_articles_data(wf_path, saved_results_path, corpus_year):
+def _read_articles_data(wf_path, final_results_path, corpus_year):
     """Reads saved data of publications list resulting from the parsing step.
 
-    It uses the `get_final_dedup` function imported from the 
+    It uses the `read_final_dedup` function imported from the 
     the `bmfuncts.useful_functs` module.
 
     Args:
         wf_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
+        final_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
@@ -218,9 +218,9 @@ def _read_articles_data(wf_path, saved_results_path, corpus_year):
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(wf_path,
-                                         saved_results_path,
-                                         corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path,
+                                          final_results_path,
+                                          corpus_year)
 
     # Getting ID of each author with author name
     articles_df = dedup_parsing_dict[articles_item_alias]
@@ -259,7 +259,7 @@ def _build_doctype_analysis_data(data_params_list,
     wf_path, datatype, corpus_year = data_params_list
 
     # Setting input-data path
-    saved_results_path = set_saved_results_path(wf_path, datatype)
+    final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful column names list
     doctype_cols_dic, depts_cols_list = doctype_cols_tup
@@ -274,7 +274,7 @@ def _build_doctype_analysis_data(data_params_list,
 
     # Getting articles data resulting from deduplication parsing
     parsing_articles_df = _read_articles_data(wf_path,
-                                              saved_results_path, corpus_year)
+                                              final_results_path, corpus_year)
 
     # Building the dict {journal name : normalized journal name,}
     # from the deduplication results
@@ -282,7 +282,7 @@ def _build_doctype_analysis_data(data_params_list,
                                  parsing_articles_df[journal_norm_col]))
 
     # Initializing the dataframe to be analysed
-    pub_df = read_final_pub_list_data(saved_results_path,
+    pub_df = read_final_pub_list_data(final_results_path,
                                       corpus_year, full_cols_list)
 
     # Setting final dataframe to be analyzed
@@ -564,10 +564,7 @@ def doctype_analysis(params_list, if_most_recent_year,
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["doctypes"] = True
-    if_analysis_name = "None"
-    _ = save_final_results(institute, org_tup, wf_path, datatype,
-                           corpus_year, if_analysis_name, results_to_save_dict,
-                           verbose=False)
+    _ = save_final_results(params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(50)
 

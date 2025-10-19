@@ -16,11 +16,11 @@ import pandas as pd
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
+from bmfuncts.read_final_results import read_final_dedup
+from bmfuncts.read_final_results import read_final_pub_list_data
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
-from bmfuncts.useful_functs import get_final_dedup
-from bmfuncts.useful_functs import read_final_pub_list_data
-from bmfuncts.useful_functs import set_saved_results_path
+from bmfuncts.save_final_results import set_results_folder_path
 
 
 def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df, cols_tup,
@@ -169,7 +169,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     This is done through the following steps:
 
     1. Gets deduplication results of the parsing step trough the \
-    `read_parsing_dict` function imported from `bmfuncts.useful_functs` module.
+    `read_final_dedup` function imported from `bmfuncts.read_final_results` module.
     2. Builds the dataframe of publications list to be analyzed specifying \
     the useful columns;
     3. Loops on KW type among author KW (AK), indexed KW (IK) and title KW (TK) for:
@@ -196,7 +196,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     institute, org_tup, wf_path, datatype, corpus_year = params_list
 
     # Setting input-data path
-    saved_results_path = set_saved_results_path(wf_path, datatype)
+    final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful files params
     kw_items_dict, kw_analysis_folder_path = _set_kw_files_params(wf_path, corpus_year)
@@ -215,13 +215,13 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(15)
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(wf_path, saved_results_path, corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
     if progress_callback:
         progress_callback(25)
 
     # Building the dataframe to be analysed
     cols_list = [final_pub_id_col] + depts_col_list
-    pub_df = read_final_pub_list_data(saved_results_path,
+    pub_df = read_final_pub_list_data(final_results_path,
                                       corpus_year, cols_list)
     if progress_callback:
         progress_callback(30)
@@ -251,9 +251,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["kws"] = True
-    if_analysis_name = None
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
-                           if_analysis_name, results_to_save_dict, verbose=False)
+    _ = save_final_results(params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(100)
     return kw_analysis_folder_path

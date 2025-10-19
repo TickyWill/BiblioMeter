@@ -30,6 +30,7 @@ __all__ = ['ANALYSIS_IF',
            'DOC_TYPE_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
+           'FIRST_BDD',
            'HOMONYM_FLAG',
            'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
@@ -46,6 +47,7 @@ __all__ = ['ANALYSIS_IF',
            'SHEET_SAVE_OTP',
            'STAT_FILE_DICT',
            'STAT_INST_TYPES_LIST',
+           'STAT_ROW_NAMES',
            'TSV_SAVE_EXTENT',
            'XL_INDEX_BASE', 
           ]
@@ -58,6 +60,7 @@ import bmfuncts.employees_globals as bm_eg
 
 # Setting the databases of corpuses extraction
 BDD_LIST = [bp.SCOPUS, bp.WOS]
+FIRST_BDD = bp.SCOPUS
 
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
@@ -154,14 +157,14 @@ ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                 }
 
 
-ARCHI_YEAR = {
-              "analyses"                            : "5 - Analyses",
+ARCHI_YEAR = {"analyses"                            : "5 - Analyses",
               "authors analysis"                    : "Auteurs",
               "doctype analysis"                    : "Edition",
               "if analysis"                         : "IFs",
               "keywords analysis"                   : "Mots clefs",
               "subjects analysis"                   : "Thématique",
               "countries analysis"                  : "Géographique",
+              "institute-country weight file base"  : "Statistiques_",
               "institutions analysis"               : "Collaborations",
               "authors file name"                   : "Informations auteur par publication",
               "authors weight file name"            : "Statistiques par auteurs",
@@ -202,7 +205,7 @@ ARCHI_YEAR = {
 RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists",
                    "ifs", "kws","countries", "continents",
                    "authors", "institutions", "doctypes",
-                   "homonyms",]
+                   "homonyms", "institute_country"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -276,6 +279,7 @@ COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
                    'book_pub_nb'       : "Nombre d'ouvrages ou de chapitres",
                    'name_as_auth'      : "Nom d'auteur",
                    'name_as_empl'      : "Nom de salarié",
+                   'pub_type'          : "Type des co-auteurs",
                   }
 
 
@@ -399,3 +403,10 @@ STAT_FILE_DICT = dict(zip(stat_keys_list, values_tup_list))
 
 STAT_INST_TYPES_LIST = ["Firm", "Chu", "Nro", "Rto", "Univ", "Inst",
                         "CNRS-Lab", "Univ-Lab", "Jlab", "CEA-Inst"]
+
+STAT_ROW_NAMES = {'all'                : "Au moins un de l'Institut",
+                  'institute_only'     : "Uniquement de l'Institut",
+                  'country_only'       : "Nationaux uniquement",
+                  'country_at_least'   : "Nationaux et internationaux",
+                  'out_of_country_only': "Internationaux uniquement",
+                 }

@@ -13,10 +13,10 @@ import pandas as pd
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
+from bmfuncts.read_final_results import read_final_dedup
+from bmfuncts.read_final_results import read_final_submit_data
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import get_final_dedup
-from bmfuncts.useful_functs import read_final_submit_data
 from bmfuncts.useful_functs import save_xlsx_file
 from bmfuncts.useful_functs import set_year_pub_id
 
@@ -400,7 +400,7 @@ def _set_save_folder_path(wf_path, corpus_year):
 def _read_addresses_data(input_data_params):
     """Reads saved data of addresses resulting from the parsing step.
 
-    It uses the `get_final_dedup` function imported from 
+    It uses the `read_final_dedup` function imported from 
     the `bmfuncts.useful_functs` module.
 
     Args:
@@ -411,15 +411,15 @@ def _read_addresses_data(input_data_params):
         (dataframe): The data of addresses.
     """
     # Setting parameters values from 'input_data_params'
-    wf_path, corpus_year, saved_results_path = input_data_params
+    wf_path, corpus_year, final_results_path = input_data_params
 
     # Setting useful aliases
     addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(wf_path,
-                                         saved_results_path,
-                                         corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path,
+                                          final_results_path,
+                                          corpus_year)
 
     # Getting ID of each author with author name
     addresses_df = dedup_parsing_dict[addresses_item_alias]
@@ -439,7 +439,7 @@ def _build_institute_authors_addresses(input_data_params, pub_addresses_cols_dic
         (dataframe), Publications IDs (str) of the institute (list)).
     """
     # Setting parameters values from 'input_data_params'
-    corpus_year, saved_results_path = input_data_params
+    corpus_year, final_results_path = input_data_params
 
     # Setting useful column names from 'pub_addresses_cols_dic'
     col_keys = ['bm_pub_id_col', 'bm_author_id_col', 'bm_address_col']
@@ -450,7 +450,7 @@ def _build_institute_authors_addresses(input_data_params, pub_addresses_cols_dic
     data_cols = [bm_pub_id_col, bm_author_id_col, bm_address_col]
 
     # Building the dict of institute-authors IDs per publications
-    submit_df = read_final_submit_data(saved_results_path, corpus_year)
+    submit_df = read_final_submit_data(final_results_path, corpus_year)
     sub_submit_df = submit_df[data_cols]
 
     institute_author_addresses_df = pd.DataFrame()

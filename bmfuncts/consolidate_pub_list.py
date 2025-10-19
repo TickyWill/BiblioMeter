@@ -7,6 +7,7 @@ in terms of:
 """
 
 __all__ = ['built_final_pub_list',
+           'check_dedup_parsing_available',
            'concatenate_pub_lists',
            'split_pub_list_by_doc_type',
           ]
@@ -24,6 +25,7 @@ import pandas as pd
 import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.add_ifs import add_if
+from bmfuncts.config_utils import set_user_config
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
@@ -105,6 +107,40 @@ def _set_split_pub_files_params(wf_path, corpus_year):
                                                            pub_list_file_base_alias,
                                                            corpus_year, add_key=key)
     return pub_list_file_path, doctype_split_paths
+
+
+def check_dedup_parsing_available(wf_path, year):
+    """Checks if deduplication parsing folder exist and not empty.
+
+    Args:
+        wf_path (path): Full path to working folder.
+        year (str): 4 digits year of the corpus.
+    Returns:
+        (bool): Status of the deduplication parsing folder \
+        (False if folder didn't exist or is empty).
+    """
+    # To Do:  Checks if a specific parsing file is available not only if folder is empty
+
+    # Setting default returned status
+    dedup_parsing_status = False
+
+    # Getting the full paths of the working folder architecture for the corpus "year select"
+    config_tup = set_user_config(wf_path, year, bm_pg.BDD_LIST)
+    parsing_path_dict = config_tup[1]
+
+    # Setting parsing files extension of saved results
+    parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
+
+    # Setting path of deduplicated parsings
+    dedup_parsing_path = parsing_path_dict['dedup']
+    if os.path.isdir(dedup_parsing_path):
+        dedup_files_list = []
+        for path, _, files in os.walk(dedup_parsing_path):
+            dedup_files_list.extend(Path(path) / Path(file) for file in files
+                                    if file.endswith(parsing_save_extent))
+        if len(dedup_files_list)!=0:
+            dedup_parsing_status = True
+    return dedup_parsing_status
 
 
 def split_pub_list_by_doc_type(sub_params_list, pub_list_cols_dic=None):
@@ -327,10 +363,7 @@ def built_final_pub_list(params_list):
     keys_list = ["pub_lists", "hash_ids", "submit", "homonyms"]
     for key in keys_list:
         results_to_save_dict[key] = True
-    if_analysis_name = None
-    final_save_message = save_final_results(institute, org_tup, wf_path,
-                                            datatype, corpus_year, if_analysis_name,
-                                            results_to_save_dict, verbose=False)
+    final_save_message = save_final_results(params_list, results_to_save_dict)
 
     end_message  = (f"\n{otp_message}"
                     f"\nOTPs identification integrated in file: \n  '{pub_list_file_path}'"

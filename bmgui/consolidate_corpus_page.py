@@ -29,6 +29,7 @@ import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.add_otps import add_otp
 from bmfuncts.consolidate_pub_list import built_final_pub_list
+from bmfuncts.consolidate_pub_list import check_dedup_parsing_available
 from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.merge_pub_employees import recursive_year_search
 from bmfuncts.update_employees import set_employees_data
@@ -36,7 +37,6 @@ from bmfuncts.update_employees import update_employees
 from bmfuncts.use_homonyms import set_saved_homonyms
 from bmfuncts.use_homonyms import solve_homonyms
 from bmfuncts.use_otps import set_saved_otps
-from bmfuncts.useful_functs import check_dedup_parsing_available
 
 
 def _set_empl_files_params(root_path):
@@ -238,7 +238,8 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
 
     This is done through the `recursive_year_search` function imported from 
     `bmfuncts.merge_pub_employees` module after:
-    - setting employees data through `_set_employees_data` function 
+    - setting employees data through `set_employees_data` function imported \
+    from `bmfuncts.update_employees` module.
     - check of status of parsing step through `check_dedup_parsing_available` \
     function imported from `bmfuncts.useful_functs` module.
 
@@ -406,7 +407,7 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
 
             # Creating the files for homonyms resolution by the user
             _return_tup = solve_homonyms(master.institute, master.org_tup,
-                                           submit_path, homonyms_file_path)
+                                         submit_path, homonyms_file_path)
             end_message, actual_homonym_status = _return_tup
             print(end_message)
             print('\n Actual homonyms status before setting saved homonyms:',

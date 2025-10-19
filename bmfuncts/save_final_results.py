@@ -1,8 +1,10 @@
 """ Module of functions for saving final results.
 """
 
-__all__ = ['save_final_countries',
+__all__ = ['save_fails_dict',
+           'save_final_countries',
            'save_final_continents',
+           'save_final_dedup',
            'save_final_doctypes',
            'save_final_ifs',
            'save_final_institutions',
@@ -12,11 +14,13 @@ __all__ = ['save_final_countries',
            'save_final_results',
            'save_final_set_homonyms',
            'save_final_submit',
-           'set_result_folder_path',
+           'save_parsing_dict',
+           'set_results_folder_path',
           ]
 
 
 # Standard library imports
+import json
 import os
 import shutil
 from pathlib import Path
@@ -27,6 +31,120 @@ import BiblioParsing as bp
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import set_final_col_names
+
+
+def _set_item_path(item_filename_base, save_extent, parsing_path):
+    item_file_name = item_filename_base + "." + save_extent
+    item_path = parsing_path / Path(item_file_name)
+    return item_path
+
+
+def _save_item(item_df, item_filename_base, save_extent, parsing_path):
+    item_working_path = _set_item_path(item_filename_base, save_extent, parsing_path)
+    if save_extent=="xlsx":
+        item_df.to_excel(item_working_path, index=False)
+    elif save_extent=="dat":
+        item_df.to_csv(item_working_path, index=False, sep='\t')
+    else:
+        item_df.to_csv(item_working_path, index=False, sep=',')
+
+
+def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
+    """Saves the data of an item of the deduplication results of the parsing step
+    as final results.
+
+    Args:
+        item_df (dataframe): The data of the deduplication item to be saved.
+        item_filename_base (str): The file name base to build the name of the file \
+        for saving the item data.
+        save_extent (str): The extent for building the name of the file for saving \
+        the data.
+        dedup_infos (list): The full path to the working folder (path), \
+        Data combination type from corpuses databases (str) and \
+        4 digits year of the corpus (str).
+    Returns:
+        (tup): (4 digits year of the corpus (str), The full path to the folder \
+        where the deduplication result are saved).
+    """
+    # Setting parameters from args
+    wf_path, datatype, corpus_year = dedup_infos
+
+    # Setting aliases for final saving deduplication results
+    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
+
+    # Setting path for final saving deduplication results
+    results_root_path = wf_path / Path(results_root_alias)
+    results_folder_path = results_root_path / Path(results_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_parsing_path = year_target_folder_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required final results folders
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_parsing_path):
+        os.makedirs(target_parsing_path)
+
+    _save_item(item_df, item_filename_base, save_extent, target_parsing_path)
+    return corpus_year, target_parsing_path
+
+
+def save_parsing_dict(parsing_dict, parsing_path,
+                      item_filename_dict, save_extent,
+                      dedup_infos=None):
+    """Saves the data passed through the dict of parsing results 
+    as files of a specified type.
+
+    It may manage the final saving of the parsing-deduplication results 
+    depending on the optional argument 'dedup_infos'.
+
+    Args:
+        parsing_dict (dict): Parsing results keyed by parsing items \
+        given by 'PARSING_ITEMS_LIST' global imported from the package \
+        imported as bp and valued by the data (dataframes) of parsing results.
+        parsing_path (path): Full path to the folder for saving \
+        the parsing results.
+        item_filename_dict (dict): Dict keyed by the parsing items \
+        and valued by the file names for saving the parsing results.
+        save_extent (str): File type given by file extension without \
+        the dot separator (ex: "xlsx" for Excel file type).
+        dedup_infos (tup): Optional tuple for final saving of deduplication \
+        results = (Full path to working folder (path), \
+        Data combination type from corpuses databases (str), \
+        4 digits year of the corpus (str)) (default = None).
+    """
+    parsing_items_nb = len(parsing_dict.keys())
+    item_idx = 0
+    # Cycling on parsing items
+    for item in bp.PARSING_ITEMS_LIST:
+        if item in parsing_dict.keys():
+            item_df = parsing_dict[item]
+            item_filename_base = item_filename_dict[item]
+            _save_item(item_df, item_filename_base, save_extent, parsing_path)
+
+            if dedup_infos:
+                item_idx += 1
+                return_tup = save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+                if item_idx==parsing_items_nb:
+                    corpus_year, final_dedup_path = return_tup
+                    end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
+                                   f"\n  '{final_dedup_path}'")
+                    print(end_message)
+
+
+def save_fails_dict(fails_dict, parsing_path):
+    """The function `save_fails_dict` saves parsing fails in a json file 
+    named by the global PARSING_PERF imported from the module imported as bm_pg.
+
+    Args:
+        fails_dict (dict): The dict of parsing fails.
+        parsing_path (path): The full path to the parsing results folder \
+        where the json file is saved.
+    """
+    parsing_perf_path = parsing_path / Path(bm_pg.PARSING_PERF)
+    with open(parsing_perf_path, 'w', encoding="utf-8") as write_json:
+        json.dump(fails_dict, write_json, indent=4)
 
 
 def save_final_hash_ids(wf_path, corpus_year,
@@ -518,6 +636,58 @@ def save_final_continents(wf_path,
     return end_message
 
 
+def save_final_institute_country(wf_path, corpus_year,
+                                 results_folder_path, institute_country):
+    """Saves final results of publications per country for the corpus year.
+
+    Args:
+        wf_path (path): Full path to working folder.
+        corpus_year (str): 4 digits year of the corpus.
+        results_folder_path (path): Full path to the folder where final \
+        results have to be saved.
+    Returns:
+        (str): End message recalling corpus year and full path to \
+        the folder where final results have been saved.
+    """
+
+    # Setting aliases for saving results
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["countries"]
+
+    # Setting aliases of common parts of file names
+    origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
+    origin_countries_folder_alias = bm_pg.ARCHI_YEAR["countries analysis"]
+    institute_country_file_base_alias = bm_pg.ARCHI_YEAR["institute-country weight file base"]
+    
+    institute_country_file_name = institute_country_file_base_alias + institute_country
+    year_institute_country_file_name = institute_country_file_name + " " + corpus_year
+
+    # Setting common paths
+    origin_corpus_year_path = wf_path / Path(corpus_year)
+    origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
+    origin_countries_path = origin_analysis_folder_path / Path(origin_countries_folder_alias)
+    year_target_folder_path = results_folder_path / Path(corpus_year)
+    target_countries_path = year_target_folder_path / Path(results_sub_folder_alias)
+
+    # Checking availability of required results folders
+    if not os.path.exists(year_target_folder_path):
+        os.makedirs(year_target_folder_path)
+    if not os.path.exists(target_countries_path):
+        os.makedirs(target_countries_path)
+
+    # Setting full path 'origin_countries_file_path' and 'target_countries_file_path'
+    origin_institute_country_file_name = institute_country_file_name + ".xlsx"
+    origin_institute_country_file_path = origin_countries_path / Path(origin_institute_country_file_name)
+    target_institute_country_file_name = year_institute_country_file_name + ".xlsx"
+    target_institute_country_file_path = target_countries_path / Path(target_institute_country_file_name)
+
+    # Copying file from origin path to target path
+    shutil.copy2(origin_institute_country_file_path, target_institute_country_file_path)
+
+    end_message = (f"Final Institute country statistics for year {corpus_year} saved in folder: "
+                   f"\n  '{target_countries_path}'")
+    return end_message
+
+
 def save_final_institutions(wf_path,
                             corpus_year, results_folder_path):
     """Saves final results of publications per institution for the corpus year.
@@ -590,9 +760,16 @@ def save_final_doctypes(wf_path,
     return end_message
 
 
-def set_result_folder_path(wf_path, datatype):
+def set_results_folder_path(wf_path, datatype):
     """Sets the path to the folder where the final results
-    will be saved given the datatype."""
+    will be saved given the datatype.
+
+    Args:
+        wf_path (path): Full path to working folder.
+        datatype (str): Data combination type from corpuses databases.
+    Returns:
+        (path): The full path of the saved results.
+    """
     # Setting aliases for saving results
     results_root_alias = bm_pg.ARCHI_RESULTS["root"]
     results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
@@ -607,10 +784,36 @@ def set_result_folder_path(wf_path, datatype):
     if not os.path.exists(results_folder_path):
         os.makedirs(results_folder_path)
     return results_folder_path
+#
+#
+#def set_result_folder_path(wf_path, datatype):
+#    """Sets the path to the folder where the final results
+#    will be saved given the datatype.
+#
+#    Args:
+#        wf_path (path): Full path to working folder.
+#        datatype (str): Data combination type from corpuses databases.
+#    Returns:
+#        (path): The full path of the saved results.
+#    """
+#    # Setting aliases for saving results
+#    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
+#    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
+#
+#    # Setting paths for saving results
+#    results_root_path = wf_path / Path(results_root_alias)
+#    results_folder_path = results_root_path / Path(results_folder_alias)
+#
+#    # Checking availability of required results folders
+#    if not os.path.exists(results_root_path):
+#        os.makedirs(results_root_path)
+#    if not os.path.exists(results_folder_path):
+#        os.makedirs(results_folder_path)
+#    return results_folder_path
 
 
-def save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
-                       if_analysis_name, results_to_save_dict, verbose=False):
+def save_final_results(params_list, results_to_save_dict, if_analysis_name=None,
+                       institute_country=None, verbose=False):
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
 
@@ -621,23 +824,27 @@ def save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
     and publications per OTPs.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
-        corpus_year (str): 4 digits year of the corpus.
-        if_analysis_name (str): Base for building file names for saving \
-        impact-factors type of results.
+        params_list (list): The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute organization, \
+        the full path to working folder (path), the data combination type \
+        of corpuses databases (str) and the 4 digits year of the corpus (str).
         results_to_save_dict (dict): Dict keyed by the type of results \
         to save and valued by saving status (bool; True if the type of \
         results should be saved).
+        if_analysis_name (str): Optional base (str) building file names \
+        for saving impact-factors type of results (default=None).
+        institute_country (str): Optional country of the institute \
+        for building the file names for saving related stat data (default=None).
         verbose (bool): Status of prints (default = False).
     Returns:
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
+    # Setting parameters values from 'params_list'
+    institute, org_tup, wf_path, datatype, corpus_year = params_list
+
     # Setting path for saving results
-    results_folder_path = set_result_folder_path(wf_path, datatype)
+    results_folder_path = set_results_folder_path(wf_path, datatype)
 
     if results_to_save_dict["hash_ids"]:
         message = save_final_hash_ids(wf_path, corpus_year,
@@ -691,6 +898,13 @@ def save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
     if results_to_save_dict["continents"]:
         message = save_final_continents(wf_path, corpus_year,
                                         results_folder_path)
+        if verbose:
+            print("\n",message)
+
+    if results_to_save_dict["institute_country"]:
+        message = save_final_institute_country(wf_path, corpus_year,
+                                               results_folder_path,
+                                               institute_country)
         if verbose:
             print("\n",message)
 

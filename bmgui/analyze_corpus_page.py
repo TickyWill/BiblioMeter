@@ -19,7 +19,7 @@ from bmfuncts.authors_analysis import authors_analysis
 from bmfuncts.build_kpi import if_analysis
 from bmfuncts.coupling_analysis import coupling_analysis
 from bmfuncts.keywords_analysis import keywords_analysis
-from bmfuncts.save_final_results import set_result_folder_path
+from bmfuncts.save_final_results import set_results_folder_path
 
 
 def _launch_au_analysis(master, year_select, progress_callback):
@@ -137,7 +137,7 @@ def _launch_if_analysis(master, year_select, progress_callback):
                    master.datatype, year_select]
 
     # Setting path for saving results
-    results_folder_path = set_result_folder_path(master.wf_path, master.datatype)
+    final_results_path = set_results_folder_path(master.wf_path, master.datatype)
 
     # Getting year of most recent IFs
     _, _, if_most_recent_year = get_if_db(master.institute, master.org_tup,
@@ -163,7 +163,7 @@ def _launch_if_analysis(master, year_select, progress_callback):
                  "\n\nLa base de données des indicateurs respective de l'Institut "
                  "et de chaque département a été mise à jour "
                  "avec les résultats de cette analyse et se trouve dans le dossier :"
-                 f"\n\n'{results_folder_path}'.")
+                 f"\n\n'{final_results_path}'.")
     messagebox.showinfo(info_title, info_text)
 
 

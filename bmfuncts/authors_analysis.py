@@ -16,26 +16,26 @@ import pandas as pd
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
+from bmfuncts.read_final_results import read_final_dedup
+from bmfuncts.read_final_results import read_final_set_homonyms_data
 from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.save_final_results import save_final_results
+from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import get_final_dedup
 from bmfuncts.useful_functs import name_capwords
-from bmfuncts.useful_functs import read_final_set_homonyms_data
-from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import set_year_pub_id
 
 
-def _read_authors_data(wf_path, saved_results_path,
+def _read_authors_data(wf_path, final_results_path,
                        corpus_year):
     """Reads saved authors data resulting from the parsing step.
 
-    It uses the `get_final_dedup` function of 
+    It uses the `read_final_dedup` function of 
     the `bmfuncts.useful_functs` module.
 
     Args:
         wf_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
+        final_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
@@ -45,9 +45,9 @@ def _read_authors_data(wf_path, saved_results_path,
     authors_item_alias = bp.PARSING_ITEMS_LIST[1]
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(wf_path,
-                                         saved_results_path,
-                                         corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path,
+                                          final_results_path,
+                                          corpus_year)
 
     # Getting ID of each author with author name
     authors_df = dedup_parsing_dict[authors_item_alias]
@@ -89,7 +89,7 @@ def _set_au_analysis_cols(institute, org_tup):
     return au_analysis_cols_dic
 
 
-def _build_auth_nb_per_pub(wf_path, saved_results_path,
+def _build_auth_nb_per_pub(wf_path, final_results_path,
                            corpus_year, cols_list):
     """Builds the data of authors number per publications.
 
@@ -98,7 +98,7 @@ def _build_auth_nb_per_pub(wf_path, saved_results_path,
 
     Args:
         wf_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
+        final_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         cols_list (list):  Composed of Pub-ID column name (str) and \
@@ -110,7 +110,7 @@ def _build_auth_nb_per_pub(wf_path, saved_results_path,
     pub_id_col, nb_au_col = cols_list
 
     # Getting the authors per pub-ID file from parsing results
-    authors_df = _read_authors_data(wf_path, saved_results_path,
+    authors_df = _read_authors_data(wf_path, final_results_path,
                                     corpus_year)
 
     # Creating a dataframe with a column with number of authors per pub-ID
@@ -147,7 +147,7 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
         (dataframe): The dataframe of the authors data per publications.
     """
     # Setting input-data path
-    saved_results_path = set_saved_results_path(wf_path, datatype)
+    final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful columns names from 'au_analysis_cols_dic'
     col_keys = ['pub_id_col', 'au_id_col', 'inst_au_col', 'first_au_col',
@@ -160,11 +160,11 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
 
     # Getting the publications list with one row per Institute author
     # and its attributes columns
-    set_homonyms_df = read_final_set_homonyms_data(saved_results_path, corpus_year)
+    set_homonyms_df = read_final_set_homonyms_data(final_results_path, corpus_year)
 
     # Getting the number of authors per pub-ID from parsing results
     count_select_cols = [pub_id_col, nb_au_col]
-    count_auth_df = _build_auth_nb_per_pub(wf_path, saved_results_path,
+    count_auth_df = _build_auth_nb_per_pub(wf_path, final_results_path,
                                            corpus_year, count_select_cols)
 
     # Initializing dataframe to build
@@ -371,11 +371,7 @@ def authors_analysis(params_list, progress_callback=None):
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
-    if_analysis_name = "None"
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
-                           if_analysis_name, results_to_save_dict, verbose=False)
-#    _ = save_final_results(params_list, if_analysis_name,
-#                           results_to_save_dict, verbose=False)
+    _ = save_final_results(params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(100)
 

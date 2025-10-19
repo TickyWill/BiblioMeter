@@ -21,11 +21,11 @@ import BiblioParsing as bp
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
+from bmfuncts.read_final_results import read_final_dedup
+from bmfuncts.save_final_results import save_final_dedup
+from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
-from bmfuncts.useful_functs import get_final_dedup
-from bmfuncts.useful_functs import save_final_dedup
-from bmfuncts.useful_functs import set_saved_results_path
 from bmfuncts.useful_functs import standardize_firstname_initials
 from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
@@ -512,18 +512,18 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet,
     return new_pub_df
 
 
-def _read_useful_parsing_data(wf_path, saved_results_path,
+def _read_useful_parsing_data(wf_path, final_results_path,
                               corpus_year, items_list):
     """Reads the saved data of publications, addresses, authors 
     and authors with affiliations resulting from 
     the parsing step.
 
-    It uses the `get_final_dedup` function of 
+    It uses the `read_final_dedup` function of 
     the `bmfuncts.useful_functs` module.
 
     Args:
         wf_path (path): Full path to working folder.
-        saved_results_path (path): Full path to the folder \
+        final_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         items_list (list): List of items (str) to be read.
@@ -540,9 +540,9 @@ def _read_useful_parsing_data(wf_path, saved_results_path,
      auth_inst_item) = items_list
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = get_final_dedup(wf_path,
-                                         saved_results_path,
-                                         corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path,
+                                          final_results_path,
+                                          corpus_year)
 
     # Getting ID of each publication with complementary info
     articles_df = dedup_parsing_dict[articles_item]
@@ -589,14 +589,14 @@ def _get_input_data(params_list, bp_cols_list):
     item_filename_dict = config_tup[2]
 
     # Setting input-data paths
-    saved_results_path = set_saved_results_path(wf_path, datatype)
+    final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Getting the useful parsing results
     items_list = [articles_item_alias,
                   addresses_item_alias,
                   authors_item_alias,
                   auth_inst_item_alias]
-    return_tup = _read_useful_parsing_data(wf_path, saved_results_path,
+    return_tup = _read_useful_parsing_data(wf_path, final_results_path,
                                            corpus_year, items_list)
     articles_df, addresses_df, authors_df, authorsinst_df = return_tup
 

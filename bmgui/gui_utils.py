@@ -350,8 +350,10 @@ def existing_corpuses(wf_path, corpuses_number=None):
         pointed by the full path 'rawdata_path'.
         """
         filenames_list = []
-        for _, _, files in os.walk(rawdata_path):
-            filenames_list.extend(file for file in files if file.endswith("." + rawdata_extent))
+        rawdata_file_end = "." + rawdata_extent
+        for file in os.listdir(rawdata_path):
+            if file.endswith(rawdata_file_end):
+                filenames_list.append(file)
         if not filenames_list:
             return Path(f'{database_type} rawdata file not Found')
         return rawdata_path / Path(filenames_list[0])

@@ -138,8 +138,8 @@ def create_hash_id(institute, org_tup, files_paths):
     hash_id_cols_dic = _set_hash_id_cols_dic(institute, org_tup)
     col_keys = ['pub_id_col', 'year_col', 'first_auth_col', 'title_col',
                 'issn_col', 'doi_col', 'hash_id_col']
-    (pub_id_col, year_col, first_auth_col, doi_col,
-     title_col, issn_col, hash_id_col) = [hash_id_cols_dic[key] for key in col_keys]
+    (pub_id_col, year_col, first_auth_col, title_col,
+     issn_col, doi_col, hash_id_col) = [hash_id_cols_dic[key] for key in col_keys]
 
     # Setting useful columns list
     useful_cols = [pub_id_col, year_col, first_auth_col,

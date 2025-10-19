@@ -20,9 +20,9 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.config_utils import set_user_config
+from bmfuncts.save_final_results import save_fails_dict
+from bmfuncts.save_final_results import save_parsing_dict
 from bmfuncts.useful_functs import read_parsing_dict
-from bmfuncts.useful_functs import save_fails_dict
-from bmfuncts.useful_functs import save_parsing_dict
 
 
 class CheckBoxCorpuses:
@@ -333,8 +333,13 @@ def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
         _progress_callback(30)
-        concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
-                                                     inst_filter_list=master.org_tup[3])
+        if bm_pg.FIRST_BDD==bp.SCOPUS:
+            concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
+                                                         inst_filter_list=master.org_tup[3])
+        else:
+            concat_parsing_dict = bp.concatenate_parsing(wos_parsing_dict, scopus_parsing_dict,
+                                                         inst_filter_list=master.org_tup[3])
+            
         _progress_callback(50)
         save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)

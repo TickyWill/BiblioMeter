@@ -18,8 +18,8 @@ from bmfuncts.doctype_analysis import doctype_analysis
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
+from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _set_build_kpi_cols(institute, org_tup, if_analysis_col, if_analysis_year):
@@ -418,11 +418,12 @@ def _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys, corpus_year, corp
     return dept_kpi_df
 
 
-def _set_kpi_files_params(saved_results_path):
+def _set_kpi_files_params(final_results_path):
     """Sets IFs specific file and folder 
     
     Args:
-        saved_results_path (path): Full path to working folder.
+        final_results_path (path): Full path to the folder \
+        where final results are saved.
     Returns:
         (tup): publications-lists folder name, \
         base for building names of publications-list files, \
@@ -434,7 +435,7 @@ def _set_kpi_files_params(saved_results_path):
     kpi_file_base_alias = bm_pg.ARCHI_RESULTS["kpis file name base"]
 
     # Setting paths for saving results
-    results_kpis_folder_path = saved_results_path / Path(results_sub_folder_alias)
+    results_kpis_folder_path = final_results_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folder
     if not os.path.exists(results_kpis_folder_path):
@@ -454,7 +455,7 @@ def update_kpi_database(kpi_params, kpi_dict, if_key,
 
     Args:
         institute (str): Institute name.
-        saved_results_path (path): Full path to the folder \
+        final_results_path (path): Full path to the folder \
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
@@ -467,10 +468,10 @@ def update_kpi_database(kpi_params, kpi_dict, if_key,
         (dataframe): Institute KPIs data.
     """
     # Setting parameters values from kpi_params
-    institute, saved_results_path, corpus_year = kpi_params
+    institute, final_results_path, corpus_year = kpi_params
 
     # Setting file name and path for saving results
-    kpi_file_base, results_kpis_folder_path = _set_kpi_files_params(saved_results_path)
+    kpi_file_base, results_kpis_folder_path = _set_kpi_files_params(final_results_path)
 
     # Setting useful column names aliases
     corpus_year_row_alias = bm_pg.KPI_KEYS_ORDER_DICT[0]
@@ -583,7 +584,7 @@ def if_analysis(params_list, if_most_recent_year,
     institute, org_tup, wf_path, datatype, corpus_year = params_list
 
     # Setting input-data path
-    saved_results_path = set_saved_results_path(wf_path, datatype)
+    final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful folder path
     if_analysis_folder_path =  _set_if_files_params(wf_path, corpus_year)
@@ -619,7 +620,7 @@ def if_analysis(params_list, if_most_recent_year,
 
     # Updating the KPIs database
     depts_col_list = build_kpi_cols_dic['depts_col_list']
-    kpi_params = [institute, saved_results_path, corpus_year]
+    kpi_params = [institute, final_results_path, corpus_year]
     institute_kpi_df = update_kpi_database(kpi_params, kpi_dict, new_if_analysis_col,
                                            depts_col_list, verbose=verbose)
     if progress_callback:
@@ -629,9 +630,8 @@ def if_analysis(params_list, if_most_recent_year,
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["ifs"] = True
-    if_analysis_name = new_if_analysis_col
-    _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
-                           if_analysis_name, results_to_save_dict, verbose=False)
+    _ = save_final_results(params_list, results_to_save_dict,
+                           if_analysis_name=new_if_analysis_col)
     if progress_callback:
         progress_callback(100)
     return doctypes_analysis_folder_path, if_analysis_folder_path, institute_kpi_df, kpi_dict

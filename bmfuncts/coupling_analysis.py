@@ -14,16 +14,17 @@ import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
+import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_geo_stat import build_and_save_geo_stat
 from bmfuncts.build_institutions_stat import build_and_save_institutions_stat
 from bmfuncts.build_pub_addresses import build_institute_addresses_df
 from bmfuncts.format_files import save_formatted_df_to_xlsx
+from bmfuncts.read_final_results import build_pub_ids_lists
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
-from bmfuncts.useful_functs import build_pub_ids_lists
+from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import set_saved_results_path
 
 
 def _set_co_cols_dic(institute, org_tup):
@@ -329,7 +330,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     institute, org_tup, wf_path, datatype, corpus_year = params_list
 
     # Setting input-data path
-    saved_results_path = set_saved_results_path(wf_path, datatype)
+    final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful paths
     files_list, folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year)
@@ -350,7 +351,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    addresses_params = [institute, org_tup, wf_path, corpus_year, saved_results_path]
+    addresses_params = [institute, org_tup, wf_path, corpus_year, final_results_path]
     inst_pub_addresses_df = build_institute_addresses_df(addresses_params, verbose=False,
                                                          progress_param=progress_param)
     if verbose:
@@ -375,7 +376,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
             inter_progress_3 = 93
             progress_param = (progress_callback, inter_progress_2, inter_progress_3)
         pub_doctype_cols_list = [final_pub_id_col, final_doctype_col]
-        pub_ids_lists = build_pub_ids_lists(saved_results_path, corpus_year, pub_doctype_cols_list)
+        pub_ids_lists = build_pub_ids_lists(final_results_path, corpus_year, pub_doctype_cols_list)
         build_and_save_institutions_stat(institute, norm_institutions_df,
                                          inst_types_file_path,
                                          inst_analysis_folder_path, corpus_year,
@@ -384,9 +385,17 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         if verbose:
             print("    Distributed institutions and institutions stat built and saved.")
 
+        # Setting Institute's geo
+        institute_geo_dict = {'country'  : bm_ig.INSTITUTES_COUNTRY_DICT[institute],
+                              'continent': bm_ig.INSTITUTES_CONTINENT_DICT[institute],
+                              'norm_name': institute.upper() + " Rto",
+                             }
+
         # Building and saving geo stat dataframes
-        geo_analysis_folder_name = build_and_save_geo_stat(countries_df, analysis_folder_path,
-                                                           corpus_year)
+        return_tup = build_and_save_geo_stat(countries_df, norm_institutions_df,
+                                             institute_geo_dict, analysis_folder_path,
+                                             corpus_year)
+        geo_analysis_folder_name = return_tup
         if verbose:
             print("    Geo stat built and saved.")
         if progress_callback:
@@ -395,12 +404,11 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         # Saving coupling analysis as final result
         status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
         results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
-        save_keys_list = ["countries", "continents", "institutions"]
+        save_keys_list = ["countries", "continents", "institutions", "institute_country"]
         for key in save_keys_list:
             results_to_save_dict[key] = True
-        if_analysis_name = "None"
-        _ = save_final_results(institute, org_tup, wf_path, datatype, corpus_year,
-                               if_analysis_name, results_to_save_dict, verbose=False)
+        _ = save_final_results(params_list, results_to_save_dict,
+                               institute_country=institute_geo_dict['country'])
     else:
         analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name = ("", "", "")
     if progress_callback:
