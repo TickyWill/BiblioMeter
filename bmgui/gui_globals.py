@@ -22,6 +22,8 @@ __all__ = ['APP_WIN_TITLE',
            'KEY_CONSO_YEAR',
            'KEY_CORRECT',
            'KEY_CORRECT_YEAR',
+           'KEY_EID_CORRECT',
+           'KEY_EID_CORRECT_YEAR',
            'KEY_IF',
            'KEY_PARSE',
            'KEY_PARSE_YEAR', 
@@ -162,6 +164,8 @@ KEY_ANALYS = 'analys'
 KEY_ANALYS_YEAR = 'analys_year'
 KEY_CORRECT = 'correct'
 KEY_CORRECT_YEAR = 'correct_year'
+KEY_EID_CORRECT = 'eid_correct'
+KEY_EID_CORRECT_YEAR = 'eid_correct_year'
 
 # Font name for all characters
 FONT_NAME = "Helvetica"
@@ -491,6 +495,23 @@ STEPS_LABELS_DICT[KEY_ANALYS].append("Analyse des mots clefs")
 STEPS_HELPS_DICT[KEY_ANALYS].append("L'analyse des mots clefs est effectuée pour l'année sélectionnée "
                                     "à partir des fichiers issus de l'étape de parsing du corpus.")
 STEPS_LAUNCHES_DICT[KEY_ANALYS].append("Lancer l'analyse des mots clefs")
+
+
+# Parameters for all eid-correct-scopus steps
+# ---------------------------------
+STEPS_NB_DICT[KEY_EID_CORRECT] = 1
+STEP_POS_TUPS_DICT[KEY_EID_CORRECT] = _set_step_pos_tups(STEPS_NB_DICT[KEY_EID_CORRECT], STEP_X_POS_REF,
+                                                    steps_y_pos_init=45, steps_dy=28)
+STEPS_LABELS_DICT[KEY_EID_CORRECT], STEPS_HELPS_DICT[KEY_EID_CORRECT], STEPS_LAUNCHES_DICT[KEY_EID_CORRECT] = [], [], []
+
+    # Correct scopus step 0
+STEPS_LABELS_DICT[KEY_EID_CORRECT].append("Correction automatique des données de publications par EID de Scopus")
+STEPS_HELPS_DICT[KEY_EID_CORRECT].append("La correction est effectuée pour l'année sélectionnée "
+                                         "à partir des EIDs de l'extraction sur requête en utilisant "
+                                         "la version 2.0.0 du paquet ScopusApyJson déposée sur GitHub."
+                                         "\nLes données scopus corrigées seront créées et sauvegardées "
+                                         "aux formats csv et xlsx")
+STEPS_LAUNCHES_DICT[KEY_EID_CORRECT].append("Lancer la correction automatique")
 
 
 # Parameters for all correct-scopus steps
