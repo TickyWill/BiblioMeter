@@ -263,19 +263,22 @@ PAGE_FONT_SIZE_DICT = {'box_header'    : 11,
                       }
 
 # Progress-bar lengths
-PROGRESS_BAR_LEN_DICT = {KEY_PARSE  : 80,
-                         KEY_CONSO  : 80,
-                         KEY_IF     : 100,
-                         KEY_ANALYS : 90,
-                         KEY_CORRECT: 90,
+PROGRESS_BAR_LEN_DICT = {KEY_PARSE      : 80,
+                         KEY_CONSO      : 80,
+                         KEY_IF         : 100,
+                         KEY_ANALYS     : 90,
+                         KEY_CORRECT    : 90,
+                         KEY_EID_CORRECT: 90,
+                         
                         }
 
 # Relative positions of progress-bar
-PROGRESS_BAR_DPOS_DICT = {KEY_PARSE  : (10, 0.5),
-                          KEY_CONSO  : (10, 0.5),
-                          KEY_IF     : (20, 10),
-                          KEY_ANALYS : (10, 0.5),
-                          KEY_CORRECT: (10, 0.5),
+PROGRESS_BAR_DPOS_DICT = {KEY_PARSE      : (10, 0.5),
+                          KEY_CONSO      : (10, 0.5),
+                          KEY_IF         : (20, 10),
+                          KEY_ANALYS     : (10, 0.5),
+                          KEY_CORRECT    : (10, 0.5),
+                          KEY_EID_CORRECT: (10, 0.5),
                          }
 
 PAGE_TITLE_POS_DICT = {'page_title'    : ("mid_page", 7),
@@ -302,28 +305,31 @@ PAGE_SELECT_LABEL_DICT = {'year': "Sélection de l'année ",
                           'data': "Données ",}
 
 # Positions of labels for items selection
-PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR  : (10, 100),
-                              KEY_CONSO_YEAR  : (80, 48),
-                              KEY_ANALYS_YEAR : (10, 26),
-                              KEY_CORRECT_YEAR: (10, 26),
+PAGE_SELECT_LABEL_POS_DICT = {KEY_PARSE_YEAR      : (10, 100),
+                              KEY_CONSO_YEAR      : (80, 48),
+                              KEY_ANALYS_YEAR     : (10, 26),
+                              KEY_CORRECT_YEAR    : (10, 26),
+                              KEY_EID_CORRECT_YEAR: (10, 26),
                              }
 
 # Relative positions of label for items selection
 PAGE_SELECT_LABEL_DPOS_DICT = {KEY_PARSE: (10, 2),}
 
-PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE  : (1, -2),
-                             KEY_CONSO  : (0, -1.2),
-                             KEY_ANALYS : (0, -1.2),
-                             KEY_CORRECT: (0, -1.2),
+PAGE_SELECT_BUT_DPOS_DICT = {KEY_PARSE      : (1, -2),
+                             KEY_CONSO      : (0, -1.2),
+                             KEY_ANALYS     : (0, -1.2),
+                             KEY_CORRECT    : (0, -1.2),
+                             KEY_EID_CORRECT: (0, -1.2),
                             }
 
 # Relative positions for step-launch buttons
-STEP_BUT_DPOS_DICT = {KEY_PARSE  : (15, 0.2),
-                      KEY_DEDUP  : (20, 0.2),
-                      KEY_CONSO  : (5, 2),
-                      KEY_IF     : (10, 4),
-                      KEY_ANALYS : (10, 2),
-                      KEY_CORRECT: (10, 2),
+STEP_BUT_DPOS_DICT = {KEY_PARSE      : (15, 0.2),
+                      KEY_DEDUP      : (20, 0.2),
+                      KEY_CONSO      : (5, 2),
+                      KEY_IF         : (10, 4),
+                      KEY_ANALYS     : (10, 2),
+                      KEY_CORRECT    : (10, 2),
+                      KEY_EID_CORRECT: (10, 2),
                      }
 
 # Reference of positions and sizes
