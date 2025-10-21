@@ -306,7 +306,7 @@ def _add_column_firstname_initial(df):
     # Internal functions
     def _get_firstname_initials(row):
         row = row[0] if isinstance(row, list) else row
-        row = row.replace('-',' ')
+        row = row.replace('-',' ').strip(' ')
         row_list = row.split(' ')
         initial_list = [x[0] for x in row_list]
         initials = ''.join(initial_list)

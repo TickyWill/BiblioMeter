@@ -699,7 +699,7 @@ def _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
     add_otps_cols_dic, otp_base_col_list = add_otps_cols_tup
     col_keys = ['dpt_col', 'srv_col', 'lab_col', 'otp_lab_col']
     build_otp_cols_list = [add_otps_cols_dic[key] for key in col_keys]
-    save_otp_cols_list = [add_otps_cols_dic['otp_list'],
+    save_otp_cols_list = [add_otps_cols_dic['otp_col'],
                           add_otps_cols_dic['otp_lab_col']]
     save_otp_cols_tup = (save_otp_cols_list, otp_base_col_list)
 

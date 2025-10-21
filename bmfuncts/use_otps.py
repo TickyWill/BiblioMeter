@@ -905,7 +905,7 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     return otps_hist_dict, doi_otp_history_df
 
 
-def set_saved_otps(sub_params_list, wf_root_path):
+def set_saved_otps(sub_params_list):
     """Attributes the OTPs from the history of the attributed OTPs 
     before submitting to the user the file for attributing the not yet
     attributed OTPs.
@@ -934,7 +934,7 @@ def set_saved_otps(sub_params_list, wf_root_path):
     # Setting useful params values and lists from sub_params_list
     institute, org_tup, wf_path, corpus_year = sub_params_list
     save_otp_params_list = [wf_path, corpus_year]
-    set_otp_params_list = [institute, org_tup, wf_root_path]
+    set_otp_params_list = sub_params_list[:-1]
     otp_level = org_tup[11]
 
     # Setting selected column names for using the saved history of attributed OTPs

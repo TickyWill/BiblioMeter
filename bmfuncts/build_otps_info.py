@@ -391,7 +391,6 @@ def _read_otps_data(org_tup, wf_root_path, unknown_kw):
         names of the OTPs data (dict) as built by the `_set_build_otps_cols` \
         internal function).
     """
-
     # Setting useful Institute config parameters for OTPs
     otps_data_file = org_tup[12]
     otps_sheet = org_tup[13]
@@ -407,6 +406,7 @@ def _read_otps_data(org_tup, wf_root_path, unknown_kw):
     # Setting useful paths for OTPs source file
     config_root_path = wf_root_path / Path(config_root_alias)
     otps_data_path = config_root_path / Path(otps_data_file)
+    print("otps_data_path:", otps_data_path)
 
     # Getting the OTPs infos from OTPs source file
     otps_data_df = pd.read_excel(otps_data_path, sheet_name=otps_sheet,
@@ -442,7 +442,10 @@ def set_lab_otps(set_otp_params_list):
         and valued by dicts keyed by labs and valued by OTPs lists.    
     """
     # Setting params values from set_otp_params_list
-    institute, org_tup, wf_root_path = set_otp_params_list
+    institute, org_tup, wf_path = set_otp_params_list
+
+    # Setting folder of the Institute parameters
+    wf_root_path = wf_path.parent
 
     # Setting the label used for the part of the Institute
     # external to all the Institute departments
