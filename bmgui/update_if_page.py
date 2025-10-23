@@ -270,13 +270,14 @@ def _update_pub_if(self, master, progress_callback):
             split_pub_list_by_doc_type(sub_params_list)
 
             # Saving pub list as final result
+            params_list = [master.institute, master.org_tup, master.wf_path,
+                           master.datatype, corpus_year]
             status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
             results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
             results_to_save_dict["pub_lists"] = True
             if_analysis_name = None
-            _ = save_final_results(master.institute, master.org_tup, master.wf_path,
-                                   master.datatype, corpus_year, if_analysis_name,
-                                   results_to_save_dict, verbose=False)
+            _ = save_final_results(params_list, results_to_save_dict, if_analysis_name)
+
             # Updating progress bar state
             progress_bar_state += progress_bar_loop_progression
             progress_callback(progress_bar_state)

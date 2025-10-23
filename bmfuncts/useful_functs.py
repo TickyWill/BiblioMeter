@@ -22,6 +22,7 @@ __all__ = ['concat_dfs',
 
 
 # Standard library imports
+import csv
 import os
 import shutil
 from pathlib import Path
@@ -383,6 +384,30 @@ def _set_database_extract_info(wf_path, datatype, database):
     return database_folder_path, database_file_end, empty_file_folder
 
 
+def _correct_authors(init_au_txt):
+    init_au_txt = bp.remove_special_symbol(init_au_txt,
+                                           only_ascii=True, strip=True)
+    init_au_list = init_au_txt.split("; ")
+    corr_au_list = []
+    for init_au in init_au_list:
+        new_au = init_au
+        au_parts_list = init_au.split(", ")
+        new_au_parts_list = []
+        for au_part in au_parts_list:
+            if not "." in au_part:
+                new_au_parts_list.append(au_part)
+            else:
+                end_au_part = au_part
+        new_au_parts_list.append(end_au_part)
+        if len(new_au_parts_list)<=2: 
+            new_au = " ".join(new_au_parts_list)
+        else:
+            new_au = f'{new_au_parts_list[0]} {new_au_parts_list[-1]}'
+        corr_au_list.append(new_au)
+    new_au_txt = "; ".join(corr_au_list)
+    return new_au_txt
+
+
 def set_rawdata(wf_path, datatype, years_list, database):
     """Sets the rawdata to be used for the data type 'datatype' analysis.
 
@@ -427,7 +452,7 @@ def set_rawdata(wf_path, datatype, years_list, database):
             if not year_database_file_path:
                 year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                                   last_year_database_file_end)
-
+        
         rawdata_path_dict, _, _ = set_user_config(wf_path, year, bm_pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
         if os.path.exists(rawdata_path):

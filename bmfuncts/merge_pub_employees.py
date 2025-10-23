@@ -257,7 +257,6 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path, cols_list):
     orphan_firstname_short_col = col_rename_dic[submit_firstname_short_col]
 
     # Initializing new_orphan_df as copy of init_orphan_df
-    #new_orphan_df = init_orphan_df.copy()
     new_orphan_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
     # Initializing the dataframe to be droped from init_orphan_df

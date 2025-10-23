@@ -290,7 +290,7 @@ def _build_doctype_analysis_data(data_params_list,
     analysis_df[journal_norm_col] = analysis_df[journal_col]
     analysis_df[journal_norm_col] = analysis_df[journal_norm_col].map(journal_norm_dict)
     analysis_df[journal_norm_col] = analysis_df.apply(set_capwords_lambda(journal_norm_col),
-                                                        axis=1)
+                                                      axis=1)
     analysis_df[journal_col] = analysis_df.apply(set_capwords_lambda(journal_col), axis=1)
     analysis_df[doctype_col] = analysis_df.apply(set_capwords_lambda(doctype_col), axis=1)
 
