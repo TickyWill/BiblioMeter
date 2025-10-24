@@ -332,17 +332,12 @@ def _get_database_file_path(database_folder_path, database_file_end):
     Returns:
         (path): Path targeting the file found and selected.
     """
-
-    # Listing the available files ending with database_file_end
     list_data_base = []
-    for path, _, files in os.walk(database_folder_path):
-        list_data_base.extend(Path(path) / Path(file) for file in files
-                              if file.endswith(database_file_end))
-
+    for file in os.listdir(database_folder_path):
+        if file.endswith(database_file_end):
+            list_data_base.append(file)
     if list_data_base:
-        # Selecting the most recent file with raw_extent extension
-        list_data_base.sort(key = os.path.getmtime, reverse=True)
-        database_file_path = list_data_base[0]
+        database_file_path = database_folder_path / Path(list_data_base[0])
     else:
         database_file_path = None
     return database_file_path
