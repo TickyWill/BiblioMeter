@@ -123,7 +123,7 @@ def _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic, empty_kws_list)
         from the `BiblioParsing` package and of the 'NOT_AVAILABLE' global \
         imported from the `bmfuncts.pub_globals` module.
     returns:
-        (tup): (The recasted IFs data (dict keyed by years and valued \
+        (tup): (The recast IFs data (dict keyed by years and valued \
         by dataframes),  the list of available years (4-digits strings) \
         of IFs data, the most recent year (4-digits string) of IFs data).
     """
