@@ -27,7 +27,7 @@ def _set_add_ifs_col_dic(institute, org_tup, corpus_year):
     """Builds a dict setting selected columns names for the process
     of IFs attribution.
 
-    This is done thtough the combination of column names resulting 
+    This is done through the combination of column names resulting 
     from the `set_final_col_names` and `set_if_col_names` functions 
     imported from the `bmfuncts.rename_cols` module.
     
@@ -123,7 +123,7 @@ def _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic, empty_kws_list)
         from the `BiblioParsing` package and of the 'NOT_AVAILABLE' global \
         imported from the `bmfuncts.pub_globals` module.
     returns:
-        (tup): (The recasted IFs data (dict keyed by years and valued \
+        (tup): (The recast IFs data (dict keyed by years and valued \
         by dataframes),  the list of available years (4-digits strings) \
         of IFs data, the most recent year (4-digits string) of IFs data).
     """
@@ -287,7 +287,7 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
         process as set through the `_set_add_ifs_col_dic` internal function.
         unknown_kw (str): The word to identify unknown values.
     Returns:
-        (tup): (Recasted corpus data (dataframe), \
+        (tup): (Recast corpus data (dataframe), \
         Data (dataframe) of journals with their ISSN and eISSN IDs).
     """
 
@@ -666,7 +666,7 @@ def add_if(sub_params_list, paths_list):
         paths_list (list): The list composed of the full path to get the corpus data, \
         the full path to save the corpus data with the impact-factors information added, \
         the full path to save the missing ISSNs information and \
-        the full path to save the missing impact-factors information).
+        the full path to save the missing impact-factors information.
     Returns:
         (tup): (message indicating which file has been modified and how, \
         completion status of the impact-factors database).

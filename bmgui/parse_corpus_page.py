@@ -339,7 +339,6 @@ def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
         else:
             concat_parsing_dict = bp.concatenate_parsing(wos_parsing_dict, scopus_parsing_dict,
                                                          inst_filter_list=master.org_tup[3])
-            
         _progress_callback(50)
         save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)
