@@ -27,7 +27,7 @@ def _set_add_ifs_col_dic(institute, org_tup, corpus_year):
     """Builds a dict setting selected columns names for the process
     of IFs attribution.
 
-    This is done thtough the combination of column names resulting 
+    This is done through the combination of column names resulting 
     from the `set_final_col_names` and `set_if_col_names` functions 
     imported from the `bmfuncts.rename_cols` module.
     
