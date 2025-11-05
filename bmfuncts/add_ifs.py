@@ -287,7 +287,7 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
         process as set through the `_set_add_ifs_col_dic` internal function.
         unknown_kw (str): The word to identify unknown values.
     Returns:
-        (tup): (Recasted corpus data (dataframe), \
+        (tup): (Recast corpus data (dataframe), \
         Data (dataframe) of journals with their ISSN and eISSN IDs).
     """
 
