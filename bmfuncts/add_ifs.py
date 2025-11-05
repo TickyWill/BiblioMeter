@@ -666,7 +666,7 @@ def add_if(sub_params_list, paths_list):
         paths_list (list): The list composed of the full path to get the corpus data, \
         the full path to save the corpus data with the impact-factors information added, \
         the full path to save the missing ISSNs information and \
-        the full path to save the missing impact-factors information).
+        the full path to save the missing impact-factors information.
     Returns:
         (tup): (message indicating which file has been modified and how, \
         completion status of the impact-factors database).
