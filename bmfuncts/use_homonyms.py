@@ -140,7 +140,16 @@ def solve_homonyms(institute, org_tup, in_path, out_path):
 
 
 def _set_homonyms_file_params(wf_path, corpus_year):
+    """Builds the files parameters for the process of using resolved homonyms.
 
+    Args:
+        wf_path (path): The full path to the working folder.
+        corpus_year (str): The 4-digits year of the corpus.
+    Returns:
+        (tup): (the full path to the file of Hash IDs data, \
+        the full path to the file of homonyms resolution, \
+        the full path to the file of history of homonyms resolution).
+    """
     # Setting useful folder and file aliases
     bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
     homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
@@ -246,7 +255,7 @@ def set_saved_homonyms(sub_params_list, actual_homonym_status):
         year of the corpus (str).
         actual_homonym_status (bool): True if homonyms exists.
     Returns:
-        (tup): Tuple = (End message (str), actualized homonyms \
+        (tup): Tuple = End message (str), actualized homonyms \
         status (bool).
     """
     # Setting params values from sub_params_list

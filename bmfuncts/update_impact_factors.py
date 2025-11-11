@@ -468,11 +468,9 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
     5. Saves the 'wb' workbook using the 'inst_all_if_path' full path.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
-        wf_path (path): Full path to working folder.
-        corpus_years_list (list): The list of years (str) \
-        of available corpuses.
+        update_db_params_list (list): The list composed of Institute's name (str), \
+        the tuple that contains Institute's parameters (tup), the full path to the \
+        working folder (path) and the list of years (4-digits strings) of available corpuses. 
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
     Returns:
@@ -480,7 +478,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
         of the IFs database (str), List of IFs-database years (4-digits strings)).
     """
     print("\nUpdate of IF database launched...")
-    # Setting parameters values from 
+    # Setting parameters values from 'update_db_params_list'
     institute, org_tup, wf_path, corpus_years_list = update_db_params_list
 
     # Setting useful columns names

@@ -130,8 +130,9 @@ def _build_doctype_kpi(doctype, doctype_df, institute, build_kpi_cols_dic):
     Args:
         doctype (str): The document-type label.
         doctype_df (dataframe): Publications list of the given document-type.
-        params_tup (tup): (Institute name (str), list of departments (list), \
-        column name of journals (str)).
+        institute (str): The name of the institute.
+        build_kpi_cols_dic (dict): The selected columns names for the process \
+        of building KPIs data
     Returns:
         (dict): Hierarchical dict keyed by departments and valued at each \
         key by KPIs dict of the department for the given document type.
@@ -188,6 +189,8 @@ def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic):
     Args:
         institute (str): Institute name.
         pub_df_dict (dataframe): Articles data to be analyzed.
+        build_kpi_cols_dic (dict): The selected columns names for the process \
+        of building KPIs data.
     Returns:
         (hierarchical dict): The dict keyed by departments of \
         the Institute including itself and valued with basic-KPIs \
@@ -294,8 +297,8 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
         final results are saved.
         kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
         including itself and valued with KPIs dict of these keys.
-        final_cols_tup (tup): Tuple of infos about the final column names as returned \
-        by the `set_final_col_names` function of the `bmfuncts.rename_cols` module.
+        build_kpi_cols_dic (dict): The selected columns names for the process \
+        of building KPIs data.
         verbose (bool): Status of prints (default = False).
     Returns:
         (tup): (KPIs updated data with IFs data (hierarchical dict), name of the column \
@@ -454,15 +457,14 @@ def update_kpi_database(kpi_params, kpi_dict, if_key,
     imported from the `bmfuncts.format_files` module.
 
     Args:
-        institute (str): Institute name.
-        final_results_path (path): Full path to the folder \
-        where final results are saved.
-        corpus_year (str): 4 digits year of the corpus.
+        kpi_params (list): A list composed of the name od the institute (str), \
+        the full path to the folder where final results are saved (path) and \
+        the 4 digits year of the corpus (str).
         kpi_dict (dict): Hierarchical dict keyed by departments of the Institute \
         including itself and valued with KPIs dict of these keys.
         if_key (str): Column name of the analyzed impact factors (either those of \
         the publication year or the last available ones).
-        depts_col_list (list): The list of the Institute departments.
+        depts_col_list (list): The list of the Institute's departments.
         verbose (bool): Status of prints (default = False).
     Returns:
         (dataframe): Institute KPIs data.
@@ -565,7 +567,7 @@ def if_analysis(params_list, if_most_recent_year,
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
-        params_list (list):  The list composed of the Institute name (str), \
+        params_list (list): The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute organization, \
         the full path to working folder (path), the data combination type \
         of corpuses databases (str) and the 4 digits year of the corpus (str).

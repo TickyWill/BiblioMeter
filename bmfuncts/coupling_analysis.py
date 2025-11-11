@@ -28,7 +28,18 @@ from bmfuncts.useful_functs import concat_dfs
 
 
 def _set_co_cols_dic(institute, org_tup):
+    """Builds a dict setting selected columns names for the process 
+    of coupling analysis.
 
+    This is done through the `set_final_col_names` function imported 
+    from the `bmfuncts.rename_cols` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains parameters of Institute organization.
+    Returns:
+        (dict): The built dict.
+    """
     final_col_dic, _ = set_final_col_names(institute, org_tup)
 
     co_cols_dic = {'pub_id_col'       : bp.COL_NAMES['pub_id'],
@@ -126,14 +137,14 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
     `save_formatted_df_to_xlsx` function imported from the `bmfuncts.format_files` module.
 
     Args:
+        corpus_year (str): 4 digits year of the corpus.
         inst_pub_addresses_df (dataframe): Data of addresses related only to publications \
         of the Institute.
-        inst_analysis_folder_path (path): The full path to the folder where the build data \
-        are saved.
-        corpus_year (str): 4 digits year of the corpus.
-        co_cols_dic (dict): The dict giving the col names for coupling analysis process. 
-        paths_tup (tup): (the full path to the folder where useful institutions info \
-        are stored, the full path to the file of institutions types definition).
+        co_cols_dic (dict): The dict giving the col names for coupling analysis process.
+        files_list (list): The list of file names as built by the `_set_co_files_params` \
+        internal function.
+        sub_paths_list (list): The list of paths as built by the `_set_co_files_params` \
+        internal function except the first item of the bulit list.
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
@@ -142,7 +153,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
         (tup): (Data with one row per country for each publication ID, Data with one row \
         per address with attached institutions list  for each publication ID, \
         The full path (path) to the file of countries-affiliations data, \
-        The dict keyed by countries and valued by the list of normalyzed affiliation types \
+        The dict keyed by countries and valued by the list of normalised affiliation types \
         to be corrected).
     """
     print("    Building normalized and raw affiliations data...")
@@ -153,9 +164,9 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
     (pub_id_col, address_col, address_id_col, institutions_col,
      countries_col, final_pub_id_col, raw_affil_col) = [co_cols_dic[key] for key in col_keys]
 
-    # Setting parameters values from 'files_lis' and 'sub_paths_list'
+    # Setting parameters values from 'files_list' and 'sub_paths_list'
     country_towns_file, norm_inst_file, raw_inst_file = files_list
-    (inst_analysis_folder_path, institutions_folder_path, inst_types_file_path,
+    (institutions_folder_path, inst_analysis_folder_path, inst_types_file_path,
      country_affil_file_path, country_unkept_affil_file_path) = sub_paths_list
 
     # Setting parameters from optional arg
@@ -241,10 +252,8 @@ def _set_co_files_params(institute, wf_path, corpus_year):
         wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
-        (tup): publications-lists folder name, \
-        base for building names of publications-list files, \
-        base for building names of missing-IFs files, \
-        name for building names of missing-ISSNs files.
+        (tup): (the list of useful file names, \
+        the list of useful folder names, the list of useful paths).
     """
     # Setting aliases from globals
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
@@ -282,8 +291,8 @@ def _set_co_files_params(institute, wf_path, corpus_year):
 
     files_list = [country_towns_file, norm_inst_file, raw_inst_file]
     folders_list = [analysis_folder_alias, inst_analysis_folder_alias]
-    paths_list = [analysis_folder_path, inst_analysis_folder_path,
-                  institutions_folder_path, inst_types_file_path,
+    paths_list = [analysis_folder_path, institutions_folder_path,
+                  inst_analysis_folder_path, inst_types_file_path,
                   country_affil_file_path, country_unkept_affil_file_path]
     return files_list, folders_list, paths_list
 
@@ -323,7 +332,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         The full path (path) to folder where the results of the geographical analysis are saved, \
         The full path (path) to folder where the results of the collaborations analysis are saved, \
         The full path (path) to the file of countries-affiliations data, \
-        The dict keyed by countries and valued by the list of normalyzed affiliation types \
+        The dict keyed by countries and valued by the list of normalised affiliation types \
         to be corrected).
     """
     # Setting parameters values from params_list
@@ -335,8 +344,9 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     # Setting useful paths
     files_list, folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year)
     analysis_folder_name, inst_analysis_folder_name = folders_list
-    (analysis_folder_path, inst_analysis_folder_path, institutions_folder_path,
-     inst_types_file_path, country_affil_file_path) = paths_list[0:5]
+    analysis_folder_path = paths_list[0]
+    (inst_analysis_folder_path, inst_types_file_path,
+     country_affil_file_path) = paths_list[2:5]
 
     # Setting useful column names
     co_cols_dic = _set_co_cols_dic(institute, org_tup)

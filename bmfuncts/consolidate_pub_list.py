@@ -35,6 +35,18 @@ from bmfuncts.useful_functs import reorder_df
 
 
 def _set_pub_list_cols_dic(institute, org_tup):
+    """Builds a dict setting selected columns names for the process 
+    of building consolidated publications list.
+
+    This is done through the `set_final_col_names` function imported 
+    from the `bmfuncts.rename_cols` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains parameters of Institute organization.
+    Returns:
+        (dict): The built dict.
+    """
     final_col_dic, _ = set_final_col_names(institute, org_tup)
 
     pub_list_cols_dic = {'pub_id_col'   : final_col_dic['pub_id'],
@@ -72,7 +84,7 @@ def _set_year_file_paths(wf_path, file_folder, file_base, corpus_year,
 
 
 def _set_split_pub_files_params(wf_path, corpus_year):
-    """Sets a dict of useful full paths for spliting the consolidated 
+    """Sets a dict of useful full paths for splitting the consolidated 
     publications list and the full path to this list.
 
     The full paths are built through the `_set_year_file_paths` 
@@ -303,7 +315,7 @@ def built_final_pub_list(params_list):
         final list, completion status of the impact-factors database).
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
+    institute, org_tup, wf_path, _, corpus_year = params_list
     sub_params_list = [institute, org_tup, wf_path, corpus_year]
 
     # Setting useful column names
@@ -323,7 +335,7 @@ def built_final_pub_list(params_list):
     # Setting pub ID as index for unique identification of rows
     consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_col)
 
-    # Droping invalid publications by pub Id as index
+    # Dropping invalid publications by pub ID as index
     invalids_idx_list = consolidate_pub_list_df[consolidate_pub_list_df[otps_list_col]\
                                                 !=bm_ig.INVALIDE].index
     invalids_df = consolidate_pub_list_df.drop(index=invalids_idx_list)

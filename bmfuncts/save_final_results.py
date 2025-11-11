@@ -34,12 +34,29 @@ from bmfuncts.rename_cols import set_final_col_names
 
 
 def _set_item_path(item_filename_base, save_extent, parsing_path):
+    """Build the full path to the item parsing file.
+
+    Args:
+        item_filename_base (str): The file name part to be added with the file extent.
+        save_extent (str): The extent to be used for building the item file name.
+        parsing_path (path): The full path to the folder where the item parsing file is saved.
+    Returns:
+        (path): The built full path.
+    """
     item_file_name = item_filename_base + "." + save_extent
     item_path = parsing_path / Path(item_file_name)
     return item_path
 
 
 def _save_item(item_df, item_filename_base, save_extent, parsing_path):
+    """Saves the item parsing data.
+
+    Args:
+        item_df (dataframe): The item parsing data to be saved.
+        item_filename_base (str): The file name part to be added with the file extent.
+        save_extent (str): The extent to be used for building the item file name.
+        parsing_path (path): The full path to the folder where the item parsing file is saved.
+    """
     item_working_path = _set_item_path(item_filename_base, save_extent, parsing_path)
     if save_extent=="xlsx":
         item_df.to_excel(item_working_path, index=False)
@@ -645,6 +662,7 @@ def save_final_institute_country(wf_path, corpus_year,
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
+        institute_country (str): Country of the Institute.
     Returns:
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
@@ -657,7 +675,8 @@ def save_final_institute_country(wf_path, corpus_year,
     origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
     origin_countries_folder_alias = bm_pg.ARCHI_YEAR["countries analysis"]
     institute_country_file_base_alias = bm_pg.ARCHI_YEAR["institute-country weight file base"]
-    
+
+    # Setting useful file names
     institute_country_file_name = institute_country_file_base_alias + institute_country
     year_institute_country_file_name = institute_country_file_name + " " + corpus_year
 
@@ -784,32 +803,6 @@ def set_results_folder_path(wf_path, datatype):
     if not os.path.exists(results_folder_path):
         os.makedirs(results_folder_path)
     return results_folder_path
-#
-#
-#def set_result_folder_path(wf_path, datatype):
-#    """Sets the path to the folder where the final results
-#    will be saved given the datatype.
-#
-#    Args:
-#        wf_path (path): Full path to working folder.
-#        datatype (str): Data combination type from corpuses databases.
-#    Returns:
-#        (path): The full path of the saved results.
-#    """
-#    # Setting aliases for saving results
-#    results_root_alias = bm_pg.ARCHI_RESULTS["root"]
-#    results_folder_alias = bm_pg.ARCHI_RESULTS[datatype]
-#
-#    # Setting paths for saving results
-#    results_root_path = wf_path / Path(results_root_alias)
-#    results_folder_path = results_root_path / Path(results_folder_alias)
-#
-#    # Checking availability of required results folders
-#    if not os.path.exists(results_root_path):
-#        os.makedirs(results_root_path)
-#    if not os.path.exists(results_folder_path):
-#        os.makedirs(results_folder_path)
-#    return results_folder_path
 
 
 def save_final_results(params_list, results_to_save_dict, if_analysis_name=None,

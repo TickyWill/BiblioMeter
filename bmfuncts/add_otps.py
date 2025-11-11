@@ -237,8 +237,9 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
     the `_add_authors_name_list` internal function. 
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        add_otp_params_list (list): The list composed of the Institute \
+        name (str) and of the org_tup (tup) that contains parameters \
+        of Institute organization.
         in_path (path): Full path to the file where homonyms have been solved.
     Returns:
         (dataframe): The enhanced data. 
@@ -357,8 +358,8 @@ def _save_dpt_otp_file(dpt, save_otp_cols_tup, dpt_df, dpt_otp_list, xl_dpt_path
     if dpt_df_len:
         # Getting the column letter for the OTPs column
         otp_col_letter = get_col_letter(dpt_df, otp_col, xl_idx_base)
-        ws = add_data_val(ws, data_val, dpt_df_len, otp_col_letter,
-                          xl_idx_base)
+        _ = add_data_val(ws, data_val, dpt_df_len, otp_col_letter,
+                         xl_idx_base)
     # Saving the workbook
     wb.save(xl_dpt_path)
 
@@ -509,8 +510,8 @@ def _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, dpt_df,
             otp_col_letter = get_col_letter(otp_lab_df, otp_col, xl_idx_base)
 
             # Adding a validation data list
-            ws = add_data_val(ws, data_val, len(otp_lab_df), otp_col_letter,
-                              xl_idx_base)
+            _ = add_data_val(ws, data_val, len(otp_lab_df), otp_col_letter,
+                             xl_idx_base)
             first = False
     else:
         # Renaming the columns

@@ -21,6 +21,12 @@ from bmfuncts.useful_functs import keep_initials
 
 
 def _set_test_cols_dic():
+    """Builds a dict setting selected columns names for the process 
+    of testing match between employees data and publications data.
+
+    Returns:
+        (dict): The built dict.
+    """
     test_cols_dic = {'pub_firstname_col' : bm_pg.COL_NAMES_BM['First_name'],
                      'pub_lastname_col'  : bm_pg.COL_NAMES_BM['Last_name'],
                      'pub_fullname_col'  : bp.COL_NAMES['authors'][2],
@@ -40,6 +46,8 @@ def _test_full_match(empl_pub_match_df, pub_lastname, test_cols_dic):
         corresponding to each of the found similarities by orphan reduction.
         pub_lastname (str): The last name of the author for which similarity \
         has been found.
+        test_cols_dic (dict): The selected columns names for the process \
+        of testing match between employees data and publications data.
     """
     # Setting col names
     empl_mat_col = test_cols_dic['empl_mat_col']
@@ -69,6 +77,8 @@ def _test_similarity(empl_pub_match_df, pub_lastname, lastname_match_list,
         lastname_match_list (list): The list of employees last-names (str) \
         that matches the author last_name.
         flag_lastname_match (bool): The status of last name match.
+        test_cols_dic (dict): The selected columns names for the process \
+        of testing match between employees data and publications data.
     """
     # Setting col names
     empl_mat_col = test_cols_dic['empl_mat_col']
@@ -102,6 +112,8 @@ def _test_no_similarity(pub_df_row, pub_lastname, lastname_match_list,
         lastname_match_list (list): The list of employees last-names (str) \
         that matches the author last_name.
         flag_lastname_match (bool): The status of last name match.
+        test_cols_dic (dict): The selected columns names for the process \
+        of testing match between employees data and publications data.
     """
     # Setting col names
     pub_fullname_col = test_cols_dic['pub_fullname_col']
@@ -120,6 +132,23 @@ def _test_no_similarity(pub_df_row, pub_lastname, lastname_match_list,
 def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
                                       eff_firstnames, list_idx, eff_lastnames_spec,
                                       test_cols_dic):
+    """Prints the info of the test on first name initials for all test cases.
+
+    Args:
+        pub_df_row (pandas series): The data related to a given publication \
+        when several matches on firstname initials are found.
+        pub_lastname (str): The last name of the author for which matches of \
+        firstname initials has been found.
+        pub_firstname (str): The first name initials of the author matches of \
+        firstname initials has been found.
+        eff_firstnames (list): The list of first name initials of the employees \
+        that matches the firstname initials of the author.
+        list_idx (list): Indices (int) of matching initials.
+        eff_lastnames_spec (list): The list of last names of the employees \
+        that matches the firstname initials of the author.
+        test_cols_dic (dict): The selected columns names for the process \
+        of testing match between employees data and publications data.
+    """
     # Setting col names
     pub_fullname_col = test_cols_dic['pub_fullname_col']
 
@@ -169,7 +198,7 @@ def _save_spec_dfs(temp_df, empl_pub_match_df, test_name, checks_path):
         empl_pub_match_df (dataframe): The concatenated rows of the 'empl_df' dataframe 
         corresponding to each of the found similarities by orphan reduction.
         test_name (str): The author's last-name for the test.
-        checks_path (path): The full path for saving the the testing data.
+        checks_path (path): The full path for saving the testing data.
     """
     name_suffix = test_name + '.xlsx'
     temp_df.to_excel(checks_path / Path('temp_df_' + name_suffix),

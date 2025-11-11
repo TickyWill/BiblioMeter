@@ -23,7 +23,7 @@ from bmfuncts.useful_functs import concat_dfs
 
 def _set_inst_stat_cols():
     """Builds a dict setting selected columns names for the process 
-    of building institutions statistics.
+    of building statistics of institutions.
 
     Returns:
         (dict): The built dict.
@@ -157,7 +157,6 @@ def _build_pub_id_inst_type_df(institute, distrib_institutions_df,
     for inst_name in corrected_inst_list:
         for _, row in pub_id_inst_type_df.iterrows():
             inst_names = row[inst_type_col]
-            pub_id = row[pub_id_col]
             if inst_names!="[]":
                 inst_names_list = _set_inst_names_list(inst_names)
                 data = []
@@ -313,6 +312,14 @@ def _build_inst_type_country_df(pub_country_inst_df, sub_pub_ids_lists, cols_lis
 
 
 def _build_useful_cols_lists(inst_stat_cols_dic):
+    """Builds useful lists of columns used in several functions of the module.
+
+    Args:
+        inst_stat_cols_dic (dict): The selected columns names for the process \
+        of building statistics of institutions.
+    Returns:
+        (tup): Tuple of 4 lists of colums names.
+    """
 
     # Setting col names from 'inst_stat_cols_dic'
     col_keys = ['pub_id_col', 'country_col', 'final_country_col',
@@ -352,14 +359,12 @@ def _build_inst_stat_data(institute, distrib_institutions_df, pub_ids_lists, ins
         institute (str): Institute name.
         distrib_institutions_df (dataframe): data with distributed normalized \
         institutions per institution type and per publication.
-        common_cols_list (list): The  names (str) list of the common columns \
-        used to build the data.
-        stat_cols_list (list): The names (str) list of the specific columns \
-        that will contain the statistics results in the built data.
         pub_ids_lists (tuple): (list of all publication IDs (str) of the institute, \
         list of the IDs (str) of publications in journals, \
         list of the IDs (str) of publications in conference proceedings, \
         list of the IDs (str) of publications in books).
+        inst_stat_cols_dic (dict): The selected columns names for the process \
+        of building statistics of institutions.
     Returns:
         (Hierarchical dict): The dict keyed by institutions types and valued \
         by dicts keyed by the statistical keys (str) given by the 'STAT_FILE_DICT' \
@@ -465,11 +470,12 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
     """
     print("    Computing institutions statistics")
 
+    # Setting useful col names
     inst_stat_cols_dic = _set_inst_stat_cols()
     institutions_col = inst_stat_cols_dic['inst_col']
 
-    # Setting local parameters
-    xlsx_extent = ".xlsx"
+    # Setting folder and file names aliases
+    distrib_inst_filename_alias = bm_pg.ARCHI_YEAR["institutions distribution file name"] + ".xlsx"
 
     # Setting optional values
     if progress_param:
@@ -477,16 +483,9 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
         progress_inter = init_progress + (final_progress - init_progress) * 0.85
         progress_callback(init_progress)
 
-    # Setting useful column names aliases
-    inst_type_abbr_col = bp.INST_TYPES_USECOLS[1]
-    institutions_col = bm_pg.COL_NAMES_BONUS['institution']
-
-    # Setting folder and file names aliases
-    distrib_inst_filename_alias = bm_pg.ARCHI_YEAR["institutions distribution file name"] + xlsx_extent
-
     # Getting institutions types data
-    inst_types_df = pd.read_excel(inst_types_file_path, usecols = bp.INST_TYPES_USECOLS)
-    inst_types_list = inst_types_df[inst_type_abbr_col].to_list()
+    inst_types_df = pd.read_excel(inst_types_file_path, usecols=bp.INST_TYPES_USECOLS)
+    inst_types_list = inst_types_df[bp.INST_TYPES_USECOLS[1]].to_list()
 
     # Building distributed info of normalized institutions per type and per address
     inter_progress_param = None

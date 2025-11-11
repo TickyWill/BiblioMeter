@@ -283,8 +283,11 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
     Args:
         in_file_path (path): The full path to get the corpus data.
         if_dict (dict): Impact-factors data (dataframes) keyed by years.
-        add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
-        process as set through the `_set_add_ifs_col_dic` internal function.
+        add_ifs_col_tup (tup): (Useful columns names for the IFs-attribution \
+        process as set through the `_set_add_ifs_col_dic` internal \
+        function (dict), the full list of final column names (list) \
+        got from the `set_final_col_names` function imported from \
+        the `bmfuncts.rename_cols` module).
         unknown_kw (str): The word to identify unknown values.
     Returns:
         (tup): (Recast corpus data (dataframe), \

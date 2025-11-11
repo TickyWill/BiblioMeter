@@ -10,11 +10,9 @@ __all__ = ['build_pub_ids_lists',
 
 
 # Standard library imports
-import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # local imports

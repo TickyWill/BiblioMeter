@@ -13,7 +13,6 @@ from tkinter import messagebox
 from tkinter import font as tkFont
 
 # Local imports
-import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
@@ -289,9 +288,6 @@ class AnalyzeCorpusPage(tk.Frame):
         master (class): `bmgui.main_page.AppMain` class.
         pagebutton_frame (tk.Frame): Frame of pages buttons.
         page_frame (tk.Frame): Frame of master page.
-        institute (str): Institute name.
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
     """
 
     def __init__(self, master, pagebutton_frame, page_frame):

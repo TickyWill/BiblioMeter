@@ -301,11 +301,11 @@ def authors_analysis(params_list, progress_callback=None):
     This is done through the following steps:
 
     1. Sets the column names  useful for building authors analysis data 
-    trough the `_set_useful_cols` internal function.
+    through the `_set_useful_cols` internal function.
     2. Builds data of authors per publication with corresponding employee name, 
     number of authors, author position in the authors list through the 
     `_build_author_employee_df` internal function.
-    3. Builds the data of publications number per author trough the 
+    3. Builds the data of publications number per author through the 
     `_build_pub_nb_per_author_df` internal function.
     4. Saves the results of this analysis as openpyxl workbooks through the \
     `format_page` function imported from `bmfuncts.format_files` module.

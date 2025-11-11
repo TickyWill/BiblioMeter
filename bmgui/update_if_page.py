@@ -146,9 +146,7 @@ def _missing_pub_file_year_check(master, if_tup, all_years_list_folder, progress
     imported from `bmfuncts.update_impact_factors` module.
 
     Args:
-        wf_path (path): Full path to working folder.
-        corpus_years_list (list): List of available corpus years \
-        (each item defined by a string of 4 digits).
+        master (class): `bmgui.main_page.AppMain` class.
         if_tup (tup): (year of the missing publications list (str),\
         status of IFs database (bool), unused parameter).
         all_years_list_folder (str): The folder name where \
@@ -202,6 +200,21 @@ def _missing_pub_file_year_check(master, if_tup, all_years_list_folder, progress
 
 
 def _set_year_files_params(wf_path, corpus_year, names_tup):
+    """Sets the full paths of file and folder specific to a corpus.
+    
+    Args:
+        wf_path (path): Full path to working folder.
+        corpus_year (str): Corpus year defined by 4 digits.
+        names_tup (tup): (publications-list folder name, \
+        base for building name of publications-list file, \
+        base for building name of missing-IFs file, \
+        name for building name of missing-ISSNs file).
+    Returns:
+        (tup): (Publications-list folder path, \
+        Publications-list file path, \
+        Missing-IFs file path, \
+        Missing-ISSNs file path).
+    """
     # Setting files parameters from args
     (pub_list_folder,
      pub_list_file_base,

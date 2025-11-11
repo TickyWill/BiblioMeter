@@ -75,13 +75,15 @@ def _set_save_otp_file_params(save_otp_params_list):
     of attributed OTPs by the user.
     
     Args:
-        wf_path (path): Full path to working folder.
-        corpus_year (str): Corpus year defined by 4 digits.
+        save_otp_params_list (list): Composed of the Full path \
+        to working folder and of the corpus year (str) defined \
+        by 4 digits.
     Returns:
-        (tup): (Full path (path) to the file of Hash-IDs, \
-        Full path (path) to the file of history of attributed OTPs, \
-        The sheet names (list of strings) of the file of history \
-        of attributed OTPs).
+        (tup): (The base (str) for building OTPs file names, \
+        The full path to the folder of OTPs attribution, \
+        The full path (path) to the file of Hash-IDs, \
+        The full path (path) to the file of history of attributed OTPs, \
+        The sheet names (dict) of the file of history of attributed OTPs).
     """
     # setting parameters value from save_otp_params_list
     wf_path, corpus_year = save_otp_params_list
@@ -120,11 +122,14 @@ def _set_read_otp_file_params(dpt_label_list, set_hist_file_params_list):
 
     The name of the files is build using the file-name base given 
     by a global and the department label. This name is added '_ok' if 
-    this file exists in the files folder.
+    this file exists in the folder of the files.
 
     Args:
         dpt_label_list (list): The names (str) list of Institute \
         departments.
+        set_hist_file_params_list (list): Composed of the base (str) for \
+        building OTPs file names and of the full path to the folder \
+        of OTPs attribution.
     Returns:
         (dict): The dict keyed by department names and valued \
         by the full path (path) to the file where the attributed \
@@ -170,8 +175,11 @@ def _concat_dept_otps_dfs(dpt_label_list, set_hist_file_params_list):
     after getting them through the `_build_dpt_otp_df` internal function.
 
     Args:
-        pub_otp_params_list (list): org_tup, wf_path, corpus_year
-        org_tup (tup): Contains Institute parameters.
+        dpt_label_list (list): The names (str) list of Institute \
+        departments.
+        set_hist_file_params_list (list): Composed of the base (str) for \
+        building OTPs file names and of the full path to the folder \
+        of OTPs attribution.
     Returns:
         (dataframe): The concatenated publications list with OTPs.        
     """
@@ -201,8 +209,11 @@ def set_pub_otp_df(dpt_label_list, set_hist_file_params_list, final_col_list, pu
     For that it uses the `_concat_dept_otps_dfs` internal function.
 
     Args:
-        pub_otp_params_list (list): org_tup, wf_path, corpus_year
-        org_tup (tup): Contains Institute parameters.
+        dpt_label_list (list): The names (str) list of Institute \
+        departments.
+        set_hist_file_params_list (list): Composed of the base (str) for \
+        building OTPs file names and of the full path to the folder \
+        of OTPs attribution.
         final_col_list (list): The list of column names of the built data.
         pub_id_col (str): The column name of publications IDs.
     Returns:
@@ -232,18 +243,21 @@ def _update_otps_history(kept_otps_file_path, otp_sheets_dict, otps_history_dfs)
         - Hash-ID of the publication for which OTPs have been attributed. 
         - The OTPs value attributed.
 
-    - A seconf sheet with the following columns:
+    - A second sheet with the following columns:
 
         - Full name (last name + first name initials) of the first author \
         of the publication for which OTPs have been attributed.
         - DOI of the publication for which OTPs have been attributed.
         - The OTPs value attributed.
+
     Args:
         kept_otps_file_path (path): The full path to the file \
         of the history of attributed OTPs.
-        otp_sheets_list (list): The list composed the 2 sheet names of the file.
+        otp_sheets_dict (dict): The dict giving the sheet names as built \
+        by the `_set_save_otp_file_params` internal function.
         otps_history_dfs (list): The list of the two dataframes of the refreshed \
-        data of attributed OTPs with the same structure as the sheets of the file.
+        data of attributed OTPs with the same structure as the sheets \
+        of the file to be updated.
     Returns:
         (str): End message.
     """
@@ -535,6 +549,7 @@ def _add_set_otp_rows(ws, otp_set_df, df_len, cell_colors):
 
 
 def _set_otp_save_params(use_otps_cols_dic):
+    """Builds the list of parameters for the process of saving OTPs data."""
     # Setting num of first col and first row in EXCEL files
     xl_idx_base = bm_pg.XL_INDEX_BASE
 
@@ -551,7 +566,9 @@ def _set_otp_save_params(use_otps_cols_dic):
     return save_params
 
 
-def _set_update_common_params(df, init_common_params):
+def _update_common_params(df, init_common_params):
+    """Updates the shared parameters by all departments with the openpyxl 
+    letter associated with the column of OTPs values."""
     # Setting parameters values from 'init_common_params'
     xl_idx_base, otp_list_col = init_common_params[2:]
 
@@ -564,7 +581,7 @@ def _set_update_common_params(df, init_common_params):
 
 
 def _set_lab_otp_ws(lab, dfs_tup, lab_otp_list, wb, first, labs_common_params):
-    """Builts the openpyxl sheet of a laboratory in the openpyxl workbook 
+    """Builds the openpyxl sheet of a laboratory in the openpyxl workbook 
     of the department it belongs, to using set OTPs and keeping validation 
     rules for not set OTPs.
     """
@@ -623,15 +640,19 @@ def _re_save_labs_otp_file(dicts_list, use_otps_cols_dic, dpt_otp_file_name_path
     through the `_set_lab_otp_ws` internal function.
 
     Args:
-        dpt_pub_dict (dict): The data of the department keyed by laboratory names (str) \
-        and valued by publications data (dataframe).
-        dpt_lab_otps_dict (dict): The data of the department keyed \
-        by laboratory names (str) and valued by OTPs lists (list). 
+        dicts_list (list): Composed of the data (dict) of the department keyed by \
+        laboratory names (str) and valued by publications data (dataframe) and of \
+        the data (dict) of the department keyed by laboratory names (str) and \
+        valued by OTPs list (list).
+        use_otps_cols_dic (dict): selected columns names for the process of OTPs \
+        attribution resolution as built through the `_set_use_otps_cols` internal function.
         dpt_otp_file_name_path (path): Full path to where the workbook is saved.
         otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
         data of OTPs set by DOI (dataframe).
+        dpts_common_params (list): The shared parameters by all Institute's departments \
+        as built through the `_set_otp_save_params` internal function.
     """
-    # Setting parameters vaues from 'dicts_list'
+    # Setting parameters values from 'dicts_list'
     dpt_pub_dict, dpt_lab_otps_dict = dicts_list
 
     # Initialize parameters for saving results as multisheet workbook
@@ -641,7 +662,7 @@ def _re_save_labs_otp_file(dicts_list, use_otps_cols_dic, dpt_otp_file_name_path
 
     for lab, lab_df in dpt_pub_dict.items():
         if first:
-            labs_common_params = _set_update_common_params(lab_df, labs_common_params)
+            labs_common_params = _update_common_params(lab_df, labs_common_params)
             first = False
 
         # Using set OTPs by Hash-ID
@@ -680,8 +701,11 @@ def _set_saved_lab_otps(org_tup, otps_history_tup, use_otps_cols_dic,
         org_tup (tup): Contains Institute parameters.
         otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
         data of OTPs set by DOI (dataframe).
-        otp_folder_path (path): The full path to the folder where the file is saved.
-        otp_file_base (str): The name base of the file to be saved.
+        use_otps_cols_dic (dict): selected columns names for the process of OTPs \
+        attribution resolution as built through the `_set_use_otps_cols` internal function.
+        set_hist_file_params_list (list): Composed of the base (str) for \
+        building OTPs file names and of the full path to the folder \
+        of OTPs attribution.
         lab_otps_dict (hierarchical dict): The data keyed by department names (str) \
         and valued by OTPs data given by laboratory of each department (dict).
     """
@@ -733,10 +757,11 @@ def _re_save_dpt_otp_file(dfs_tup, dpt_otp_list, dpt_otp_file_name_path,
     Args:
         dfs_tup (tup): (Data of the already attributed OTPs for the department (dataframe), \
         Data of the OTPs still to be attributed for the department (dataframe)).
-        cols_tup (tup): Useful column names (str).
         dpt_otp_list (list): The OTPs list of the department.
         dpt_otp_file_name_path (path): Full path to where the workbook is saved. 
         dpt_otp_sheet_name (str): Name of the openpyxl sheet of the workbook.
+        dpts_common_params (list): The shared parameters by all Institute's departments \
+        as built through the `_set_otp_save_params` internal function.
     """
     # Setting parameters from args
     otp_set_dpt_df, otp_to_set_dpt_df = dfs_tup
@@ -798,8 +823,11 @@ def _set_saved_dept_otps(org_tup, otps_history_tup, use_otps_cols_dic,
         org_tup (tup): Contains Institute parameters.
         otps_history_tup (tup): (useful lists (tup), useful column names (tup), \
         data of OTPs set by DOI (dataframe).
-        otp_folder_path (path): The full path to the folder where the file is saved.
-        otp_file_base (str): The name base of the file to be saved.
+        use_otps_cols_dic (dict): selected columns names for the process of OTPs \
+        attribution resolution as built through the `_set_use_otps_cols` internal function.
+        set_hist_file_params_list (list): Composed of the base (str) for \
+        building OTPs file names and of the full path to the folder \
+        of OTPs attribution.
     """
     # Setting parameters values from 'set_hist_file_params_list'
     otp_file_base, otp_folder_path = set_hist_file_params_list
@@ -827,7 +855,7 @@ def _set_saved_dept_otps(org_tup, otps_history_tup, use_otps_cols_dic,
         dpt_df = pd.read_excel(dpt_otp_file_name_path)
 
         if first:
-            dpts_common_params = _set_update_common_params(dpt_df, dpts_common_params)
+            dpts_common_params = _update_common_params(dpt_df, dpts_common_params)
             first = False
 
         # Using set OTPs by Hash-ID
@@ -850,9 +878,11 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     """Gets the history of previously set OTPs.
 
     Args:
-        hash_id_file_path (path): The full path to the Hash-IDs file.
-        kept_otps_file_path (path): the full path to the history of \
-        the set OTPs.
+        get_hist_file_params_list (list):  Composed of the full path (path) to the file \
+        of Hash-IDs, the full path (path) to the file of history of attributed OTPs, \
+        the sheet names (dict) of the file of history of attributed OTPs.
+        use_otps_cols_dic (dict): selected columns names for the process of OTPs \
+        attribution resolution as built through the `_set_use_otps_cols` internal function.
     Returns:
         (tup): (Dict valued by lists of infos for using previously set OTPs, \
         The data of the history of previously set OTPs by DOI).

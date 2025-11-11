@@ -203,7 +203,7 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
 def _read_articles_data(wf_path, final_results_path, corpus_year):
     """Reads saved data of publications list resulting from the parsing step.
 
-    It uses the `read_final_dedup` function imported from the 
+    It uses the `read_final_dedup` function imported from 
     the `bmfuncts.useful_functs` module.
 
     Args:
@@ -229,7 +229,7 @@ def _read_articles_data(wf_path, final_results_path, corpus_year):
 
 def _build_doctype_analysis_data(data_params_list,
                                  doctype_cols_tup):
-    """Builds the data of publications list to be analyzed for each documents types.
+    """Builds the data of publications list to be analysed for each document types.
 
     The list of documents-types items is given by the 'DOC_TYPE_DICT' global 
     imported from the `bmfuncts.pub_globals` module. 
@@ -241,7 +241,7 @@ def _build_doctype_analysis_data(data_params_list,
     2. The data of the final publication list is got through the `read_final_pub_list_data` \
     function imported from the `bmfuncts.useful_functs` module.
     3. The journal names are normalized using the dict built at step 1.
-    4. THe words of the values of journal columns and documents types are capitalized through \
+    4. The words of the values of journal columns and documents types are capitalized through \
     the `set_capwords_lambda` lambda function imported from the `bmfuncts.useful_functs` module.
     5. The data thus obtained are split into data of each documents-types items.
 
@@ -249,11 +249,12 @@ def _build_doctype_analysis_data(data_params_list,
         data_params_list (list): The list composed of the full path \
         to working folder (path), the data combination type of corpuses \
         databases (str) and the 4 digits year of the corpus (str).
-        final_cols_tup (tup): (final columns names dict, departments columns list).
-        if_cols_list (list): Column names of impact-factors.
+        doctype_cols_tup (tup): (The selected columns names for the process \
+        of document-types analysis (dict), the list of Institute's \
+        departments (list)).
     Returns:
         (dict): The dict keyed per documents-types items (str) and valued \
-        by the data (dataframe) built for each documents type.
+        by the data (dataframe) built for each document type.
     """
     # Setting parameters values from data_params_list
     wf_path, datatype, corpus_year = data_params_list
@@ -455,7 +456,7 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
     Returns:
         (tup): (Dict keyed by department labels (str) of the Institute \
         and valued by data (dataframe) of statistics per journal, full path \
-        to the folder where the results of the anqlysis per documents types \
+        to the folder where the results of the analysis per document types \
         are saved).
     """
     # Setting parameters values from 'stat_params_list'

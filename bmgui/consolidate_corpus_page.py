@@ -89,7 +89,6 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
 
     # Setting dialogs and checking answers
     # for ad-hoc use of 'update_employees' function
-    update_status = False
     # Launch employees database update
     ask_title = "- Confirmation de la mise à jour des effectifs -"
     ask_text = ("Le fichier des effectifs de l'Institut va être mis à jour "
@@ -265,7 +264,7 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
             print('\n',end_message)
             _progress_callback(100)
 
-            # Displaying the status of the resursive search of authors
+            # Displaying the status of the recursive search of authors
             _info_title = '- Information -'
             _info_text = f"Le croisement auteurs-effectifs de l'année {year_select} a été effectué."
             if orphan_status:
@@ -287,7 +286,7 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
         else:
             _progress_callback(100)
 
-            # Displaying the status of the resursive search of authors
+            # Displaying the status of the recursive search of authors
             warning_title = "!!! ATTENTION : fichier manquant !!!"
             warning_text = (f"La synthèse de l'année {year_select} n'est pas disponible."
                             "\n1- Revenez à l'onglet 'Analyse élémentaire des corpus' ;"
@@ -338,7 +337,7 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                 else:
                     progress_callback(100)
 
-                    # Displaying the status of the resursive search of authors
+                    # Displaying the status of the recursive search of authors
                     info_title = "- Information -"
                     info_text = (f"Le croisement auteurs-effectifs de l'année {year_select} "
                                  "dejà disponible est conservé.")
@@ -346,7 +345,7 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
         else:
             progress_callback(100)
 
-            # Displaying the status of the resursive search of authors
+            # Displaying the status of the recursive search of authors
             info_title = "- Information -"
             info_text = (f"Le croisement auteurs-effectifs de l'année {year_select} "
                          "est annulé.")

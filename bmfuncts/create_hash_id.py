@@ -18,6 +18,18 @@ from bmfuncts.useful_functs import reorder_df
 
 
 def _set_hash_id_cols_dic(institute, org_tup):
+    """Builds a dict setting selected columns names for the process 
+    of building hash IDs.
+
+    This is done through the `build_col_conversion_dic` function imported 
+    from the `bmfuncts.rename_cols` module.
+
+    Args:
+        institute (str): Institute name.
+        org_tup (tup): Contains parameters of Institute organization.
+    Returns:
+        (dict): The built dict.
+    """
 
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
@@ -124,9 +136,9 @@ def create_hash_id(institute, org_tup, files_paths):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        files_paths (list): Full paths (path) to (1) the publications list \
-        with one row per Institute authorthat has been identified \
-        as Institute employee, (2) the publications list with one row per author that has not \
+        files_paths (list): Full paths (path) to (1) the publications list with one row per \
+        Institute author that has been identified as Institute employee, \
+        (2) the publications list with one row per author that has not \
         been identified as Institute employee and (3) for saving the created Hash-IDs data.
     Returns:
         (str): End message recalling path to the saved file.        

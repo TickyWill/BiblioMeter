@@ -1,13 +1,22 @@
 # Application Release Backlog
 
-## Release 6.2.0 - 2025/xx/xx
-* **Summary**: This release corresponds to the introduction of the analysis per subjects and to the update of the collaborations analysis with the enhancement of the publications statistics provided by the affiliations analysis of the authors.
+## Release 6.2.0 - 2025/11/12
+* **Summary**: This release corresponds to a deep refactoring of the code and to the update of the collaborations analysis with the enhancement of the publications statistics provided by the affiliations analysis of the authors.
 * **Features**:
   - Feature 1: Update of the "\_build_inst_type_inst_df" and "\_build_inst_type_country_df" functions of "build_institutions_stat" module to add columns with number of publications per document type to the statistics results.
   - Feature 2: Addition of the "build_pub_ids_lists" function to the "useful_functs" module for setting the list of the Institute publications IDS and performing collaborations analysis only on these IDs.
+  - Feature 3: Creation of "bmfuncts.read_final_results" module from split of "bmfuncts.useful_functs module".
+  - Feature 4: Creation of "bmgui.gui_utils" module of functions shared by all GUI pages.
+  - Feature 5: Creation of "bmgui.pages_classes" module of classes shared by pages.
+  - Feature 6: Creation of "bmgui.main_utils" module of useful functions from split of for "bmgui.main_page".
+  
 * **Improvements**:
   - Improvement 1: Update of the "coupling_analysis" module to integrate the use of the above created or updated functions.
   - Improvement 2: Update of the "bmfuncts/build_pub_addresses" and the "useful_functs" modules to integrate the use of the "standardize_address" function as imported from "BiblioParsing" package.
+  - Improvement 3: Introduced a folder of Institute parameter located out of the working folder to share the info with other applications.
+  - Improvement 4: Refactored "bmfunct" package by creating internal functions for columns setting and paths setting.
+  - Improvement 5: Introduced in "bmgui" package a single arg to make available everywhere the selected parameters by the user on main page and refactored accordingly the "bmfuncts" package.
+  - Improvement 6: Updated "existing_corpuses" function of "bmgui.gui_utils" module to walk only the folder of rawdata and not the sub-folders.
 * **Bug Fixes**:
   - None.
 * **Known Issues**:

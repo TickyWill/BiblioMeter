@@ -111,9 +111,7 @@ def _get_displays(in_to_mm):
             diag_in = float(input(quest))
             width_mm = round(int(width_px) * (diag_in/diag_px) * in_to_mm, 1)
             height_mm = round(int(height_px) * (diag_in/diag_px) * in_to_mm, 1)
-            assert isinstance(width_mm, int)
             displays[disp]['width_mm'] = str(width_mm)
-            assert isinstance(height_mm, int)
             displays[disp]['height_mm'] = str(height_mm)
         else:
             diag_in = math.sqrt(float(width_mm) ** 2 + float(height_mm) ** 2) / in_to_mm
@@ -269,7 +267,6 @@ PROGRESS_BAR_LEN_DICT = {KEY_PARSE      : 80,
                          KEY_ANALYS     : 90,
                          KEY_CORRECT    : 90,
                          KEY_EID_CORRECT: 90,
-                         
                         }
 
 # Relative positions of progress-bar

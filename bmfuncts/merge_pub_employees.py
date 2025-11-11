@@ -67,7 +67,6 @@ def _add_author_job_type(in_path, out_path, empl_dict, years, cols_list):
 
 
     def _search_mat_author_type(_mat):
-        author_type = '-'
         years_nb = len(years)
         year_idx = 0
         set_author_type = "FIN"
@@ -256,9 +255,6 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path, cols_list):
     init_orphan_df = init_orphan_df.rename(columns=col_rename_dic)
     orphan_firstname_short_col = col_rename_dic[submit_firstname_short_col]
 
-    # Initializing new_orphan_df as copy of init_orphan_df
-    new_orphan_df = pd.DataFrame(columns=list(init_orphan_df.columns))
-
     # Initializing the dataframe to be droped from init_orphan_df
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
@@ -391,9 +387,6 @@ def _add_other_ext(submit_path, orphan_path, others_path, cols_list):
     init_orphan_df = keep_initials(init_orphan_df, submit_firstname_short_col,
                                    missing_fill=bp.UNKNOWN)
 
-    # Initializing new_submit_df with same column names as init_submit_df
-    new_submit_df = pd.DataFrame(columns=list(init_submit_df.columns))
-
     # Initializing the dataframe to be concatenated to init_submit_df in new_submit_df
     # with same column names as init_submit_df
     new_submit_adds_df = pd.DataFrame(columns=list(init_submit_df.columns))
@@ -403,10 +396,6 @@ def _add_other_ext(submit_path, orphan_path, others_path, cols_list):
     col_rename_dic = {submit_firstname_short_col : submit_firstname_short_col + "_x"}
     init_orphan_df = init_orphan_df.rename(columns=col_rename_dic)
     orphan_firstname_short_col = col_rename_dic[submit_firstname_short_col]
-
-    # Initializing new_orphan_df as copy of init_orphan_df
-    #new_orphan_df = init_orphan_df.copy()
-    new_orphan_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
     # Initializing the dataframe to be droped from init_orphan_df
     # with same column names as init_orphan_df
@@ -688,7 +677,7 @@ def _config_empl(empl_dict, years, initials_col, mat_col):
     this value to be set to NaN by default.
 
     Args:
-        empl_dict (dict): The employees dict keyyed by year 
+        empl_dict (dict): The employees dict keyed by year 
         and valued by employees data (dataframe).
         years (list): The keys (str) at which the employees dict 
         will to be modified.
@@ -814,13 +803,6 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
     # * Building recursively the `submit_df` and `orphan_df` dataframes *
     # *                 using `empl_dict` files of years                   *
     # *******************************************************************
-
-    # Initializing the dataframes to be built
-    # a Data frame containing all matches between article Institute authors and employee names
-    submit_df = pd.DataFrame()
-    # a Data frame containing article Institute authors
-    # not matching with any employee name
-    orphan_df = pd.DataFrame()
 
     # Building the initial dataframes
     print("    Initializing cross pub_employees data")

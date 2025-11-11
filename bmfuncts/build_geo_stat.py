@@ -88,7 +88,6 @@ def _build_continents_stat(countries_df, institute_continent):
     - The country of the given address.
 
     Args:
-        institute (str): Institute's name.
         countries_df (dataframe): Data of countries per publications.
         institute_continent (str): The continent of the institute
     Returns:
@@ -157,6 +156,28 @@ def _set_institute_country_stat_df_params():
 
 
 def _build_institute_country_stat(norm_institutions_df, institute_country, institute_norm):
+    """Builds the statistics of publications per combination types of co-authors countries 
+    from the analysis of the dataframe of the normalized institutions per publication.
+
+    Each row of this dataframe contains:
+
+    - A type of co-authors: 
+        - all types of co-authors,
+        - no co-authors,
+        - only co-authors of the country of the Institute,
+        - co-authors from the Institute country together with co-authors from other countries,
+        - only co_authors from other countries; 
+    - The number of publications; 
+    - The list of publication IDs.
+
+    Args:
+        norm_institutions_df (dataframe): Data of the normalized institutions per publication.
+        institute_country (str): The country of the institute
+    Returns:
+        (dataframe): Institute's country statistics where each row gives the co-authors type, \
+        the Institute-publications number related to the co-authors type \
+        and a string listing the concerned publications IDs separated by semicolon.
+    """
     inst_country_stat_cols_dic, inst_country_stat_rows_dic = _set_institute_country_stat_df_params()
     col_keys = ['pub_id_col', 'address_id_col', 'countries_col', 'institutions_col',
                 'pub_kind_col', 'weight_col', 'pub_ids_col']
@@ -239,79 +260,6 @@ def _build_institute_country_stat(norm_institutions_df, institute_country, insti
     inst_country_stat_df = pd.DataFrame(data, columns=data_cols)
 
     return inst_country_stat_df
-
-
-#def _build_institute_country_stat_old(norm_institutions_df, institute_country, institute_norm):
-#    inst_country_stat_cols_dic, inst_country_stat_rows_dic = _set_institute_country_stat_df_params()
-#    col_keys = ['pub_id_col', 'address_id_col', 'countries_col', 'institutions_col',
-#                'pub_kind_col', 'weight_col', 'pub_ids_col']
-#    (pub_id_col, address_id_col, countries_col, institutions_col,
-#     pub_kind_col, weight_col, pub_ids_col) = [inst_country_stat_cols_dic[key] for key in col_keys]
-#
-#    row_keys = ['all_key', 'institute_only_key', 'w_others_key', 'wo_others_key']
-#    (all_key, institute_only_key, w_others_key,
-#     wo_others_key) = [inst_country_stat_rows_dic[key] for key in row_keys]
-#
-#    inst_country_stat_dic = {}
-#    raw_institute_only_pub_ids_list = []
-#    raw_w_others_pub_ids_list = []
-#
-#    for pub_id, pub_id_df in norm_institutions_df.groupby(pub_id_col):
-#        countries_list = list(set(pub_id_df[countries_col].to_list()))
-#        if len(countries_list)==1:
-#            if countries_list[0]==institute_country:
-#                addr_idxs = pub_id_df[address_id_col].to_list()
-#                institutions = pub_id_df[institutions_col].to_list()
-#                addr_inst_dic = dict(zip(addr_idxs, institutions))
-#                only_institute = True
-#                for addr_idx, addr_institution in addr_inst_dic.items():
-#                    institutions_list = str(addr_institution).split("; ")
-#                    if not institute_norm in institutions_list:
-#                        only_institute = False
-#                if only_institute:
-#                    raw_institute_only_pub_ids_list.append(pub_id)
-#
-#    for pub_id, pub_id_df in norm_institutions_df.groupby(pub_id_col):
-#        for country, country_df in pub_id_df.groupby(countries_col):
-#            if country==institute_country:
-#                addr_idxs = country_df[address_id_col].to_list()
-#                institutions = country_df[institutions_col].to_list()
-#                addr_inst_dic = dict(zip(addr_idxs, institutions))
-#                for addr_idx, addr_institution in addr_inst_dic.items():
-#                    institutions_list = str(addr_institution).split("; ")
-#                    if not institute_norm in institutions_list:
-#                        raw_w_others_pub_ids_list.append(pub_id)
-#
-#    raw_pub_ids_list = norm_institutions_df[pub_id_col].to_list()
-#    all_pub_ids_list = sorted(list(set(raw_pub_ids_list)))
-#    all_nb = len(all_pub_ids_list)
-#    all_pub_ids_str = "; ... ; ".join([all_pub_ids_list[0], all_pub_ids_list[all_nb-1]])
-#    inst_country_stat_dic[all_key] = [all_nb, all_pub_ids_str]
-#
-#    institute_only_pub_ids_list = sorted(list(set(raw_institute_only_pub_ids_list)))
-#    institute_only_nb = len(institute_only_pub_ids_list)
-#    institute_only_pub_ids_str = "; ".join(institute_only_pub_ids_list)
-#    inst_country_stat_dic[institute_only_key] = [institute_only_nb,
-#                                                 institute_only_pub_ids_str]
-#
-#    w_others_pub_ids_list = sorted(list(set(raw_w_others_pub_ids_list)))
-#    w_others_nb = len(w_others_pub_ids_list)
-#    w_others_pub_ids_str = "; ".join(w_others_pub_ids_list)
-#    inst_country_stat_dic[w_others_key] = [w_others_nb, w_others_pub_ids_str]
-#
-#    raw_wo_others_pub_ids_set = set(raw_pub_ids_list) - set(raw_w_others_pub_ids_list)
-#    wo_others_pub_ids_list = sorted(list(raw_wo_others_pub_ids_set))
-#    wo_others_nb = all_nb - w_others_nb
-#    wo_others_pub_ids_str = "; ".join(wo_others_pub_ids_list)
-#    inst_country_stat_dic[wo_others_key] = [wo_others_nb, wo_others_pub_ids_str]
-#
-#    data_cols = [pub_kind_col, weight_col, pub_ids_col]
-#    data = []
-#    for k, v in inst_country_stat_dic.items():
-#        data.append([k,v[0],v[1]])
-#    inst_country_stat_df = pd.DataFrame(data, columns=data_cols)
-#
-#    return inst_country_stat_df
 
 
 def _set_geo_files_params(analysis_folder_path, institute_country):

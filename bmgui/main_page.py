@@ -92,7 +92,7 @@ class AppMain(tk.Tk):
 
         # Tracing Institute selection
         institute_val.trace('w', partial(bm_mu.update_app_page, self,
-                                         institute_widget=institute_val))
+                                         institute_val))
 
         # Handling exception
         threading.excepthook = bm_mu.except_hook

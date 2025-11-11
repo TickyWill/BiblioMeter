@@ -18,12 +18,12 @@ import bmfuncts.institute_globals as bm_ig
 
 
 def _try_init_dict(dic, init_key, set_key):
-    """Initializes 'dic' dict at key 'init_key' if init_key not None 
-    then returns 'init_key', else returns 'set_key'.
+    """Initializes 'dic' dict at key 'init_key' if init_key not an empty 
+    string then returns 'init_key', else returns 'set_key'.
 
     Args:
         dic (dict): the dict to initialize at 'init_key' if 'init_key' \
-        is not None.
+        is not an empty string.
         init_key (str): the key at which the dict should be initialized.
         set_key (str): the key to be used for the existing dict.
     Returns:
@@ -92,7 +92,7 @@ def _set_full(div):
 
 def _add_invalide(new_lab_otps_dict):
     """Adds 'INVALIDE' global, imported from 
-    'bmfuncts.intitute_globals' module, to OTPs list 
+    'bmfuncts.institute_globals' module, to OTPs list 
     of values of 'new_lab_otps_dict'.
 
     Args:
@@ -198,7 +198,7 @@ def _set_lab_otps_dict(dept_otps_dict, inst_dir):
     return lab_otps_dict
 
 
-def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None):
+def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv="", dpt=""):
     """Updates of the OTPs data for the given lab of the given service 
     of the given department.
 
@@ -212,9 +212,9 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv=None, dpt=None
         lb (str): The label of the laboratory of the service of the department.
         otps_list (list): The list of OTPs values.
         srv (str): The optional label of the service to be used as key \
-        (default = None).
+        (default = "").
         dpt (str): The optional label of the department to be used as key \
-        (default = None).
+        (default = "").
     Returns:
         (dict): The updated data as a hierarchical dict keyed by the department label \
         and valued by a dict keyed by the service label and valued by a dict keyed \
@@ -257,7 +257,7 @@ def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
         lab = _set_dir(otps_serv)
         dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                         otps_serv, lab, serv_otps_list,
-                                        srv=None, dpt=None)
+                                        srv="", dpt="")
     else:
         for otps_lab, otps_lab_df in otps_serv_df.groupby(otps_lab_col):
             lab_otps_list = _set_sorted_list2(otps_lab_df, otps_otp_col)
@@ -267,7 +267,7 @@ def _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
                 lab = otps_lab
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             otps_serv, lab, lab_otps_list,
-                                            srv=None, dpt=None)
+                                            srv="", dpt="")
     return dept_otps_dict
 
 
@@ -312,7 +312,7 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, build_otps_cols_dic,
             new_serv_otps_list = _set_sorted_list1(otps_lists)
             dept_otps_dict = _set_otps_dict(dept_otps_dict, otps_dept,
                                             serv, lab, new_serv_otps_list,
-                                            srv=serv, dpt=None)
+                                            srv=serv, dpt="")
         else:
             dept_otps_dict = _build_lab_otps_dict(otps_serv_df, otps_serv, otps_dept,
                                                   build_otps_cols_dic, dept_otps_dict,
@@ -321,12 +321,12 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, build_otps_cols_dic,
 
 
 def _build_special_depts_labels(otps_data_df, otps_dept_col, inst_dir):
-    """Builds a dict keyyed by special labels of OTPS departments and 
+    """Builds a dict keyed by special labels of OTPS departments and 
     valued for each key by a tuple composed of the department label 
     and service label to be used for the OTPs attribution.
 
     The label 'CLINATEC' is considered as a possible special department 
-    label in the OTPs data and it is attributed the tuple value 
+    label in the OTPs data, and it is attributed the tuple value 
     '("CLINATEC", "SCLIN")'. 
     In addition to the 'inst_dir' label, the labels containing the string 
     'DIR' are considered as special departments labels that are attributed 
@@ -400,7 +400,7 @@ def _read_otps_data(org_tup, wf_root_path, unknown_kw):
     # Building the dict giving the columns names of the OTPs data
     build_otps_cols_dic = _set_build_otps_cols(otps_cols)
 
-    # Seting useful aliases for OTPs source file
+    # Setting useful aliases for OTPs source file
     config_root_alias = bm_eg.EMPLOYEES_ARCHI["root"]
 
     # Setting useful paths for OTPs source file
@@ -451,10 +451,10 @@ def set_lab_otps(set_otp_params_list):
     # external to all the Institute departments
     inst_dir = _set_dir(institute.upper())
 
-    # Seting useful aliases
+    # Setting useful aliases
     unknown_alias = bp.UNKNOWN
 
-    # Getting the OTPs infos from OTPs source file)
+    # Getting the OTPs infos from OTPs source file
     otps_data_df, build_otps_cols_dic = _read_otps_data(org_tup, wf_root_path,
                                                         unknown_alias)
 
@@ -469,7 +469,7 @@ def set_lab_otps(set_otp_params_list):
     # Filling initial OTPs dict with infos provided by OTPs source file
     # The dict is a hierarchical dict keyed by department, services and labs
     # as they are defined in the source file but not as defined
-    # in the Instiute config file.
+    # in the Institute config file.
     dept_otps_dict = {}
     for otps_dept, otps_dept_df in otps_data_df.groupby(otps_dept_col):
         dept_otps_list = _set_sorted_list2(otps_dept_df, otps_otp_col)

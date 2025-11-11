@@ -22,7 +22,6 @@ __all__ = ['concat_dfs',
 
 
 # Standard library imports
-import csv
 import os
 import shutil
 from pathlib import Path
@@ -379,30 +378,6 @@ def _set_database_extract_info(wf_path, datatype, database):
     return database_folder_path, database_file_end, empty_file_folder
 
 
-def _correct_authors(init_au_txt):
-    init_au_txt = bp.remove_special_symbol(init_au_txt,
-                                           only_ascii=True, strip=True)
-    init_au_list = init_au_txt.split("; ")
-    corr_au_list = []
-    for init_au in init_au_list:
-        new_au = init_au
-        au_parts_list = init_au.split(", ")
-        new_au_parts_list = []
-        for au_part in au_parts_list:
-            if not "." in au_part:
-                new_au_parts_list.append(au_part)
-            else:
-                end_au_part = au_part
-        new_au_parts_list.append(end_au_part)
-        if len(new_au_parts_list)<=2: 
-            new_au = " ".join(new_au_parts_list)
-        else:
-            new_au = f'{new_au_parts_list[0]} {new_au_parts_list[-1]}'
-        corr_au_list.append(new_au)
-    new_au_txt = "; ".join(corr_au_list)
-    return new_au_txt
-
-
 def set_rawdata(wf_path, datatype, years_list, database):
     """Sets the rawdata to be used for the data type 'datatype' analysis.
 
@@ -447,7 +422,7 @@ def set_rawdata(wf_path, datatype, years_list, database):
             if not year_database_file_path:
                 year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                                   last_year_database_file_end)
-        
+
         rawdata_path_dict, _, _ = set_user_config(wf_path, year, bm_pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
         if os.path.exists(rawdata_path):
@@ -484,7 +459,7 @@ def create_folder(root_path, folder, verbose=False):
 
 
 def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=False):
-    """Creates a corpus folder with the required architecture.
+    """Creates a corpus folder with optionally the required internal architecture.
 
     It uses the global "ARCHI_YEAR" for the names of the sub_folders 
     and the `create_folder` function of the same module.
@@ -492,15 +467,15 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
     Args:
         wf_path (path): The full path of the working folder.
         corpus_year_folder (str): The name of the folder of the corpus.
+        create_archi_param (bool): If true, a full corpus folder architecture \
+        is built otherwise only the root corpus folder is created (default=True).
         verbose (bool): Optional status of prints (default = False).
     Returns:
         (str): End message recalling the corpus-year architecture created.
     """
-    if not create_archi_param:
-        # Creating folder for corpus-year working-folder
-        corpus_year_folder_path = create_folder(wf_path, corpus_year_folder, verbose=verbose)
-        message = f"{corpus_year_folder} folder created"
-    else:
+    # Creating folder for corpus-year working-folder
+    corpus_year_folder_path = create_folder(wf_path, corpus_year_folder, verbose=verbose)
+    if create_archi_param:
         # Setting useful alias
         archi_alias = bm_pg.ARCHI_YEAR
         extract_folder_alias = bm_pg.ARCHI_EXTRACT["root"]
@@ -516,7 +491,6 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
             _ = create_folder(year_bdd_extract_folder_path, archiv_folder_alias, verbose=verbose)
 
         # Creating architecture for corpus-year working-folder
-        corpus_year_folder_path = create_folder(wf_path, corpus_year_folder, verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose=verbose)
@@ -548,6 +522,8 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
         _ = create_folder(wos_folder, archi_alias["rawdata"], verbose=verbose)
 
         message = f"Architecture created for {corpus_year_folder} folder"
+    else:
+        message = f"{corpus_year_folder} folder created"
     return message
 
 

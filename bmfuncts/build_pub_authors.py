@@ -296,8 +296,8 @@ def _set_correction_file_params(institute, wf_path):
         institute (str): The institute name.
         wf_path (path): Full path to working folder.
     Returns:
-        (tup): The full path to the file where mispelled author names \
-        are reported, the full path to the file where matadata errors and \
+        (tup): The full path to the file where misspelled author names \
+        are reported, the full path to the file where metadata errors and \
         authors to remove are reported,the sheet name containing the \
         metadata errors and the sheet name containing the authors to remove.
     """
@@ -328,10 +328,10 @@ def _check_names_spelling(init_df, ortho_path,
     Args:
         init_df (dataframe): Publications list with one row per author \
         where author names should be corrected.
-        ortho_path (path): The full path to the file of the mispelled names.
+        ortho_path (path): The full path to the file of the misspelled names.
         bm_auth_names_list (list): Useful column names in 'init_df' \
         dataframe = [full name, last name, first name].
-        bm_ortho_cols_list (list): Useful column names in the data of mispelled \
+        bm_ortho_cols_list (list): Useful column names in the data of misspelled \
         author names = [publication last name, publication first name, \
         employee last name, employee first name].
     Returns:
@@ -403,7 +403,7 @@ def _check_names_to_replace(corpus_year, init_df,
         employee last name, employee first name, corpus year].
     Returns:
         (dataframe): Publications list with one row per author where \
-        author names have been corrected for specific publicatons.
+        author names have been corrected for specific publications.
     """
     # Setting parameters from args
     (pub_fullname_col, pub_last_name_col,
@@ -506,7 +506,7 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet,
                 drop_df = concat_dfs([drop_df, row_to_drop_df], concat_ignore_index=True)
 
     # Removing the rows to drop from the dataframe to update
-    new_pub_df = concat_dfs([pub_df, drop_df], keep=False)
+    new_pub_df = concat_dfs([pub_df, drop_df], keep="False")
 
     print("    External authors removed")
     return new_pub_df

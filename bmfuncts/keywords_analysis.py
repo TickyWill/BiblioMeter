@@ -168,7 +168,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
 
     This is done through the following steps:
 
-    1. Gets deduplication results of the parsing step trough the \
+    1. Gets deduplication results of the parsing step through the \
     `read_final_dedup` function imported from `bmfuncts.read_final_results` module.
     2. Builds the dataframe of publications list to be analyzed specifying \
     the useful columns;

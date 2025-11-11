@@ -83,7 +83,7 @@ def _set_steps_save_params_dic():
     """Sets dict giving the file name base for saving
     intermediate results.
 
-    The dict is keyyed by the step index and valued name (str) of the data
+    The dict is keyed by the step index and valued name (str) of the data
     to be saved.
 
     Returns:
@@ -335,7 +335,7 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
     """
     # Setting parameters values from 'bm_full_cols_list'
     bm_full_cols_list = col_lists_dic['bm_full_cols_list']
-    bm_final_cols_list = col_lists_dic['bm_final_cols_list'] 
+    bm_final_cols_list = col_lists_dic['bm_final_cols_list']
 
     # Setting parameters from optional arg
     if progress_param:
@@ -488,7 +488,7 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
     imported from the `BiblioParsing` package.
 
     Args:
-        sub_addresses_params (list): Composed of of the full path (path) to \
+        sub_addresses_params (list): Composed of the full path (path) to \
         the working folder, of the 4 digits year (str) of the corpus and of \
         the full path to the folder where final results are saved (path).
         pub_addresses_cols_dic (dict): The dict giving selected columns names \

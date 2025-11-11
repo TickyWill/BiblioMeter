@@ -167,6 +167,10 @@ def _get_file(self, institute_select, datatype_select, set_inst_param, create_ar
         self (instance): Instance of the calling page.
         institute_select (str): Selected Institute name.
         datatype_select (str): Selected datatype.
+        set_inst_param (bool): Parameter for getting rid of setting \
+        Institute parameters if False.
+        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        is built otherwise only the root corpus folder is created (default=True).
     """
     # Getting new working directory
     dialog_title = "Choisir un nouveau dossier de travail"
@@ -196,6 +200,10 @@ def set_wf_widget_param(self, institute_select, inst_wf,
         institute_select (str): Selected Institute name.
         inst_wf (str): Full path as string to the working folder.
         datatype_select (str): Selected datatype.
+        set_inst_param (bool): Parameter for getting rid of setting \
+        Institute parameters if False.
+        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        is built otherwise only the root corpus folder is created (default=True).
     """
     # Setting wf label widget
     wf_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -256,6 +264,8 @@ def _create_corpus(self, inst_wf, create_arcchi_param):
     Args:
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
+        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        is built otherwise only the root corpus folder is created (default=True).
     """
     corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_arcchi_param)
     wf_path = Path(inst_wf)
@@ -299,6 +309,8 @@ def set_corpuses_widgets_param(self, inst_wf, create_arcchi_param):
     Args:
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
+        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        is built otherwise only the root corpus folder is created (default=True).
     """
 
     # Setting corpuses label widget
@@ -336,8 +348,9 @@ def _update_corpuses(self, inst_wf, create_arcchi_param):
     Args:
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
+        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        is built otherwise only the root corpus folder is created (default=True).
     """
-
     corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_arcchi_param)
     corpuses_val_to_set = ""
     wf_path = Path(inst_wf)
@@ -359,7 +372,6 @@ def _update_datatype(self, *args, datatype_widget=None):
         self (instance): Instance of the calling page.
         datatype_widget (tk.StringVar): For tracking value of datatype selection.
     """
-
     datatype_select = datatype_widget.get()
     self.datatype_optionbutton.configure(state='disabled')
 
@@ -399,14 +411,15 @@ def _update_datatype(self, *args, datatype_widget=None):
                     datatype_select, set_inst_param)
 
 
-def update_app_page(self, *args, institute_widget=None):
+def update_app_page(self, *args):
     """Gets the selected Institute and 'datatype' widgets parameters.
     Then, trace change in datatype selection to update page parameters.
 
     Args:
         self (instance): Instance of the calling page.
-        institute_widget (tk.StringVar): For tracking value of Institute selection.
     """
+    # Getting from args the institute_widget that tracks value of Institute selection
+    institute_widget = args[0]
     institute_select = institute_widget.get()
 
     # Setting default values for datatype selection

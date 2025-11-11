@@ -35,6 +35,8 @@ def set_general_params(master, institute, wf_path, datatype, set_inst_param):
         wf_path (path): The full path to the working folder.
         datatype (str): The data combination type \
         of corpuses databases.
+        set_inst_param (bool): Parameter for getting rid of setting \
+        Institute parameters if False.
     """
     master.institute = institute
     master.wf_path = wf_path
