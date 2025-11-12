@@ -170,7 +170,7 @@ def _get_file(self, institute_select, datatype_select, set_inst_param, create_ar
         set_inst_param (bool): Parameter for getting rid of setting \
         Institute parameters if False.
         create_arcchi_param (bool): If true, a full corpus folder architecture \
-        is built otherwise only the root corpus folder is created (default=True).
+        is built otherwise only the root corpus folder is created.
     """
     # Getting new working directory
     dialog_title = "Choisir un nouveau dossier de travail"
@@ -203,7 +203,7 @@ def set_wf_widget_param(self, institute_select, inst_wf,
         set_inst_param (bool): Parameter for getting rid of setting \
         Institute parameters if False.
         create_arcchi_param (bool): If true, a full corpus folder architecture \
-        is built otherwise only the root corpus folder is created (default=True).
+        is built otherwise only the root corpus folder is created.
     """
     # Setting wf label widget
     wf_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
@@ -265,7 +265,7 @@ def _create_corpus(self, inst_wf, create_arcchi_param):
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
         create_arcchi_param (bool): If true, a full corpus folder architecture \
-        is built otherwise only the root corpus folder is created (default=True).
+        is built otherwise only the root corpus folder is created.
     """
     corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_arcchi_param)
     wf_path = Path(inst_wf)
@@ -310,7 +310,7 @@ def set_corpuses_widgets_param(self, inst_wf, create_arcchi_param):
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
         create_arcchi_param (bool): If true, a full corpus folder architecture \
-        is built otherwise only the root corpus folder is created (default=True).
+        is built otherwise only the root corpus folder is created.
     """
 
     # Setting corpuses label widget
@@ -349,7 +349,7 @@ def _update_corpuses(self, inst_wf, create_arcchi_param):
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
         create_arcchi_param (bool): If true, a full corpus folder architecture \
-        is built otherwise only the root corpus folder is created (default=True).
+        is built otherwise only the root corpus folder is created.
     """
     corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_arcchi_param)
     corpuses_val_to_set = ""

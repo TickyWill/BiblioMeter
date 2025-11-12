@@ -139,11 +139,14 @@ def _launch_update_if_db(self, master,
     return update_status
 
 
-def _missing_pub_file_year_check(master, if_tup, all_years_list_folder, progress_callback):
-    """Launches updating impact-factors database of the Institute.
+def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress_callback):
+    """Builds message about update status of IFs in the publications list 
+    of each corpus depending on the availability of the publications list 
+    and the completion status of the IFs data.
 
-    This is done through the `update_inst_if_database` function 
-    imported from `bmfuncts.update_impact_factors` module.
+    In addition, the IFs are updated in the full publications list resulting 
+    from the concatenation over the corpus years depending on status of 
+    the 'bm_pg.LISTES_CONCAT' global.
 
     Args:
         master (class): `bmgui.main_page.AppMain` class.
@@ -327,7 +330,7 @@ def _update_pub_if(self, master, progress_callback):
             missing_pub_file_year = corpus_year
         progress_callback(progress_bar_state)
     if_tup = missing_pub_file_year, if_database_complete, progress_bar_state
-    _missing_pub_file_year_check(master, if_tup, all_years_list_folder, progress_callback)
+    _set_if_update_final_message(master, if_tup, all_years_list_folder, progress_callback)
 
 
 def _launch_update_pub_if(self, master, progress_callback):

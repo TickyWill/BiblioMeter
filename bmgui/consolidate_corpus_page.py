@@ -360,7 +360,11 @@ def _set_homonymies_year_files_param(wf_path, year_select):
         wf_path (path): Full path to working folder.
         year_select (str): Corpus year defined by 4 digits.
     Returns:
-        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        (tup): (The full path to the file of the list of publications with \
+        one row per author found in the employees data, The full path to the \
+        file of data for homonymies resolution, The full path to the folder \
+        of data for homonymies resolution, The file name of data for \
+        homonymies resolution).
     """
     # Setting useful aliases
     merge_data_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
@@ -513,7 +517,9 @@ def _set_otp_year_files_param(wf_path, year_select):
         wf_path (path): Full path to working folder.
         year_select (str): Corpus year defined by 4 digits.
     Returns:
-        (tup): (!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!).
+        (tup): (The full path to the file of data of homonymies resolution, \
+        The full path to the folder of data for OTPs attribution, \
+        The file-name base of data for OTPs attribution).
     """
     # Setting useful aliases
     homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
