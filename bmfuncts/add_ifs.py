@@ -508,7 +508,7 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_
     'missing_issn_df'. The unknown values are identified by the 'unknown_kw' word.
 
     Args:
-        if_df (dtaframe): The built data through the `_build_issn_df` 
+        if_df (dataframe): The built data through the `_build_issn_df` 
         internal function.
         inst_issn_df (dataframe): The built data through the 
         `_clean_corpus_df` internal function.
