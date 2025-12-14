@@ -23,7 +23,7 @@ from bmfuncts.useful_functs import concat_dfs
 
 def _set_parse_cols_dic():
     """Builds a dict setting selected columns names for the process 
-    of getting list of unknown country per address and per publication.
+    of getting list of unknown countries per address and per publication.
 
     Returns:
         (dict): The built dict.
@@ -90,7 +90,7 @@ def _build_string_from_list(input_list, sep_str):
     return output_str
 
 
-def _remove_unknown_country(input_addr_str, sep_str):
+def _remove_unknown_country(input_addr_str, sep_str, unknown_country):
     """Removes unknown-country key from an address.
 
     The unknown-country key is potentially added when  
@@ -102,11 +102,12 @@ def _remove_unknown_country(input_addr_str, sep_str):
         input_addr_str (str): The list of string items to be joined.
         sep_str (str): The separator to be used for the split and join \
         including space if required.
+        unknown_country (str): Key word for unknown countries.
     Returns:
         (str): The built final address.
     """
     output_addr_list = _build_list_from_str(input_addr_str, sep_str)
-    while output_addr_list[-1]==bm_pg.UNKNOWN_COUNTRY:
+    while output_addr_list[-1]==unknown_country:
         output_addr_list = output_addr_list[:-1]
     output_addr_str = _build_string_from_list(output_addr_list, sep_str)
     return output_addr_str
@@ -176,7 +177,7 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
                 address_id_df = pub_id_addresses_df[pub_id_addresses_df[address_id_col]==false_address_id]
                 raw_false_address = address_id_df[address_col].to_list()[0]
                 std_false_address = bp.standardize_address(raw_false_address)
-                false_address = _remove_unknown_country(std_false_address, ", ")
+                false_address = _remove_unknown_country(std_false_address, ", ", unknown_country)
 
                 # Building the IDs list of authors that have the false address in their affiliations list
                 false_address_auth_ids_list = []
@@ -187,7 +188,8 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
                     author_addresses_str = row[address_col]
                     author_addresses_list = _build_list_from_str(author_addresses_str, "; ")
                     author_addresses_list = [bp.standardize_address(x) for x in author_addresses_list]
-                    author_addresses_list = [_remove_unknown_country(x, ", ") for x in author_addresses_list]
+                    author_addresses_list = [_remove_unknown_country(x, ", ", unknown_country)
+                                             for x in author_addresses_list]
 
                     # Searching for false address in the author's adresses list to append author's ID
                     if false_address in author_addresses_list:
@@ -297,7 +299,8 @@ def _correct_parsing_addresses(addresses_correct_dfs, parse_cols_dic, parsing_ad
     return message 
 
 
-def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic, parsing_authsinst_path, norm_dicts):
+def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
+                               parsing_authsinst_path, norm_dicts, unknown_country):
     """Corrects the parsing data of authors-institutions using the data 
     of unknown countries corrected by the user.
 
@@ -317,6 +320,7 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic, parsing_au
         norm_dicts (list): Composed of the data per country for normalizing the authors' \
         affiliations (dict), the data (dict) of affiliations types and the data (dict) \
         of towns per country.
+        unknown_country (str): Key word for unknown countries.
     Returns:
         (str): Final message.
     """
@@ -350,7 +354,7 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic, parsing_au
                         author_addresses_list = []
                         for address in raw_author_addresses_list:
                             std_address_str = bp.standardize_address(address)
-                            address_str = _remove_unknown_country(std_address_str, ", ")
+                            address_str = _remove_unknown_country(std_address_str, ", ", unknown_country)
                             author_addresses_list.append(address_str)
 
                         # Finding index of false address in 'author_addresses_list'
@@ -373,9 +377,9 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic, parsing_au
                             auth_addr_raw_inst_list = author_addr_aff_tup.raw_inst_list
                             full_raw_inst_list.append(auth_addr_raw_inst_list)
 
-                        addr_norm_inst_list = _drop_multiple_item(addr_norm_inst_list, "empty")
+                        addr_norm_inst_list = _drop_multiple_item(addr_norm_inst_list, bp.EMPTY)
                         norm_inst_str = _build_string_from_list(addr_norm_inst_list, ";")
-                        full_raw_inst_list = _drop_multiple_item(full_raw_inst_list, "empty")
+                        full_raw_inst_list = _drop_multiple_item(full_raw_inst_list, bp.EMPTY)
                         raw_inst_str = _build_string_from_list(full_raw_inst_list, ";")
 
                         pub_id_auths_inst_df.loc[row_num, norm_inst_col] = norm_inst_str                   
@@ -419,7 +423,7 @@ def set_parse_inst_params(institute, wf_path):
 
 
 def correct_parsing(institute, wf_path, parsing_path, parsing_dict,
-                    item_filename_dict, test_txt=""):
+                    item_filename_dict, unknown_country, test_txt=""):
     """Corrects the parsing data of countries, addresses and authors-institutions 
     using the data of unknown countries corrected by the user.
 
@@ -441,6 +445,7 @@ def correct_parsing(institute, wf_path, parsing_path, parsing_dict,
         imported as bp and valued by the data (dataframes) of parsing results.
         item_filename_dict (dict): Dict keyed by the parsing items \
         and valued by the file names for saving the parsing results.
+        unknown_country (str): Key word for unknown countries.
         test_txt (str): For optional modification of the file names \
         for saving the corrected parsing data during code test (default="").
     Returns:
@@ -488,7 +493,7 @@ def correct_parsing(institute, wf_path, parsing_path, parsing_dict,
         # Correcting the authors-institutions parsing data using the user's correction of the unknown countries
         authsinst_correct_dfs = [auth_inst_df, correct_addresses_df]
         _ = _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic, parsing_authsinst_path,
-                                       norm_dicts)
+                                       norm_dicts, unknown_country)
         correct_status = True
         empty_addresses_df = pd.DataFrame(columns=correct_addresses_df.columns)
         empty_addresses_df.to_excel(correct_addresses_path, index=False)

@@ -620,7 +620,7 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
         (tup): (employees data (df), adapted search depth (int), \
         list of available years of employees data).    
     """
-    print(f"Setting the adequate selection of employees data for {corpus_year} corpus...")
+    print(f"\nSetting the adequate selection of employees data for {corpus_year} corpus...")
 
     # Setting useful columns aliases
     last_name_col_alias = bm_eg.EMPLOYEES_USEFUL_COLS['name']

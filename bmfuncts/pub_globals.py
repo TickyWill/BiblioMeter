@@ -49,7 +49,6 @@ __all__ = ['ANALYSIS_IF',
            'STAT_INST_TYPES_LIST',
            'STAT_ROW_NAMES',
            'TSV_SAVE_EXTENT',
-           'UNKNOWN_COUNTRY',
            'XL_INDEX_BASE', 
           ]
 
@@ -62,8 +61,6 @@ import bmfuncts.employees_globals as bm_eg
 # Setting the databases of corpuses extraction
 BDD_LIST = [bp.SCOPUS, bp.WOS]
 FIRST_BDD = bp.SCOPUS
-
-UNKNOWN_COUNTRY = bp.UNKNOWN
 
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]

@@ -96,27 +96,31 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
          wrong_affil_types_dict, raw_institutions_status) = return_tup
 
         if not wrong_affil_types_dict:
-            info_title = "- Information -"
-            info_text = ("L'analyse géographique et l'analyse des collaborations "
-                         f"a été effectuée pour l'année {year_select}.")
             if raw_institutions_status:
-                info_text += (f"\nToutes les affiliations ont été normalisées.")
+                info_title = "- Information -"
+                info_text = ("L'analyse des collaborations "
+                             f"a été effectuée pour l'année {year_select}."
+                             f"\nToutes les affiliations ont été normalisées."
+                             "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
+                             f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
+                             f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
             else:
-                info_text += (f"\nDes affiliations non normalisées subsistent.")
-                
-            info_text += ("\n\nLes fichiers obtenus ont été créés dans les dossiers :"
-                          f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
-                          f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
+                info_title = "- Information -"
+                info_text = ("L'analyse des collaborations "
+                             f"a été interrompue pour l'année {year_select}."
+                             f"\nDes affiliations non normalisées subsistent :"
+                             "\n\n  1- Complétez la définition des affiliations normalisées;"
+                             "\n\n  2- Relancez l'analyse des collaborations.")
         else:
             info_title = "- Attention -"
-            info_text = ("L'analyse géographique et l'analyse des collaborations "
+            info_text = ("L'analyse des collaborations "
                          f"a été abandonnée pour l'année {year_select}."
                          "\n\nDes types d'affiliations erronés ont été rencontrés dans le fichier "
                          f"suivant : \n    '{country_affil_file_path}"
-                         f"\n\n1- Corriger dans ce fichier les types d'affiliation suivants:")
+                         f"\n\n1- Corrigez dans ce fichier les types d'affiliation suivants:")
             for k,v in wrong_affil_types_dict.items():
                 info_text += f"\n        {k}: {v}"
-            info_text +="\n\n2- Relancer l'analyse des collaborations"
+            info_text +="\n\n2- Relancez l'analyse des collaborations"
         messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)

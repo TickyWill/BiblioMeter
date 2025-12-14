@@ -232,10 +232,9 @@ def _launch_parsing(master, corpus_year, database_type,
         _progress_callback(95)
 
         # Building the data for unknown country correction by the user
-        unknown_country = bp.UNKNOWN   #.capitalize()
         unkown_countries_empty = build_and_save_unknown_country_data(parsing_dict,
                                                                      _parsing_path,
-                                                                     unknown_country,
+                                                                     bp.UNKNOWN_COUNTRY,
                                                                     _database_type,
                                                                      corpus_year)
         _progress_callback(100)
@@ -354,14 +353,14 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
         correct_status = correct_parsing(master.institute, master.wf_path, scopus_parse_path,
-                                         scopus_parsing_dict, item_filename_dict)
+                                         scopus_parsing_dict, item_filename_dict, bp.UNKNOWN_COUNTRY)
         if correct_status:
             scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                     parsing_save_extent)
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
         correct_status = correct_parsing(master.institute, master.wf_path, wos_parse_path,
-                                         wos_parsing_dict, item_filename_dict,)
+                                         wos_parsing_dict, item_filename_dict, bp.UNKNOWN_COUNTRY)
         if correct_status:
             wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                                  parsing_save_extent)
