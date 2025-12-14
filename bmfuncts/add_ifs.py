@@ -221,7 +221,7 @@ def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
                                                              (row[journal_col].upper()),
                                                              axis=1)
     inst_issn_df = pd.DataFrame()
-    for _ , dg in init_inst_issn_df.groupby(journal_col):
+    for dg_journal, dg in init_inst_issn_df.groupby(journal_col):
 
         issn_list = list(set(dg[issn_col].to_list()) - {unknown_kw})
         if not issn_list:
@@ -293,7 +293,6 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
         (tup): (Recast corpus data (dataframe), \
         Data (dataframe) of journals with their ISSN and eISSN IDs).
     """
-
     # Setting parameters value from args
     add_ifs_col_dic, base_col_list = add_ifs_col_tup
     col_keys = ['journal_col', 'issn_col', 'eissn_col']
@@ -533,17 +532,18 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_
         row_issn = row[issn_col]
         row_most_recent_year_if = row[most_recent_year_if_col]
         row_corpus_year_if = row[corpus_year_if_col]
-        if row_issn not in inst_issn_list and row_issn not in inst_eissn_list:
+        if row_issn in inst_issn_list or row_issn in inst_eissn_list:
+            if unknown_kw in [row_most_recent_year_if, row_corpus_year_if]:
+                row_journal = row[journal_col]
+                row[issn_col] = _get_id(inst_issn_df, row_journal,
+                                        journal_col, issn_col,
+                                        unknown_kw)
+                row[eissn_col] = _get_id(inst_issn_df, row_journal,
+                                         journal_col, eissn_col,
+                                         unknown_kw)
+                missing_if_df = concat_dfs([missing_if_df, row.to_frame().T])
+        else:
             missing_issn_df = concat_dfs([missing_issn_df, row.to_frame().T])
-        elif unknown_kw in [row_most_recent_year_if, row_corpus_year_if]:
-            row_journal = row[journal_col]
-            row[issn_col] = _get_id(inst_issn_df, row_journal,
-                                    journal_col, issn_col,
-                                    unknown_kw)
-            row[eissn_col] = _get_id(inst_issn_df, row_journal,
-                                     journal_col, eissn_col,
-                                     unknown_kw)
-            missing_if_df = concat_dfs([missing_if_df, row.to_frame().T])
     return missing_issn_df, missing_if_df
 
 

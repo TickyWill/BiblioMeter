@@ -1,6 +1,6 @@
 # Application Release Backlog
 
-## Release 6.2.0 - 2025/11/12
+## Release 6.2.0 - 2025/12/xx
 * **Summary**: This release corresponds to a deep refactoring of the code and to the update of the collaborations analysis with the enhancement of the publications statistics provided by the affiliations analysis of the authors.
 * **Features**:
   - Feature 1: Update of the "\_build_inst_type_inst_df" and "\_build_inst_type_country_df" functions of "bmfuncts.build_institutions_stat" module to add columns with number of publications per document type to the statistics results.
@@ -9,6 +9,7 @@
   - Feature 4: Creation of "bmgui.gui_utils" module of functions shared by all GUI pages.
   - Feature 5: Creation of "bmgui.pages_classes" module of classes shared by pages.
   - Feature 6: Creation of "bmgui.main_utils" module of useful functions from split of for "bmgui.main_page".
+  - Feature 7: Creation of "bmfuncts.correct_parsing" module to help the user in correcting unknown countries in authors' addresses.
 * **Improvements**:
   - Improvement 1: Update of the "bmfuncts.coupling_analysis" module to integrate the use of the above created or updated functions.
   - Improvement 2: Update of the "bmfuncts.build_pub_addresses" and the "bmfuncts.useful_functs" modules to integrate the use of the "standardize_address" function as imported from "BiblioParsing" package.
@@ -16,8 +17,11 @@
   - Improvement 4: Refactored "bmfunct" package by creating internal functions for columns setting and paths setting.
   - Improvement 5: Introduced in "bmgui" package a single arg to make available everywhere the selected parameters by the user on main page and refactored accordingly the "bmfuncts" package.
   - Improvement 6: Updated "existing_corpuses" function of "bmgui.gui_utils" module to walk only the folder of rawdata and not the sub-folders.
+  - Improvement 7: Updated "\_launch_dedup" internal function of "bmgui.parse_corpus_page" module with using the functions of "bmfuncts.correct_parsing" new module.
+  - Improvement 8: Updated "build_institute_pubs_authors" function of "bmfuncts.build_pub_authors" module for saving data of droped publications lines in parsing results for further check of the selection process of the Institute's publications. 
 * **Bug Fixes**:
-  - None.
+  - Bug 1: Inversion of file paths when calling "add_if" function of "bmfuncts.add_ifs" module in the "bmgui.update_if_page" module.
+  - Bug 2: Partial update of IFs database with data of missing ISSNs and missing IFs set by the user fixed by creation of "\_clean_journals_data" and "\_clean_and_save_if_db" internal functions to "bmfuncts.update_impact_factors" module.
 * **Known Issues**:
   - None.
 * **API Changes**:

@@ -92,16 +92,21 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
     if answer:
         return_tup = coupling_analysis(params_list, progress_callback,
                                        verbose=True)
-        (analysis_folder, geo_analysis_folder, inst_analysis_folder,
-         country_affil_file_path, wrong_affil_types_dict) = return_tup
+        (analysis_folder, geo_analysis_folder, inst_analysis_folder, country_affil_file_path,
+         wrong_affil_types_dict, raw_institutions_status) = return_tup
 
         if not wrong_affil_types_dict:
             info_title = "- Information -"
             info_text = ("L'analyse géographique et l'analyse des collaborations "
-                         f"a été effectuée pour l'année {year_select}."
-                         "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
-                         f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
-                         f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
+                         f"a été effectuée pour l'année {year_select}.")
+            if raw_institutions_status:
+                info_text += (f"\nToutes les affiliations ont été normalisées.")
+            else:
+                info_text += (f"\nDes affiliations non normalisées subsistent.")
+                
+            info_text += ("\n\nLes fichiers obtenus ont été créés dans les dossiers :"
+                          f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
+                          f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
         else:
             info_title = "- Attention -"
             info_text = ("L'analyse géographique et l'analyse des collaborations "

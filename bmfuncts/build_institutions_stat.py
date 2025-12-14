@@ -370,6 +370,7 @@ def _build_inst_stat_data(institute, distrib_institutions_df, pub_ids_lists, ins
         by dicts keyed by the statistical keys (str) given by the 'STAT_FILE_DICT' \
         global and valued by the built data (dataframe) of the statistical results.
     """
+    print("    Computing institutions statistics...")
     # Setting useful columns list
     lists_tup = _build_useful_cols_lists(inst_stat_cols_dic)
     (base_cols_list, inst_type_inst_cols, inst_type_pub_id_cols, inst_type_country_cols) = lists_tup
@@ -468,7 +469,7 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
     """
-    print("    Computing institutions statistics")
+    print("    Building distributed institutions and institutions statistics...")
 
     # Setting useful col names
     inst_stat_cols_dic = _set_inst_stat_cols()
@@ -500,6 +501,8 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
     save_formatted_df_to_xlsx(inst_analysis_folder_path, distrib_inst_filename_alias,
                               distrib_institutions_df, distrib_inst_df_title,
                               sheet_name)
+    print("        Distributed institutions and institutions statistics built and saved.")
+    
 
     # Building and saving as multisheet openpyxl files the data of institutions statistics
     inst_type_data_dict = _build_inst_stat_data(institute, distrib_institutions_df,

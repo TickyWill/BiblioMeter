@@ -718,7 +718,8 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
 
             # Consolidating publications list
             conso_tup = built_final_pub_list(params_list)
-            end_message, pub_nb, split_ratio, if_database_complete = conso_tup
+            (end_message, pub_nb, invalids_nb,
+             split_ratio, if_database_complete) = conso_tup
             print(end_message)
             _progress_callback(70)
             if bm_pg.LISTES_CONCAT:
@@ -732,6 +733,8 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
             _info_text = (f"Une liste consolidée de {pub_nb} publications a été créée "
                          f"pour l'année {year_select} dans le dossier :\n\n '{pub_list_folder_path}' "
                          f"\n\nsous le nom :   '{pub_list_file}'."
+                         f"\n\nUne liste de {invalids_nb} publications invalides "
+                          "a également été créée dans le même dossier."
                          "\n\nLes IFs disponibles ont été automatiquement attribués.")
             if if_database_complete:
                 _info_text += ("\n\nLa base de données des facteurs d'impact étant complète, "

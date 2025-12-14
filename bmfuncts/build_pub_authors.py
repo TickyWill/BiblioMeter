@@ -289,20 +289,23 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
     return filt_authors_inst_
 
 
-def _set_correction_file_params(institute, wf_path):
+def _set_correction_file_params(institute, wf_path, corpus_year):
     """Sets the files paths and sheet names for authors names correction.
 
     Args:
         institute (str): The institute name.
         wf_path (path): Full path to working folder.
+        corpus_year (str): The 4 digits year of the corpus.
     Returns:
         (tup): The full path to the file where misspelled author names \
         are reported, the full path to the file where metadata errors and \
         authors to remove are reported,the sheet name containing the \
         metadata errors and the sheet name containing the authors to remove.
     """
-
     # Setting useful aliases
+    drop_articles_folder = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    drop_articles_file = bm_pg.ARCHI_YEAR["drop articles file name"]
+    drop_authsinst_file = bm_pg.ARCHI_YEAR["drop authsinst file name"]
     orphan_treat_root = bm_pg.ARCHI_ORPHAN["root"]
     orthograph_file_name = bm_pg.ARCHI_ORPHAN["orthograph file"]
     complements_file_name = bm_pg.ARCHI_ORPHAN["complementary file"]
@@ -310,10 +313,16 @@ def _set_correction_file_params(institute, wf_path):
     remove_sheet = bm_pg.SHEET_NAMES_ORPHAN["to remove"] + institute
 
     # Setting useful path
+    year_drop_articles_folder = Path(corpus_year) / Path(drop_articles_folder)
+    drop_articles_path = wf_path / Path(year_drop_articles_folder) / Path(drop_articles_file)
+    drop_authsinst_path = wf_path / Path(year_drop_articles_folder) / Path(drop_authsinst_file)
     ortho_path = wf_path / Path(orphan_treat_root) / Path(orthograph_file_name)
     complements_path = wf_path / Path(orphan_treat_root) / Path(complements_file_name)
+    
+    paths_list = [drop_articles_path, drop_authsinst_path, ortho_path, complements_path]
+    sheets_list = [replace_sheet, remove_sheet]
 
-    return ortho_path, complements_path, replace_sheet, remove_sheet
+    return paths_list, sheets_list
 
 
 def _check_names_spelling(init_df, ortho_path,
@@ -774,8 +783,9 @@ def build_institute_pubs_authors(params_list):
     fullname_col = bm_auth_names_list[0]
 
     # Setting files parameters for authors names correction
-    correction_tup = _set_correction_file_params(institute, wf_path)
-    ortho_path, complements_path, replace_sheet, remove_sheet = correction_tup
+    paths_list, sheets_list = _set_correction_file_params(institute, wf_path, corpus_year)
+    drop_articles_path, drop_authsinst_path, ortho_path, complements_path = paths_list
+    replace_sheet, remove_sheet = sheets_list
 
     # Getting input-data from parsing ones
     return_tup = _get_input_data(params_list, bp_cols_list)
@@ -834,4 +844,12 @@ def build_institute_pubs_authors(params_list):
     # Setting columns order
     reorder_cols_list = bm_auth_names_list + [authors_list_col]
     inst_merged_df = _reorder_cols(inst_merged_df, reorder_cols_list)
+
+    # Building and save data of dropped publications
+    final_pub_ids_list = list(set(inst_merged_df[pub_id_col].to_list()))
+    drop_articles_df = articles_df[~articles_df[pub_id_col].isin(final_pub_ids_list)]
+    drop_authorsinst_df = authorsinst_df[~authorsinst_df[pub_id_col].isin(final_pub_ids_list)]    
+    drop_articles_df.to_excel(drop_articles_path, index=False)
+    drop_authorsinst_df.to_excel(drop_authsinst_path, index=False)
+
     return inst_merged_df

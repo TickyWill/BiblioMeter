@@ -347,6 +347,7 @@ def built_final_pub_list(params_list):
     col_dict = {pub_id_col: 1}
     consolidate_pub_list_df = reorder_df(consolidate_pub_list_df, col_dict)
     invalids_df = reorder_df(invalids_df, col_dict)
+    invalids_nb = len(invalids_df)
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
@@ -384,7 +385,7 @@ def built_final_pub_list(params_list):
                     "in several files by group of document types. \n"
                     f"{final_save_message}")
 
-    return end_message, pub_nb, split_ratio, if_database_complete
+    return end_message, pub_nb, invalids_nb, split_ratio, if_database_complete
 
 
 def _set_concat_pub_list_path(wf_path, available_pub_lists):

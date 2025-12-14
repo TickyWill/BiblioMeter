@@ -74,7 +74,7 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
     for country, country_raw_inst_df in raw_institutions_df.groupby(countries_col):
         if country in unkept_country_list:
             unkept_institutions_list = unkept_institutions_dict[country][raw_affil_col].to_list()
-            unkept_institutions_list_mod = [institution.translate(bp.SYMB_CHANGE)
+            unkept_institutions_list_mod = [institution.translate(bp.SYMB_CHANGE).strip()
                                             for institution in unkept_institutions_list]
             for idx_row, inst_row in country_raw_inst_df.iterrows():
                 inst_row_list = [x.strip() for x in inst_row[institution_col].split(";")]
@@ -154,7 +154,8 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
         per address with attached institutions list  for each publication ID, \
         The full path (path) to the file of countries-affiliations data, \
         The dict keyed by countries and valued by the list of normalised affiliation types \
-        to be corrected).
+        to be corrected, The status (bool) of the raw-affiliations data \
+        (True if no remaining raw-affiliations)).
     """
     print("    Building normalized and raw affiliations data...")
 
@@ -191,6 +192,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
                                                 verbose=False,
                                                 progress_param=inter_progress_param)
     countries_df, norm_institutions_df, raw_institutions_df, wrong_affil_types_dict = return_tup
+    raw_institutions_status = False
     if not wrong_affil_types_dict:
         if progress_param:
             progress_callback(inter_progress_1)
@@ -220,6 +222,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
                                                   cols_list)
         raw_institutions_df = raw_institutions_df.sort_values(by=[pub_id_col,
                                                                   address_id_col])
+        raw_institutions_status = raw_institutions_df.empty
         if verbose:
             print("      Unkept institutions removed from not-yet-normalized "
                   "institutions data")
@@ -241,7 +244,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
                   "institutions data saved")
         if progress_param:
             progress_callback(final_progress)
-    return countries_df, norm_institutions_df, wrong_affil_types_dict
+    return countries_df, norm_institutions_df, wrong_affil_types_dict, raw_institutions_status
 
 
 def _set_co_files_params(institute, wf_path, corpus_year):
@@ -375,10 +378,15 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
                                               co_cols_dic, files_list, sub_paths_list,
                                               progress_param=progress_param,
                                               verbose=verbose)
-    (countries_df, norm_institutions_df, wrong_affil_types_dict) = return_tup
+    (countries_df, norm_institutions_df,
+     wrong_affil_types_dict, raw_institutions_status) = return_tup
     if not wrong_affil_types_dict:
         if verbose:
-            print("    normalized and raw institutions built and saved.")
+            print("    Normalized and raw institutions built and saved.")
+            if raw_institutions_status:
+                print("    with no remaining raw institutions.")
+            else:
+                print("    with remaining raw institutions.")
 
         # Building and saving inst stat dataframe
         if progress_callback:
@@ -393,7 +401,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
                                          pub_ids_lists,
                                          progress_param=progress_param)
         if verbose:
-            print("    Distributed institutions and institutions stat built and saved.")
+            print("        Institutions statistics built and saved.")
 
         # Setting Institute's geo
         institute_geo_dict = {'country'  : bm_ig.INSTITUTES_COUNTRY_DICT[institute],
@@ -407,7 +415,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
                                              corpus_year)
         geo_analysis_folder_name = return_tup
         if verbose:
-            print("    Geo stat built and saved.")
+            print("        Geo statistics built and saved.")
         if progress_callback:
             progress_callback(98)
 
@@ -424,5 +432,5 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     if progress_callback:
         progress_callback(100)
     return_tup = (analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name,
-                  country_affil_file_path, wrong_affil_types_dict)
+                  country_affil_file_path, wrong_affil_types_dict, raw_institutions_status)
     return return_tup

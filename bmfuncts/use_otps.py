@@ -681,6 +681,8 @@ def _re_save_labs_otp_file(dicts_list, use_otps_cols_dic, dpt_otp_file_name_path
                                 wb, first, labs_common_params)
 
     # Saving the workbook
+    if "Sheet" in wb.sheetnames:
+        wb.remove(wb['Sheet'])
     wb.save(dpt_otp_file_name_path)
 
 

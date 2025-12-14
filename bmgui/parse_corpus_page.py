@@ -20,8 +20,12 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.config_utils import set_user_config
+from bmfuncts.correct_parsing import build_and_save_unknown_country_data
+from bmfuncts.correct_parsing import correct_parsing
+from bmfuncts.correct_parsing import set_parse_inst_params
 from bmfuncts.save_final_results import save_fails_dict
 from bmfuncts.save_final_results import save_parsing_dict
+from bmfuncts.useful_functs import compute_dedup_articles_number
 from bmfuncts.useful_functs import read_parsing_dict
 
 
@@ -193,7 +197,7 @@ def _get_dedup_data_status(master, corpus_year):
 
 
 def _launch_parsing(master, corpus_year, database_type,
-                    inst_paths_tup, progress_callback):
+                    inst_paths_list, progress_callback):
     """Launches parsing of raw-data of 'database_type' database.
 
     This is done through `biblio_parser` function imported from 
@@ -207,8 +211,8 @@ def _launch_parsing(master, corpus_year, database_type,
         master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
         database_type (str): Database name (ex: 'wos' or 'scopus').
-        inst_paths_tup (tup): (full path to institute-affiliations \
-        file, full path to institutions-types file).
+        inst_paths_list (list): Composed of the full path to institute-affiliations \
+        file and of the full path to institutions-types file.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
@@ -217,20 +221,38 @@ def _launch_parsing(master, corpus_year, database_type,
                         _database_type, _progress_callback):
         parsing_tup = bp.biblio_parser(raw_data_path, _database_type,
                                        inst_filter_list=None,
-                                       country_affiliations_file_path=inst_paths_tup[0],
-                                       inst_types_file_path=inst_paths_tup[1])
+                                       country_affiliations_file_path=inst_paths_list[0],
+                                       inst_types_file_path=inst_paths_list[1])
         parsing_dict, dic_failed = parsing_tup
         _progress_callback(80)
         save_parsing_dict(parsing_dict, _parsing_path,
                           item_filename_dict, parsing_save_extent)
         _progress_callback(90)
         save_fails_dict(dic_failed, _parsing_path)
+        _progress_callback(95)
+
+        # Building the data for unknown country correction by the user
+        unknown_country = bp.UNKNOWN   #.capitalize()
+        unkown_countries_empty = build_and_save_unknown_country_data(parsing_dict,
+                                                                     _parsing_path,
+                                                                     unknown_country,
+                                                                    _database_type,
+                                                                     corpus_year)
         _progress_callback(100)
 
         articles_number = dic_failed["number of article"]
         _info_title = "Information"
         _info_text = (f"'Parsing' de '{_database_type}' effectué pour l'année {corpus_year}."
-                     f"\n\n  Nombre d'articles du corpus : {articles_number}")
+                      f"\n\n  Nombre d'articles du corpus : {articles_number}")
+        if not unkown_countries_empty:
+            _info_text += ("\n\nATTENTION : Des adresses d'auteurs ne comportent pas de pays."
+                           "\nPour les définir :"
+                           f"\n\n - Ouvrez le fichier :     {bm_pg.ARCHI_YEAR['unknown countries file']}"
+                           f"\n  qui a été créé dans le dossier :"
+                           f"\n    {_parsing_path}"
+                           "\n\n - Indiquez le pays correct dans la colonne nommée 'Country' ;"
+                           "\n - Sauvegardez le fichier ;"
+                           "\n - Puis, poursuivez vos traitements sans aucune autre action.")
         messagebox.showinfo(_info_title, _info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
@@ -306,7 +328,7 @@ def _launch_parsing(master, corpus_year, database_type,
         messagebox.showwarning(warning_title, warning_text)
 
 
-def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
+def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
     """Concatenates and deduplicates the parsing from wos or scopus databases.
 
     This is done through the functions `concatenate_parsing` 
@@ -321,39 +343,50 @@ def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
     Args:
         master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
-        inst_paths_tup (tup): (full path to institute-affiliations file, \
-        full path to institutions-types file).
+        inst_paths_list (list): Composed of the full path to institute-affiliations \
+        file and of the full path to institutions-types file.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
     # Internal functions
+        
     def _deduplicate_corpus_parsing(_progress_callback):
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
+        correct_status = correct_parsing(master.institute, master.wf_path, scopus_parse_path,
+                                         scopus_parsing_dict, item_filename_dict)
+        if correct_status:
+            scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
+                                                    parsing_save_extent)
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
-        _progress_callback(30)
+        correct_status = correct_parsing(master.institute, master.wf_path, wos_parse_path,
+                                         wos_parsing_dict, item_filename_dict,)
+        if correct_status:
+            wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
+                                                 parsing_save_extent)
+        _progress_callback(15)
         if bm_pg.FIRST_BDD==bp.SCOPUS:
             concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
                                                          inst_filter_list=master.org_tup[3])
         else:
             concat_parsing_dict = bp.concatenate_parsing(wos_parsing_dict, scopus_parsing_dict,
                                                          inst_filter_list=master.org_tup[3])
-        _progress_callback(50)
+        _progress_callback(25)
         save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)
-        _progress_callback(60)
+        _progress_callback(30)
         dedup_parsing_dict = bp.deduplicate_parsing(concat_parsing_dict,
                                                     norm_inst_status=False,
-                                                    inst_types_file_path=inst_paths_tup[0],
-                                                    country_affiliations_file_path=inst_paths_tup[1])
-        _dedup_articles_nb = len(dedup_parsing_dict["articles"])
+                                                    inst_types_file_path=inst_paths_list[0],
+                                                    country_affiliations_file_path=inst_paths_list[1])
+        _dedup_articles_nb_tup = compute_dedup_articles_number(master.org_tup, dedup_parsing_dict)
         _progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_path,
                           item_filename_dict, parsing_save_extent,
                           dedup_infos=(master.wf_path, master.datatype, corpus_year))
         _progress_callback(100)
-        return _dedup_articles_nb
+        return _dedup_articles_nb_tup
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(master.wf_path, corpus_year, bm_pg.BDD_LIST)
@@ -369,7 +402,7 @@ def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
 
     # Setting parsing files extension for saving
     parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
-    progress_callback(15)
+    progress_callback(10)
 
     # Asking for confirmation of corpus year to concatenate and deduplicate
     ask_title = "Confirmation de l'année de traitement"
@@ -406,10 +439,12 @@ def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
                             "\n\nReconstruire la synthèse ?")
                 answer_2 = messagebox.askokcancel(ask_title, ask_text)
                 if answer_2:
-                    dedup_articles_nb = _deduplicate_corpus_parsing(progress_callback)
+                    return_tup = _deduplicate_corpus_parsing(progress_callback)
+                    dedup_articles_nb, dedup_institute_articles_nb = return_tup
                     info_title = "Information"
                     info_text = (f"La synthèse pour l'année {corpus_year} a été reconstruite."
-                                 f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}.")
+                                 f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}."
+                                 f"\n\ndont {dedup_institute_articles_nb} du {master.institute}.")
                     messagebox.showinfo(info_title, info_text)
                 else:
                     progress_callback(100)
@@ -417,43 +452,18 @@ def _launch_dedup(master, corpus_year, inst_paths_tup, progress_callback):
                     info_text = "La synthèse dejà disponible est conservée."
                     messagebox.showinfo(info_title, info_text)
             else:
-                dedup_articles_nb = _deduplicate_corpus_parsing(progress_callback)
+                return_tup = _deduplicate_corpus_parsing(progress_callback)
+                dedup_articles_nb, dedup_institute_articles_nb = return_tup
                 info_title = "Information"
                 info_text = (f"La synthèse pour l'année {corpus_year} a été construite."
-                             f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}.")
+                             f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}."
+                             f"\n\ndont {dedup_institute_articles_nb} du {master.institute}.")
                 messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)
         info_title = "Information"
         info_text = f"La synthèse pour l'année {corpus_year} est abandonnée."
         messagebox.showinfo(info_title, info_text)
-
-
-def _set_parse_inst_params(institute, wf_path):
-    """Sets files paths to institutions data.
-
-    Args:
-        institute (str): Institute name.
-        wf_path (path): Full path to working folder.
-    Returns:
-        (tup): (full path to institute-affiliations file, \
-        full path to institutions-types file).
-    """
-    # Setting useful aliases
-    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
-    inst_aff_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["institute_affil_base"]
-    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
-
-    # Setting useful file names and paths for Institute affiliations
-    institute_affil_file = institute + "_" + inst_aff_file_base_alias
-    inst_types_file = institute + "_" + inst_types_file_base_alias
-    institutions_folder_path = wf_path / Path(institutions_folder_alias)
-    institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
-    inst_types_file_path = institutions_folder_path / Path(inst_types_file)
-
-    # Setting return tup
-    inst_paths_tup = (institute_affil_file_path, inst_types_file_path)
-    return inst_paths_tup
 
 
 def create_parsing_concat(self, master, page_name):
@@ -479,7 +489,8 @@ def create_parsing_concat(self, master, page_name):
     # ****************************** GENERAL SETTNGS
 
     # Setting institutions files paths
-    inst_paths_tup = _set_parse_inst_params(master.institute, master.wf_path)
+    _, full_inst_paths_list = set_parse_inst_params(master.institute, master.wf_path)
+    inst_paths_list = full_inst_paths_list[0:2]
 
     # Creating and setting widgets for page title and exit button
     page_label = bm_gg.PAGES_LABELS[page_name]
@@ -541,7 +552,7 @@ def create_parsing_concat(self, master, page_name):
         parsing_data = parse_data_var.get()
 
         _launch_parsing(master, year_select, parsing_data,
-                        inst_paths_tup, progress_callback)
+                        inst_paths_list, progress_callback)
         # update files status
         _update_status(self, master, box_pos_params)
         self.progress_bar.place_forget()
@@ -574,7 +585,7 @@ def create_parsing_concat(self, master, page_name):
     def _launch_dedup_try(progress_callback):
         # Getting year selection
         year_select = self.variable_years.get()
-        _launch_dedup(master, year_select, inst_paths_tup, progress_callback)
+        _launch_dedup(master, year_select, inst_paths_list, progress_callback)
         # update files status
         _update_status(self, master, box_pos_params)
         self.progress_bar.place_forget()

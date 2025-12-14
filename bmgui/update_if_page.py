@@ -228,9 +228,9 @@ def _set_year_files_params(wf_path, corpus_year, names_tup):
     pub_list_file = pub_list_file_base + " " + corpus_year + ".xlsx"
     year_pub_list_folder_path = wf_path / Path(corpus_year) / pub_list_folder
     pub_list_file_path = year_pub_list_folder_path / Path(pub_list_file)
-    missing_if_path = year_pub_list_folder_path / Path(corpus_year + missing_if_base)
     missing_issn_path = year_pub_list_folder_path / Path(corpus_year + missing_issn_base)
-    paths_tup = (year_pub_list_folder_path, pub_list_file_path, missing_if_path, missing_issn_path)
+    missing_if_path = year_pub_list_folder_path / Path(corpus_year + missing_if_base)
+    paths_tup = (year_pub_list_folder_path, pub_list_file_path, missing_issn_path, missing_if_path)
     return paths_tup
 
 
@@ -250,25 +250,24 @@ def _update_pub_if(self, master, progress_callback):
         (bool): Status of impact-factors database. 
     """
     # Setting files parameters
-    [_,
-     pub_list_file_base,
-     missing_if_base,
-     missing_issn_base] = self.files_list
+    [_, pub_list_file_base,
+     missing_if_base, missing_issn_base] = self.files_list
     pub_list_folder = self.folders_list[0]
     all_years_list_folder = self.folders_list[1]
     names_tup = (pub_list_folder, pub_list_file_base,
                  missing_if_base, missing_issn_base)
     progress_callback(5)
     progress_bar_state = 5
-    progress_bar_loop_progression = 70 // len(master.years_list)
+    progress_bar_loop_progression = 90 // len(master.years_list)
 
     if_database_complete = None
     missing_pub_file_year = None
     for corpus_year in master.years_list:
+        print(f"    {corpus_year}...", end="\r")
         # Setting corpus dependant paths
         return_tup = _set_year_files_params(master.wf_path, corpus_year, names_tup)
         (year_pub_list_folder_path, pub_list_file_path,
-         missing_if_path, missing_issn_path) = return_tup
+         missing_issn_path, missing_if_path) = return_tup
 
         # Checking availability of publications-list file of the year
         out_file_status = os.path.exists(pub_list_file_path)
@@ -277,7 +276,7 @@ def _update_pub_if(self, master, progress_callback):
             # Updating Impact Factors and saving new consolidated list of publications
             # this also for saving results files to complete IFs database
             paths_tup = (pub_list_file_path, pub_list_file_path,
-                         missing_if_path, missing_issn_path)
+                         missing_issn_path, missing_if_path)
             sub_params_list = [master.institute, master.org_tup,
                                master.wf_path, corpus_year]
             _, if_database_complete = add_if(sub_params_list, paths_tup)
@@ -293,6 +292,7 @@ def _update_pub_if(self, master, progress_callback):
             results_to_save_dict["pub_lists"] = True
             if_analysis_name = None
             _ = save_final_results(params_list, results_to_save_dict, if_analysis_name)
+            print(f"    {corpus_year} updated and saved")
 
             # Updating progress bar state
             progress_bar_state += progress_bar_loop_progression

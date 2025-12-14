@@ -4,7 +4,8 @@ ToDo:
     - import `standardize_address` from BiblioParsing package.
 """
 
-__all__ = ['concat_dfs',
+__all__ = ['compute_dedup_articles_number',
+           'concat_dfs',
            'create_archi',
            'create_folder',
            'keep_initials',
@@ -33,6 +34,43 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
+
+
+def compute_dedup_articles_number(org_tup, dedup_parsing_dict):
+    """Computes articles numbers resulting from the deduplication of parsing results.
+
+    Args:
+        org_tup (tup): Contains Institute parameters.
+        dedup_parsing_dict (dict): Parsing results keyed by parsing items \
+        given by 'PARSING_ITEMS_LIST' global imported from the package \
+        imported as bp and valued by the data (dataframes) of parsing results.
+    Returns:
+        (tup): (Total number of articles (int), Number of articles tagged \
+        to be of the Institute).
+    """
+    # Setting parameters from globals
+    pub_id_col = bp.COL_NAMES['pub_id']
+    articles_item = bp.PARSING_ITEMS_LIST[0]
+    auth_inst_item = bp.PARSING_ITEMS_LIST[5]
+
+    # Setting useful Institute's parameters 
+    institute_col_idx = org_tup[7]
+    institute_col_list = org_tup[4]
+
+    # Setting the col name for selecting articles tagged as of the Institute
+    institute_col = institute_col_list[institute_col_idx]
+
+    # Computing the total articles number
+    articles_df = dedup_parsing_dict[articles_item]
+    articles_nb = len(articles_df)
+
+    # Computing the number of articles tagged as of the Institute
+    authorsinst_df = dedup_parsing_dict[auth_inst_item]
+    institute_articles_df = authorsinst_df[authorsinst_df[institute_col]==1]
+    institute_articles_df = institute_articles_df.drop_duplicates(subset=[pub_id_col])
+    institutes_articles_nb = len(institute_articles_df)
+
+    return articles_nb, institutes_articles_nb
 
 
 def reorder_df(df, col_dict):

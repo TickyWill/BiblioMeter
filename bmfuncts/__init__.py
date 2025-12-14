@@ -11,6 +11,7 @@ from bmfuncts.employees_globals import *
 from bmfuncts.pub_globals import *
 from bmfuncts.rename_cols import *
 from bmfuncts.build_otps_info import *
+from bmfuncts.correct_parsing import *
 from bmfuncts.add_otps import *
 from bmfuncts.add_ifs import *
 from bmfuncts.use_homonyms import *

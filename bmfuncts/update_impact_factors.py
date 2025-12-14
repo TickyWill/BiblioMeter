@@ -18,8 +18,8 @@ from openpyxl import Workbook as openpyxl_Workbook
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.rename_cols import set_final_col_names
-from bmfuncts.useful_functs import set_capwords_lambda
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import set_capwords_lambda
 
 
 def _get_if(if_updated_file_path, useful_col_list):
@@ -246,7 +246,7 @@ def _build_previous_years_if_df(wf_path, if_db_dict,
 
     Args:
         wf_path (path): Full path to working folder.
-        if_db_dict (hierarchical dict): IFs database keyed by years (str) \
+        if_db_dict (dict): IFs database keyed by years (str) \
         and valued by data of IFs per journal (dataframe).
         if_most_recent_year (str): 4-digits most-recent year in IFs database.
         journal_cols_list (list): [Column name of journal name (str), Column name of \
@@ -450,6 +450,110 @@ def _set_years_lists(if_db_dict, corpus_years_list):
     return if_db_years_tup
 
 
+def _clean_journals_data(if_db_dict, journal_cols_list):
+    """Builds unique data per journal and ISSN.
+
+    Args:
+        if_db_dict (dict): IFs database keyed by years (str) and valued \
+        by data of IFs per journal (dataframe).
+        journal_cols_list (list): [Column name of journal name (str), \
+        Column name of journal ISSN (str), Column name of journal e-ISSN (str)]. 
+    Returns:
+        (dataframe): The data unique per journal and ISSN.
+    """
+    # Setting useful col names from journal_cols_list
+    journal_col, issn_col, eissn_col = journal_cols_list
+
+    # Building the journals data to homogenize over all IFs-database years
+    all_journals_df = pd.DataFrame(columns=journal_cols_list)
+    for year, year_if_db in if_db_dict.items():
+        year_journal_df = year_if_db[journal_cols_list]
+        all_journals_df = concat_dfs([all_journals_df, year_journal_df], dedup=False)
+    all_journals_df[journal_col] = all_journals_df.apply(set_capwords_lambda(journal_col), axis=1)
+
+    # Homogenizing the ISSN and e-ISSN per journal name
+    data = []
+    for journal, journal_df in all_journals_df.groupby(journal_col):
+        issns_list = list(set(journal_df[issn_col].to_list()))
+        eissns_list = list(set(journal_df[eissn_col].to_list()))
+        if len(issns_list)>1 or len(eissns_list)>1:
+            for issn, issn_df in journal_df.groupby(issn_col):
+                for eissn, eissn_df in issn_df.groupby(eissn_col):
+                    if eissn!=issn:
+                        data.append([journal, issn, eissn])
+        else:
+            issn, eissn = issns_list[0], eissns_list[0]
+            data.append([journal, issn, eissn]) 
+    new_journal_df = pd.DataFrame(data, columns=journal_cols_list)
+
+    # Homogenizing the e-ISSN per ISSN value
+    data = []
+    for issn, issn_df in new_journal_df.groupby(issn_col):
+        if issn!=bm_pg.NOT_AVAILABLE:
+            eissns_list = list(set(issn_df[eissn_col].to_list()))
+            while issn in eissns_list:
+                eissns_list.remove(issn)
+            if eissns_list:
+                eissn = eissns_list[0]
+            else:
+                eissn = issn
+            for journal in issn_df[journal_col]:
+                data.append([journal, issn, eissn])
+        else:
+            for _, row in issn_df.iterrows():
+                journal = row[journal_col]
+                eissn = row[eissn_col]
+                data.append([journal, issn, eissn])      
+    new_all_journals_df = pd.DataFrame(data, columns=journal_cols_list)
+    return new_all_journals_df
+
+
+def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
+    """Rebuilds IF database after cleaning journals data and saves 
+    it as multisheet Openpyxl worbook.
+
+    Args:
+        inst_all_if_path (path): Full path to the IFs database.
+        journal_cols_list (list): [Column name of journal name (str), \
+        Column name of journal ISSN (str), Column name of journal e-ISSN (str)]. 
+    """
+    journal_col, issn_col, eissn_col = journal_cols_list
+
+    # Getting the IFs database content and its IFs available years list
+    if_db_dict = pd.read_excel(inst_all_if_path, sheet_name=None)
+
+    # Setting unique data per journal name and per ISSN
+    new_all_journals_df = _clean_journals_data(if_db_dict, journal_cols_list)
+
+    # Initialize parameters for saving new IFs database as multisheet workbook
+    first = True
+    wb = openpyxl_Workbook()
+
+    # Setting unique data per journal in IFs database
+    new_if_db_dict = []
+    for if_year, year_if_df in if_db_dict.items():
+        year_if_df[journal_col] = year_if_df.apply(set_capwords_lambda(journal_col), axis=1)
+        new_year_if_df = pd.DataFrame(columns=year_if_df.columns)
+        new_year_if_df = pd.merge(year_if_df,
+                                  new_all_journals_df,
+                                  how='left',
+                                  left_on=[journal_col],
+                                  right_on=[journal_col])
+        cols_to_drop = [issn_col + "_x", eissn_col + "_x"]
+        new_year_if_df.drop(columns=cols_to_drop, inplace=True)
+        new_year_if_df.rename(columns={issn_col + "_y": issn_col,
+                                       eissn_col + "_y" : eissn_col},
+                              inplace=True)
+        new_year_if_df = new_year_if_df[year_if_df.columns.to_list()]
+        if_sheet_name = if_year
+        if_db_title = bm_pg.DF_TITLES_LIST[3]
+        wb = format_wb_sheet(if_sheet_name, new_year_if_df,
+                             if_db_title, wb, first)
+        first = False
+    # Saving the new IFs database as Openpyxl workbook
+    wb.save(inst_all_if_path)
+
+
 def update_inst_if_database(update_db_params_list, progress_callback=None):
     """Updates the impact-factors (IFs) database of the Institute using the files 
     where IFs have been added by the user for each existing corpuses.
@@ -477,7 +581,6 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
         (tup): (end message recalling the full path to the saved file \
         of the IFs database (str), List of IFs-database years (4-digits strings)).
     """
-    print("\nUpdate of IF database launched...")
     # Setting parameters values from 'update_db_params_list'
     institute, org_tup, wf_path, corpus_years_list = update_db_params_list
 
@@ -518,6 +621,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Building fully updated IFs database for years
     # before the most recent year available for IFs
+    print(f"    For years before {if_most_recent_year}")
     save_params_tup = (wb, first)
     return_tup = _build_previous_years_if_df(wf_path, if_db_dict,
                                              if_db_years_list, if_most_recent_year,
@@ -529,6 +633,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Building fully updated IFs database for years beginning
     # from the most recent year available for IFs
+    print(f"    For years from {if_most_recent_year} and after")
     save_params_tup = (wb, first)
     wb = _build_recent_year_if_df(wf_path, if_db_dict,
                                   off_if_db_years_list, if_most_recent_year,
@@ -540,6 +645,11 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Saving workbook
     wb.save(inst_all_if_path)
+    if progress_callback:
+        progress_callback(95)
+
+    # Extending complementary IFs data to all years of the IFs database
+    _clean_and_save_if_db(inst_all_if_path, journal_cols_list)
     if progress_callback:
         progress_callback(100)
 

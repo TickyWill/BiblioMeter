@@ -49,6 +49,7 @@ __all__ = ['ANALYSIS_IF',
            'STAT_INST_TYPES_LIST',
            'STAT_ROW_NAMES',
            'TSV_SAVE_EXTENT',
+           'UNKNOWN_COUNTRY',
            'XL_INDEX_BASE', 
           ]
 
@@ -62,6 +63,8 @@ import bmfuncts.employees_globals as bm_eg
 BDD_LIST = [bp.SCOPUS, bp.WOS]
 FIRST_BDD = bp.SCOPUS
 
+UNKNOWN_COUNTRY = bp.UNKNOWN
+
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
 
@@ -72,7 +75,7 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "inst_country_pub_df", "doctype_stat_df",
                   "pub_country_inst_df", "country_inst_pub_df",
                   "raw_institutions_df", "invalids_df",
-                  "missing_if_issn_df"]
+                  "missing_if_issn_df", "false_addresses_df",]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
@@ -199,6 +202,9 @@ ARCHI_YEAR = {"analyses"                            : "5 - Analyses",
               "wos"                                 : "wos",
               "parsing"                             : "parsing",
               "rawdata"                             : "rawdata",
+              "unknown countries file"              : 'False_addresses.xlsx',
+              "drop articles file name"             : "drop_articles.xlsx",
+              "drop authsinst file name"            : "drop_authsinst.xlsx",
              }
 
 # Setting list of final results to save
