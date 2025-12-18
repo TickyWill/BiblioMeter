@@ -4,10 +4,13 @@ ToDo:
     - import `standardize_address` from BiblioParsing package.
 """
 
-__all__ = ['compute_dedup_articles_number',
+__all__ = ['build_list_from_str',
+           'build_string_from_list',
+           'compute_dedup_articles_number',
            'concat_dfs',
            'create_archi',
            'create_folder',
+           'drop_multiple_item',
            'keep_initials',
            'name_capwords',
            'read_parsing_dict',
@@ -34,6 +37,60 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
+
+
+def build_list_from_str(input_str, sep_str):
+    """Builds a list by split of the list using the specified separator.
+
+    Args:
+        input_str (str): The string to be splited.
+        sep_str (str): The separator to be used for the split \
+        including space if required.
+    Returns:
+        (str): The built string.
+    """
+    if sep_str in input_str:
+        output_list = input_str.split(sep_str)
+    else:
+        output_list = [input_str]
+    return output_list
+
+
+def build_string_from_list(input_list, sep_str):
+    """Builds a string by joining the items of the list using 
+    the specified separator.
+
+    Args:
+        input_list (list): The list of string items to be joined.
+        sep_str (str): The separator to be used for the join \
+        including space if required.
+    Returns:
+        (str): The built string.
+    """
+    items_nb = len(input_list)
+    if items_nb>1:
+        output_str = sep_str.join(input_list)
+    elif items_nb==1:
+        output_str = str(input_list[0])
+    else:
+        output_str = ""
+    return output_str
+
+
+def drop_multiple_item(init_list, item):
+    """Keeps only one occurence of an item value in a list.
+
+    Args:
+        init_list (list): The list of string items to be modified.
+        item (str): The item value to be kept only once.
+    Returns:
+        (list): The modified list.
+    """
+    final_list = init_list
+    while item in final_list and len(final_list)>1:
+        item_idx = final_list.index(item)
+        del final_list[item_idx]
+    return final_list
 
 
 def compute_dedup_articles_number(org_tup, dedup_parsing_dict):

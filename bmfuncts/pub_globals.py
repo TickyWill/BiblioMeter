@@ -72,7 +72,8 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "inst_country_pub_df", "doctype_stat_df",
                   "pub_country_inst_df", "country_inst_pub_df",
                   "raw_institutions_df", "invalids_df",
-                  "missing_if_issn_df", "false_addresses_df",]
+                  "missing_if_issn_df", "unknown_countries_df", 
+                  "false_addresses_df",]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
@@ -138,6 +139,7 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
 
 ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
                  "dedup_parsing"       : "Synthèse des extractions",
+                 "False_address_file"  : 'False_addresses.xlsx',
                  "hash_id"             : "Identifiants universels",
                  "submit"              : "Croisement auteurs-effectifs",
                  "homonyms"            : "Résolution homonymes",
@@ -199,7 +201,7 @@ ARCHI_YEAR = {"analyses"                            : "5 - Analyses",
               "wos"                                 : "wos",
               "parsing"                             : "parsing",
               "rawdata"                             : "rawdata",
-              "unknown countries file"              : 'False_addresses.xlsx',
+              "unknown_country_file"                : 'Unknown_countries.xlsx',
               "drop articles file name"             : "drop_articles.xlsx",
               "drop authsinst file name"            : "drop_authsinst.xlsx",
              }

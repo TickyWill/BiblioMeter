@@ -19,6 +19,9 @@ import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_geo_stat import build_and_save_geo_stat
 from bmfuncts.build_institutions_stat import build_and_save_institutions_stat
 from bmfuncts.build_pub_addresses import build_institute_addresses_df
+from bmfuncts.config_utils import set_user_config
+from bmfuncts.correct_dedup import correct_dedup
+from bmfuncts.correct_dedup import initialize_false_addresses_file
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.read_final_results import build_pub_ids_lists
 from bmfuncts.rename_cols import set_final_col_names
@@ -349,6 +352,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
 
+    # Setting useful parameters lists
+    dedup_params = [institute, wf_path, datatype, corpus_year]
+    addresses_params = [institute, org_tup, wf_path, corpus_year, final_results_path]
+
+    # Getting item_filename_dict
+    config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
+    item_filename_dict = config_tup[2]
+
     # Setting useful paths
     files_list, folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year)
     analysis_folder_name, inst_analysis_folder_name = folders_list
@@ -360,8 +371,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     co_cols_dic = _set_co_cols_dic(institute, org_tup)
     final_pub_id_col = co_cols_dic['final_pub_id_col']
     final_doctype_col = co_cols_dic['final_doctype_col']
-
-    # Building only addresses of Institute publications
+    
+    # Correcting false addresses in deduplication-parsing data as indicated by the user
+    correct_addresses_path, correct_status = correct_dedup(dedup_params, item_filename_dict)
+    if verbose:
+        if correct_status:
+            print("    False addresses in deduplication-parsing data corrected.")
+        else:
+            print("    No correction of false addresses in deduplication-parsing data.")
     progress_param = None
     if progress_callback:
         init_progress = 5
@@ -369,7 +386,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_param = (progress_callback, init_progress, inter_progress_1)
         progress_callback(init_progress)
 
-    addresses_params = [institute, org_tup, wf_path, corpus_year, final_results_path]
+    # Selecting addresses of Institute's publications only from parsing addresses data
     inst_pub_addresses_df = build_institute_addresses_df(addresses_params, verbose=False,
                                                          progress_param=progress_param)
     if verbose:
@@ -426,9 +443,12 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         _ = save_final_results(params_list, results_to_save_dict,
                                institute_country=institute_geo_dict['country'])
     else:
+        correct_addresses_path = initialize_false_addresses_file(dedup_params)
         analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name = ("", "", "")
+
     if progress_callback:
         progress_callback(100)
     return_tup = (analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name,
-                  country_affil_file_path, wrong_affil_types_dict, raw_institutions_status)
+                  country_affil_file_path, wrong_affil_types_dict, raw_institutions_status,
+                  correct_addresses_path)
     return return_tup

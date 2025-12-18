@@ -93,14 +93,14 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
         return_tup = coupling_analysis(params_list, progress_callback,
                                        verbose=True)
         (analysis_folder, geo_analysis_folder, inst_analysis_folder, country_affil_file_path,
-         wrong_affil_types_dict, raw_institutions_status) = return_tup
+         wrong_affil_types_dict, raw_institutions_status, correct_addresses_path) = return_tup
 
         if not wrong_affil_types_dict:
             if raw_institutions_status:
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été effectuée pour l'année {year_select}."
-                             f"\nToutes les affiliations ont été normalisées."
+                             "\nToutes les affiliations ont été normalisées."
                              "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
                              f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
                              f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
@@ -108,9 +108,11 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été interrompue pour l'année {year_select}."
-                             f"\nDes affiliations non normalisées subsistent :"
+                             "\nDes affiliations non normalisées subsistent :"
                              "\n\n  1- Complétez la définition des affiliations normalisées;"
-                             "\n\n  2- Relancez l'analyse des collaborations.")
+                             "\n\n  2- Indiquez les adresses à corriger dans le fichier :"
+                             f"\n\n    {correct_addresses_path}"
+                             "\n\n  3- Relancez l'analyse des collaborations.")
         else:
             info_title = "- Attention -"
             info_text = ("L'analyse des collaborations "

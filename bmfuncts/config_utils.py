@@ -3,6 +3,7 @@ for setting the configuration parameters for the use of the BiblioMeter applicat
 
 """
 __all__ = ['set_org_params',
+           'set_parse_inst_params',
            'set_user_config', ]
 
 
@@ -309,3 +310,33 @@ def set_org_params(institute, wf_path):
                   orphan_drop_dict, otps_level, lab_otps_bdd,
                   otps_sheet, otps_header, otps_cols, nolab_depts)
     return return_tup
+
+
+def set_parse_inst_params(institute, wf_path):
+    """Sets files paths to institutions data.
+
+    Args:
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+    Returns:
+        (tup): (full path to institute-affiliations file, \
+        full path to institutions-types file).
+    """
+    # Setting useful aliases
+    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
+    inst_aff_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["institute_affil_base"]
+    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
+    country_towns_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["country_towns_base"]
+
+    # Setting useful file names and paths for Institute affiliations
+    inst_country_towns_file = institute + "_" + country_towns_file_base_alias
+    institute_affil_file = institute + "_" + inst_aff_file_base_alias
+    inst_types_file = institute + "_" + inst_types_file_base_alias
+    institutions_folder_path = wf_path / Path(institutions_folder_alias)
+    institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
+    inst_types_file_path = institutions_folder_path / Path(inst_types_file)
+
+    # Setting return tup
+    inst_paths_list = [institute_affil_file_path, inst_types_file_path,
+                       institutions_folder_path]
+    return inst_country_towns_file, inst_paths_list

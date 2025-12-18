@@ -19,10 +19,10 @@ import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
+from bmfuncts.config_utils import set_parse_inst_params
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.correct_parsing import build_and_save_unknown_country_data
 from bmfuncts.correct_parsing import correct_parsing
-from bmfuncts.correct_parsing import set_parse_inst_params
 from bmfuncts.save_final_results import save_fails_dict
 from bmfuncts.save_final_results import save_parsing_dict
 from bmfuncts.useful_functs import compute_dedup_articles_number
@@ -246,7 +246,7 @@ def _launch_parsing(master, corpus_year, database_type,
         if not unkown_countries_empty:
             _info_text += ("\n\nATTENTION : Des adresses d'auteurs ne comportent pas de pays."
                            "\nPour les définir :"
-                           f"\n\n - Ouvrez le fichier :     {bm_pg.ARCHI_YEAR['unknown countries file']}"
+                           f"\n\n - Ouvrez le fichier :     {bm_pg.ARCHI_YEAR['unknown_country_file']}"
                            f"\n  qui a été créé dans le dossier :"
                            f"\n    {_parsing_path}"
                            "\n\n - Indiquez le pays correct dans la colonne nommée 'Country' ;"
