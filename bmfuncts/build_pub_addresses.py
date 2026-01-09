@@ -61,7 +61,6 @@ def _set_col_lists_infos(pub_addresses_cols_dic):
         (tuple): (The dict giving the final col list and the full col list, \
         The dict for renaming the columns).
     """
-
     col_keys = ['bp_pub_id_col', 'bp_address_id_col', 'bp_address_col']
     bp_init_cols_list = [pub_addresses_cols_dic[key] for key in col_keys]
 

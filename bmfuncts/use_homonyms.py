@@ -115,6 +115,7 @@ def solve_homonyms(institute, org_tup, in_path, out_path):
         (tup): The tuple composed of end message (str) \
         and homonyms status (bool; True if homonyms are found).
     """
+    print("\nBuilding data for homonyms resolution...")
     # Setting useful col names
     use_homonyms_cols_dic, homonyms_cols_list = _set_use_homonyms_cols(institute, org_tup)
     homonyms_col = use_homonyms_cols_dic['homonyms_col']
@@ -122,21 +123,22 @@ def solve_homonyms(institute, org_tup, in_path, out_path):
     save_cols_list = [use_homonyms_cols_dic[key] for key in col_keys]
 
     # Reading the submit file
-    df_submit = pd.read_excel(in_path)
+    submit_df = pd.read_excel(in_path)
 
     # Getting rid of the columns we don't want
-    df_homonyms = df_submit[homonyms_cols_list].copy()
+    homonyms_df = submit_df[homonyms_cols_list].copy()
 
     # Setting homonyms status
     homonyms_status = False
-    if bm_pg.HOMONYM_FLAG in df_homonyms[homonyms_col].to_list():
+    if bm_pg.HOMONYM_FLAG in homonyms_df[homonyms_col].to_list():
         homonyms_status = True
 
-    # Saving shaped df_homonyms
-    _save_shaped_homonyms_file(df_homonyms, save_cols_list, out_path)
-
-    end_message = f"File for solving homonymies saved in folder: \n  '{out_path}'"
-    return end_message, homonyms_status
+    # Saving shaped homonyms_df
+    print("  - Saving homonyms data as shaped openpyxl file...", end="\r")
+    _save_shaped_homonyms_file(homonyms_df, save_cols_list, out_path)
+    print("  - File for solving homonymies saved              "
+          f"\n  - Homonyms status before using resolution history: {homonyms_status}")
+    return homonyms_status
 
 
 def _set_homonyms_file_params(wf_path, corpus_year):
@@ -189,6 +191,7 @@ def save_homonyms(sub_params_list):
     Returns:
         (str): End message.
     """
+    print("\nUpdating history of solved homonyms...")
     # Setting params values from sub_params_list
     institute, org_tup, wf_path, corpus_year = sub_params_list
 
@@ -234,12 +237,12 @@ def save_homonyms(sub_params_list):
 
     # Saving the concatenated dataframe
     homonyms_history_df.to_excel(kept_homonyms_file_path, index=False)
-
-    message = "History of homonyms resolution saved"
+    message = "  - History of homonyms resolution saved"
+    print(message)
     return message
 
 
-def set_saved_homonyms(sub_params_list, actual_homonym_status):
+def set_saved_homonyms(sub_params_list, homonyms_status):
     """Resolves the homonyms from the history of the resolved homonyms 
     before submitting the file for resolving remaining homonyms to the user.
 
@@ -253,11 +256,13 @@ def set_saved_homonyms(sub_params_list, actual_homonym_status):
         name (str), the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
-        actual_homonym_status (bool): True if homonyms exists.
+        homonyms_status (bool): True if homonyms exists.
     Returns:
         (tup): Tuple = End message (str), actualized homonyms \
         status (bool).
     """
+    print("\nUsing history of resolved homonyms...")
+
     # Setting params values from sub_params_list
     institute, org_tup, wf_path, corpus_year = sub_params_list
 
@@ -274,6 +279,7 @@ def set_saved_homonyms(sub_params_list, actual_homonym_status):
      kept_homonyms_file_path) = _set_homonyms_file_params(wf_path, corpus_year)
 
     if kept_homonyms_file_path.is_file():
+        print("  - Using history of resolved homonyms...", end="\r")
 
         # Getting the kept homonyms dataframe
         homonyms_history_df = pd.read_excel(kept_homonyms_file_path)
@@ -321,12 +327,14 @@ def set_saved_homonyms(sub_params_list, actual_homonym_status):
                         homonyms_df_new = concat_dfs([homonyms_df_new, author_df])
 
         # Setting actual homonyms status
-        actual_homonym_status = False
+        homonyms_status = False
         if bm_pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col].to_list():
-            actual_homonym_status = True
+            homonyms_status = True
         # Saving updated homonyms_df
         _save_shaped_homonyms_file(homonyms_df_new, save_cols_list, homonyms_file_path)
-        message = "Already resolved homonyms used"
+        message = ("  - History of resolved homonyms used    "
+                   f"\n  - Homonyms status after using resolution history: {homonyms_status}")
     else:
-        message = "No already resolved homonyms available"
-    return message, actual_homonym_status
+        message = "  - No history of resolved homonyms available"
+    print(message) 
+    return homonyms_status

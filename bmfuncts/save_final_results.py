@@ -1,7 +1,8 @@
 """ Module of functions for saving final results.
 """
 
-__all__ = ['save_fails_dict',
+__all__ = ['save_db_ids_data',
+           'save_fails_dict',
            'save_final_countries',
            'save_final_continents',
            'save_final_dedup',
@@ -145,8 +146,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
                 return_tup = save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
                 if item_idx==parsing_items_nb:
                     corpus_year, final_dedup_path = return_tup
-                    end_message = (f"Deduplication files for year {corpus_year} saved in folder: "
-                                   f"\n  '{final_dedup_path}'")
+                    end_message = (f"\nAll parsing results deduplicated for year {corpus_year} saved as final results")
                     print(end_message)
 
 
@@ -161,7 +161,21 @@ def save_fails_dict(fails_dict, parsing_path):
     """
     parsing_perf_path = parsing_path / Path(bm_pg.PARSING_PERF)
     with open(parsing_perf_path, 'w', encoding="utf-8") as write_json:
-        json.dump(fails_dict, write_json, indent=4)
+        json.dump(fails_dict, write_json, indent=4) 
+
+
+def save_db_ids_data(db_ids_df, parsing_path, database_type):
+    """The function `save_db_ids_data` saves database-IDs data in an xlsx file.
+    
+    Args:
+        db_ids_df (dataframe): The database-IDs data.
+        parsing_path (path): The full path of the parsing results folder \
+        for saving the xlsx file.
+        database_type (str): Database name (ex: 'wos' or 'scopus'). 
+    """
+    file_name = database_type.capitalize() + bm_pg.IDS_FILE_BASE
+    file_path = parsing_path / Path(file_name)
+    db_ids_df.to_excel(file_path, index=False)
 
 
 def save_final_hash_ids(wf_path, corpus_year,

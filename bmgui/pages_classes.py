@@ -302,3 +302,4 @@ class AnalyzeCorpusPage(tk.Frame):
 
         # Creating and setting widgets for page frame
         create_analysis(self, master, page_name)
+

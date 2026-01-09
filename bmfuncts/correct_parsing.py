@@ -22,6 +22,7 @@ from bmfuncts.useful_functs import build_list_from_str
 from bmfuncts.useful_functs import build_string_from_list
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import drop_multiple_item
+from bmfuncts.useful_functs import set_year_pub_id
 
 
 def _set_parse_cols_dic():
@@ -32,6 +33,7 @@ def _set_parse_cols_dic():
         (dict): The built dict.
     """
     parse_cols_dic = {'bp_pub_id_col'    : bp.COL_NAMES['pub_id'],
+                      'bp_doi_col'       : bp.COL_NAMES['articles'][6],
                       'bp_address_id_col': bp.COL_NAMES['address'][1],
                       'bp_address_col'   : bp.COL_NAMES['address'][2],
                       'bp_country_col'   : bp.COL_NAMES['country'][2],
@@ -39,28 +41,80 @@ def _set_parse_cols_dic():
                       'bp_norm_inst_col' : bp.COL_NAMES['auth_inst'][4],
                       'bp_raw_inst_col'  : bp.COL_NAMES['auth_inst'][5],
                       'author_ids_col'   : 'Author IDs',
+                      'correct_address_col': "Correct address",
                      }
     return parse_cols_dic
 
 
-def _set_correct_parsing_paths(parsing_path, item_filename_dict="", test_txt=""):
+def _set_db_id_cols_dict():
+    """Builds a dict setting columns names for the database-IDs for the process 
+    of getting list of unknown countries per address and per publication.
+
+    Returns:
+        (dict): The built dict.
+    """
+    db_id_cols_dic = {bp.WOS   : bp.COL_NAMES['wos_id'][0],
+                      bp.SCOPUS: bp.COL_NAMES['scopus_id'][0],
+                     }
+    return db_id_cols_dic
+
+
+def _built_pub_identifiers_data(parsing_dict, db_ids_path, identifiers_cols):
+    # Setting column names from args
+    database_id_col, pub_id_col, doi_col = identifiers_cols
+
+    # Building the data of DOI per publication-ID
+    articles_df = parsing_dict['articles']
+    dois_dict = dict(zip(articles_df[pub_id_col], articles_df[doi_col]))
+
+    # Building the data of database-ID per publication-ID
+    db_ids_df = pd.read_excel(db_ids_path)
+    db_ids_dict = dict(zip(db_ids_df[pub_id_col], db_ids_df[database_id_col]))
+
+    ids_dicts_list = [db_ids_dict, dois_dict]
+    return ids_dicts_list
+
+
+def _set_correct_parsing_paths(parsing_path, database_type, item_filename_dict="", test_txt=""):
     # Internal functions
+    def _set_db_file_name(name_base):
+        db_file_name = f"{database_type.capitalize()}{name_base}"
+        return db_file_name
+
     def _set_parsing_item_path(item):
         parsing_item_file = test_txt + item_filename_dict[item] + parsing_extent
         parsing_item_path = parsing_path / Path(parsing_item_file)
         return parsing_item_path
 
-    # Setting useful aliases
-    parsing_extent = "." + bm_pg.TSV_SAVE_EXTENT
-    unknown_country_file_alias = bm_pg.ARCHI_YEAR["unknown_country_file"]
-    
+    # Setting parameters from globals
+    parsing_extent = f".{bm_pg.TSV_SAVE_EXTENT}"
+
+    # Initializing list of built file_names and paths
     paths_list = []
-    unknown_countries_path = parsing_path / Path(unknown_country_file_alias)
-    paths_list.append(unknown_countries_path)
+    files_list = []
+
+    # Appending full path to unknown-countries file
+    addresses_to_correct_file = _set_db_file_name(bm_pg.ARCHI_YEAR["addresses_to_correct_file_base"])
+    addresses_to_correct_path = parsing_path / Path(addresses_to_correct_file)
+    paths_list.append(addresses_to_correct_path)
+    files_list.append(addresses_to_correct_file)
+
+    # Appending full path to unknown-countries file
+    corrected_addresses_file = _set_db_file_name(bm_pg.ARCHI_YEAR["corrected_addresses_file_base"])
+    corrected_addresses_path = parsing_path / Path(corrected_addresses_file)
+    paths_list.append(corrected_addresses_path)
+    files_list.append(corrected_addresses_file)
+
+    # Appending full path to database-IDs file
+    db_ids_file = _set_db_file_name(bm_pg.IDS_FILE_BASE)
+    db_ids_path = parsing_path / Path(db_ids_file)
+    paths_list.append(db_ids_path)
+
     if item_filename_dict:
+        # Appending full path to the parsing data to be corrected
         for item in ['countries', 'addresses', 'authors_institutions']:
             paths_list.append(_set_parsing_item_path(item))
-    return paths_list
+    return paths_list, files_list
 
 
 def _remove_unknown_country(input_addr_str, sep_str, unknown_country):
@@ -86,6 +140,78 @@ def _remove_unknown_country(input_addr_str, sep_str, unknown_country):
     return output_addr_str
 
 
+def _save_addresses_to_correct_data(user_unknown_countries_df, addresses_to_correct_path,
+                                    database_type, corpus_year, file_clear=False):
+    """Saves the unknown-countries data for the process of correcting unknown-countries in parsing data.
+
+    Args:
+        user_corrected_countries_df (dataframe): Unknown-countries data completly corrected \
+        by the user after prefilling by the history.
+        addresses_to_correct_path (path): Full file path for saving the data.
+        database_type (str): Database name (ex: 'wos' or 'scopus').
+        corpus_year (str): Corpus year defined by 4 digits.
+        file_clear (bool): Optional parameter for saving empty data (default=False).
+    """
+    unknown_countries_df = user_unknown_countries_df.copy()
+    if file_clear:
+        unknown_countries_cols = unknown_countries_df.columns
+        cols_nb = len(unknown_countries_cols)
+        data_row = [""] * cols_nb
+        data = sum([], [data_row]*10)
+        unknown_countries_df = pd.DataFrame(data, columns=unknown_countries_cols)
+
+    # Saving unknown-countries data
+    df_title = bm_pg.DF_TITLES_LIST[19]
+    wb, ws = format_page(unknown_countries_df, df_title) 
+    ws.title = database_type + " " + corpus_year
+    wb.save(addresses_to_correct_path)
+
+
+def _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_hist_df, unknown_country):
+    """Uses the history of the corrected-addresses data to pre-fill addresses with unknown countries data 
+    before completion by the user.
+
+    Args:
+        init_addresses_to_correct_df (dataframe): Addresses with unknown countries data before pre-fill \
+        by the history of corrected countries.
+        corrected_addresses_hist_df (dataframe): History of corrected addresses with unknown countries data.
+        unknown_country (str): Key word for unknown countries.
+    """
+    unknown_countries_cols = init_addresses_to_correct_df.columns
+    (database_id_col, pub_id_col, doi_col, address_id_col, country_col,
+     address_col, correct_address_col, author_ids_col) = unknown_countries_cols
+
+    corrected_db_ids = corrected_addresses_hist_df[database_id_col].to_list()
+
+    unknown_countries_df = pd.DataFrame(columns=unknown_countries_cols)
+    for db_id, db_id_df in init_addresses_to_correct_df.groupby(database_id_col):
+        if db_id in corrected_db_ids:
+            corrected_db_id_df = corrected_addresses_hist_df[corrected_addresses_hist_df[database_id_col]==db_id]
+            correct_countries_dict = dict(zip(corrected_db_id_df[address_id_col],
+                                              corrected_db_id_df[country_col]))
+            correct_addresses_dict = dict(zip(corrected_db_id_df[address_id_col],
+                                              corrected_db_id_df[correct_address_col]))
+            data = []
+            for idx, row in db_id_df.iterrows():
+                pub_id = row[pub_id_col]
+                doi = row[doi_col]
+                address_id = row[address_id_col]
+                country = correct_countries_dict[address_id]
+                address = row[address_col]
+                correct_address = correct_addresses_dict[address_id]
+                author_ids = row[author_ids_col]
+                data.append([db_id, pub_id, doi, address_id, country, address, correct_address, author_ids])
+            new_db_id_df = pd.DataFrame(data, columns=unknown_countries_cols)
+        else:
+            new_db_id_df = db_id_df.copy()
+        unknown_countries_df = concat_dfs([unknown_countries_df, new_db_id_df])
+        unknown_countries_df.sort_values(by=[pub_id_col], inplace=True)
+    all_countries_corrected = False
+    if unknown_country not in unknown_countries_df[country_col].to_list():
+        all_countries_corrected = True 
+    return unknown_countries_df, all_countries_corrected
+
+
 def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_country,
                                         database_type, corpus_year):
     """Builds data of unknown countries in authors addresses and saves these data 
@@ -103,8 +229,8 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
         (bool): True if no unknown country is found.
     """
     # Setting useful paths for the process of the unknown-countries correction 
-    correct_paths_list = _set_correct_parsing_paths(parsing_path)
-    unknown_countries_path = correct_paths_list[0]
+    correct_paths_list, correct_files_list = _set_correct_parsing_paths(parsing_path, database_type)
+    addresses_to_correct_path, corrected_addresses_path, db_ids_path = correct_paths_list[0:3]
 
     # Setting parsing data to be corrected
     addresses_df = parsing_dict['addresses']
@@ -113,16 +239,23 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
 
     # Setting useful column names    
     parse_cols_dic = _set_parse_cols_dic()
-    cols_keys = ['bp_pub_id_col', 'bp_address_id_col', 'bp_address_col',
-                 'bp_country_col', 'bp_author_id_col', 'author_ids_col',
-                ]   
-    (pub_id_col, address_id_col, address_col, country_col,
+    cols_keys = ['bp_pub_id_col', 'bp_doi_col', 'bp_address_id_col', 'bp_country_col',
+                 'bp_address_col', 'correct_address_col', 'bp_author_id_col', 'author_ids_col']   
+    (pub_id_col, doi_col, address_id_col, country_col, address_col, correct_address_col,
      author_id_col, author_ids_col) = [parse_cols_dic[key] for key in cols_keys]
+    db_id_cols_dic = _set_db_id_cols_dict()
+    database_id_col = db_id_cols_dic[database_type]
+    
+    # Settinh publications identifiers
+    identifiers_cols = [database_id_col, pub_id_col, doi_col]
+    db_ids_dict, dois_dict = _built_pub_identifiers_data(parsing_dict, db_ids_path, identifiers_cols)
 
-    unknown_countries_cols = [pub_id_col, address_id_col, address_col,
-                              country_col, author_ids_col]
+    unknown_countries_cols = [database_id_col, pub_id_col, doi_col, address_id_col, country_col,
+                              address_col, correct_address_col, author_ids_col]
     data = []
     for pub_id, pub_id_df in countries_df.groupby(pub_id_col):
+        database_id = db_ids_dict[pub_id]
+        doi = dois_dict[pub_id]
         countries = pub_id_df[country_col].to_list()
         if unknown_country in countries:
             pub_id_auth_inst_df = auth_inst_df[auth_inst_df[pub_id_col]==pub_id]
@@ -130,56 +263,106 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
             unknown_country_df = pub_id_df[pub_id_df[country_col]==unknown_country]
             false_address_ids_list = unknown_country_df[address_id_col].to_list()
             for false_address_id in false_address_ids_list:
-                # setting the false address with stadardization and remove of unknown country
+                # setting the false address with stadardization without add of unknown country
                 address_id_df = pub_id_addresses_df[pub_id_addresses_df[address_id_col]==false_address_id]
                 raw_false_address = address_id_df[address_col].to_list()[0]
-                std_false_address = bp.standardize_address(raw_false_address)
-                false_address = _remove_unknown_country(std_false_address, ", ", unknown_country)
+                std_false_address = bp.standardize_address(raw_false_address, add_unknown_country=False)
 
                 # Building the IDs list of authors that have the false address in their affiliations list
                 false_address_auth_ids_list = []
                 for _, row in pub_id_auth_inst_df.iterrows():
                     author_id = row[author_id_col]
 
-                    # Building the author's addresses list (standardized and unknown countryremoved)
+                    # Building the author's addresses list (standardized without add of unknown country)
                     author_addresses_str = row[address_col]
                     author_addresses_list = build_list_from_str(author_addresses_str, "; ")
-                    author_addresses_list = [bp.standardize_address(x) for x in author_addresses_list]
-                    author_addresses_list = [_remove_unknown_country(x, ", ", unknown_country)
-                                             for x in author_addresses_list]
+                    author_addresses_list = [bp.standardize_address(x, add_unknown_country=False) for x in author_addresses_list]
+                    author_addresses_list = [_remove_unknown_country(x, ", ", unknown_country) for x in author_addresses_list]
 
-                    # Searching for false address in the author's adresses list to append author's ID
-                    if false_address in author_addresses_list:
+                    # Searching for false address in the author's addresses list to append author's ID
+                    if std_false_address in author_addresses_list:
                         false_address_auth_ids_list.append(str(author_id))
 
                 # Building a string from the built IDs list of authors
                 false_address_auth_ids = build_string_from_list(false_address_auth_ids_list, "; ")
 
-                data.append([pub_id, false_address_id, false_address, unknown_country, false_address_auth_ids])
-    unkown_countries_df = pd.DataFrame(data, columns=unknown_countries_cols)
-    unkown_countries_empty = unkown_countries_df.empty
+                data.append([database_id, pub_id, doi, false_address_id, unknown_country,
+                             std_false_address, "", false_address_auth_ids])
+    init_addresses_to_correct_df = pd.DataFrame(data, columns=unknown_countries_cols)
+    addresses_to_correct_empty = init_addresses_to_correct_df.empty
+    addresses_to_correct_df = init_addresses_to_correct_df.copy()
+    all_addresses_corrected = False
+    if addresses_to_correct_empty:
+        all_addresses_corrected = True
+        message = ("  - No addresses with unknown countries found")        
+    elif corrected_addresses_path.is_file():
+        corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
+        return_tup = _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_hist_df,
+                                              unknown_country)
+        addresses_to_correct_df, all_addresses_corrected = return_tup
+        message = ("  - History of corrected addresses with unknown countries used")
+        print(message)
+        if all_addresses_corrected:
+            message = ("    and correction is available for all addresses with unknown countries")
+        else:
+            message = ("    and addresses with unknown countries remain to be corrected")
+        print(message)
+    else:
+        message = ("  - Addresses with unknown countries need to be corrected"
+                   "\n    and no history of correction for addresses with unknown countries is available")
+        print(message)
 
-    # Saving false-addresses data
+    # Saving unknown-countries data
+    _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correct_path,
+                                    database_type, corpus_year)
+    if not all_addresses_corrected:
+        message = ("  - Data for correction of addresses with unknown countries saved")
+        print(message)
+    return addresses_to_correct_empty, all_addresses_corrected, correct_files_list
+
+
+def _update_corrected_addresses_history(user_addresses_to_correct_df, corrected_addresses_path,
+                                        database_type, corpus_year, dedup_cols):
+    """Updates the history of the corrected-countries data and saves them.
+
+    Args:
+        user_addresses_to_correct_df (dataframe): Unknown-countries data completly corrected by the user \
+        after prefill by the history.
+        corrected_addresses_path (path): Full path to the existing history of corrected countries data \
+        before update.
+        database_type (str): Database name (ex: 'wos' or 'scopus').
+        corpus_year (str): Corpus year defined by 4 digits.
+        dedup_cols (list): Columns names for deduplicating rows in updated data.
+    Returns:
+        (dataframe): The updated data of history of the corrected-countries.
+    """
+    new_corrected_addresses_hist_df = user_addresses_to_correct_df.copy()
+    # Getting the history of corrected countries before umpdate
+    if corrected_addresses_path.is_file():
+        init_corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
+
+        # Concatenating the existing history of corrected countries data with the user's corrected ones
+        new_corrected_addresses_hist_df = concat_dfs([init_corrected_addresses_hist_df,
+                                                      user_addresses_to_correct_df],
+                                                     dedup_cols=dedup_cols)    
+
+    # Saving unknown-countries data
     df_title = bm_pg.DF_TITLES_LIST[19]
-    wb, ws = format_page(unkown_countries_df, df_title) 
+    wb, ws = format_page(new_corrected_addresses_hist_df, df_title) 
     ws.title = database_type + " " + corpus_year
-    wb.save(unknown_countries_path)
-
-    message = ("\nData for correction of unknown countries in addresses saved in the file:"
-               f"\n{unknown_countries_path}")
-    print(message)
-    return unkown_countries_empty
+    wb.save(corrected_addresses_path)
+    return new_corrected_addresses_hist_df
 
 
-def _correct_parsing_countries(countries_correct_dfs, parse_cols_dic, parsing_countries_path):
-    """Corrects the parsing data of countries using the data of unknown countries corrected by the user.
+def _correct_parsing_countries(countries_correct_dfs, parse_cols_dic):
+    """Corrects the parsing data of countries using the data of addresses with unknown countries 
+    corrected by the user.
 
     Args:
         countries_correct_dfs (list): Composed of the parsing data of countries (dataframe) \
-        and of the user's correction of the unkown countries (dataframe).
+        and of the user's correction of the addresses with unknown countries (dataframe).
         parse_cols_dic (dict): The dict giving the columns names for the \
         process of correcting parsing data.
-        parsing_countries_path (path): The full path for saving the corrected parsing data of countries.
     Returns:
         (str): Final message.
     """
@@ -188,18 +371,18 @@ def _correct_parsing_countries(countries_correct_dfs, parse_cols_dic, parsing_co
     pub_id_col, address_id_col, country_col = [parse_cols_dic[key] for key in cols_keys]
 
     # Setting data to correct from 'countries_correct_dfs' arg
-    countries_df, correct_countries_df = countries_correct_dfs
-    correct_pub_ids_list = correct_countries_df[pub_id_col].to_list()
+    countries_df, addresses_to_correct_df = countries_correct_dfs
+    correct_pub_ids_list = addresses_to_correct_df[pub_id_col].to_list()
     
     new_countries_df = pd.DataFrame(columns=countries_df.columns)
     for pub_id, pub_id_df in countries_df.groupby(pub_id_col):
         pub_id_countries_df = pub_id_df.copy()
         if pub_id in correct_pub_ids_list:
-            pub_id_correct_countries_df = correct_countries_df[correct_countries_df[pub_id_col]==pub_id]
-            pub_id_correct_address_ids_list = pub_id_correct_countries_df[address_id_col].to_list()
-            pub_id_correct_countries_list = pub_id_correct_countries_df[country_col].to_list()
+            pub_id_addresses_to_correct_df = addresses_to_correct_df[addresses_to_correct_df[pub_id_col]==pub_id]
+            pub_id_correct_address_ids_list = pub_id_addresses_to_correct_df[address_id_col].to_list()
+            pub_id_correct_countries_list = pub_id_addresses_to_correct_df[country_col].to_list()
             pub_id_correct_countries_dict = dict(zip(pub_id_correct_address_ids_list,
-                                              pub_id_correct_countries_list))
+                                                     pub_id_correct_countries_list))
             for correct_address_id in pub_id_correct_address_ids_list:
                 for num_row, row in pub_id_countries_df.iterrows():
                     false_address_id = row[address_id_col]
@@ -207,66 +390,56 @@ def _correct_parsing_countries(countries_correct_dfs, parse_cols_dic, parsing_co
                         correct_country = pub_id_correct_countries_dict[correct_address_id]
                         pub_id_countries_df.loc[num_row, country_col] = correct_country
         new_countries_df = concat_dfs([new_countries_df, pub_id_countries_df])
-    new_countries_df.to_csv(parsing_countries_path, index=False, sep='\t')
-    message = ("\nCorrected parsing countries saved in the file:"
-               f"\n{parsing_countries_path}")
-    return message
+    message = ("  - Countries parsing corrected")
+    print(message)
+    return new_countries_df
 
 
-def _correct_parsing_addresses(addresses_correct_dfs, parse_cols_dic, parsing_addresses_path):
-    """Corrects the parsing data of countries using the data of unknown countries corrected by the user.
+def _correct_parsing_addresses(addresses_correct_dfs, parse_cols_dic):
+    """Corrects the parsing data of countries using the data of addresses with unknown countries 
+    corrected by the user.
 
     Args:
         addresses_correct_dfs (list): Composed of the parsing data of addresses (dataframe) \
-        and of the user's correction of the unkown countries (dataframe).
+        and of the user's correction of the addresses with unknown countries (dataframe).
         parse_cols_dic (dict): The dict giving the columns names for the \
         process of correcting parsing data.
-        parsing_addresses_path (path): The full path for saving the corrected parsing data of addresses.
     Returns:
         (str): Final message.
     """
     # Setting useful col names from 'parse_cols_dic' arg
-    cols_keys = ['bp_pub_id_col', 'bp_address_id_col', 'bp_address_col',
-                 'bp_country_col']   
-    (pub_id_col, address_id_col, address_col,
-     country_col) = [parse_cols_dic[key] for key in cols_keys]
+    cols_keys = ['bp_pub_id_col', 'bp_address_id_col', 'bp_address_col', 'correct_address_col']   
+    (pub_id_col, address_id_col, address_col, correct_address_col ) = [parse_cols_dic[key] for key in cols_keys]
 
     # Setting data for parsing correction from 'addresses_correct_dfs' arg
-    addresses_df, correct_countries_df = addresses_correct_dfs
-    correct_pub_ids_list = correct_countries_df[pub_id_col].to_list()
+    addresses_df, addresses_to_correct_df = addresses_correct_dfs
+    correct_pub_ids_list = addresses_to_correct_df[pub_id_col].to_list()
 
     new_addresses_df = pd.DataFrame(columns=addresses_df.columns)
     for pub_id, pub_id_df in addresses_df.groupby(pub_id_col):
         pub_id_addresses_df = pub_id_df.copy()
-        pub_id_addresses_df[address_col] = pub_id_addresses_df[address_col].apply(bp.standardize_address)
         if pub_id in correct_pub_ids_list:
-            pub_id_correct_countries_df = correct_countries_df[correct_countries_df[pub_id_col]==pub_id]
-            pub_id_correct_address_ids_list = pub_id_correct_countries_df[address_id_col].to_list()
-            pub_id_correct_addresses_list = pub_id_correct_countries_df[address_col].to_list()
-            pub_id_correct_countries_list = pub_id_correct_countries_df[country_col].to_list()
+            pub_id_addresses_to_correct_df = addresses_to_correct_df[addresses_to_correct_df[pub_id_col]==pub_id]
+            pub_id_correct_address_ids_list = pub_id_addresses_to_correct_df[address_id_col].to_list()
+            pub_id_correct_addresses_list = pub_id_addresses_to_correct_df[correct_address_col].to_list()
             pub_id_correct_addresses_dict = dict(zip(pub_id_correct_address_ids_list,
-                                              pub_id_correct_addresses_list))
-            pub_id_correct_countries_dict = dict(zip(pub_id_correct_address_ids_list,
-                                              pub_id_correct_countries_list))
+                                                     pub_id_correct_addresses_list))
             for correct_address_id in pub_id_correct_address_ids_list:
                 for num_row, row in pub_id_addresses_df.iterrows():
                     false_address_id = row[address_id_col]
                     if correct_address_id==false_address_id:
-                        init_address = pub_id_correct_addresses_dict[correct_address_id]
-                        correct_country = pub_id_correct_countries_dict[correct_address_id]
-                        correct_address = init_address + ", " + correct_country
+                        correct_address = pub_id_correct_addresses_dict[correct_address_id]
                         pub_id_addresses_df.loc[num_row, address_col] = correct_address
         new_addresses_df = concat_dfs([new_addresses_df, pub_id_addresses_df])
-    new_addresses_df.to_csv(parsing_addresses_path, index=False, sep='\t')
-    message = ("\nCorrected parsing addresses saved in the file:"
-               f"\n{parsing_addresses_path}")
-    return message 
+    message = ("  - Addresses parsing corrected")
+    print(message)
+    return new_addresses_df 
 
 
 def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
-                               parsing_authsinst_path, norm_dicts, unknown_country):
+                               norm_dicts, unknown_country):
     """Corrects the parsing data of authors-institutions using the data 
-    of unknown countries corrected by the user.
+    of addresses with unknown countries corrected by the user.
 
     In addition, the normalized and raw affiliations are defined for 
     the corrected addresses of authors using the `address_inst_full_list` 
@@ -276,11 +449,10 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
 
     Args:
         authsinst_correct_dfs (list): Composed of the parsing data (dataframe) of \
-        authors-institutions and of the user's correction of the unkown countries (dataframe).
+        authors-institutions and of the user's correction of the addresses with \
+        unknown countries (dataframe).
         parse_cols_dic (dict): The dict giving the columns names for the process \
         of correcting parsing data.
-        parsing_authsinst_path (path): The full path for saving the corrected parsing data \
-        of authors-institutions.
         norm_dicts (list): Composed of the data per country for normalizing the authors' \
         affiliations (dict), the data (dict) of affiliations types and the data (dict) \
         of towns per country.
@@ -289,38 +461,39 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
         (str): Final message.
     """
     # Setting useful col names from 'parse_cols_dic' arg
-    cols_keys = ['bp_pub_id_col', 'bp_address_col', 'bp_country_col', 'bp_author_id_col',
+    cols_keys = ['bp_pub_id_col', 'bp_country_col', 'bp_address_col', 'correct_address_col', 'bp_author_id_col',
                  'author_ids_col', 'bp_norm_inst_col', 'bp_raw_inst_col']   
-    (pub_id_col, address_col, country_col, author_id_col, author_ids_col,
+    (pub_id_col, country_col, address_col, correct_address_col, author_id_col, author_ids_col,
      norm_inst_col, raw_inst_col) = [parse_cols_dic[key] for key in cols_keys]
 
     # Setting data for affiliations normalization from 'norm_dicts' arg
     norm_raw_aff_dict, aff_type_dict, towns_dict = norm_dicts
 
     # Setting data for parsing correction from 'authsinst_correct_dfs' arg
-    auth_inst_df, correct_countries_df = authsinst_correct_dfs
-    correct_pub_ids_list = correct_countries_df[pub_id_col].to_list()
+    auth_inst_df, addresses_to_correct_df = authsinst_correct_dfs
+    correct_pub_ids_list = addresses_to_correct_df[pub_id_col].to_list()
 
     new_auth_inst_df = pd.DataFrame(columns=auth_inst_df.columns)
     for pub_id, pub_id_df in auth_inst_df.groupby(pub_id_col):
         pub_id_auths_inst_df = pub_id_df.copy()
         if pub_id in correct_pub_ids_list:
-            pub_id_correct_countries_df = correct_countries_df[correct_countries_df[pub_id_col]==pub_id]
-            for _, pub_id_correct_countries_row in pub_id_correct_countries_df.iterrows():
-                false_address = pub_id_correct_countries_row[address_col]
-                correct_country = pub_id_correct_countries_row[country_col]
-                correct_address = false_address + ", " + correct_country
-                auth_ids_str = str(pub_id_correct_countries_row[author_ids_col])
+            pub_id_addresses_to_correct_df = addresses_to_correct_df[addresses_to_correct_df[pub_id_col]==pub_id]
+            for _, addresses_to_correct_row in pub_id_addresses_to_correct_df.iterrows():
+                correct_country = addresses_to_correct_row[country_col]
+                false_address = addresses_to_correct_row[address_col]
+                correct_address = addresses_to_correct_row[correct_address_col]
+                auth_ids_str = str(addresses_to_correct_row[author_ids_col])
                 auth_ids_list = build_list_from_str(auth_ids_str, "; ")
                 auth_ids_list = [int(x) for x in auth_ids_list]
+                
                 for row_num, auths_inst_row in pub_id_auths_inst_df.iterrows():
-                    author_id = auths_inst_row[author_id_col]
+                    author_id = int(auths_inst_row[author_id_col])
                     if author_id in auth_ids_list:
                         raw_author_addresses_str = str(auths_inst_row[address_col])
                         raw_author_addresses_list = build_list_from_str(raw_author_addresses_str, "; ")
                         author_addresses_list = []
                         for address in raw_author_addresses_list:
-                            std_address_str = bp.standardize_address(address)
+                            std_address_str = bp.standardize_address(address, add_unknown_country=False)
                             address_str = _remove_unknown_country(std_address_str, ", ", unknown_country)
                             author_addresses_list.append(address_str)
 
@@ -353,10 +526,9 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
                         pub_id_auths_inst_df.loc[row_num, raw_inst_col] = raw_inst_str
 
         new_auth_inst_df = concat_dfs([new_auth_inst_df, pub_id_auths_inst_df])
-    new_auth_inst_df.to_csv(parsing_authsinst_path, index=False, sep='\t')
-    message = ("\nCorrected parsing authors-institutions saved in the file:"
-               f"\n{parsing_authsinst_path}")
-    return message
+    message = ("  - Authors-with-affiliations parsing corrected")
+    print(message)
+    return new_auth_inst_df
 
 
 def set_parse_inst_params(institute, wf_path):
@@ -389,7 +561,7 @@ def set_parse_inst_params(institute, wf_path):
     return inst_country_towns_file, inst_paths_list
 
 
-def correct_parsing(institute, wf_path, parsing_path, parsing_dict,
+def correct_parsing(params_list, parsing_path, parsing_dict,
                     item_filename_dict, unknown_country, test_txt=""):
     """Corrects the parsing data of countries, addresses and authors-institutions 
     using the data of unknown countries corrected by the user.
@@ -418,33 +590,52 @@ def correct_parsing(institute, wf_path, parsing_path, parsing_dict,
     Returns:
         (bool): True if the parsing data have been corrected.
     """
+    # Setting parameters from 'params_list'
+    institute, wf_path, database_type, corpus_year = params_list
+
     # Setting useful paths to files for parsing data correction
-    correct_paths_list = _set_correct_parsing_paths(parsing_path, item_filename_dict, test_txt)
-    (correct_countries_path, parsing_countries_path,
+    correct_paths_list, _ = _set_correct_parsing_paths(parsing_path, database_type,
+                                                       item_filename_dict, test_txt)
+    (addresses_to_correct_path, corrected_addresses_path, _, parsing_countries_path,
      parsing_addresses_path, parsing_authsinst_path) = correct_paths_list
 
     # Getting data of the user's correction of the unknown countries
-    correct_countries_df = pd.read_excel(correct_countries_path)
+    addresses_to_correct_df = pd.read_excel(addresses_to_correct_path)
+
     correct_status = False
-    if not correct_countries_df.empty:
+    if not addresses_to_correct_df.empty:
         # If data of the user's correction of the unknown countries not empty,
         # proceeding with parsing data correction
+
+        # Setting useful column names
+        parse_cols_dic = _set_parse_cols_dic()
+        address_id_col = parse_cols_dic["bp_address_id_col"]
+        db_id_cols_dic = _set_db_id_cols_dict()
+        database_id_col = db_id_cols_dic[database_type]
+
+        # Updating history of corrected addresses by the user
+        dedup_cols = [database_id_col, address_id_col]
+        addresses_to_correct_df = _update_corrected_addresses_history(addresses_to_correct_df,
+                                                                      corrected_addresses_path,
+                                                                      database_type, corpus_year,
+                                                                      dedup_cols)
+        message = ("  - History of corrected addresses with unknown countries updated")
+        print(message)
 
         # Getting parsing data to be corrected
         addresses_df = parsing_dict['addresses']
         countries_df = parsing_dict['countries']
         auth_inst_df = parsing_dict['authors_institutions']
 
-        # Setting useful column names
-        parse_cols_dic = _set_parse_cols_dic()
+        # Correcting the countries parsing data using the user's correction of the addresses with unknown countries
+        countries_correct_dfs = [countries_df, addresses_to_correct_df]
+        new_countries_df = _correct_parsing_countries(countries_correct_dfs, parse_cols_dic)
+        new_countries_df.to_csv(parsing_countries_path, index=False, sep='\t')
 
-        # Correcting the countries parsing data using the user's correction of the unknown countries
-        countries_correct_dfs = [countries_df, correct_countries_df]
-        _ = _correct_parsing_countries(countries_correct_dfs, parse_cols_dic, parsing_countries_path)
-
-        # Correcting the addresses parsing data using the user's correction of the unknown countries
-        addresses_correct_dfs = [addresses_df, correct_countries_df]
-        _ = _correct_parsing_addresses(addresses_correct_dfs, parse_cols_dic, parsing_addresses_path)
+        # Correcting the addresses parsing data using the user's correction of the addresses with unknown countries
+        addresses_correct_dfs = [addresses_df, addresses_to_correct_df]
+        new_addresses_df = _correct_parsing_addresses(addresses_correct_dfs, parse_cols_dic)
+        new_addresses_df.to_csv(parsing_addresses_path, index=False, sep='\t')
 
         # Getting intitutions normalization data for correction authors-institutions parsing data
         inst_country_towns_file, inst_paths_list = set_parse_inst_params(institute, wf_path)
@@ -456,11 +647,15 @@ def correct_parsing(institute, wf_path, parsing_path, parsing_dict,
                                                country_towns_folder_path=inst_paths_list[2])
         norm_dicts = [norm_raw_aff_dict, aff_type_dict, towns_dict]
 
-        # Correcting the authors-institutions parsing data using the user's correction of the unknown countries
-        authsinst_correct_dfs = [auth_inst_df, correct_countries_df]
-        _ = _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic, parsing_authsinst_path,
-                                       norm_dicts, unknown_country)
+        # Correcting the authors-institutions parsing data using the user's correction of addresses with the unknown countries
+        authsinst_correct_dfs = [auth_inst_df, addresses_to_correct_df]
+        new_auth_inst_df = _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
+                                                      norm_dicts, unknown_country)
+        new_auth_inst_df.to_csv(parsing_authsinst_path, index=False, sep='\t')
         correct_status = True
-        empty_addresses_df = pd.DataFrame(columns=correct_countries_df.columns)
-        empty_addresses_df.to_excel(correct_countries_path, index=False)
+
+        # Clear data of addresses to correct with unknown countries 
+        _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correct_path,
+                                        database_type, corpus_year, file_clear=True)
+        print("  - Data for correction of addresses with unknown countries cleaned")
     return correct_status

@@ -333,7 +333,7 @@ def _add_ext_docs(submit_path, orphan_path, ext_docs_path, cols_list):
     new_submit_df.to_excel(submit_path, index=False)
     new_orphan_df.to_excel(orphan_path, index=False)
 
-    print("    External PhD students added")
+    print("      - External PhD students added")
     return new_submit_df, new_orphan_df
 
 
@@ -474,7 +474,7 @@ def _add_other_ext(submit_path, orphan_path, others_path, cols_list):
     new_submit_df.to_excel(submit_path, index=False)
     new_orphan_df.to_excel(orphan_path, index=False)
 
-    print("    Other external collaborators added")
+    print("      - Other external collaborators added")
     return new_submit_df, new_orphan_df
 
 
@@ -766,7 +766,7 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
     """
     # Setting parameters values from params_list
     institute, org_tup, wf_path, _, corpus_year = params_list
-    print(f"\nMerge publications and employees information launched for year {corpus_year}...")
+    print("\nMerge publications authors and employees information...")
 
     # Setting useful params of merge files from args
     merge_folder_path, submit_path, orphan_path = merge_paths[:3]
@@ -805,7 +805,7 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
     # *******************************************************************
 
     # Building the initial dataframes
-    print("    Initializing cross pub_employees data")
+    print("    Initializing search of authors among employees data...")
     submit_df, orphan_df = build_submit_df(empl_dict[years[0]],
                                            pub_df, wf_path,
                                            test_case=set_test_case,
@@ -832,8 +832,10 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
         progress_callback(new_progress_bar_state)
         progress_bar_loop_progression = step * 50 // len(years)
 
+    print("    Recursive search of authors among employees data...")
+    print(f"        Search period: {years[0]}...{years[-1]}")
     for _, year in enumerate(years):
-        print(f"    Search among employees of {year}")
+        print(f"        Search year:   {year}", end="\r")
         # Updating the dataframes submit_df_add and orphan_df
         submit_df_add, orphan_df = build_submit_df(empl_dict[year],
                                                    orphan_df,
@@ -852,15 +854,15 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
     # *************************************************************************************
     # * Saving results in 'submit_file' file and 'orphan_file' file *
     # *************************************************************************************
-
+    print("    Enhancing search results...")
     # Replace NaN values by UNKNOWN string except in first name initials
     submit_df = keep_initials(submit_df, initials_col, missing_fill=bp.UNKNOWN)
     orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bp.UNKNOWN)
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
-    print("    Setting year pub IDs")
     submit_df = set_year_pub_id(submit_df, corpus_year, pub_id_col)
+    print("      - Publication IDs tagged with corpus year")
     if not orphan_status:
         orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_col)
 
@@ -871,23 +873,25 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
     submit_df.to_excel(submit_path, index=False)
 
     # Adding author job type and saving new submit_df
-    print("    Adding column with author job type...")
     _add_author_job_type(submit_path, submit_path, empl_dict, years, add_job_cols_list)
+    print("      - Column with author job-type added")
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 5)
 
     # Adding full publication reference and saving new submit_df
-    print("    Adding column with full publication reference...")
     _add_biblio_list(submit_path, submit_path, add_ref_cols_list)
+    print("      - Column with full publication reference added")
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 10)
 
     # Renaming column names using submit_col_rename_dic and orphan_col_rename_dic
     _change_col_names(institute, org_tup, submit_path, orphan_path)
+    print("      - Columns renamed with final names")
 
     # Splitting orphan file in subdivisions of Institute
     if orphan_split_status:
         orphan_status = _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file)
+        print("      - Not found authors splitted in the specified subdivisions")
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
@@ -895,7 +899,10 @@ def recursive_year_search(orphan_file, merge_paths, empl_dict, params_list, sear
     create_hash_id(institute, org_tup, merge_paths[1:])
     if progress_callback:
         progress_callback(100)
-
-    end_message = ("Results of search of authors in employees list "
-                   f"saved in folder: \n  {merge_folder_path}")
-    return end_message, orphan_status
+    end_message = "\nResults of search of authors in employees list saved"
+    if orphan_status:
+        end_message += " with all authors identified as employees."
+    else:
+        end_message += " with remaining authors not identified as employees."
+    print(end_message)
+    return orphan_status

@@ -37,6 +37,7 @@ from bmfuncts.update_employees import update_employees
 from bmfuncts.use_homonyms import set_saved_homonyms
 from bmfuncts.use_homonyms import solve_homonyms
 from bmfuncts.use_otps import set_saved_otps
+from bmfuncts.useful_functs import set_bold_txt
 
 
 def _set_empl_files_params(root_path):
@@ -100,11 +101,11 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                 "confirmez la mise à jour ?")
     answer_1 = messagebox.askokcancel(ask_title, ask_text)
     if answer_1:
-        (employees_year,
-         files_number_error,
-         sheet_name_error,
-         column_error,
-         years2add_error,
+        log_title = "UPDATE OF EMPLOYEES DATABASE"
+        print(f"\n\n{set_bold_txt(log_title)}")
+
+        (employees_year, files_number_error, sheet_name_error,
+         column_error, years2add_error,
          all_years_file_error) = update_employees(wf_path, progress_callback,
                                                   progress_bar_state_init)
         progress_callback(100)
@@ -249,7 +250,6 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
-
     def _recursive_year_search_try(_progress_callback, progress_bar_state):
         dedup_parsing_status = check_dedup_parsing_available(master.wf_path, year_select)
         if dedup_parsing_status:
@@ -258,10 +258,9 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                            master.datatype, year_select]
 
             # Searching recursively the authors in the employees data
-            end_message, orphan_status = recursive_year_search(orphan_file, merge_paths, employees_dict,
-                                                               params_list, search_depth,
-                                                               _progress_callback, progress_bar_state)
-            print('\n',end_message)
+            orphan_status = recursive_year_search(orphan_file, merge_paths, employees_dict,
+                                                  params_list, search_depth,
+                                                  _progress_callback, progress_bar_state)
             _progress_callback(100)
 
             # Displaying the status of the recursive search of authors
@@ -293,6 +292,9 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                             "\n2- Effectuez la synthèse pour cette année ;"
                             "\n3- Puis relancez le croisement pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
+
+    log_title = f"ENHANCEMENT OF PUBLICATIONS LIST WITH EMPLOYEES DATA FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
 
     # Setting files parameters dependent on year selection
     merge_files, merge_paths = _set_merge_year_files_param(master.wf_path, year_select)
@@ -403,32 +405,23 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-
     def _resolution_homonymies_try(_progress_callback):
         if os.path.isfile(submit_path):
             _progress_callback(20)
 
             # Creating the files for homonyms resolution by the user
-            _return_tup = solve_homonyms(master.institute, master.org_tup,
-                                         submit_path, homonyms_file_path)
-            end_message, actual_homonym_status = _return_tup
-            print(end_message)
-            print('\n Actual homonyms status before setting saved homonyms:',
-                  actual_homonym_status)
+            homonyms_status = solve_homonyms(master.institute, master.org_tup,
+                                             submit_path, homonyms_file_path)
             _progress_callback(80)
-            if actual_homonym_status:
+            if homonyms_status:
                 # Setting the list of useful params values selected by the user
                 sub_params_list = [master.institute, master.org_tup,
                                    master.wf_path, year_select]
 
                 # Using the available history of homonyms resolution by the user
                 # in the files for homonyms resolution
-                _return_tup = set_saved_homonyms(sub_params_list,
-                                                 actual_homonym_status)
-                end_message, actual_homonym_status = _return_tup
-            print('\n',end_message)
-            print('\n Actual homonyms status after setting saved homonyms:',
-                  actual_homonym_status)
+                homonyms_status = set_saved_homonyms(sub_params_list,
+                                                     homonyms_status)
             _progress_callback(100)
 
             # Displaying the status of the homonyms step
@@ -437,7 +430,7 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
                          f"de l'année {year_select} a été créé "
                          f"dans le dossier :\n\n  '{homonyms_folder_path}' "
                          f"\n\nsous le nom :  '{homonyms_file}'.")
-            if actual_homonym_status:
+            if homonyms_status:
                 _info_text += ("\n\nDes homonymes existent parmi "
                               "les auteurs dans les effectifs."
                               "\n\n1- Ouvrez ce fichier, "
@@ -445,11 +438,11 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
                               "des homonymes non-auteurs, "
                               "\n3- Puis sauvegardez le fichier sous le même nom."
                               "\n\nDès que le fichier est traité, "
-                              "\nl'affectation des OTPs peut être lancée.")
+                              "\nl'attribution des OTPs peut être lancée.")
             else:
                 _info_text += ("\n\nAucun homonyme n'est trouvé parmi "
                               "les auteurs dans les effectifs."
-                              "\n\nL'affectation des OTPs peut être lancée.")
+                              "\n\nL'attribution des OTPs peut être lancée.")
             messagebox.showinfo(_info_title, _info_text)
 
         else:
@@ -462,6 +455,9 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
                             "\n1- Effectuez d'abord le croisement pour cette année."
                             "\n2- Puis relancez la résolution des homonymies pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
+
+    log_title = f"BUILD OF DATA FOR HOMONYMS RESOLUTION FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
 
     # Setting files parameters dependent on year selection
     return_tup = _set_homonymies_year_files_param(master.wf_path, year_select)
@@ -566,15 +562,13 @@ def _launch_add_otp_try(master, year_select, progress_callback):
             _progress_callback(20)
 
             # Creating the files for OTPs attribution by the user
-            end_message = add_otp(sub_params_list, homonyms_file_path,
-                                  otp_folder_path, otp_file_base)
-            print(end_message)
+            _ = add_otp(sub_params_list, homonyms_file_path,
+                        otp_folder_path, otp_file_base)
             _progress_callback(80)
 
-            # Using the available history of OTPs setting by the user
-            # in the files for OTPs attribution
-            end_message = set_saved_otps(sub_params_list)
-            print(end_message)
+            # Using the available history of OTPs attribution by the user
+            # in the created files for that
+            _ = set_saved_otps(sub_params_list)
             _progress_callback(100)
 
             # Displaying the status of the OTPs step
@@ -598,6 +592,9 @@ def _launch_add_otp_try(master, year_select, progress_callback):
                             "\n1- Effectuez la résolution des homonymies pour cette année."
                             "\n2- Relancez l'attribution des OTPs pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
+
+    log_title = f"BUILD OF DATA FOR OTP ATTRIBUTION FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
 
     # Setting files parameters dependent on year selection
     return_tup = _set_otp_year_files_param(master.wf_path, year_select)
@@ -718,14 +715,11 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
 
             # Consolidating publications list
             conso_tup = built_final_pub_list(params_list)
-            (end_message, pub_nb, invalids_nb,
-             split_ratio, if_database_complete) = conso_tup
-            print(end_message)
+            (pub_nb, invalids_nb, split_ratio, if_database_complete) = conso_tup
             _progress_callback(70)
             if bm_pg.LISTES_CONCAT:
                 # Concatenating all available publications lists
-                end_message = concatenate_pub_lists(master.wf_path, master.years_list)
-                print('\n',end_message)
+                _ = concatenate_pub_lists(master.wf_path, master.years_list)
             _progress_callback(100)
 
             # Displaying the status of the consolidation step of the publications list
@@ -782,6 +776,9 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
                             "\n2- Relancez la consolidation de la liste des publications "
                             "pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
+
+    log_title = f"BUILD FINAL LIST OF PUBLICATIONS FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
 
     # Setting files parameters dependent on year selection
     files_list, paths_list = _set_conso_year_files_params(master.wf_path, year_select)
@@ -877,8 +874,6 @@ def create_consolidate_corpus(self, master, page_name):
     def _launch_update_employees(progress_callback):
         """Command of the 'empl_update_button' button.        
         """
-        print("\nTrying update of employees data...")
-
         # Trying launch of update of employees file
         self.empl_update_status = _launch_update_employees_try(self, master.wf_path,
                                                                progress_callback)

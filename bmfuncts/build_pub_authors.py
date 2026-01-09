@@ -347,6 +347,7 @@ def _check_names_spelling(init_df, ortho_path,
         (dataframe): Publications list with one row per author where \
         spelling of author names have been corrected.
     """
+    print("      - Correcting misspelling of author's names...", end="\r")
     # Setting parameters from args
     (pub_fullname_col, pub_last_name_col,
      pub_first_name_col) = bm_auth_names_list
@@ -385,7 +386,7 @@ def _check_names_spelling(init_df, ortho_path,
                 new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + \
                                                             ' ' + initials_eff_ortho
 
-    print("    Misspelling of author names corrected")
+    print("      - Misspelling of author names corrected      ")
     return new_df
 
 
@@ -455,7 +456,7 @@ def _check_names_to_replace(corpus_year, init_df,
                 new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_compl \
                 + ' ' + initials_eff_compl
 
-    print("    False author names replaced")
+    print("      - False author names replaced")
     return new_df
 
 
@@ -517,7 +518,7 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet,
     # Removing the rows to drop from the dataframe to update
     new_pub_df = concat_dfs([pub_df, drop_df], keep="False")
 
-    print("    External authors removed")
+    print("      - External authors removed")
     return new_pub_df
 
 
@@ -664,7 +665,7 @@ def _recasting_authors_df(authors_df, recast_cols_list):
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = fullname_col # Last_name + firstname initials
     authors_df[col_in] = authors_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
-    print("    Author name recast to last name and first-name initials")
+    print("      - Author name recast to last name and first-name initials")
     return authors_df
 
 
@@ -695,7 +696,7 @@ def _build_authors_full_list(authors_df, full_authors_cols_list):
         authors_str = ", ".join(authors_list)
         data.append([pub_id, authors_str])
     pub_authors_df = pd.DataFrame(data, columns=[pub_id_col, authors_list_col])
-    print("    Full list of authors per publication built")
+    print("      - Full list of authors per publication built")
     return pub_authors_df
 
 
@@ -769,6 +770,7 @@ def build_institute_pubs_authors(params_list):
         of author-names and drop of authors with inappropriate affiliation \
         to the Institute.
     """
+    print("    Building publications list with authors affiliated to the Institute...")
     # Setting parameters values from params_list
     institute, org_tup, wf_path, _, corpus_year = params_list
 

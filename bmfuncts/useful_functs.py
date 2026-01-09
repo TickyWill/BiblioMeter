@@ -16,7 +16,9 @@ __all__ = ['build_list_from_str',
            'read_parsing_dict',
            'reorder_df',
            'save_xlsx_file',
+           'set_bold_txt',
            'set_capwords_lambda',
+           'set_print_same_len',
            'set_rawdata',
            'set_year_pub_id',
            'standardize_firstname_initials',
@@ -27,6 +29,7 @@ __all__ = ['build_list_from_str',
 
 # Standard library imports
 import os
+import numpy as np
 import shutil
 from pathlib import Path
 
@@ -37,6 +40,18 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
+
+
+def set_bold_txt(txt):
+    bold_txt = f"{bm_pg.PRINT_DICT['end']}{bm_pg.PRINT_DICT['bold']}{txt}{bm_pg.PRINT_DICT['blue']}"
+    return bold_txt
+
+
+def set_print_same_len(txts_list):
+    max_len = np.max([len(x) for x in txts_list])
+    print_txts_list = [x + ' ' * (max_len - len(x)) for x in txts_list]
+    print_txts_dict = dict(zip(txts_list, print_txts_list))
+    return print_txts_dict
 
 
 def build_list_from_str(input_str, sep_str):
@@ -50,9 +65,9 @@ def build_list_from_str(input_str, sep_str):
         (str): The built string.
     """
     if sep_str in input_str:
-        output_list = input_str.split(sep_str)
+        output_list = [x.strip() for x in input_str.split(sep_str)]
     else:
-        output_list = [input_str]
+        output_list = [input_str.strip()]
     return output_list
 
 

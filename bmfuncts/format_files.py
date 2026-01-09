@@ -210,34 +210,6 @@ def _set_base_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_unkn_countries_attributes(cols_list):
-    """Sets the widths and horizontal alignement of each column 
-    and the heights of the first row and other rows to be used 
-    for formatting the data of unknown countries to be saved for 
-    correction by the user.
-
-    Args:
-        cols_list (list): The columns names (str) of the data.
-    Returns:
-        (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
-        The dict keyed by given row types (str) and valued by row heights (int), 
-        The value (int) for initializing columns index).
-    """
-    # Setting col-attributes dict
-    attr_list = [[15, "center"], [15, "center"], [70, "left"],
-                 [20, "center"], [20, "left"]]
-    col_attr_dict = dict(zip(cols_list, attr_list))
-
-    # Setting row-heights dict
-    row_heights_dict = {'first_row':30,
-                        'other_rows':15}
-
-    # Setting value to initialize columns index
-    col_idx_init = 0
-    return col_attr_dict, row_heights_dict, col_idx_init
-
-
 def _set_false_addresses_attributes(cols_list):
     """Sets the widths and horizontal alignement of each column 
     and the heights of the first row and other rows to be used 
@@ -253,8 +225,8 @@ def _set_false_addresses_attributes(cols_list):
         The value (int) for initializing columns index).
     """
     # Setting col-attributes dict
-    attr_list = [[15, "center"], [15, "center"], [55, "left"],
-                 [55, "left"], [20, "center"]]
+    attr_list = [[20, "center"], [15, "center"], [40, "center"], 
+                 [15, "center"], [20, "center"], [55, "left"], [55, "left"]]
     if len(cols_list)>len(attr_list):
         attr_list = attr_list + [[20, "left"]]
     col_attr_dict = dict(zip(cols_list, attr_list))
@@ -718,9 +690,9 @@ def _set_raw_inst_attributes(cols_list):
         The value (int) for initializing columns index).
     """
     # Setting col-attributes dict
-    # with widths-list order: first col, other cols, last cols
-    widths_list = [12, 15, 100]
-    col_attr_dict = _set_attr_dict(cols_list, widths_list, last_cols_nb=2)
+    attr_list = [[20, "center"], [15, "center"], [35, "center"], [15, "center"]] \
+              + [[15, "center"], [100, "left"], [100, "left"]]
+    col_attr_dict = dict(zip(cols_list, attr_list))
 
     # Setting row-heights dict
     row_heights_dict = {'first_row':30,
@@ -908,8 +880,7 @@ def set_df_attributes(df_title, df_cols_list):
     raw_inst_alias = bm_pg.DF_TITLES_LIST[16]
     invalids_alias = bm_pg.DF_TITLES_LIST[17]
     missing_if_issn_alias = bm_pg.DF_TITLES_LIST[18]
-    unkn_countries_alias = bm_pg.DF_TITLES_LIST[19]
-    false_addr_alias = bm_pg.DF_TITLES_LIST[20]
+    false_addr_alias = bm_pg.DF_TITLES_LIST[19]
 
     if df_title==pub_list_alias:
         attr_tup = _set_pub_list_attributes(df_cols_list)
@@ -964,9 +935,6 @@ def set_df_attributes(df_title, df_cols_list):
 
     elif df_title==raw_inst_alias:
         attr_tup = _set_raw_inst_attributes(df_cols_list)
-
-    elif df_title==unkn_countries_alias:
-        attr_tup = _set_unkn_countries_attributes(df_cols_list)
 
     elif df_title==false_addr_alias:
         attr_tup = _set_false_addresses_attributes(df_cols_list)

@@ -27,6 +27,7 @@ from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.rename_cols import set_otp_col_names
 from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import set_print_same_len
 
 
 def _set_otps_homonyms_cols_dic(add_otp_params_list):
@@ -152,9 +153,10 @@ def _set_otps_dept_affil(org_tup, in_df, otps_homonyms_cols_dic):
     # Renaming the 'otp_dpt_col' as 'dpt_col'
     out_df = out_df.rename(columns={otp_dpt_col: dpt_col})
 
-    end_message = ("Column with department for OTPs attribution and columns "
-                   "for each department of the institute added")
-    return end_message, out_df
+    message = ("  - Column with department for OTPs attribution and columns "
+               "\n    for each department of the institute added")
+    print(message)
+    return out_df
 
 
 def _add_authors_name_list(org_tup, in_df, otps_homonyms_cols_dic):
@@ -179,7 +181,6 @@ def _add_authors_name_list(org_tup, in_df, otps_homonyms_cols_dic):
         (tup): (End message (str), the data of the publication list \
         added with the new columns (dataframe)).
     """
-
     # Internal functions
     def _get_dpt_key(dpt_raw):
         return_key = None
@@ -220,8 +221,9 @@ def _add_authors_name_list(org_tup, in_df, otps_homonyms_cols_dic):
         out_df = concat_dfs([out_df, pub_id_df])
     out_df.fillna('')
 
-    end_message = "Column with co-authors list added"
-    return end_message, out_df
+    message = "  - Column with co-authors list added"
+    print(message)
+    return out_df
 
 
 def _enhance_homonyms_file(add_otp_params_list, in_path):
@@ -244,6 +246,7 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
     Returns:
         (dataframe): The enhanced data. 
     """
+    print("\nEnhancing data used for homonyms resolution...")
     # Setting parameters value from add_otp_params_list
     _, org_tup = add_otp_params_list
 
@@ -255,16 +258,13 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
     solved_homonymies_df = solved_homonymies_df.fillna('')
 
     # Setting the affiliation department for OTPs attribution
-    end_message, new_solved_homonymies_df = _set_otps_dept_affil(org_tup, solved_homonymies_df,
-                                                                 otps_homonyms_cols_dic)
-    print('\n ',end_message)
+    new_solved_homonymies_df = _set_otps_dept_affil(org_tup, solved_homonymies_df,
+                                                    otps_homonyms_cols_dic)
 
     # Adding a column with a list of the authors in the file where homonymies
     # have been solved and pointed by in_path
-    end_message, final_solved_homonymies_df = _add_authors_name_list(org_tup,
-                                                                     new_solved_homonymies_df,
-                                                                     otps_homonyms_cols_dic)
-    print('\n ',end_message)
+    final_solved_homonymies_df = _add_authors_name_list(org_tup, new_solved_homonymies_df,
+                                                        otps_homonyms_cols_dic)
 
     return final_solved_homonymies_df
 
@@ -420,7 +420,10 @@ def _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base, add_otp
     out_df[dpt_col] = out_df[dpt_col].apply(lambda _x: _x.strip())
 
     # Configuring an Excel file per department with the list of OTPs
+    print("\nBuilding data for attributing OTPs...")
+    print_dpt_dict = set_print_same_len(sorted(dpt_list))
     for dpt in sorted(dpt_list):
+        print(f"     - Data department: {print_dpt_dict[dpt]}", end="\r")
         # Setting dpt_df with only pub_ids for which the first author
         # is from the 'dpt' department
         filtre_dpt = False
@@ -438,6 +441,9 @@ def _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base, add_otp
         # Adding a column with validation list for OTPs and saving the file
         _save_dpt_otp_file(dpt, save_otp_cols_tup, dpt_df, dpt_otp_list,
                            xl_dpt_path)
+    
+    print("  - Data built and saved for Institute's departments:"
+          f"\n    {sorted(dpt_list)}")
 
 
 def _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, dpt_df,
@@ -714,7 +720,10 @@ def _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
     full_pub_df = _set_full_pub_df(init_pub_df, add_otps_cols_dic, dpt_list)
 
     # Configuring an Excel file per department with the list of OTPs
+    print("\nBuilding data for attributing OTPs...")
+    print_dpt_dict = set_print_same_len(sorted(dpt_list))
     for dpt in sorted(dpt_list):
+        print(f"     - Data department: {print_dpt_dict[dpt]}", end="\r")
         # Setting the dict of list of OTPs for the 'dpt' department
         dpt_otp_dict = lab_otps_dict[dpt]
 
@@ -734,6 +743,9 @@ def _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
        # Adding a column with validation list for OTPs and saving the file
         _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, otp_dpt_df,
                                dpt_otp_dict, xl_dpt_path)
+    
+    print("  - Data built and saved for Institute's departments:"
+          f"\n    {sorted(dpt_list)}")
 
 
 def add_otp(sub_params_list, in_path, out_path, out_file_base):
@@ -761,8 +773,7 @@ def add_otp(sub_params_list, in_path, out_path, out_file_base):
         (str): end message recalling out_path.
     """
     # Saving the homonyms resolved by the user
-    end_message = save_homonyms(sub_params_list)
-    print('\n',end_message)
+    _ = save_homonyms(sub_params_list)
 
     # Setting useful params values and lists from sub_params_list
     set_otp_params_list = sub_params_list[:-1]
@@ -783,6 +794,5 @@ def add_otp(sub_params_list, in_path, out_path, out_file_base):
         _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base,
                       add_otps_cols_tup)
 
-    end_message = ("Files for setting publication OTPs per department "
-                   f"saved in folder: \n  '{out_path}'")
-    return end_message
+    message = "Files for attributing OTPs to publication saved"
+    return message

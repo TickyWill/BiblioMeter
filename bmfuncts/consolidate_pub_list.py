@@ -329,9 +329,9 @@ def built_final_pub_list(params_list):
      missing_issn_path, missing_if_path) = paths_list
 
     # Saving the OTPs set by user
-    return_tup = save_otps(sub_params_list)
-    otp_message, consolidate_pub_list_df = return_tup
+    consolidate_pub_list_df = save_otps(sub_params_list)
 
+    print("\nCleaning publications list...")
     # Setting pub ID as index for unique identification of rows
     consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_col)
 
@@ -351,6 +351,7 @@ def built_final_pub_list(params_list):
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
+    print("  - Invalid publications removed from publications list")
 
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
@@ -359,16 +360,19 @@ def built_final_pub_list(params_list):
     wb, ws = format_page(invalids_df, invalids_df_title)
     ws.title = "Invalides " +  corpus_year
     wb.save(invalids_file_path)
+    print("  - Data of invalid publications saved")
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
     # this also for saving results files to complete IFs database
     add_if_paths_list = [pub_list_file_path, pub_list_file_path,
                          missing_issn_path, missing_if_path]
     _, if_database_complete = add_if(sub_params_list, add_if_paths_list)
+    print("  - IFs added to publications list")
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
     split_ratio, pub_nb = split_pub_list_by_doc_type(sub_params_list,
                                                      pub_list_cols_dic)
+    print("  - Publications list split performed")
 
     # Saving pub list and hash-IDs as final results
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
@@ -376,16 +380,11 @@ def built_final_pub_list(params_list):
     keys_list = ["pub_lists", "hash_ids", "submit", "homonyms"]
     for key in keys_list:
         results_to_save_dict[key] = True
-    final_save_message = save_final_results(params_list, results_to_save_dict)
+    _ = save_final_results(params_list, results_to_save_dict)
 
-    end_message  = (f"\n{otp_message}"
-                    f"\nOTPs identification integrated in file: \n  '{pub_list_file_path}'"
-                    f"\n\nPublications list for year {corpus_year} "
-                    f"has been {split_ratio} % split "
-                    "in several files by group of document types. \n"
-                    f"{final_save_message}")
-
-    return end_message, pub_nb, invalids_nb, split_ratio, if_database_complete
+    end_message  = ("  - Consolidated publications lists saved as final results")
+    print(end_message)
+    return pub_nb, invalids_nb, split_ratio, if_database_complete
 
 
 def _set_concat_pub_list_path(wf_path, available_pub_lists):
@@ -452,6 +451,7 @@ def concatenate_pub_lists(wf_path, years_list):
     ws.title = "Publications de " + available_pub_lists
     wb.save(multi_year_file_path)
 
-    end_message  = ("Concatenation of consolidated pub lists under: "
-                    f"\n\n  '{multi_year_file_path}'")
+    end_message  = ("    Concatenation of consolidated pub lists under: "
+                    f"\n\n    '{multi_year_file_path}'")
+    print(end_message)
     return end_message

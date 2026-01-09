@@ -32,6 +32,7 @@ __all__ = ['ANALYSIS_IF',
            'FILL_EMPTY_KEY_WORD',
            'FIRST_BDD',
            'HOMONYM_FLAG',
+           'IDS_FILE_BASE',
            'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
            'LISTES_CONCAT',
@@ -41,6 +42,7 @@ __all__ = ['ANALYSIS_IF',
            'OUTSIDE_ANALYSIS',
            'PARSING_CONFIG_FILE',
            'PARSING_PERF',
+           'PRINT_DICT',
            'RESULTS_TO_SAVE',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
@@ -72,14 +74,15 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "inst_country_pub_df", "doctype_stat_df",
                   "pub_country_inst_df", "country_inst_pub_df",
                   "raw_institutions_df", "invalids_df",
-                  "missing_if_issn_df", "unknown_countries_df", 
-                  "false_addresses_df",]
+                  "missing_if_issn_df", "false_addresses_df",]
 
 CONFIG_FOLDER = 'ConfigFiles'
 
 PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 
 PARSING_PERF = "Parsing_perf.json"
+
+IDS_FILE_BASE = "_IDs.xlsx"
 
 TSV_SAVE_EXTENT = "dat"
 
@@ -137,25 +140,26 @@ ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
                 "complementary file"  : "Autres corrections.xlsx",
                }
 
-ARCHI_RESULTS = {"root"                : "Sauvegarde des résultats",
-                 "dedup_parsing"       : "Synthèse des extractions",
-                 "False_address_file"  : 'False_addresses.xlsx',
-                 "hash_id"             : "Identifiants universels",
-                 "submit"              : "Croisement auteurs-effectifs",
-                 "homonyms"            : "Résolution homonymes",
-                 "pub-lists"           : "Listes consolidées des publications",
-                 "doctypes"            : "Analyse par types de document",
-                 "impact-factors"      : "Analyse des facteurs d'impact",
-                 "authors_prod"        : "Analyse par auteurs",
-                 "keywords"            : "Analyse des mots clefs",
-                 "countries"           : "Analyse géographique",
-                 "institutions"        : "Analyse des collaborations",
-                 "subjects"            : "Analyse des thématiques",
-                 "kpis"                : "Synthèse des indicateurs",
-                 "kpis file name base" : "Synthèse des KPIs",
-                 DATATYPE_LIST[0]      : "Scopus&Wos",
-                 DATATYPE_LIST[1]      : "HalScopus&Wos",
-                 DATATYPE_LIST[2]      : "Wos",
+ARCHI_RESULTS = {"root"                    : "Sauvegarde des résultats",
+                 "dedup_parsing"           : "Synthèse des extractions",
+                 "false_addresses_file"    : 'Adresses à corriger.xlsx',
+                 "corrected_addresses_file": 'Adresses corrigées conservées.xlsx',
+                 "hash_id"                 : "Identifiants universels",
+                 "submit"                  : "Croisement auteurs-effectifs",
+                 "homonyms"                : "Résolution homonymes",
+                 "pub-lists"               : "Listes consolidées des publications",
+                 "doctypes"                : "Analyse par types de document",
+                 "impact-factors"          : "Analyse des facteurs d'impact",
+                 "authors_prod"            : "Analyse par auteurs",
+                 "keywords"                : "Analyse des mots clefs",
+                 "countries"               : "Analyse géographique",
+                 "institutions"            : "Analyse des collaborations",
+                 "subjects"                : "Analyse des thématiques",
+                 "kpis"                    : "Synthèse des indicateurs",
+                 "kpis file name base"     : "Synthèse des KPIs",
+                 DATATYPE_LIST[0]          : "Scopus&Wos",
+                 DATATYPE_LIST[1]          : "HalScopus&Wos",
+                 DATATYPE_LIST[2]          : "Wos",
                 }
 
 
@@ -201,7 +205,8 @@ ARCHI_YEAR = {"analyses"                            : "5 - Analyses",
               "wos"                                 : "wos",
               "parsing"                             : "parsing",
               "rawdata"                             : "rawdata",
-              "unknown_country_file"                : 'Unknown_countries.xlsx',
+              "addresses_to_correct_file_base"      : '_Adresses à corriger.xlsx',
+              "corrected_addresses_file_base"       : '_Adresses corrigées conservées.xlsx',
               "drop articles file name"             : "drop_articles.xlsx",
               "drop authsinst file name"            : "drop_authsinst.xlsx",
              }
@@ -415,3 +420,15 @@ STAT_ROW_NAMES = {'all'                : "Au moins un de l'Institut",
                   'country_at_least'   : "Nationaux et internationaux",
                   'out_of_country_only': "Internationaux uniquement",
                  }
+
+PRINT_DICT = {'purple'   : '\033[95m',
+              'cyan'     : '\033[96m',
+              'darkcyan' : '\033[36m',
+              'blue'     : '\033[94m',
+              'green'    : '\033[92m',
+              'yellow'   : '\033[93m',
+              'red'      : '\033[91m',
+              'bold'     : '\033[1m',
+              'underline': '\033[4m',
+              'end'      : '\033[0m',
+             }

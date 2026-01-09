@@ -501,7 +501,7 @@ def build_and_save_institutions_stat(institute, norm_institutions_df,
     save_formatted_df_to_xlsx(inst_analysis_folder_path, distrib_inst_filename_alias,
                               distrib_institutions_df, distrib_inst_df_title,
                               sheet_name)
-    print("        Distributed institutions and institutions statistics built and saved.")
+    print("      - Distributed institutions and institutions statistics built and saved.")
     
 
     # Building and saving as multisheet openpyxl files the data of institutions statistics

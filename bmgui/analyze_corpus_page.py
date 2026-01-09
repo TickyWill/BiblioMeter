@@ -20,6 +20,7 @@ from bmfuncts.build_kpi import if_analysis
 from bmfuncts.coupling_analysis import coupling_analysis
 from bmfuncts.keywords_analysis import keywords_analysis
 from bmfuncts.save_final_results import set_results_folder_path
+from bmfuncts.useful_functs import set_bold_txt
 
 
 def _launch_au_analysis(master, year_select, progress_callback):
@@ -32,6 +33,9 @@ def _launch_au_analysis(master, year_select, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
+    log_title = f"AUTHORS' SCIENTIFIQUE PRODUCTION FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
+
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
                    master.datatype, year_select]
@@ -56,6 +60,8 @@ def _launch_kw_analysis(master, year_select, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
+    log_title = f"KEYWORDS ANALYSIS FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
                    master.datatype, year_select]
@@ -90,6 +96,9 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                 "\n\nContinuer ?")
     answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
+        log_title = f"COUPLING ANALYSIS FOR {year_select}"
+        print(f"\n\n{set_bold_txt(log_title)}")
+
         return_tup = coupling_analysis(params_list, progress_callback,
                                        verbose=True)
         (analysis_folder, geo_analysis_folder, inst_analysis_folder, country_affil_file_path,
@@ -143,6 +152,9 @@ def _launch_if_analysis(master, year_select, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.  
     """
+    log_title = f"IF ANALYSIS AND BUILD OF KPI FOR {year_select}"
+    print(f"\n\n{set_bold_txt(log_title)}")
+
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
                    master.datatype, year_select]
@@ -228,8 +240,6 @@ def create_analysis(self, master, page_name):
     def _launch_if_analysis_try(progress_callback):
         # Getting year selection
         year_select = self.variable_years.get()
-
-        print(f"\nIFs analysis launched for year {year_select}...")
         _launch_if_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
@@ -252,8 +262,6 @@ def create_analysis(self, master, page_name):
     def _launch_au_analysis_try(progress_callback):
         # Getting year selection
         year_select = self.variable_years.get()
-
-        print(f"\nAuthors analysis launched for year {year_select}...")
         _launch_au_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
@@ -276,8 +284,6 @@ def create_analysis(self, master, page_name):
     def _launch_coupling_analysis_try(progress_callback):
         # Getting year selection
         year_select = self.variable_years.get()
-
-        print(f"\nCoupling analysis launched for year {year_select}...")
         _launch_coupling_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 
@@ -300,8 +306,6 @@ def create_analysis(self, master, page_name):
     def _launch_kw_analysis_try(progress_callback):
         # Getting year selection
         year_select = self.variable_years.get()
-
-        print(f"\nKeywords analysis launched for year {year_select}...")
         _launch_kw_analysis(master, year_select, progress_callback)
         self.progress_bar.place_forget()
 

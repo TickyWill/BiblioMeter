@@ -30,7 +30,6 @@ def _set_hash_id_cols_dic(institute, org_tup):
     Returns:
         (dict): The built dict.
     """
-
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
 
@@ -189,7 +188,7 @@ def create_hash_id(institute, org_tup, files_paths):
     new_orphan_df.to_excel(orphan_path, index=False)
     new_hash_id_df.to_excel(hash_id_path, index=False)
     hash_id_nb = len(new_hash_id_df)
-    print(f"{hash_id_nb} hash IDs of publications created")
+    print(f"\nHash-IDs number of publications: {hash_id_nb}")
     message = (f"{hash_id_nb} hash IDs of publications created and saved in file: ",
                f"\n  {hash_id_path}")
     return message

@@ -541,7 +541,6 @@ def doctype_analysis(params_list, if_most_recent_year,
     """
     # Setting params values from params_list
     institute, org_tup, wf_path, datatype, corpus_year = params_list
-    print(f"\n    Doctype analysis launched for year {corpus_year}...")
 
     # Setting useful columns info
     return_tup = _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year)
@@ -568,7 +567,6 @@ def doctype_analysis(params_list, if_most_recent_year,
     _ = save_final_results(params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(50)
-
     final_return_tup = (pub_df_dict, by_journal_dict, if_analysis_col,
                         if_analysis_year, doctypes_analysis_folder_path)
     return final_return_tup
