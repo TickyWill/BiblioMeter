@@ -80,7 +80,7 @@ def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict
     return paths_list
 
 
-def initialize_addresses_to_correct_file(params_list, file_clean=False):
+def initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year, file_clean=False):
     # internal functions
     def _save_empty_file():
         cols_nb = len(correct_addresses_cols)
@@ -93,16 +93,6 @@ def initialize_addresses_to_correct_file(params_list, file_clean=False):
         wb, ws = format_page(correct_addresses_df, df_title) 
         ws.title = "False addr " + corpus_year
         wb.save(addresses_to_correct_path)
-        
-    # Setting params from "params_list"
-    institute, wf_path, datatype, corpus_year = params_list
-
-    # Getting the full path to folder where final results of deduplication are saved
-    final_results_path = set_results_folder_path(wf_path, datatype)
-
-    # Setting useful paths to files for parsing data correction
-    correct_paths_list = _set_correct_dedup_paths(final_results_path, corpus_year)
-    addresses_to_correct_path = correct_paths_list[0]
 
     # Setting useful column names    
     dedup_cols_dic = _set_dedup_cols_dic()
@@ -474,7 +464,7 @@ def correct_dedup(params_list, final_results_path, item_filename_dict, ids_dicts
         
     if not addresses_to_correct_status:
         print("\n    Initializing file of addresses to correct by the user...")
-        message = initialize_addresses_to_correct_file(params_list)
+        message = initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year)
         print(message)
 
     # Getting data of the user's correction of the unknown countries
@@ -511,6 +501,6 @@ def correct_dedup(params_list, final_results_path, item_filename_dict, ids_dicts
                                      norm_dicts, corpus_year)
         correct_status = True
         print("\n    Cleaning file of addresses to correct by the user")
-        message = initialize_addresses_to_correct_file(params_list, file_clean=True)
+        message = initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year, file_clean=True)
         print(message)
     return addresses_to_correct_path, correct_status

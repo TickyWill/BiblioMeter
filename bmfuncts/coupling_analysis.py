@@ -430,8 +430,8 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     # Correcting false addresses in deduplication-parsing data as indicated by the user
     print(f"\nCorrecting false addresses...")
-    correct_addresses_path, correct_status = correct_dedup(dedup_params, final_results_path,
-                                                           item_filename_dict, ids_dicts_list)
+    addresses_to_correct_path, correct_status = correct_dedup(dedup_params, final_results_path,
+                                                              item_filename_dict, ids_dicts_list)
     if correct_status:
         print("\n    False addresses in deduplication-parsing data corrected")
     else:
@@ -501,12 +501,13 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         _ = save_final_results(params_list, results_to_save_dict,
                                institute_country=institute_geo_dict['country'])
     else:
-        correct_addresses_path = initialize_addresses_to_correct_file(dedup_params)
         analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name = ("", "", "")
+        message = initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year)
+        print(message)
 
     if progress_callback:
         progress_callback(100)
     return_tup = (analysis_folder_name, geo_analysis_folder_name, inst_analysis_folder_name,
                   country_affil_file_path, wrong_affil_types_dict, raw_institutions_status,
-                  correct_addresses_path)
+                  addresses_to_correct_path)
     return return_tup

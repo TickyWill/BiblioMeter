@@ -81,9 +81,12 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 App_Ludo.ipynb
-App_Amal.ipynb
+app_amal.ipynb
 App_Francois.ipynb
 hal_app.ipynb
+app_amal-Correct addresses.ipynb
+app_amal-Normalize affil.ipynb
+
 
 # IPython
 profile_default/
