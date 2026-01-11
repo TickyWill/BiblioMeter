@@ -445,8 +445,9 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     # Selecting addresses of Institute's publications only from parsing addresses data
     print(f"\nBuilding data of addresses of Institute's publications...")
-    inst_pub_addresses_df = build_institute_addresses_df(addresses_params, verbose=False,
-                                                         progress_param=progress_param)
+    return_tup = build_institute_addresses_df(addresses_params, verbose=False,
+                                              progress_param=progress_param)
+    inst_pub_addresses_df = return_tup[2]
     print("  - Addresses of Institute's publications selected")
     if progress_callback:
         progress_callback(inter_progress_1)
