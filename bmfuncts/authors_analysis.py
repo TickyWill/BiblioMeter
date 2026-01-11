@@ -16,6 +16,7 @@ import pandas as pd
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
+from bmfuncts.read_final_results import build_pub_ids_lists
 from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.read_final_results import read_final_set_homonyms_data
 from bmfuncts.rename_cols import set_homonym_col_names
@@ -77,13 +78,14 @@ def _set_au_analysis_cols(institute, org_tup):
                             'mat_col'          : homonyms_col_dic['matricul'],
                             'type_col'         : homonyms_col_dic['author_type'],
                             'empl_col'         : homonyms_col_dic['empl_full_name'],
+                            'doctype_col'      : homonyms_col_dic['doc_type'],
                             'nb_au_col'        : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb'],
                             'is_first_col'     : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author'],
                             'is_last_col'      : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author'],
                             'nb_pub_col'       : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb'],
                             'pub_list_col'     : bm_pg.COL_NAMES_BONUS['pub_ids list'],
-                            "final_inst_au_col": bm_pg.COL_NAMES_BONUS['name_as_auth'],
-                            "final_empl_col"   : bm_pg.COL_NAMES_BONUS['name_as_empl'],
+                            'final_inst_au_col': bm_pg.COL_NAMES_BONUS['name_as_auth'],
+                            'final_empl_col'   : bm_pg.COL_NAMES_BONUS['name_as_empl'],
                            }
 
     return au_analysis_cols_dic
@@ -152,17 +154,25 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
     # Setting useful columns names from 'au_analysis_cols_dic'
     col_keys = ['pub_id_col', 'au_id_col', 'inst_au_col', 'first_au_col',
                 'mat_col', 'type_col', 'empl_col', 'nb_au_col',
-                'is_first_col', 'is_last_col']
+                'is_first_col', 'is_last_col', 'doctype_col']
     au_empl_cols = [au_analysis_cols_dic[key] for key in col_keys]
     homonyms_select_cols = au_empl_cols[0:7]
-    (pub_id_col, au_id_col, inst_au_col, first_au_col, mat_col, type_col,
-     empl_col, nb_au_col, is_first_col, is_last_col) = au_empl_cols
+    (pub_id_col, au_id_col, inst_au_col, first_au_col, mat_col, type_col, empl_col,
+     nb_au_col, is_first_col, is_last_col, doctype_col) = au_empl_cols
 
     # Getting the publications list with one row per Institute author
     # and its attributes columns
     print("- Get the final results of homonyms resolution...", end="\r")
-    set_homonyms_df = read_final_set_homonyms_data(final_results_path, corpus_year)
+    all_pub_authors_df = read_final_set_homonyms_data(final_results_path, corpus_year)
     print("- Employees data of Institute's authors set from homonyms-resolution results")
+
+    # Selecting only publications of the final publication list
+    cols_list = pub_id_col, doctype_col
+    pub_ids_to_keep_list = build_pub_ids_lists(final_results_path, corpus_year, cols_list)[0]
+    kept_pub_authors_df = pd.DataFrame()
+    for pub_id, dg in all_pub_authors_df.groupby(pub_id_col):
+        if pub_id in pub_ids_to_keep_list:
+            kept_pub_authors_df = concat_dfs([kept_pub_authors_df, dg])
 
     # Getting the number of authors per pub-ID from parsing results
     print("- Computing the number of authors per publication from parsing results...", end="\r")
@@ -171,11 +181,11 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
                                            corpus_year, count_select_cols)
     print("- Data of number of authors per publication built from parsing results   ")
 
-    # Initializing dataframe to build    
+    # Initializing dataframe to build
     print("- Enhancing data of Institute's authors per publication...", end="\r")
     author_employee_df = pd.DataFrame(columns=au_empl_cols)
     for col in homonyms_select_cols:
-        author_employee_df[col] = set_homonyms_df[col].copy()
+        author_employee_df[col] = kept_pub_authors_df[col].copy()
     author_employee_df[is_first_col] = 0
     author_employee_df[is_last_col] = 0
 
@@ -264,7 +274,7 @@ def _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic):
 
 def _set_au_files_params(wf_path, corpus_year):
     """Sets authors analysis specific files and folder paths. 
-    
+
     Args:
         wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
