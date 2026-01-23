@@ -26,7 +26,7 @@ from bmgui.gui_utils import set_progress_bar_pos_tup
 
 
 def set_general_params(master, institute, wf_path, datatype, set_inst_param):
-    """Sets selected paramaters by the user as attributes 
+    """Sets selected parameters by the user as attributes
     of the main_page.
 
     Args:
@@ -281,11 +281,11 @@ def set_step_launch_button(self, step_num, step_start_funct, pos_type,
         pos_type (str): {'place', 'bellow', 'after'}, \
         'place' = button placed at absolute position, \
         'bellow' = button is placed bellow the step label, \
-        'after' = button is placed after a specifyed reference widget.
+        'after' = button is placed after a specified reference widget.
         parse (bool): Optional, specify if the calling page \
         is the parsing page (default=False).
         widget_ref (tk widget): Optional, specify the reference \
-        widget when posètype is set to 'after'.
+        widget when pos_type is set to 'after'.
     Returns:
         (tk.Button): The set button for launching the step.
     """

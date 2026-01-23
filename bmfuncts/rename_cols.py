@@ -22,7 +22,7 @@ def build_col_conversion_dic(institute, org_tup):
     given the initial column names of 3 dataframes.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -183,7 +183,7 @@ def set_otp_col_names(institute, org_tup):
     the same module.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -234,7 +234,7 @@ def set_final_col_names(institute, org_tup):
     of the same module.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -287,11 +287,11 @@ def set_if_col_names(institute, org_tup):
     the same module.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
-        (dict): To to be used for updating the final publications-list \
+        (dict): To be used for updating the final publications-list \
         dataframe with impact factors values.
     """
 

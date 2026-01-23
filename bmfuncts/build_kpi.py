@@ -249,7 +249,7 @@ def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic):
 def _build_dept_if_df(dept_by_journal_df, cols_list):
     """Builds the IFs data for a department.
     Args:
-        dept_by_journal_df (dataframe): The statistiques by journals \
+        dept_by_journal_df (dataframe): The statistics by journals \
         data for the department.
         cols_list (list): Useful column names. 
     Returns:
@@ -504,9 +504,9 @@ def update_kpi_database(kpi_params, kpi_dict, if_key,
 
         if dept==institute:
             institute_kpi_df = db_dept_kpi_df.copy()
-    if verbose:
-        message = f"\n    KPIs database updated and saved in folder: \n {file_path}"
-        print(message)
+        if verbose:
+            message = f"    - {dept} KPIs database updated and saved in folder: \n {file_path}"
+            print(message)
 
     return institute_kpi_df
 
@@ -619,7 +619,7 @@ def if_analysis(params_list, if_most_recent_year,
     return_tup = _build_articles_if_kpi(institute, by_journal_dict,
                                         if_analysis_folder_path, kpi_dict,
                                         build_kpi_cols_dic)
-    kpi_dict, new_if_analysis_col = return_tup                
+    kpi_dict, new_if_analysis_col = return_tup
     print("  - IFs KPIs built      ")
     if progress_callback:
         progress_callback(75)

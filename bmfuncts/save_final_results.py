@@ -145,32 +145,31 @@ def save_parsing_dict(parsing_dict, parsing_path,
                 item_idx += 1
                 return_tup = save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
                 if item_idx==parsing_items_nb:
-                    corpus_year, final_dedup_path = return_tup
-                    end_message = (f"\nAll parsing results deduplicated for year {corpus_year} saved as final results")
-                    print(end_message)
+                    corpus_year, _ = return_tup
+                    print(f"\nAll parsing results deduplicated for year {corpus_year} saved as final results")
 
 
 def save_fails_dict(fails_dict, parsing_path):
-    """The function `save_fails_dict` saves parsing fails in a json file 
+    """The function `save_fails_dict` saves parsing fails in a JSON file
     named by the global PARSING_PERF imported from the module imported as bm_pg.
 
     Args:
         fails_dict (dict): The dict of parsing fails.
         parsing_path (path): The full path to the parsing results folder \
-        where the json file is saved.
+        where the JSON file is saved.
     """
     parsing_perf_path = parsing_path / Path(bm_pg.PARSING_PERF)
     with open(parsing_perf_path, 'w', encoding="utf-8") as write_json:
-        json.dump(fails_dict, write_json, indent=4) 
+        json.dump(fails_dict, write_json, indent=4)
 
 
 def save_db_ids_data(db_ids_df, parsing_path, database_type):
-    """The function `save_db_ids_data` saves database-IDs data in an xlsx file.
+    """The function `save_db_ids_data` saves database-IDs data in an XLSX file.
     
     Args:
         db_ids_df (dataframe): The database-IDs data.
         parsing_path (path): The full path of the parsing results folder \
-        for saving the xlsx file.
+        for saving the XLSX file.
         database_type (str): Database name (ex: 'wos' or 'scopus'). 
     """
     file_name = database_type.capitalize() + bm_pg.IDS_FILE_BASE
@@ -437,7 +436,7 @@ def save_final_ifs(institute, org_tup, wf_path,
         shutil.copy2(origin_dept_file_path, target_dept_file_path)
 
     end_message = (f"Final impact factors for year {corpus_year} saved in folder: "
-                   f"\n  '{target_dept_file_path}'")
+                   f"\n  '{target_ifs_folder_path}'")
     return end_message
 
 
@@ -721,8 +720,7 @@ def save_final_institute_country(wf_path, corpus_year,
     return end_message
 
 
-def save_final_institutions(wf_path,
-                            corpus_year, results_folder_path):
+def save_final_institutions(wf_path, corpus_year, results_folder_path):
     """Saves final results of publications per institution for the corpus year.
 
     Args:
@@ -819,8 +817,8 @@ def set_results_folder_path(wf_path, datatype):
     return results_folder_path
 
 
-def save_final_results(params_list, results_to_save_dict, if_analysis_name=None,
-                       institute_country=None, verbose=False):
+def save_final_results(params_list, results_to_save_dict, if_analysis_name="None",
+                       institute_country="None", verbose=False):
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
 
@@ -839,10 +837,10 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name=None,
         to save and valued by saving status (bool; True if the type of \
         results should be saved).
         if_analysis_name (str): Optional base (str) building file names \
-        for saving impact-factors type of results (default=None).
+        for saving impact-factors type of results (default: "None").
         institute_country (str): Optional country of the institute \
-        for building the file names for saving related stat data (default=None).
-        verbose (bool): Status of prints (default = False).
+        for building the file names for saving related stat data (default: "None").
+        verbose (bool): Status of prints (default: False).
     Returns:
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.

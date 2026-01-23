@@ -1,6 +1,6 @@
 # Application Release Backlog
 
-## Release 6.2.0 - 2025/12/xx
+## Release 6.2.0 - 2026/12/xx
 * **Summary**: This release corresponds to a deep refactoring of the code and to the update of the collaborations analysis with the enhancement of the publications statistics provided by the affiliations analysis of the authors.
 * **Features**:
   - Feature 1: Update of the "\_build_inst_type_inst_df" and "\_build_inst_type_country_df" functions of "bmfuncts.build_institutions_stat" module to add columns with number of publications per document type to the statistics results.
@@ -9,7 +9,8 @@
   - Feature 4: Creation of "bmgui.gui_utils" module of functions shared by all GUI pages.
   - Feature 5: Creation of "bmgui.pages_classes" module of classes shared by pages.
   - Feature 6: Creation of "bmgui.main_utils" module of useful functions from split of for "bmgui.main_page".
-  - Feature 7: Creation of "bmfuncts.correct_parsing" module to help the user in correcting unknown countries in authors' addresses.
+  - Feature 7: Creation of "bmfuncts.correct_parsing" module to help the user in correcting authors' addresses with unknown countries.
+  - Feature 8: Creation of "bmfuncts.correct_dedup" module to help the user in correcting authors' affiliations when required.
 * **Improvements**:
   - Improvement 1: Update of the "bmfuncts.coupling_analysis" module to integrate the use of the above created or updated functions.
   - Improvement 2: Update of the "bmfuncts.build_pub_addresses" and the "bmfuncts.useful_functs" modules to integrate the use of the "standardize_address" function as imported from "BiblioParsing" package.
@@ -18,7 +19,7 @@
   - Improvement 5: Introduced in "bmgui" package a single arg to make available everywhere the selected parameters by the user on main page and refactored accordingly the "bmfuncts" package.
   - Improvement 6: Updated "existing_corpuses" function of "bmgui.gui_utils" module to walk only the folder of rawdata and not the sub-folders.
   - Improvement 7: Updated "\_launch_dedup" internal function of "bmgui.parse_corpus_page" module with using the functions of "bmfuncts.correct_parsing" new module.
-  - Improvement 8: Updated "build_institute_pubs_authors" function of "bmfuncts.build_pub_authors" module for saving data of droped publications lines in parsing results for further check of the selection process of the Institute's publications. 
+  - Improvement 8: Updated "build_institute_pubs_authors" function of "bmfuncts.build_pub_authors" module for saving data of dropped publications lines in parsing results for further check of the selection process of the Institute's publications.
 * **Bug Fixes**:
   - Bug 1: Inversion of file paths when calling "add_if" function of "bmfuncts.add_ifs" module in the "bmgui.update_if_page" module.
   - Bug 2: Partial update of IFs database with data of missing ISSNs and missing IFs set by the user fixed by creation of "\_clean_journals_data" and "\_clean_and_save_if_db" internal functions to "bmfuncts.update_impact_factors" module.
@@ -72,7 +73,7 @@
   - Feature 5: Creation of "add_otps" module of functions to help the user adding OTP attribute to each publication with info given at laboratory level or at department level.
   - Feature 6: Creation of "use_otps" module of functions for setting and using history of OTPs attribution.
   - Feature 7: Creation of "add_ifs" module of functions for adding impact-factor to each publication.
-  - Feature 8: Redistribution of "pub_analysis" module into the specialized modules "coupling_analysis", "impact_factors_analysis" and "keywords_analysis" complementing the "authors_analisis" module.
+  - Feature 8: Redistribution of "pub_analysis" module into the specialized modules "coupling_analysis", "impact_factors_analysis" and "keywords_analysis" complementing the "authors_analysis" module.
 * **Improvements**:
   - Improvement 1: Management of setting OTPs info at laboratory level or at department level depending on Institute choice.
   - Improvement 2: Introduction of building OTPs info from a structured EXCEL file specific to the Institute.
@@ -93,13 +94,13 @@
 ## Release 5.1.0 - 2024/11/12
 * **Summary**: This release corresponds to the deep update of the code allowing an enhanced analysis of the authors affiliations and attributes. In addition, it allows to display progress bars within the GUI and to edit infos on the code through docstrings and Sphinx documentation.
 * **Features**:
-  - Feature 1: Addition of scientifique production by authors.
+  - Feature 1: Addition of scientific production of authors.
   - Feature 2: Use of progress bars displaying data processing tasks in progress.
   - Feature 3: Complementary authors attributes to the Institute authors list.
   - Feature 4: Use of 'Insitute_Country_towns.xlsx' file to parse affiliations for the coupling analysis according to the selected Institute.
   - Feature 5: Set of ad-hoc rawdata in the working folder using an updated folder architecture based on 3 combination types of data.
 * **Improvements**:
-  - Improvement 1: Introduction of standardization of last names of authors and employees for better efficiency in similarity tests for merge of employees information in publications list and therfore get more efficient automatic reduction of orphan authors list.
+  - Improvement 1: Introduction of standardization of last names of authors and employees for better efficiency in similarity tests for merge of employees information in publications list and therefore get more efficient automatic reduction of orphan authors list.
   - Improvement 2: Addition of tools for building Sphinx documentation.
   - Improvement 3: Code docstrings added.
   - Improvement 4: Enhancement by saving invalid-publications list.
@@ -115,7 +116,7 @@
 * **Deprecated Features**:
   - Feature 1: Creation of html-plots files and wordcloud-plots files in `pub_analysis` module.
 * **Contributors**: Amal Chabli, Baptiste Refalo and François Bertin.
-* **Acknowledgments**: Thanks to Ludovic Desmeuzes for the initial developpement of the GUI package.
+* **Acknowledgments**: Thanks to Ludovic Desmeuzes for the initial development of the GUI package.
 
 ---
 ```

@@ -27,7 +27,7 @@ EMPLOYEES_ARCHI = {"root"                        : "Parametres Institut",
 
 
 # This is only the full list of employees file columns available
-# to be add to EMPLOYEES_USEFUL_COLS global
+# to be added to EMPLOYEES_USEFUL_COLS global
 EMPLOYEES_FULL_COLS = {'matricule'           : 'Matricule',                       #
                        'name'                : 'Nom',                             #
                        'first_name'          : 'Prénom',                          #
@@ -103,7 +103,7 @@ EMPLOYEES_ADD_COLS = {'dpts_list'          : 'Dpts',
                      }
 
 
-# Column names when reading external phd students list
+# Column names when reading external PhD students list
 EXT_DOCS_USEFUL_COL_LIST = [EMPLOYEES_USEFUL_COLS['matricule'],
                             EMPLOYEES_USEFUL_COLS['name'],
                             EMPLOYEES_USEFUL_COLS['first_name'],

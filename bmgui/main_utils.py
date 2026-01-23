@@ -19,6 +19,7 @@ import tkinter as tk
 import traceback
 from functools import partial
 from pathlib import Path
+from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import font as tkFont
 
@@ -158,7 +159,7 @@ def _display_path(inst_wf):
     return p_disp
 
 
-def _get_file(self, institute_select, datatype_select, set_inst_param, create_arcchi_param):
+def _get_file(self, institute_select, datatype_select, set_inst_param, create_archi_param):
     """Gets full path of working folder through 'tk.filedialog.askdirectory'. 
     Updates 'wf' widgets parameters and values accordingly to the working 
     folder got and sets launch button of corpuses analysis.
@@ -169,12 +170,12 @@ def _get_file(self, institute_select, datatype_select, set_inst_param, create_ar
         datatype_select (str): Selected datatype.
         set_inst_param (bool): Parameter for getting rid of setting \
         Institute parameters if False.
-        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
     # Getting new working directory
     dialog_title = "Choisir un nouveau dossier de travail"
-    wf_str = tk.filedialog.askdirectory(title=dialog_title)
+    wf_str = filedialog.askdirectory(title=dialog_title)
     if wf_str=='':
         warning_title = "!!! Attention !!!"
         warning_text = "Chemin non renseigné."
@@ -182,8 +183,8 @@ def _get_file(self, institute_select, datatype_select, set_inst_param, create_ar
 
     # Updating wf values using new working directory
     set_wf_widget_param(self, institute_select, wf_str, datatype_select,
-                        set_inst_param, create_arcchi_param)
-    _update_corpuses(self, wf_str, create_arcchi_param)
+                        set_inst_param, create_archi_param)
+    _update_corpuses(self, wf_str, create_archi_param)
     wf_path = Path(wf_str)
     SetLaunchButton(self, institute_select, wf_path, datatype_select,
                     set_inst_param)
@@ -191,7 +192,7 @@ def _get_file(self, institute_select, datatype_select, set_inst_param, create_ar
 
 def set_wf_widget_param(self, institute_select, inst_wf,
                         datatype_select, set_inst_param,
-                        create_arcchi_param):
+                        create_archi_param):
     """Sets 'wf' widgets parameters and values 
     according to the selected Institute.
 
@@ -202,7 +203,7 @@ def set_wf_widget_param(self, institute_select, inst_wf,
         datatype_select (str): Selected datatype.
         set_inst_param (bool): Parameter for getting rid of setting \
         Institute parameters if False.
-        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
     # Setting wf label widget
@@ -232,7 +233,7 @@ def set_wf_widget_param(self, institute_select, inst_wf,
                           font=wf_button_font,
                           command=lambda: _get_file(self, institute_select,
                                                     datatype_select, set_inst_param,
-                                                    create_arcchi_param))
+                                                    create_archi_param))
     bm_gu.place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
 
 
@@ -256,7 +257,7 @@ def try_wf_access(wf_path):
     return wf_access_status
 
 
-def _create_corpus(self, inst_wf, create_arcchi_param):
+def _create_corpus(self, inst_wf, create_archi_param):
     """Creates a new corpus folder in the working folder through `create_archi` 
     function imported from `bmfuncts.useful_functs` module.             
     Then, updates 'corpuses' widget value with new list of available corpuses.
@@ -264,10 +265,10 @@ def _create_corpus(self, inst_wf, create_arcchi_param):
     Args:
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
-        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
-    corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_arcchi_param)
+    corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_archi_param)
     wf_path = Path(inst_wf)
     wf_access_status = try_wf_access(wf_path)
     if wf_access_status:
@@ -278,7 +279,7 @@ def _create_corpus(self, inst_wf, create_arcchi_param):
 
 
         # Creating required folders for new corpus year
-        message = create_archi(wf_path, new_corpus_year_folder, create_arcchi_param,
+        message = create_archi(wf_path, new_corpus_year_folder, create_archi_param,
                                verbose=False)
         print("\n",message)
 
@@ -301,7 +302,7 @@ def _create_corpus(self, inst_wf, create_arcchi_param):
         corpuses_val.set("")
 
 
-def set_corpuses_widgets_param(self, inst_wf, create_arcchi_param):
+def set_corpuses_widgets_param(self, inst_wf, create_archi_param):
     """Sets 'corpuses' widgets parameters and values accordingly 
     to the working folder and returns tkinter 'corpuses' parameter 
     that is used to set for displaying the available corpuses list.
@@ -309,7 +310,7 @@ def set_corpuses_widgets_param(self, inst_wf, create_arcchi_param):
     Args:
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
-        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
 
@@ -336,22 +337,22 @@ def set_corpuses_widgets_param(self, inst_wf, create_arcchi_param):
                              text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
                              font=corpuses_button_font,
                              command=lambda: _create_corpus(self, inst_wf,
-                                                            create_arcchi_param))
+                                                            create_archi_param))
     bm_gu.place_bellow(corpuses_entry, corpuses_button, dy=self.buttons_dy)
     return corpuses_val
 
 
-def _update_corpuses(self, inst_wf, create_arcchi_param):
+def _update_corpuses(self, inst_wf, create_archi_param):
     """Updates tkinter 'corpuses' parameter with the available corpuses list
     accordingly to working folder.
 
     Args:
         self (instance): Instance of the calling page.
         inst_wf (str): Full path as string to the working folder.
-        create_arcchi_param (bool): If true, a full corpus folder architecture \
+        create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
-    corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_arcchi_param)
+    corpuses_val = set_corpuses_widgets_param(self, inst_wf, create_archi_param)
     corpuses_val_to_set = ""
     wf_path = Path(inst_wf)
     wf_access_status = try_wf_access(wf_path)
@@ -378,13 +379,13 @@ def _update_datatype(self, *args, datatype_widget=None):
     # Managing working folder
     institute_select = args[0]
     set_inst_param = args[1]
-    create_arcchi_param = args[2]
+    create_archi_param = args[2]
     inst_default_wf = bm_ig.WORKING_FOLDERS_DICT[institute_select] + "-" + bm_gg.VERSION
     set_wf_widget_param(self, institute_select, inst_default_wf,
-                        datatype_select, set_inst_param, create_arcchi_param)
+                        datatype_select, set_inst_param, create_archi_param)
 
     # Managing corpus list
-    corpuses_val = set_corpuses_widgets_param(self, inst_default_wf, create_arcchi_param)
+    corpuses_val = set_corpuses_widgets_param(self, inst_default_wf, create_archi_param)
 
     # Setting and displaying corpuses list initial values
     corpuses_val_to_set = ""
@@ -432,7 +433,7 @@ def update_app_page(self, *args):
 
     # Tracing data type selection
     set_inst_param = True
-    create_arcchi_param = True
+    create_archi_param = True
     datatype_val.trace('w',
                        partial(_update_datatype, self, institute_select, set_inst_param,
-                               create_arcchi_param, datatype_widget=datatype_val))
+                               create_archi_param, datatype_widget=datatype_val))

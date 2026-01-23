@@ -8,7 +8,6 @@ __all__ = ['create_parsing_concat']
 # Standard library imports
 import threading
 import tkinter as tk
-from pathlib import Path
 from tkinter import messagebox
 
 # 3rd party imports
@@ -253,13 +252,13 @@ def _launch_parsing(master, corpus_year, database_type,
                       f"\n\n  Nombre d'articles du corpus : {articles_number}")
         if not unknown_countries_empty and not all_countries_corrected:
             _info_text += ("\n\nATTENTION : Des adresses d'auteurs ne comportent pas de pays."
-                           "\nPour les définir :"
-                           f"\n\n - Ouvrez le fichier :     {correct_files_list[0]}"
-                           "\n  qui a été créé dans le dossier :"
+                           "\n\nPour les définir :"
+                           f"\n\n - Ouvrez le fichier   '{correct_files_list[0]}'"
+                           "\n    qui a été créé dans le dossier suivant :"
                            f"\n    {_parsing_path}"
-                           "\n\n - Indiquez le pays correct dans la colonne nommée 'Country' ;"
-                           "\n\n - Indiquez l'adresse correcte dans la colonne nommée 'Correct address' ;"
-                           "\n - Sauvegardez le fichier ;"
+                           "\n\n - Indiquez le pays correct dans la colonne 'Country'"
+                           "\n - Indiquez l'adresse correcte dans la colonne 'Correct address'"
+                           "\n - Sauvegardez le fichier"
                            "\n - Puis, poursuivez vos traitements sans aucune autre action.")
         else:
             _info_text += ("\n\nToutes les adresses d'auteurs comportent un pays "
@@ -360,7 +359,7 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
         ProgressBar tkinter widget status.
     """
     # Internal functions
-        
+
     def _deduplicate_corpus_parsing(_progress_callback):
         print(f"\nCorrecting addresses with unknown countries for {bp.SCOPUS}...")
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,

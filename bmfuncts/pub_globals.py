@@ -74,7 +74,8 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "inst_country_pub_df", "doctype_stat_df",
                   "pub_country_inst_df", "country_inst_pub_df",
                   "raw_institutions_df", "invalids_df",
-                  "missing_if_issn_df", "false_addresses_df",]
+                  "missing_if_issn_df", "false_addresses_df",
+                  "inst_type_pub_list_df"]
 
 CONFIG_FOLDER = 'ConfigFiles'
 

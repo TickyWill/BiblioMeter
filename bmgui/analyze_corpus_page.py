@@ -33,7 +33,7 @@ def _launch_au_analysis(master, year_select, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.   
     """
-    log_title = f"AUTHORS' SCIENTIFIQUE PRODUCTION FOR {year_select}"
+    log_title = f"AUTHORS' SCIENTIFIC PRODUCTION FOR {year_select}"
     print(f"\n\n{set_bold_txt(log_title)}")
 
     # Setting params values selected by the user

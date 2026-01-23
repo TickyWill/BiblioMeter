@@ -16,7 +16,7 @@ import pandas as pd
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_page
-from bmfuncts.read_final_results import build_pub_ids_lists
+from bmfuncts.read_final_results import keep_only_final_pub_data
 from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.read_final_results import read_final_set_homonyms_data
 from bmfuncts.rename_cols import set_homonym_col_names
@@ -40,7 +40,7 @@ def _read_authors_data(wf_path, final_results_path,
         where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
-        (dataframe): The dataframe of the authors data.
+        (dataframe): The dataframe of the authors' data.
     """
     # Setting useful aliases
     authors_item_alias = bp.PARSING_ITEMS_LIST[1]
@@ -160,20 +160,6 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
     (pub_id_col, au_id_col, inst_au_col, first_au_col, mat_col, type_col, empl_col,
      nb_au_col, is_first_col, is_last_col, doctype_col) = au_empl_cols
 
-    # Getting the publications list with one row per Institute author
-    # and its attributes columns
-    print("- Get the final results of homonyms resolution...", end="\r")
-    all_pub_authors_df = read_final_set_homonyms_data(final_results_path, corpus_year)
-    print("- Employees data of Institute's authors set from homonyms-resolution results")
-
-    # Selecting only publications of the final publication list
-    cols_list = pub_id_col, doctype_col
-    pub_ids_to_keep_list = build_pub_ids_lists(final_results_path, corpus_year, cols_list)[0]
-    kept_pub_authors_df = pd.DataFrame()
-    for pub_id, dg in all_pub_authors_df.groupby(pub_id_col):
-        if pub_id in pub_ids_to_keep_list:
-            kept_pub_authors_df = concat_dfs([kept_pub_authors_df, dg])
-
     # Getting the number of authors per pub-ID from parsing results
     print("- Computing the number of authors per publication from parsing results...", end="\r")
     count_select_cols = [pub_id_col, nb_au_col]
@@ -181,19 +167,32 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
                                            corpus_year, count_select_cols)
     print("- Data of number of authors per publication built from parsing results   ")
 
+    # Getting the publications list with one row per Institute author
+    # and its attributes columns
+    print("- Get the final results of homonyms resolution...", end="\r")
+    all_pub_authors_df = read_final_set_homonyms_data(final_results_path, corpus_year)
+    print("- Employees data of Institute's authors set from homonyms-resolution results")
+
+    # Selecting only data related to the consolidated publications list
+    cols_list = [pub_id_col, doctype_col]
+    kept_pub_authors_df = keep_only_final_pub_data(all_pub_authors_df, final_results_path,
+                                                   corpus_year, cols_list)
+
     # Initializing dataframe to build
     print("- Enhancing data of Institute's authors per publication...", end="\r")
     author_employee_df = pd.DataFrame(columns=au_empl_cols)
     for col in homonyms_select_cols:
         author_employee_df[col] = kept_pub_authors_df[col].copy()
+
+    # Initializing new columns values
+    author_employee_df[nb_au_col] = 0
     author_employee_df[is_first_col] = 0
     author_employee_df[is_last_col] = 0
-
     for idx, row in author_employee_df.iterrows():
         # Setting useful values
         pub_id = row[pub_id_col]
-        author_pos = row[au_id_col] + 1
-        authors_nb = count_auth_df[count_auth_df[pub_id_col]==pub_id][nb_au_col][0]
+        author_pos = int(row[au_id_col]) + 1
+        authors_nb = int(count_auth_df[count_auth_df[pub_id_col]==pub_id][nb_au_col][0])
 
         # Completing row
         author_employee_df.loc[idx, nb_au_col] = authors_nb
@@ -209,11 +208,8 @@ def _build_author_employee_df(wf_path, datatype, corpus_year, au_analysis_cols_d
     author_employee_df = author_employee_df[cols_order]
 
     # Capitalize names
-    author_employee_df[inst_au_col] = author_employee_df[inst_au_col].\
-    apply(name_capwords)
-
-    author_employee_df[empl_col] = author_employee_df[empl_col].\
-    apply(name_capwords)
+    author_employee_df[inst_au_col] = author_employee_df[inst_au_col].apply(name_capwords)
+    author_employee_df[empl_col] = author_employee_df[empl_col].apply(name_capwords)
     print("- Institute's authors data per publication enhanced       ")
     return author_employee_df
 
@@ -246,7 +242,7 @@ def _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic):
                           inst_au_col, nb_pub_col, pub_list_col]
     pub_nb_per_auth_df = pd.DataFrame(columns = au_pub_select_cols)
 
-    # Building the targetted dataframe
+    # Building the targeted dataframe
     print("- Building the data of publications number per Institute's author...", end="\r")
     for _, empl_df in sub_author_employee_df.groupby(empl_col):
         pub_id_list = list(empl_df[pub_id_col])

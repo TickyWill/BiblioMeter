@@ -104,7 +104,7 @@ def solve_homonyms(institute, org_tup, in_path, out_path):
     internal function.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Institute name.
         org_tup (tup): The tuple of the organization structure of the Institute \
         used here to set column names for homonyms.
         in_path (path): The full path to the input file of list of publications \
@@ -184,8 +184,8 @@ def save_homonyms(sub_params_list):
     Finally, saves the dataframe as Excel file.
 
     Args:
-        sub_params_list (list): The list composed of the Institute \
-        name (str), the org_tup (tup) that contains parameters of Institute \
+        sub_params_list (list): The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
     Returns:
@@ -252,14 +252,13 @@ def set_saved_homonyms(sub_params_list, homonyms_status):
     internal function.
 
     Args:
-        sub_params_list (list): The list composed of the Institute \
-        name (str), the org_tup (tup) that contains parameters of Institute \
+        sub_params_list (list): The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
         homonyms_status (bool): True if homonyms exists.
     Returns:
-        (tup): Tuple = End message (str), actualized homonyms \
-        status (bool).
+        (tup): (End message (str), actualized homonyms status (bool)).
     """
     print("\nUsing history of resolved homonyms...")
 
@@ -336,5 +335,5 @@ def set_saved_homonyms(sub_params_list, homonyms_status):
                    f"\n  - Homonyms status after using resolution history: {homonyms_status}")
     else:
         message = "  - No history of resolved homonyms available"
-    print(message) 
+    print(message)
     return homonyms_status

@@ -4,9 +4,9 @@ Python application for bibliometric purpose based on analysis of publications me
 More specifically:<br />
 - Parse Scopus and WoS corpuses;
 - Merge Scopus and WoS corpuses taking care of the duplicates;
-- Recursively dispatch the articles per department using the employees database;
-- Take care of the authors homonimies (user action required);
-- Take care of the authors affiliated to the Institute but not found in the employees database;
+- Recursively dispatch the articles per department using the employees' database;
+- Take care of the authors homonyms (user's action required);
+- Take care of the authors affiliated to the Institute but not found in the employees' database;
 - Computes key performance indicators (impact factors, collaborations and keywords occurrences...).
 
 ## Installation
@@ -32,7 +32,7 @@ docs\make.bat html
 ```
 
 ## Documentation edition
-Open the following BiblioMeter sphinx-documentation html file:
+Open the following BiblioMeter sphinx-documentation HTML file:
 >docs/docbuild/html/index.html
 
 ## Building executable
@@ -42,7 +42,7 @@ Either run the following batch file:
 Or refer to the following manual:
 <p><a href=https://github.com/TickyWill/BiblioMeter/blob/main/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual
 </a></p>
-<span style="color:red">BEWARE:</span> Some security softwares (eg. McAfee) could place the .exe file in quarantine. If so you have to manually authorized the .exe file.
+<span style="color:red">BEWARE:</span> Some security tools (e.g. McAfee) could place the EXE file in quarantine. If so you have to manually authorized the .exe file.
 
 ## Usage example
 ```python

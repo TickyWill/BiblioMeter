@@ -26,7 +26,6 @@ from bmfuncts.save_final_results import save_final_dedup
 from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import reorder_df
-from bmfuncts.useful_functs import standardize_firstname_initials
 from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
 
@@ -213,13 +212,11 @@ def _check_added_dois_affil(params_list, dfs_list, bp_cols_list):
 
 
 def _retain_firstname_initials(txt):
-    """Removes '-' from the initials of the author's 
-    first name.
+    """Removes '-' from the initials of the author's first name.
 
     Args:
-        txt (str): The raw initials of the author's \
-        first name.
-    returns:
+        txt (str): The raw initials of the author's first name.
+    Returns:
         (str): The modified initials.
     """
     txt = txt.replace('-',' ')
@@ -228,20 +225,17 @@ def _retain_firstname_initials(txt):
 
 
 def _split_lastname_firstname(txt, digits_min=4):
-    """Sets the lambda function for extracting last_name 
-    and first-name initials from the author's name.
+    """Sets the lambda function for extracting last_name and first-name initials from the author's name.
 
-    It uses the `_retain_firstname_initials` internal function 
-    and the `standardize_txt` function imported from the \
-    `bmfuncts.useful_functs` module.
+    It uses the `_retain_firstname_initials` internal function  and the `standardize_txt` function 
+    imported from the `bmfuncts.useful_functs` module.
 
     Args:
-        txt (str): The txt from which last name and first-name initials \
-        of the author are extracted.
-        digits_min (int): The minimum length of the names that contains '-' \
-        symbol to be kept in author's last name.
-    returns:
-        tup): (The extracted last name, the extracted first-name initials).
+        txt (str): The txt from which last name and first-name initials of the author are extracted.
+        digits_min (int): The minimum length of the names that contains '-' symbol to be kept \
+        in author's last name.
+    Returns:
+        (tup): (The extracted last name, the extracted first-name initials).
     """
     names_list = txt.split()
     first_names_list = names_list[-1:]
@@ -262,12 +256,12 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
     Args:
         authorsinst_authors_df (dataframe): Data of combined name of author to author ID \
         with affiliation by publication ID.
-        inst_col_list (list): List of column names (str) that contains \
-        affiliation status to the Institute.
+        inst_col_list (list): List of column names (str) that contains affiliation \
+        status to the Institute.
         main_status (bool): Status of the combination of 'inst_col_list' columns \
-        to identify affiliation to the Institute. 
+        to identify affiliation to the Institute.
         main_inst_idx (int): Index of the unique column name in 'inst_col_list' list \
-        to be used for the Institute affiliation status for 'main_status' set to False.                    
+        to be used for the Institute affiliation status for 'main_status' set to False.
     Returns:
         (Pandas Series): A filter on specified columns depending on the status \
         of the combination of 'inst_col_list' columns of the 'authorsinst_authors_df' \
@@ -284,8 +278,7 @@ def _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status,
         filt_authors_inst_ = authorsinst_authors_df[first_inst_col]==1
         for inst_idx, inst_col in enumerate(inst_col_list):
             if inst_idx!=0:
-                filt_authors_inst_ = filt_authors_inst_ | \
-                                     (authorsinst_authors_df[inst_col]==1)
+                filt_authors_inst_ = filt_authors_inst_ | (authorsinst_authors_df[inst_col]==1)
     return filt_authors_inst_
 
 
@@ -318,15 +311,14 @@ def _set_correction_file_params(institute, wf_path, corpus_year):
     drop_authsinst_path = wf_path / Path(year_drop_articles_folder) / Path(drop_authsinst_file)
     ortho_path = wf_path / Path(orphan_treat_root) / Path(orthograph_file_name)
     complements_path = wf_path / Path(orphan_treat_root) / Path(complements_file_name)
-    
+
     paths_list = [drop_articles_path, drop_authsinst_path, ortho_path, complements_path]
     sheets_list = [replace_sheet, remove_sheet]
 
     return paths_list, sheets_list
 
 
-def _check_names_spelling(init_df, ortho_path,
-                          bm_auth_names_list, bm_ortho_cols_list):
+def _check_names_spelling(init_df, ortho_path, bm_auth_names_list, bm_ortho_cols_list):
     """Replace author names in 'init_df' dataframe by the employee name.
 
     This is done when a name-spelling discrepancy is given in the dedicated 
@@ -347,139 +339,123 @@ def _check_names_spelling(init_df, ortho_path,
         (dataframe): Publications list with one row per author where \
         spelling of author names have been corrected.
     """
-    print("      - Correcting misspelling of author's names...", end="\r")
+    print("      - Correcting misspelling of authors' names...")
     # Setting parameters from args
-    (pub_fullname_col, pub_last_name_col,
-     pub_first_name_col) = bm_auth_names_list
-    (ortho_lastname_init, ortho_initials_init,
-     ortho_lastname_new, ortho_initials_new) = bm_ortho_cols_list
+    (pub_fullname_col, pub_last_name_col, pub_first_name_col) = bm_auth_names_list
+    (ortho_lastname_init, ortho_initials_init, ortho_lastname_new, ortho_initials_new) = bm_ortho_cols_list
 
-    # Reading data file targeted by 'ortho_path'
+    # Reading the file giving the misspelled names
     ortho_col_list = list(bm_pg.COL_NAMES_ORTHO.values())
     warnings.simplefilter(action='ignore', category=UserWarning)
-    ortho_df = pd.read_excel(ortho_path,
-                             usecols=ortho_col_list,
+    ortho_df = pd.read_excel(ortho_path, usecols=ortho_col_list,
                              keep_default_na=False)
-    ortho_df[ortho_lastname_init] = ortho_df[ortho_lastname_init].\
-        apply(standardize_txt)
-    ortho_df[ortho_lastname_new] = ortho_df[ortho_lastname_new].\
-        apply(standardize_txt)
-    ortho_df[ortho_initials_init] = ortho_df[ortho_initials_init].\
-        apply(standardize_firstname_initials)
-    ortho_df[ortho_initials_new] = ortho_df[ortho_initials_new].\
-        apply(standardize_firstname_initials)
 
-    new_df = init_df.copy()
-    new_df = new_df.reset_index(drop=True)
-    for pub_row_num, _ in new_df.iterrows():
-        lastname_init = init_df.loc[pub_row_num, pub_last_name_col]
-        initials_init = init_df.loc[pub_row_num, pub_first_name_col]
-        for ortho_row_num, _ in ortho_df.iterrows():
-            lastname_pub_ortho = ortho_df.loc[ortho_row_num, ortho_lastname_init]
-            initials_pub_ortho = ortho_df.loc[ortho_row_num, ortho_initials_init]
+    # Standardizing the names
+    for col in bm_ortho_cols_list:
+        ortho_df[col] = ortho_df[col]. apply(standardize_txt)
+    print("          - Misspelled authors' names and corrected names standardized")
 
+    print("          - Correcting the misspelled names in the publications list...")
+    full_names_nb, names_nb = len(init_df), 0
+    new_df = pd.DataFrame()
+    for _, pub_row in init_df.iterrows():
+        names_nb += 1
+        print(f"              Number of checked names:   {names_nb} / {full_names_nb}", end="\r")
+        lastname_init = str(pub_row[pub_last_name_col])
+        initials_init = str(pub_row[pub_first_name_col])
+        new_pub_row = pub_row.copy()
+        for _, ortho_df_row in ortho_df.iterrows():
+            lastname_pub_ortho = str(ortho_df_row[ortho_lastname_init])
+            initials_pub_ortho = str(ortho_df_row[ortho_initials_init])
             if lastname_init==lastname_pub_ortho and initials_init==initials_pub_ortho:
-                lastname_eff_ortho = ortho_df.loc[ortho_row_num, ortho_lastname_new]
-                initials_eff_ortho = ortho_df.loc[ortho_row_num, ortho_initials_new]
-                new_df.loc[pub_row_num, pub_last_name_col] = lastname_eff_ortho
-                new_df.loc[pub_row_num, pub_first_name_col] = initials_eff_ortho
-                new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_ortho + \
-                                                            ' ' + initials_eff_ortho
+                lastname_eff_ortho = str(ortho_df_row[ortho_lastname_new])
+                initials_eff_ortho = str(ortho_df_row[ortho_initials_new])
+                new_pub_row[pub_last_name_col] = lastname_eff_ortho
+                new_pub_row[pub_first_name_col] = initials_eff_ortho
+                new_pub_row[pub_fullname_col] = lastname_eff_ortho + ' ' + initials_eff_ortho
+        new_df = concat_dfs([new_df, new_pub_row.to_frame().T], concat_ignore_index=True)
 
-    print("      - Misspelling of author names corrected      ")
+    print("          - Misspelling of author names corrected                         ")
     return new_df
 
 
-def _check_names_to_replace(corpus_year, init_df,
-                            complements_path, replace_sheet,
+def _check_names_to_replace(corpus_year, init_df, complements_path, replace_sheet,
                             bm_auth_names_list, bm_compl_cols_list):
     """Replace author names in 'init_df' dataframe by the correct author name.
 
-    This is done when metadata error is reported for specified publications 
-    in the dedicated xlsx file.
+    This is done when metadata error is reported for specified publications in the dedicated XLSX file.
 
     Args:
         corpus_year (str): Corpus year of publications list.
-        init_df (dataframe): Publications list with one row per author \
-        where author names should be corrected.
-        complements_path (path): The full path to the file where the metadata \
-        errors are reported. 
-        replace_sheet (str): The name of the sheet where the metadata \
-        errors are reported.
-        bm_auth_names_list (list): Useful column names in 'init_df' \
-        dataframe = [full name, last name, first name].
-        bm_compl_cols_list (list): Useful column names in the complementary \
-        dataframe = [publication last name, publication first name, \
-        employee last name, employee first name, corpus year].
+        init_df (dataframe): Publications list with one row per author where author names \
+        should be corrected.
+        complements_path (path): The full path to the file where the metadata errors are reported.
+        replace_sheet (str): The name of the sheet where the metadata errors are reported.
+        bm_auth_names_list (list): Useful column names in 'init_df' data (full name, last name, first name).
+        bm_compl_cols_list (list): Useful column names in the complementary (publication last name, \
+        publication first name, employee last name, employee first name, corpus year).
     Returns:
-        (dataframe): Publications list with one row per author where \
-        author names have been corrected for specific publications.
+        (dataframe): Publications list with one row per author where author names have been \
+        corrected for specific publications.
     """
+    print("      - Replacing false authors' names...")
     # Setting parameters from args
-    (pub_fullname_col, pub_last_name_col,
-     pub_first_name_col) = bm_auth_names_list
-    (compl_lastname_init, compl_initials_init,
-     compl_lastname_new, compl_initials_new,
-     compl_year_pub) = bm_compl_cols_list
+    (pub_fullname_col, pub_last_name_col, pub_first_name_col) = bm_auth_names_list
+    (compl_lastname_init, compl_initials_init, compl_lastname_new,
+     compl_initials_new, compl_year_pub) = bm_compl_cols_list
 
-    # Getting the information of the year in the complementary file
+    # Reading the file reporting metadata errors
     compl_col_list = list(bm_pg.COL_NAMES_COMPL.values())
     warnings.simplefilter(action='ignore', category=UserWarning)
-    compl_df = pd.read_excel(complements_path,
-                             sheet_name=replace_sheet,
-                             usecols=compl_col_list,
-                             keep_default_na=False)
-    compl_df[compl_lastname_init] = compl_df[compl_lastname_init].\
-        apply(standardize_txt)
-    compl_df[compl_lastname_new] = compl_df[compl_lastname_new].\
-        apply(standardize_txt)
-    compl_df[compl_initials_init] = compl_df[compl_initials_init].\
-        apply(standardize_firstname_initials)
-    compl_df[compl_initials_new] = compl_df[compl_initials_new].\
-        apply(standardize_firstname_initials)
+    compl_df = pd.read_excel(complements_path, sheet_name=replace_sheet,
+                             usecols=compl_col_list, keep_default_na=False)
+
+    # Standardizing the names
+    for col in bm_compl_cols_list[:-1]:
+        compl_df[col] = compl_df[col].apply(standardize_txt)
+    print("          - False authors' names and corrected names standardized")
+
+    # Getting the information of the year in the complementary file
     year_compl_df = compl_df[compl_df[compl_year_pub]==int(corpus_year)]
     year_compl_df = year_compl_df.reset_index()
 
-    new_df = init_df.copy()
-    for pub_row_num, _ in new_df.iterrows():
-        lastname_init = init_df.loc[pub_row_num, pub_last_name_col]
-        initials_init = init_df.loc[pub_row_num, pub_first_name_col]
-        for compl_row_num, _ in year_compl_df.iterrows():
-            lastname_pub_compl = year_compl_df.loc[compl_row_num, compl_lastname_init]
-            initials_pub_compl = year_compl_df.loc[compl_row_num, compl_initials_init]
+    print("          - Correcting the false authors' names in the publications list...")
+    full_names_nb, names_nb = len(init_df), 0
+    new_df = pd.DataFrame()
+    for _, pub_row in init_df.iterrows():
+        names_nb += 1
+        print(f"              Number of checked names:   {names_nb} / {full_names_nb}", end="\r")
+        lastname_init = str(pub_row[pub_last_name_col])
+        initials_init = str(pub_row[pub_first_name_col])
+        new_pub_row = pub_row.copy()
+        for _, year_compl_row in year_compl_df.iterrows():
+            lastname_pub_compl = str(year_compl_row[compl_lastname_init])
+            initials_pub_compl = str(year_compl_row[compl_initials_init])
             if lastname_init==lastname_pub_compl and initials_init==initials_pub_compl:
+                lastname_eff_compl = str(year_compl_row[compl_lastname_new])
+                initials_eff_compl = str(year_compl_row[compl_initials_new])
+                new_pub_row[pub_last_name_col] = lastname_eff_compl
+                new_pub_row[pub_first_name_col] = initials_eff_compl
+                new_pub_row[pub_fullname_col] = lastname_eff_compl + ' ' + initials_eff_compl
+        new_df = concat_dfs([new_df, new_pub_row.to_frame().T], concat_ignore_index=True)
 
-                lastname_eff_compl = year_compl_df.loc[compl_row_num, compl_lastname_new]
-                initials_eff_compl = year_compl_df.loc[compl_row_num, compl_initials_new]
-                new_df.loc[pub_row_num, pub_last_name_col] = lastname_eff_compl
-                new_df.loc[pub_row_num, pub_first_name_col] = initials_eff_compl
-                new_df.loc[pub_row_num, pub_fullname_col] = lastname_eff_compl \
-                + ' ' + initials_eff_compl
-
-    print("      - False author names replaced")
+    print("          - False author names replaced                                       ")
     return new_df
 
 
-def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet,
-                             bm_auth_names_list, bm_outliers_cols_list):
+def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_names_list, bm_outliers_cols_list):
     """Drops rows of authors to be removed in the 'pub-df' dataframe.
 
     The authors to remove are reported in the dedicated xlsx file.
 
     Args:
-        pub_df (dataframe): Publications list with one row per author \
-        where rows should be dropped.
-        outliers_path (path): The full path to the file where the authors \
-        to remove are reported. 
-        outliers_sheet (str): The name of the sheet where the authors \
-        to remove are reported. 
-        bm_auth_names_list (list): Useful column names in 'pub_df' dataframe \
-        = [last name col, first name col].
-        bm_outliers_cols_list (list): Useful column names in the outliers \
-        dataframe = [last name col, first name initials col]. 
+        pub_df (dataframe): Publications list with one row per author where rows should be dropped.
+        outliers_path (path): The full path to the file where the authors to remove are reported.
+        outliers_sheet (str): The name of the sheet where the authors to remove are reported.
+        bm_auth_names_list (list): Useful column names in 'pub_df' data (last name col, first name col).
+        bm_outliers_cols_list (list): Useful column names in the outliers (last name col, first name initials col).
     Returns:
-        (dataframe): Publications list with one row per author where \
-        rows of authors to be removed have been dropped.
+        (dataframe): Publications list with one row per author where rows of authors to be removed have been dropped.
     """
 
     # Setting parameters from args
@@ -488,71 +464,59 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet,
 
     # Reading the file giving the outliers
     warnings.simplefilter(action='ignore', category=UserWarning)
-    outliers_df = pd.read_excel(outliers_path,
-                                sheet_name=outliers_sheet,
-                                usecols=[outliers_lastname_col,
-                                         outliers_initials_col],
-                                keep_default_na=False)
-    outliers_df[outliers_lastname_col] = outliers_df[outliers_lastname_col].\
-        apply(standardize_txt)
-    outliers_df[outliers_initials_col] = outliers_df[outliers_initials_col].\
-        apply(standardize_firstname_initials)
+    outliers_df = pd.read_excel(outliers_path, sheet_name=outliers_sheet,
+                                usecols=bm_outliers_cols_list, keep_default_na=False)
 
-    # Initializing the dataframe that will contain the rows to drop
-    # with the same columns names as the dataframe to update
+    # Standardizing the names
+    for col in bm_outliers_cols_list:
+        outliers_df[col] = outliers_df[col].apply(standardize_txt)
+
+    # Searching for the outliers in the data to update by lastname and initials
+    print("          - Removing external-authors' information in the publications list...")
+    full_names_nb, names_nb = len(pub_df), 0
     drop_df = pd.DataFrame(columns=list(pub_df.columns))
-
-    # Searching for the outliers in the dataframe to update by lastname and initials
-    for pub_row_num, _ in pub_df.iterrows():
-        pub_lastname = pub_df.loc[pub_row_num, pub_last_col]
-        pub_initials = pub_df.loc[pub_row_num, pub_initials_col]
-        for outliers_row_num, _ in outliers_df.iterrows():
-            outliers_lastname = outliers_df.loc[outliers_row_num, outliers_lastname_col]
-            outliers_initials = outliers_df.loc[outliers_row_num, outliers_initials_col]
+    for _, pub_row in pub_df.iterrows():
+        names_nb += 1
+        print(f"              Number of checked names:   {names_nb} / {full_names_nb}", end="\r")
+        pub_lastname = str(pub_row[pub_last_col])
+        pub_initials = str(pub_row[pub_initials_col])
+        for _, outliers_row in outliers_df.iterrows():
+            outliers_lastname = str(outliers_row[outliers_lastname_col])
+            outliers_initials = str(outliers_row[outliers_initials_col])
             if pub_lastname==outliers_lastname and pub_initials==outliers_initials:
                 # Setting the row to drop as a dataframe
-                row_to_drop_df = pub_df.loc[pub_row_num].to_frame().T
-                # Appending the row to drop to the dataframe that will contain all the rows to drop
+                row_to_drop_df = pub_row.to_frame().T
+                # Appending the row to drop to the datathat will contain all the rows to drop
                 drop_df = concat_dfs([drop_df, row_to_drop_df], concat_ignore_index=True)
 
     # Removing the rows to drop from the dataframe to update
     new_pub_df = concat_dfs([pub_df, drop_df], keep="False")
 
-    print("      - External authors removed")
+    print("          - External authors removed                                              ")
     return new_pub_df
 
 
-def _read_useful_parsing_data(wf_path, final_results_path,
-                              corpus_year, items_list):
-    """Reads the saved data of publications, addresses, authors 
-    and authors with affiliations resulting from 
-    the parsing step.
+def _read_useful_parsing_data(wf_path, final_results_path, corpus_year, items_list):
+    """Reads the saved data of publications, addresses, authors and authors 
+    with affiliations resulting from the parsing step.
 
-    It uses the `read_final_dedup` function of 
-    the `bmfuncts.useful_functs` module.
+    It uses the `read_final_dedup` function of the `bmfuncts.useful_functs` module.
 
     Args:
         wf_path (path): Full path to working folder.
-        final_results_path (path): Full path to the folder \
-        where final results are saved.
+        final_results_path (path): Full path to the folder where final results are saved.
         corpus_year (str): 4 digits year of the corpus.
         items_list (list): List of items (str) to be read.
     Returns:
-        (tup): (The publications data (dataframe), \
-         The addresses data (dataframe), \
-         The authors data (dataframe), \
-         The authors with affiliations data (dataframe)).
+        (tup): (The publications data (dataframe), The addresses data (dataframe), \
+         The authors data (dataframe), The authors with affiliations data (dataframe)).
     """
     # Setting useful parameters from args
-    (articles_item,
-     addresses_item,
-     authors_item,
-     auth_inst_item) = items_list
+    (articles_item, addresses_item,
+     authors_item, auth_inst_item) = items_list
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_final_dedup(wf_path,
-                                          final_results_path,
-                                          corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
 
     # Getting ID of each publication with complementary info
     articles_df = dedup_parsing_dict[articles_item]
@@ -570,20 +534,16 @@ def _read_useful_parsing_data(wf_path, final_results_path,
 
 
 def _get_input_data(params_list, bp_cols_list):
-    """Gets the input data through the `_read_useful_parsing_data` internal function 
-    and corrects incomplete affiliations for the added DOIs info from HAL database through 
-    the `_check_added_dois_affil` internal function.
+    """Gets the input data through the `_read_useful_parsing_data` internal function and corrects incomplete 
+    affiliations for the added DOIs info from HAL database through the `_check_added_dois_affil` internal function.
 
     Args:
-        params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
-        bp_cols_list (list): the list of useful col names as set by \
-        the `_set_useful_bp_cols` internal function.
+        params_list (list):  The list composed of the Institute name (str), the org_tup (tup) \
+        that contains parameters of Institute organization, the full path to working folder (path), \
+        the data combination type of corpuses databases (str) and the 4 digits year of the corpus (str).
+        bp_cols_list (list): the list of useful col names as set through the `_set_useful_bp_cols` internal function.
     Returns:
-        (tup): (The built data of articles, The built data of authors, \
-        The built data of authors with affiliations).
+        (tup): (The built data of articles, The built data of authors, The built data of authors with affiliations).
     """
     # Setting parameters values from params_list
     wf_path, datatype, corpus_year = params_list[2:]
@@ -594,7 +554,7 @@ def _get_input_data(params_list, bp_cols_list):
     authors_item_alias = bp.PARSING_ITEMS_LIST[1]
     auth_inst_item_alias = bp.PARSING_ITEMS_LIST[5]
 
-    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
+    # Getting the full paths of the working folder architecture for the corpus
     config_tup = set_user_config(wf_path, corpus_year, bm_pg.BDD_LIST)
     item_filename_dict = config_tup[2]
 
@@ -602,12 +562,9 @@ def _get_input_data(params_list, bp_cols_list):
     final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Getting the useful parsing results
-    items_list = [articles_item_alias,
-                  addresses_item_alias,
-                  authors_item_alias,
-                  auth_inst_item_alias]
-    return_tup = _read_useful_parsing_data(wf_path, final_results_path,
-                                           corpus_year, items_list)
+    items_list = [articles_item_alias, addresses_item_alias,
+                  authors_item_alias, auth_inst_item_alias]
+    return_tup = _read_useful_parsing_data(wf_path, final_results_path, corpus_year, items_list)
     articles_df, addresses_df, authors_df, authorsinst_df = return_tup
 
     if datatype=="Scopus-HAL & WoS":
@@ -620,50 +577,43 @@ def _get_input_data(params_list, bp_cols_list):
         dedup_infos = [wf_path, datatype, corpus_year]
         addresses_file_name_base = item_filename_dict[addresses_item_alias]
         auth_inst_file_name_base = item_filename_dict[auth_inst_item_alias]
-        save_final_dedup(addresses_df, addresses_file_name_base,
-                         bm_pg.TSV_SAVE_EXTENT, dedup_infos)
-        save_final_dedup(authorsinst_df, auth_inst_file_name_base,
-                         bm_pg.TSV_SAVE_EXTENT, dedup_infos)
+        save_final_dedup(addresses_df, addresses_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
+        save_final_dedup(authorsinst_df, auth_inst_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
 
     return articles_df, authors_df, authorsinst_df
 
 
 def _recasting_authors_df(authors_df, recast_cols_list):
-    """Recasts the data with one row per Institute author 
-    for each publication by formatting the authors full names and their 
-    redistribution into last names and first-names initials.
+    """Recasts the data with one row per Institute's author for each publication 
+    by formatting the authors full names and their redistribution into last names 
+    and first-names initials.
 
     Args:
-        authors_df (dataframe): Data of publication IDs list \
-        with one row per author resulting from the parsing step. 
-        recast_cols_list (list): The names of the columns to be \
-        used = [publication author full name, publication author \
-        last name, publication author first name, Institute author name].
+        authors_df (dataframe): Data of publication IDs list with one row per author \
+        resulting from the parsing step.
+        recast_cols_list (list): The names (str) of the columns to be used for authors' \
+        names recast (fullname, lastname, firstname, co-author name).
     Returns:
         (dataframe): The recast data.
     """
     # Setting useful alias
     fullname_col, lastname_col, firstname_col, co_auth_col = recast_cols_list
 
-    # Transforming to uppercase the Institute author name
-    # which is in column 'co_auth_col'
+    # Transforming to uppercase the co-author's name
     authors_df[co_auth_col] = authors_df[co_auth_col].str.upper()
 
-    # Splitting the Institute author name to firstname initials and lastname
+    # Splitting the Ico-author's name to firstname initials and lastname
     # and putting them as a tuple in column 'fullname_col'
     col_in, col_out = co_auth_col, fullname_col
-    authors_df[col_out] = authors_df.apply(lambda row:
-                                           _split_lastname_firstname(row[col_in]),
-                                           axis=1)
+    authors_df[col_out] = authors_df.apply(lambda row: _split_lastname_firstname(row[col_in]), axis=1)
 
-    # Splitting tuples of column 'fullname_col'
-    # into the two columns 'lastname_col' and 'firstname_col'
-    col_in = fullname_col # Last_name + firstname initials
+    # Splitting tuples of column 'fullname_col' into the two columns 'lastname_col' and 'firstname_col'
+    col_in = fullname_col
     col1_out, col2_out = lastname_col, firstname_col
     authors_df[[col1_out, col2_out]] = pd.DataFrame(authors_df[col_in].tolist())
 
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
-    col_in = fullname_col # Last_name + firstname initials
+    col_in = fullname_col
     authors_df[col_in] = authors_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
     print("      - Author name recast to last name and first-name initials")
     return authors_df
@@ -673,12 +623,10 @@ def _build_authors_full_list(authors_df, full_authors_cols_list):
     """Builds the data of authors full-list per publications.
 
     Args:
-        authors_df (dataframe): Data of publication IDs list \
-        with one row per author resulting from the parsing step. 
-        full_authors_cols_list (list): The names of the columns to be \
-        used = [publications IDs, Institute author name, publication \
-        author full name, publication author last name, publication \
-        author first name, authors list].
+        authors_df (dataframe): Data of publication IDs list with one row per author \
+        resulting from the parsing step. 
+        full_authors_cols_list (list): The columns to be used (publications IDs, co-author name, \
+        author's full name, author's last name, author's first name, authors list].
     Returns:
         (dataframe): The built data.
     """
@@ -739,7 +687,7 @@ def build_institute_pubs_authors(params_list):
     for each publication from the results of the corpus parsing.
 
     This is done through the following steps:
-    
+
     1. The parsing results are got through the `_get_input_data` internal function.
     2. The authors data resulting from the parsing step are recast to split \
     authors full name into last name and firstname initials through \
@@ -801,44 +749,30 @@ def build_institute_pubs_authors(params_list):
     authors_df = _recasting_authors_df(authors_df, recast_cols_list)
 
     # Checking authors name spelling and correct them
-    authors_df = _check_names_spelling(authors_df, ortho_path,
-                                       bm_auth_names_list, bm_ortho_cols_list)
+    authors_df = _check_names_spelling(authors_df, ortho_path, bm_auth_names_list, bm_ortho_cols_list)
 
     # Adding column of full authors list
     full_authors_cols_list = [pub_id_col, co_auth_col, fullname_col, authors_list_col]
     pub_authors_df = _build_authors_full_list(authors_df, full_authors_cols_list)
-    new_articles_df =  articles_df.merge(pub_authors_df,
-                                         how='right',
-                                         on=pub_id_col)
+    new_articles_df =  articles_df.merge(pub_authors_df, how='right', on=pub_id_col)
 
     # Combining name of author to author ID with affiliation by publication ID
-    authorsinst_authors_df = authorsinst_df.merge(authors_df,
-                                                  how='inner',
-                                                  left_on=[pub_id_col, auth_idx_col],
-                                                  right_on=[pub_id_col, auth_idx_col])
+    merge_cols = [pub_id_col, auth_idx_col]
+    authorsinst_authors_df = authorsinst_df.merge(authors_df, how='inner', left_on=merge_cols, right_on=merge_cols)
 
     # Building the authors filter of the institution INSTITUTE
-    inst_col_list = org_tup[4]
-    main_inst_idx = org_tup[7]
-    main_status = org_tup[8]
-    filt_authors_inst = _build_filt_authors_inst(authorsinst_authors_df,
-                                                 inst_col_list,
-                                                 main_status, main_inst_idx)
+    inst_col_list, main_inst_idx, main_status = org_tup[4], org_tup[7], org_tup[8]
+    filt_authors_inst = _build_filt_authors_inst(authorsinst_authors_df, inst_col_list, main_status, main_inst_idx)
 
-    # Associating each publication (including its complementary info)
-    # with each of its INSTITUTE authors
-    # The resulting dataframe contains a row for each INSTITUTE author
-    # with the corresponding publication info
-    inst_merged_df = authorsinst_authors_df[filt_authors_inst].merge(new_articles_df,
-                                                                     how='left',
-                                                                     left_on=[pub_id_col],
-                                                                     right_on=[pub_id_col])
+    # Associating each publication (including its complementary info) with each of its Institute's authors
+    # The resulting data  contains a row for each Institute's author with the corresponding publication info
+    inst_merged_df = authorsinst_authors_df[filt_authors_inst].merge(new_articles_df, how='left',
+                                                                     left_on=[pub_id_col], right_on=[pub_id_col])
 
     # Replacing author names resulting from publication metadata errors
     # Then searching for authors external to Institute but tagged as affiliated to it
     # and dropping their row in the returned dataframe
-    inst_merged_df = _check_names_to_replace(corpus_year, inst_merged_df,
-                                             complements_path, replace_sheet,
+    inst_merged_df = _check_names_to_replace(corpus_year, inst_merged_df, complements_path, replace_sheet,
                                              bm_auth_names_list, bm_compl_cols_list)
     inst_merged_df = _check_authors_to_remove(inst_merged_df, complements_path, remove_sheet,
                                               bm_auth_names_list, bm_outliers_cols_list)
@@ -850,7 +784,7 @@ def build_institute_pubs_authors(params_list):
     # Building and save data of dropped publications
     final_pub_ids_list = list(set(inst_merged_df[pub_id_col].to_list()))
     drop_articles_df = articles_df[~articles_df[pub_id_col].isin(final_pub_ids_list)]
-    drop_authorsinst_df = authorsinst_df[~authorsinst_df[pub_id_col].isin(final_pub_ids_list)]    
+    drop_authorsinst_df = authorsinst_df[~authorsinst_df[pub_id_col].isin(final_pub_ids_list)]
     drop_articles_df.to_excel(drop_articles_path, index=False)
     drop_authorsinst_df.to_excel(drop_authsinst_path, index=False)
 

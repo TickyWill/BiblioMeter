@@ -1,5 +1,4 @@
 """Module of functions for geographical collaborations analysis.
-
 """
 
 __all__ = ['build_and_save_geo_stat']
@@ -35,6 +34,34 @@ def _set_geo_stat_cols():
     return geo_stat_cols_dic
 
 
+def _build_items_stat(items_df, institute_item, items_cols, stat_cols):
+    """Builds the statistics of publications per item, item being 
+    for instance country or continent.
+
+    Args:
+        items_df (dataframe): Item data used to compute the statistics.
+        institute_item (str): Value of the Institute's item.
+        items_cols (list): The two column names of the item data useful \
+        to compute de statistics, i.e. publications IDs and publications items.
+        stat_cols (list): The column names of the data of the built statisctics.
+    Returns:
+        (dataframe): The data of the built statisctics.
+    """
+    [pub_id_col, item_col] = items_cols
+    data = []
+    for item, pub_id_dg in items_df.groupby(item_col):
+        pub_id_dg = pub_id_dg.drop_duplicates([pub_id_col, item_col])
+        pub_ids_list = pub_id_dg[pub_id_col].tolist()
+        pub_ids_nb = len(pub_ids_list)
+        if item!=institute_item:
+            pud_ids_txt = "; ".join(pub_ids_list)
+        else:
+            pud_ids_txt = pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb - 1]
+        data.append([item, pub_ids_nb, pud_ids_txt])
+    by_item_df = pd.DataFrame(data, columns=stat_cols)
+    return by_item_df
+
+
 def _build_countries_stat(countries_df, institute_country):
     """Builds the statistics of publications per country from the analysis 
     of the dataframe of countries.
@@ -47,7 +74,7 @@ def _build_countries_stat(countries_df, institute_country):
 
     Args:
         countries_df (dataframe): Data of countries per publications.
-        institute_country (str): The country of the institute
+        institute_country (str): The country of the institute.
     Returns:
         (dataframe): Countries statistics where each row gives the country name, \
         the Institute-publications number with address from the country \
@@ -59,21 +86,10 @@ def _build_countries_stat(countries_df, institute_country):
     (pub_id_col, country_col, final_country_col,
      weight_col, pub_ids_col) = [geo_stat_cols_dic[key] for key in col_keys]
 
-    by_country_df = pd.DataFrame(columns=[final_country_col, weight_col, pub_ids_col])
-    idx_country = 0
-    for country, pub_id_dg in countries_df.groupby(country_col):
-        pub_id_dg = pub_id_dg.drop_duplicates([pub_id_col, country_col])
-        pub_ids_list = pub_id_dg[pub_id_col].tolist()
-        pub_ids_nb = len(pub_ids_list)
-        by_country_df.loc[idx_country, final_country_col] = country
-        by_country_df.loc[idx_country, weight_col] = pub_ids_nb
-        if country!=institute_country:
-            pud_ids_txt = "; ".join(pub_ids_list)
-        else:
-            pud_ids_txt = pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb - 1]
-        by_country_df.loc[idx_country, pub_ids_col] = pud_ids_txt
-        idx_country += 1
-
+    # Computing the statistics per countries
+    countries_cols = [pub_id_col, country_col]
+    stat_cols = [final_country_col, weight_col, pub_ids_col]
+    by_country_df = _build_items_stat(countries_df, institute_country, countries_cols, stat_cols)
     return by_country_df
 
 
@@ -83,8 +99,8 @@ def _build_continents_stat(countries_df, institute_continent):
 
     Each row of this dataframe contains:
 
-    - A publication IDs; 
-    - The index of an address of the publication addresses; 
+    - A publication IDs;
+    - The index of an address of the publication addresses;
     - The country of the given address.
 
     Args:
@@ -111,21 +127,10 @@ def _build_continents_stat(countries_df, institute_continent):
     # Renaming the column 'country_col' to 'continent_col'
     continents_df = continents_df.rename(columns={country_col: continent_col})
 
-    by_continent_df = pd.DataFrame(columns=[continent_col, weight_col, pub_ids_col])
-    idx_continent = 0
-    for continent, pub_id_dg in continents_df.groupby(continent_col):
-        pub_id_dg = pub_id_dg.drop_duplicates([pub_id_col, continent_col])
-        pub_ids_list = pub_id_dg[pub_id_col].tolist()
-        pub_ids_nb = len(pub_ids_list)
-        by_continent_df.loc[idx_continent, continent_col] = continent
-        by_continent_df.loc[idx_continent, weight_col] = pub_ids_nb
-        if continent!=institute_continent:
-            pud_ids_txt = "; ".join(pub_ids_list)
-        else:
-            pud_ids_txt = pub_ids_list[0] + "..." + pub_ids_list[pub_ids_nb - 1]
-        by_continent_df.loc[idx_continent, pub_ids_col] = pud_ids_txt
-        idx_continent += 1
-
+    # Computing the statistics per continents
+    continents_cols = [pub_id_col, continent_col]
+    stat_cols = [continent_col, weight_col, pub_ids_col]
+    by_continent_df = _build_items_stat(continents_df, institute_continent, continents_cols, stat_cols)
     return by_continent_df
 
 
@@ -155,19 +160,78 @@ def _set_institute_country_stat_df_params():
     return inst_country_stat_cols_dic, inst_country_stat_rows_dic
 
 
+def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, raw_item_lists):
+    """Updates two lists of publications IDs with the passed publication ID 
+    depending on the Institute's normalized name occurrence in the analyzed data.
+
+    The kind of the publications IDs lists are explained in 
+    the `_build_institute_country_stat` internal calling function.
+
+    Args:
+        pub_id (str): The publication ID tagged with the corpus year value.
+        df (dataframe): The data to be analyzed.
+        institute_norm (str): The Institute's normalized name.
+        institutions_col (list): The name of the column that contains \
+        the normalized affiliations in the data to be analyzed.
+        raw_item_lists (list)/ The list of the publications IDs lists to be updated.
+    Returns:
+        (tup): The two updated lists of the publications IDs.
+    """
+    raw_item_at_least_pub_ids_list, raw_out_of_item_only_pub_ids_list = raw_item_lists
+    item_at_least = False
+    institutions = [str(x) for x in df[institutions_col].to_list()]
+    for institution_str in institutions:
+        institutions_list = institution_str.split("; ")
+        if not institute_norm in institutions_list:
+            item_at_least = True
+            break
+    if item_at_least:
+        raw_item_at_least_pub_ids_list.append(pub_id)
+    else:
+        raw_out_of_item_only_pub_ids_list.append(pub_id)
+    return raw_item_at_least_pub_ids_list, raw_out_of_item_only_pub_ids_list
+
+
+def _set_stat_value(raw_pub_ids_list, all_status=False):
+    """Formats the statistics data of the Institute's country.
+
+    The list of publications IDs are built through the 
+    `_build_institute_country_stat` internal calling function. 
+    The statistics data computed are:
+        - The number of publications;
+        - The publications-IDs string composed of the publications \
+        IDs separated by semicolon.
+
+    Args:
+        raw_pub_ids_list (list) : The list of publications IDs \
+        to be used for computing the statistics data.
+        all_status (bool): Optional (default: False), if True the length \
+        of the publications-IDs string is limited.
+    Returns:
+        (list): The formated statistics data.
+    """
+    pub_ids_list = sorted(list(set(raw_pub_ids_list)))
+    pub_ids_nb = len(pub_ids_list)
+    pub_ids_str = "; ".join(pub_ids_list)
+    if all_status:
+        pub_ids_str = "; ... ; ".join([pub_ids_list[0], pub_ids_list[pub_ids_nb-1]])
+    value_list = [pub_ids_nb, pub_ids_str]
+    return value_list
+
+
 def _build_institute_country_stat(norm_institutions_df, institute_country, institute_norm):
     """Builds the statistics of publications per combination types of co-authors countries 
-    from the analysis of the dataframe of the normalized institutions per publication.
+    from the analysis of the data of the normalized institutions per publication.
 
-    Each row of this dataframe contains:
+    Each row of the built data contains:
 
-    - A type of co-authors: 
+    - A type of co-authors:
         - all types of co-authors,
         - no co-authors,
         - only co-authors of the country of the Institute,
         - co-authors from the Institute country together with co-authors from other countries,
-        - only co_authors from other countries; 
-    - The number of publications; 
+        - only co-authors from other countries;
+    - The number of publications;
     - The list of publication IDs.
 
     Args:
@@ -179,84 +243,45 @@ def _build_institute_country_stat(norm_institutions_df, institute_country, insti
         and a string listing the concerned publications IDs separated by semicolon.
     """
     inst_country_stat_cols_dic, inst_country_stat_rows_dic = _set_institute_country_stat_df_params()
-    col_keys = ['pub_id_col', 'address_id_col', 'countries_col', 'institutions_col',
-                'pub_kind_col', 'weight_col', 'pub_ids_col']
-    (pub_id_col, address_id_col, countries_col, institutions_col,
-     pub_kind_col, weight_col, pub_ids_col) = [inst_country_stat_cols_dic[key] for key in col_keys]
+    col_keys = ['pub_id_col', 'countries_col', 'institutions_col', 'pub_kind_col',
+                'weight_col', 'pub_ids_col']
+    (pub_id_col, countries_col, institutions_col, pub_kind_col,
+     weight_col, pub_ids_col) = [inst_country_stat_cols_dic[key] for key in col_keys]
 
-    row_keys = ['all_key', 'institute_only_key', 'country_only_key', 'country_at_least_key', 'out_of_country_only_key']
-    (all_key, institute_only_key, country_only_key,
-     country_at_least_key, out_of_country_only_key) = [inst_country_stat_rows_dic[key] for key in row_keys]
+    row_keys = ['all_key', 'institute_only_key', 'country_only_key',
+                'country_at_least_key', 'out_of_country_only_key']
+    (all_key, institute_only_key, country_only_key, country_at_least_key,
+     out_of_country_only_key) = [inst_country_stat_rows_dic[key] for key in row_keys]
 
-    inst_country_stat_dic = {}
-    raw_institute_only_pub_ids_list = []
-    raw_country_only_pub_ids_list = []
-    raw_country_at_least_pub_ids_list = []
-    raw_out_of_country_only_pub_ids_list = []
+    (raw_institute_only_pub_ids_list, raw_country_only_pub_ids_list,
+     raw_country_at_least_pub_ids_list, raw_out_of_country_only_pub_ids_list) = [[]] * 4
 
+    raw_all_pub_ids_list = norm_institutions_df[pub_id_col].to_list()
     for pub_id, pub_id_df in norm_institutions_df.groupby(pub_id_col):
         countries_list = list(set(pub_id_df[countries_col].to_list()))
         if len(countries_list)==1:
-            addr_idxs = pub_id_df[address_id_col].to_list()
-            institutions = pub_id_df[institutions_col].to_list()
-            addr_inst_dic = dict(zip(addr_idxs, institutions))
-            only_institute = True
-            for _, addr_institution in addr_inst_dic.items():
-                institutions_list = str(addr_institution).split("; ")
-                if not institute_norm in institutions_list:
-                    only_institute = False
-                    break
-            if only_institute:
-                raw_institute_only_pub_ids_list.append(pub_id)
-            else:
-                raw_country_only_pub_ids_list.append(pub_id)
+            raw_item_lists = [raw_institute_only_pub_ids_list, raw_country_only_pub_ids_list]
+            return_tup = _update_pub_ids_lists(pub_id, pub_id_df, institute_norm,
+                                               institutions_col, raw_item_lists)
+            raw_institute_only_pub_ids_list, raw_country_only_pub_ids_list = return_tup
         else:
             institute_country_df = pub_id_df[pub_id_df[countries_col]==institute_country]
-            addr_idxs = institute_country_df[address_id_col].to_list()
-            institutions = institute_country_df[institutions_col].to_list()
-            addr_inst_dic = dict(zip(addr_idxs, institutions))
-            country_at_least = False
-            for _, addr_institution in addr_inst_dic.items():
-                institutions_list = str(addr_institution).split("; ")
-                if not institute_norm in institutions_list:
-                    country_at_least = True
-                    break
-            if country_at_least:
-                raw_country_at_least_pub_ids_list.append(pub_id)
-            else:
-                raw_out_of_country_only_pub_ids_list.append(pub_id)
+            raw_item_lists = [raw_country_at_least_pub_ids_list, raw_out_of_country_only_pub_ids_list]
+            return_tup = _update_pub_ids_lists(pub_id, institute_country_df, institute_norm,
+                                               institutions_col, raw_item_lists)
+            raw_country_at_least_pub_ids_list, raw_out_of_country_only_pub_ids_list = return_tup
 
-    raw_pub_ids_list = norm_institutions_df[pub_id_col].to_list()
-    all_pub_ids_list = sorted(list(set(raw_pub_ids_list)))
-    all_nb = len(all_pub_ids_list)
-    all_pub_ids_str = "; ... ; ".join([all_pub_ids_list[0], all_pub_ids_list[all_nb-1]])
-    inst_country_stat_dic[all_key] = [all_nb, all_pub_ids_str]
-
-    institute_only_pub_ids_list = sorted(list(set(raw_institute_only_pub_ids_list)))
-    institute_only_nb = len(institute_only_pub_ids_list)
-    institute_only_pub_ids_str = "; ".join(institute_only_pub_ids_list)
-    inst_country_stat_dic[institute_only_key] = [institute_only_nb,
-                                                 institute_only_pub_ids_str]
-
-    country_only_pub_ids_list = sorted(list(set(raw_country_only_pub_ids_list)))
-    country_only_nb = len(country_only_pub_ids_list)
-    country_only_pub_ids_str = "; ".join(country_only_pub_ids_list)
-    inst_country_stat_dic[country_only_key] = [country_only_nb, country_only_pub_ids_str]
-
-    country_at_least_pub_ids_list = sorted(list(set(raw_country_at_least_pub_ids_list)))
-    country_at_least_nb = len(country_at_least_pub_ids_list)
-    country_at_least_pub_ids_str = "; ".join(country_at_least_pub_ids_list)
-    inst_country_stat_dic[country_at_least_key] = [country_at_least_nb, country_at_least_pub_ids_str]
-
-    out_of_country_only_pub_ids_list = sorted(list(set(raw_out_of_country_only_pub_ids_list)))
-    out_of_country_only_nb = len(out_of_country_only_pub_ids_list)
-    out_of_country_only_pub_ids_str = "; ".join(out_of_country_only_pub_ids_list)
-    inst_country_stat_dic[out_of_country_only_key] = [out_of_country_only_nb, out_of_country_only_pub_ids_str]
+    inst_country_stat_dic = {all_key                : _set_stat_value(raw_all_pub_ids_list, all_status=True),
+                             institute_only_key     : _set_stat_value(raw_institute_only_pub_ids_list),
+                             country_only_key       : _set_stat_value(raw_country_only_pub_ids_list),
+                             country_at_least_key   : _set_stat_value(raw_country_at_least_pub_ids_list),
+                             out_of_country_only_key: _set_stat_value(raw_out_of_country_only_pub_ids_list),
+                             }
 
     data_cols = [pub_kind_col, weight_col, pub_ids_col]
     data = []
     for k, v in inst_country_stat_dic.items():
-        data.append([k,v[0],v[1]])
+        data.append([k, v[0], v[1]])
     inst_country_stat_df = pd.DataFrame(data, columns=data_cols)
 
     return inst_country_stat_df
@@ -294,7 +319,8 @@ def _set_geo_files_params(analysis_folder_path, institute_country):
     if not os.path.exists(geo_analysis_folder_path):
         os.makedirs(geo_analysis_folder_path)
 
-    filenames_list = [country_weight_file_name, continent_weight_file_name, institute_country_weight_file_name]
+    filenames_list = [country_weight_file_name, continent_weight_file_name,
+                      institute_country_weight_file_name]
     folder_params = [geo_analysis_folder_alias, geo_analysis_folder_path]
     return filenames_list, folder_params
 
@@ -303,7 +329,7 @@ def build_and_save_geo_stat(countries_df, norm_institutions_df,
                             institute_geo_dict, analysis_folder_path, year):
     """Builds the publications statistics dataframes per country and per continent
     including for the Institute country.
-    
+
     First, it builds the statistics dataframes through the `_build_countries_stat` 
     and the `_build_continents_stat` internal functions.
     Then, it saves the statistics dataframes through the `_save_formatted_df_to_xlsx` 

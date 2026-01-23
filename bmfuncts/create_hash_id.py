@@ -125,8 +125,8 @@ def create_hash_id(institute, org_tup, files_paths):
     The content of these columns is as follows:
 
     - The 'hash_id_alias' column contains the unique hash ID built for each publication \
-    through the `_my_hash` internal function on the basis of the values of 'year_alias', \
-    'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns.
+    through the `_my_hash` internal function. The values of 'year_alias', \
+    'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns are used.
     - The 'pub_id_alias' column contains the publication order number in the publications list.
 
     Finally, the data are cleaned from the publications that have same hash ID through \
@@ -140,7 +140,7 @@ def create_hash_id(institute, org_tup, files_paths):
         (2) the publications list with one row per author that has not \
         been identified as Institute employee and (3) for saving the created Hash-IDs data.
     Returns:
-        (str): End message recalling path to the saved file.        
+        (str): End message recalling path to the saved file.
     """
     # Setting paths from args
     submit_path, orphan_path, hash_id_path = files_paths

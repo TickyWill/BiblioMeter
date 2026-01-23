@@ -58,7 +58,7 @@ def _set_pub_list_cols_dic(institute, org_tup):
 
 
 def _set_year_file_paths(wf_path, file_folder, file_base, corpus_year,
-                         add_key=None):
+                         add_key=""):
     """Sets useful full paths to a publications list file for a corpus year.
 
     Args:
@@ -67,8 +67,8 @@ def _set_year_file_paths(wf_path, file_folder, file_base, corpus_year,
         file_base (str) : The file name base for building the name \
         of the file of which the paths are sets.
         corpus_year (str): Corpus year defined by 4 digits.
-        add_key (str): The optional string to add to the file name \
-        base (default: None).
+        add_key (str): The optional string (default: "") to add to \
+        the file name base .
     Returns:
         (tup): (The full path (path) to the folder of the publications list, \
         The full path (path) the publications-list file).
@@ -382,18 +382,18 @@ def built_final_pub_list(params_list):
         results_to_save_dict[key] = True
     _ = save_final_results(params_list, results_to_save_dict)
 
-    end_message  = ("  - Consolidated publications lists saved as final results")
+    end_message  = "  - Consolidated publications lists saved as final results"
     print(end_message)
     return pub_nb, invalids_nb, split_ratio, if_database_complete
 
 
-def _set_concat_pub_list_path(wf_path, available_pub_lists):
+def _set_concat_pub_list_path(wf_path, available_pub_lists_str):
     """Sets the full path to the file of the concatenation 
     of the consolidated publications list.
 
     Args:
         wf_path (path): Full path to working folder.
-        available_pub_lists (list): The list of the available \
+        available_pub_lists_str (str): The list of the available \
         corpus years (4 digits string) in the working folder.
     Returns:
         (tup): (Base of OTPs files names (str), The full paths list (list).
@@ -402,7 +402,7 @@ def _set_concat_pub_list_path(wf_path, available_pub_lists):
     multi_year_base_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
     date = str(datetime.now())[:16].replace(':', 'h')
     multi_year_file = (f"{date} {multi_year_base_alias} "
-                       f"{os.getlogin()}_{available_pub_lists}.xlsx")
+                       f"{os.getlogin()}_{available_pub_lists_str}.xlsx")
     multi_year_folder_path = wf_path / Path(multi_year_folder_alias)
     multi_year_file_path = multi_year_folder_path / Path(multi_year_file)
     return multi_year_file_path
@@ -433,25 +433,25 @@ def concatenate_pub_lists(wf_path, years_list):
 
     # Building the concatenated dataframe of available publications lists
     concat_df = pd.DataFrame()
-    available_pub_lists = ""
+    available_pub_lists_str = ""
     for year in years_list:
         try:
             _, pub_list_path = _set_year_file_paths(wf_path, pub_list_folder_alias,
                                                     pub_list_file_base_alias, year)
             inter_df = pd.read_excel(pub_list_path)
             concat_df = concat_dfs([concat_df, inter_df])
-            available_pub_lists += f" {year}"
+            available_pub_lists_str += f" {year}"
         except FileNotFoundError:
             pass
 
     # Formatting and saving the concatenated dataframe in an EXCEL file
-    multi_year_file_path = _set_concat_pub_list_path(wf_path, available_pub_lists)
+    multi_year_file_path = _set_concat_pub_list_path(wf_path, available_pub_lists_str)
     concat_df_title = bm_pg.DF_TITLES_LIST[0]
     wb, ws = format_page(concat_df, concat_df_title)
-    ws.title = "Publications de " + available_pub_lists
+    ws.title = "Publications de " + available_pub_lists_str
     wb.save(multi_year_file_path)
 
-    end_message  = ("    Concatenation of consolidated pub lists under: "
+    end_message  = ("    Concatenation of consolidated publications lists under: "
                     f"\n\n    '{multi_year_file_path}'")
     print(end_message)
     return end_message

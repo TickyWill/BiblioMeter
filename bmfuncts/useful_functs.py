@@ -1,7 +1,4 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
-
-ToDo:
-    - import `standardize_address` from BiblioParsing package.
 """
 
 __all__ = ['build_list_from_str',
@@ -11,6 +8,7 @@ __all__ = ['build_list_from_str',
            'create_archi',
            'create_folder',
            'drop_multiple_item',
+           'get_sheet_names',
            'keep_initials',
            'name_capwords',
            'read_parsing_dict',
@@ -24,17 +22,20 @@ __all__ = ['build_list_from_str',
            'standardize_firstname_initials',
            'standardize_full_name_order',
            'standardize_txt',
+           'try_save_excel_data',
           ]
 
 
 # Standard library imports
 import os
-import numpy as np
 import shutil
+import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 # 3rd party imports
 import BiblioParsing as bp
+import numpy as np
 import pandas as pd
 
 # local imports
@@ -42,12 +43,69 @@ import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
 
 
+def try_save_excel_data(df, file_path):
+    """Saves data as XLSX file by making sure the file is closed in case it already exists.
+
+    Args:
+        df (dataframe): The data to save.
+        file_path (path): The full path to the file where data will be saved.
+    """
+    closed = False
+    rep = "N"
+    while not closed:
+        print("Trying to save data...", end="\r")
+        try:
+            df.to_excel(file_path, index=False)
+            print(f"Data saved in the file:\n        {file_path}")
+            closed = True
+        except PermissionError:
+            while rep!="Y":
+                rep = input("    !!!-Permission denied-!!! Close all opened XLSX files (Y/N)?")
+            os.system('TASKKILL /F /IM excel.exe')
+
+
+def get_sheet_names(file_path):
+    """Gets the sheet names of an multisheet XLSX file whithout loading it.
+
+    Args:
+        file_path (path): The full path to the file.
+    Returns:
+        (list): Composed of the sheet names(str).
+    """
+    search_str = ".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet"
+    with zipfile.ZipFile(file_path, "r") as z:
+        xml_content = z.read("xl/workbook.xml")
+        root = ET.fromstring(xml_content)
+        sheet_names = [sheet.attrib["name"] for sheet in root.findall(search_str)]
+        return sheet_names
+
+
 def set_bold_txt(txt):
+    """Builds a bold text using a dict from globals 
+    imported from `bmfuncts.pub_globals` module.
+
+    Args:
+        txt (str): The string to be formatted to bold characters.
+    Returns:
+        (str): The bold text.
+    """
     bold_txt = f"{bm_pg.PRINT_DICT['end']}{bm_pg.PRINT_DICT['bold']}{txt}{bm_pg.PRINT_DICT['blue']}"
     return bold_txt
 
 
 def set_print_same_len(txts_list):
+    """Builds strings of same lengths by addition of spaces for prints.
+
+    The function builds a dict keyed by the initial string and valued by 
+    the same string added with spaces to reach the same length as 
+    the maximum string length of the passed list of strings.
+
+    Args:
+        txts_list (list): The strings to be added with spaces \
+        for reaching the maximum string length.
+    Returns:
+        (dict): The built dict.
+    """
     max_len = np.max([len(x) for x in txts_list])
     print_txts_list = [x + ' ' * (max_len - len(x)) for x in txts_list]
     print_txts_dict = dict(zip(txts_list, print_txts_list))
@@ -55,24 +113,26 @@ def set_print_same_len(txts_list):
 
 
 def build_list_from_str(input_str, sep_str):
-    """Builds a list by split of the list using the specified separator.
+    """Builds a list of strings by split of the input string using 
+    the specified separator.
 
     Args:
-        input_str (str): The string to be splited.
+        input_str (str): The string to be split.
         sep_str (str): The separator to be used for the split \
         including space if required.
     Returns:
-        (str): The built string.
+        (list): The built list of stringsstring.
     """
     if sep_str in input_str:
-        output_list = [x.strip() for x in input_str.split(sep_str)]
+        txts_list = input_str.split(sep_str)
+        output_list = [x.strip() for x in txts_list]
     else:
         output_list = [input_str.strip()]
     return output_list
 
 
 def build_string_from_list(input_list, sep_str):
-    """Builds a string by joining the items of the list using 
+    """Builds a string by joining the items of the input list using 
     the specified separator.
 
     Args:
@@ -93,7 +153,7 @@ def build_string_from_list(input_list, sep_str):
 
 
 def drop_multiple_item(init_list, item):
-    """Keeps only one occurence of an item value in a list.
+    """Keeps only one occurrence of an item value in a list.
 
     Args:
         init_list (list): The list of string items to be modified.
@@ -125,7 +185,7 @@ def compute_dedup_articles_number(org_tup, dedup_parsing_dict):
     articles_item = bp.PARSING_ITEMS_LIST[0]
     auth_inst_item = bp.PARSING_ITEMS_LIST[5]
 
-    # Setting useful Institute's parameters 
+    # Setting useful Institute's parameters
     institute_col_idx = org_tup[7]
     institute_col_list = org_tup[4]
 
@@ -148,7 +208,7 @@ def compute_dedup_articles_number(org_tup, dedup_parsing_dict):
 def reorder_df(df, col_dict):
     """Reorders data by modifying the order of the columns using 
     the given index for each column to be moved.
-    
+
     A positive index gives the effective position of the column in 
     the reordered list of the columns. 
     A negative index means that the column is to be added at the end 
@@ -190,7 +250,7 @@ def reorder_df(df, col_dict):
 
 def name_capwords(text):
     """Capitalizes words in full names of authors getting 
-    rid of particular separators and keeping firstname initiales.
+    rid of particular separators and keeping firstname initials.
 
     Args:
         text (str): Full name to be capitalized by words.
@@ -283,11 +343,11 @@ def set_capwords_lambda(col):
 def keep_initials(df, initials_col_base, missing_fill=None):
     """Keeps the first-name initials avoiding setting them to NaN 
     when they are equal to 'NA'.
-    
+
     Args:
         df (dataframe): Data where the first-name initials are kept.
         initials_col_base (str): Base of the column names \
-        of first_name initiales. 
+        of first_name initials.
         missing_fill (str): Optional value for replacing NaN \
         in the other columns (default = None).
     Returns:
@@ -356,7 +416,7 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
         drop_ignore_index (bool): Same as 'ignore_index' parameter of drop_duplicates \
         method of 'pandas.DataFrame' method, optional, default:False.
     Returns:
-        (dataframe): Result of the concatenation.    
+        (dataframe): Result of the concatenation.
     """
 
     # Setting list of not empty dataframes
@@ -393,8 +453,8 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
 
 def standardize_firstname_initials(initials_init):
     """Standardizes the initials of a firstname by removing minus symbol 
-    between initials. 
-    
+    between initials.
+
     For example, changes "P-Y" into "PY"
 
     Args:
@@ -495,7 +555,7 @@ def set_rawdata(wf_path, datatype, years_list, database):
     targeted by the path 'database_folder_path' to the rawdata folder 
     targeted by the path 'rawdata_path'. 
     To do that it uses the `_set_database_extract_info` internal function. 
-    When the database is Scopus and the data type to be analysed is restricted to WoS, 
+    When the database is Scopus and the data type to be analyzed is restricted to WoS,
     empty files ending with 'database_file_end' are used as Scopus rawdata.
 
     Args:
@@ -578,8 +638,8 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
         wf_path (path): The full path of the working folder.
         corpus_year_folder (str): The name of the folder of the corpus.
         create_archi_param (bool): If true, a full corpus folder architecture \
-        is built otherwise only the root corpus folder is created (default=True).
-        verbose (bool): Optional status of prints (default = False).
+        is built otherwise only the root corpus folder is created (default: True).
+        verbose (bool): Optional status of prints (default:  False).
     Returns:
         (str): End message recalling the corpus-year architecture created.
     """

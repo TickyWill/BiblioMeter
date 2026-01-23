@@ -84,6 +84,7 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
     Returns:
         (bool): Update status of the employees' data.
     """
+    progress_bar_state_init = None
     if progress_callback:
         progress_bar_state_init = 10
         progress_callback(progress_bar_state_init)
@@ -157,7 +158,7 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                                 "\n 1- Ouvrez le fichier;"
                                 "\n 2- Vérifiez et corrigez les noms des feuilles "
                                 "dans ce fichier;"
-                                "\n 3- Sauvegardez le ficher;"
+                                "\n 3- Sauvegardez le fichier;"
                                 "\n 4- Relancez la mise à jour des effectifs.")
                 messagebox.showwarning(warning_title, warning_text)
             if column_error:
@@ -169,7 +170,7 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                                 "\n 1- Ouvrez le fichier;"
                                 "\n 2- Vérifiez et corrigez les noms des colonnes "
                                 "des feuilles dans ce fichier;"
-                                "\n 3- Sauvegardez le ficher."
+                                "\n 3- Sauvegardez le fichier."
                                 "\n 4- Relancez la mise à jour des effectifs.")
                 messagebox.showwarning(warning_title, warning_text)
             if years2add_error:
@@ -258,9 +259,13 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                            master.datatype, year_select]
 
             # Searching recursively the authors in the employees data
-            orphan_status = recursive_year_search(orphan_file, merge_paths, employees_dict,
-                                                  params_list, search_depth,
-                                                  _progress_callback, progress_bar_state)
+            orphan_status = recursive_year_search(orphan_file=orphan_file,
+                                                  merge_paths=merge_paths,
+                                                  empl_dict=employees_dict,
+                                                  params_list=params_list,
+                                                  search_depth=search_depth,
+                                                  progress_callback=_progress_callback,
+                                                  progress_bar_state=progress_bar_state)
             _progress_callback(100)
 
             # Displaying the status of the recursive search of authors
@@ -301,6 +306,7 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
     orphan_file = merge_files[1]
     merge_folder_path, submit_path = merge_paths[:2]
 
+    progress_bar_state_init = None
     if progress_callback:
         progress_bar_state_init = 10
         progress_callback(progress_bar_state_init)

@@ -325,14 +325,14 @@ def existing_corpuses(wf_path, corpuses_number=None):
     if rawdata and parsing results are available, and False otherwise.
 
     This is done for each of the available corpuses.
-        ex: If only 2023 files are not present, the returned tuple of lists contains
+        ex: If only 2023 files are not present, the returned tuple of lists is the following.
 
-        - Years list                          = ["2018", "2019", "2020", "2021", "2022", "2023"]
-        - WoS raw-data boolean list           = [ True,   True,   True,   True,   True,   False]
-        - WoS parsing boolean list            = [ True,   True,   True,   True,   True,   False]
-        - Scopus raw-data boolean list        = [ True,   True,   True,   True,   True,   False]
-        - Scopus parsing boolean list         = [ True,   True,   True,   True,   True,   False]
-        - Deduplication parsing boolean list  = [ True,   True,   True,   True,   True,   False]
+        - Years list                          = ["2018","2019","2020","2021","2022","2023"].
+        - WoS raw-data boolean list           = [ True,  True,  True,  True,  True,  False].
+        - WoS parsing boolean list            = [ True,  True,  True,  True,  True,  False].
+        - Scopus raw-data boolean list        = [ True,  True,  True,  True,  True,  False].
+        - Scopus parsing boolean list         = [ True,  True,  True,  True,  True,  False].
+        - Deduplication parsing boolean list  = [ True,  True,  True,  True,  True,  False].
 
     Args:
         wf_path (path):  Full path to working folder.
@@ -477,11 +477,11 @@ def _window_properties(screen_width_px, screen_height_px):
     ref_window_width_mm = bm_gg.TK_SIZES_REF['window_mm'][0]
     ref_window_height_mm = bm_gg.TK_SIZES_REF['window_mm'][1]
 
-    # Computing ratii of effective screen sizes to screen reference sizes in pixels
+    # Computing ratio of effective screen sizes to screen reference sizes in pixels
     scale_factor_width_px  = screen_width_px / ref_width_px
     scale_factor_height_px = screen_height_px / ref_height_px
 
-    # Computing ratii of effective screen sizes to screen reference sizes in mm
+    # Computing ratio of effective screen sizes to screen reference sizes in mm
     scale_factor_width_mm = screen_width_mm / ref_width_mm
     scale_factor_height_mm = screen_height_mm / ref_height_mm
 

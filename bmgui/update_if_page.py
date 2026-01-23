@@ -275,11 +275,11 @@ def _update_pub_if(self, master, progress_callback):
 
             # Updating Impact Factors and saving new consolidated list of publications
             # this also for saving results files to complete IFs database
-            paths_tup = (pub_list_file_path, pub_list_file_path,
-                         missing_issn_path, missing_if_path)
+            paths_list = [pub_list_file_path, pub_list_file_path,
+                         missing_issn_path, missing_if_path]
             sub_params_list = [master.institute, master.org_tup,
                                master.wf_path, corpus_year]
-            _, if_database_complete = add_if(sub_params_list, paths_tup)
+            _, if_database_complete = add_if(sub_params_list, paths_list)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
             split_pub_list_by_doc_type(sub_params_list)

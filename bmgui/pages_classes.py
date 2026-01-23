@@ -1,14 +1,19 @@
 """Module of useful classes for GUI main management."""
 
-__all__ = ['SetAuthorCopyright',
+__all__ = ['AnalyzeCorpusPage',
+           'ConsolidateCorpusPage',
+           'PageButton',
+           'ParseCorpusPage',
+           'SetAuthorCopyright',
            'SetLaunchButton',
            'SetMasterTitle',
-           'PageButton',
-          ]
+           'UpdateIfPage',
+           ]
 
 
 # Standard library imports
 import tkinter as tk
+from datetime import datetime
 from tkinter import messagebox
 from tkinter import font as tkFont
 
@@ -18,6 +23,7 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.config_utils import set_org_params
+from bmfuncts.useful_functs import set_bold_txt
 from bmfuncts.useful_functs import set_rawdata
 from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
@@ -139,6 +145,12 @@ class SetLaunchButton:
             # Setting years list
             master.years_list = bm_gu.last_available_years(master.wf_path,
                                                            bm_gg.CORPUSES_NUMBER)
+            log_title = f"ANALYSIS FOR {master.institute}"
+            print(f"\n\n{set_bold_txt(log_title)}")
+            print(f"\n    Working folder  : {master.wf_path}")
+            print(f"    Data combination: {master.datatype}")
+            print(f"    Corpus list     : {master.years_list}")
+            print(f"    Date            : {str(datetime.now())[:16]}")
 
             if master.datatype:
                 # Setting rawdata for datatype
@@ -188,6 +200,8 @@ class PageButton(tk.Frame):
     """
 
     def __init__(self, master, page_name, pagebutton_frame):
+        super().__init__(pagebutton_frame)
+        self.controller = master
 
         # Setting page num
         page_num = master.pages_ordered_list.index(page_name)
@@ -302,4 +316,3 @@ class AnalyzeCorpusPage(tk.Frame):
 
         # Creating and setting widgets for page frame
         create_analysis(self, master, page_name)
-

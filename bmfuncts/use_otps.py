@@ -188,6 +188,7 @@ def _concat_dept_otps_dfs(dpt_label_list, set_hist_file_params_list):
 
     # Concatenating publications list with OTPs of the Institute departments
     otp_df_init_status = True
+    otp_df = pd.DataFrame()
     for dpt_label in dpt_label_list:
         # Getting department publications list with OTPs
         dpt_otp_df = _build_dpt_otp_df(dpt_otp_paths[dpt_label])
@@ -728,7 +729,7 @@ def _set_saved_lab_otps(org_tup, otps_history_tup, use_otps_cols_dic,
 
     # Setting the already attributed OTPs for each department
     for dpt in sorted(dpt_list):
-        # Setting the full path of the EXCEl file for the 'dpt' department
+        # Setting the full path of the XLSX file for the 'dpt' department
         dpt_otp_file_name = f'{otp_file_base}_{dpt}.xlsx'
         dpt_otp_file_name_path = otp_folder_path / Path(dpt_otp_file_name)
 
@@ -849,11 +850,11 @@ def _set_saved_dept_otps(org_tup, otps_history_tup, use_otps_cols_dic,
 
     # Setting the already attributed OTPs for each department
     for dpt in sorted(dpt_list):
-        # Setting the full path of the EXCEl file for the 'dpt' department
+        # Setting the full path of the XLSX file for the 'dpt' department
         dpt_otp_file_name = f'{otp_file_base}_{dpt}.xlsx'
         dpt_otp_file_name_path = otp_folder_path / Path(dpt_otp_file_name)
 
-        # Setting the sheet name of the EXCEl file for the 'dpt' department
+        # Setting the sheet name of the XLSX file for the 'dpt' department
         dpt_otp_sheet_name = bm_pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
         # Getting the pub list for department dpt
@@ -959,14 +960,14 @@ def set_saved_otps(sub_params_list):
     the `_set_saved_dept_otps` internal function.
 
     Args:
-        sub_params_list (list): The list composed of the Institute \
-        name (str), the org_tup (tup) that contains parameters of Institute \
+        sub_params_list (list): The list composed of the Institute name (str), \
+        the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
     Returns:
         (str): End message giving the status of the OTPs attribution.
     """
-    print("\nUsing data of history of OTPs attribution...") 
+    print("\nUsing data of history of OTPs attribution...")
     # Setting useful params values and lists from sub_params_list
     institute, org_tup, wf_path, corpus_year = sub_params_list
     save_otp_params_list = [wf_path, corpus_year]

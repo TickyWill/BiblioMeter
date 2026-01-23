@@ -17,28 +17,30 @@ import pandas as pd
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import get_sheet_names
 from bmfuncts.useful_functs import standardize_txt
 
 
 def _set_employees_paths(wf_path):
     """Sets the full paths towards employees working folders.
 
-    The 4 folders are as follows:
+    The paths of the  folders are as follows:
 
-    - 'months2add_employees_folder_path' - The folder containing \
-    the employees Excel file(s) to add; this file must contain \
-    one sheet per month for a given year.
-    - 'all_years_employees_folder_path' - The folder hosting \
-    the employees Excel file which name is given by the global \
-    'EMPLOYEES_ARCHI' at key 'all_years_employees' containing \
-    a sheet per year.
-    - 'one_year_employees_folder_path' - The folder hosting \
-    the annual employees Excel files which names are built \
-    by adding the year value to the string given by the global \
-    'EMPLOYEES_ARCHI' at key 'one_year_employees_filebase'.
-    - 'backup_folder_path' - The folder hosting the backup file \
-    of the employees EXCEL file in case of a potential corruption \
-    of the active employees file.
+    - 'months2add_employees_folder_path' - The full path to the folder \
+    which name is given by the 'EMPLOYEES_ARCHI' global at \
+    'complementary_employees' key and hosting the employees XLSX file(s) \
+    to add; this file must contain one sheet per month for a given year.
+    - 'all_years_employees_folder_path' - The full path to the folder \
+    which name is given by the 'EMPLOYEES_ARCHI' global at \
+    'all_years_employees' key and hosting the employees XLSX file; \
+    this file contains a sheet per year.
+    - 'one_year_employees_folder_path' - The full path to the folder \
+     which name is given by the 'EMPLOYEES_ARCHI' global at \
+    'one_year_employees' key and hosting the annual employees XLSX files.
+    - 'backup_folder_path' - The full path to the folder which name \
+     is given by the 'ARCHI_BACKUP' global at 'root' key and hosting \
+     the backup file of the employees XLSX file in case of corruption \
+     of the active employees file.
 
     Args:
         wf_path (path): Full path to working folder.    
@@ -157,12 +159,12 @@ def _update_months_history(months2add_file_path,
         the files gathering the employees per year.
         one_year_employees_base_name (path): Base for building the file \
         name of the file gathering the employees for a year.
-        replace (bool): If true, existing sheets are replaced in the Excel \
-        file (default: True).
+        replace (bool): Optional (default: True), if True, existing sheets are \
+        replaced in the XLSX file .
         progress_callback (function): Function for updating ProgressBar \
-        tkinter widget status (optional, default = None).
+        tkinter widget status (optional, default: None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
-        (optional, default = None).
+        (optional, default: None).
     Returns:
         (tup): Tuple of 5 strings and 1 integer = (year, year_months_file_path, \
         sheet_name_message, col_message, years2add_message, progress_bar_state).
@@ -170,6 +172,7 @@ def _update_months_history(months2add_file_path,
     df_months_to_add = pd.read_excel(months2add_file_path, sheet_name=None)
     months_to_add = list(df_months_to_add.keys())
     months_to_add_nb = len(months_to_add)
+    step = None
     if progress_callback:
         step = 20 / months_to_add_nb
 
@@ -319,28 +322,25 @@ def _add_column_firstname_initial(df):
 
 
 def _add_column_full_name(df):
-    """Adds a new column defined by the global 'EMPLOYEES_ADD_COLS' 
-    at the key 'employee_full_name' containing the employee full name 
+    """Adds a new column key containing the employee full name
     composed by the last name and the first name initials.
 
-    It uses the columns defined by the global `EMPLOYEES_USEFUL_COLS` at key 'name' 
-    that contains the last name for each employee, and it uses the previously added column
-    defined by the global `EMPLOYEES_ADD_COLS` at key 'first_name_initials':
+    The new column name is given by the EMPLOYEES_ADD_COLS['employee_full_name'] global.
+    The full name is built using the values of the columns named EMPLOYEES_USEFUL_COLS['name'] and
+    EMPLOYEES_ADD_COLS['first_name_initials'].
 
         ex: if last name is SIMONATO and first name initials are JP --> full name is SIMONATO JP.
 
     Args:
-        df (dataframe): The dataframe to which the column is added.
+        df (dataframe): The data to which the column is added.
     Returns:
-        (dataframe): The updated dataframe.
+        (dataframe): The updated data.
     """
-
     col_last_name_alias = bm_eg.EMPLOYEES_USEFUL_COLS['name']
     col_first_name_initial_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
     col_full_name_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']
 
     df[col_full_name_alias] = df[col_last_name_alias] + ' ' + df[col_first_name_initial_alias]
-
     return df
 
 
@@ -388,39 +388,35 @@ def _select_employee_dpt_and_serv(df):
 def _build_year_month_dpt(year_months_file_path,
                           progress_callback=None,
                           progress_bar_state=None):
-    """Merges all employees information of a year available
-    by month in an Excel workbook.
+    """Merges all employees information of a year available by month
+    in an XLSX workbook.
 
     This workbook contains a worksheet per month. 
-    Each worksheet is labelled mmyyyy where mm stands for the month
-    (01, 02, ..., 12) and yyyy stands for the year (2019, 2020, ...). 
+    Each worksheet is labeled 'mmyyyy' where 'mm' stands for the month
+    (01, 02, ..., 12) and 'yyyy' stands for the year (2019, 2020, ...).
     All the worksheets must at least contain the columns which names 
-    are defined by the keys 'matricule', 'first_name', 'name', 'dpt' 
-    and 'serv' in the global 'EMPLOYEES_USEFUL_COLS'.
-
-    The function merges the list of sheets and builds the new columns 
-    defined by the global 'EMPLOYEES_ADD_COLS' using the local functions 
+    are defined at the 'matricule', 'first_name', 'name', 'dpt'
+    and 'serv' keys in the 'EMPLOYEES_USEFUL_COLS' global.
+    The function merges the list of the sheets. Then, it builds the new columns
+    defined by the 'EMPLOYEES_ADD_COLS' global using the internal functions:
     '_add_column_keep_history', '_add_column_firstname_initial' and 
-    '_add_column_full_name' of the module 'update_employees' of the package 'bmfuncts'.
-
-    The columns added at keys 'months_list', 'years_list', 'dpts_list' and 'servs_list' 
-    contains lists formated as: [item_1, item_2, ... items_n] of the n items 
-    of the n available months and where item_i stands for month, year, department 
-    and service respectively.
-
+    '_add_column_full_name'.
+    The added columns at keys 'months_list', 'years_list', 'dpts_list' and 'servs_list'
+    contains lists of the n items of the n available months.
+    The lists are formated as follow: [item_1, item_2, ... items_n]
+    where item_i stands for month, year, department and service respectively.
     Finally, a single department and service is selected for each employee using 
-    the local function '_select_employee_dpt_and_serv' of the module 'update_employees' 
-    of the package 'bmfuncts'.
+    the '_select_employee_dpt_and_serv' internal function.
 
     Args:
-        year_months_file_path (path): The path to the Excel file \
+        year_months_file_path (path): The path to the XLSX file \
         that contains a sheet per month of a year.
         progress_callback (function): Function for updating ProgressBar \
-        tkinter widget status (optional, default = None).
+        tkinter widget status (optional, default: None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
-        (optional, default = None).
+        (optional, default: None).
     Returns:
-        (dataframe): The built employees dataframe.
+        (dataframe): The built employees data.
     """
     # Internal functions
     def _set_tup(_month, _year):
@@ -443,6 +439,7 @@ def _build_year_month_dpt(year_months_file_path,
                                    sheet_name=None,
                                    usecols=useful_col_list)
     months_nb = len(year_empl_dict.keys())
+    step = None
     if progress_callback:
         step = 20 / months_nb
 
@@ -612,7 +609,25 @@ def update_employees(wf_path, progress_callback=None,
     return employees_year, None, None, None, None, all_years_file_error
 
 
-def set_employees_data(corpus_year, empl_file_path, search_depth):
+def _build_useful_employees_years(empl_all_years, corpus_year, init_search_depth):
+
+    # Identifying available years in employees data
+    all_available_int_years = [int(x) for x in empl_all_years]
+    int_years_to_check = [int(corpus_year) - int(init_search_depth)
+                         + (i+1) for i in range(int(init_search_depth))]
+    available_int_years = []
+    for i in int_years_to_check:
+        if i in all_available_int_years:
+            available_int_years.append(i)
+
+    if len(available_int_years)>0:
+        search_depth = min(int(init_search_depth), len(available_int_years))
+    else:
+        search_depth = 0
+    return search_depth, available_int_years
+
+
+def set_employees_data(corpus_year, empl_file_path, init_search_depth):
     """Sets employees data through the reading of Institute employees database.
 
     The employee last name is standardized through the `standardize_txt` 
@@ -622,10 +637,10 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
         corpus_year (str): Corpus year defined by 4 digits.
         empl_file_path (path): Full path to file of Institute \
         employees data.
-        search_depth (int): Initial search depth.
+        init_search_depth (int): Initial search depth.
     Returns:
         (tup): (employees data (df), adapted search depth (int), \
-        list of available years of employees data).    
+        list of available years of employees data).
     """
     print("\nSetting the adequate years-selection of employees data...")
 
@@ -634,40 +649,13 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
     full_name_col_alias = bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']
     first_name_col_alias = bm_eg.EMPLOYEES_ADD_COLS['first_name_initials']
 
-    # Getting employees df
-    useful_col_list = list(bm_eg.EMPLOYEES_USEFUL_COLS.values()) + list(bm_eg.EMPLOYEES_ADD_COLS.values())
-    employees_dict = pd.read_excel(empl_file_path,
-                                   sheet_name=None,
-                                   dtype=bm_eg.EMPLOYEES_COL_TYPES,
-                                   usecols=useful_col_list,
-                                   keep_default_na=False)
+    # Getting the employees years available
+    empl_all_years = get_sheet_names(empl_file_path)
 
-    # Standardizing employee last name and consequently updating employee full name
-    new_employees_dict = {}
-    for year in employees_dict.keys():
-        year_employees_df = employees_dict[year].copy()
-        year_employees_df[last_name_col_alias] = year_employees_df[last_name_col_alias].\
-        apply(standardize_txt)
-        for row_num, _ in year_employees_df.iterrows():
-            last_name = year_employees_df.loc[row_num, last_name_col_alias]
-            first_name = year_employees_df.loc[row_num, first_name_col_alias]
-            full_name = last_name + " " + first_name
-            year_employees_df.loc[row_num, full_name_col_alias] = full_name
-        new_employees_dict[year] = year_employees_df
-
-    # Identifying available years in employees df
-    annees_dispo = [int(x) for x in list(employees_dict.keys())]
-    annees_a_verifier = [int(corpus_year) - int(search_depth)
-                         + (i+1) for i in range(int(search_depth))]
-    annees_verifiees = []
-    for i in annees_a_verifier:
-        if i in annees_dispo:
-            annees_verifiees.append(i)
-
-    if len(annees_verifiees) > 0:
-        search_depth = min(int(search_depth), len(annees_verifiees))
-    else:
-        search_depth = 0
+    # Identifying available years in employees data for the corpus
+    search_depth, available_int_years = _build_useful_employees_years(empl_all_years, corpus_year,
+                                                                      init_search_depth)
+    if not search_depth:
         warning_title = "!!! Attention !!!"
         warning_text  = ("Le nombre d'années disponibles est insuffisant "
                          "dans le fichier des effectifs de l'Institut."
@@ -675,4 +663,27 @@ def set_employees_data(corpus_year, empl_file_path, search_depth):
                          "\n1- Complétez le fichier des effectifs de l'Institut ;"
                          "\n2- Puis relancer le croisement auteurs-effectifs.")
         messagebox.showwarning(warning_title, warning_text)
-    return new_employees_dict, search_depth, annees_verifiees
+    else:
+        # Getting employees df for the corpus
+        empl_years = [str(int_year) for int_year in available_int_years]
+        useful_col_list = list(bm_eg.EMPLOYEES_USEFUL_COLS.values()) + list(bm_eg.EMPLOYEES_ADD_COLS.values())
+        empl_dict = pd.read_excel(empl_file_path, sheet_name=empl_years,
+                                  dtype=bm_eg.EMPLOYEES_COL_TYPES,
+                                  usecols=useful_col_list, keep_default_na=False)
+
+        # Standardizing employee last name and consequently updating employee full name
+        print(f"      - Selected years of employees data: {empl_years[0]}...{empl_years[-1]}")
+        print("      - Update of employees full name...")
+        new_empl_dict = {}
+        for year in empl_years:
+            print(f"            Employees full name update for:   {year}", end="\r")
+            year_empl_df = empl_dict[year].copy()
+            year_empl_df[last_name_col_alias] = year_empl_df[last_name_col_alias].apply(standardize_txt)
+            for row_num, row in year_empl_df.iterrows():
+                last_name = str(row[last_name_col_alias])
+                first_name = str(row[first_name_col_alias])
+                full_name = last_name + " " + first_name
+                year_empl_df.loc[row_num, full_name_col_alias] = full_name
+            new_empl_dict[year] = year_empl_df
+        print("      - Employees full name updated for the selected years")
+    return new_empl_dict, search_depth, available_int_years

@@ -2,15 +2,20 @@
 for setting the configuration parameters for the use of the BiblioMeter application.
 
 """
-__all__ = ['set_org_params',
+__all__ = ['build_norm_dicts',
+           'set_org_params',
            'set_parse_inst_params',
-           'set_user_config', ]
+           'set_user_config',
+          ]
 
 
 # Standard library imports
 import json
 import os
 from pathlib import Path
+
+# 3rd party imports
+import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.employees_globals as bm_eg
@@ -19,10 +24,10 @@ import bmfuncts.pub_globals as bm_pg
 
 
 def _get_bm_parsing_config():
-    """Reads the json file giving the architecture of the parsing folder 
+    """Reads the JSON file giving the architecture of the parsing folder
     and the names of the parsing files.
 
-    The name of this json file is given by the global 'PARSING_CONFIG_FILE' and 
+    The name of this JSON file is given by the global 'PARSING_CONFIG_FILE' and
     it is located in the folder of the `bmfuncts` package which name is given 
     by the global 'CONFIG_FOLDER'.
     These globals are defined in the `pub_globals.py` module 
@@ -31,12 +36,12 @@ def _get_bm_parsing_config():
     Args:
         None.
     Returns:
-        (dict): The dict resulting from the parsing of the json file.
+        (dict): The dict resulting from the parsing of the JSON file.
     """
     config_folder_name = bm_pg.CONFIG_FOLDER
     config_json_file_name = bm_pg.PARSING_CONFIG_FILE
 
-    # Reads the json file
+    # Reading the JSON file
     config_folder_path = Path(__file__).parent / Path(config_folder_name)
     config_file_path = config_folder_path / Path(config_json_file_name)
     with open(config_file_path, encoding = 'utf-8') as file:
@@ -197,11 +202,11 @@ def set_user_config(wf_path, year, db_list):
     return rawdata_path_dict, parsing_path_dict, item_filename_dict
 
 
-def _get_insitute_config(institute, wf_path):
-    """Reads the json file giving the parameters of the organization 
+def _get_institute_config(institute, wf_path):
+    """Reads the JSON file giving the parameters of the organization
     structure for the Institute.
 
-    The name of this json file is given by the global 'CONFIG_JSON_FILES_DICT' 
+    The name of this JSON file is given by the global 'CONFIG_JSON_FILES_DICT'
     and it is located in the folder of the working folder which name is given 
     by the global 'EMPLOYEES_ARCHI' at key "root".
     The global 'CONFIG_JSON_FILES_DICT' is defined in the `institute_globals.py` 
@@ -213,12 +218,12 @@ Args:
         institute (str): The Institute name.
         wf_path (path): The full path to the working folder.
     Returns:
-        (dict): The dict resulting from the parsing of the json file.
+        (dict): The dict resulting from the parsing of the JSON file.
     """
     config_root_path = wf_path / Path(bm_eg.EMPLOYEES_ARCHI["root"])
     config_file_path = config_root_path / Path(bm_ig.CONFIG_JSON_FILES_DICT[institute])
 
-    # Reads the json_file
+    # Reads the JSON file
     with open(config_file_path, encoding = 'utf-8') as file:
         inst_org_dict = json.load(file)
     return inst_org_dict
@@ -227,7 +232,7 @@ Args:
 def set_org_params(institute, wf_path):
     """Sets the parameters of the organization structure for the Institute.
 
-    For that, it uses the configuration dict returned by the `_get_insitute_config` 
+    For that, it uses the configuration dict returned by the `_get_institute_config`
     function of the same module. The set parameters are returned in a tuple as follows:
 
     - index 0 = the dict giving the column name (str) for each department (str).
@@ -242,7 +247,7 @@ def set_org_params(institute, wf_path):
     - index 5 = the status (bool) of the impact factors database:
         - True, if the database specific to the Institute will be used; 
         - False, if a general database will be used.
-    - index 6 = the list of document types (str) for which the impact factors will not be analysed.
+    - index 6 = the list of document types (str) for which the impact factors are not analyzed.
     - index 7 = the index of the main institution among the tuples at index 3.
     - index 8 = the status of the combination of the tuples at index 3.
     - index 9 = the status of splitting the file of list of publications with one row per author \
@@ -262,14 +267,9 @@ def set_org_params(institute, wf_path):
     Returns:
         (tup): A tuple of the 9 set parameters. 
     """
-
-    config_root_path = wf_path / Path(bm_eg.EMPLOYEES_ARCHI["root"])
-    config_file_path = config_root_path / Path(bm_ig.CONFIG_JSON_FILES_DICT[institute])
+    inst_org_dict = _get_institute_config(institute, wf_path)
     dpt_label_key = bm_ig.DPT_LABEL_KEY
     dpt_otp_key = bm_ig.DPT_OTP_KEY
-
-    with open(config_file_path, encoding = 'utf-8') as file:
-        inst_org_dict = json.load(file)
 
     col_names_dpt = inst_org_dict["COL_NAMES_DPT"]
     dpt_label_dict = inst_org_dict["DPT_LABEL_DICT"]
@@ -336,7 +336,35 @@ def set_parse_inst_params(institute, wf_path):
     institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
     inst_types_file_path = institutions_folder_path / Path(inst_types_file)
 
-    # Setting return tup
+    # Setting paths list to return
     inst_paths_list = [institute_affil_file_path, inst_types_file_path,
                        institutions_folder_path]
     return inst_country_towns_file, inst_paths_list
+
+
+def build_norm_dicts(institute, wf_path):
+    """Builds the useful dicts for affiliations normalization.
+
+    Three dicts are built:
+    - The data per country for normalizing the authors affiliations \
+    built through the `build_norm_raw_affiliations_dict` function;
+    - The data of affiliations types built through the `read_inst_types` function; 
+    - The data of towns per country built through the `read_towns_per_country` function.
+    These 3 functions are imported from the `BiblioParsing` package itself imported as 'bp'.
+
+    Args:
+        institute (str): Institute name.
+        wf_path (path): Full path to working folder.
+    Returns:
+        (list): The list of the 3 built dicts.
+    """
+    # Getting institutions normalization data for correction authors-institutions parsing data
+    inst_country_towns_file, inst_paths_list = set_parse_inst_params(institute, wf_path)
+    norm_raw_aff_dict = bp.build_norm_raw_affiliations_dict(
+        country_affiliations_file_path=inst_paths_list[0])
+    aff_type_dict = bp.read_inst_types(inst_types_file_path=inst_paths_list[1],
+                                       inst_types_usecols=None)
+    towns_dict = bp.read_towns_per_country(country_towns_file=inst_country_towns_file,
+                                           country_towns_folder_path=inst_paths_list[2])
+    norm_dicts = [norm_raw_aff_dict, aff_type_dict, towns_dict]
+    return norm_dicts

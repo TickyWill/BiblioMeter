@@ -466,7 +466,7 @@ def _clean_journals_data(if_db_dict, journal_cols_list):
 
     # Building the journals data to homogenize over all IFs-database years
     all_journals_df = pd.DataFrame(columns=journal_cols_list)
-    for year, year_if_db in if_db_dict.items():
+    for _, year_if_db in if_db_dict.items():
         year_journal_df = year_if_db[journal_cols_list]
         all_journals_df = concat_dfs([all_journals_df, year_journal_df], dedup=False)
     all_journals_df[journal_col] = all_journals_df.apply(set_capwords_lambda(journal_col), axis=1)
@@ -478,12 +478,12 @@ def _clean_journals_data(if_db_dict, journal_cols_list):
         eissns_list = list(set(journal_df[eissn_col].to_list()))
         if len(issns_list)>1 or len(eissns_list)>1:
             for issn, issn_df in journal_df.groupby(issn_col):
-                for eissn, eissn_df in issn_df.groupby(eissn_col):
+                for eissn,_ in issn_df.groupby(eissn_col):
                     if eissn!=issn:
                         data.append([journal, issn, eissn])
         else:
             issn, eissn = issns_list[0], eissns_list[0]
-            data.append([journal, issn, eissn]) 
+            data.append([journal, issn, eissn])
     new_journal_df = pd.DataFrame(data, columns=journal_cols_list)
 
     # Homogenizing the e-ISSN per ISSN value
@@ -503,14 +503,14 @@ def _clean_journals_data(if_db_dict, journal_cols_list):
             for _, row in issn_df.iterrows():
                 journal = row[journal_col]
                 eissn = row[eissn_col]
-                data.append([journal, issn, eissn])      
+                data.append([journal, issn, eissn])
     new_all_journals_df = pd.DataFrame(data, columns=journal_cols_list)
     return new_all_journals_df
 
 
 def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
     """Rebuilds IF database after cleaning journals data and saves 
-    it as multisheet Openpyxl worbook.
+    it as multisheet Openpyxl workbook.
 
     Args:
         inst_all_if_path (path): Full path to the IFs database.
@@ -530,10 +530,8 @@ def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
     wb = openpyxl_Workbook()
 
     # Setting unique data per journal in IFs database
-    new_if_db_dict = []
     for if_year, year_if_df in if_db_dict.items():
         year_if_df[journal_col] = year_if_df.apply(set_capwords_lambda(journal_col), axis=1)
-        new_year_if_df = pd.DataFrame(columns=year_if_df.columns)
         new_year_if_df = pd.merge(year_if_df,
                                   new_all_journals_df,
                                   how='left',

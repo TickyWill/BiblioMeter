@@ -74,7 +74,7 @@ from screeninfo import get_monitors
 # Setting application version value
 VERSION = '6.2.0'
 
-# Setting the number of corpuses to analyse
+# Setting the number of corpuses to be analyzed
 CORPUSES_NUMBER = 6
 
 # Setting the title of the application main window
@@ -226,9 +226,9 @@ MAIN_DISP_LABEL_DICT = {'wf'      : "Dossier de travail",
                         'corpuses': "Liste des corpus",}
 
 # Number of characters for display fields
-MAIN_CHAR_NB_DICT = {'work_folder': 110,
+MAIN_CHAR_NB_DICT = {'work_folder': 90,
                      'datatype'   : 30,
-                     'corpus_list': 110,
+                     'corpus_list': 90,
                     }
 
 # Positions of display fields
@@ -538,9 +538,12 @@ STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la correction automatique")
 STEPS_LABELS_DICT[KEY_CORRECT].append("Correction guidée des données de publications sans DOI ")
 STEPS_HELPS_DICT[KEY_CORRECT].append("Deux fichiers au format xlsx pour accompagner la correction par l'utilisateur "
                                      "sont créés pour l'année sélectionnée à partir des données initiales "
-                                     "des publications sans DOI identifiées à l'étape 1. Ces deux fichiers contiennent :"
-                                     "\n    - Les données scopus où les noms d'auteurs ont été mises au format ad-hoc pour BiblioMeter ;"
-                                     "\n    - Les données préparées pour corriger l'affiliation de chaque auteur des publications sans DOI.")
+                                     "des publications sans DOI identifiées à l'étape 1. "
+                                     "Ces deux fichiers contiennent :"
+                                     "\n    - Les données scopus où les noms d'auteurs ont été mises au format "
+                                     "          ad-hoc pour BiblioMeter ;"
+                                     "\n    - Les données préparées pour corriger l'affiliation de chaque auteur "
+                                     "          des publications sans DOI.")
 STEPS_LAUNCHES_DICT[KEY_CORRECT].append("Lancer la création des fichiers pour la correction manuelle")
 
 

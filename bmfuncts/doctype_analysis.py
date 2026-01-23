@@ -229,7 +229,7 @@ def _read_articles_data(wf_path, final_results_path, corpus_year):
 
 def _build_doctype_analysis_data(data_params_list,
                                  doctype_cols_tup):
-    """Builds the data of publications list to be analysed for each document types.
+    """Builds the data of publications list to be analyzed for each document types.
 
     The list of documents-types items is given by the 'DOC_TYPE_DICT' global 
     imported from the `bmfuncts.pub_globals` module. 
@@ -247,11 +247,10 @@ def _build_doctype_analysis_data(data_params_list,
 
     Args:
         data_params_list (list): The list composed of the full path \
-        to working folder (path), the data combination type of corpuses \
-        databases (str) and the 4 digits year of the corpus (str).
+        to working folder (path), the data-combination type (str) of corpus \
+        databases and the 4 digits year of the corpus (str).
         doctype_cols_tup (tup): (The selected columns names for the process \
-        of document-types analysis (dict), the list of Institute's \
-        departments (list)).
+        of document-types analysis (dict), the departments (list) of the Institute).
     Returns:
         (dict): The dict keyed per documents-types items (str) and valued \
         by the data (dataframe) built for each document type.
@@ -282,11 +281,11 @@ def _build_doctype_analysis_data(data_params_list,
     journal_norm_dict = dict(zip(parsing_articles_df[journal_col],
                                  parsing_articles_df[journal_norm_col]))
 
-    # Initializing the dataframe to be analysed
+    # Initializing the data to be analyzed
     pub_df = read_final_pub_list_data(final_results_path,
                                       corpus_year, full_cols_list)
 
-    # Setting final dataframe to be analyzed
+    # Setting final data to be analyzed
     analysis_df = _unique_journal_name(pub_df, journal_col, issn_col)
     analysis_df[journal_norm_col] = analysis_df[journal_col]
     analysis_df[journal_norm_col] = analysis_df[journal_norm_col].map(journal_norm_dict)
@@ -295,7 +294,7 @@ def _build_doctype_analysis_data(data_params_list,
     analysis_df[journal_col] = analysis_df.apply(set_capwords_lambda(journal_col), axis=1)
     analysis_df[doctype_col] = analysis_df.apply(set_capwords_lambda(doctype_col), axis=1)
 
-    # Building the dict of dataframes to be analyzed
+    # Building the dict of data to be analyzed
     pub_df_dict = {}
     for doctype, docname_list in bm_pg.DOC_TYPE_DICT.items():
         pub_df_dict[doctype] = analysis_df[analysis_df[doctype_col].isin(docname_list)]
@@ -314,7 +313,7 @@ def _set_by_issn_df(by_doc_df, idx_doc, issn, dg, drop_dup_cols,
         are computed.
         dg (dataframe): The data of publications list for the given \
         ISSN value.
-        drop_dup_cols (list): The list of columns names (str) for droping \
+        drop_dup_cols (list): The list of columns names (str) for dropping \
         duplicates in 'dg' data.
         journal_col (str): The column name of documents-types values.
         norm_doc (str): The normalized name of the document-type value \

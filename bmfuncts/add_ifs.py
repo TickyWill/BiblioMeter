@@ -221,7 +221,7 @@ def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
                                                              (row[journal_col].upper()),
                                                              axis=1)
     inst_issn_df = pd.DataFrame()
-    for dg_journal, dg in init_inst_issn_df.groupby(journal_col):
+    for _, dg in init_inst_issn_df.groupby(journal_col):
 
         issn_list = list(set(dg[issn_col].to_list()) - {unknown_kw})
         if not issn_list:
@@ -283,15 +283,14 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
     Args:
         in_file_path (path): The full path to get the corpus data.
         if_dict (dict): Impact-factors data (dataframes) keyed by years.
-        add_ifs_col_tup (tup): (Useful columns names for the IFs-attribution \
-        process as set through the `_set_add_ifs_col_dic` internal \
-        function (dict), the full list of final column names (list) \
-        got from the `set_final_col_names` function imported from \
+        add_ifs_col_tup (tup): (Useful columns names (dict) for the IFs-attribution process \
+        as set through the `_set_add_ifs_col_dic` internal function, the full list (list) of \
+        final column names got from the `set_final_col_names` function imported from \
         the `bmfuncts.rename_cols` module).
         unknown_kw (str): The word to identify unknown values.
     Returns:
-        (tup): (Recast corpus data (dataframe), \
-        Data (dataframe) of journals with their ISSN and eISSN IDs).
+        (tup): (Recast corpus data (dataframe), Data (dataframe) of \
+        journals with their ISSN and eISSN IDs).
     """
     # Setting parameters value from args
     add_ifs_col_dic, base_col_list = add_ifs_col_tup

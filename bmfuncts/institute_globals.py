@@ -8,6 +8,7 @@ __all__ = ['CONFIG_JSON_FILES_DICT',
            'INSTITUTES_CONTINENT_DICT',
            'INSTITUTES_COUNTRY_DICT',
            'INSTITUTES_LIST',
+           'INSTITUTES_NORM_NAME_DICT',
            'INVALIDE',
            'ROOT_FOLDERS_DICT',
            'WORKING_FOLDERS_DICT',
@@ -24,6 +25,10 @@ INSTITUTES_COUNTRY_DICT = {'Liten': 'France',
 
 INSTITUTES_CONTINENT_DICT = {'Liten': 'Europe',
                              'Leti' : 'Europe',
+                            }
+
+INSTITUTES_NORM_NAME_DICT = {'Liten': 'LITEN' + " Rto",
+                             'Leti' : 'LETI' + " Rto",
                             }
 
 # Setting default working folder of each institute

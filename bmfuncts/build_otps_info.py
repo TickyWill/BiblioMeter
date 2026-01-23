@@ -202,8 +202,8 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv="", dpt=""):
     """Updates of the OTPs data for the given lab of the given service 
     of the given department.
 
-    It uses the `-try_init_dict` internal function to nitialize the OTPs data 
-    at the right key value depending on the status of the optio.
+    It uses the `-try_init_dict` internal function to initialize the OTPs data
+    at the right key value depending on the status of the optional args.
 
     Args:
         dept_otps_dict (dict): The hierarchical dict of OTPs data to be updated.
@@ -212,9 +212,9 @@ def _set_otps_dict(dept_otps_dict, dept, serv, lb, otps_list, srv="", dpt=""):
         lb (str): The label of the laboratory of the service of the department.
         otps_list (list): The list of OTPs values.
         srv (str): The optional label of the service to be used as key \
-        (default = "").
+        (default: "").
         dpt (str): The optional label of the department to be used as key \
-        (default = "").
+        (default: "").
     Returns:
         (dict): The updated data as a hierarchical dict keyed by the department label \
         and valued by a dict keyed by the service label and valued by a dict keyed \
@@ -432,10 +432,10 @@ def set_lab_otps(set_otp_params_list):
     and `_build_dept_otps_dict`.
 
     Args:
-        set_otp_params_list (list): The list composed of the Institute \
-        name (str), of the org_tup (tup) that contains parameters of \
-        Institute organization and of the full path (path) to the root \
-        folder of the working folder where the OTPs data should be available.
+        set_otp_params_list (list): The list composed of the Institute name (str), \
+        the org_tup that contains parameters of Institute organization (tup), \
+        and of the full path (path) to the root folder of the working folder \
+        where the OTPs data should be available.
     Returns:
         (dict): OTPs hierarchical dict keyed by departments \
         and valued by dicts keyed by labs and valued by OTPs lists.    
@@ -467,8 +467,7 @@ def set_lab_otps(set_otp_params_list):
 
     # Filling initial OTPs dict with infos provided by OTPs source file
     # The dict is a hierarchical dict keyed by department, services and labs
-    # as they are defined in the source file but not as defined
-    # in the Institute config file.
+    # They are set from the source file but not from the Institute's configuration file.
     dept_otps_dict = {}
     for otps_dept, otps_dept_df in otps_data_df.groupby(otps_dept_col):
         dept_otps_list = _set_sorted_list2(otps_dept_df, otps_otp_col)

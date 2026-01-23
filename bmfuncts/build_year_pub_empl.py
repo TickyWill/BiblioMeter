@@ -237,7 +237,7 @@ def _set_merge_cols_dic():
     return merge_cols_dic
 
 
-def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No name"):
+def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No name", init_status=False):
     """Builds a dataframe of the merged employees information with the publications 
     list with one row per author.
 
@@ -256,16 +256,17 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute publications list with one row per author. 
         wf_path (path): Full path to working folder.
-        test_case (str): Optional test case for testing the function (default = "No test").
+        test_case (str): Optional test case for testing the function (default: "No test").
         test_name (str): Optional author's last-name for testing the function \
-        (default = "No name").
+        (default: "No name").
+        init_status (bool): Optional, status of initial search (default: False)
     Returns:
         (tup): (dataframe of merged employees information with \
         the publications list with one row per Institute author with \
         identified homonyms, dataframe of publications list with \
         one row per author that has not been identified as Institute employee).
     Note:
-        Care is taken to keep 'NA' value for the first name initiales \
+        Care is taken to keep 'NA' value for the first name initials \
         (that are set to NaN otherwise) through the `keep_initials` function \
         imported from `bmfuncts.useful_functs` module.
     """
@@ -278,15 +279,15 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
     # Replace in "pub_df" NaN values "NA" in first name initials
     pub_df = keep_initials(pub_df, pub_firstname_col)
 
-    # Initializing a Data frame that will contain all matches
+    # Initializing the Data that will contain all matches
     # between 'pub_df' author-name and 'empl_df' employee-name
     submit_df = pd.DataFrame()
 
-    # Initializing a Data frame that will contain all 'pub_df' author-names
+    # Initializing the Data that will contain all 'pub_df' author-names
     # which do not match with any of the 'empl_df' employee-names
     orphan_df = pd.DataFrame(columns=list(pub_df.columns))
 
-    # Building the set of lastnames (without duplicates) of the dataframe 'empl_df'
+    # Building the set of lastnames (without duplicates) of the 'empl_df' data
     eff_lastnames = set(empl_df[empl_lastname_col].to_list())
     eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
 
@@ -297,12 +298,17 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
     # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
     test_states, checks_path = _set_match_test_info(wf_path, test_case)
 
-    # Building submit_df and orphan_df dataframes
+    # Building 'submit_df' and 'orphan_df' data
+    if init_status:
+        print("          - Searching of authors among employees data...")
+        full_names_nb, names_nb = len(pub_df), 0
     for _, pub_df_row in pub_df.iterrows():
-
-        # Building a dataframe 'empl_pub_match_df' with rows of 'empl_df'
-        # where name in column COL_NAMES_BM['Last_name'] of the dataframe 'pub_df'
-        # matches with name in column EMPLOYEES_USEFUL_COLS['name'] of the dataframe 'empl_df'
+        if init_status:
+            names_nb += 1
+            print(f"              Number of searched authors:   {names_nb} / {full_names_nb}", end="\r")
+        # Building an 'empl_pub_match_df' data with rows of 'empl_df' data
+        # The rows where the value in COL_NAMES_BM['Last_name'] column of the 'pub_df' data
+        # matches with the value in EMPLOYEES_USEFUL_COLS['name'] column of the 'empl_df' data
 
         # Initializing the flag 'flag_lastname_match' as True by default
         flag_lastname_match = True
@@ -381,11 +387,10 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
                                                   test_cols_dic)
 
             if list_idx:
-                # Building a dataframe 'temp_df' with the row 'pub_df_row'
-                # related to a given publication
-                # and adding the item value HOMONYM_FLAG
-                # at column COL_NAMES_BM['Homonym']
-                # when several matches on firstname initials are found
+                # Building a 'temp_df' data with the 'pub_df_row' row
+                # related to a given publication.
+                # Then adding the item value HOMONYM_FLAG at COL_NAMES_BM['Homonym'] column
+                # when several matches on firstname initials are found.
                 temp_df = pub_df_row.to_frame().T
                 temp_df[homonyms_col]=\
                     bm_pg.HOMONYM_FLAG if len(list_idx) > 1 else '_'
@@ -394,10 +399,10 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
                 if pub_lastname==test_name and test_states[4]:
                     _save_spec_dfs(temp_df, empl_pub_match_df, test_name, checks_path)
 
-                # Merging the dataframe 'empl_pub_match_df' to the dataframe 'temp_df'
-                # by matching column '[COL_NAMES_BM['Last_name']]' of the dataframe 'temp_df'
-                # to the column 'EMPLOYEES_ADD_COLS['employee_full_name']'
-                # of the dataframe 'empl_pub_match_df'
+                # Merging the 'empl_pub_match_df' data to the 'temp_df' data.
+                # The COL_NAMES_BM['Last_name'] column of the 'temp_df' data
+                # is matched to the EMPLOYEES_ADD_COLS['employee_full_name']
+                # column of the 'empl_pub_match_df' data.
                 pub_emp_join_df = pd.merge(temp_df,
                                            empl_pub_match_df,
                                            how='left',
@@ -416,4 +421,5 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
     submit_df = submit_df.drop_duplicates()
     orphan_df = orphan_df.drop_duplicates()
 
+    print("          - Data of authors found as employees and data of authors not found amond employees built")
     return submit_df, orphan_df

@@ -2,19 +2,14 @@
 of `main_page` module of `bmgui` package.
 """
 
-
 # Local imports
 from bmgui.main_page import AppMain
 
 def run_application():
+    """ Main function used for starting the BiblioMeter application.
     """
-    Main function used for starting the BiblioMeter application
-    """
-    try:
-        app = AppMain()
-        app.mainloop()
-    except Exception as err:
-        print(err)
+    app = AppMain()
+    app.mainloop()
 
 if __name__ == "__main__":
     run_application()

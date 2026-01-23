@@ -23,7 +23,7 @@ from bmfuncts.config_utils import set_user_config
 from bmfuncts.correct_dedup import correct_dedup
 from bmfuncts.correct_dedup import initialize_addresses_to_correct_file
 from bmfuncts.format_files import save_formatted_df_to_xlsx
-from bmfuncts.read_final_results import build_pub_ids_lists
+from bmfuncts.read_final_results import build_pub_ids_dict
 from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
@@ -67,7 +67,7 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
     Args:
         raw_institutions_df (dataframe): The initial data of raw institutions.
         country_unkept_affil_file_path (path): The full path to the data of raw \
-        institutions that should be droped from the initial data of raw institutions.
+        institutions that should be dropped from the initial data of raw institutions.
         cols_list (list): The names of useful columns.
     Returns:
         (dataframe): The cleaned data of raw institutions.
@@ -102,6 +102,7 @@ def _clean_unkept_affil(raw_institutions_df, country_unkept_affil_file_path, col
 
 def _copy_dg_col_to_df(df, dg, cols_list, copy_col):
     """Copies a column of 'dg' data in initial 'df' data.
+
     Args:
          df (dataframe): The initial data.
          dg (dataframe): The data from which the column is copied
@@ -116,22 +117,33 @@ def _copy_dg_col_to_df(df, dg, cols_list, copy_col):
 
 
 def _enhance_raw_institutions_data(init_raw_institutions_df, ids_dicts_list, co_cols_dic):
-    
+    """Adds hash-IDs and DOIs identifiers to help the user in the reduction 
+    of the authors' affiliations not yet normalized and to identify the addresses 
+    that need to be corrected.
+
+    Args:
+        init_raw_institutions_df (dataframe): Initial data of raw affiliations of the corpus.
+        ids_dicts_list (list): The list composed of the data (dict) of database ID \
+        per publication ID and the data (dict) of the DOI per publication ID.
+        co_cols_dic (dict): The dict giving the col names for coupling analysis process.
+    Returns:
+        (dataframe): The updated data of raw affiliations of the corpus.
+    """
     # Setting useful column names aliases
     col_keys = ['hash_id_col','pub_id_col', 'doi_col', 'address_id_col',
                 'countries_col', 'address_col', 'institutions_col']
     (hash_id_col, pub_id_col, doi_col, address_id_col, countries_col,
      address_col, institutions_col) = [co_cols_dic[key] for key in col_keys]
-    
+
     init_ordered_columns = [pub_id_col, address_id_col, countries_col, address_col,
-                            institutions_col] 
+                            institutions_col]
     init_raw_institutions_df = init_raw_institutions_df[init_ordered_columns]
     final_ordered_columns = [hash_id_col, pub_id_col, doi_col, address_id_col, countries_col,
                              address_col, institutions_col]
 
     # Setting hash-ID and DOI per publication data from args
     hash_ids_dict, dois_dict = ids_dicts_list
-    
+
     data = []
     for _, row in init_raw_institutions_df.iterrows():
         init_values_list = row.T.to_list()
@@ -144,9 +156,9 @@ def _enhance_raw_institutions_data(init_raw_institutions_df, ids_dicts_list, co_
     return raw_institutions_df
 
 
-def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
-                                 co_cols_dic, files_list, sub_paths_list, ids_dicts_list,
-                                 progress_param=None, verbose=False):
+def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df, co_cols_dic,
+                                 files_list, sub_paths_list, ids_dicts_list,
+                                 progress_param=None):
     """Builds the data of countries, normalized institutions and raw institutions.
 
     This is done through the following steps:
@@ -164,7 +176,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
 
     2. Completes the normalized institutions and raw institutions dataframes with country \
     information by `_copy_dg_col_to_df` internal function.
-    3. Modifyes the publications IDs by `set_year_pub_id` function imported from \
+    3. Modifies the publications IDs by `set_year_pub_id` function imported from \
     `bmfuncts.useful_functs` in the 3 dataframes.
     4. Removes the institutions not to be considered through the `_clean_unkept_affil` \
     internal function.
@@ -179,16 +191,17 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
         files_list (list): The list of file names as built by the `_set_co_files_params` \
         internal function.
         sub_paths_list (list): The list of paths as built by the `_set_co_files_params` \
-        internal function except the first item of the bulit list.
+        internal function except the first item.
+        ids_dicts_list (list): The list composed of the data (dict) of database ID \
+        per publication ID and the data (dict) of the DOI per publication ID.
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default = None)
-        verbose (bool): Status of prints (default = False).
     Returns:
         (tup): (Data with one row per country for each publication ID, Data with one row \
         per address with attached institutions list  for each publication ID, \
         The full path (path) to the file of countries-affiliations data, \
-        The dict keyed by countries and valued by the list of normalised affiliation types \
+        The dict keyed by countries and valued by the list of the normalized affiliation types \
         to be corrected, The status (bool) of the raw-affiliations data \
         (True if no remaining raw-affiliations)).
     """
@@ -206,6 +219,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
      country_affil_file_path, country_unkept_affil_file_path) = sub_paths_list
 
     # Setting parameters from optional arg
+    progress_callback, init_progress, final_progress, inter_progress_1, inter_progress_2 = [None] * 5
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param
         inter_progress_1 = init_progress + (final_progress - init_progress) * 0.90
@@ -272,6 +286,7 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
         sheet_name = 'Raw Inst ' + corpus_year
         save_formatted_df_to_xlsx(inst_analysis_folder_path, raw_inst_file,
                                   raw_institutions_df, inst_df_title, sheet_name)
+        countries_df.to_excel(inst_analysis_folder_path / Path("Temp_countries.xlsx"), index=False)
         print_text = ("      - Data of normalized affiliations and of "
                       "raw-affiliations saved ")
         if raw_institutions_status:
@@ -285,8 +300,8 @@ def _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df,
 
 
 def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
-    """Sets IFs specific file and folder 
-    
+    """Sets IFs specific file and folder.
+
     Args:
         institute (str): Institute name.
         wf_path (path): Full path to working folder.
@@ -341,15 +356,27 @@ def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
     return files_list, folders_list, paths_list
 
 
-def _built_pub_identifiers_data(wf_path, corpus_year, final_results_path, hash_ids_path, co_cols_dic):
-    # Setting useful column names aliases
-    col_keys = ['hash_id_col', 'pub_id_col', 'doi_col']
-    (hash_id_col, pub_id_col, doi_col) = [co_cols_dic[key] for key in col_keys]
+def _built_co_pub_identifiers_data(ids_params, hash_ids_path, identifiers_cols):
+    """Builds data of publications identifiers specific to a given deduplicated corpus parsing.
+
+    Args:
+        ids_params (list): The list composed of the full path to the working folder (path), \
+        of the 4 digits year of the corpus (str) and of the full path to the folder \
+        where the final results of parsings deduplication are saved.
+        hash_ids_path (path): The full path to the hash-IDs file.
+        identifiers_cols (list): The column names of the publications identifiers.
+    Returns:
+        (list): The list composed of the data (dict) of database ID per publication ID \
+        and the data (dict) of the DOI per publication ID.
+    """
+    # Setting parameters values from args
+    wf_path, corpus_year, final_results_path = ids_params
+    hash_id_col, pub_id_col, doi_col = identifiers_cols
 
     # Building the data of hash-ID per publication-ID
     hash_ids_df = pd.read_excel(hash_ids_path)
     hash_ids_dict = dict(zip(hash_ids_df[pub_id_col], hash_ids_df[hash_id_col]))
-    
+
     # Building the data of DOI per publication-ID
     parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
     articles_df = parsing_dict['articles']
@@ -360,7 +387,7 @@ def _built_pub_identifiers_data(wf_path, corpus_year, final_results_path, hash_i
 
 def coupling_analysis(params_list, progress_callback=None, verbose=False):
     """Performs the analysis of countries and authors affiliations of Institute publications 
-    of the 'year' corpus.
+    of a corpus.
 
     This is done through the following steps:
 
@@ -373,7 +400,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     through the `_build_and_save_norm_raw_dfs` internal function.
     4. Builds the publications statistics dataframes per institutions through the \
     `_build_and_save_institutions_stat` internal function after setting the Institute publications \
-    IDs list through the `build_pub_ids_lists` function imported from the `bmfuncts.useful_functs` \
+    IDs list through the `build_pub_ids_dict` function imported from the `bmfuncts.read_final_results` \
     module.
     5. Builds the publications statistics dataframes per country and per continent through \
     the `_build_and_save_geo_stat` internal function.
@@ -382,18 +409,18 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     Args:
         params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        of the org_tup (tup) that contains parameters of Institute organization, \
+        of the full path to working folder (path), of the data combination type \
+        of corpuses databases (str) and of the 4 digits year of the corpus (str).
         progress_callback (function): Function for updating ProgressBar \
-        tkinter widget status (default = None).
-        verbose (bool): Status of prints (default = False).
+        tkinter widget status (default: None).
+        verbose (bool): Status of prints (default: False).
     Returns:
         (tup): (The full path (path) to the folder where results of coupling analysis are saved, \
         The full path (path) to folder where the results of the geographical analysis are saved, \
         The full path (path) to folder where the results of the collaborations analysis are saved, \
         The full path (path) to the file of countries-affiliations data, \
-        The dict keyed by countries and valued by the list of normalised affiliation types \
+        The dict keyed by countries and valued by the list of the normalized affiliation types \
         to be corrected).
     """
     # Setting parameters values from params_list
@@ -403,7 +430,8 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful parameters lists
-    dedup_params = [institute, wf_path, datatype, corpus_year]
+    ids_params = [wf_path, corpus_year, final_results_path]
+    dedup_params = [institute, wf_path, corpus_year, final_results_path]
     addresses_params = [institute, org_tup, wf_path, corpus_year, final_results_path]
 
     # Getting item_filename_dict
@@ -421,22 +449,23 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     # Setting useful column names
     co_cols_dic = _set_co_cols_dic(institute, org_tup)
-    final_pub_id_col = co_cols_dic['final_pub_id_col']
-    final_doctype_col = co_cols_dic['final_doctype_col']
+    col_keys = ['hash_id_col', 'pub_id_col', 'doi_col', 'final_pub_id_col', 'final_doctype_col']
+    (hash_id_col, pub_id_col, doi_col,
+     final_pub_id_col, final_doctype_col) = [co_cols_dic[key] for key in col_keys]
 
     # Building data of hash-ID and DOI per publication
-    ids_dicts_list = _built_pub_identifiers_data(wf_path, corpus_year, final_results_path,
-                                                 hash_ids_path, co_cols_dic)
+    identifiers_cols = [hash_id_col, pub_id_col, doi_col]
+    ids_dicts_list = _built_co_pub_identifiers_data(ids_params, hash_ids_path, identifiers_cols)
 
     # Correcting false addresses in deduplication-parsing data as indicated by the user
-    print(f"\nCorrecting false addresses...")
-    addresses_to_correct_path, correct_status = correct_dedup(dedup_params, final_results_path,
-                                                              item_filename_dict, ids_dicts_list)
+    print("\nCorrecting false addresses...")
+    addresses_to_correct_path, correct_status = correct_dedup(dedup_params, item_filename_dict,
+                                                              ids_dicts_list)
     if correct_status:
         print("\n    False addresses in deduplication-parsing data corrected")
     else:
         print("\n    No correction of false addresses in deduplication-parsing data")
-    progress_param = None
+    progress_param, inter_progress_1, inter_progress_2 = [None] * 3
     if progress_callback:
         init_progress = 5
         inter_progress_1 = 15
@@ -444,7 +473,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(init_progress)
 
     # Selecting addresses of Institute's publications only from parsing addresses data
-    print(f"\nBuilding data of addresses of Institute's publications...")
+    print("\nBuilding data of addresses of Institute's publications...")
     return_tup = build_institute_addresses_df(addresses_params, verbose=False,
                                               progress_param=progress_param)
     inst_pub_addresses_df = return_tup[2]
@@ -454,12 +483,11 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         inter_progress_2 = 83
         progress_param = (progress_callback, inter_progress_1, inter_progress_2)
 
-    print(f"\nTrying to built affiliations and geographical statistics...")
+    print("\nTrying to built affiliations and geographical statistics...")
     sub_paths_list = paths_list[1:6]
     return_tup = _build_and_save_norm_raw_dfs(corpus_year, inst_pub_addresses_df, co_cols_dic,
                                               files_list, sub_paths_list, ids_dicts_list,
-                                              progress_param=progress_param,
-                                              verbose=verbose)
+                                              progress_param=progress_param)
     (countries_df, norm_institutions_df,
      wrong_affil_types_dict, raw_institutions_status) = return_tup
     if not wrong_affil_types_dict and raw_institutions_status:
@@ -469,18 +497,18 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
             inter_progress_3 = 93
             progress_param = (progress_callback, inter_progress_2, inter_progress_3)
         pub_doctype_cols_list = [final_pub_id_col, final_doctype_col]
-        pub_ids_lists = build_pub_ids_lists(final_results_path, corpus_year, pub_doctype_cols_list)
+        pub_ids_dict = build_pub_ids_dict(final_results_path, corpus_year, pub_doctype_cols_list)
         build_and_save_institutions_stat(institute, norm_institutions_df,
                                          inst_types_file_path,
                                          inst_analysis_folder_path, corpus_year,
-                                         pub_ids_lists,
+                                         pub_ids_dict,
                                          progress_param=progress_param)
         print("    Affiliations statistics built and saved")
 
         # Setting Institute's geo
         institute_geo_dict = {'country'  : bm_ig.INSTITUTES_COUNTRY_DICT[institute],
                               'continent': bm_ig.INSTITUTES_CONTINENT_DICT[institute],
-                              'norm_name': institute.upper() + " Rto",
+                              'norm_name': bm_ig.INSTITUTES_NORM_NAME_DICT[institute],
                              }
 
         # Building and saving geo stat dataframes

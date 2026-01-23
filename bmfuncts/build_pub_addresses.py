@@ -13,7 +13,7 @@ import pandas as pd
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
-from bmfuncts.read_final_results import build_pub_ids_lists
+from bmfuncts.read_final_results import keep_only_final_pub_data
 from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.read_final_results import read_final_submit_data
 from bmfuncts.rename_cols import build_col_conversion_dic
@@ -119,15 +119,19 @@ def _initializing_save_params_dic(wf_path, corpus_year, verbose):
     """
     # Initializing the index of already-saved intermediate results
     save_num = 0
-    save_params_dic = {'save_num': save_num,}
+    save_folder_path = ""
+    steps_save_params_dic = {}
 
     if verbose:
         # Setting the folder for saving intermediate results
         save_folder_path = _set_save_folder_path(wf_path, corpus_year)
-        save_params_dic['save_folder_path'] = save_folder_path
         # Building the dict giving information for saving intermediate results
         steps_save_params_dic = _set_steps_save_params_dic()
-        save_params_dic['steps_save_params_dic'] = steps_save_params_dic
+
+    save_params_dic = {'save_num'             : save_num,
+                       'save_folder_path'     : save_folder_path,
+                       'steps_save_params_dic': steps_save_params_dic,
+                       }
     return save_params_dic
 
 
@@ -181,7 +185,7 @@ def _build_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
         (dataframe): The built data.
     """
     bm_pub_id_col, bm_address_id_col, bm_author_id_col, bm_address_col = bm_full_cols_list
-    pubid_addid_authid_addresse_df = pd.DataFrame()
+    pubid_addid_authid_addresse_df = pd.DataFrame(columns=bm_full_cols_list)
     for pub_id, pub_id_df1 in inst_pub_addresses_init_df.groupby(bm_pub_id_col):
         # Setting all addresses list for 'pub_id' in a dict
         df1_address_ids_list = pub_id_df1[bm_address_id_col].to_list()
@@ -196,26 +200,26 @@ def _build_pubid_addid_authid_addresse_df(inst_pub_addresses_init_df,
         df1_out_df2_addresses_list = list(set(df1_addresses_list) - set(df2_addresses_list))
 
         # Building partial 'pubid_addid_authid_addresse_df' for 'pub_id' as 'pub_id_out_df'
-        pub_id_out_df = pd.DataFrame()
-        data = []
+        pub_id_data = []
+        others_data = []
         for address in df1_out_df2_addresses_list:
             # Setting data for other authors than authors of the institute
             address_id = df1_address_dict[address]
             author_id = "_"
-            data.append([pub_id, address_id, author_id, address])
-            address_df = pd.DataFrame(data,
-                                      columns=bm_full_cols_list)
-            pub_id_out_df = concat_dfs([pub_id_out_df, address_df])
+            others_data.append([pub_id, address_id, author_id, address])
+        pub_id_data = pub_id_data + others_data
+            #address_df = pd.DataFrame(others_data, columns=bm_full_cols_list)
+            #pub_id_out_df = concat_dfs([pub_id_out_df, address_df])
 
         for df2_address, df2_address_df in pub_id_df2.groupby(bm_address_col):
             # Setting data for authors of the institute
             df2_author_ids_list = df2_address_df[bm_author_id_col].to_list()
             df1_address_id = df1_address_dict[df2_address]
-            data = []
+            inst_data = []
             for author_id in df2_author_ids_list:
-                data.append([pub_id, df1_address_id, author_id, df2_address])
-            address_df = pd.DataFrame(data, columns=bm_full_cols_list)
-            pub_id_out_df = concat_dfs([pub_id_out_df, address_df])
+                inst_data.append([pub_id, df1_address_id, author_id, df2_address])
+            pub_id_data = pub_id_data + inst_data
+        pub_id_out_df = pd.DataFrame(pub_id_data, columns=bm_full_cols_list)
         pub_id_out_df = pub_id_out_df.drop_duplicates()
         pub_id_out_df = pub_id_out_df.sort_values(by=[bm_address_id_col])
 
@@ -252,6 +256,7 @@ def _correct_inst_address(pubid_addid_authid_addresse_df, bm_full_cols_list):
                     ines_rpl_str = "CEA, LITEN, INES"
                     unknown_rpl_str = "France"
                     new_addresses_list = [address.replace("INES", ines_rpl_str) for address in addresses_list]
+                    new_addresses_list = [address.replace("INESCEA", ines_rpl_str) for address in addresses_list]
                     new_addresses_list = [address.replace(bp.UNKNOWN, unknown_rpl_str)
                                           for address in new_addresses_list]
                     addresses_dict = dict(zip(new_addresses_list, address_ids_list))
@@ -276,7 +281,7 @@ def _build_final_institute_addresses_df(corr_pubid_addid_authid_addresse_df, bm_
     and per publication ID corrected for addresses of the institute.
 
     Args:
-        corr_pubid_addid_authid_addresse_df (dtaframe): The data of addresses \
+        corr_pubid_addid_authid_addresse_df (dataframe): The data of addresses \
         per author ID, per address ID and per publication ID with corrected \
         addresses of the authors of the institute.
         bm_final_cols_list (list): Final column names (str) set within \
@@ -291,15 +296,15 @@ def _build_final_institute_addresses_df(corr_pubid_addid_authid_addresse_df, bm_
     # Building the final data
     data_cols = bm_final_cols_list
     in_df = corr_pubid_addid_authid_addresse_df.copy()
-    out_df = pd.DataFrame()
+    full_data = []
     for pub_id, pub_id_df in in_df.groupby(bm_pub_id_col):
-        data = []
+        pub_id_data = []
         for addr_id, addr_id_df in pub_id_df.groupby(bm_address_id_col):
             addresses_list = list(set(addr_id_df[bm_address_col].to_list()))
             address = ", ".join(addresses_list)
-            data.append([pub_id, addr_id, address])
-            addr_df = pd.DataFrame(data, columns=data_cols)
-            out_df = concat_dfs([out_df, addr_df])
+            pub_id_data.append([pub_id, addr_id, address])
+        full_data = full_data + pub_id_data
+    out_df = pd.DataFrame(full_data, columns=data_cols)
     out_df = out_df.drop_duplicates()
     inst_pub_addresses_df = out_df.copy()
     return inst_pub_addresses_df
@@ -339,6 +344,7 @@ def _clean_institute_addresses_data(institute, inst_pub_addresses_init_df,
     bm_final_cols_list = col_lists_dic['bm_final_cols_list']
 
     # Setting parameters from optional arg
+    progress_callback, init_progress, final_progress, progress_step, progress_status = [None] * 5
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param
         progress_step = (final_progress - init_progress) * 0.30
@@ -447,14 +453,14 @@ def _build_institute_authors_addresses(input_data_params, pub_addresses_cols_dic
     (bm_pub_id_col, bm_author_id_col,
      bm_address_col) = [pub_addresses_cols_dic[key] for key in col_keys]
 
-    # Setting useful col list
+    # Setting useful cols list
     data_cols = [bm_pub_id_col, bm_author_id_col, bm_address_col]
 
     # Building the dict of institute-authors IDs per publications
     submit_df = read_final_submit_data(final_results_path, corpus_year)
     sub_submit_df = submit_df[data_cols]
 
-    institute_author_addresses_df = pd.DataFrame()
+    full_data = []
     for _, submit_row in sub_submit_df.iterrows():
         pub_id = submit_row[bm_pub_id_col]
         author_idx = submit_row[bm_author_id_col]
@@ -462,9 +468,8 @@ def _build_institute_authors_addresses(input_data_params, pub_addresses_cols_dic
         data = []
         for auth_address in auth_addresses_list:
             data.append([pub_id, author_idx, auth_address])
-            author_addresse_df = pd.DataFrame(data, columns=data_cols)
-            dfs_list = [institute_author_addresses_df, author_addresse_df]
-            institute_author_addresses_df = concat_dfs(dfs_list)
+        full_data = full_data + data
+    institute_author_addresses_df = pd.DataFrame(full_data, columns=data_cols)
     inst_pud_ids_list = list(set(institute_author_addresses_df[bm_pub_id_col].to_list()))
     return institute_author_addresses_df, inst_pud_ids_list
 
@@ -489,7 +494,7 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
     imported from the `BiblioParsing` package.
 
     Args:
-        sub_addresses_params (list): Composed of of the full path (path) to \
+        sub_addresses_params (list): Composed of the full path (path) to \
         the working folder, of the 4 digits year (str) of the corpus and of \
         the full path to the folder where final results are saved (path).
         pub_addresses_cols_dic (dict): The dict giving selected columns names \
@@ -508,6 +513,7 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
     final_results_path = sub_addresses_params[-1]
 
     # Setting parameters from optional arg
+    progress_callback, init_progress, final_progress = [None] * 3
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param
         progress_callback(init_progress)
@@ -519,6 +525,16 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
 
     # Setting useful cols lists
     col_lists_dic, bp2bm_rename_cols_dict = _set_col_lists_infos(pub_addresses_cols_dic)
+    if progress_param:
+        progress_callback(init_progress + (final_progress - init_progress) * 0.05)
+
+    # Getting the institute-authors IDs per publications of the institute
+    return_df, _ = _build_institute_authors_addresses(sub_addresses_params[1:],
+                                                      pub_addresses_cols_dic)
+    return_df[bm_address_col] = return_df[bm_address_col].apply(bp.standardize_address)
+    all_institute_author_addresses_df = return_df.copy()
+    if progress_param:
+        progress_callback(init_progress + (final_progress - init_progress) * 0.50)
 
     # Setting the addresses data from the deduplication results of the parsing step
     all_address_df = _read_addresses_data(sub_addresses_params)
@@ -526,30 +542,14 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
     all_address_df[bp_address_col] = all_address_df[bp_address_col].apply(bp.standardize_address)
     all_address_df.rename(columns=bp2bm_rename_cols_dict, inplace=True)
     if progress_param:
-        progress_callback(init_progress + (final_progress - init_progress) * 0.20)
+        progress_callback(init_progress + (final_progress - init_progress) * 0.80)
 
-    # Selecting only addresses of the final publication list
-    cols_list = bm_pub_id_col, bm_doctype_col
-    pub_ids_to_keep_list = build_pub_ids_lists(final_results_path, corpus_year, cols_list)[0]
-    kept_address_df = pd.DataFrame()
-    for pub_id, dg in all_address_df.groupby(bm_pub_id_col):
-        if pub_id in pub_ids_to_keep_list:
-            kept_address_df = concat_dfs([kept_address_df, dg])
-
-    # Getting the institute-authors IDs per publications of the institute
-    return_tup = _build_institute_authors_addresses(sub_addresses_params[1:],
-                                                    pub_addresses_cols_dic)
-    return_df, inst_pud_ids_list = return_tup
-    return_df[bm_address_col] = return_df[bm_address_col].apply(bp.standardize_address)
-    institute_author_addresses_df = return_df.copy()
-    if progress_param:
-        progress_callback(init_progress + (final_progress - init_progress) * 0.70)
-
-    # Selecting only addresses of the publications of the institute
-    inst_pub_addresses_init_df = pd.DataFrame()
-    for pub_id, dg in kept_address_df.groupby(bm_pub_id_col):
-        if pub_id in inst_pud_ids_list:
-            inst_pub_addresses_init_df = concat_dfs([inst_pub_addresses_init_df, dg])
+    # Selecting only data related to the consolidated publications list
+    cols_list = [bm_pub_id_col, bm_doctype_col]
+    inst_pub_addresses_init_df = keep_only_final_pub_data(all_address_df, final_results_path,
+                                                          corpus_year, cols_list)
+    institute_author_addresses_df = keep_only_final_pub_data(all_institute_author_addresses_df,
+                                                             final_results_path, corpus_year, cols_list)
     if progress_param:
         progress_callback(final_progress)
 
@@ -581,12 +581,14 @@ def build_institute_addresses_df(addresses_params, verbose=False,
     """
     # Setting parameters values from "addresses_params"
     institute, org_tup, wf_path, corpus_year = addresses_params[:-1]
-    sub_adresses_params = addresses_params[2:]
+    sub_addresses_params = addresses_params[2:]
 
     # Setting dict giving column names
     pub_addresses_cols_dic = _set_pub_addresses_cols_dic(institute, org_tup)
 
-    # Setting parameters from optional arg
+    # Setting parameters from optional args
+    (progress_callback, init_progress, final_progress,
+     inter_progress_1, inter_progress_2) = [None] * 5
     if progress_param:
         progress_callback, init_progress, final_progress = progress_param
         progress_callback(init_progress)
@@ -599,7 +601,7 @@ def build_institute_addresses_df(addresses_params, verbose=False,
     if progress_param:
         inter_progress_1 = init_progress + (final_progress - init_progress) * 0.20
         inter_progress_param_1 = (progress_callback, init_progress, inter_progress_1)
-    return_tup = _build_init_institute_addresses_df(sub_adresses_params, pub_addresses_cols_dic,
+    return_tup = _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_dic,
                                                     progress_param=inter_progress_param_1)
     (inst_pub_addresses_init_df, institute_author_addresses_df,
      col_lists_dic, bp2bm_rename_cols_dict) = return_tup

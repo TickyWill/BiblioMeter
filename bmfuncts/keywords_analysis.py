@@ -1,5 +1,5 @@
 """Module of functions for publications-list analysis
-in terms of key words.
+in terms of keywords.
 
 """
 
@@ -36,7 +36,7 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
     from the 'kw_df' dataframe using the built list of publication IDs \
     of the department;
     3. Builds the 'dept_kw_df' dataframe by computing the number \
-    of occurences of each KW in the built list of KWs;
+    of occurrences of each KW in the built list of KWs;
     4. Saves the 'dept_kw_df' dataframe as openpyxl workbook using the \
     `format_page` function imported from the `bmfuncts.format_files` \
     module.
@@ -219,7 +219,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     if progress_callback:
         progress_callback(25)
 
-    # Building the dataframe to be analysed
+    # Building the dataframe to be analyzed
     cols_list = [final_pub_id_col] + depts_col_list
     pub_df = read_final_pub_list_data(final_results_path,
                                       corpus_year, cols_list)
@@ -227,6 +227,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(30)
 
     # Plotting the words-cloud of the different kinds of keywords
+    progress_bar_state, progress_bar_loop_progression = [None] * 2
     if progress_callback:
         progress_bar_state = 30
         progress_bar_loop_progression = 50 // len(kw_items_dict.keys())
