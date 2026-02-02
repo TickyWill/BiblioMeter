@@ -1,5 +1,4 @@
-"""Module for setting globals specific to publications
-management and analysis.
+"""Module for setting globals specific to publications management and analysis.
 """
 
 __all__ = ['ANALYSIS_IF',
@@ -36,6 +35,8 @@ __all__ = ['ANALYSIS_IF',
            'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
            'LISTES_CONCAT',
+           'LOG_FILE',
+           'LOG_FOLDER',
            'NOT_AVAILABLE',
            'OTHER_DOCTYPE',
            'OTP_SHEET_NAME_BASE',
@@ -51,7 +52,7 @@ __all__ = ['ANALYSIS_IF',
            'STAT_INST_TYPES_LIST',
            'STAT_ROW_NAMES',
            'TSV_SAVE_EXTENT',
-           'XL_INDEX_BASE', 
+           'XL_INDEX_BASE',
           ]
 
 # 3rd party imports
@@ -77,6 +78,9 @@ DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "missing_if_issn_df", "false_addresses_df",
                   "inst_type_pub_list_df"]
 
+LOG_FILE = "Log"
+LOG_FOLDER = "BM-Log files"
+
 CONFIG_FOLDER = 'ConfigFiles'
 
 PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
@@ -94,11 +98,11 @@ LISTES_CONCAT = False
 # Setting if the full list of authors is based on the corrected author names
 AUTHORS_FULL_LIST_NAME_CORRECTION = False
 
-ARCHI_BACKUP = {"root" : "Sauvegarde de secours"}
+ARCHI_BACKUP = {"root": "Sauvegarde de secours"}
 
-ARCHI_BDD_MULTI_ANNUELLE = {"root"                  : "BDD multi annuelle",
-                            "concat file name base" : "Concaténation par",
-                            "kpis file name base"   : "Synthèse des KPIs",
+ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
+                            "concat file name base": "Concaténation par",
+                            "kpis file name base"  : "Synthèse des KPIs",
                            }
 
 ARCHI_EXTRACT = {"root"             : "Extractions Institut",
@@ -119,26 +123,26 @@ ARCHI_EXTRACT = {"root"             : "Extractions Institut",
                  "archiv"           : "Archives",
                 }
 
-ARCHI_IF = {"root"                   : "Impact Factor",
-            "all IF"                 : "IF all years.xlsx",
-            "missing"                : "ISSN_manquants.xlsx",
-            "missing_issn_base"      : "_ISSN manquants.xlsx",
-            "missing_if_base"        : "_IF manquants.xlsx",
-            "institute_if_all_years" : "_IF all years.xlsx",
+ARCHI_IF = {"root"                  : "Impact Factor",
+            "all IF"                : "IF all years.xlsx",
+            "missing"               : "ISSN_manquants.xlsx",
+            "missing_issn_base"     : "_ISSN manquants.xlsx",
+            "missing_if_base"       : "_IF manquants.xlsx",
+            "institute_if_all_years": "_IF all years.xlsx",
            }
 
-ARCHI_INSTITUTIONS = {"root"                 : "Traitement Institutions",
-                      "institute_affil_base" : "Institute_affiliations.xlsx",
-                      "inst_types_base"      : "Institutions_types.xlsx",
-                      "affiliations_base"    : "Country_affiliations.xlsx",
-                      "country_towns_base"   : "Country_towns.xlsx",
-                      "unkept_affil_base"    : "Unkept_affiliations.xlsx",
+ARCHI_INSTITUTIONS = {"root"                : "Traitement Institutions",
+                      "institute_affil_base": "Institute_affiliations.xlsx",
+                      "inst_types_base"     : "Institutions_types.xlsx",
+                      "affiliations_base"   : "Country_affiliations.xlsx",
+                      "country_towns_base"  : "Country_towns.xlsx",
+                      "unkept_affil_base"   : "Unkept_affiliations.xlsx",
                      }
 
-ARCHI_ORPHAN = {"root"                : "Traitement Orphan",
-                "orthograph file"     : "Orthographe.xlsx",
-                "employees adds file" : "Effectifs additionnels.xlsx",
-                "complementary file"  : "Autres corrections.xlsx",
+ARCHI_ORPHAN = {"root"               : "Traitement Orphan",
+                "orthograph file"    : "Orthographe.xlsx",
+                "employees adds file": "Effectifs additionnels.xlsx",
+                "complementary file" : "Autres corrections.xlsx",
                }
 
 ARCHI_RESULTS = {"root"                    : "Sauvegarde des résultats",
@@ -163,60 +167,57 @@ ARCHI_RESULTS = {"root"                    : "Sauvegarde des résultats",
                  DATATYPE_LIST[2]          : "Wos",
                 }
 
-
-ARCHI_YEAR = {"analyses"                            : "5 - Analyses",
-              "authors analysis"                    : "Auteurs",
-              "doctype analysis"                    : "Edition",
-              "if analysis"                         : "IFs",
-              "keywords analysis"                   : "Mots clefs",
-              "subjects analysis"                   : "Thématique",
-              "countries analysis"                  : "Géographique",
-              "institute-country weight file base"  : "Statistiques_",
-              "institutions analysis"               : "Collaborations",
-              "authors file name"                   : "Informations auteur par publication",
-              "authors weight file name"            : "Statistiques par auteurs",
-              "countries file name"                 : "Pays par publication",
-              "book weight file name"               : "Statistiques par ouvrage",
-              "country weight file name"            : "Statistiques par pays",
-              "continent weight file name"          : "Statistiques par continent",
-              "journal weight file name"            : "Statistiques par journal",
-              "proceedings weight file name"        : "Statistiques par actes de conférence",
-              "norm inst file name"                 : "Institutions normalisées",
-              "raw inst file name"                  : "Institutions brutes",
-              "institutions distribution file name" : "Distribution institutions par types",
-              "institution weight file name"        : "Statistiques par institutions",
-              "bdd mensuelle"                       : "0 - BDD multi mensuelle",
-              "submit file name"                    : "submit.xlsx",
-              "orphan file name"                    : "orphan.xlsx",
-              "hash_id file name"                   : "hash_id.xlsx",
-              "homonymes folder"                    : "1 - Consolidation Homonymes",
-              "homonymes file name base"            : "Fichier Consolidation",
-              "OTP folder"                          : "2 - OTP",
-              "OTP file name base"                  : "fichier_ajout_OTP",
-              "pub list folder"                     : "3 - Résultats Finaux",
-              "pub list file name base"             : "Liste consolidée",
-              "invalid file name base"              : "Liste des invalides",
-              "history folder"                      : "4 - Informations",
-              "kept homonyms file name"             : "Homonymes conservés.xlsx",
-              "kept OTPs file name"                 : "OTPs conservés.xlsx",
-              "corpus"                              : "Corpus",
-              "concat"                              : "concatenation",
-              "dedup"                               : "deduplication",
-              "scopus"                              : "scopus",
-              "wos"                                 : "wos",
-              "parsing"                             : "parsing",
-              "rawdata"                             : "rawdata",
-              "addresses_to_correct_file_base"      : '_Adresses à corriger.xlsx',
-              "corrected_addresses_file_base"       : '_Adresses corrigées conservées.xlsx',
-              "drop articles file name"             : "drop_articles.xlsx",
-              "drop authsinst file name"            : "drop_authsinst.xlsx",
+ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
+              "authors analysis"                   : "Auteurs",
+              "doctype analysis"                   : "Edition",
+              "if analysis"                        : "IFs",
+              "keywords analysis"                  : "Mots clefs",
+              "subjects analysis"                  : "Thématique",
+              "countries analysis"                 : "Géographique",
+              "institute-country weight file base" : "Statistiques_",
+              "institutions analysis"              : "Collaborations",
+              "authors file name"                  : "Informations auteur par publication",
+              "authors weight file name"           : "Statistiques par auteurs",
+              "countries file name"                : "Pays par publication",
+              "book weight file name"              : "Statistiques par ouvrage",
+              "country weight file name"           : "Statistiques par pays",
+              "continent weight file name"         : "Statistiques par continent",
+              "journal weight file name"           : "Statistiques par journal",
+              "proceedings weight file name"       : "Statistiques par actes de conférence",
+              "norm inst file name"                : "Institutions normalisées",
+              "raw inst file name"                 : "Institutions brutes",
+              "institutions distribution file name": "Distribution institutions par types",
+              "institution weight file name"       : "Statistiques par institutions",
+              "bdd mensuelle"                      : "0 - BDD multi mensuelle",
+              "submit file name"                   : "submit.xlsx",
+              "orphan file name"                   : "orphan.xlsx",
+              "hash_id file name"                  : "hash_id.xlsx",
+              "homonymes folder"                   : "1 - Consolidation Homonymes",
+              "homonymes file name base"           : "Fichier Consolidation",
+              "OTP folder"                         : "2 - OTP",
+              "OTP file name base"                 : "fichier_ajout_OTP",
+              "pub list folder"                    : "3 - Résultats Finaux",
+              "pub list file name base"            : "Liste consolidée",
+              "invalid file name base"             : "Liste des invalides",
+              "history folder"                     : "4 - Informations",
+              "kept homonyms file name"            : "Homonymes conservés.xlsx",
+              "kept OTPs file name"                : "OTPs conservés.xlsx",
+              "corpus"                             : "Corpus",
+              "concat"                             : "concatenation",
+              "dedup"                              : "deduplication",
+              "scopus"                             : "scopus",
+              "wos"                                : "wos",
+              "parsing"                            : "parsing",
+              "rawdata"                            : "rawdata",
+              "addresses_to_correct_file_base"     : '_Adresses à corriger.xlsx',
+              "corrected_addresses_file_base"      : '_Adresses corrigées conservées.xlsx',
+              "drop articles file name"            : "drop_articles.xlsx",
+              "drop authsinst file name"           : "drop_authsinst.xlsx",
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists",
-                   "ifs", "kws","countries", "continents",
-                   "authors", "institutions", "doctypes",
-                   "homonyms", "institute_country"]
+RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists", "ifs", "kws","countries", "continents",
+                   "authors", "institutions", "doctypes", "homonyms", "institute_country"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -239,9 +240,9 @@ DOC_TYPE_DICT = {'articles'   : ['Article', 'Article; Early Access', 'Correction
                                  'Article; Proceedings Paper'],
                 }
 
-DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings' : DOC_TYPE_DICT['articles'] + \
-                                                   DOC_TYPE_DICT['proceedings'],
-                        'Books & Editorials'     : DOC_TYPE_DICT['books'],
+DOCTYPE_TO_SAVE_DICT = {'Articles & Proceedings': DOC_TYPE_DICT['articles'] + \
+                                                  DOC_TYPE_DICT['proceedings'],
+                        'Books & Editorials'    : DOC_TYPE_DICT['books'],
                        }
 
 OTHER_DOCTYPE = 'Others'
@@ -252,9 +253,9 @@ OUTSIDE_ANALYSIS    = 'Not analysed'
 HOMONYM_FLAG        = "HOMONYM"
 
 
-COL_HASH = {'hash_id'    : "Hash_id",
-            'homonym_id' : "Homonyme auteur",
-            'OTP'        : "OTP",
+COL_HASH = {'hash_id'   : "Hash_id",
+            'homonym_id': "Homonyme auteur",
+            'OTP'       : "OTP",
            }
 
 
@@ -284,6 +285,7 @@ COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
                    'inst number'       : "Nombre d'entités",
                    'pub_ids list'      : "Liste des Pub_ids",
                    'inst list'         : "Liste des entités",
+                   'co-auth inst'      : "Institutions co-autrices",
                    'address ID'        : "Adresse_id",
                    'journal_pub_nb'    : "Nombre de publications de journal",
                    'proceedings_pub_nb': "Nombre de publications d'actes de conférence",
@@ -314,30 +316,30 @@ COL_NAMES_ORTHO = {'last name init': PUB_LAST_NAME,
                   }
 
 
-COL_NAMES_COMPL = {'last name init'   : PUB_LAST_NAME,
-                   'initials init'    : PUB_INITIALS,
-                   'matricule'        : 'Matricule',
-                   'last name new'    : EMPLOYEE_LAST_NAME,
-                   'initials new'     : EMPLOYEE_INITIALS,
-                   'dept'             : 'Dept',
-                   'publication year' : 'Année pub',
-                   'hash id'          : 'Hash_id',
+COL_NAMES_COMPL = {'last name init'  : PUB_LAST_NAME,
+                   'initials init'   : PUB_INITIALS,
+                   'matricule'       : 'Matricule',
+                   'last name new'   : EMPLOYEE_LAST_NAME,
+                   'initials new'    : EMPLOYEE_INITIALS,
+                   'dept'            : 'Dept',
+                   'publication year': 'Année pub',
+                   'hash id'         : 'Hash_id',
                   }
 
-COL_NAMES_EXT = {'last name'   : PUB_LAST_NAME,
-                 'initials'    : PUB_INITIALS,
+COL_NAMES_EXT = {'last name': PUB_LAST_NAME,
+                 'initials' : PUB_INITIALS,
                 }
 
 
-SHEET_NAMES_ORPHAN = {"to replace"    : "Spécifique par publi",
-                      "to remove"     : "Externes ",
-                      "docs to add"   : "Doctorants externes",
-                      "others to add" : "Autres externes",
+SHEET_NAMES_ORPHAN = {"to replace"   : "Spécifique par publi",
+                      "to remove"    : "Externes ",
+                      "docs to add"  : "Doctorants externes",
+                      "others to add": "Autres externes",
                      }
 
 
-COL_NAMES_PUB_NAMES = {'last name' : PUB_LAST_NAME,
-                       'initials'  : PUB_INITIALS,
+COL_NAMES_PUB_NAMES = {'last name': PUB_LAST_NAME,
+                       'initials' : PUB_INITIALS,
                       }
 
 EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_BONUS['homonym'],
@@ -345,16 +347,16 @@ EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_BONUS['homonym'],
 
 ANALYSIS_IF = COL_NAMES_BONUS['IF année publi']
 
-COL_NAMES_IF_ANALYSIS = {'corpus_year'   : "Corpus year",
-                         'journal_short' : "Journal_court",
-                         'articles_nb'   : "Number",
-                         'analysis_if'   : "Analysis IF",
+COL_NAMES_IF_ANALYSIS = {'corpus_year'  : "Corpus year",
+                         'journal_short': "Journal_court",
+                         'articles_nb'  : "Number",
+                         'analysis_if'  : "Analysis IF",
                         }
 
-COL_NAMES_AUTHOR_ANALYSIS = {'author_nb'       : "Nombre d'auteurs",
-                             'is_first_author' : "Status premier auteur",
-                             'is_last_author'  : "Status dernier auteur",
-                             'pub_nb'          : "Nombre de publications",
+COL_NAMES_AUTHOR_ANALYSIS = {'author_nb'      : "Nombre d'auteurs",
+                             'is_first_author': "Status premier auteur",
+                             'is_last_author' : "Status dernier auteur",
+                             'pub_nb'         : "Nombre de publications",
                             }
 
 COL_NAMES_DOCTYPE_ANALYSIS = {'articles'   : {'doctype_col': "Journal",

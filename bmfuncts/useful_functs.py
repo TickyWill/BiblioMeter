@@ -11,6 +11,10 @@ __all__ = ['build_list_from_str',
            'get_sheet_names',
            'keep_initials',
            'name_capwords',
+           'print_step_text',
+           'print_step_title',
+           'print_to_console',
+           'print_to_log',
            'read_parsing_dict',
            'reorder_df',
            'save_xlsx_file',
@@ -41,6 +45,100 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
+
+
+def print_step_title(step_title, print_params):
+    """Prints to console and to log file the step title
+
+    Args:
+        step_title (str)= The title to print.
+        print_params (list): Composed of the name of the TXT log file \
+        to which ".txt" extension is added, of the name of the log folder \
+        where the TXT log file is saved and of the full path to the working \
+        folder where the log folder is saved.
+    """
+    print_txt = ""
+    print_to_console(step_title, print_txt)
+    print_to_log(step_title, print_txt, print_params, log_init=False)
+
+
+def print_step_text(step_txt, print_params):
+    """Prints to console and to log file the step text.
+
+    Args:
+        step_txt (str)= The text to print.
+        print_params (list): Composed of the name of the TXT log file \
+        to which ".txt" extension is added, of the name of the log folder \
+        where the TXT log file is saved and of the full path to the working \
+        folder where the log folder is saved.
+    """
+    print_title = ""
+    print_to_console(print_title, step_txt)
+    print_to_log(print_title, step_txt, print_params, log_init=False)
+
+
+def print_to_console(title, print_txt):
+    """Sends prints to console.
+
+    The title format and the other prints color are set through \
+    the `set_bold_txt` function of the same module.
+
+    Args:
+        title (str): Title of the prints.
+        print_txt (str): Corps of the prints.
+    """
+    if title and print_txt:
+        full_print_txt = f"\n\n{set_bold_txt(title)}" + print_txt
+    elif title:
+        full_print_txt = f"\n\n{set_bold_txt(title)}"
+    else:
+        full_print_txt = print_txt
+    print(full_print_txt)
+
+
+def print_to_log(title, print_txt, print_params, log_init=True):
+    """Sends prints to a TXT log file.
+
+    Args:
+        title (str): Title of the prints.
+        print_txt (str): Corps of the prints.
+        print_params (list): Composed of the name of the TXT log file \
+        to which ".txt" extension is added, of the name of the log folder \
+        where the TXT log file is saved and of the full path to the working \
+        folder where the log folder is saved.
+        log_init (bool): Optional (default: true), if True, the title is surrounded by \
+        "*" lines and it is headed by "* " and ended by " *", "otherwise, \
+        the title is only headed by '# '.
+    """
+    log_file, log_folder, wf_path = print_params
+    txt_log_file = log_file +'.txt'
+    log_files_path = Path(wf_path) / Path(log_folder)
+    txt_log_file_path = log_files_path / Path(txt_log_file)
+    if not os.path.exists(log_files_path):
+        os.makedirs(log_files_path)
+    os.chdir(log_files_path)
+
+    full_print_txt = print_txt
+    if log_init:
+        full_title_len = len(title) + 4
+        title_line = "".join(["*"] * (full_title_len))
+        title_sup_line = "\n" + title_line + "\n* "
+        title_inf_line = " *\n" + title_line
+        full_print_txt = f"\n{title_sup_line}{title}{title_inf_line}{print_txt}"
+    else:
+        if title:
+            title_start = "# "
+            full_print_txt = f"\n{title_start}{title}"
+        if print_txt:
+            full_print_txt = print_txt
+
+    if log_init or not txt_log_file_path.is_file():
+        with open(txt_log_file, 'w', encoding='utf-8') as f:
+            print(full_print_txt, file=f)
+    else:
+        with open(txt_log_file, 'a', encoding='utf-8') as f:
+            print(full_print_txt, file=f)
+    os.chdir(wf_path)
 
 
 def try_save_excel_data(df, file_path):
@@ -121,7 +219,7 @@ def build_list_from_str(input_str, sep_str):
         sep_str (str): The separator to be used for the split \
         including space if required.
     Returns:
-        (list): The built list of stringsstring.
+        (list): The built list of strings.
     """
     if sep_str in input_str:
         txts_list = input_str.split(sep_str)

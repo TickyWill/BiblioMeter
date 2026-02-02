@@ -25,6 +25,7 @@ from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.save_final_results import save_final_dedup
 from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import reorder_df
 from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
@@ -134,8 +135,7 @@ def _check_added_dois_affil(params_list, dfs_list, bp_cols_list):
     Args:
         params_list (list):  The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str, unused here) and the 4 digits year of the corpus (str).
+        the full path to working folder (path) and the 4 digits year of the corpus (str).
         dfs_list (list): The publications data (dataframe), \
         the addresses data (dataframe) and \
         the authors with affiliations data (dataframe).
@@ -146,7 +146,8 @@ def _check_added_dois_affil(params_list, dfs_list, bp_cols_list):
          The corrected data of authors with affiliations (dataframe)).
     """
     # Setting parameters values from args
-    institute, org_tup, wf_path, _, corpus_year = params_list
+    institute, org_tup, wf_path = params_list[:3]
+    corpus_year = params_list[-1]
     articles_df, addresses_df, authorsinst_df = dfs_list
     pub_id_col = bp_cols_list[0]
     doi_col, address_col, norm_inst_col = bp_cols_list[3:]
@@ -290,7 +291,7 @@ def _set_correction_file_params(institute, wf_path, corpus_year):
         wf_path (path): Full path to working folder.
         corpus_year (str): The 4 digits year of the corpus.
     Returns:
-        (tup): The full path to the file where misspelled author names \
+        (tup): The full path to the file where misspelled authors' names \
         are reported, the full path to the file where metadata errors and \
         authors to remove are reported,the sheet name containing the \
         metadata errors and the sheet name containing the authors to remove.
@@ -318,7 +319,7 @@ def _set_correction_file_params(institute, wf_path, corpus_year):
     return paths_list, sheets_list
 
 
-def _check_names_spelling(init_df, ortho_path, bm_auth_names_list, bm_ortho_cols_list):
+def _check_names_spelling(init_df, ortho_path, bm_auth_names_list, bm_ortho_cols_list, print_params):
     """Replace author names in 'init_df' dataframe by the employee name.
 
     This is done when a name-spelling discrepancy is given in the dedicated 
@@ -333,13 +334,13 @@ def _check_names_spelling(init_df, ortho_path, bm_auth_names_list, bm_ortho_cols
         bm_auth_names_list (list): Useful column names in 'init_df' \
         dataframe = [full name, last name, first name].
         bm_ortho_cols_list (list): Useful column names in the data of misspelled \
-        author names = [publication last name, publication first name, \
+        authors' names = [publication last name, publication first name, \
         employee last name, employee first name].
     Returns:
         (dataframe): Publications list with one row per author where \
         spelling of author names have been corrected.
     """
-    print("      - Correcting misspelling of authors' names...")
+    print_step_text("      - Correcting misspelling of authors' names...", print_params)
     # Setting parameters from args
     (pub_fullname_col, pub_last_name_col, pub_first_name_col) = bm_auth_names_list
     (ortho_lastname_init, ortho_initials_init, ortho_lastname_new, ortho_initials_new) = bm_ortho_cols_list
@@ -353,14 +354,15 @@ def _check_names_spelling(init_df, ortho_path, bm_auth_names_list, bm_ortho_cols
     # Standardizing the names
     for col in bm_ortho_cols_list:
         ortho_df[col] = ortho_df[col]. apply(standardize_txt)
-    print("          - Misspelled authors' names and corrected names standardized")
+    print_step_text("          - Misspelled authors' names and corrected names standardized", print_params)
 
-    print("          - Correcting the misspelled names in the publications list...")
+    print_step_text("          - Correcting the misspelled names in the publications list...", print_params)
     full_names_nb, names_nb = len(init_df), 0
     new_df = pd.DataFrame()
     for _, pub_row in init_df.iterrows():
         names_nb += 1
-        print(f"              Number of checked names:   {names_nb} / {full_names_nb}", end="\r")
+        txt = f"              Number of checked names:   {names_nb} / {full_names_nb}"
+        print(txt, end="\r")
         lastname_init = str(pub_row[pub_last_name_col])
         initials_init = str(pub_row[pub_first_name_col])
         new_pub_row = pub_row.copy()
@@ -374,13 +376,12 @@ def _check_names_spelling(init_df, ortho_path, bm_auth_names_list, bm_ortho_cols
                 new_pub_row[pub_first_name_col] = initials_eff_ortho
                 new_pub_row[pub_fullname_col] = lastname_eff_ortho + ' ' + initials_eff_ortho
         new_df = concat_dfs([new_df, new_pub_row.to_frame().T], concat_ignore_index=True)
-
-    print("          - Misspelling of author names corrected                         ")
+    print(" " * len(txt), end="\r")
     return new_df
 
 
 def _check_names_to_replace(corpus_year, init_df, complements_path, replace_sheet,
-                            bm_auth_names_list, bm_compl_cols_list):
+                            bm_auth_names_list, bm_compl_cols_list, print_params):
     """Replace author names in 'init_df' dataframe by the correct author name.
 
     This is done when metadata error is reported for specified publications in the dedicated XLSX file.
@@ -398,7 +399,7 @@ def _check_names_to_replace(corpus_year, init_df, complements_path, replace_shee
         (dataframe): Publications list with one row per author where author names have been \
         corrected for specific publications.
     """
-    print("      - Replacing false authors' names...")
+    print_step_text("      - Replacing false authors' names...", print_params)
     # Setting parameters from args
     (pub_fullname_col, pub_last_name_col, pub_first_name_col) = bm_auth_names_list
     (compl_lastname_init, compl_initials_init, compl_lastname_new,
@@ -413,18 +414,19 @@ def _check_names_to_replace(corpus_year, init_df, complements_path, replace_shee
     # Standardizing the names
     for col in bm_compl_cols_list[:-1]:
         compl_df[col] = compl_df[col].apply(standardize_txt)
-    print("          - False authors' names and corrected names standardized")
+    print_step_text("          - False authors' names and corrected names standardized", print_params)
 
     # Getting the information of the year in the complementary file
     year_compl_df = compl_df[compl_df[compl_year_pub]==int(corpus_year)]
     year_compl_df = year_compl_df.reset_index()
 
-    print("          - Correcting the false authors' names in the publications list...")
+    print_step_text("          - Correcting the false authors' names in the publications list...", print_params)
     full_names_nb, names_nb = len(init_df), 0
     new_df = pd.DataFrame()
     for _, pub_row in init_df.iterrows():
         names_nb += 1
-        print(f"              Number of checked names:   {names_nb} / {full_names_nb}", end="\r")
+        txt = f"              Number of checked names:   {names_nb} / {full_names_nb}"
+        print(txt, end="\r")
         lastname_init = str(pub_row[pub_last_name_col])
         initials_init = str(pub_row[pub_first_name_col])
         new_pub_row = pub_row.copy()
@@ -438,12 +440,12 @@ def _check_names_to_replace(corpus_year, init_df, complements_path, replace_shee
                 new_pub_row[pub_first_name_col] = initials_eff_compl
                 new_pub_row[pub_fullname_col] = lastname_eff_compl + ' ' + initials_eff_compl
         new_df = concat_dfs([new_df, new_pub_row.to_frame().T], concat_ignore_index=True)
-
-    print("          - False author names replaced                                       ")
+    print(" " * len(txt), end="\r")
     return new_df
 
 
-def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_names_list, bm_outliers_cols_list):
+def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_names_list,
+                             bm_outliers_cols_list, print_params):
     """Drops rows of authors to be removed in the 'pub-df' dataframe.
 
     The authors to remove are reported in the dedicated xlsx file.
@@ -457,7 +459,6 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_name
     Returns:
         (dataframe): Publications list with one row per author where rows of authors to be removed have been dropped.
     """
-
     # Setting parameters from args
     pub_last_col, pub_initials_col = bm_auth_names_list[1:]
     outliers_lastname_col, outliers_initials_col = bm_outliers_cols_list
@@ -472,12 +473,13 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_name
         outliers_df[col] = outliers_df[col].apply(standardize_txt)
 
     # Searching for the outliers in the data to update by lastname and initials
-    print("          - Removing external-authors' information in the publications list...")
+    print_step_text("      - Removing external-authors' information in the publications list...", print_params)
     full_names_nb, names_nb = len(pub_df), 0
     drop_df = pd.DataFrame(columns=list(pub_df.columns))
     for _, pub_row in pub_df.iterrows():
         names_nb += 1
-        print(f"              Number of checked names:   {names_nb} / {full_names_nb}", end="\r")
+        txt = f"              Number of checked names:   {names_nb} / {full_names_nb}"
+        print(txt, end="\r")
         pub_lastname = str(pub_row[pub_last_col])
         pub_initials = str(pub_row[pub_initials_col])
         for _, outliers_row in outliers_df.iterrows():
@@ -491,8 +493,7 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_name
 
     # Removing the rows to drop from the dataframe to update
     new_pub_df = concat_dfs([pub_df, drop_df], keep="False")
-
-    print("          - External authors removed                                              ")
+    print(" " * len(txt), end="\r")
     return new_pub_df
 
 
@@ -546,7 +547,7 @@ def _get_input_data(params_list, bp_cols_list):
         (tup): (The built data of articles, The built data of authors, The built data of authors with affiliations).
     """
     # Setting parameters values from params_list
-    wf_path, datatype, corpus_year = params_list[2:]
+    wf_path, datatype, corpus_year = params_list[2], params_list[3], params_list[-1]
 
     # Setting useful aliases
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
@@ -615,7 +616,6 @@ def _recasting_authors_df(authors_df, recast_cols_list):
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = fullname_col
     authors_df[col_in] = authors_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
-    print("      - Author name recast to last name and first-name initials")
     return authors_df
 
 
@@ -644,7 +644,6 @@ def _build_authors_full_list(authors_df, full_authors_cols_list):
         authors_str = ", ".join(authors_list)
         data.append([pub_id, authors_str])
     pub_authors_df = pd.DataFrame(data, columns=[pub_id_col, authors_list_col])
-    print("      - Full list of authors per publication built")
     return pub_authors_df
 
 
@@ -662,7 +661,7 @@ def _reorder_cols(inst_merged_df, reorder_cols_list):
         inst_merged_df (dataframe): Data of publication IDs list \
         with one row per author where authors full name has been \
         formatted and split into last name and firstname initials \
-        and the misspelled names have been corrected. 
+        and the misspelled names have been corrected.
         reorder_cols_list (list): The names of the columns to be \
         reordered = [author full name, author last name, author \
         first name, authors list].
@@ -692,8 +691,8 @@ def build_institute_pubs_authors(params_list):
     2. The authors data resulting from the parsing step are recast to split \
     authors full name into last name and firstname initials through \
     the `_recasting_inst_merged_df` internal function.
-    3. The misspelling of authors name in the recast authors data are corrected \
-    through the `_check_names_spelling` internal function. 
+    3. The misspelling of authors' names in the recast authors data are corrected \
+    through the `_check_names_spelling` internal function.
     4. The data of full list of authors per publications are built through the \
     `_build_authors_full_list` internal function.
     5. The data of full list of authors per publications are merged to the data \
@@ -718,9 +717,9 @@ def build_institute_pubs_authors(params_list):
         of author-names and drop of authors with inappropriate affiliation \
         to the Institute.
     """
-    print("    Building publications list with authors affiliated to the Institute...")
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, _, corpus_year = params_list
+    institute, org_tup, wf_path, _, print_params, corpus_year = params_list
+    print_step_text("  - Building publications list with authors affiliated to the Institute...", print_params)
 
     # Setting useful cols lists
     bp_cols_list = _set_useful_bp_cols()
@@ -747,13 +746,16 @@ def build_institute_pubs_authors(params_list):
     # Recasting the authors data
     recast_cols_list = bm_auth_names_list + [co_auth_col]
     authors_df = _recasting_authors_df(authors_df, recast_cols_list)
+    print_step_text("      - Author name recast to last name and first-name initials", print_params)
 
     # Checking authors name spelling and correct them
-    authors_df = _check_names_spelling(authors_df, ortho_path, bm_auth_names_list, bm_ortho_cols_list)
+    authors_df = _check_names_spelling(authors_df, ortho_path, bm_auth_names_list, bm_ortho_cols_list, print_params)
+    print_step_text("          - Misspelling of authors' names corrected", print_params)
 
     # Adding column of full authors list
     full_authors_cols_list = [pub_id_col, co_auth_col, fullname_col, authors_list_col]
     pub_authors_df = _build_authors_full_list(authors_df, full_authors_cols_list)
+    print_step_text("      - Full list of authors per publication built", print_params)
     new_articles_df =  articles_df.merge(pub_authors_df, how='right', on=pub_id_col)
 
     # Combining name of author to author ID with affiliation by publication ID
@@ -773,9 +775,11 @@ def build_institute_pubs_authors(params_list):
     # Then searching for authors external to Institute but tagged as affiliated to it
     # and dropping their row in the returned dataframe
     inst_merged_df = _check_names_to_replace(corpus_year, inst_merged_df, complements_path, replace_sheet,
-                                             bm_auth_names_list, bm_compl_cols_list)
+                                             bm_auth_names_list, bm_compl_cols_list, print_params)
+    print_step_text("          - False authors' names replaced", print_params)
     inst_merged_df = _check_authors_to_remove(inst_merged_df, complements_path, remove_sheet,
-                                              bm_auth_names_list, bm_outliers_cols_list)
+                                              bm_auth_names_list, bm_outliers_cols_list, print_params)
+    print_step_text("          - External authors removed", print_params)
 
     # Setting columns order
     reorder_cols_list = bm_auth_names_list + [authors_list_col]

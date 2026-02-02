@@ -343,7 +343,7 @@ def _set_pub_list_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_inst_type_pub_list_attributes(cols_list):
+def _set_inst_type_pub_list_attributes(cols_list, add_cols_nb):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
     for formatting the publications list data to be saved.
@@ -364,10 +364,10 @@ def _set_inst_type_pub_list_attributes(cols_list):
                      [55, 'left'], [15, "center"]]
     cols_nb = len(cols_list)
     set_attr_nb = len(sub_attr_list)
-    dept_nb = cols_nb - set_attr_nb - 4
+    dept_nb = cols_nb - set_attr_nb - (3 + add_cols_nb)
     attr_list = sub_attr_list \
               + [[10, "center"]] * dept_nb \
-              + [[15, "center"]] * 3 + [[30, "left"]]
+              + [[15, "center"]] * 3 + [[30, "left"]] * add_cols_nb
     col_attr_dict = dict(zip(cols_list, attr_list))
 
     # Setting row-heights dict
@@ -884,13 +884,15 @@ def _set_doctype_stat_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def set_df_attributes(df_title, df_cols_list):
+def set_df_attributes(df_title, df_cols_list, add_cols_nb=0):
     """Sets the attributes for formating a given data type as openpyxl object.
 
     Args:
         df_title (str): Name of the data type to be formatted.
         df_cols_list (list): List of columns names (str) for \
         which attributes are to be defined.
+        add_cols_nb (int): Optional (default: 0), number of supplementary \
+        attributes to set by default.
     Returns:
         (tup): (The columns attributes as dict keyed by column names (str) \
         and valued by the attributes lists of each column composed \
@@ -924,7 +926,7 @@ def set_df_attributes(df_title, df_cols_list):
         attr_tup = _set_pub_list_attributes(df_cols_list)
 
     if df_title==pub_inst_type_list_alias:
-        attr_tup = _set_inst_type_pub_list_attributes(df_cols_list)
+        attr_tup = _set_inst_type_pub_list_attributes(df_cols_list, add_cols_nb)
 
     elif df_title==invalids_alias:
         attr_tup = _set_invalid_list_attributes(df_cols_list)
@@ -986,7 +988,7 @@ def set_df_attributes(df_title, df_cols_list):
 
 
 def format_page(df, df_title, wb=None, header=True,
-                cell_colors=None, idx_wrap=None):
+                cell_colors=None, idx_wrap=None, add_cols_nb=0):
     """Formats a worksheet of an openpyxl workbook using 
     columns attributes got through the `set_df_attributes`  
     internal function.
@@ -1022,7 +1024,7 @@ def format_page(df, df_title, wb=None, header=True,
 
     # Setting useful df attributes
     df_cols_list = df.columns
-    attrib_tup = set_df_attributes(df_title, df_cols_list)
+    attrib_tup = set_df_attributes(df_title, df_cols_list, add_cols_nb=add_cols_nb)
     col_attr_dict, row_heights_dict, col_idx_init = attrib_tup
 
     # Initialize wb as an openpyxl workbook and ws its active worksheet

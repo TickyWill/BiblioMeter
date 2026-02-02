@@ -18,6 +18,7 @@ import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import keep_initials
+from bmfuncts.useful_functs import print_step_text
 
 
 def _set_test_cols_dic():
@@ -237,7 +238,8 @@ def _set_merge_cols_dic():
     return merge_cols_dic
 
 
-def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No name", init_status=False):
+def build_submit_df(empl_df, pub_df, wf_path, print_params,
+                    test_case="No test", test_name="No name", init_status=False):
     """Builds a dataframe of the merged employees information with the publications 
     list with one row per author.
 
@@ -300,7 +302,7 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
 
     # Building 'submit_df' and 'orphan_df' data
     if init_status:
-        print("          - Searching of authors among employees data...")
+        print_step_text("      - Searching of authors among employees data...", print_params)
         full_names_nb, names_nb = len(pub_df), 0
     for _, pub_df_row in pub_df.iterrows():
         if init_status:
@@ -421,5 +423,8 @@ def build_submit_df(empl_df, pub_df, wf_path, test_case="No test", test_name="No
     submit_df = submit_df.drop_duplicates()
     orphan_df = orphan_df.drop_duplicates()
 
-    print("          - Data of authors found as employees and data of authors not found amond employees built")
+    if init_status:
+        step_txt = ("      - Data of authors found as employees "
+                    "and data of authors not found amond employees built")
+        print_step_text(step_txt, print_params)
     return submit_df, orphan_df

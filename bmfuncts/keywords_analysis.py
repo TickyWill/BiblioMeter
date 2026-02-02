@@ -193,7 +193,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         (path): Full path to the folder where results of keywords analysis are saved.
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
+    institute, org_tup, wf_path, datatype, _, corpus_year = params_list
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)

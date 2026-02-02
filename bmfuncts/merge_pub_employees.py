@@ -27,6 +27,7 @@ from bmfuncts.create_hash_id import create_hash_id
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import keep_initials
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import set_year_pub_id
 from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
@@ -174,7 +175,7 @@ def _add_biblio_list(submit_df, cols_list):
     return new_submit_df
 
 
-def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list):
+def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, print_params):
     """Adds to the publications-list dataframe with one row per author 
     new rows containing the information of specific authors.
 
@@ -296,11 +297,11 @@ def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list):
                              submit_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
-    print("      - External PhD students added")
+    print_step_text("      - External PhD students added", print_params)
     return new_submit_df, new_orphan_df
 
 
-def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list):
+def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print_params):
     """Adds to the publications-list dataframe with one row per author 
     new rows containing the information of specific authors.
 
@@ -421,7 +422,7 @@ def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list):
                              submit_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
-    print("      - Other external collaborators added")
+    print_step_text("      - Other external collaborators added", print_params)
     return new_submit_df, new_orphan_df
 
 
@@ -485,8 +486,8 @@ def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_d
             file_name = _inst_col + "_" + orphan_file
             file_path = merge_folder_path / Path(file_name)
         df_to_save.to_excel(file_path, index=False)
-        message = f"    File of orphan authors created for Institute subdivision: {_inst_col}"
         if verbose:
+            message = f"    File of orphan authors created for Institute subdivision: {_inst_col}"
             print(message)
 
     # Setting useful column names list and dropping status
@@ -676,7 +677,8 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         params_list (list):  The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute organization, \
         the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        of corpuses databases (str), the pParameters (list) for the `print_step_text` function \
+        imported from the `bmfuncts.useful_functs` module and the 4 digits year of the corpus (str).
         search_depth (int): Depth for search in 'empl_dict' using 'years' list.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (optional, default = None).
@@ -695,8 +697,9 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         imported from "bmfuncts.useful_functs" internal module.
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, _, corpus_year = params_list
-    print("\nMerge publications authors and employees information...")
+    institute, org_tup, wf_path, _, print_params, corpus_year = params_list
+    print_step_text("\nMerge publications authors and employees information...",
+                        print_params)
 
     # Setting useful params of merge files from args
     merge_folder_path, submit_path, orphan_path = merge_paths[:3]
@@ -736,36 +739,34 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     # **************************************************************
 
     # Building the initial dataframes
-    print("    Initializing search of authors among employees data...")
-    submit_df, orphan_df = build_submit_df(empl_dict[years[0]], pub_df, wf_path,
+    print_step_text("\n  - Initializing search of authors among employees data...",
+                        print_params)
+    submit_df, orphan_df = build_submit_df(empl_dict[years[0]], pub_df, wf_path, print_params,
                                            test_case=set_test_case, test_name=set_test_name, init_status=True)
     if progress_callback:
         progress_callback(progress_bar_state + step * 20)
 
     # Adding authors from list of external_phd students
     # to 'submit_df' data and updating 'orphan_df' data
-    submit_df, orphan_df = _add_ext_docs(submit_df, orphan_df,
-                                         ext_empl_path, add_ext_cols_list)
+    submit_df, orphan_df = _add_ext_docs(submit_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
         progress_callback(progress_bar_state + step * 25)
 
     # Adding authors from list of external employees under other hiring contract
     # to 'submit_df' data  and updating 'orphan_df' data
-    submit_df, orphan_df = _add_other_ext(submit_df, orphan_df,
-                                          ext_empl_path, add_ext_cols_list)
+    submit_df, orphan_df = _add_other_ext(submit_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
         new_progress_bar_state = progress_bar_state + step * 30
         progress_callback(new_progress_bar_state)
         progress_bar_loop_progression = step * 50 // len(years)
 
-    print("    Recursive search of authors among employees data...")
+    print_step_text("\n  - Recursive search of authors among employees data...", print_params)
     print(f"        Search period: {years[0]}...{years[-1]}")
     for _, year in enumerate(years):
         print(f"        Search year:   {year}", end="\r")
         # Updating the 'submit_df_add' and 'orphan_df' data
-        submit_df_add, orphan_df = build_submit_df(empl_dict[year], orphan_df, wf_path,
-                                                   test_case=set_test_case,
-                                                   test_name=set_test_name)
+        submit_df_add, orphan_df = build_submit_df(empl_dict[year], orphan_df, wf_path, print_params,
+                                                   test_case=set_test_case, test_name=set_test_name)
 
         # Updating the 'submit_df' data
         submit_df = concat_dfs([submit_df, submit_df_add])
@@ -774,8 +775,9 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         if progress_callback:
             new_progress_bar_state += progress_bar_loop_progression
             progress_callback(new_progress_bar_state)
+    print_step_text("      - Search period results used to update data", print_params)
 
-    print("    Enhancing search results...")
+    print_step_text("\n  - Enhancing search results...", print_params)
     # Replace NaN values by UNKNOWN string except in first name initials
     submit_df = keep_initials(submit_df, initials_col, missing_fill=bp.UNKNOWN)
     orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bp.UNKNOWN)
@@ -783,25 +785,25 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
     submit_df = set_year_pub_id(submit_df, corpus_year, pub_id_col)
-    print("      - Publication IDs tagged with corpus year")
+    print_step_text("      - Publication IDs tagged with corpus year", print_params)
     if not orphan_status:
         orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_col)
 
     # Adding author job type to 'submit_df' data
     submit_df = _add_author_job_type(submit_df, empl_dict, years, add_job_cols_list)
-    print("      - Column with author job-type added")
+    print_step_text("      - Column with author job-type added", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 5)
 
     # Adding full publication reference to 'submit_df' data
     submit_df = _add_biblio_list(submit_df, add_ref_cols_list)
-    print("      - Column with full publication reference added")
+    print_step_text("      - Column with full publication reference added", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 10)
 
     # Renaming column names in submit_df' and 'orphan_df' data
     submit_df, orphan_df = _change_col_names(institute, org_tup, submit_df, orphan_df)
-    print("      - Columns renamed with final names")
+    print_step_text("      - Columns renamed with final names", print_params)
 
     # Saving submit_df' and 'orphan_df' data
     submit_df.to_excel(submit_path, index=False)
@@ -810,18 +812,18 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     # Splitting orphan file in subdivisions of Institute when indicated
     if orphan_split_status:
         orphan_status = _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_df)
-        print("      - Not found authors split in the specified subdivisions")
+        print_step_text("      - Not found authors split in the specified subdivisions", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identifiers of publications independent of data extraction
-    create_hash_id(institute, org_tup, merge_paths[1:])
+    create_hash_id(institute, org_tup, merge_paths[1:], print_params)
     if progress_callback:
         progress_callback(100)
-    end_message = "\nResults of search of authors in employees list saved"
+    step_txt = "\nResults of search of authors in employees list saved"
     if orphan_status:
-        end_message += " with all authors identified as employees."
+        step_txt += " with all authors identified as employees."
     else:
-        end_message += " with remaining authors not identified as employees."
-    print(end_message)
+        step_txt += " with remaining authors not identified as employees."
+    print_step_text(step_txt, print_params)
     return orphan_status

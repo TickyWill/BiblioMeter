@@ -27,6 +27,7 @@ from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.rename_cols import set_otp_col_names
 from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import set_print_same_len
 
 
@@ -37,7 +38,7 @@ def _set_otps_homonyms_cols_dic(add_otp_params_list):
     This is done through the `set_homonym_col_names` and 
     the `set_otp_col_names` functions imported from the 
     `bmfuncts.rename_cols` module.
-    
+
     Args:
         add_otp_params_list (list): The list composed of the Institute name (str) \
         and of the org_tup (tup) that contains parameters of Institute organization.
@@ -45,7 +46,7 @@ def _set_otps_homonyms_cols_dic(add_otp_params_list):
         (dict): The built dict.
     """
     # Setting parameters values from 'add_otp_params_list'
-    institute, org_tup = add_otp_params_list
+    institute, org_tup, _ = add_otp_params_list
 
     # Setting useful column names from homonyms file
     homonyms_col_dic = set_homonym_col_names(institute, org_tup)
@@ -72,7 +73,7 @@ def _set_otps_homonyms_cols_dic(add_otp_params_list):
 
 def add_data_val(ws, data_val, df_len, col_letter, xl_idx_base):
     """Adding a list-data-validation rule to each row of an openpyxl worksheet.
-    
+
     Args:
         ws (openpyxl worksheet): Worksheet to be added with validation data list.
         data_val (openpyxl DataValidation): list-data-validation rule that can \
@@ -106,7 +107,7 @@ def _set_otps_dept_affil(org_tup, in_df, otps_homonyms_cols_dic):
         otps_homonyms_cols_dic (dict): The dict built through \
         the `_set_otps_homonyms_cols_dic` internal function giving useful columns.
     returns:
-        (tup): (End message (str), modified data (dataframe)).
+        (dataframe): The modified data.
     """
     # Internal functions
     def _set_dpt(_dpt_label_list):
@@ -151,10 +152,6 @@ def _set_otps_dept_affil(org_tup, in_df, otps_homonyms_cols_dic):
 
     # Renaming the 'otp_dpt_col' as 'dpt_col'
     out_df = out_df.rename(columns={otp_dpt_col: dpt_col})
-
-    message = ("  - Column with department for OTPs attribution and columns "
-               "\n    for each department of the institute added")
-    print(message)
     return out_df
 
 
@@ -177,8 +174,7 @@ def _add_authors_name_list(org_tup, in_df, otps_homonyms_cols_dic):
         otps_homonyms_cols_dic (dict): The dict built through \
         the `_set_otps_homonyms_cols_dic` internal function giving useful columns.
     Returns:
-        (tup): (End message (str), the data of the publication list \
-        added with the new columns (dataframe)).
+        (dataframe): The data of the publication list enhanced with the new columns.
     """
     # Internal functions
     def _get_dpt_key(dpt_raw):
@@ -219,9 +215,6 @@ def _add_authors_name_list(org_tup, in_df, otps_homonyms_cols_dic):
         pub_id_df[inst_authors_col] = authors_full_str
         out_df = concat_dfs([out_df, pub_id_df])
     out_df.fillna('')
-
-    message = "  - Column with co-authors list added"
-    print(message)
     return out_df
 
 
@@ -242,11 +235,11 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
         and of the org_tup (tup) that contains parameters of Institute organization.
         in_path (path): Full path to the file where homonyms have been solved.
     Returns:
-        (dataframe): The enhanced data. 
+        (dataframe): The enhanced data.
     """
-    print("\nEnhancing data used for homonyms resolution...")
     # Setting parameters value from add_otp_params_list
-    _, org_tup = add_otp_params_list
+    _, org_tup, print_params = add_otp_params_list
+    print_step_text("\nEnhancing data used for homonyms resolution...", print_params)
 
     # Setting useful column names
     otps_homonyms_cols_dic = _set_otps_homonyms_cols_dic(add_otp_params_list)
@@ -258,11 +251,15 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
     # Setting the affiliation department for OTPs attribution
     new_solved_homonymies_df = _set_otps_dept_affil(org_tup, solved_homonymies_df,
                                                     otps_homonyms_cols_dic)
+    step_txt = ("  - Column with department for OTPs attribution and columns "
+               "\n    for each department of the institute added")
+    print_step_text(step_txt, print_params)
 
     # Adding a column with a list of the authors in the file where homonymies
     # have been solved and pointed by in_path
     final_solved_homonymies_df = _add_authors_name_list(org_tup, new_solved_homonymies_df,
                                                         otps_homonyms_cols_dic)
+    print_step_text("  - Column with co-authors list added", print_params)
 
     return final_solved_homonymies_df
 
@@ -273,7 +270,7 @@ def _set_add_otps_cols_dic(add_otp_params_list):
 
     This is done through the `set_otp_col_names` function imported 
     from the `bmfuncts.rename_cols` module.
-    
+
     Args:
         add_otp_params_list (list): The list composed of the Institute's name (str) \
         and of the org_tup (tup) that contains parameters of Institute's organization.
@@ -281,14 +278,14 @@ def _set_add_otps_cols_dic(add_otp_params_list):
         (tup): The built dict and the full list of final column names \
         got from the `set_otp_col_names` function.
     """
-    institute, org_tup = add_otp_params_list
+    institute, org_tup, _ = add_otp_params_list
     # Setting useful column names
     otp_col_dic = set_otp_col_names(institute, org_tup)
 
     # Setting useful col names
 
     add_otps_cols_dic = {'pub_id_col'   : otp_col_dic['pub_id'],
-                         'author_id_col': otp_col_dic['author_id'], 
+                         'author_id_col': otp_col_dic['author_id'],
                          'dpt_col'      : otp_col_dic['dpt'],
                          'srv_col'      : otp_col_dic['serv'],
                          'lab_col'      : otp_col_dic['lab'],
@@ -301,7 +298,7 @@ def _set_add_otps_cols_dic(add_otp_params_list):
 
 
 def _save_dpt_otp_file(dpt, save_otp_cols_tup, dpt_df, dpt_otp_list, xl_dpt_path):
-    """Creates an openpyxl file to allow the user to set the OTP attribute   
+    """Creates an openpyxl file to allow the user to set the OTP attribute 
     of the publications for the Institute department labeled 'dpt'.
 
     First, a validation list and a list-data-validation rule are defined 
@@ -385,7 +382,7 @@ def _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base, add_otp
         (str): End message recalling out_path.
     """
     # Set parameters value from add_otp_params_list
-    _, org_tup = add_otp_params_list
+    _, org_tup, print_params = add_otp_params_list
 
     # Setting institute parameters
     dpt_attributs_dict = org_tup[2]
@@ -417,10 +414,11 @@ def _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base, add_otp
     out_df[dpt_col] = out_df[dpt_col].apply(lambda _x: _x.strip())
 
     # Configuring an Excel file per department with the list of OTPs
-    print("\nBuilding data for attributing OTPs...")
+    print_step_text("\nBuilding data for attributing OTPs...", print_params)
     print_dpt_dict = set_print_same_len(sorted(dpt_list))
     for dpt in sorted(dpt_list):
-        print(f"     - Data department: {print_dpt_dict[dpt]}", end="\r")
+        txt = f"     - Data department: {print_dpt_dict[dpt]}"
+        print(txt, end="\r")
         # Setting dpt_df with only pub_ids for which the first author
         # is from the 'dpt' department
         filtre_dpt = False
@@ -438,15 +436,16 @@ def _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base, add_otp
         # Adding a column with validation list for OTPs and saving the file
         _save_dpt_otp_file(dpt, save_otp_cols_tup, dpt_df, dpt_otp_list,
                            xl_dpt_path)
-
-    print("  - Data built and saved for Institute's departments:"
-          f"\n    {sorted(dpt_list)}")
+    print(" " * len(txt), end="\r")
+    step_txt = ("  - Data built and saved for Institute's departments:"
+                f"\n    {sorted(dpt_list)}")
+    print_step_text(step_txt, print_params)
 
 
 def _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, dpt_df,
                            dpt_otp_dict, xl_dpt_path):
-    """Creates an openpyxl file to allow the user to set the OTP attribute   
-    of the publications for each laboratory of a department of the Institute. 
+    """Creates an openpyxl file to allow the user to set the OTP attribute 
+    of the publications for each laboratory of a department of the Institute.
 
     First, a validation list and a list-data-validation rule are defined 
     based on the list of OTPs of the laboratory given by 'lab_otp_list' list 
@@ -467,7 +466,7 @@ def _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, dpt_df,
     'xl_dpt_path'.
 
     Arg:
-        institute (str): Institute name. 
+        institute (str): Institute name.
         dpt (str): The department label.
         save_otp_cols_tup (tup): (The names (list of str) of the OTPs column \
         and the column of lab names to be used for the selection \
@@ -550,7 +549,7 @@ def _set_otp_lab(add_otp_params_list, cols_list, dpt_labs_list, lab_df, lab):
         (str): The laboratory name to be used for setting the OTPs list.
     """
     # Set parameters value from add_otp_params_list
-    institute, org_tup = add_otp_params_list
+    institute, org_tup, _ = add_otp_params_list
     dpt_col, srv_col = cols_list
 
     # Setting institute parameters
@@ -589,7 +588,7 @@ def _build_otp_dept_df(add_otp_params_list, build_otp_cols_list, dpt_attributs_d
     """Builds a data extracted from 'full_df' data by selecting rows 
     of publications where at least one author is affiliated to the 
     given department.
-    
+
     A column is added with the lab to be used for the determination 
     of the OTPs list through the `_set_otp_lab` internal function.
 
@@ -695,7 +694,7 @@ def _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
         and valued by dicts keyed by labs and valued by OTPs lists.
     """
     # Set parameters value from 'add_otp_params_list'
-    institute, org_tup = add_otp_params_list
+    institute, org_tup, print_params = add_otp_params_list
 
     # Setting institute parameters
     dpt_attributs_dict = org_tup[2]
@@ -719,10 +718,11 @@ def _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
     full_pub_df = _set_full_pub_df(init_pub_df, add_otps_cols_dic, dpt_list)
 
     # Configuring an Excel file per department with the list of OTPs
-    print("\nBuilding data for attributing OTPs...")
+    print_step_text("\nBuilding data for attributing OTPs...", print_params)
     print_dpt_dict = set_print_same_len(sorted(dpt_list))
     for dpt in sorted(dpt_list):
-        print(f"     - Data department: {print_dpt_dict[dpt]}", end="\r")
+        txt = f"     - Data department: {print_dpt_dict[dpt]}"
+        print(txt, end="\r")
         # Setting the dict of list of OTPs for the 'dpt' department
         dpt_otp_dict = lab_otps_dict[dpt]
 
@@ -742,9 +742,10 @@ def _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
        # Adding a column with validation list for OTPs and saving the file
         _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, otp_dpt_df,
                                dpt_otp_dict, xl_dpt_path)
-
-    print("  - Data built and saved for Institute's departments:"
-          f"\n    {sorted(dpt_list)}")
+    print(" " * len(txt), end="\r")
+    step_txt = ("  - Data built and saved for Institute's departments:"
+                f"\n    {sorted(dpt_list)}")
+    print_step_text(step_txt, print_params)
 
 
 def add_otp(sub_params_list, in_path, out_path, out_file_base):
@@ -767,16 +768,15 @@ def add_otp(sub_params_list, in_path, out_path, out_file_base):
         in_path (path): Full path to the file where homonyms have been solved.
         out_path (path): Full path to the files for setting OTPs attributes by the user.
         out_file_base (str): Base for building created-files names.
-    Returns:
-        (str): end message recalling out_path.
     """
     # Saving the homonyms resolved by the user
-    _ = save_homonyms(sub_params_list)
+    save_homonyms(sub_params_list)
 
     # Setting useful params values and lists from sub_params_list
-    set_otp_params_list = sub_params_list[:-1]
-    add_otp_params_list = sub_params_list[0:2]
     org_tup = sub_params_list[1]
+    print_params = sub_params_list[3]
+    set_otp_params_list = sub_params_list[:-2]
+    add_otp_params_list = sub_params_list[0:2] + [print_params]
 
     # Setting the selected columns of OTPs data for OTPs-attribution process
     add_otps_cols_tup = _set_add_otps_cols_dic(add_otp_params_list)
@@ -785,12 +785,13 @@ def add_otp(sub_params_list, in_path, out_path, out_file_base):
     otp_level = org_tup[11]
 
     if otp_level=="LAB":
+        print_step_text("\nBuilding OTPs information for the attribution per lab...", print_params)
         lab_otps_dict = set_lab_otps(set_otp_params_list)
+        print_step_text("  - OTPs information for the attribution per lab built", print_params)
         _add_lab_otp(add_otp_params_list, in_path, out_path, out_file_base,
                      add_otps_cols_tup, lab_otps_dict)
     else:
         _add_dept_otp(add_otp_params_list, in_path, out_path, out_file_base,
                       add_otps_cols_tup)
 
-    message = "Files for attributing OTPs to publication saved"
-    return message
+    print_step_text("  - Files for attributing OTPs to publication saved", print_params)

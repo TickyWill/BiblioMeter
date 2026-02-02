@@ -35,6 +35,7 @@ from bmfuncts.format_files import set_df_attributes
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.rename_cols import set_otp_col_names
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
 
 
 def _set_use_otps_cols(institute, org_tup):
@@ -317,9 +318,10 @@ def save_otps(sub_params_list):
         (tup): (End message (str), the built data of publications list \
         with OTPs attributed by the user (dataframe)).
     """
-    print("\nUpdating history of attributed OTPs...")
     # Setting useful params values and lists from sub_params_list
-    institute, org_tup, wf_path, corpus_year = sub_params_list
+    institute, org_tup, wf_path, print_params, corpus_year = sub_params_list
+    print_step_text("\nUpdating history of attributed OTPs...", print_params)
+
     save_otp_params_list = [wf_path, corpus_year]
     dpt_label_dict = org_tup[1]
     dpt_label_list = list(dpt_label_dict.keys())
@@ -341,7 +343,7 @@ def save_otps(sub_params_list):
     # Setting the publication list with OTP info
     pub_otp_df = set_pub_otp_df(dpt_label_list, set_hist_file_params_list,
                                 final_col_list, pub_id_col)
-    print("  - OTPs identification integrated in publications list")
+    print_step_text("  - OTPs attribution integrated in publications list", print_params)
 
     # Building set OTPs df
     if otp_col in pub_otp_df.columns:
@@ -372,7 +374,7 @@ def save_otps(sub_params_list):
     otps_history_dfs = [hash_otps_history_df, doi_otps_history_df]
     _ = _update_otps_history(kept_otps_file_path, otp_sheets_dict, otps_history_dfs)
 
-    print("  - History of attributed OTPs saved")
+    print_step_text("  - History of attributed OTPs saved", print_params)
     return pub_otp_df
 
 
@@ -964,15 +966,13 @@ def set_saved_otps(sub_params_list):
         the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
-    Returns:
-        (str): End message giving the status of the OTPs attribution.
     """
-    print("\nUsing data of history of OTPs attribution...")
     # Setting useful params values and lists from sub_params_list
-    institute, org_tup, wf_path, corpus_year = sub_params_list
+    institute, org_tup, wf_path, print_params, corpus_year = sub_params_list
     save_otp_params_list = [wf_path, corpus_year]
-    set_otp_params_list = sub_params_list[:-1]
+    set_otp_params_list = sub_params_list[:-2]
     otp_level = org_tup[11]
+    print_step_text("\nUsing data of history of OTPs attribution...", print_params)
 
     # Setting selected column names for using the saved history of attributed OTPs
     use_otps_cols_dic, _ = _set_use_otps_cols(institute, org_tup)
@@ -987,15 +987,16 @@ def set_saved_otps(sub_params_list):
         otps_history_tup = _get_otps_history(get_hist_file_params_list,
                                              use_otps_cols_dic)
         if otp_level=="LAB":
+            print_step_text("  - Building OTPs information for the attribution per lab...", print_params)
             lab_otps_dict = set_lab_otps(set_otp_params_list)
+            print_step_text("  - OTPs information for the attribution per lab built", print_params)
             _set_saved_lab_otps(org_tup, otps_history_tup, use_otps_cols_dic,
                                 set_hist_file_params_list, lab_otps_dict)
         else:
             _set_saved_dept_otps(org_tup, otps_history_tup, use_otps_cols_dic,
                                  set_hist_file_params_list)
 
-        message = "  - Already attributed OTPs used"
+        step_txt = "  - Already attributed OTPs used"
     else:
-        message = "  - No file of already attributed OTPs available"
-    print(message)
-    return message
+        step_txt = "  - No file of already attributed OTPs available"
+    print_step_text(step_txt, print_params)

@@ -14,6 +14,7 @@ import BiblioParsing as bp
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import reorder_df
 
 
@@ -102,16 +103,12 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
         new_hash_id_df = concat_dfs([new_hash_id_df, add_hash_id_dg])
 
     # Adding column of Hash-IDs and reordering columns in new_submit_df
-    new_submit_df = new_submit_df.merge(new_hash_id_df,
-                                        how="inner",
-                                        on=pub_id_col)
+    new_submit_df = new_submit_df.merge(new_hash_id_df, how="inner", on=pub_id_col)
     col_dict = {hash_id_col: 0}
     new_submit_df = reorder_df(new_submit_df, col_dict)
 
     # Adding column of Hash-IDs and reordering columns in new_orphan_df
-    new_orphan_df = new_orphan_df.merge(new_hash_id_df,
-                                        how="inner",
-                                        on=pub_id_col)
+    new_orphan_df = new_orphan_df.merge(new_hash_id_df, how="inner", on=pub_id_col)
     col_dict = {hash_id_col: 0,
                 pub_id_col : 1}
     new_orphan_df = reorder_df(new_orphan_df, col_dict)
@@ -119,7 +116,7 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     return new_submit_df, new_orphan_df, new_hash_id_df
 
 
-def create_hash_id(institute, org_tup, files_paths):
+def create_hash_id(institute, org_tup, files_paths, print_params):
     """Creates a dataframe which columns are given by 'hash_id_alias' and 'pub_id_alias'.
 
     The content of these columns is as follows:
@@ -153,8 +150,7 @@ def create_hash_id(institute, org_tup, files_paths):
      issn_col, doi_col, hash_id_col) = [hash_id_cols_dic[key] for key in col_keys]
 
     # Setting useful columns list
-    useful_cols = [pub_id_col, year_col, first_auth_col,
-                   title_col, issn_col, doi_col]
+    useful_cols = [pub_id_col, year_col, first_auth_col, title_col, issn_col, doi_col]
 
     # Getting dataframes to hash
     submit_df = pd.read_excel(submit_path)
@@ -188,7 +184,5 @@ def create_hash_id(institute, org_tup, files_paths):
     new_orphan_df.to_excel(orphan_path, index=False)
     new_hash_id_df.to_excel(hash_id_path, index=False)
     hash_id_nb = len(new_hash_id_df)
-    print(f"\nHash-IDs number of publications: {hash_id_nb}")
-    message = (f"{hash_id_nb} hash IDs of publications created and saved in file: ",
-               f"\n  {hash_id_path}")
-    return message
+    print_step_text("\nPublications hash IDs created and saved", print_params)
+    print_step_text(f"  - Number of publications hash-IDs: {hash_id_nb}", print_params)

@@ -558,8 +558,7 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
     return return_tup
 
 
-def build_institute_addresses_df(addresses_params, verbose=False,
-                                 progress_param=None):
+def build_institute_addresses_df(addresses_params, verbose=False, progress_param=None):
     """Builds the data of addresses with one row per address 
     and per publication ID for the institute.
 

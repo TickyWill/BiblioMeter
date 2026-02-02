@@ -26,8 +26,9 @@ from bmfuncts.save_final_results import save_db_ids_data
 from bmfuncts.save_final_results import save_fails_dict
 from bmfuncts.save_final_results import save_parsing_dict
 from bmfuncts.useful_functs import compute_dedup_articles_number
+from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_step_title
 from bmfuncts.useful_functs import read_parsing_dict
-from bmfuncts.useful_functs import set_bold_txt
 
 
 class CheckBoxCorpuses:
@@ -38,7 +39,7 @@ class CheckBoxCorpuses:
         year (str): Corpus year defined by 4 digits.
         items_status (dict): Availability of raw data, parsing data \
         and deduplicated data (keys: type of data (str); values: status (bool)).
-        col_space (int): The space value (int) for boxes columns spacing. 
+        col_space (int): The space value (int) for boxes columns spacing.
     """
 
     def __init__(self, parent, master, year, items_status, col_space):
@@ -220,33 +221,33 @@ def _launch_parsing(master, corpus_year, database_type,
     # Internal functions
     def _corpus_parsing(raw_data_path, _parsing_path,
                         _database_type, _progress_callback):
+        print_step_title(f"PARSING OF {_database_type.upper()} DATA FOR {corpus_year}",
+                         master.print_params)
 
-        log_title = f"PARSING OF {_database_type.upper()} DATA FOR {corpus_year}"
-        print(f"\n\n{set_bold_txt(log_title)}")
-
-        print("\nParsing...")
+        print_step_text("\nParsing...", master.print_params)
         parsing_tup = bp.biblio_parser(raw_data_path, _database_type,
                                        inst_filter_list=None,
                                        country_affiliations_file_path=inst_paths_list[0],
                                        inst_types_file_path=inst_paths_list[1])
         parsing_dict, fails_dict, db_ids_df = parsing_tup[0:3]
+        articles_number = fails_dict["number of article"]
         _progress_callback(80)
         save_parsing_dict(parsing_dict, _parsing_path,
                           item_filename_dict, parsing_save_extent)
         _progress_callback(90)
         save_fails_dict(fails_dict, _parsing_path)
         save_db_ids_data(db_ids_df, _parsing_path, _database_type)
+        print_step_text(f"  - Parsing results built and saved for {articles_number} publications",
+                        master.print_params)
         _progress_callback(95)
 
-        # Building the data for unknown country correction by the user
-        print("\nCreating unknown-countries file...")
+        # Building the data for addresses correction by the user
+        correct_params = [_database_type, corpus_year, master.print_params]
         return_tup = build_and_save_unknown_country_data(parsing_dict, _parsing_path,
-                                                         bp.UNKNOWN_COUNTRY, _database_type,
-                                                         corpus_year)
+                                                         bp.UNKNOWN_COUNTRY, correct_params)
         unknown_countries_empty, all_countries_corrected, correct_files_list = return_tup
         _progress_callback(100)
 
-        articles_number = fails_dict["number of article"]
         _info_title = "Information"
         _info_text = (f"'Parsing' de '{_database_type}' effectué pour l'année {corpus_year}."
                       f"\n\n  Nombre d'articles du corpus : {articles_number}")
@@ -361,25 +362,25 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
     # Internal functions
 
     def _deduplicate_corpus_parsing(_progress_callback):
-        print(f"\nCorrecting addresses with unknown countries for {bp.SCOPUS}...")
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
-        scopus_params_list = [master.institute, master.wf_path, bp.SCOPUS, corpus_year]
+        scopus_params_list = [master.institute, master.wf_path, bp.SCOPUS, master.print_params, corpus_year]
         correct_status = correct_parsing(scopus_params_list, scopus_parse_path, scopus_parsing_dict,
                                          item_filename_dict, bp.UNKNOWN_COUNTRY)
         if correct_status:
             scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                     parsing_save_extent)
-        print(f"\nCorrecting addresses with unknown countries for {bp.WOS}...")
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
-        wos_params_list = [master.institute, master.wf_path, bp.WOS, corpus_year]
+        wos_params_list = [master.institute, master.wf_path, bp.WOS, master.print_params, corpus_year]
         correct_status = correct_parsing(wos_params_list, wos_parse_path, wos_parsing_dict,
                                          item_filename_dict, bp.UNKNOWN_COUNTRY)
         if correct_status:
             wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                                  parsing_save_extent)
         _progress_callback(15)
+
+        print_step_text("\nConcatenating parsing data...", master.print_params)
         if bm_pg.FIRST_BDD==bp.SCOPUS:
             concat_parsing_dict = bp.concatenate_parsing(scopus_parsing_dict, wos_parsing_dict,
                                                          inst_filter_list=master.org_tup[3])
@@ -389,21 +390,28 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
         _progress_callback(25)
         save_parsing_dict(concat_parsing_dict, concat_path,
                           item_filename_dict, parsing_save_extent)
+        print_step_text("  - Parsing data concatenated and saved", master.print_params)
         _progress_callback(30)
+
+        print_step_text("\nDeduplicating parsing data...", master.print_params)
         dedup_parsing_dict = bp.deduplicate_parsing(concat_parsing_dict,
                                                     norm_inst_status=False,
                                                     inst_types_file_path=inst_paths_list[0],
                                                     country_affiliations_file_path=inst_paths_list[1])
         _dedup_articles_nb_tup = compute_dedup_articles_number(master.org_tup, dedup_parsing_dict)
+        dedup_articles_nb, dedup_institute_articles_nb = _dedup_articles_nb_tup
         _progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_path,
                           item_filename_dict, parsing_save_extent,
                           dedup_infos=(master.wf_path, master.datatype, corpus_year))
+        step_txt = ("  - All parsing results deduplicated and saved as final results "
+                    f"for {dedup_articles_nb} publications "
+                    f"including {dedup_institute_articles_nb} of {master.institute}")
+        print_step_text(step_txt, master.print_params)
         _progress_callback(100)
         return _dedup_articles_nb_tup
 
-    log_title = f"DEDUPLICATION OF PARSINGS FOR {corpus_year}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", master.print_params)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
     config_tup = set_user_config(master.wf_path, corpus_year, bm_pg.BDD_LIST)

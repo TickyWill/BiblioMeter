@@ -20,7 +20,7 @@ from bmfuncts.build_kpi import if_analysis
 from bmfuncts.coupling_analysis import coupling_analysis
 from bmfuncts.keywords_analysis import keywords_analysis
 from bmfuncts.save_final_results import set_results_folder_path
-from bmfuncts.useful_functs import set_bold_txt
+from bmfuncts.useful_functs import print_step_title
 
 
 def _launch_au_analysis(master, year_select, progress_callback):
@@ -31,14 +31,13 @@ def _launch_au_analysis(master, year_select, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.   
+        ProgressBar tkinter widget status.
     """
-    log_title = f"AUTHORS' SCIENTIFIC PRODUCTION FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"AUTHORS' SCIENTIFIC PRODUCTION FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, year_select]
+                   master.datatype, master.print_params, year_select]
     auth_analysis_folder_path = authors_analysis(params_list,
                                                  progress_callback)
 
@@ -58,13 +57,13 @@ def _launch_kw_analysis(master, year_select, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.   
+        ProgressBar tkinter widget status.
     """
-    log_title = f"KEYWORDS ANALYSIS FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"KEYWORDS ANALYSIS FOR {year_select}", master.print_params)
+
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, year_select]
+                   master.datatype, master.print_params, year_select]
     kw_analysis_folder_path = keywords_analysis(params_list, progress_callback,
                                                 verbose=False)
 
@@ -83,11 +82,11 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.    
+        ProgressBar tkinter widget status.
     """
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, year_select]
+                   master.datatype, master.print_params, year_select]
 
     ask_title = "- Confirmation de l'analyse des collaborations -"
     ask_text = ("L'analyse des collaborations a été lancée "
@@ -96,16 +95,15 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                 "\n\nContinuer ?")
     answer = messagebox.askokcancel(ask_title, ask_text)
     if answer:
-        log_title = f"COUPLING ANALYSIS FOR {year_select}"
-        print(f"\n\n{set_bold_txt(log_title)}")
+        print_step_title(f"COUPLING ANALYSIS FOR {year_select}", master.print_params)
 
-        return_tup = coupling_analysis(params_list, progress_callback,
-                                       verbose=True)
-        (analysis_folder, geo_analysis_folder, inst_analysis_folder, country_affil_file_path,
-         wrong_affil_types_dict, raw_institutions_status, correct_addresses_path) = return_tup
-
+        co_return_tup = coupling_analysis(params_list, progress_callback)
+        wrong_affil_types_dict = co_return_tup[0]
         if not wrong_affil_types_dict:
+            raw_institutions_status = co_return_tup[1]
             if raw_institutions_status:
+                return_folders_list = co_return_tup[2]
+                analysis_folder, inst_analysis_folder, geo_analysis_folder = return_folders_list
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été effectuée pour l'année {year_select}."
@@ -114,6 +112,7 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                              f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
                              f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
             else:
+                correct_addresses_path = co_return_tup[3][1]
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été interrompue pour l'année {year_select}."
@@ -123,6 +122,7 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                              f"\n\n    {correct_addresses_path}"
                              "\n\n  3- Relancez l'analyse des collaborations.")
         else:
+            country_affil_file_path = co_return_tup[3][0]
             info_title = "- Attention -"
             info_text = ("L'analyse des collaborations "
                          f"a été abandonnée pour l'année {year_select}."
@@ -150,14 +150,13 @@ def _launch_if_analysis(master, year_select, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.  
+        ProgressBar tkinter widget status.
     """
-    log_title = f"IF ANALYSIS AND BUILD OF KPI FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"IF ANALYSIS AND BUILD OF KPI FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
     params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, year_select]
+                   master.datatype, master.print_params, year_select]
 
     # Setting path for saving results
     final_results_path = set_results_folder_path(master.wf_path, master.datatype)

@@ -31,6 +31,7 @@ from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.use_otps import save_otps
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import reorder_df
 
 
@@ -179,7 +180,7 @@ def split_pub_list_by_doc_type(sub_params_list, pub_list_cols_dic=None):
         consolidated publications number (int)).
     """
     # Setting parameters values from 'sub_params_list'
-    institute, org_tup, wf_path, corpus_year = sub_params_list
+    institute, org_tup, wf_path, _, corpus_year = sub_params_list
 
     # Setting useful parameters for use of 'format_page' function
     common_df_title = bm_pg.DF_TITLES_LIST[0]
@@ -267,7 +268,6 @@ def _set_build_pub_files_params(wf_path, corpus_year):
 
     paths_list = [pub_list_file_path, invalids_file_path,
                   missing_issn_path, missing_if_path]
-
     return paths_list
 
 
@@ -302,7 +302,7 @@ def built_final_pub_list(params_list):
     The useful full paths are set through the `_set_build_pub_files_params` 
     internal function. 
     The useful col names are set through the `_set_pub_list_cols_dic` 
-    internal function. 
+    internal function.
 
     Args:
         params_list (list):  The list composed of the Institute name (str), \
@@ -315,8 +315,8 @@ def built_final_pub_list(params_list):
         final list, completion status of the impact-factors database).
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, _, corpus_year = params_list
-    sub_params_list = [institute, org_tup, wf_path, corpus_year]
+    institute, org_tup, wf_path, _, print_params, corpus_year = params_list
+    sub_params_list = [institute, org_tup, wf_path, print_params, corpus_year]
 
     # Setting useful column names
     pub_list_cols_dic = _set_pub_list_cols_dic(institute, org_tup)
@@ -331,7 +331,7 @@ def built_final_pub_list(params_list):
     # Saving the OTPs set by user
     consolidate_pub_list_df = save_otps(sub_params_list)
 
-    print("\nCleaning publications list...")
+    print_step_text("\nCleaning publications list...", print_params)
     # Setting pub ID as index for unique identification of rows
     consolidate_pub_list_df = consolidate_pub_list_df.set_index(pub_id_col)
 
@@ -348,10 +348,13 @@ def built_final_pub_list(params_list):
     consolidate_pub_list_df = reorder_df(consolidate_pub_list_df, col_dict)
     invalids_df = reorder_df(invalids_df, col_dict)
     invalids_nb = len(invalids_df)
+    valids_nb = len(consolidate_pub_list_df)
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
-    print("  - Invalid publications removed from publications list")
+    print_step_text(f"  - Number of confirmed publications: {valids_nb}", print_params)
+    print_step_text(f"  - Number of removed invalid publications: {invalids_nb}",
+                    print_params)
 
     # Formatting and saving 'invalids_df' as openpyxl file
     # at full path 'invalids_file_path'
@@ -360,19 +363,24 @@ def built_final_pub_list(params_list):
     wb, ws = format_page(invalids_df, invalids_df_title)
     ws.title = "Invalides " +  corpus_year
     wb.save(invalids_file_path)
-    print("  - Data of invalid publications saved")
+    print_step_text("  - Data of invalid publications saved", print_params)
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
     # this also for saving results files to complete IFs database
     add_if_paths_list = [pub_list_file_path, pub_list_file_path,
                          missing_issn_path, missing_if_path]
-    _, if_database_complete = add_if(sub_params_list, add_if_paths_list)
-    print("  - IFs added to publications list")
+    if_database_complete = add_if(sub_params_list, add_if_paths_list)
+    step_txt = "  - IFs added to publications list "
+    if if_database_complete:
+        step_txt += "with complete IFs data"
+    else:
+        step_txt += "with partial IFs data"
+    print_step_text(step_txt, print_params)
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
     split_ratio, pub_nb = split_pub_list_by_doc_type(sub_params_list,
                                                      pub_list_cols_dic)
-    print("  - Publications list split performed")
+    print_step_text("  - Publications list split performed", print_params)
 
     # Saving pub list and hash-IDs as final results
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
@@ -382,8 +390,7 @@ def built_final_pub_list(params_list):
         results_to_save_dict[key] = True
     _ = save_final_results(params_list, results_to_save_dict)
 
-    end_message  = "  - Consolidated publications lists saved as final results"
-    print(end_message)
+    print_step_text("  - Consolidated publications lists saved as final results", print_params)
     return pub_nb, invalids_nb, split_ratio, if_database_complete
 
 
@@ -408,7 +415,7 @@ def _set_concat_pub_list_path(wf_path, available_pub_lists_str):
     return multi_year_file_path
 
 
-def concatenate_pub_lists(wf_path, years_list):
+def concatenate_pub_lists(wf_path, print_params, years_list):
     """Builds the concatenated publications list of the corpuses 
     listed in 'years_list'.
 
@@ -450,8 +457,6 @@ def concatenate_pub_lists(wf_path, years_list):
     wb, ws = format_page(concat_df, concat_df_title)
     ws.title = "Publications de " + available_pub_lists_str
     wb.save(multi_year_file_path)
-
-    end_message  = ("    Concatenation of consolidated publications lists under: "
-                    f"\n\n    '{multi_year_file_path}'")
-    print(end_message)
-    return end_message
+    step_txt = ("  - Concatenation of consolidated publications lists under: "
+                f"\n\n    '{multi_year_file_path}'")
+    print_step_text(step_txt, print_params)

@@ -37,7 +37,8 @@ from bmfuncts.update_employees import update_employees
 from bmfuncts.use_homonyms import set_saved_homonyms
 from bmfuncts.use_homonyms import solve_homonyms
 from bmfuncts.use_otps import set_saved_otps
-from bmfuncts.useful_functs import set_bold_txt
+from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_step_title
 
 
 def _set_empl_files_params(root_path):
@@ -68,7 +69,7 @@ def _set_empl_files_params(root_path):
     return empl_folder_path, empl_upd_folder_path, empl_file_path, empl_file_alias
 
 
-def _launch_update_employees_try(self, wf_path, progress_callback):
+def _launch_update_employees_try(self, master, progress_callback):
     """Launches update of Institute employees database.
 
     This is done through the `update_employees` function imported from 
@@ -78,7 +79,7 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
 
     Args:
         self (instance): Instance of the calling page.
-        wf_path (path): Full path to working folder.
+        master (class): `bmgui.main_page.AppMain` class.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     Returns:
@@ -102,18 +103,17 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
                 "confirmez la mise à jour ?")
     answer_1 = messagebox.askokcancel(ask_title, ask_text)
     if answer_1:
-        log_title = "UPDATE OF EMPLOYEES DATABASE"
-        print(f"\n\n{set_bold_txt(log_title)}")
+        print_step_title("UPDATE OF EMPLOYEES DATABASE", master.print_params)
 
         (employees_year, files_number_error, sheet_name_error,
          column_error, years2add_error,
-         all_years_file_error) = update_employees(wf_path, progress_callback,
-                                                  progress_bar_state_init)
+         all_years_file_error) = update_employees(master.wf_path, master.print_params,
+                                                  progress_callback, progress_bar_state_init)
         progress_callback(100)
         if not any([files_number_error, sheet_name_error, column_error,
                     years2add_error, all_years_file_error]):
             update_status = True
-            print("File of employees-data updated")
+            print_step_text("  - File of employees-data updated", master.print_params)
 
             # Displaying the status of the update of employees data
             info_title = "- Information -"
@@ -122,7 +122,7 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
             messagebox.showinfo(info_title, info_text)
         elif all_years_file_error:
             update_status = True
-            print("File of employees data created")
+            print_step_text("  - File of employees data created", master.print_params)
 
             # Displaying the status of the update of employees data
             info_title = "- Information -"
@@ -136,7 +136,8 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
             messagebox.showinfo(info_title, info_text)
         else:
             update_status = False
-            print("Update of employees data aborted (error in the provided file for update)")
+            step_txt = "  - Update of employees data aborted (error in the provided file for update)"
+            print_step_text(step_txt, master.print_params)
 
             # Displaying the status of the update of employees data
             warning_title = "!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!"
@@ -187,7 +188,7 @@ def _launch_update_employees_try(self, wf_path, progress_callback):
     else:
         progress_callback(100)
         update_status = False
-        print("Update of employees data canceled")
+        print_step_text("  - Update of employees data canceled", master.print_params)
 
         # Displaying the status of the update of employees data
         warning_title = "- Information -"
@@ -255,8 +256,8 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
         dedup_parsing_status = check_dedup_parsing_available(master.wf_path, year_select)
         if dedup_parsing_status:
             # Setting the list of useful params values selected by the user
-            params_list = [master.institute, master.org_tup, master.wf_path,
-                           master.datatype, year_select]
+            params_list = [master.institute, master.org_tup, master.wf_path, master.datatype,
+                           master.print_params, year_select]
 
             # Searching recursively the authors in the employees data
             orphan_status = recursive_year_search(orphan_file=orphan_file,
@@ -298,8 +299,8 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                             "\n3- Puis relancez le croisement pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
-    log_title = f"ENHANCEMENT OF PUBLICATIONS LIST WITH EMPLOYEES DATA FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"ENHANCEMENT OF PUBLICATIONS LIST WITH EMPLOYEES DATA FOR {year_select}",
+                     master.print_params)
 
     # Setting files parameters dependent on year selection
     merge_files, merge_paths = _set_merge_year_files_param(master.wf_path, year_select)
@@ -314,7 +315,8 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
     # Setting dialogs and checking answers
     # for ad-hoc use of '_recursive_year_search_try' internal function
     # after adapting search depth to available years for search
-    tup = set_employees_data(year_select, self.empl_file_path, bm_eg.SEARCH_DEPTH)
+    tup = set_employees_data(year_select, self.empl_file_path, bm_eg.SEARCH_DEPTH,
+                             master.print_params)
     employees_dict, search_depth, available_empl_years = tup[0], tup[1], tup[2]
     if available_empl_years:
         status = "sans"
@@ -396,7 +398,7 @@ def _set_homonymies_year_files_param(wf_path, year_select):
 
 
 def _launch_resolution_homonymies_try(master, year_select, progress_callback):
-    """Launches file creation for resolving homonyms. 
+    """Launches file creation for resolving homonyms.
 
     This is done through the `solve_homonyms` function imported from 
     `bmfuncts.use_homonyms` module after check of status of 
@@ -409,7 +411,7 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.   
+        ProgressBar tkinter widget status.
     """
     def _resolution_homonymies_try(_progress_callback):
         if os.path.isfile(submit_path):
@@ -417,12 +419,13 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
 
             # Creating the files for homonyms resolution by the user
             homonyms_status = solve_homonyms(master.institute, master.org_tup,
+                                             master.print_params,
                                              submit_path, homonyms_file_path)
             _progress_callback(80)
             if homonyms_status:
                 # Setting the list of useful params values selected by the user
                 sub_params_list = [master.institute, master.org_tup,
-                                   master.wf_path, year_select]
+                                   master.wf_path, master.print_params, year_select]
 
                 # Using the available history of homonyms resolution by the user
                 # in the files for homonyms resolution
@@ -462,8 +465,8 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
                             "\n2- Puis relancez la résolution des homonymies pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
-    log_title = f"BUILD OF DATA FOR HOMONYMS RESOLUTION FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"BUILD OF DATA FOR HOMONYMS RESOLUTION FOR {year_select}",
+                     master.print_params)
 
     # Setting files parameters dependent on year selection
     return_tup = _set_homonymies_year_files_param(master.wf_path, year_select)
@@ -551,30 +554,30 @@ def _launch_add_otp_try(master, year_select, progress_callback):
     homonyms resolution step. 
     The created files are filled with previously set OTPs through 
     `set_saved_otps` function imported from `bmfuncts.use_otps` 
-    module. 
+    module.
 
     Args:
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.   
+        ProgressBar tkinter widget status.
     """
 
     def _add_otp_try(_progress_callback):
         if os.path.isfile(homonyms_file_path):
             # Setting the list of useful params values selected by the user
             sub_params_list = [master.institute, master.org_tup,
-                               master.wf_path, year_select]
+                               master.wf_path, master.print_params, year_select]
             _progress_callback(20)
 
             # Creating the files for OTPs attribution by the user
-            _ = add_otp(sub_params_list, homonyms_file_path,
-                        otp_folder_path, otp_file_base)
+            add_otp(sub_params_list, homonyms_file_path,
+                    otp_folder_path, otp_file_base)
             _progress_callback(80)
 
             # Using the available history of OTPs attribution by the user
             # in the created files for that
-            _ = set_saved_otps(sub_params_list)
+            set_saved_otps(sub_params_list)
             _progress_callback(100)
 
             # Displaying the status of the OTPs step
@@ -599,8 +602,8 @@ def _launch_add_otp_try(master, year_select, progress_callback):
                             "\n2- Relancez l'attribution des OTPs pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
-    log_title = f"BUILD OF DATA FOR OTP ATTRIBUTION FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"BUILD OF DATA FOR OTP ATTRIBUTION FOR {year_select}",
+                     master.print_params)
 
     # Setting files parameters dependent on year selection
     return_tup = _set_otp_year_files_param(master.wf_path, year_select)
@@ -709,7 +712,7 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         year_select (str): Corpus year defined by 4 digits.
         progress_callback (function): Function for updating \
-        ProgressBar tkinter widget status.  
+        ProgressBar tkinter widget status.
     """
 
     def _consolidate_pub_list(_progress_callback):
@@ -717,7 +720,7 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
             _progress_callback(20)
             # Setting the list of useful params values selected by the user
             params_list = [master.institute, master.org_tup, master.wf_path,
-                           master.datatype, year_select]
+                           master.datatype, master.print_params, year_select]
 
             # Consolidating publications list
             conso_tup = built_final_pub_list(params_list)
@@ -725,7 +728,7 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
             _progress_callback(70)
             if bm_pg.LISTES_CONCAT:
                 # Concatenating all available publications lists
-                _ = concatenate_pub_lists(master.wf_path, master.years_list)
+                concatenate_pub_lists(master.wf_path, master.print_params, master.years_list)
             _progress_callback(100)
 
             # Displaying the status of the consolidation step of the publications list
@@ -783,8 +786,8 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
                             "pour cette année.")
             messagebox.showwarning(warning_title, warning_text)
 
-    log_title = f"BUILD FINAL LIST OF PUBLICATIONS FOR {year_select}"
-    print(f"\n\n{set_bold_txt(log_title)}")
+    print_step_title(f"BUILD FINAL LIST OF PUBLICATIONS FOR {year_select}",
+                     master.print_params)
 
     # Setting files parameters dependent on year selection
     files_list, paths_list = _set_conso_year_files_params(master.wf_path, year_select)
@@ -881,7 +884,7 @@ def create_consolidate_corpus(self, master, page_name):
         """Command of the 'empl_update_button' button.        
         """
         # Trying launch of update of employees file
-        self.empl_update_status = _launch_update_employees_try(self, master.wf_path,
+        self.empl_update_status = _launch_update_employees_try(self, master,
                                                                progress_callback)
         self.progress_bar.place_forget()
 

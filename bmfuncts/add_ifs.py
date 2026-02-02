@@ -30,7 +30,7 @@ def _set_add_ifs_col_dic(institute, org_tup, corpus_year):
     This is done through the combination of column names resulting 
     from the `set_final_col_names` and `set_if_col_names` functions 
     imported from the `bmfuncts.rename_cols` module.
-    
+
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
@@ -136,8 +136,8 @@ def _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic, empty_kws_list)
     unknown_kw, not_available_kw = empty_kws_list
 
     # Getting the df of the IFs database
-    if_dict, if_available_years_list, if_most_recent_year = get_if_db(institute, org_tup,
-                                                                      wf_path)
+    ifs_return_tup = get_if_db(institute, org_tup, wf_path)
+    if_dict, if_available_years_list, if_most_recent_year = ifs_return_tup
 
     # Taking care all IF column names in if_dict are set to database_if_col
     if if_db_status:
@@ -593,7 +593,7 @@ def _format_and_save_add_if_dfs(dfs_list, out_paths_list, corpus_year,
                                 add_ifs_col_dic, unknown_kw):
     """Formats with final column names the missing-ISSNs data 
     and the missing-IFs data and saves them.
-    
+
     The data are formated through the `_format_missing_df` 
     internal function. 
     They are saved through the `format_page` function imported 
@@ -670,14 +670,13 @@ def add_if(sub_params_list, paths_list):
         the full path to save the missing ISSNs information and \
         the full path to save the missing impact-factors information.
     Returns:
-        (tup): (message indicating which file has been modified and how, \
-        completion status of the impact-factors database).
+        (bool):  Completion status of the impact-factors data (True if complete).
     """
     # Setting parameters values from sub_params_list
-    institute, org_tup, wf_path, corpus_year = sub_params_list
+    institute, org_tup, wf_path, _, corpus_year = sub_params_list
 
     # Setting parameters from args
-    in_file_path, out_file_path = paths_list[0:2]
+    in_file_path = paths_list[0]
 
     # Setting useful column names
     add_ifs_col_tup = _set_add_ifs_col_dic(institute, org_tup, corpus_year)
@@ -743,6 +742,4 @@ def add_if(sub_params_list, paths_list):
     dfs_list = [corpus_df, year_missing_issn_df, year_missing_if_df]
     _format_and_save_add_if_dfs(dfs_list, paths_list[1:], corpus_year, add_ifs_col_dic,
                                 bp.UNKNOWN)
-
-    end_message = f"IFs added for year {corpus_year} in file : \n  '{out_file_path}'"
-    return end_message, if_database_complete
+    return if_database_complete

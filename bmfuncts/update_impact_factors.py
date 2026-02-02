@@ -19,6 +19,7 @@ import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import set_capwords_lambda
 
 
@@ -242,7 +243,7 @@ def _build_previous_years_if_df(wf_path, if_db_dict,
         for building the IFs database of the most-recent year.
         4. Formats IFs sheet in the 'wb' Openpyxl workbook with sheet name set to IFs-year \
         given by 'if_db_year' through the `formatting_wb_sheet` function imported from \
-        `bmfuncts.format_files` module.        
+        `bmfuncts.format_files` module.
 
     Args:
         wf_path (path): Full path to working folder.
@@ -580,7 +581,8 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
         of the IFs database (str), List of IFs-database years (4-digits strings)).
     """
     # Setting parameters values from 'update_db_params_list'
-    institute, org_tup, wf_path, corpus_years_list = update_db_params_list
+    institute, org_tup, wf_path, print_params, corpus_years_list = update_db_params_list
+    print_step_text("\nUpdating IFs data...", print_params)
 
     # Setting useful columns names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
@@ -619,7 +621,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Building fully updated IFs database for years
     # before the most recent year available for IFs
-    print(f"    For years before {if_most_recent_year}")
+    print_step_text(f"  - For years before {if_most_recent_year}", print_params)
     save_params_tup = (wb, first)
     return_tup = _build_previous_years_if_df(wf_path, if_db_dict,
                                              if_db_years_list, if_most_recent_year,
@@ -631,7 +633,8 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Building fully updated IFs database for years beginning
     # from the most recent year available for IFs
-    print(f"    For years from {if_most_recent_year} and after")
+    print_step_text(f"  - For years from {if_most_recent_year} and after",
+                    print_params)
     save_params_tup = (wb, first)
     wb = _build_recent_year_if_df(wf_path, if_db_dict,
                                   off_if_db_years_list, if_most_recent_year,
@@ -650,6 +653,6 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
     _clean_and_save_if_db(inst_all_if_path, journal_cols_list)
     if progress_callback:
         progress_callback(100)
-
-    end_message = f"IFs database updated in file : \n  '{inst_all_if_path}'"
-    return end_message, if_db_years_list
+    print_step_text(f"  - IFs data updated in file : \n  '{inst_all_if_path}'",
+                    print_params)
+    return if_db_years_list

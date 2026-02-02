@@ -162,7 +162,7 @@ def _set_final_otps_dict(institute, lab_otps_dict):
 
 def _set_lab_otps_dict(dept_otps_dict, inst_dir):
     """Set the reorganized dict of OTPs by removing services keys.
-    
+
     It also builds the final dict of OTPs specifically for the \
     'Leti' institute taking care of the effective structure \
     of the Institute through the `_set_final_otps_dict` \
@@ -438,7 +438,7 @@ def set_lab_otps(set_otp_params_list):
         where the OTPs data should be available.
     Returns:
         (dict): OTPs hierarchical dict keyed by departments \
-        and valued by dicts keyed by labs and valued by OTPs lists.    
+        and valued by dicts keyed by labs and valued by OTPs lists.
     """
     # Setting params values from set_otp_params_list
     institute, org_tup, wf_path = set_otp_params_list

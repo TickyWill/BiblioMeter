@@ -23,7 +23,8 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.config_utils import set_org_params
-from bmfuncts.useful_functs import set_bold_txt
+from bmfuncts.useful_functs import print_to_console
+from bmfuncts.useful_functs import print_to_log
 from bmfuncts.useful_functs import set_rawdata
 from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
@@ -145,12 +146,20 @@ class SetLaunchButton:
             # Setting years list
             master.years_list = bm_gu.last_available_years(master.wf_path,
                                                            bm_gg.CORPUSES_NUMBER)
-            log_title = f"ANALYSIS FOR {master.institute}"
-            print(f"\n\n{set_bold_txt(log_title)}")
-            print(f"\n    Working folder  : {master.wf_path}")
-            print(f"    Data combination: {master.datatype}")
-            print(f"    Corpus list     : {master.years_list}")
-            print(f"    Date            : {str(datetime.now())[:16]}")
+
+            # Printing run info to console and log file
+            run_date_time = str(datetime.now())[:16]
+            run_date, run_time = run_date_time.split(" ")
+            master.log_file = f"{run_date}_{run_time.replace(':', '-')}_{bm_pg.LOG_FILE}"
+            master.print_params = [master.log_file, bm_pg.LOG_FOLDER, master.wf_path]
+            log_title = f"BM ANALYSIS FOR {master.institute}"
+            print_txt = (f"\n\n    Working folder  : {master.wf_path}"
+                         f"\n    Data combination: {master.datatype}"
+                         f"\n    Corpus list     : {master.years_list}"
+                         f"\n    Date            : {run_date} {run_time}")
+
+            print_to_console(log_title, print_txt)
+            print_to_log(log_title, print_txt, master.print_params)
 
             if master.datatype:
                 # Setting rawdata for datatype

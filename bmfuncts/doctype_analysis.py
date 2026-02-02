@@ -1,5 +1,4 @@
 """Module of functions for building statistics per doctype.
-
 """
 
 __all__ = ['doctype_analysis',
@@ -89,7 +88,7 @@ def _set_analysis_if_cols_info(corpus_year, if_most_recent_year):
     Returns:
         (tup): (List of the columns names (str) to be used for \
         the IF analysis, Name (str) of the column of IFs in the IFs \
-        analysis results, 4 digits-year (str) of IFs analysis). 
+        analysis results, 4 digits-year (str) of IFs analysis).
     """
     # Setting useful aliases
     most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
@@ -218,17 +217,14 @@ def _read_articles_data(wf_path, final_results_path, corpus_year):
     articles_item_alias = bp.PARSING_ITEMS_LIST[0]
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_final_dedup(wf_path,
-                                          final_results_path,
-                                          corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
 
     # Getting ID of each author with author name
     articles_df = dedup_parsing_dict[articles_item_alias]
     return articles_df
 
 
-def _build_doctype_analysis_data(data_params_list,
-                                 doctype_cols_tup):
+def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
     """Builds the data of publications list to be analyzed for each document types.
 
     The list of documents-types items is given by the 'DOC_TYPE_DICT' global 
@@ -429,7 +425,7 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
                                  doctype_cols_tup, doctype_cols_keys_dic):
     """Builds the statistics data of publications per documents types for each 
     department of the Institute including itself.
-    
+
     First, it sets the full path to the files of publications list for each 
     document type. 
     Then, it builds the statistics data by cycling on department and 
@@ -443,7 +439,7 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
     3. These statistics data of the given document type for the given \
     department are saved through the `save_formatted_df_to_xlsx` \
     function imported from `bmfuncts.format_files` module.
-    
+
     Args:
         stat_params_list (list): The list composed of the Institute name (str), \
         the full path to working folder (path), and the 4 digits year \
@@ -481,9 +477,9 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
             dept_doctype_df = dept_doctype_df.drop(columns=depts_col_list)
 
             # Building statistic data by document of doctype
-            by_doc_dept_df, idx_wrap = _build_doctype_stat(dept_doctype_df,
-                                                           doctype_col_keys_tup,
-                                                           doctype_cols_dic)
+            return_tup = _build_doctype_stat(dept_doctype_df, doctype_col_keys_tup,
+                                             doctype_cols_dic)
+            by_doc_dept_df, idx_wrap = return_tup
 
             # Keeping the articles data for IF analysis
             if doctype=="articles":
@@ -503,20 +499,19 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
     return by_journal_dict, doctypes_analysis_folder_path
 
 
-def doctype_analysis(params_list, if_most_recent_year,
-                     progress_callback=None):
+def doctype_analysis(params_list, if_most_recent_year, progress_callback=None):
     """Performs the analysis per documents-types of the Institute 
     publications of the 'year' corpus.
 
     This is done through the following steps:
 
     1. The specific columns names for the impact-factors analysis \
-    are set through the `_set_analysis_if_cols_lis` internal function. 
+    are set through the `_set_analysis_if_cols_lis` internal function.
     2. The data of the publications list per documents-types to be \
     analyzed are built through the `_build_doctype_analysis_data` \
-    internal function. 
+    internal function.
     3. The statistic data are built for each documents type through \
-    the function `_build_and_save_doctype_stat` internal function. 
+    the function `_build_and_save_doctype_stat` internal function.
     4. The results of this analysis for the 'datatype' case are saved \
     through the `save_final_results` function imported from \
     `bmfuncts.save_final_results` module.
@@ -539,7 +534,7 @@ def doctype_analysis(params_list, if_most_recent_year,
         where IFs analysis final results are saved).
     """
     # Setting params values from params_list
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
+    institute, org_tup, wf_path, datatype, _, corpus_year = params_list
 
     # Setting useful columns info
     return_tup = _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year)

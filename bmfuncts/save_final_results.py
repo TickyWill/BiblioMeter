@@ -80,9 +80,6 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         dedup_infos (list): The full path to the working folder (path), \
         Data combination type from corpuses databases (str) and \
         4 digits year of the corpus (str).
-    Returns:
-        (tup): (4 digits year of the corpus (str), The full path to the folder \
-        where the deduplication result are saved).
     """
     # Setting parameters from args
     wf_path, datatype, corpus_year = dedup_infos
@@ -103,13 +100,10 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
         os.makedirs(year_target_folder_path)
     if not os.path.exists(target_parsing_path):
         os.makedirs(target_parsing_path)
-
     _save_item(item_df, item_filename_base, save_extent, target_parsing_path)
-    return corpus_year, target_parsing_path
 
 
-def save_parsing_dict(parsing_dict, parsing_path,
-                      item_filename_dict, save_extent,
+def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_extent,
                       dedup_infos=None):
     """Saves the data passed through the dict of parsing results 
     as files of a specified type.
@@ -132,8 +126,6 @@ def save_parsing_dict(parsing_dict, parsing_path,
         Data combination type from corpuses databases (str), \
         4 digits year of the corpus (str)) (default = None).
     """
-    parsing_items_nb = len(parsing_dict.keys())
-    item_idx = 0
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
         if item in parsing_dict.keys():
@@ -142,11 +134,7 @@ def save_parsing_dict(parsing_dict, parsing_path,
             _save_item(item_df, item_filename_base, save_extent, parsing_path)
 
             if dedup_infos:
-                item_idx += 1
-                return_tup = save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
-                if item_idx==parsing_items_nb:
-                    corpus_year, _ = return_tup
-                    print(f"\nAll parsing results deduplicated for year {corpus_year} saved as final results")
+                save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
 
 
 def save_fails_dict(fails_dict, parsing_path):
@@ -177,8 +165,7 @@ def save_db_ids_data(db_ids_df, parsing_path, database_type):
     db_ids_df.to_excel(file_path, index=False)
 
 
-def save_final_hash_ids(wf_path, corpus_year,
-                        results_folder_path):
+def save_final_hash_ids(wf_path, corpus_year, results_folder_path):
     """Saves final results of the hash-IDs of publications for the corpus year.
 
     Args:
@@ -190,8 +177,6 @@ def save_final_hash_ids(wf_path, corpus_year,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["hash_id"]
 
@@ -223,8 +208,7 @@ def save_final_hash_ids(wf_path, corpus_year,
     return end_message
 
 
-def save_final_submit(wf_path, corpus_year,
-                      results_folder_path):
+def save_final_submit(wf_path, corpus_year, results_folder_path):
     """Saves final results of the list of publications with one row per author 
     for the corpus year.
 
@@ -237,8 +221,6 @@ def save_final_submit(wf_path, corpus_year,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["submit"]
 
@@ -271,8 +253,7 @@ def save_final_submit(wf_path, corpus_year,
     return end_message
 
 
-def save_final_set_homonyms(wf_path, corpus_year,
-                            results_folder_path):
+def save_final_set_homonyms(wf_path, corpus_year, results_folder_path):
     """Saves final results of the list of publications with one row per author 
     for the corpus year after homonymies resolution.
 
@@ -317,8 +298,7 @@ def save_final_set_homonyms(wf_path, corpus_year,
     return end_message
 
 
-def save_final_pub_lists(wf_path,
-                         corpus_year, results_folder_path):
+def save_final_pub_lists(wf_path, corpus_year, results_folder_path):
     """Saves final results of the publications lists for the corpus year.
 
     Args:
@@ -382,8 +362,7 @@ def save_final_pub_lists(wf_path,
     return end_message
 
 
-def save_final_ifs(institute, org_tup, wf_path,
-                   corpus_year, results_folder_path, if_analysis_name):
+def save_final_ifs(institute, org_tup, wf_path, corpus_year, results_folder_path, if_analysis_name):
     """Saves final results of number of publications per journal 
     with its impact factor for the corpus year.
 
@@ -400,7 +379,6 @@ def save_final_ifs(institute, org_tup, wf_path,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
@@ -440,8 +418,7 @@ def save_final_ifs(institute, org_tup, wf_path,
     return end_message
 
 
-def save_final_authors(wf_path, corpus_year,
-                       results_folder_path):
+def save_final_authors(wf_path, corpus_year, results_folder_path):
     """Saves final results of publications per author for the corpus year.
 
     Args:
@@ -453,7 +430,6 @@ def save_final_authors(wf_path, corpus_year,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Internal function
     def _copy_file(origin_file, target_file):
         origin_file_path = origin_authors_path / Path(origin_file)
@@ -501,8 +477,7 @@ def save_final_authors(wf_path, corpus_year,
     return end_message
 
 
-def save_final_kws(institute, org_tup, wf_path,
-                   corpus_year, results_folder_path):
+def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path):
     """Saves final results of number of publications per keyword for the corpus year.
 
     Args:
@@ -516,7 +491,6 @@ def save_final_kws(institute, org_tup, wf_path,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
@@ -566,8 +540,7 @@ def save_final_kws(institute, org_tup, wf_path,
     return end_message
 
 
-def save_final_countries(wf_path,
-                         corpus_year, results_folder_path):
+def save_final_countries(wf_path, corpus_year, results_folder_path):
     """Saves final results of publications per country for the corpus year.
 
     Args:
@@ -579,7 +552,6 @@ def save_final_countries(wf_path,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["countries"]
 
@@ -616,8 +588,7 @@ def save_final_countries(wf_path,
     return end_message
 
 
-def save_final_continents(wf_path,
-                          corpus_year, results_folder_path):
+def save_final_continents(wf_path, corpus_year, results_folder_path):
     """Saves final results of publications per continent for the corpus year.
 
     Args:
@@ -629,7 +600,6 @@ def save_final_continents(wf_path,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["countries"]
 
@@ -666,8 +636,7 @@ def save_final_continents(wf_path,
     return end_message
 
 
-def save_final_institute_country(wf_path, corpus_year,
-                                 results_folder_path, institute_country):
+def save_final_institute_country(wf_path, corpus_year, results_folder_path, institute_country):
     """Saves final results of publications per country for the corpus year.
 
     Args:
@@ -680,7 +649,6 @@ def save_final_institute_country(wf_path, corpus_year,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["countries"]
 
@@ -732,7 +700,6 @@ def save_final_institutions(wf_path, corpus_year, results_folder_path):
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["institutions"]
 
@@ -755,8 +722,7 @@ def save_final_institutions(wf_path, corpus_year, results_folder_path):
     return end_message
 
 
-def save_final_doctypes(wf_path,
-                        corpus_year, results_folder_path):
+def save_final_doctypes(wf_path, corpus_year, results_folder_path):
     """Saves final results of number of publications per doctype for the corpus year.
 
     Args:
@@ -768,7 +734,6 @@ def save_final_doctypes(wf_path,
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
     """
-
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["doctypes"]
 
@@ -846,7 +811,7 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
         the folder where final results have been saved.
     """
     # Setting parameters values from 'params_list'
-    institute, org_tup, wf_path, datatype, corpus_year = params_list
+    institute, org_tup, wf_path, datatype, _, corpus_year = params_list
 
     # Setting path for saving results
     results_folder_path = set_results_folder_path(wf_path, datatype)
