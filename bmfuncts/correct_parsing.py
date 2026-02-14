@@ -147,9 +147,9 @@ def _set_correct_parsing_paths(parsing_path, database_type, item_filename_dict,
 def _remove_unknown_country(input_addr_str, sep_str, unknown_country):
     """Removes unknown-country key from an address.
 
-    The unknown-country key is potentially added when  
+    The unknown-country key is potentially added when 
     the address is standardized.
-    The split of the address and the join of the items uses  
+    The split of the address and the join of the items uses 
     the specified separator.
 
     Args:

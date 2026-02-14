@@ -25,6 +25,7 @@ from bmfuncts.correct_parsing import correct_parsing
 from bmfuncts.save_final_results import save_db_ids_data
 from bmfuncts.save_final_results import save_fails_dict
 from bmfuncts.save_final_results import save_parsing_dict
+from bmfuncts.save_final_results import save_rawdata_correction
 from bmfuncts.useful_functs import compute_dedup_articles_number
 from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import print_step_title
@@ -219,17 +220,22 @@ def _launch_parsing(master, corpus_year, database_type,
         ProgressBar tkinter widget status.
     """
     # Internal functions
-    def _corpus_parsing(raw_data_path, _parsing_path,
+    def _corpus_parsing(_raw_data_path, _parsing_path,
                         _database_type, _progress_callback):
         print_step_title(f"PARSING OF {_database_type.upper()} DATA FOR {corpus_year}",
                          master.print_params)
 
         print_step_text("\nParsing...", master.print_params)
-        parsing_tup = bp.biblio_parser(raw_data_path, _database_type,
+        parsing_tup = bp.biblio_parser(_raw_data_path, _database_type,
                                        inst_filter_list=None,
                                        country_affiliations_file_path=inst_paths_list[0],
                                        inst_types_file_path=inst_paths_list[1])
         parsing_dict, fails_dict, db_ids_df = parsing_tup[0:3]
+        if len(parsing_tup)>3:
+            correction_dict = dict(zip(list(bm_pg.RAWDATA_CORRECT.keys()), parsing_tup[3:]))
+            save_rawdata_correction(correction_dict, _raw_data_path, _database_type)
+            print_step_text("  - Data of correction in rawdata of authors and addresses saved for control",
+                            master.print_params)
         articles_number = fails_dict["number of article"]
         _progress_callback(80)
         save_parsing_dict(parsing_dict, _parsing_path,

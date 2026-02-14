@@ -44,6 +44,7 @@ __all__ = ['ANALYSIS_IF',
            'PARSING_CONFIG_FILE',
            'PARSING_PERF',
            'PRINT_DICT',
+           'RAWDATA_CORRECT',
            'RESULTS_TO_SAVE',
            'ROW_COLORS',
            'SHEET_NAMES_ORPHAN',
@@ -88,6 +89,10 @@ PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
 PARSING_PERF = "Parsing_perf.json"
 
 IDS_FILE_BASE = "_IDs.xlsx"
+
+RAWDATA_CORRECT = {'authors'  : "_Auteurs corrigés.xlsx",
+                   'addresses': "_Adresses corrigées.xlsx",
+                  }
 
 TSV_SAVE_EXTENT = "dat"
 

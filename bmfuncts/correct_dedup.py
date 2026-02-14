@@ -75,7 +75,6 @@ def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict
     # Setting useful aliases
     parsing_extent = "." + bm_pg.TSV_SAVE_EXTENT
     saved_dedup_parsing_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
-    addresses_to_correct_file_alias = bm_pg.ARCHI_RESULTS["false_addresses_file"]
     corrected_addresses_history_file_alias = bm_pg.ARCHI_RESULTS["corrected_addresses_file"]
 
     # Setting path of deduplicated parsings
@@ -83,10 +82,9 @@ def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict
     dedup_parsing_path = year_final_results_path / Path(saved_dedup_parsing_folder_alias)
 
     # Setting paths for addresses correction
-    addresses_to_correct_path = dedup_parsing_path / Path(addresses_to_correct_file_alias)
     corrected_addresses_path = dedup_parsing_path / Path(corrected_addresses_history_file_alias)
 
-    paths_list = [addresses_to_correct_path, corrected_addresses_path]
+    paths_list = [corrected_addresses_path]
     compl_paths_list = []
     if items_parsing_status:
         use_items_list = ['countries', 'addresses', 'authors_institutions']
@@ -95,47 +93,68 @@ def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict
     return paths_list
 
 
-def initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year,
-                                         print_params, file_clean=False):
+def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_addresses_path,
+                                         corpus_year, print_params, file_clean=False):
     """Manages the initialization of the file for correcting 
     false addresses identified by the user.
 
     Args:
         addresses_to_correct_path (path): The full path to the file \
         for correcting false addresses.
+        corrected_addresses_path (path): The full path to the file \
+        of history of false addresses correction.
         corpus_year (str): Corpus year defined by 4 digits.
         file_clean (bool): Optional, if True the existing file is \
         replaced by a formated empty file (default: False).
     """
     # internal functions
-    def _save_empty_file():
-        cols_nb = len(correct_addresses_cols)
-        data_row = [""] * cols_nb
-        data = sum([], [data_row]*10)
-        corrected_addresses_df = pd.DataFrame(data, columns=correct_addresses_cols)
-
-        # Saving false-addresses empty data
+    def _save_file(_addresses_to_correct_df):
+        # Saving false-addresses data
         df_title = bm_pg.DF_TITLES_LIST[19]
-        wb, ws = format_page(corrected_addresses_df, df_title)
+        wb, ws = format_page(_addresses_to_correct_df, df_title)
         ws.title = "False addr " + corpus_year
         wb.save(addresses_to_correct_path)
 
+    def _save_empty_file():
+        # Setting false-addresses empty data
+        cols_nb = len(addresses_to_correct_cols)
+        data_row = [""] * cols_nb
+        data = sum([], [data_row]*10)
+        addresses_to_correct_df = pd.DataFrame(data, columns=addresses_to_correct_cols)
+        _save_file(addresses_to_correct_df)
+
     # Setting useful column names
     dedup_cols_dic = _set_dedup_cols_dic()
-    cols_keys = ['bm_hash_id_col', 'bp_pub_id_col', 'bp_doi_col',
-                 'bp_address_id_col', 'bp_country_col', 'bp_address_col',
-                 'correct_address_col']
-    correct_addresses_cols = [dedup_cols_dic[key] for key in cols_keys]
+    cols_keys = ['bm_hash_id_col', 'bp_pub_id_col', 'bp_doi_col', 'bp_address_id_col',
+                 'bp_country_col', 'bp_address_col', 'correct_address_col']
+    addresses_to_correct_cols = [dedup_cols_dic[key] for key in cols_keys]
 
-    # Creating or cleaning the false-addresses file
-    if addresses_to_correct_path.is_file() and not file_clean:
-        step_txt = "    - File for correcting false addresses already exist"
-    else:
+    # Setting status of data for addresses correction
+    corrected_addresses_isfile = corrected_addresses_path.is_file()
+    addresses_to_correct_isfile = addresses_to_correct_path.is_file()
+
+    if file_clean:
         _save_empty_file()
-        if file_clean:
-            step_txt = "    - File for correction of false addresses by the user cleaned"
-        else:
-            step_txt = "    - Empty file for correction of false addresses created"
+        step_txt = "    - File for correction of false addresses by the user cleaned"
+    else:
+        if not corrected_addresses_isfile and not addresses_to_correct_isfile:
+            _save_empty_file()
+            step_txt = "    - Empty file for correction of false addresses by the user created"
+        elif corrected_addresses_isfile:
+            # Using the history of corrected addresses
+            corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
+            addresses_to_correct_hist_df = corrected_addresses_hist_df[addresses_to_correct_cols]
+            addresses_to_correct_df = addresses_to_correct_hist_df.copy()
+
+            if addresses_to_correct_isfile:
+                user_addresses_to_correct_df = pd.read_excel(addresses_to_correct_path)
+                addresses_to_correct_df = concat_dfs([addresses_to_correct_hist_df, user_addresses_to_correct_df])
+                step_txt = ("    - File for correction of false addresses by the user updated "
+                            "with history of corrected addresses")
+            else:
+                step_txt = ("    - File for correction of false addresses by the user created "
+                            "with history of corrected addresses")
+            _save_file(addresses_to_correct_df)
     print_step_text(step_txt, print_params)
 
 
@@ -219,11 +238,10 @@ def _update_corrected_addresses_history(addresses_to_correct_df, corrected_addre
     new_corrected_addresses_hist_df = addresses_to_correct_df.copy()
     # Getting the history of corrected addresses before update
     if corrected_addresses_path.is_file():
-        init_corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
+        corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
 
         # Concatenating the existing history of corrected countries data with the user's corrected ones
-        new_corrected_addresses_hist_df = concat_dfs([init_corrected_addresses_hist_df,
-                                                      addresses_to_correct_df],
+        new_corrected_addresses_hist_df = concat_dfs([corrected_addresses_hist_df, addresses_to_correct_df],
                                                      dedup_cols=dedup_cols)
         step_txt = "    - History of corrected addresses updated"
     else:
@@ -235,6 +253,7 @@ def _update_corrected_addresses_history(addresses_to_correct_df, corrected_addre
     wb, ws = format_page(new_corrected_addresses_hist_df, df_title)
     ws.title = 'Correct addresses ' + corpus_year
     wb.save(corrected_addresses_path)
+    return new_corrected_addresses_hist_df
 
 
 def _correct_dedup_countries(countries_correct_dfs, dedup_cols_dic, parsing_countries_path, corpus_year):
@@ -380,8 +399,9 @@ def _correct_dedup_authsinst(authsinst_correct_dfs, dedup_cols_dic,
                             author_addresses_list.append(std_address_str)
 
                         # Finding index of false address in 'author_addresses_list'
-                        false_addr_idx = author_addresses_list.index(false_address)
-                        author_addresses_list[false_addr_idx] = correct_address
+                        if false_address in author_addresses_list:
+                            false_addr_idx = author_addresses_list.index(false_address)
+                            author_addresses_list[false_addr_idx] = correct_address
 
                         author_addresses_str = build_string_from_list(author_addresses_list, "; ")
                         pub_id_auths_inst_df.loc[row_num, address_col] = author_addresses_str
@@ -431,15 +451,15 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
     # Internal functions
     def _build_corrected_addresses_data():
         addresses_to_correct_df = pd.read_excel(addresses_to_correct_path)
-        corrected_addresses_df = addresses_to_correct_df.copy()
+        new_corrected_addresses_df = addresses_to_correct_df.copy()
         if not addresses_to_correct_df.empty:
             # Adding authors IDs with false addresses to correct addresses data
             init_correct_dfs = [auth_inst_df, addresses_to_correct_df]
-            corrected_addresses_df = _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic,
-                                                                          ids_dicts_list)
+            new_corrected_addresses_df = _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic,
+                                                                             ids_dicts_list)
 
-        _update_corrected_addresses_history(corrected_addresses_df, corrected_addresses_path,
-                                            corpus_year, dedup_cols, print_params)
+        corrected_addresses_df = _update_corrected_addresses_history(new_corrected_addresses_df, corrected_addresses_path,
+                                                                     corpus_year, dedup_cols, print_params)
         return corrected_addresses_df
 
     # Setting useful column names
@@ -448,14 +468,15 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
     dedup_cols = [dedup_cols_dic[key] for key in cols_keys]
 
     # Setting params from "params_list"
-    institute, wf_path, print_params, corpus_year, final_results_path = params_list
+    (institute, wf_path, print_params, corpus_year, final_results_path,
+     addresses_to_correct_path) = params_list
 
     # Setting useful paths to files for parsing data correction
     items_parsing_status = True
     correct_paths_list = _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict,
                                                   items_parsing_status, test_txt)
-    (addresses_to_correct_path, corrected_addresses_path, parsing_countries_path,
-     parsing_addresses_path, parsing_authsinst_path) = [correct_paths_list[idx] for idx in range(5)]
+    (corrected_addresses_path, parsing_countries_path,
+     parsing_addresses_path, parsing_authsinst_path) = [correct_paths_list[idx] for idx in range(4)]
 
     # Setting parsing data for the correction process
     parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
@@ -465,10 +486,9 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
 
     # Initializing status of addresses to correct
     correct_status = False
-    addresses_to_correct_is_file = addresses_to_correct_path.is_file()
-    if not addresses_to_correct_is_file:
-        print_step_text("\n    Initializing file of addresses to correct by the user...", print_params)
-        initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year, print_params)
+    print_step_text("  - Initializing file of addresses to correct by the user...", print_params)
+    initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_addresses_path,
+                                         corpus_year, print_params)
 
     # Getting data of the user's correction of the addresses to correct
     print_step_text("  - Building data for addresses correction...", print_params)
@@ -476,7 +496,7 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
     empty_corrected_addresses = corrected_addresses_df.empty
 
     if not empty_corrected_addresses:
-        print_step_text("\n    Correcting addresses in deduplication-parsing data...", print_params)
+        print_step_text("  - Correcting addresses in deduplication-parsing data...", print_params)
 
         # Correcting the countries parsing data using the user's correction of the addresses
         countries_correct_dfs = [countries_df, corrected_addresses_df]
@@ -497,7 +517,7 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
                                  norm_dicts, corpus_year)
         print_step_text("    - Authors-institutions parsing data corrected", print_params)
         correct_status = True
-        print_step_text("\n    Cleaning file of addresses to correct by the user", print_params)
-        initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year,
-                                             print_params, file_clean=True)
+        print_step_text("  - Cleaning file of addresses to correct by the user...", print_params)
+        initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_addresses_path,
+                                             corpus_year, print_params, file_clean=True)
     return addresses_to_correct_path, correct_status

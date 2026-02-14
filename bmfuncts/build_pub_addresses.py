@@ -40,6 +40,7 @@ def _set_pub_addresses_cols_dic(institute, org_tup):
     pub_addresses_cols_dic = {'bp_pub_id_col'    : bp.COL_NAMES['address'][0],
                               'bp_address_id_col': bp.COL_NAMES['address'][1],
                               'bp_address_col'   : bp.COL_NAMES['address'][2],
+                              'bp_author_id_col' : bp.COL_NAMES['auth_inst'][1],
                               'bm_pub_id_col'    : submit_col_rename_dic[bp.COL_NAMES['authors'][0]],
                               'bm_address_id_col': bm_pg.COL_NAMES_BONUS['address ID'],
                               'bm_address_col'   : submit_col_rename_dic[bp.COL_NAMES['address'][2]],
@@ -424,9 +425,7 @@ def _read_addresses_data(input_data_params):
     addresses_item_alias = bp.PARSING_ITEMS_LIST[2]
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_final_dedup(wf_path,
-                                          final_results_path,
-                                          corpus_year)
+    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
 
     # Getting ID of each author with author name
     addresses_df = dedup_parsing_dict[addresses_item_alias]
@@ -446,32 +445,46 @@ def _build_institute_authors_addresses(input_data_params, pub_addresses_cols_dic
         (dataframe), Publications IDs (str) of the institute (list)).
     """
     # Setting parameters values from 'input_data_params'
-    corpus_year, final_results_path = input_data_params
+    wf_path, corpus_year, final_results_path = input_data_params
 
     # Setting useful column names from 'pub_addresses_cols_dic'
-    col_keys = ['bm_pub_id_col', 'bm_author_id_col', 'bm_address_col']
-    (bm_pub_id_col, bm_author_id_col,
+    col_keys = ['bp_pub_id_col', 'bp_author_id_col', 'bp_address_col',
+                'bm_pub_id_col', 'bm_author_id_col', 'bm_address_col']
+    (bp_pub_id_col, bp_author_id_col, bp_address_col, bm_pub_id_col, bm_author_id_col,
      bm_address_col) = [pub_addresses_cols_dic[key] for key in col_keys]
 
-    # Setting useful cols list
-    data_cols = [bm_pub_id_col, bm_author_id_col, bm_address_col]
+    # Getting the data of consolidated Institute's authors
+    submit_df = read_final_submit_data(final_results_path, corpus_year)
+    bm_cols = [bm_pub_id_col, bm_author_id_col, bm_address_col]
+    sub_submit_df = submit_df[bm_cols]
+
+    # building {pub_id, institute_auth_ids_list} dict
+    institute_auth_dict = {}
+    for pub_id, pub_id_df in sub_submit_df.groupby(bm_pub_id_col):
+        auth_ids_list = pub_id_df[bm_author_id_col].to_list()
+        institute_auth_dict[pub_id] = auth_ids_list
+    inst_pub_ids_list = list(institute_auth_dict.keys())
+
+    # Getting the data of all authors with their addresses corrected
+    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
+    bp_cols = [bp_pub_id_col, bp_author_id_col, bp_address_col]
+    sub_authinst_df = dedup_parsing_dict['authors_institutions'][bp_cols]
+    sub_authinst_df = set_year_pub_id(sub_authinst_df, corpus_year, bp_pub_id_col)
 
     # Building the dict of institute-authors IDs per publications
-    submit_df = read_final_submit_data(final_results_path, corpus_year)
-    sub_submit_df = submit_df[data_cols]
-
     full_data = []
-    for _, submit_row in sub_submit_df.iterrows():
-        pub_id = submit_row[bm_pub_id_col]
-        author_idx = submit_row[bm_author_id_col]
-        auth_addresses_list = submit_row[bm_address_col].split("; ")
-        data = []
-        for auth_address in auth_addresses_list:
-            data.append([pub_id, author_idx, auth_address])
-        full_data = full_data + data
-    institute_author_addresses_df = pd.DataFrame(full_data, columns=data_cols)
-    inst_pud_ids_list = list(set(institute_author_addresses_df[bm_pub_id_col].to_list()))
-    return institute_author_addresses_df, inst_pud_ids_list
+    for _, sub_authinst_row in sub_authinst_df.iterrows():
+        pub_id = sub_authinst_row[bp_pub_id_col]
+        if pub_id in inst_pub_ids_list:
+            dedup_author_idx = sub_authinst_row[bp_author_id_col]
+            if dedup_author_idx in institute_auth_dict[pub_id]:
+                auth_addresses_list = sub_authinst_row[bp_address_col].split("; ")
+                data = []
+                for auth_address in auth_addresses_list:
+                    data.append([pub_id, dedup_author_idx, auth_address])
+                full_data = full_data + data
+    institute_author_addresses_df = pd.DataFrame(full_data, columns=bm_cols)
+    return institute_author_addresses_df
 
 
 def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_dic,
@@ -529,8 +542,7 @@ def _build_init_institute_addresses_df(sub_addresses_params, pub_addresses_cols_
         progress_callback(init_progress + (final_progress - init_progress) * 0.05)
 
     # Getting the institute-authors IDs per publications of the institute
-    return_df, _ = _build_institute_authors_addresses(sub_addresses_params[1:],
-                                                      pub_addresses_cols_dic)
+    return_df = _build_institute_authors_addresses(sub_addresses_params, pub_addresses_cols_dic)
     return_df[bm_address_col] = return_df[bm_address_col].apply(bp.standardize_address)
     all_institute_author_addresses_df = return_df.copy()
     if progress_param:

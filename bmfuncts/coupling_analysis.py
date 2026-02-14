@@ -21,7 +21,6 @@ from bmfuncts.build_institutions_stat import build_and_save_institutions_stat
 from bmfuncts.build_pub_addresses import build_institute_addresses_df
 from bmfuncts.config_utils import set_user_config
 from bmfuncts.correct_dedup import correct_dedup
-from bmfuncts.correct_dedup import initialize_addresses_to_correct_file
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.read_final_results import build_pub_ids_dict
 from bmfuncts.read_final_results import read_final_dedup
@@ -184,6 +183,9 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, norm_paths_list, country_towns
                                                 country_towns_folder_path=institutions_folder_path,
                                                 progress_param=progress_param)
     sub_countries_df, sub_norm_affil_df, sub_raw_addr_df, wrong_affil_types_dict = return_tup
+
+    # Initializing returned parameters
+    norm_affil_df, raw_addr_df = keep_norm_affil_df, empty_raw_addr_df
     raw_addr_status = False
     if not wrong_affil_types_dict:
         if progress_param:
@@ -215,6 +217,7 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, norm_paths_list, country_towns
 
         raw_addr_df = sub_raw_addr_df.copy()
         if not empty_raw_addr_df.empty:
+            empty_raw_addr_df = empty_raw_addr_df[sub_raw_addr_df.columns]
             raw_addr_df = concat_dfs([empty_raw_addr_df, sub_raw_addr_df])
         raw_addr_df = raw_addr_df.sort_values(by=[final_pub_id_col, address_id_col])
         raw_addr_status = raw_addr_df[raw_addr_df[institutions_col]!=bp.EMPTY].empty
@@ -233,8 +236,12 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, norm_paths_list, country_towns
 def _build_addresses_to_normalize(addr_params, co_cols_dic, print_params, verbose=False, progress_param=None):
 
     # Setting useful column names
-    col_keys = ['pub_id_col', 'address_id_col', 'institutions_col']
-    (pub_id_col, address_id_col, institutions_col) = [co_cols_dic[key] for key in col_keys]
+    col_keys = ['pub_id_col', 'address_col', 'address_id_col', 'institutions_col',
+                'countries_col', 'final_pub_id_col', 'raw_affil_col']
+    (pub_id_col, address_col, address_id_col, institutions_col, countries_col,
+     final_pub_id_col, raw_affil_col) = [co_cols_dic[key] for key in col_keys]
+    norm_cols_list = [final_pub_id_col, address_id_col, countries_col, institutions_col]
+
 
     # Building data of all addresses of Institute's publications from parsing addresses data
     print_step_text("  - Building data of all addresses of Institute's publications...", print_params)
@@ -246,7 +253,7 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, print_params, verbos
 
     sub_inst_pub_raw_addr_df = inst_pub_raw_addr_df.copy()
     empty_raw_addr_df = pd.DataFrame()
-    keep_norm_affil_df = pd.DataFrame()
+    keep_norm_affil_df = pd.DataFrame(columns=norm_cols_list)
     norm_affil_file_path, raw_addr_file_path = addr_params[5], addr_params[6]
     if raw_addr_file_path.is_file():
         print_step_text("  - Selecting data of addresses remaining to be normalized...", print_params)
@@ -300,6 +307,7 @@ def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
     """
     # Setting aliases from globals
     hash_id_folder_alias = bm_pg.ARCHI_RESULTS["hash_id"]
+    addresses_to_correct_file_alias = bm_pg.ARCHI_RESULTS["false_addresses_file"]
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
     inst_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
     norm_inst_file_base_alias = bm_pg.ARCHI_YEAR["norm inst file name"]
@@ -329,6 +337,7 @@ def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
     country_unkept_affil_file_path = institutions_folder_path / Path(country_unkept_affil_file)
     year_final_results_path = final_results_path / Path(corpus_year)
     hash_ids_path = year_final_results_path / Path(hash_id_folder_alias) / Path(hash_id_file)
+    inst_addresses_to_correct_path = inst_analysis_folder_path / Path(addresses_to_correct_file_alias)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
@@ -340,7 +349,8 @@ def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
     folders_list = [analysis_folder_alias, inst_analysis_folder_alias]
     paths_list = [analysis_folder_path, institutions_folder_path,
                   inst_analysis_folder_path, inst_types_file_path,
-                  country_affil_file_path, country_unkept_affil_file_path, hash_ids_path]
+                  country_affil_file_path, country_unkept_affil_file_path, hash_ids_path,
+                  inst_addresses_to_correct_path]
     return files_list, folders_list, paths_list
 
 
@@ -423,14 +433,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     files_list, folders_list, paths_list = _set_co_files_params(institute, wf_path,
                                                                 corpus_year, final_results_path)
     (analysis_folder_path, institutions_folder_path, inst_analysis_folder_path, inst_types_file_path,
-     country_affil_file_path, country_unkept_affil_file_path, hash_ids_path) = paths_list
+     country_affil_file_path, country_unkept_affil_file_path, hash_ids_path, inst_addresses_to_correct_path) = paths_list
     country_towns_file, norm_affil_file, raw_addr_file = files_list
     norm_affil_file_path = inst_analysis_folder_path / Path(norm_affil_file)
     raw_addr_file_path = inst_analysis_folder_path / Path(raw_addr_file)
 
     # Setting useful parameters lists
     ids_params = [wf_path, corpus_year, final_results_path]
-    dedup_params = [institute, wf_path, print_params, corpus_year, final_results_path]
+    dedup_params = [institute, wf_path, print_params, corpus_year, final_results_path, inst_addresses_to_correct_path]
     addr_params = [institute, org_tup, wf_path, corpus_year, final_results_path,
                    norm_affil_file_path, raw_addr_file_path]
 
@@ -485,7 +495,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     print_step_text("\nTrying to built affiliations stat and geographical stat...", print_params)
     if not inst_pub_raw_addr_df.empty:
-        norm_paths_list =  [institutions_folder_path, inst_types_file_path, country_affil_file_path,
+        norm_paths_list = [institutions_folder_path, inst_types_file_path, country_affil_file_path,
                            country_unkept_affil_file_path]
         print_step_text("  - Building normalized affiliations data and remaining raw-addresses...", print_params)
         return_tup = _build_norm_raw_affil_data(addr_dfs_list, norm_paths_list, country_towns_file, co_cols_dic,
@@ -552,7 +562,6 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
                                institute_country=institute_geo_dict['country'])
     else:
         geo_analysis_folder_name = ""
-        initialize_addresses_to_correct_file(addresses_to_correct_path, corpus_year, print_params)
 
     return_folders_list = [folders_list[0], folders_list[1], geo_analysis_folder_name]
     return_paths_list = [country_affil_file_path, addresses_to_correct_path]

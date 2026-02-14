@@ -485,14 +485,15 @@ def set_year_pub_id(df, year, pub_id_col):
     Returns:
         (pandas.DataFrame): The data with its changed column.
     """
+    new_df = df.copy()
     def _rename_pub_id(old_pub_id, _year):
         pub_id_str = str(int(old_pub_id))
         while len(pub_id_str)<3:
             pub_id_str = "0" + pub_id_str
         new_pub_id = str(int(_year)) + '_' + pub_id_str
         return new_pub_id
-    df[pub_id_col] = df[pub_id_col].apply(lambda x: _rename_pub_id(x, year))
-    return df
+    new_df[pub_id_col] = new_df[pub_id_col].apply(lambda x: _rename_pub_id(x, year))
+    return new_df
 
 
 def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
@@ -643,7 +644,7 @@ def _set_database_extract_info(wf_path, datatype, database):
     extraction_folder_path = wf_path / Path(extraction_folder)
     database_folder_path = extraction_folder_path / Path(database_folder)
 
-    return database_folder_path, database_file_end, empty_file_folder
+    return database_folder_path, database_file_end, empty_file_folder, database_file_extent
 
 
 def set_rawdata(wf_path, datatype, years_list, database):
@@ -667,7 +668,7 @@ def set_rawdata(wf_path, datatype, years_list, database):
     """
     # Getting database extractions info
     return_tup = _set_database_extract_info(wf_path, datatype, database)
-    database_folder_path, database_file_end, empty_file_folder = return_tup
+    database_folder_path, database_file_end, empty_file_folder, database_file_extent = return_tup
 
     # Setting specific parameters for Scopus-HAL data
     last_year_database_file_end = database_file_end
@@ -675,7 +676,7 @@ def set_rawdata(wf_path, datatype, years_list, database):
         last_year_datatype = bm_pg.DATATYPE_LIST[0]
         return_tup = _set_database_extract_info(wf_path, last_year_datatype,
                                                 database)
-        _, last_year_database_file_end, _ = return_tup
+        _, last_year_database_file_end, _, _ = return_tup
 
     # Cycling on year
     for year in years_list:
@@ -694,8 +695,11 @@ def set_rawdata(wf_path, datatype, years_list, database):
         rawdata_path_dict, _, _ = set_user_config(wf_path, year, bm_pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
         if os.path.exists(rawdata_path):
-            shutil.rmtree(rawdata_path)
-        os.makedirs(rawdata_path)
+            for item in os.listdir(rawdata_path):
+                if item.endswith(database_file_extent):
+                    os.remove(os.path.join(rawdata_path, item))
+        else:
+            os.makedirs(rawdata_path)
         shutil.copy2(year_database_file_path, rawdata_path)
 
     message = f"\n{database} rawdata set for {datatype} data type."

@@ -138,8 +138,8 @@ def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_exten
 
 
 def save_fails_dict(fails_dict, parsing_path):
-    """The function `save_fails_dict` saves parsing fails in a JSON file
-    named by the global PARSING_PERF imported from the module imported as bm_pg.
+    """Saves parsing fails in a JSON file named by the global PARSING_PERF 
+    imported from the module imported as bm_pg.
 
     Args:
         fails_dict (dict): The dict of parsing fails.
@@ -152,17 +152,33 @@ def save_fails_dict(fails_dict, parsing_path):
 
 
 def save_db_ids_data(db_ids_df, parsing_path, database_type):
-    """The function `save_db_ids_data` saves database-IDs data in an XLSX file.
-    
+    """Saves database-IDs data as XLSX file.
+
     Args:
         db_ids_df (dataframe): The database-IDs data.
         parsing_path (path): The full path of the parsing results folder \
         for saving the XLSX file.
-        database_type (str): Database name (ex: 'wos' or 'scopus'). 
+        database_type (str): Database name (ex: 'wos' or 'scopus').
     """
     file_name = database_type.capitalize() + bm_pg.IDS_FILE_BASE
     file_path = parsing_path / Path(file_name)
     db_ids_df.to_excel(file_path, index=False)
+
+
+def save_rawdata_correction(correction_dict, rawdata_path, database_type):
+    """Saves the results of rawdata correction as XLSX files.
+
+    Args:
+        correction_dict (dict): Composed of the data of corrected authors' names \
+        and of the data of corrected addresses.
+        rawdata_path (path): The full path of the rawdata folder \
+        for saving the XLSX files .
+        database_type (str): Database name (ex: 'wos' or 'scopus').
+    """
+    for key, df in correction_dict.items():
+        file_name = database_type.capitalize() + bm_pg.RAWDATA_CORRECT[key]
+        file_path = rawdata_path / Path(file_name)
+        df.to_excel(file_path, index=False)
 
 
 def save_final_hash_ids(wf_path, corpus_year, results_folder_path):
