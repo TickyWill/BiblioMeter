@@ -564,7 +564,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         geo_analysis_folder_name = ""
 
     return_folders_list = [folders_list[0], folders_list[1], geo_analysis_folder_name]
-    return_paths_list = [country_affil_file_path, addresses_to_correct_path]
+    return_paths_list = [country_affil_file_path, addresses_to_correct_path, raw_addr_file_path]
     return_tup = (wrong_affil_types_dict, raw_addr_status, return_folders_list, return_paths_list)
     if progress_callback:
         progress_callback(final_progress)

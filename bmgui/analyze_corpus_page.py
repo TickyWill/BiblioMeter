@@ -113,13 +113,15 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                              f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
             else:
                 correct_addresses_path = co_return_tup[3][1]
+                raw_addr_file_path = co_return_tup[3][2]
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été interrompue pour l'année {year_select}."
                              "\nDes affiliations non normalisées subsistent :"
-                             "\n\n  1- Complétez la définition des affiliations normalisées;"
-                             "\n\n  2- Indiquez les adresses à corriger dans le fichier :"
-                             f"\n\n    {correct_addresses_path}"
+                             "\n\n  1- Complétez la définition des affiliations normalisées "
+                             f"en consultant sans le modifier le fichier : \n '{raw_addr_file_path}';"
+                             "\n\n  2- Indiquez si besoin les adresses à corriger dans le fichier :"
+                             f"\n    '{correct_addresses_path}'"
                              "\n\n  3- Relancez l'analyse des collaborations.")
         else:
             country_affil_file_path = co_return_tup[3][0]

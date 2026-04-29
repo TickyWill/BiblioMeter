@@ -284,7 +284,7 @@ def _update_pub_if(self, master, progress_callback):
             paths_list = [pub_list_file_path, pub_list_file_path,
                          missing_issn_path, missing_if_path]
             sub_params_list = [master.institute, master.org_tup,
-                               master.wf_path, master.print_params, corpus_year]
+                               master.wf_path, corpus_year]
             if_database_complete = add_if(sub_params_list, paths_list)
 
             # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)

@@ -31,7 +31,7 @@ from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import set_print_same_len
 
 
-def _set_otps_homonyms_cols_dic(add_otp_params_list):
+def _set_otps_homonyms_cols_dic(institute, org_tup):
     """Builds a dict setting selected columns names for the process 
     of enhancing the file where homonyms have been resolved.
 
@@ -40,14 +40,11 @@ def _set_otps_homonyms_cols_dic(add_otp_params_list):
     `bmfuncts.rename_cols` module.
 
     Args:
-        add_otp_params_list (list): The list composed of the Institute name (str) \
-        and of the org_tup (tup) that contains parameters of Institute organization.
+        institute (str): The Institute name.
+        org_tup (tup): Contains the parameters of Institute organization.
     Returns:
         (dict): The built dict.
     """
-    # Setting parameters values from 'add_otp_params_list'
-    institute, org_tup, _ = add_otp_params_list
-
     # Setting useful column names from homonyms file
     homonyms_col_dic = set_homonym_col_names(institute, org_tup)
 
@@ -238,11 +235,11 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
         (dataframe): The enhanced data.
     """
     # Setting parameters value from add_otp_params_list
-    _, org_tup, print_params = add_otp_params_list
+    institute, org_tup, print_params = add_otp_params_list
     print_step_text("\nEnhancing data used for homonyms resolution...", print_params)
 
     # Setting useful column names
-    otps_homonyms_cols_dic = _set_otps_homonyms_cols_dic(add_otp_params_list)
+    otps_homonyms_cols_dic = _set_otps_homonyms_cols_dic(institute, org_tup)
 
     # Getting data where homonymies have been solved
     solved_homonymies_df = pd.read_excel(in_path)
@@ -264,7 +261,7 @@ def _enhance_homonyms_file(add_otp_params_list, in_path):
     return final_solved_homonymies_df
 
 
-def _set_add_otps_cols_dic(add_otp_params_list):
+def _set_add_otps_cols_dic(institute, org_tup):
     """Builds a dict setting selected columns names for the process 
     of OTPs attribution.
 
@@ -272,18 +269,16 @@ def _set_add_otps_cols_dic(add_otp_params_list):
     from the `bmfuncts.rename_cols` module.
 
     Args:
-        add_otp_params_list (list): The list composed of the Institute's name (str) \
-        and of the org_tup (tup) that contains parameters of Institute's organization.
+        institute (str): The Institute's name (str).
+        org_tup (tup): Contains parameters of Institute's organization.
     Returns:
         (tup): The built dict and the full list of final column names \
         got from the `set_otp_col_names` function.
     """
-    institute, org_tup, _ = add_otp_params_list
     # Setting useful column names
     otp_col_dic = set_otp_col_names(institute, org_tup)
 
     # Setting useful col names
-
     add_otps_cols_dic = {'pub_id_col'   : otp_col_dic['pub_id'],
                          'author_id_col': otp_col_dic['author_id'],
                          'dpt_col'      : otp_col_dic['dpt'],
@@ -773,13 +768,12 @@ def add_otp(sub_params_list, in_path, out_path, out_file_base):
     save_homonyms(sub_params_list)
 
     # Setting useful params values and lists from sub_params_list
-    org_tup = sub_params_list[1]
-    print_params = sub_params_list[3]
-    set_otp_params_list = sub_params_list[:-2]
-    add_otp_params_list = sub_params_list[0:2] + [print_params]
+    institute, org_tup, wf_path, print_params, corpus_year = sub_params_list
+    set_otp_params_list = [institute, org_tup, wf_path]
+    add_otp_params_list = [institute, org_tup, print_params]
 
     # Setting the selected columns of OTPs data for OTPs-attribution process
-    add_otps_cols_tup = _set_add_otps_cols_dic(add_otp_params_list)
+    add_otps_cols_tup = _set_add_otps_cols_dic(institute, org_tup)
 
     # Setting institute parameters
     otp_level = org_tup[11]

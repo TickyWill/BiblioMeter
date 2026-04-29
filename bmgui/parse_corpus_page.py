@@ -26,7 +26,8 @@ from bmfuncts.save_final_results import save_db_ids_data
 from bmfuncts.save_final_results import save_fails_dict
 from bmfuncts.save_final_results import save_parsing_dict
 from bmfuncts.save_final_results import save_rawdata_correction
-from bmfuncts.useful_functs import compute_dedup_articles_number
+from bmfuncts.useful_functs import build_and_save_dedup_db_ids
+from bmfuncts.useful_functs import compute_dedup_pub_number
 from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import print_step_title
 from bmfuncts.useful_functs import read_parsing_dict
@@ -248,18 +249,24 @@ def _launch_parsing(master, corpus_year, database_type,
         _progress_callback(95)
 
         # Building the data for addresses correction by the user
-        correct_params = [_database_type, corpus_year, master.print_params]
-        return_tup = build_and_save_unknown_country_data(parsing_dict, _parsing_path,
-                                                         bp.UNKNOWN_COUNTRY, correct_params)
-        unknown_countries_empty, all_countries_corrected, correct_files_list = return_tup
+        unknown_countries_empty, all_countries_corrected, correct_files_list = True, True, []
+        if master.datatype.lower()==_database_type.lower():
+            correct_params = [_database_type, corpus_year, master.print_params]
+            return_tup = build_and_save_unknown_country_data(parsing_dict, _parsing_path,
+                                                             bp.UNKNOWN_COUNTRY, correct_params)
+            unknown_countries_empty, all_countries_corrected, correct_files_list = return_tup
         _progress_callback(100)
 
         _info_title = "Information"
         _info_text = (f"'Parsing' de '{_database_type}' effectué pour l'année {corpus_year}."
                       f"\n\n  Nombre d'articles du corpus : {articles_number}")
-        if not unknown_countries_empty and not all_countries_corrected:
+        if any([unknown_countries_empty, all_countries_corrected]):
+            _info_text += ("\n\nToutes les adresses d'auteurs comportent un pays "
+                           "ou bien une correction a déjà été indiquée.")
+        else:
             _info_text += ("\n\nATTENTION : Des adresses d'auteurs ne comportent pas de pays."
-                           "\n\nPour les définir :"
+                           "\n\n!! Vous pouvez poursuivre vos traitements sans les corriger !!"
+                           "\n\nPour éventuellement corriger ces adresses :"
                            f"\n\n - Ouvrez le fichier   '{correct_files_list[0]}'"
                            "\n    qui a été créé dans le dossier suivant :"
                            f"\n    {_parsing_path}"
@@ -267,9 +274,6 @@ def _launch_parsing(master, corpus_year, database_type,
                            "\n - Indiquez l'adresse correcte dans la colonne 'Correct address'"
                            "\n - Sauvegardez le fichier"
                            "\n - Puis, poursuivez vos traitements sans aucune autre action.")
-        else:
-            _info_text += ("\n\nToutes les adresses d'auteurs comportent un pays "
-                           "ou bien une correction a déjà été indiquée.")
         messagebox.showinfo(_info_title, _info_text)
 
     # Getting the full paths of the working folder architecture for the corpus "corpus_year"
@@ -370,20 +374,22 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
     def _deduplicate_corpus_parsing(_progress_callback):
         scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
                                                 parsing_save_extent)
-        scopus_params_list = [master.institute, master.wf_path, bp.SCOPUS, master.print_params, corpus_year]
-        correct_status = correct_parsing(scopus_params_list, scopus_parse_path, scopus_parsing_dict,
-                                         item_filename_dict, bp.UNKNOWN_COUNTRY)
-        if correct_status:
-            scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
-                                                    parsing_save_extent)
+        if master.datatype.lower()==bp.SCOPUS.lower():
+            scopus_params_list = [master.institute, master.wf_path, bp.SCOPUS, master.print_params, corpus_year]
+            correct_status = correct_parsing(scopus_params_list, scopus_parse_path, scopus_parsing_dict,
+                                             item_filename_dict, bp.UNKNOWN_COUNTRY)
+            if correct_status:
+                scopus_parsing_dict = read_parsing_dict(scopus_parse_path, item_filename_dict,
+                                                        parsing_save_extent)
         wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
                                              parsing_save_extent)
-        wos_params_list = [master.institute, master.wf_path, bp.WOS, master.print_params, corpus_year]
-        correct_status = correct_parsing(wos_params_list, wos_parse_path, wos_parsing_dict,
-                                         item_filename_dict, bp.UNKNOWN_COUNTRY)
-        if correct_status:
-            wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
-                                                 parsing_save_extent)
+        if master.datatype.lower()==bp.WOS.lower():
+            wos_params_list = [master.institute, master.wf_path, bp.WOS, master.print_params, corpus_year]
+            correct_status = correct_parsing(wos_params_list, wos_parse_path, wos_parsing_dict,
+                                             item_filename_dict, bp.UNKNOWN_COUNTRY)
+            if correct_status:
+                wos_parsing_dict = read_parsing_dict(wos_parse_path, item_filename_dict,
+                                                     parsing_save_extent)
         _progress_callback(15)
 
         print_step_text("\nConcatenating parsing data...", master.print_params)
@@ -404,18 +410,22 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
                                                     norm_inst_status=False,
                                                     inst_types_file_path=inst_paths_list[0],
                                                     country_affiliations_file_path=inst_paths_list[1])
-        _dedup_articles_nb_tup = compute_dedup_articles_number(master.org_tup, dedup_parsing_dict)
-        dedup_articles_nb, dedup_institute_articles_nb = _dedup_articles_nb_tup
+        dedup_pub_nb, dedup_institute_pub_nb = compute_dedup_pub_number(master.org_tup, dedup_parsing_dict)
+        _dedup_infos=(master.wf_path, master.datatype, corpus_year)
+        ids_nb_dict = build_and_save_dedup_db_ids(dedup_parsing_dict['articles'], parsing_path_dict, _dedup_infos)
         _progress_callback(90)
         save_parsing_dict(dedup_parsing_dict, dedup_path,
                           item_filename_dict, parsing_save_extent,
-                          dedup_infos=(master.wf_path, master.datatype, corpus_year))
+                          dedup_infos=_dedup_infos)
         step_txt = ("  - All parsing results deduplicated and saved as final results "
-                    f"for {dedup_articles_nb} publications "
-                    f"including {dedup_institute_articles_nb} of {master.institute}")
+                    f"for {dedup_pub_nb} publications "
+                    f"including {dedup_institute_pub_nb} of {master.institute}"
+                    "\n  - After deduplication, the number of kept publications from each database are:")
+        for db_type, db_nb in ids_nb_dict.items():
+            step_txt += f"\n      - {db_nb} for {db_type}"
         print_step_text(step_txt, master.print_params)
         _progress_callback(100)
-        return _dedup_articles_nb_tup
+        return dedup_pub_nb, dedup_institute_pub_nb, ids_nb_dict
 
     print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", master.print_params)
 
@@ -445,7 +455,7 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
         if not wos_parse_status:
             progress_callback(100)
             warning_title = "Attention ! Fichiers manquants"
-            warning_text = ("Le 'parsing' de 'wos' "
+            warning_text = ("Le 'parsing' de WoS "
                             f"de l'année {corpus_year} n'est pas disponible."
                             "\nLa synthèse correspondante ne peut pas encore être construite !"
                             "\n\n-1 Lancez le 'parsing' manquant ;"
@@ -455,14 +465,14 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
         if not scopus_parse_status:
             progress_callback(100)
             warning_title = "Attention ! Fichiers manquants"
-            warning_text = ("Le 'parsing' de 'scopus' "
+            warning_text = ("Le 'parsing' de Scopus "
                             f"de l'année {corpus_year} n'est pas disponible."
                             "\nLa synthèse correspondante ne peut pas encore être construite !"
                             "\n\n-1 Lancez le 'parsing' manquant ;"
                             "\n-2 Relancez la synthèse.")
             messagebox.showwarning(warning_title, warning_text)
 
-        if wos_parse_status and scopus_parse_status:
+        if all([wos_parse_status, scopus_parse_status]):
             if dedup_parse_status:
                 # Ask to carry on with concatenation and deduplication if already available
                 ask_title = "Reconstruction de la synthèse"
@@ -471,11 +481,13 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
                 answer_2 = messagebox.askokcancel(ask_title, ask_text)
                 if answer_2:
                     return_tup = _deduplicate_corpus_parsing(progress_callback)
-                    dedup_articles_nb, dedup_institute_articles_nb = return_tup
+                    dedup_pub_nb, dedup_institute_pub_nb, ids_nb_dict = return_tup
                     info_title = "Information"
                     info_text = (f"La synthèse pour l'année {corpus_year} a été reconstruite."
-                                 f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}."
-                                 f"\n\ndont {dedup_institute_articles_nb} du {master.institute}.")
+                                 f"\n\nNombre de publications dans la synthèse : {dedup_pub_nb}"
+                                 f"\n  - Pour l'institut {master.institute} : {dedup_institute_pub_nb}")
+                    for db_type, db_nb in ids_nb_dict.items():
+                        info_text +=  f"\n  - Pour {db_type}: {db_nb}"
                     messagebox.showinfo(info_title, info_text)
                 else:
                     progress_callback(100)
@@ -484,11 +496,13 @@ def _launch_dedup(master, corpus_year, inst_paths_list, progress_callback):
                     messagebox.showinfo(info_title, info_text)
             else:
                 return_tup = _deduplicate_corpus_parsing(progress_callback)
-                dedup_articles_nb, dedup_institute_articles_nb = return_tup
+                dedup_pub_nb, dedup_institute_pub_nb, ids_nb_dict = return_tup
                 info_title = "Information"
                 info_text = (f"La synthèse pour l'année {corpus_year} a été construite."
-                             f"\n\nNombre d'articles de synthèse : {dedup_articles_nb}."
-                             f"\n\ndont {dedup_institute_articles_nb} du {master.institute}.")
+                             f"\n\nNombre de publications dans la synthèse : {dedup_pub_nb}"
+                             f"\n  - Pour l'institut {master.institute} : {dedup_institute_pub_nb}")
+                for db_type, db_nb in ids_nb_dict.items():
+                    info_text +=  f"\n  - Pour {db_type}: {db_nb}"
                 messagebox.showinfo(info_title, info_text)
     else:
         progress_callback(100)

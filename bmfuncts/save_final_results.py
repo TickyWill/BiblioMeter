@@ -44,7 +44,9 @@ def _set_item_path(item_filename_base, save_extent, parsing_path):
     Returns:
         (path): The built full path.
     """
-    item_file_name = item_filename_base + "." + save_extent
+    item_file_name = item_filename_base
+    if save_extent and not item_file_name.endswith(save_extent):
+        item_file_name = item_filename_base + "." + save_extent
     item_path = parsing_path / Path(item_file_name)
     return item_path
 
@@ -103,8 +105,7 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
     _save_item(item_df, item_filename_base, save_extent, target_parsing_path)
 
 
-def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_extent,
-                      dedup_infos=None):
+def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_extent, dedup_infos=[]):
     """Saves the data passed through the dict of parsing results 
     as files of a specified type.
 
@@ -121,10 +122,10 @@ def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_exten
         and valued by the file names for saving the parsing results.
         save_extent (str): File type given by file extension without \
         the dot separator (ex: "xlsx" for Excel file type).
-        dedup_infos (tup): Optional tuple for final saving of deduplication \
-        results = (Full path to working folder (path), \
+        dedup_infos (list): Optional list for final saving of deduplication \
+        results = [Full path to working folder (path), \
         Data combination type from corpuses databases (str), \
-        4 digits year of the corpus (str)) (default = None).
+        4 digits year of the corpus (str) ] (default=[]).
     """
     # Cycling on parsing items
     for item in bp.PARSING_ITEMS_LIST:
@@ -151,7 +152,7 @@ def save_fails_dict(fails_dict, parsing_path):
         json.dump(fails_dict, write_json, indent=4)
 
 
-def save_db_ids_data(db_ids_df, parsing_path, database_type):
+def save_db_ids_data(db_ids_df, parsing_path, database_type, dedup_infos=[]):
     """Saves database-IDs data as XLSX file.
 
     Args:
@@ -159,10 +160,17 @@ def save_db_ids_data(db_ids_df, parsing_path, database_type):
         parsing_path (path): The full path of the parsing results folder \
         for saving the XLSX file.
         database_type (str): Database name (ex: 'wos' or 'scopus').
+        dedup_infos (list): Optional list for final saving of deduplication \
+        results = [Full path to working folder (path), \
+        Data combination type from corpuses databases (str), \
+        4 digits year of the corpus (str) ] (default=[]).
     """
     file_name = database_type.capitalize() + bm_pg.IDS_FILE_BASE
     file_path = parsing_path / Path(file_name)
     db_ids_df.to_excel(file_path, index=False)
+
+    if dedup_infos:
+        save_final_dedup(db_ids_df, file_name, "xlsx", dedup_infos)
 
 
 def save_rawdata_correction(correction_dict, rawdata_path, database_type):

@@ -3,7 +3,8 @@
 
 __all__ = ['build_list_from_str',
            'build_string_from_list',
-           'compute_dedup_articles_number',
+           'build_and_save_dedup_db_ids',
+           'compute_dedup_pub_number',
            'concat_dfs',
            'create_archi',
            'create_folder',
@@ -45,6 +46,7 @@ import pandas as pd
 # local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.config_utils import set_user_config
+from bmfuncts.save_final_results import save_db_ids_data
 
 
 def print_step_title(step_title, print_params):
@@ -266,14 +268,41 @@ def drop_multiple_item(init_list, item):
     return final_list
 
 
-def compute_dedup_articles_number(org_tup, dedup_parsing_dict):
-    """Computes articles numbers resulting from the deduplication of parsing results.
+def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
+    # Setting parameters from globals
+    pub_id_col = bp.COL_NAMES['pub_id']
+
+    # Selecting the publication IDs tagged in 'col' column
+    sub_data_dict = {}
+    for col in cols:
+        sub_data_dict[col] = in_left_authorsinst_df[in_left_authorsinst_df[col]==1]
+        sub_data_dict[col] = sub_data_dict[col].drop_duplicates(subset=[pub_id_col])
+    sub_data_df = concat_dfs(sub_data_dict.values())
+    sub_data_df = sub_data_df.drop_duplicates(subset=[pub_id_col])
+
+    # Computing the number of publications tagged in 'col' column
+    col_pub_nb = len(sub_data_df)
+
+    # Keeping only the data without tag in 'col' column
+    pub_ids_to_drop = sub_data_df[pub_id_col].to_list()
+    out_left_pub_ids = list(set(in_left_pub_ids)-set(pub_ids_to_drop))
+    out_left_authorsinst_df = in_left_authorsinst_df[in_left_authorsinst_df[pub_id_col].isin(out_left_pub_ids)]
+
+    return col_pub_nb, out_left_authorsinst_df, out_left_pub_ids
+
+
+def compute_dedup_pub_number(org_tup, dedup_parsing_dict):
+    """Computes publications numbers resulting from the deduplication of parsing results.
+
+    The function builts a dictionary keyed by the tags of Institute's publications as given 
+    by the 'org_tup' parameter and valued by corresponding computed number of publications. 
+    The total number of publication is given at key "all".
 
     Args:
         org_tup (tup): Contains Institute parameters.
         dedup_parsing_dict (dict): Parsing results keyed by parsing items \
         given by 'PARSING_ITEMS_LIST' global imported from the package \
-        imported as bp and valued by the data (dataframes) of parsing results.
+        imported as 'bp' and valued by the data (dataframes) of parsing results.
     Returns:
         (tup): (Total number of articles (int), Number of articles tagged \
         to be of the Institute).
@@ -284,23 +313,18 @@ def compute_dedup_articles_number(org_tup, dedup_parsing_dict):
     auth_inst_item = bp.PARSING_ITEMS_LIST[5]
 
     # Setting useful Institute's parameters
-    institute_col_idx = org_tup[7]
-    institute_col_list = org_tup[4]
-
-    # Setting the col name for selecting articles tagged as of the Institute
-    institute_col = institute_col_list[institute_col_idx]
+    institute_cols = [col for col in org_tup[10] if not org_tup[10][col]]
 
     # Computing the total articles number
     articles_df = dedup_parsing_dict[articles_item]
-    articles_nb = len(articles_df)
+    all_pub_nb = len(articles_df)
+    all_pub_ids = articles_df[pub_id_col].to_list()
 
     # Computing the number of articles tagged as of the Institute
     authorsinst_df = dedup_parsing_dict[auth_inst_item]
-    institute_articles_df = authorsinst_df[authorsinst_df[institute_col]==1]
-    institute_articles_df = institute_articles_df.drop_duplicates(subset=[pub_id_col])
-    institutes_articles_nb = len(institute_articles_df)
-
-    return articles_nb, institutes_articles_nb
+    return_tup = _compute_col_pub_number(institute_cols, authorsinst_df, all_pub_ids)
+    institute_pub_nb, left_authorsinst_df, left_pub_ids = return_tup
+    return all_pub_nb, institute_pub_nb
 
 
 def reorder_df(df, col_dict):
@@ -684,6 +708,10 @@ def set_rawdata(wf_path, datatype, years_list, database):
             year_database_folder_path = database_folder_path / Path(empty_file_folder)
             year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                               database_file_end)
+        elif database==bp.WOS and datatype==bm_pg.DATATYPE_LIST[3]:
+            year_database_folder_path = database_folder_path / Path(empty_file_folder)
+            year_database_file_path = _get_database_file_path(year_database_folder_path,
+                                                              database_file_end)
         else:
             year_database_folder_path = database_folder_path / Path(year)
             year_database_file_path = _get_database_file_path(year_database_folder_path,
@@ -839,3 +867,58 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
         if item_df is not None:
             parsing_dict[item] = item_df
     return parsing_dict
+
+
+def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_infos):
+    """Builds and save the list of the database identifiers kept after the deduplication process.
+
+    It is based on the concatenation of the database identifiers through the `concat_dfs` function
+    of the same module and the selection of the identifiers kept after the deduplication process.
+
+    Args:
+        dedup_article_df (dataframe): The articles data resulting from the deduplication process.
+        parsing_path_dict (dict): The full path to the data resulting from all parsing steps.
+    Returns:
+        (dict): Keyed by database types and valued by number of kept publications for each database type.
+    """
+    # Setting parameters from globals
+    pub_id_col = bp.COL_NAMES['pub_id']
+    dbs_ids_col = bm_pg.DB_ID_COLS["all_dbs"]
+    source_col = bm_pg.COL_NAMES_BONUS['source']
+
+    # Building the list of identifiers data of each database type
+    db_ids_dfs_list = []
+    increment = 0
+    for db_type in bm_pg.BDD_LIST:
+        # Getting the identifiers list for the selected database-type
+        db_ids_file = f"{db_type.capitalize()}{bm_pg.IDS_FILE_BASE}"
+        db_ids_path = parsing_path_dict[db_type] / Path(db_ids_file)
+        db_ids_df = pd.read_excel(db_ids_path)
+
+        # Incrementing the Pub_id for the concatenation to align with the deduplication data
+        db_ids_df[pub_id_col] = db_ids_df[pub_id_col].apply(lambda x: x + increment)
+
+        # Enhancing the data with the database-type name set in a new column
+        db_ids_df[source_col] = db_type
+
+        # Setting the same column name for the database identifiers to allow data concatenation
+        db_ids_df.rename({bm_pg.DB_ID_COLS[db_type]: dbs_ids_col}, axis=1, inplace=True)
+        db_ids_dfs_list.append(db_ids_df)
+        increment += len(db_ids_df)
+
+    # Building the full identifiers data by concatenating the ones of each database type
+    all_db_ids_df = concat_dfs(db_ids_dfs_list, dedup=False)
+
+    # Selecting the identifiers data kept after the deduplication process
+    pub_ids_list = dedup_article_df[pub_id_col].to_list()
+    dedup_db_ids_df = all_db_ids_df[all_db_ids_df[pub_id_col].isin(pub_ids_list)]
+
+    # Saving the resulting identifiers data
+    save_db_ids_data(dedup_db_ids_df, parsing_path_dict["dedup"], "dedup", dedup_infos=dedup_db_infos)
+
+    # Computing the number of kept identifiers per database type
+    ids_nb_dict = {}
+    for db_type in bm_pg.BDD_LIST:
+        db_df = dedup_db_ids_df[dedup_db_ids_df[source_col]==db_type]
+        ids_nb_dict[db_type] = len(db_df)
+    return ids_nb_dict

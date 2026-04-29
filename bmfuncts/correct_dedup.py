@@ -133,6 +133,7 @@ def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_ad
     corrected_addresses_isfile = corrected_addresses_path.is_file()
     addresses_to_correct_isfile = addresses_to_correct_path.is_file()
 
+    step_txt = "    - File for correction of false addresses by the user unchanged"
     if file_clean:
         _save_empty_file()
         step_txt = "    - File for correction of false addresses by the user cleaned"

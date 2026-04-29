@@ -336,8 +336,8 @@ def build_and_save_geo_stat(countries_df, norm_institutions_df, institute_geo_di
 
     First, it builds the statistics dataframes through the `_build_countries_stat` 
     and the `_build_continents_stat` internal functions.
-    Then, it saves the statistics dataframes through the `_save_formatted_df_to_xlsx` 
-    internal function.
+    Then, it saves the statistics dataframes through the `save_formatted_df_to_xlsx` 
+    function imported from the `bmfuncts.format_files` module.
 
     Args:
         countries_df (dataframe): Data of countries per publications.

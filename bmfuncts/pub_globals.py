@@ -25,6 +25,7 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_PUB_NAMES',
            'CONFIG_FOLDER',
            'DATATYPE_LIST',
+           'DB_ID_COLS',
            'DF_TITLES_LIST',
            'DOC_TYPE_DICT',
            'EXT_DOCS_COL_ADDS_LIST',
@@ -66,8 +67,13 @@ import bmfuncts.employees_globals as bm_eg
 BDD_LIST = [bp.SCOPUS, bp.WOS]
 FIRST_BDD = bp.SCOPUS
 
+DB_ID_COLS = {bp.WOS   : bp.COL_NAMES['wos_id'][0],
+              bp.SCOPUS: bp.COL_NAMES['scopus_id'][0],
+              "all_dbs" : "DB_id_col",
+              }
+
 # Setting list of raw data types
-DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS"]
+DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS", "Scopus"]
 
 DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
                   "Authors_df", "Authors_stat_df", "KPI_df",
@@ -115,6 +121,7 @@ ARCHI_EXTRACT = {"root"             : "Extractions Institut",
                                        DATATYPE_LIST[0] : "scopus",
                                        DATATYPE_LIST[1] : "scopus_hal",
                                        DATATYPE_LIST[2] : "scopus",
+                                       DATATYPE_LIST[3] : "scopus",
                                        "file_extent"    : '.' + bp.SCOPUS_RAWDATA_EXTENT,
                                        "added_dois_file": " hal_added_dois.xlsx",
                                       },
@@ -122,6 +129,7 @@ ARCHI_EXTRACT = {"root"             : "Extractions Institut",
                                        DATATYPE_LIST[0] : "wos",
                                        DATATYPE_LIST[1] : "wos",
                                        DATATYPE_LIST[2] : "wos",
+                                       DATATYPE_LIST[3] : "wos",
                                        "file_extent"    : '.' + bp.WOS_RAWDATA_EXTENT,
                                       },
                  "empty-file folder": "Fichier vierge",
@@ -170,6 +178,7 @@ ARCHI_RESULTS = {"root"                    : "Sauvegarde des résultats",
                  DATATYPE_LIST[0]          : "Scopus&Wos",
                  DATATYPE_LIST[1]          : "HalScopus&Wos",
                  DATATYPE_LIST[2]          : "Wos",
+                 DATATYPE_LIST[3]          : "Scopus",
                 }
 
 ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
@@ -298,6 +307,7 @@ COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
                    'name_as_auth'      : "Nom d'auteur",
                    'name_as_empl'      : "Nom de salarié",
                    'pub_type'          : "Type des co-auteurs",
+                   'source'            : "Extraction",
                   }
 
 

@@ -74,9 +74,9 @@ def get_if_db(institute, org_tup, wf_path):
         org_tup (tup): Contains Institute parameters.
         wf_path (path): Full path to working folder.
     Returns:
-        (tup): (impact-factors (dict), \
-        available-years of impact-factors in the dict (list), \
-        most-recent year of available impact-factors (4-digits str)).
+        (tup): (impact-factors (dict), available-years of impact-factors \
+        in the dict (list), most-recent year (4-digits str) of available \
+        impact-factors).
     """
     ## Setting institute parameters
     if_db_status = org_tup[5]
@@ -167,7 +167,7 @@ def _build_if_dict(if_dict, if_year, add_ifs_col_dic, unknown_kw):
         process as set through the `_set_add_ifs_col_dic` internal function.
         unknown_kw (str): The word to identifie unknown values.
     Returns:
-        (dict): dict keyed by ISSN (str) or eISSN (str) values \
+        (dict): Dict keyed by ISSN (str) or eISSN (str) values \
         and valued by impact factors (float).
     """
     # Setting parameters value from args
@@ -190,7 +190,7 @@ def _build_if_dict(if_dict, if_year, add_ifs_col_dic, unknown_kw):
 
 def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
     """Builds data making the link between journal names and ISSNs and 
-    eISSNs. 
+    eISSNs.
 
     First, a subset dataframe is built from the dict 'if_dict' 
     using 'journal_id_cols_list' columns for each year (key of 'if_dict'). 
@@ -496,26 +496,28 @@ def _get_id(issn_df, journal_name, journal_col, id_col, unknown_kw):
     id_upper = unknown_kw
     if not id_upper_df.empty:
         id_upper = id_upper_df.to_list()[0]
-    journal_id = list({id_lower, id_upper} - {unknown_kw})[0]
-    return journal_id
+    id_journal = list({id_lower, id_upper} - {unknown_kw})[0]
+    return id_journal
 
 
 def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_kw):
     """Builds a dataframe 'missing_if_df' by removing from 'if_df' the rows 
     which ISSN value is not in IF database and keeping them in the dataframe 
-    'missing_issn_df'. The unknown values are identified by the 'unknown_kw' word.
+    'missing_issn_df'.
+
+    The unknown values are identified by the 'unknown_kw' word.
 
     Args:
-        if_df (dataframe): The built data through the `_build_issn_df` 
+        if_df (dataframe): The built data through the `_build_issn_df` \
         internal function.
-        inst_issn_df (dataframe): The built data through the 
+        inst_issn_df (dataframe): The built data through the \
         `_clean_corpus_df` internal function.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
         unknown_kw (str): The word to identify unknown values.
     Returns:
-        (tup): (Data (dataframe) of missing ISSNs in corpus data, \
-        Data (dataframe) of missing IFs in corpus data)
+        (tup): (Data (dataframe) of missing ISSNs in corpus data, Data (dataframe) \
+        of missing IFs in corpus data).
     """
     # Setting parameters value from args
     col_keys = ['journal_col', 'issn_col', 'eissn_col',
@@ -602,9 +604,8 @@ def _format_and_save_add_if_dfs(dfs_list, out_paths_list, corpus_year,
     Args:
         dfs_list (list): Composed of the corpus data (dataframe), of the \
         missing-ISSNs data (dataframe) and of the missing-IFs data (dataframe).
-        out_paths_list (list): Composed of the full path to the file where \
-        the missing_ISSNs data and of the full path to the file where the \
-        missing_IFs data are saved.
+        out_paths_list (list): Composed of the full paths to the files where \
+        the corpus data, the missing_ISSNs data and of the  missing_IFs data are saved.
         corpus_year (str): The 4-digits year of the corpus.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
@@ -639,7 +640,7 @@ def _format_and_save_add_if_dfs(dfs_list, out_paths_list, corpus_year,
     wb.save(missing_if_path)
 
 
-def add_if(sub_params_list, paths_list):
+def add_if(add_if_params_list, paths_list):
     """Adds two new columns containing impact factors to the corpus 
     dataframe 'corpus_df' got from a file which full path is 'in_file_path'.
 
@@ -662,7 +663,7 @@ def add_if(sub_params_list, paths_list):
     `_format_and_save_add_if_dfs` internal function.
 
     Args:
-        sub_params_list (list):  The list composed of the Institute name (str), \
+        add_if_params_list (list): The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute organization, \
         the full path to working folder (path) and the 4 digits year of the corpus (str).
         paths_list (list): The list composed of the full path to get the corpus data, \
@@ -672,8 +673,8 @@ def add_if(sub_params_list, paths_list):
     Returns:
         (bool):  Completion status of the impact-factors data (True if complete).
     """
-    # Setting parameters values from sub_params_list
-    institute, org_tup, wf_path, _, corpus_year = sub_params_list
+    # Setting parameters values from fct_params_list
+    institute, org_tup, wf_path, corpus_year = add_if_params_list
 
     # Setting parameters from args
     in_file_path = paths_list[0]

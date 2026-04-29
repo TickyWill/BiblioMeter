@@ -156,7 +156,7 @@ def check_dedup_parsing_available(wf_path, year):
     return dedup_parsing_status
 
 
-def split_pub_list_by_doc_type(sub_params_list, pub_list_cols_dic=None):
+def split_pub_list_by_doc_type(selected_params_list, pub_list_cols_dic=None):
     """Splits the dataframe of the publications final list into dataframes 
     corresponding to different documents types.
 
@@ -169,7 +169,7 @@ def split_pub_list_by_doc_type(sub_params_list, pub_list_cols_dic=None):
     or through the `_set_pub_list_cols_dic` internal function. 
 
     Args:
-        sub_params_list (list):  The list composed of the Institute name (str), \
+        selected_params_list (list):  The list composed of the Institute name (str), \
         of the org_tup (tup) that contains parameters of Institute organization, \
         of the full path to working folder (path) and of the 4 digits year of \
         the corpus (str).
@@ -179,8 +179,8 @@ def split_pub_list_by_doc_type(sub_params_list, pub_list_cols_dic=None):
         (tup): (split ratio in % of the publications final list (int), 
         consolidated publications number (int)).
     """
-    # Setting parameters values from 'sub_params_list'
-    institute, org_tup, wf_path, _, corpus_year = sub_params_list
+    # Setting parameters values from 'selected_params_list'
+    institute, org_tup, wf_path, corpus_year = selected_params_list
 
     # Setting useful parameters for use of 'format_page' function
     common_df_title = bm_pg.DF_TITLES_LIST[0]
@@ -316,7 +316,8 @@ def built_final_pub_list(params_list):
     """
     # Setting parameters values from params_list
     institute, org_tup, wf_path, _, print_params, corpus_year = params_list
-    sub_params_list = [institute, org_tup, wf_path, print_params, corpus_year]
+    otps_sub_params_list = [institute, org_tup, wf_path, print_params, corpus_year]
+    ifs_sub_params_list = [institute, org_tup, wf_path, corpus_year]
 
     # Setting useful column names
     pub_list_cols_dic = _set_pub_list_cols_dic(institute, org_tup)
@@ -329,7 +330,7 @@ def built_final_pub_list(params_list):
      missing_issn_path, missing_if_path) = paths_list
 
     # Saving the OTPs set by user
-    consolidate_pub_list_df = save_otps(sub_params_list)
+    consolidate_pub_list_df = save_otps(otps_sub_params_list)
 
     print_step_text("\nCleaning publications list...", print_params)
     # Setting pub ID as index for unique identification of rows
@@ -369,7 +370,7 @@ def built_final_pub_list(params_list):
     # this also for saving results files to complete IFs database
     add_if_paths_list = [pub_list_file_path, pub_list_file_path,
                          missing_issn_path, missing_if_path]
-    if_database_complete = add_if(sub_params_list, add_if_paths_list)
+    if_database_complete = add_if(ifs_sub_params_list, add_if_paths_list)
     step_txt = "  - IFs added to publications list "
     if if_database_complete:
         step_txt += "with complete IFs data"
@@ -378,7 +379,7 @@ def built_final_pub_list(params_list):
     print_step_text(step_txt, print_params)
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio, pub_nb = split_pub_list_by_doc_type(sub_params_list,
+    split_ratio, pub_nb = split_pub_list_by_doc_type(ifs_sub_params_list,
                                                      pub_list_cols_dic)
     print_step_text("  - Publications list split performed", print_params)
 

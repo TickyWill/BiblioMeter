@@ -49,20 +49,6 @@ def _set_parse_cols_dic():
     return parse_cols_dic
 
 
-def _set_db_id_cols_dict():
-    """Builds a dict setting columns names for the database-IDs for the process 
-    of correcting the addresses with unknown-country in parsings data using 
-    the corrected addresses by the user.
-
-    Returns:
-        (dict): The built dict.
-    """
-    db_id_cols_dic = {bp.WOS   : bp.COL_NAMES['wos_id'][0],
-                      bp.SCOPUS: bp.COL_NAMES['scopus_id'][0],
-                     }
-    return db_id_cols_dic
-
-
 def _built_db_pub_identifiers_data(parsing_dict, db_ids_path, identifiers_cols):
     """Builds data of publications identifiers specific to a given corpus database.
 
@@ -167,7 +153,7 @@ def _remove_unknown_country(input_addr_str, sep_str, unknown_country):
 
 
 def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correct_path,
-                                    database_type, corpus_year, file_clear=False):
+                                    database_type, corpus_year, sorting_cols, file_clear=False):
     """Saves the data of addresses with unknown-country for the process of correcting the parsing data.
 
     Args:
@@ -175,6 +161,7 @@ def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correc
         addresses_to_correct_path (path): Full file path for saving the data.
         database_type (str): Database name (ex: 'wos' or 'scopus').
         corpus_year (str): Corpus year defined by 4 digits.
+        sorting_cols (list): Columns names for sortin the data to save.
         file_clear (bool): Optional parameter for saving empty data (default: False).
     """
     save_addresses_to_correct_df = addresses_to_correct_df.copy()
@@ -186,6 +173,7 @@ def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correc
         save_addresses_to_correct_df = pd.DataFrame(data, columns=empty_df_cols)
 
     # Saving data of corrected addresses with unknown-countries
+    save_addresses_to_correct_df.sort_values(by=sorting_cols, axis=0, inplace=True)
     df_title = bm_pg.DF_TITLES_LIST[19]
     wb, ws = format_page(save_addresses_to_correct_df, df_title)
     ws.title = database_type + " " + corpus_year
@@ -418,8 +406,7 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
                  'author_ids_col', 'authors_col']
     (pub_id_col, doi_col, address_id_col, country_col, address_col, correct_address_col, author_id_col,
      author_name_col, author_ids_col, authors_col) = [parse_cols_dic[key] for key in cols_keys]
-    db_id_cols_dic = _set_db_id_cols_dict()
-    database_id_col = db_id_cols_dic[database_type]
+    database_id_col = bm_pg.DB_ID_COLS[database_type]
 
     # Setting useful columns list
     select_pub_data_cols = [pub_id_col, author_id_col, author_name_col]
@@ -475,8 +462,9 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
     addresses_to_correct_df, addresses_to_correct_empty, all_addresses_corrected = return_tup
 
     # Saving data of addresses with unknown-country
+    sorting_cols = [database_id_col, address_id_col]
     _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correct_path,
-                                    database_type, corpus_year)
+                                    database_type, corpus_year, sorting_cols)
     if not all_addresses_corrected:
         print_step_text("  - Data for correction of addresses with unknown-country saved",
                         print_params)
@@ -484,7 +472,7 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
 
 
 def _update_corrected_addresses_history(user_addresses_to_correct_df, corrected_addresses_path,
-                                        database_type, corpus_year, dedup_cols):
+                                        db_ids_path, database_type, corpus_year, dedup_cols):
     """Updates the history of the corrected-addresses data and saves them.
 
     Args:
@@ -499,22 +487,37 @@ def _update_corrected_addresses_history(user_addresses_to_correct_df, corrected_
     Returns:
         (dataframe): The updated data of history of the corrected addresses.
     """
+    addresses_correction_df = user_addresses_to_correct_df.copy()
     new_corrected_addresses_hist_df = user_addresses_to_correct_df.copy()
     # Getting the history of corrected addresses with unknown-country before update
     if corrected_addresses_path.is_file():
-        init_corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
+        # Getting database IDs list
+        db_ids_df = pd.read_excel(db_ids_path)
+        database_id_col = dedup_cols[0]
+        db_ids_list = db_ids_df[database_id_col].to_list()
+
+        # Getting existing history of corrected addresses
+        saved_corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
+        user_ids_list = user_addresses_to_correct_df[database_id_col].to_list()
+        init_data_df = saved_corrected_addresses_hist_df[saved_corrected_addresses_hist_df[database_id_col].isin(user_ids_list)]
+        final_data_df = init_data_df[init_data_df[database_id_col].isin(db_ids_list)]
+        clean_corrected_addresses_hist_df = final_data_df.copy()
 
         # Concatenating the existing history of corrected data with the user's corrected ones
-        new_corrected_addresses_hist_df = concat_dfs([init_corrected_addresses_hist_df,
-                                                      user_addresses_to_correct_df],
-                                                     dedup_cols=dedup_cols, keep='last', )
+        addresses_correction_df = concat_dfs([clean_corrected_addresses_hist_df,
+                                              user_addresses_to_correct_df],
+                                             dedup_cols=dedup_cols, keep='last')
+        new_corrected_addresses_hist_df = concat_dfs([saved_corrected_addresses_hist_df,
+                                                      new_corrected_addresses_hist_df],
+                                                     dedup_cols=dedup_cols, keep='last')
 
     # Saving data of addresses with unknown-country
+    new_corrected_addresses_hist_df.sort_values(by=dedup_cols, axis=0, inplace=True)
     df_title = bm_pg.DF_TITLES_LIST[19]
     wb, ws = format_page(new_corrected_addresses_hist_df, df_title)
     ws.title = database_type + " " + corpus_year
     wb.save(corrected_addresses_path)
-    return new_corrected_addresses_hist_df
+    return addresses_correction_df
 
 
 def _correct_parsing_countries(countries_correct_dfs, parse_cols_dic):
@@ -621,7 +624,7 @@ def _correct_parsing_authsinst(authsinst_correct_dfs, parse_cols_dic,
     """
     # Setting useful col names from 'parse_cols_dic' arg
     cols_keys = ['bp_pub_id_col', 'bp_country_col', 'bp_address_col', 'correct_address_col', 'bp_author_id_col',
-                 'author_ids_col', 'bp_norm_inst_col', 'bp_raw_inst_col']   
+                 'author_ids_col', 'bp_norm_inst_col', 'bp_raw_inst_col']
     (pub_id_col, country_col, address_col, correct_address_col, author_id_col, author_ids_col,
      norm_inst_col, raw_inst_col) = [parse_cols_dic[key] for key in cols_keys]
 
@@ -726,29 +729,29 @@ def correct_parsing(params_list, parsing_path, parsing_dict,
     items_parsing_status = True
     correct_paths_list, _ = _set_correct_parsing_paths(parsing_path, database_type, item_filename_dict,
                                                        items_parsing_status, test_txt)
-    (addresses_to_correct_path, corrected_addresses_path, _, parsing_countries_path,
+    (addresses_to_correct_path, corrected_addresses_path, db_ids_path, parsing_countries_path,
      parsing_addresses_path, parsing_authsinst_path) = [correct_paths_list[idx] for idx in range(6)]
+
+    # Setting useful column names
+    parse_cols_dic = _set_parse_cols_dic()
+    country_col = parse_cols_dic['bp_country_col']
+    address_id_col = parse_cols_dic['bp_address_id_col']
+    database_id_col = bm_pg.DB_ID_COLS[database_type]
 
     # Getting data of the user's correction of the addresses with unknown-country
     addresses_to_correct_df = pd.read_excel(addresses_to_correct_path)
+    addresses_to_correct_df = addresses_to_correct_df[addresses_to_correct_df[country_col]!=bp.UNKNOWN_COUNTRY]
+    countries_corrected_list = addresses_to_correct_df[country_col].to_list()
 
     correct_status = False
     if not addresses_to_correct_df.empty:
         # If data of the user's correction of the addresses with unknown-country not empty,
         # proceeding with parsing data correction
 
-        # Setting useful column names
-        parse_cols_dic = _set_parse_cols_dic()
-        address_id_col = parse_cols_dic["bp_address_id_col"]
-        db_id_cols_dic = _set_db_id_cols_dict()
-        database_id_col = db_id_cols_dic[database_type]
-
         # Updating history of corrected addresses by the user
         dedup_cols = [database_id_col, address_id_col]
-        addresses_to_correct_df = _update_corrected_addresses_history(addresses_to_correct_df,
-                                                                      corrected_addresses_path,
-                                                                      database_type, corpus_year,
-                                                                      dedup_cols)
+        addresses_to_correct_df = _update_corrected_addresses_history(addresses_to_correct_df, corrected_addresses_path,
+                                                                      db_ids_path, database_type, corpus_year, dedup_cols)
         print_step_text("  - History of corrected addresses with unknown-country updated",
                         print_params)
 
@@ -782,8 +785,9 @@ def correct_parsing(params_list, parsing_path, parsing_dict,
         correct_status = True
 
         # Clear data of addresses with unknown-country to be corrected
+        sorting_cols = [database_id_col, address_id_col]
         _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correct_path,
-                                        database_type, corpus_year, file_clear=True)
+                                        database_type, corpus_year, sorting_cols, file_clear=True)
         print_step_text("  - Data for correction of addresses with unknown-country cleaned",
                         print_params)
     return correct_status
