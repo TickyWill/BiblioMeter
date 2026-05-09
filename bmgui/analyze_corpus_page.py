@@ -20,6 +20,7 @@ from bmfuncts.build_kpi import if_analysis
 from bmfuncts.coupling_analysis import coupling_analysis
 from bmfuncts.keywords_analysis import keywords_analysis
 from bmfuncts.save_final_results import set_results_folder_path
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import print_step_title
 
 
@@ -36,8 +37,8 @@ def _launch_au_analysis(master, year_select, progress_callback):
     print_step_title(f"AUTHORS' SCIENTIFIC PRODUCTION FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
-    params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, master.print_params, year_select]
+    params_list = [year_select, master.print_params, master.institute, master.org_tup,
+                   master.wf_path, master.datatype, master.parsing_filenames_dict]
     auth_analysis_folder_path = authors_analysis(params_list,
                                                  progress_callback)
 
@@ -62,8 +63,8 @@ def _launch_kw_analysis(master, year_select, progress_callback):
     print_step_title(f"KEYWORDS ANALYSIS FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
-    params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, master.print_params, year_select]
+    params_list = [year_select, master.institute, master.org_tup, master.wf_path,
+                   master.datatype, master.parsing_filenames_dict]
     kw_analysis_folder_path = keywords_analysis(params_list, progress_callback,
                                                 verbose=False)
 
@@ -85,8 +86,9 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
         ProgressBar tkinter widget status.
     """
     # Setting params values selected by the user
-    params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, master.print_params, year_select]
+    params_list = [year_select, master.print_params, master.institute, master.org_tup,
+                   master.wf_path, master.datatype, master.parsing_filenames_dict,
+                   master.dedup_affil_params_dic, master.co_affil_params_dic]
 
     ask_title = "- Confirmation de l'analyse des collaborations -"
     ask_text = ("L'analyse des collaborations a été lancée "
@@ -100,8 +102,9 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
         co_return_tup = coupling_analysis(params_list, progress_callback)
         wrong_affil_types_dict = co_return_tup[0]
         if not wrong_affil_types_dict:
-            raw_institutions_status = co_return_tup[1]
-            if raw_institutions_status:
+            raw_addr_status = co_return_tup[1]
+            if raw_addr_status:
+                print_step_text("\nAnalysis completed", master.print_params)
                 return_folders_list = co_return_tup[2]
                 analysis_folder, inst_analysis_folder, geo_analysis_folder = return_folders_list
                 info_title = "- Information -"
@@ -112,8 +115,9 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                              f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
                              f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
             else:
-                correct_addresses_path = co_return_tup[3][1]
-                raw_addr_file_path = co_return_tup[3][2]
+                print_step_text("\nAnalysis interrupted because affiliations remain to be normalized",
+                                master.print_params)
+                correct_addresses_path, raw_addr_file_path = co_return_tup[3]
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été interrompue pour l'année {year_select}."
@@ -124,18 +128,24 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                              f"\n    '{correct_addresses_path}'"
                              "\n\n  3- Relancez l'analyse des collaborations.")
         else:
-            country_affil_file_path = co_return_tup[3][0]
+            country_affils_file_path = master.dedup_affil_params_dic['country_affils_file_path']
+            step_txt = ("\nAnalysis cancelled because wrong types of affiliations found in:"
+                        f"\n   {country_affils_file_path}")
+            for k,v in wrong_affil_types_dict.items():
+                step_txt += f"\n        {k}: {v}"
+            print_step_text(step_txt, master.print_params)
             info_title = "- Attention -"
             info_text = ("L'analyse des collaborations "
                          f"a été abandonnée pour l'année {year_select}."
                          "\n\nDes types d'affiliations erronés ont été rencontrés dans le fichier "
-                         f"suivant : \n    '{country_affil_file_path}"
+                         f"suivant : \n    '{country_affils_file_path}"
                          f"\n\n1- Corrigez dans ce fichier les types d'affiliation suivants:")
             for k,v in wrong_affil_types_dict.items():
                 info_text += f"\n        {k}: {v}"
             info_text +="\n\n2- Relancez l'analyse des collaborations"
         messagebox.showinfo(info_title, info_text)
     else:
+        print_step_text("\nAnalysis cancelled by the user", master.print_params)
         progress_callback(100)
         info_title = "- Information -"
         info_text = ("L'analyse des collaborations "
@@ -157,8 +167,8 @@ def _launch_if_analysis(master, year_select, progress_callback):
     print_step_title(f"IF ANALYSIS AND BUILD OF KPI FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
-    params_list = [master.institute, master.org_tup, master.wf_path,
-                   master.datatype, master.print_params, year_select]
+    params_list = [year_select, master.print_params, master.institute, master.org_tup,
+                   master.wf_path, master.datatype, master.parsing_filenames_dict]
 
     # Setting path for saving results
     final_results_path = set_results_folder_path(master.wf_path, master.datatype)

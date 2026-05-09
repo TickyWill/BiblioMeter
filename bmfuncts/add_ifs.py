@@ -188,7 +188,7 @@ def _build_if_dict(if_dict, if_year, add_ifs_col_dic, unknown_kw):
     return year_if_dict
 
 
-def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
+def _build_institute_issn_df(if_dict, journal_id_cols_list, unknown_kw):
     """Builds data making the link between journal names and ISSNs and 
     eISSNs.
 
@@ -211,17 +211,17 @@ def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
     journal_col, issn_col, eissn_col = journal_id_cols_list
     if_available_years_list = list(if_dict.keys())
 
-    # Initializing 'inst_issn_df'
-    init_inst_issn_df = pd.DataFrame(columns=journal_id_cols_list)
+    # Initializing 'institute_issn_df'
+    init_institute_issn_df = pd.DataFrame(columns=journal_id_cols_list)
 
     for year in if_available_years_list:
         year_sub_df = if_dict[year][journal_id_cols_list].copy()
-        init_inst_issn_df = concat_dfs([init_inst_issn_df, year_sub_df])
-    init_inst_issn_df[journal_col] = init_inst_issn_df.apply(lambda row:
-                                                             (row[journal_col].upper()),
-                                                             axis=1)
-    inst_issn_df = pd.DataFrame()
-    for _, dg in init_inst_issn_df.groupby(journal_col):
+        init_institute_issn_df = concat_dfs([init_institute_issn_df, year_sub_df])
+    init_institute_issn_df[journal_col] = init_institute_issn_df.apply(lambda row:
+                                                                       (row[journal_col].upper()),
+                                                                       axis=1)
+    institute_issn_df = pd.DataFrame()
+    for _, dg in init_institute_issn_df.groupby(journal_col):
 
         issn_list = list(set(dg[issn_col].to_list()) - {unknown_kw})
         if not issn_list:
@@ -233,11 +233,11 @@ def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
             eissn_list = [unknown_kw]
         dg[eissn_col] = eissn_list[0]
 
-        inst_issn_df = concat_dfs([inst_issn_df, dg.iloc[:1]])
+        institute_issn_df = concat_dfs([institute_issn_df, dg.iloc[:1]])
 
-    inst_issn_df = inst_issn_df.sort_values(by=[journal_col])
-    inst_issn_df = inst_issn_df.drop_duplicates()
-    return inst_issn_df
+    institute_issn_df = institute_issn_df.sort_values(by=[journal_col])
+    institute_issn_df = institute_issn_df.drop_duplicates()
+    return institute_issn_df
 
 
 def _fullfill_issn(corpus_df, issn_df, journal_id_cols_list, unknown_kw):
@@ -278,7 +278,7 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
     empty values in ISSN column.
 
     The ISSNs completion is donne through the `_fullfill_issn` internal function 
-    using the ISSN provided by the `_build_inst_issn_df` internal function.
+    using the ISSN provided by the `_build_institute_issn_df` internal function.
 
     Args:
         in_file_path (path): The full path to get the corpus data.
@@ -314,14 +314,14 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
     # Initializing 'corpus_df_bis' as copy of 'corpus_df'
     corpus_df_bis = corpus_df[new_base_col_list].copy()
 
-    # Getting the df of ISSN and eISSN database of the institut
-    inst_issn_df = _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw)
+    # Getting the df of ISSN and eISSN database of the institute
+    institute_issn_df = _build_institute_issn_df(if_dict, journal_id_cols_list, unknown_kw)
 
-    # Filling unknown ISSN in 'corpus_df_bis' using 'inst_issn_df'
+    # Filling unknown ISSN in 'corpus_df_bis' using 'institute_issn_df'
     # through _fullfill_issn function
-    corpus_df_bis = _fullfill_issn(corpus_df_bis, inst_issn_df, journal_id_cols_list,
+    corpus_df_bis = _fullfill_issn(corpus_df_bis, institute_issn_df, journal_id_cols_list,
                                    unknown_kw)
-    return corpus_df_bis, inst_issn_df
+    return corpus_df_bis, institute_issn_df
 
 
 def _create_if_column(issn_column, year_if_dict, unknown_kw):
@@ -500,7 +500,7 @@ def _get_id(issn_df, journal_name, journal_col, id_col, unknown_kw):
     return id_journal
 
 
-def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_kw):
+def _build_missing_issn_and_if_df(if_df, institute_issn_df, add_ifs_col_dic, unknown_kw):
     """Builds a dataframe 'missing_if_df' by removing from 'if_df' the rows 
     which ISSN value is not in IF database and keeping them in the dataframe 
     'missing_issn_df'.
@@ -510,7 +510,7 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_
     Args:
         if_df (dataframe): The built data through the `_build_issn_df` \
         internal function.
-        inst_issn_df (dataframe): The built data through the \
+        institute_issn_df (dataframe): The built data through the \
         `_clean_corpus_df` internal function.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
@@ -527,19 +527,19 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_
 
     missing_issn_df = pd.DataFrame(columns=if_df.columns)
     missing_if_df = pd.DataFrame(columns=if_df.columns)
-    inst_issn_list = inst_issn_df[issn_col].to_list()
-    inst_eissn_list = inst_issn_df[eissn_col].to_list()
+    institute_issn_list = institute_issn_df[issn_col].to_list()
+    institute_eissn_list = institute_issn_df[eissn_col].to_list()
     for _, row in if_df.iterrows():
         row_issn = row[issn_col]
         row_most_recent_year_if = row[most_recent_year_if_col]
         row_corpus_year_if = row[corpus_year_if_col]
-        if row_issn in inst_issn_list or row_issn in inst_eissn_list:
+        if row_issn in institute_issn_list or row_issn in institute_eissn_list:
             if unknown_kw in [row_most_recent_year_if, row_corpus_year_if]:
                 row_journal = row[journal_col]
-                row[issn_col] = _get_id(inst_issn_df, row_journal,
+                row[issn_col] = _get_id(institute_issn_df, row_journal,
                                         journal_col, issn_col,
                                         unknown_kw)
-                row[eissn_col] = _get_id(inst_issn_df, row_journal,
+                row[eissn_col] = _get_id(institute_issn_df, row_journal,
                                          journal_col, eissn_col,
                                          unknown_kw)
                 missing_if_df = concat_dfs([missing_if_df, row.to_frame().T])
@@ -674,7 +674,7 @@ def add_if(add_if_params_list, paths_list):
         (bool):  Completion status of the impact-factors data (True if complete).
     """
     # Setting parameters values from fct_params_list
-    institute, org_tup, wf_path, corpus_year = add_if_params_list
+    corpus_year, institute, org_tup, wf_path = add_if_params_list
 
     # Setting parameters from args
     in_file_path = paths_list[0]
@@ -704,8 +704,8 @@ def add_if(add_if_params_list, paths_list):
                                               add_ifs_col_dic, bp.UNKNOWN)
 
     # Cleaning corpus data
-    corpus_df, inst_issn_df = _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup,
-                                               bp.UNKNOWN)
+    corpus_df, institute_issn_df = _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup,
+                                                    bp.UNKNOWN)
 
     # Adding IFs cols to 'corpus_df'
     if_dicts_list = [if_dict, most_recent_year_if_dict]
@@ -726,7 +726,7 @@ def add_if(add_if_params_list, paths_list):
 
     # Removing from 'year_if_df' the rows which ISSN value is not in IF database
     # and keeping them in 'year_missing_issn_df'
-    return_tup = _build_missing_issn_and_if_df(year_if_df, inst_issn_df,
+    return_tup = _build_missing_issn_and_if_df(year_if_df, institute_issn_df,
                                                add_ifs_col_dic, bp.UNKNOWN)
     year_missing_issn_df, year_missing_if_df = return_tup
 

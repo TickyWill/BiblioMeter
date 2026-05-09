@@ -259,8 +259,9 @@ def try_wf_access(wf_path):
 
 def _create_corpus(self, inst_wf, create_archi_param):
     """Creates a new corpus folder in the working folder through `create_archi` 
-    function imported from `bmfuncts.useful_functs` module.             
-    Then, updates 'corpuses' widget value with new list of available corpuses.
+    function imported from `bmfuncts.useful_functs` module.
+
+    It also, updates 'corpuses' widget value with new list of available corpuses.
 
     Args:
         self (instance): Instance of the calling page.

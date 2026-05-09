@@ -2,10 +2,10 @@
 for setting the configuration parameters for the use of the BiblioMeter application.
 
 """
-__all__ = ['build_norm_dicts',
+__all__ = ['set_affil_params',
            'set_org_params',
-           'set_parse_inst_params',
-           'set_user_config',
+           'set_parsing_items_params',
+           'set_rawdata_and_parsing_paths',
           ]
 
 
@@ -33,8 +33,6 @@ def _get_bm_parsing_config():
     These globals are defined in the `pub_globals.py` module 
     of the `bmfuncts` package.
 
-    Args:
-        None.
     Returns:
         (dict): The dict resulting from the parsing of the JSON file.
     """
@@ -76,7 +74,18 @@ def _build_effective_config(db_list, parsing_folder_dict_init):
     return parsing_folder_dict
 
 
-def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
+def _get_folder_attributes(parsing_folder_dict, keys_list, folder_root):
+    key_dict = parsing_folder_dict
+    for key in keys_list:
+        key_dict = key_dict[key]
+    folder_name = key_dict
+    folder_path = folder_root / Path(folder_name)
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+    return folder_path, folder_name
+
+
+def set_rawdata_and_parsing_paths(wf_path, year, db_list):
     """Sets the full paths to the rawdata folders and to the parsing folders.
 
     This is done for the working folder selected by the user, 
@@ -88,24 +97,14 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
         year (str): The name of the corpus folder defined by 4 digits \
         corresponding to the corpus year.
         db_list (list): The list of the database string names.
-        parsing_folder_dict (hierarchical dict): The architecture of the parsing folder \
-        used to set the full paths.
     Returns:
         (tup of dicts): A tuple of two hierarchical dicts, the first giving the rawdata \
         full paths for each database and the second, the parsing full \
         paths for each parsing step and for each database.
     """
-
-    # Internal functions
-    def _get_folder_attributes(_parsing_folder_dict, _keys_list, folder_root):
-        key_dict = _parsing_folder_dict
-        for key in _keys_list:
-            key_dict = key_dict[key]
-        folder_name = key_dict
-        folder_path = folder_root / Path(folder_name)
-        if not os.path.exists(folder_path):
-            os.mkdir(folder_path)
-        return folder_path, folder_name
+    # Setting the working folder architecture base
+    config_dict = _get_bm_parsing_config()
+    parsing_folder_dict = config_dict['PARSING_FOLDER_ARCHI']
 
     # Updating 'parsing_folder_dict' using the list of databases 'db_list'
     parsing_folder_dict = _build_effective_config(db_list, parsing_folder_dict)
@@ -118,8 +117,7 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
     corpus_folder_path, _ = _get_folder_attributes(parsing_folder_dict,
                                                    keys_list, year_files_path)
 
-    rawdata_path_dict = {}
-    parsing_path_dict = {}
+    rawdata_path_dict, parsing_path_dict = {}, {}
     # Getting the databases folders attributes
     for db_num in list(parsing_folder_dict['corpus']['databases'].keys()):
 
@@ -163,43 +161,45 @@ def _build_files_paths(wf_path, year, db_list, parsing_folder_dict):
     return rawdata_path_dict, parsing_path_dict
 
 
-def set_user_config(wf_path, year, db_list):
-    """Sets the full paths to the rawdata folders and to the parsing folders.
 
-    This is done for the working folder selected by the user, 
-    the corpus year 'year' and for each database in the list 'db_list'.
-    It also sets the names of the parsing file for each parsed item. 
+def set_parsing_items_params():
+    """ Sets the names of the parsing file for each parsed item.
+
+    It also sets two lists of keys:
+    - keys of parsing items for building data of addresses with unknown-country;
+    - keys of parsing items to be corrected through authors' addresses correction.
     For that, it uses the configuration dict returned by the `_get_bm_parsing_config` 
-    function and the `_build_files_paths` function of the same module.
-    The set parameters are returned in a tuple as follows:
+    internal function. 
+    The built data are returned in a tuple as follows:
+    - index 1 = the dict giving the name of the parsing file for each parsed item.
+    - index 2 = the list of keys of parsing items for building data of addresses with unknown-country.
+    - index 3 = the list of keys of parsing items to be corrected through authors' addresses correction.
 
-    - index 1 = the hierarchical dict giving the rawdata full paths (path) for each database.
-    - index 2 = the hierarchical dict giving the parsing full paths (path) for each parsing step \
-    and for each database.
-    - index 3 = the dict giving the name of the parsing file for each parsed item.
-
-    Args:
-        wf_path (path): The full path to the working folder.
-        year (str): The name of the corpus folder defined by 4 digits \
-        corresponding to the corpus year.
-        db_list (list): The list of the database string names.
     Returns:
-        (tup of dicts): A tuple of the 3 set parameters.
+        (dict): The dict giving the name of the parsing file for each parsed item.
     """
     # Getting the configuration dict
     config_dict = _get_bm_parsing_config()
 
-    # Getting the working folder architecture base
-    parsing_folder_dict = config_dict['PARSING_FOLDER_ARCHI']
+    # Setting the filenames for each parsing item
+    config_parsing_filenames_dict = config_dict['PARSING_FILE_NAMES']
+    parsing_filenames_dict = {key: config_parsing_filenames_dict[bm_pg.PARSING_KEYS_CONVERT_DIC[key]]
+                              for key in bm_pg.PARSING_KEYS_DIC['all']}
 
-    # getting useful paths of the working folder architecture for a corpus single year "year"
-    rawdata_path_dict, parsing_path_dict = _build_files_paths(wf_path, year, db_list,
-                                                              parsing_folder_dict)
-
-    # Getting the filenames for each parsing item
-    item_filename_dict = config_dict['PARSING_FILE_NAMES']
-
-    return rawdata_path_dict, parsing_path_dict, item_filename_dict
+#    # Setting the list of keys of parsing items for merge of publications list
+#    # with employees data
+#    merge_employees_items_keys = config_dict['MERGE_EMPLOYEES_PARSING_ITEMS']
+#
+#    # Setting the list of keys of parsing items for building data of addresses
+#    # with unknown-country
+#    unknown_countries_items_keys = config_dict['UNKNOWN_COUNTRIES_PARSING_ITEMS']
+#
+#    # Setting the list of keys of parsing items to be corrected
+#    correction_items_keys = config_dict['CORRECTION_PARSING_ITEMS']
+#
+#    parsing_items_params = (item_filename_dict, merge_employees_items_keys,
+#                            unknown_countries_items_keys, correction_items_keys)
+    return parsing_filenames_dict
 
 
 def _get_institute_config(institute, wf_path):
@@ -215,7 +215,7 @@ def _get_institute_config(institute, wf_path):
     of the `bmfuncts` package.
 
 Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         wf_path (path): The full path to the working folder.
     Returns:
         (dict): The dict resulting from the parsing of the JSON file.
@@ -225,8 +225,8 @@ Args:
 
     # Reads the JSON file
     with open(config_file_path, encoding = 'utf-8') as file:
-        inst_org_dict = json.load(file)
-    return inst_org_dict
+        institute_org_dict = json.load(file)
+    return institute_org_dict
 
 
 def set_org_params(institute, wf_path):
@@ -245,7 +245,7 @@ def set_org_params(institute, wf_path):
     - index 4 = the list of columns names (str) that will be used for each of the potential labels \
     of the Institute filtering the authors affiliated to the Institute.
     - index 5 = the status (bool) of the impact factors database:
-        - True, if the database specific to the Institute will be used; 
+        - True, if the database specific to the Institute will be used;
         - False, if a general database will be used.
     - index 6 = the list of document types (str) for which the impact factors are not analyzed.
     - index 7 = the index of the main institution among the tuples at index 3.
@@ -262,18 +262,18 @@ def set_org_params(institute, wf_path):
     - index 16 = the list of departments that have not lab-OTPs available.
 
     Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         wf_path (path): The full path to the working folder.
     Returns:
-        (tup): A tuple of the 9 set parameters. 
+        (tup): A tuple of the 9 set parameters.
     """
-    inst_org_dict = _get_institute_config(institute, wf_path)
+    institute_org_dict = _get_institute_config(institute, wf_path)
     dpt_label_key = bm_ig.DPT_LABEL_KEY
     dpt_otp_key = bm_ig.DPT_OTP_KEY
 
-    col_names_dpt = inst_org_dict["COL_NAMES_DPT"]
-    dpt_label_dict = inst_org_dict["DPT_LABEL_DICT"]
-    dpt_otp_dict = inst_org_dict["DPT_OTP_DICT"]
+    col_names_dpt = institute_org_dict["COL_NAMES_DPT"]
+    dpt_label_dict = institute_org_dict["DPT_LABEL_DICT"]
+    dpt_otp_dict = institute_org_dict["DPT_OTP_DICT"]
     dpt_attributes_dict = {}
     for dpt in list(col_names_dpt.keys())[:-1]:
         dpt_attributes_dict[dpt] = {}
@@ -287,84 +287,82 @@ def set_org_params(institute, wf_path):
     for dpt in list(col_names_dpt.keys()):
         dpt_attributes_dict[dpt][dpt_otp_key] += [bm_ig.INVALIDE]
 
-    institutions_filter_list = [tuple(x) for x in inst_org_dict["INSTITUTIONS_FILTER_LIST"]]
-    inst_col_list = [tup[1] for tup in institutions_filter_list]
-    main_inst_idx = inst_org_dict["MAIN_INSTITUTION_IDX"]
-    and_inst_status = inst_org_dict["MAIN_INSTITUTION_STATUS"]
-    if_db_status = inst_org_dict["IF_DB_STATUS"]
-    no_if_doctype_keys_list = inst_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]
-    orphan_split_status = inst_org_dict["ORPHAN_SPLIT_STATUS"]
-    affil_drop_dict = inst_org_dict["AFFIL_DROP_DICT"]
-    orphan_drop_dict = dict(zip(inst_col_list, affil_drop_dict.values()))
-    otps_level = inst_org_dict["OTPS_LEVEL"]
-    lab_otps_bdd = inst_org_dict["LAB_OTPS_BDD"]
-    otps_sheet = inst_org_dict["OTPS_SHEET"]
-    otps_header = inst_org_dict["OTPS_HEADER"]
-    otps_cols = inst_org_dict["OTPS_COL"]
-    nolab_depts = inst_org_dict["NO_LAB_DEPTS"]
+    institutions_filter_list = [tuple(x) for x in institute_org_dict["INSTITUTIONS_FILTER_LIST"]]
+    institute_cols_list = [tup[1] for tup in institutions_filter_list]
+    institute_main_idx = institute_org_dict["MAIN_INSTITUTION_IDX"]
+    and_institute_status = institute_org_dict["MAIN_INSTITUTION_STATUS"]
+    if_db_status = institute_org_dict["IF_DB_STATUS"]
+    no_if_doctype_keys_list = institute_org_dict["NO_IF_DOCTYPE_KEYS_LIST"]
+    orphan_split_status = institute_org_dict["ORPHAN_SPLIT_STATUS"]
+    affil_drop_dict = institute_org_dict["AFFIL_DROP_DICT"]
+    orphan_drop_dict = dict(zip(institute_cols_list, affil_drop_dict.values()))
+    otps_level = institute_org_dict["OTPS_LEVEL"]
+    lab_otps_bdd = institute_org_dict["LAB_OTPS_BDD"]
+    otps_sheet = institute_org_dict["OTPS_SHEET"]
+    otps_header = institute_org_dict["OTPS_HEADER"]
+    otps_cols = institute_org_dict["OTPS_COL"]
+    nolab_depts = institute_org_dict["NO_LAB_DEPTS"]
 
     return_tup = (col_names_dpt, dpt_label_dict, dpt_attributes_dict,
-                  institutions_filter_list, inst_col_list,
+                  institutions_filter_list, institute_cols_list,
                   if_db_status, no_if_doctype_keys_list,
-                  main_inst_idx, and_inst_status, orphan_split_status,
+                  institute_main_idx, and_institute_status, orphan_split_status,
                   orphan_drop_dict, otps_level, lab_otps_bdd,
                   otps_sheet, otps_header, otps_cols, nolab_depts)
     return return_tup
 
 
-def set_parse_inst_params(institute, wf_path):
-    """Sets files paths to institutions data.
+def _build_institute_file_name(institute, file_base):
+    file = institute + "_" + file_base
+    return file
+
+
+def _set_institute_affil_params(wf_path, institute):
+    # Setting user's affiliations root path
+    affils_rep_utils = wf_path / Path(bm_pg.ARCHI_INSTITUTIONS['root'])
+
+    # Setting user's affiliations-parsing files
+    affil_files_keys = [x[:-5] + "_file" for x in list(bm_pg.ARCHI_INSTITUTIONS.keys())[1:]]
+    affil_file_base_values = list(bm_pg.ARCHI_INSTITUTIONS.values())[1:]
+    institute_affil_files_values = [_build_institute_file_name(institute, v) for v in affil_file_base_values]
+    institute_affil_files_dic = dict(zip(affil_files_keys, institute_affil_files_values))
+
+    return affils_rep_utils, institute_affil_files_dic
+
+
+def set_affil_params(institute, wf_path):
+    """Sets paths to Institute's files to use for authors' affiliations parsing.
 
     Args:
-        institute (str): Institute name.
-        wf_path (path): Full path to working folder.
+        institute (str): The Institute's name.
+        wf_path (path): The full path to the working folder.
     Returns:
-        (tup): (full path to institute-affiliations file, \
-        full path to institutions-types file).
+        (tup): Composed of the dict giving the full paths to the Institute's files to use for \
+        affiliations parsing of Institute's authors at rawdata-parsing step, \
+        of the dict giving the full paths to the Institute's files to use for \
+        authors' affiliations parsing at parsing deduplication step and \
+        of the dict giving the full paths to the Institute's complementary-files \
+        to use for authors' affiliations parsing at coupling analysis step.
     """
-    # Setting useful aliases
-    institutions_folder_alias = bm_pg.ARCHI_INSTITUTIONS["root"]
-    inst_aff_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["institute_affil_base"]
-    inst_types_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["inst_types_base"]
-    country_towns_file_base_alias = bm_pg.ARCHI_INSTITUTIONS["country_towns_base"]
+    affils_rep_utils, institute_affil_files_dic = _set_institute_affil_params(wf_path, institute)
 
-    # Setting useful file names and paths for Institute affiliations
-    inst_country_towns_file = institute + "_" + country_towns_file_base_alias
-    institute_affil_file = institute + "_" + inst_aff_file_base_alias
-    inst_types_file = institute + "_" + inst_types_file_base_alias
-    institutions_folder_path = wf_path / Path(institutions_folder_alias)
-    institute_affil_file_path = institutions_folder_path / Path(institute_affil_file)
-    inst_types_file_path = institutions_folder_path / Path(inst_types_file)
+    # Setting the filename for the affiliations-per-country data for parsings deduplication step
+    dedup_norm_affil_file = institute_affil_files_dic['affiliations_file']
+    parse_norm_affil_file = institute_affil_files_dic['institute_affil_file']
 
-    # Setting paths list to return
-    inst_paths_list = [institute_affil_file_path, inst_types_file_path,
-                       institutions_folder_path]
-    return inst_country_towns_file, inst_paths_list
+    # Setting user's affiliations-parsing paths
+    affil_types_file_path = affils_rep_utils / Path(institute_affil_files_dic['inst_types_file'])
+    dedup_affils_file_path = affils_rep_utils / Path(institute_affil_files_dic['affiliations_file'])
+    parse_affils_file_path = affils_rep_utils / Path(institute_affil_files_dic['institute_affil_file'])
+    unkept_affils_file_path = affils_rep_utils / Path(institute_affil_files_dic['unkept_affil_file'])
 
-
-def build_norm_dicts(institute, wf_path):
-    """Builds the useful dicts for affiliations normalization.
-
-    Three dicts are built:
-    - The data per country for normalizing the authors affiliations \
-    built through the `build_norm_raw_affiliations_dict` function;
-    - The data of affiliations types built through the `read_inst_types` function; 
-    - The data of towns per country built through the `read_towns_per_country` function.
-    These 3 functions are imported from the `BiblioParsing` package itself imported as 'bp'.
-
-    Args:
-        institute (str): Institute name.
-        wf_path (path): Full path to working folder.
-    Returns:
-        (list): The list of the 3 built dicts.
-    """
-    # Getting institutions normalization data for correction authors-institutions parsing data
-    inst_country_towns_file, inst_paths_list = set_parse_inst_params(institute, wf_path)
-    norm_raw_aff_dict = bp.build_norm_raw_affiliations_dict(
-        country_affiliations_file_path=inst_paths_list[0])
-    aff_type_dict = bp.read_inst_types(inst_types_file_path=inst_paths_list[1],
-                                       inst_types_usecols=None)
-    towns_dict = bp.read_towns_per_country(country_towns_file=inst_country_towns_file,
-                                           country_towns_folder_path=inst_paths_list[2])
-    norm_dicts = [norm_raw_aff_dict, aff_type_dict, towns_dict]
-    return norm_dicts
+    sub_affil_params_dic = {'affil_types_file_path'    : affil_types_file_path,
+                            'country_towns_folder_path': affils_rep_utils,
+                            'country_towns_file'       : institute_affil_files_dic['country_towns_file'],
+                           }
+    dedup_affil_params_dic = sub_affil_params_dic.copy()
+    dedup_affil_params_dic['country_affils_file_path'] = dedup_affils_file_path
+    parse_affil_params_dic = sub_affil_params_dic.copy()
+    parse_affil_params_dic['country_affils_file_path'] = parse_affils_file_path
+    co_affil_param_dic = {'unkept_affils_file_path': unkept_affils_file_path}
+    return parse_affil_params_dic, dedup_affil_params_dic, co_affil_param_dic

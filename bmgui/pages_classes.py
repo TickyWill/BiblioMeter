@@ -22,7 +22,9 @@ import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
+from bmfuncts.config_utils import set_affil_params
 from bmfuncts.config_utils import set_org_params
+from bmfuncts.config_utils import set_parsing_items_params
 from bmfuncts.useful_functs import print_to_console
 from bmfuncts.useful_functs import print_to_log
 from bmfuncts.useful_functs import set_rawdata
@@ -160,6 +162,14 @@ class SetLaunchButton:
 
             print_to_console(log_title, print_txt)
             print_to_log(log_title, print_txt, master.print_params)
+
+            # Setting affiliations parsing data
+            return_tup = set_affil_params(master.institute, master.wf_path)
+            (master.parse_affil_params_dic, master.dedup_affil_params_dic,
+             master.co_affil_params_dic) = return_tup
+
+            # Setting parsing items parameters
+            master.parsing_filenames_dict = set_parsing_items_params()
 
             if master.datatype:
                 # Setting rawdata for datatype

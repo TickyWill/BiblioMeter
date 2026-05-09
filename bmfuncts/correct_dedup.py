@@ -16,7 +16,6 @@ import pandas as pd
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
-from bmfuncts.config_utils import build_norm_dicts
 from bmfuncts.format_files import format_page
 from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.useful_functs import build_list_from_str
@@ -42,15 +41,15 @@ def _set_dedup_cols_dic():
                       'bp_address_col'     : bp.COL_NAMES['address'][2],
                       'bp_country_col'     : bp.COL_NAMES['country'][2],
                       'bp_author_id_col'   : bp.COL_NAMES['auth_inst'][1],
-                      'bp_norm_inst_col'   : bp.COL_NAMES['auth_inst'][4],
+                      'bp_norm_affils_col' : bp.COL_NAMES['auth_inst'][4],
                       'author_ids_col'     : "Author IDs",
                       'correct_address_col': "Correct address",
                      }
     return dedup_cols_dic
 
 
-def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict,
-                             items_parsing_status=False, test_txt=""):
+def _set_correct_dedup_paths(final_results_path, corpus_year, correction_item_filenames,
+                             test_txt=""):
     """Builds a list of useful paths for the process of correcting the data 
     of parsings deduplication using corrected addresses by the user.
 
@@ -58,17 +57,16 @@ def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict
         final_results_path (path): Full path to the folder where the final \
         results of parsings deduplication are saved.
         corpus_year (str): Corpus year defined by 4 digits.
-        item_filename_dict (dict): The full paths to the parsing.
-        items_parsing_status (bool): Optional (default: False), if True the useful \
-        full paths to the parsing are added to built paths list.
+        correction_item_filenames (list): The file names (str) of the parsing items \
+        to be corrected.
         test_txt (str): For optional modification of the file names \
         for saving the corrected parsing data during code test (default: "").
     Returns:
         (list): The built list of paths.
     """
     # Internal functions
-    def _set_parsing_item_path(_item):
-        parsing_item_file = test_txt + item_filename_dict[_item] + parsing_extent
+    def _set_parsing_item_path(_item_filename):
+        parsing_item_file = test_txt + _item_filename + parsing_extent
         parsing_item_path = dedup_parsing_path / Path(parsing_item_file)
         return parsing_item_path
 
@@ -85,10 +83,9 @@ def _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict
     corrected_addresses_path = dedup_parsing_path / Path(corrected_addresses_history_file_alias)
 
     paths_list = [corrected_addresses_path]
-    compl_paths_list = []
-    if items_parsing_status:
-        use_items_list = ['countries', 'addresses', 'authors_institutions']
-        compl_paths_list = [_set_parsing_item_path(item) for item in use_items_list]
+    # Setting list of full paths to the parsing data to be corrected
+    compl_paths_list = [_set_parsing_item_path(item_filename)
+                        for item_filename in correction_item_filenames]
     paths_list = paths_list + compl_paths_list
     return paths_list
 
@@ -175,7 +172,7 @@ def _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic, ids_di
         (bool): True if no false address is found.
     """
     # Setting data from 'all_correct_dfs'
-    auth_inst_df, addresses_to_correct_df = init_correct_dfs
+    authaddr_df, addresses_to_correct_df = init_correct_dfs
 
     # Setting useful column names
     cols_keys = ['bm_hash_id_col', 'bp_pub_id_col', 'bp_doi_col', 'bp_address_id_col', 'bp_country_col',
@@ -198,14 +195,14 @@ def _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic, ids_di
         hash_id = hash_ids_dict[pub_id_str]
         pub_id_int = int(pub_id_str[5:])
         doi = dois_dict[pub_id_int]
-        pub_id_auth_inst_df = auth_inst_df[auth_inst_df[pub_id_col]==pub_id_int]
+        pub_id_authaddr_df = authaddr_df[authaddr_df[pub_id_col]==pub_id_int]
 
         false_address_auth_ids_list = []
-        for _, auth_inst_row in pub_id_auth_inst_df.iterrows():
-            author_id = auth_inst_row[author_id_col]
+        for _, authaddr_row in pub_id_authaddr_df.iterrows():
+            author_id = authaddr_row[author_id_col]
 
             # Building author's addresses-list
-            author_addresses_str = auth_inst_row[address_col]
+            author_addresses_str = authaddr_row[address_col]
             author_addresses_list = build_list_from_str(author_addresses_str, "; ")
             author_addresses_list = [bp.standardize_address(x) for x in author_addresses_list]
 
@@ -343,41 +340,39 @@ def _correct_dedup_addresses(addresses_correct_dfs, dedup_cols_dic, parsing_addr
     new_addresses_df.to_csv(parsing_addresses_path, index=False, sep='\t')
 
 
-def _correct_dedup_authsinst(authsinst_correct_dfs, dedup_cols_dic,
-                             parsing_authsinst_path, norm_dicts, corpus_year):
-    """Corrects the parsing data of authors-institutions using the data 
+def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authaddr_path,
+                            dedup_affil_params_dic, corpus_year):
+    """Corrects the parsing data of authors-addresses using the data 
     of addresses corrected by the user.
 
     In addition, the normalized and raw affiliations are defined for 
-    the corrected addresses of authors using the `address_inst_full_list` 
+    the corrected addresses of authors using the `build_addr_affils_tup` 
     function imported from the `BiblioParsing` package itself imported as bp. 
     This function requires data per country for normalizing the authors affiliations, 
     the data of affiliations types and the data of towns per country.
 
     Args:
-        authsinst_correct_dfs (list): Composed of the parsing data (dataframe) of \
-        authors-institutions and of the user's correction of the false addresses (dataframe).
+        authaddr_correct_dfs (list): Composed of the parsing data (dataframe) of \
+        authors-addresses and of the user's correction of the false addresses (dataframe).
         dedup_cols_dic (dict): The selected columns names for the process \
         of correcting the data of parsings deduplication.
-        parsing_authsinst_path (path): The full path for saving the corrected parsing data \
-        of authors-institutions.
-        norm_dicts (list): Composed of the data per country (dict) for normalizing the authors' \
+        parsing_authaddr_path (path): The full path for saving the corrected parsing data \
+        of authors-addresses.
+        dedup_affil_params_dic (list): Composed of the data per country (dict) for normalizing the authors' \   #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         affiliations, the data (dict) of affiliations types and the data (dict) of towns per country.
         corpus_year (str): Corpus year defined by 4 digits.
     """
     cols_keys = ['bp_pub_id_col', 'bp_address_col', 'bp_country_col', 'bp_author_id_col',
-                 'author_ids_col', 'bp_norm_inst_col', 'correct_address_col']
+                 'author_ids_col', 'bp_norm_affils_col', 'correct_address_col']
     (pub_id_col, address_col, country_col, author_id_col, author_ids_col,
-     norm_inst_col, correct_address_col) = [dedup_cols_dic[key] for key in cols_keys]
+     norm_affils_col, correct_address_col) = [dedup_cols_dic[key] for key in cols_keys]
 
-    norm_raw_aff_dict, aff_type_dict, towns_dict = norm_dicts
-
-    auth_inst_df, corrected_addresses_df = authsinst_correct_dfs
+    authaddr_df, corrected_addresses_df = authaddr_correct_dfs
     correct_pub_ids_list = corrected_addresses_df[pub_id_col].to_list()
 
-    new_auth_inst_df = pd.DataFrame(columns=auth_inst_df.columns)
-    for _, pub_id_df in auth_inst_df.groupby(pub_id_col):
-        pub_id_auths_inst_df = pub_id_df.copy()
+    new_authaddr_df = pd.DataFrame(columns=authaddr_df.columns)
+    for _, pub_id_df in authaddr_df.groupby(pub_id_col):
+        pub_id_authaddr_df = pub_id_df.copy()
         mod_pub_id_df = set_year_pub_id(pub_id_df, corpus_year, pub_id_col)
         pub_id_str = mod_pub_id_df[pub_id_col].to_list()[0]
         if pub_id_str in correct_pub_ids_list:
@@ -389,10 +384,10 @@ def _correct_dedup_authsinst(authsinst_correct_dfs, dedup_cols_dic,
                 auth_ids_str = str(correct_address_row[author_ids_col])
                 auth_ids_list = build_list_from_str(auth_ids_str, "; ")
                 auth_ids_list = [int(x) for x in auth_ids_list]
-                for row_num, auths_inst_row in pub_id_auths_inst_df.iterrows():
-                    author_id = auths_inst_row[author_id_col]
+                for row_num, authaddr_row in pub_id_authaddr_df.iterrows():
+                    author_id = authaddr_row[author_id_col]
                     if author_id in auth_ids_list:
-                        raw_author_addresses_str = str(auths_inst_row[address_col])
+                        raw_author_addresses_str = str(authaddr_row[address_col])
                         raw_author_addresses_list = build_list_from_str(raw_author_addresses_str, "; ")
                         author_addresses_list = []
                         for address in raw_author_addresses_list:
@@ -405,43 +400,38 @@ def _correct_dedup_authsinst(authsinst_correct_dfs, dedup_cols_dic,
                             author_addresses_list[false_addr_idx] = correct_address
 
                         author_addresses_str = build_string_from_list(author_addresses_list, "; ")
-                        pub_id_auths_inst_df.loc[row_num, address_col] = author_addresses_str
-                        pub_id_auths_inst_df.loc[row_num, country_col] = correct_country
+                        pub_id_authaddr_df.loc[row_num, address_col] = author_addresses_str
+                        pub_id_authaddr_df.loc[row_num, country_col] = correct_country
 
                         # Correcting normalized affiliations
-                        addr_norm_inst_list = []
+                        addr_norm_affils_list = []
                         for auth_address in author_addresses_list:
-                            author_addr_aff_tup = bp.address_inst_full_list(auth_address, norm_raw_aff_dict,
-                                                                            aff_type_dict, towns_dict,
-                                                                            drop_status=False)
-                            auth_addr_norm_inst_list = author_addr_aff_tup.norm_inst_list
-                            addr_norm_inst_list.append(auth_addr_norm_inst_list)
+                            author_addr_aff_tup = bp.build_addr_affils_tup(auth_address, dedup_affil_params_dic,
+                                                                           drop_status=False)
+                            auth_addr_norm_affils_list = author_addr_aff_tup.norm_affils_list
+                            addr_norm_affils_list.append(auth_addr_norm_affils_list)
 
-                        addr_norm_inst_list = drop_multiple_item(addr_norm_inst_list, bp.EMPTY)
-                        norm_inst_str = build_string_from_list(addr_norm_inst_list, ";")
+                        addr_norm_affils_list = drop_multiple_item(addr_norm_affils_list, bp.EMPTY)
+                        norm_affils_str = build_string_from_list(addr_norm_affils_list, ";")
 
-                        pub_id_auths_inst_df.loc[row_num, norm_inst_col] = norm_inst_str
+                        pub_id_authaddr_df.loc[row_num, norm_affils_col] = norm_affils_str
 
-        new_auth_inst_df = concat_dfs([new_auth_inst_df, pub_id_auths_inst_df])
-    new_auth_inst_df.to_csv(parsing_authsinst_path, index=False, sep='\t')
+        new_authaddr_df = concat_dfs([new_authaddr_df, pub_id_authaddr_df])
+    new_authaddr_df.to_csv(parsing_authaddr_path, index=False, sep='\t')
 
 
-def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
-    """Corrects the parsing data of countries, addresses and authors-institutions 
+def correct_dedup(params_list, ids_dicts_list, test_txt=""):
+    """Corrects the parsing data of countries, addresses and authors-addresses 
     using the data of addresses corrected by the user.
 
-    This is done through the `_correct_parsing_countries`, `_correct_parsing_addresses` 
-    and `_correct_parsing_authsinst` internal functions. 
-    For this last function, it builds 3 dicts through the `build_norm_dicts` function 
-    imported from the `bmfuncts.config_utils` module, for the normalization of affiliations.
+    This is done through the `_correct_dedup_countries`, `_correct_dedup_addresses` 
+    and `_correct_dedup_authaddr` internal functions.
 
     Args:
-        params_list (list): The list composed of the Institute name (str), \
+        params_list (list): The list composed of the Institute's name (str), \   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         the full path to working folder (path), the corpus year defined \
         by 4 digits (str) and the full path to the folder where the final \
         results of parsings deduplication are saved.
-        item_filename_dict (dict): Dict keyed by the parsing items \
-        and valued by the file names used to save the parsing results.
         ids_dicts_list (list): The list composed of the data (dict) of hash ID \
         per publication ID and the data (dict) of DOI per publication ID.
         test_txt (str): For optional modification of the file names \
@@ -455,7 +445,7 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
         new_corrected_addresses_df = addresses_to_correct_df.copy()
         if not addresses_to_correct_df.empty:
             # Adding authors IDs with false addresses to correct addresses data
-            init_correct_dfs = [auth_inst_df, addresses_to_correct_df]
+            init_correct_dfs = [authaddr_df, addresses_to_correct_df]
             new_corrected_addresses_df = _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic,
                                                                              ids_dicts_list)
 
@@ -469,21 +459,23 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
     dedup_cols = [dedup_cols_dic[key] for key in cols_keys]
 
     # Setting params from "params_list"
-    (institute, wf_path, print_params, corpus_year, final_results_path,
-     addresses_to_correct_path) = params_list
+    (corpus_year, print_params, institute, wf_path, parsing_filenames_dict,
+     dedup_affil_params_dic, final_results_path, addresses_to_correct_path) = params_list
+
+    # Setting keys for getting parsing-deduplication results
+    correct_dedup_keys = bm_pg.PARSING_KEYS_DIC['correct_parsing']
 
     # Setting useful paths to files for parsing data correction
-    items_parsing_status = True
-    correct_paths_list = _set_correct_dedup_paths(final_results_path, corpus_year, item_filename_dict,
-                                                  items_parsing_status, test_txt)
+    correction_item_filenames = [parsing_filenames_dict[key] for key in correct_dedup_keys]
+    correct_paths_list = _set_correct_dedup_paths(final_results_path, corpus_year,
+                                                  correction_item_filenames, test_txt)
     (corrected_addresses_path, parsing_countries_path,
-     parsing_addresses_path, parsing_authsinst_path) = [correct_paths_list[idx] for idx in range(4)]
+     parsing_addresses_path, parsing_authaddr_path) = correct_paths_list
 
     # Setting parsing data for the correction process
-    parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
-    addresses_df = parsing_dict['addresses']
-    countries_df = parsing_dict['countries']
-    auth_inst_df = parsing_dict['authors_institutions']
+    dedup_read_params = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    parsing_dict = read_final_dedup(dedup_read_params)
+    addresses_df, authaddr_df, countries_df = [parsing_dict[key] for key in correct_dedup_keys]
 
     # Initializing status of addresses to correct
     correct_status = False
@@ -509,16 +501,14 @@ def correct_dedup(params_list, item_filename_dict, ids_dicts_list, test_txt=""):
         _correct_dedup_addresses(addresses_correct_dfs, dedup_cols_dic, parsing_addresses_path, corpus_year)
         print_step_text("    - Addresses parsing data corrected", print_params)
 
-        # Getting institutions normalization data for correction of authors-institutions parsing data
-        norm_dicts = build_norm_dicts(institute, wf_path)
+        # Correcting the authors-addresses parsing data using the user's correction of the addresses
+        authaddr_correct_dfs = [authaddr_df, corrected_addresses_df]
+        _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authaddr_path,
+                                dedup_affil_params_dic, corpus_year)
+        print_step_text("    - Authors-addresses parsing data corrected", print_params)
 
-        # Correcting the authors-institutions parsing data using the user's correction of the addresses
-        authsinst_correct_dfs = [auth_inst_df, corrected_addresses_df]
-        _correct_dedup_authsinst(authsinst_correct_dfs, dedup_cols_dic, parsing_authsinst_path,
-                                 norm_dicts, corpus_year)
-        print_step_text("    - Authors-institutions parsing data corrected", print_params)
         correct_status = True
         print_step_text("  - Cleaning file of addresses to correct by the user...", print_params)
         initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_addresses_path,
                                              corpus_year, print_params, file_clean=True)
-    return addresses_to_correct_path, correct_status
+    return correct_status

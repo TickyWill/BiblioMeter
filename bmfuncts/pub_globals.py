@@ -43,6 +43,8 @@ __all__ = ['ANALYSIS_IF',
            'OTP_SHEET_NAME_BASE',
            'OUTSIDE_ANALYSIS',
            'PARSING_CONFIG_FILE',
+           'PARSING_KEYS_CONVERT_DIC',
+           'PARSING_KEYS_DIC',
            'PARSING_PERF',
            'PRINT_DICT',
            'RAWDATA_CORRECT',
@@ -231,7 +233,7 @@ ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
 
 # Setting list of final results to save
 RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists", "ifs", "kws","countries", "continents",
-                   "authors", "institutions", "doctypes", "homonyms", "institute_country"]
+                   "authors", "affiliations", "doctypes", "homonyms", "institute_country"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -450,3 +452,27 @@ PRINT_DICT = {'purple'   : '\033[95m',
               'underline': '\033[4m',
               'end'      : '\033[0m',
              }
+
+
+# Order in the following list should not be changed
+
+PARSING_KEYS_DIC = {'all'             : ["pub", "auth", "addr", "countries", "affils",
+                                         "authaddr", "aukw", "ikw", "tkw", "subj",
+                                         "subsubj", "refs", "normaffils", "rawaddr"],
+                    'parsing'         : ["pub", "auth", "addr", "countries", "affils",
+                                         "authaddr", "aukw", "ikw", "tkw", "subj",
+                                         "subsubj", "refs"],
+                    'parsing_pub'     : "pub",
+                    'dedup_pub_nb'    : ["addr", "authaddr"],
+                    'merge'           : ["pub", "addr", "auth", "authaddr"],
+                    'unknown_country' : ["addr", "auth", "authaddr", "countries"],
+                    'correct_parsing' : ["addr", "authaddr", "countries"],
+                    'build_addresses' : ["addr", "authaddr"],
+                    'au_analysis'     : ["auth"],
+                    'kw_analysis'     : ["aukw", "ikw", "tkw"],
+                   }
+
+PARSING_KEYS_CONVERT_DIC = dict(zip(PARSING_KEYS_DIC['all'], bp.PARSING_ITEMS_LIST))
+
+PARSING_KEYS_REVERT_DIC = {PARSING_KEYS_CONVERT_DIC[key] : key for key in PARSING_KEYS_DIC['all']}
+

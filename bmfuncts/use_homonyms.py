@@ -32,7 +32,7 @@ def _set_use_homonyms_cols(institute, org_tup):
 
     This is done through the `set_homonym_col_names` function imported from the 
     `bmfuncts.rename_cols` module.
-    
+
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains parameters of Institute organization.
@@ -49,7 +49,7 @@ def _set_use_homonyms_cols(institute, org_tup):
                              'mat_col'      : homonyms_col_dic['matricul'],
                              'lastname_col' : homonyms_col_dic['last_name'],
                              'firstname_col': homonyms_col_dic['first_name'],
-                             'homonyms_col' : homonyms_col_dic['homonym'],                             
+                             'homonyms_col' : homonyms_col_dic['homonym'],
                             }
 
     homonyms_cols_list = list(homonyms_col_dic.values())
@@ -92,7 +92,7 @@ def _save_shaped_homonyms_file(homonyms_df, save_cols_list, out_path):
     wb.save(out_path)
 
 
-def solve_homonyms(institute, org_tup, print_params, in_path, out_path):
+def solve_homonyms(solve_homonyms_params, in_path, out_path):
     """Creates the file for homonyms solving by the user.
 
     First, a dataframe is built from specific columns 
@@ -116,6 +116,9 @@ def solve_homonyms(institute, org_tup, print_params, in_path, out_path):
         (tup): The tuple composed of end message (str) \
         and homonyms status (bool; True if homonyms are found).
     """
+    # Setting parameters value from 'solve_homonyms_params'
+    print_params, institute, org_tup = solve_homonyms_params
+
     print_step_text("\nBuilding data for homonyms resolution...", print_params)
 
     # Setting useful col names
@@ -176,7 +179,7 @@ def _set_homonyms_file_params(wf_path, corpus_year):
     return hash_id_file_path, homonyms_file_path, kept_homonyms_file_path
 
 
-def save_homonyms(sub_params_list):
+def save_homonyms(save_homonyms_params):
     """Saves the history of the resolved homonyms by the user.
 
     First, builds the dataframe to save with the following columns:
@@ -187,13 +190,13 @@ def save_homonyms(sub_params_list):
     Finally, saves the dataframe as Excel file.
 
     Args:
-        sub_params_list (list): The list composed of the Institute name (str), \
+        save_homonyms_params (list): The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
     """
-    # Setting params values from sub_params_list
-    institute, org_tup, wf_path, print_params, corpus_year = sub_params_list
+    # Setting params values from save_homonyms_params
+    corpus_year, print_params, institute, org_tup, wf_path = save_homonyms_params
     print_step_text("\nUpdating history of solved homonyms...", print_params)
 
     # Setting useful col names
@@ -241,7 +244,7 @@ def save_homonyms(sub_params_list):
     print_step_text("  - History of homonyms resolution saved", print_params)
 
 
-def set_saved_homonyms(sub_params_list, homonyms_status):
+def set_saved_homonyms(set_homonyms_params, homonyms_status):
     """Resolves the homonyms from the history of the resolved homonyms 
     before submitting the file for resolving remaining homonyms to the user.
 
@@ -251,7 +254,7 @@ def set_saved_homonyms(sub_params_list, homonyms_status):
     internal function.
 
     Args:
-        sub_params_list (list): The list composed of the Institute name (str), \
+        set_homonyms_params (list): The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
@@ -259,8 +262,8 @@ def set_saved_homonyms(sub_params_list, homonyms_status):
     Returns:
         (tup): (End message (str), actualized homonyms status (bool)).
     """
-    # Setting params values from sub_params_list
-    institute, org_tup, wf_path, print_params, corpus_year = sub_params_list
+    # Setting params values from set_homonyms_params
+    corpus_year, print_params, institute, org_tup, wf_path = set_homonyms_params
     print_step_text("\nUsing history of resolved homonyms...", print_params)
 
     # Setting useful col names
@@ -284,9 +287,7 @@ def set_saved_homonyms(sub_params_list, homonyms_status):
         hash_id_df = pd.read_excel(hash_id_file_path)
 
         # Building dataframe of pub_id and personal number to keep related to hash_id
-        mats_to_keep_df = pd.merge(hash_id_df,
-                                   homonyms_history_df,
-                                   how='inner',
+        mats_to_keep_df = pd.merge(hash_id_df, homonyms_history_df, how='inner',
                                    on=hash_id_col,)
         mats_to_keep_df = mats_to_keep_df.astype(str)
         mats_to_keep_df = mats_to_keep_df.drop(columns=[hash_id_col])

@@ -125,8 +125,8 @@ def _get_clean_kw_data(kw_df, keywords_col):
 
 
 def _set_kw_files_params(wf_path, corpus_year):
-    """Sets IFs specific file and folder 
-    
+    """Sets IFs specific file and folder.
+
     Args:
         wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
@@ -137,17 +137,11 @@ def _set_kw_files_params(wf_path, corpus_year):
         name for building names of missing-ISSNs files.
     """
     # Setting useful aliases
-    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
-    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
-    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
     kw_analysis_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting useful filenames dict
-    kw_items_dict = {'AK': auth_kw_item_alias,
-                     'IK': index_kw_item_alias,
-                     'TK': title_kw_item_alias,
-                    }
+    kw_items_dict = dict(zip(['AK', 'IK', 'TK'], list(bm_pg.PARSING_KEYS_DIC[kw_analysis])))
 
     # Setting output-data paths
     year_folder_path = wf_path / Path(corpus_year)
@@ -193,7 +187,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         (path): Full path to the folder where results of keywords analysis are saved.
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, _, corpus_year = params_list
+    corpus_year, institute, org_tup, wf_path, datatype, parsing_filenames_dict = params_list
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
@@ -215,14 +209,15 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(15)
 
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
+    dedup_read_params = [corpus_year, wf_path, parsing_filenames_dict,
+                         final_results_path]
+    dedup_parsing_dict = read_final_dedup(dedup_read_params)
     if progress_callback:
         progress_callback(25)
 
     # Building the dataframe to be analyzed
     cols_list = [final_pub_id_col] + depts_col_list
-    pub_df = read_final_pub_list_data(final_results_path,
-                                      corpus_year, cols_list)
+    pub_df = read_final_pub_list_data(final_results_path, corpus_year, cols_list)
     if progress_callback:
         progress_callback(30)
 
@@ -231,6 +226,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     if progress_callback:
         progress_bar_state = 30
         progress_bar_loop_progression = 50 // len(kw_items_dict.keys())
+
     for kw_type, kw_item in kw_items_dict.items():
         # Building the keywords dataframe for the keywords type 'kw_type'
         # from 'dedup_parsing_dict' dict at 'kw_item' key
@@ -252,7 +248,8 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["kws"] = True
-    _ = save_final_results(params_list, results_to_save_dict)
+    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
+    _ = save_final_results(save_params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(100)
     return kw_analysis_folder_path

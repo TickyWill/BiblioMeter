@@ -697,7 +697,8 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         imported from "bmfuncts.useful_functs" internal module.
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, _, print_params, corpus_year = params_list
+    corpus_year, print_params, institute, org_tup, wf_path = params_list[0:5]
+
     print_step_text("\nMerge publications authors and employees information...",
                         print_params)
 

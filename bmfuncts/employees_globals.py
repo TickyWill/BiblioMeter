@@ -16,6 +16,7 @@ __all__ = [
            'SEARCH_DEPTH',
           ]
 
+
 SEARCH_DEPTH = 10
 
 EMPLOYEES_ARCHI = {"root"                        : "Parametres Institut",

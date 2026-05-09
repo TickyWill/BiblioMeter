@@ -1,4 +1,10 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
+
+TODO: Move functions that are specific to parsing to `parse_data` module:
+- build_and_save_dedup_db_ids
+- compute_dedup_pub_number
+- read_parsing_dict
+- set_rawdata
 """
 
 __all__ = ['build_list_from_str',
@@ -45,7 +51,7 @@ import pandas as pd
 
 # local imports
 import bmfuncts.pub_globals as bm_pg
-from bmfuncts.config_utils import set_user_config
+from bmfuncts.config_utils import set_rawdata_and_parsing_paths
 from bmfuncts.save_final_results import save_db_ids_data
 
 
@@ -309,21 +315,21 @@ def compute_dedup_pub_number(org_tup, dedup_parsing_dict):
     """
     # Setting parameters from globals
     pub_id_col = bp.COL_NAMES['pub_id']
-    articles_item = bp.PARSING_ITEMS_LIST[0]
-    auth_inst_item = bp.PARSING_ITEMS_LIST[5]
 
     # Setting useful Institute's parameters
     institute_cols = [col for col in org_tup[10] if not org_tup[10][col]]
 
-    # Computing the total articles number
-    articles_df = dedup_parsing_dict[articles_item]
-    all_pub_nb = len(articles_df)
-    all_pub_ids = articles_df[pub_id_col].to_list()
+    # Getting useful parsing results
+    parsing_pub_df, authaddr_df = [dedup_parsing_dict[key]
+                                   for key in bm_pg.PARSING_KEYS_DIC['dedup_pub_nb']]
+
+    # Computing the total publications-number
+    all_pub_nb = len(parsing_pub_df)
+    all_pub_ids = parsing_pub_df[pub_id_col].to_list()
 
     # Computing the number of articles tagged as of the Institute
-    authorsinst_df = dedup_parsing_dict[auth_inst_item]
-    return_tup = _compute_col_pub_number(institute_cols, authorsinst_df, all_pub_ids)
-    institute_pub_nb, left_authorsinst_df, left_pub_ids = return_tup
+    return_tup = _compute_col_pub_number(institute_cols, authaddr_df, all_pub_ids)
+    institute_pub_nb, _, _ = return_tup
     return all_pub_nb, institute_pub_nb
 
 
@@ -678,8 +684,8 @@ def set_rawdata(wf_path, datatype, years_list, database):
     targeted by the path 'database_folder_path' to the rawdata folder 
     targeted by the path 'rawdata_path'. 
     To do that it uses the `_set_database_extract_info` internal function. 
-    When the database is Scopus and the data type to be analyzed is restricted to WoS,
-    empty files ending with 'database_file_end' are used as Scopus rawdata.
+    When the data type to be analyzed is restricted to one of the possible rawdata,
+    empty files ending with 'database_file_end' are used as the unused rawdata.
 
     Args:
         wf_path (path): The path to the working folder.
@@ -720,7 +726,7 @@ def set_rawdata(wf_path, datatype, years_list, database):
                 year_database_file_path = _get_database_file_path(year_database_folder_path,
                                                                   last_year_database_file_end)
 
-        rawdata_path_dict, _, _ = set_user_config(wf_path, year, bm_pg.BDD_LIST)
+        rawdata_path_dict, _ = set_rawdata_and_parsing_paths(wf_path, year, bm_pg.BDD_LIST)
         rawdata_path = rawdata_path_dict[database]
         if os.path.exists(rawdata_path):
             for item in os.listdir(rawdata_path):
@@ -827,13 +833,13 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
     return message
 
 
-def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
+def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
     """Reads the dataframes of the parsing results from files of a specified type.
 
     Args:
         parsing_path (path): Full path to the folder where the parsing \
         results are located.
-        item_filename_dict (dict): Dict keyed by the parsing items and valued \
+        parsing_filenames_dict (dict): Dict keyed by the parsing items and valued \
         by the file names of the parsing results.
         save_extent (str): File type given by file extension without the dot separator \
         (ex: "xlsx" for Excel file type).
@@ -845,10 +851,10 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
     """
     parsing_dict = {}
     # Cycling on parsing items
-    for item in bp.PARSING_ITEMS_LIST:
+    for item in bm_pg.PARSING_KEYS_DIC['parsing']:
         item_df = None
         if save_extent == "xlsx":
-            item_xlsx_file = item_filename_dict[item] + ".xlsx"
+            item_xlsx_file = parsing_filenames_dict[item] + ".xlsx"
             item_xlsx_path = parsing_path / Path(item_xlsx_file)
             if item_xlsx_path.is_file():
                 try:
@@ -856,7 +862,7 @@ def read_parsing_dict(parsing_path, item_filename_dict, save_extent):
                 except pd.errors.EmptyDataError:
                     item_df = pd.DataFrame()
         elif save_extent=="dat":
-            item_tsv_file = item_filename_dict[item] + ".dat"
+            item_tsv_file = parsing_filenames_dict[item] + ".dat"
             item_tsv_path = parsing_path / Path(item_tsv_file)
             if item_tsv_path.is_file():
                 try:

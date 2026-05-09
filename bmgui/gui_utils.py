@@ -36,7 +36,7 @@ import BiblioParsing as bp
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
-from bmfuncts.config_utils import set_user_config
+from bmfuncts.config_utils import set_rawdata_and_parsing_paths
 
 
 def disable_buttons(buttons_list):
@@ -59,7 +59,7 @@ def show_frame(self, page_name):
 
 def font_size(size, scale_factor):
     """Sets the font-size based on scale_factor.
-    
+
     If the font-size is less than minimum_size, 
     it is set to the minimum size.
     """
@@ -389,10 +389,9 @@ def existing_corpuses(wf_path, corpuses_number=None):
     dedup_parsing_list = []
 
     for year in years_folder_list:
-
         # Getting the full paths of the working folder architecture for the corpus "year"
-        config_tup = set_user_config(wf_path, year, bm_pg.BDD_LIST)
-        rawdata_path_dict, parsing_path_dict = config_tup[0], config_tup[1]
+        rawdata_path_dict, parsing_path_dict = set_rawdata_and_parsing_paths(wf_path, year,
+                                                                             bm_pg.BDD_LIST)
 
         # Setting useful paths for database 'database_type'
         scopus_rawdata_path = rawdata_path_dict["scopus"]

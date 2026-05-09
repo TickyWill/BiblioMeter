@@ -256,7 +256,7 @@ def build_submit_df(empl_df, pub_df, wf_path, print_params,
 
     Args:
         empl_df (dataframe): Employees database of a given year.
-        pub_df (dataframe): Institute publications list with one row per author. 
+        pub_df (dataframe): Institute's publications-list with one row per author.
         wf_path (path): Full path to working folder.
         test_case (str): Optional test case for testing the function (default: "No test").
         test_name (str): Optional author's last-name for testing the function \
@@ -264,9 +264,9 @@ def build_submit_df(empl_df, pub_df, wf_path, print_params,
         init_status (bool): Optional, status of initial search (default: False)
     Returns:
         (tup): (dataframe of merged employees information with \
-        the publications list with one row per Institute author with \
+        the publications list with one row per Institute's author with \
         identified homonyms, dataframe of publications list with \
-        one row per author that has not been identified as Institute employee).
+        one row per author that has not been identified as Institute's employee).
     Note:
         Care is taken to keep 'NA' value for the first name initials \
         (that are set to NaN otherwise) through the `keep_initials` function \
