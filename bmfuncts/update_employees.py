@@ -17,8 +17,8 @@ import pandas as pd
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import get_sheet_names
+from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import standardize_txt
 
 

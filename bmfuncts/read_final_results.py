@@ -18,8 +18,8 @@ import pandas as pd
 
 # local imports
 import bmfuncts.pub_globals as bm_pg
+from bmfuncts.parse_data import read_parsing_dict
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import read_parsing_dict
 from bmfuncts.useful_functs import set_capwords_lambda
 
 

@@ -141,7 +141,7 @@ def _set_kw_files_params(wf_path, corpus_year):
     kw_analysis_folder_alias = bm_pg.ARCHI_YEAR["keywords analysis"]
 
     # Setting useful filenames dict
-    kw_items_dict = dict(zip(['AK', 'IK', 'TK'], list(bm_pg.PARSING_KEYS_DIC[kw_analysis])))
+    kw_items_dict = dict(zip(['AK', 'IK', 'TK'], list(bm_pg.PARSING_KEYS_DIC['kw_analysis'])))
 
     # Setting output-data paths
     year_folder_path = wf_path / Path(corpus_year)

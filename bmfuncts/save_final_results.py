@@ -128,12 +128,10 @@ def save_parsing_dict(parsing_dict, parsing_path, parsing_filenames_dict,
         Data combination type from corpuses databases (str), \
         4 digits year of the corpus (str) ] (default=[]).
     """
-    print(parsing_dict.keys())
     # Cycling on parsing items
     for item in bm_pg.PARSING_KEYS_DIC['parsing']:
         item_df = parsing_dict[item]
         item_filename_base = parsing_filenames_dict[item]
-        print("\nSaving :", item, "with name:", item_filename_base, "\n")                                               # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         _save_item(item_df, item_filename_base, save_extent, parsing_path)
 
         if dedup_infos:

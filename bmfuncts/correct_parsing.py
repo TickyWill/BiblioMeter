@@ -39,7 +39,7 @@ def _set_parse_cols_dic():
                       'bp_country_col'     : bp.COL_NAMES['country'][2],
                       'bp_author_id_col'   : bp.COL_NAMES['auth_inst'][1],
                       'bp_norm_affils_col' : bp.COL_NAMES['auth_inst'][4],
-                      'bp_raw_addr_col'    : bp.COL_NAMES['auth_inst'][5],
+                      'bp_raw_affils_col'  : bp.COL_NAMES['auth_inst'][5],
                       'bp_author_col'      : bp.COL_NAMES['authors'][2],
                       'author_ids_col'     : 'Author IDs',
                       'authors_col'        : 'Author names',
@@ -152,6 +152,22 @@ def _remove_unknown_country(input_addr_str, sep_str, unknown_country):
     return output_addr_str
 
 
+def _set_addr_first_auth_id(addr_auth_ids):
+    # Ensuring type of 'addr_auth_ids' as string
+    auth_ids_str = str(addr_auth_ids)
+
+    if ";" in auth_ids_str:
+        # Keeping only the first item as integer
+        # assuming author's IDs are sorted
+        auth_ids_list = auth_ids_str.split('; ')
+        addr_first_auth_id = int(auth_ids_list[0])
+    else:
+        # Setting type of 'addr_first_auth_id' as integer
+        # assuming only one author ID
+        addr_first_auth_id = int(auth_ids_str)
+    return addr_first_auth_id
+
+
 def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correct_path,
                                     database, corpus_year, sorting_cols, file_clear=False):
     """Saves the data of addresses with unknown-country for the process of correcting the parsing data.
@@ -164,18 +180,28 @@ def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correc
         sorting_cols (list): Columns names for sorting the data to save.
         file_clear (bool): Optional parameter for saving empty data (default: False).
     """
-    author_ids_col = sorting_cols[1]
-    save_addresses_to_correct_df = addresses_to_correct_df.copy()
-    save_addresses_to_correct_df[author_ids_col] = save_addresses_to_correct_df[author_ids_col].astype(int)
     if file_clear:
-        empty_df_cols = save_addresses_to_correct_df.columns
+        # Building empty data to save with col names and 10 empty rows
+        empty_df_cols = addresses_to_correct_df.columns
         cols_nb = len(empty_df_cols)
         data_row = [""] * cols_nb
         data = sum([], [data_row]*10)
         save_addresses_to_correct_df = pd.DataFrame(data, columns=empty_df_cols)
+    else:
+        # Setting actual sorting columns to use authors' IDs as int
+        author_ids_col = sorting_cols[1]
+        temp_col = 'sorting_auth_id'
+        sorting_cols[1] = temp_col
 
-    # Saving data of corrected addresses with unknown-countries
-    save_addresses_to_correct_df.sort_values(by=sorting_cols, axis=0, inplace=True)
+        # Building temporary column of integer author's IDs
+        save_addresses_to_correct_df = addresses_to_correct_df.assign(temp=addresses_to_correct_df[author_ids_col])
+        save_addresses_to_correct_df = save_addresses_to_correct_df.rename({"temp": temp_col}, axis=1)
+        save_addresses_to_correct_df[temp_col] = save_addresses_to_correct_df[temp_col].apply(_set_addr_first_auth_id)
+
+        # Saving data of corrected addresses of addresses with initial unknown-countries
+        save_addresses_to_correct_df = save_addresses_to_correct_df.sort_values(by=sorting_cols, axis=0)
+        save_addresses_to_correct_df = save_addresses_to_correct_df.drop(columns=temp_col)
+
     df_title = bm_pg.DF_TITLES_LIST[19]
     wb, ws = format_page(save_addresses_to_correct_df, df_title)
     ws.title = database + " " + corpus_year

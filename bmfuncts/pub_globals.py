@@ -463,7 +463,7 @@ PARSING_KEYS_DIC = {'all'             : ["pub", "auth", "addr", "countries", "af
                                          "authaddr", "aukw", "ikw", "tkw", "subj",
                                          "subsubj", "refs"],
                     'parsing_pub'     : "pub",
-                    'dedup_pub_nb'    : ["addr", "authaddr"],
+                    'dedup_pub_nb'    : ["pub", "authaddr"],
                     'merge'           : ["pub", "addr", "auth", "authaddr"],
                     'unknown_country' : ["addr", "auth", "authaddr", "countries"],
                     'correct_parsing' : ["addr", "authaddr", "countries"],

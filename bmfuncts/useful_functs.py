@@ -1,16 +1,8 @@
 """Module of useful functions used by several modules of package `bmfuncts`.
-
-TODO: Move functions that are specific to parsing to `parse_data` module:
-- build_and_save_dedup_db_ids
-- compute_dedup_pub_number
-- read_parsing_dict
-- set_rawdata
 """
 
 __all__ = ['build_list_from_str',
            'build_string_from_list',
-           'build_and_save_dedup_db_ids',
-           'compute_dedup_pub_number',
            'concat_dfs',
            'create_archi',
            'create_folder',
@@ -22,13 +14,11 @@ __all__ = ['build_list_from_str',
            'print_step_title',
            'print_to_console',
            'print_to_log',
-           'read_parsing_dict',
            'reorder_df',
            'save_xlsx_file',
            'set_bold_txt',
            'set_capwords_lambda',
            'set_print_same_len',
-           'set_rawdata',
            'set_year_pub_id',
            'standardize_firstname_initials',
            'standardize_full_name_order',
@@ -39,20 +29,16 @@ __all__ = ['build_list_from_str',
 
 # Standard library imports
 import os
-import shutil
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
 # 3rd party imports
 import BiblioParsing as bp
-import numpy as np
 import pandas as pd
 
 # local imports
 import bmfuncts.pub_globals as bm_pg
-from bmfuncts.config_utils import set_rawdata_and_parsing_paths
-from bmfuncts.save_final_results import save_db_ids_data
 
 
 def print_step_title(step_title, print_params):
@@ -272,65 +258,6 @@ def drop_multiple_item(init_list, item):
         item_idx = final_list.index(item)
         del final_list[item_idx]
     return final_list
-
-
-def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
-    # Setting parameters from globals
-    pub_id_col = bp.COL_NAMES['pub_id']
-
-    # Selecting the publication IDs tagged in 'col' column
-    sub_data_dict = {}
-    for col in cols:
-        sub_data_dict[col] = in_left_authorsinst_df[in_left_authorsinst_df[col]==1]
-        sub_data_dict[col] = sub_data_dict[col].drop_duplicates(subset=[pub_id_col])
-    sub_data_df = concat_dfs(sub_data_dict.values())
-    sub_data_df = sub_data_df.drop_duplicates(subset=[pub_id_col])
-
-    # Computing the number of publications tagged in 'col' column
-    col_pub_nb = len(sub_data_df)
-
-    # Keeping only the data without tag in 'col' column
-    pub_ids_to_drop = sub_data_df[pub_id_col].to_list()
-    out_left_pub_ids = list(set(in_left_pub_ids)-set(pub_ids_to_drop))
-    out_left_authorsinst_df = in_left_authorsinst_df[in_left_authorsinst_df[pub_id_col].isin(out_left_pub_ids)]
-
-    return col_pub_nb, out_left_authorsinst_df, out_left_pub_ids
-
-
-def compute_dedup_pub_number(org_tup, dedup_parsing_dict):
-    """Computes publications numbers resulting from the deduplication of parsing results.
-
-    The function builts a dictionary keyed by the tags of Institute's publications as given 
-    by the 'org_tup' parameter and valued by corresponding computed number of publications. 
-    The total number of publication is given at key "all".
-
-    Args:
-        org_tup (tup): Contains Institute parameters.
-        dedup_parsing_dict (dict): Parsing results keyed by parsing items \
-        given by 'PARSING_ITEMS_LIST' global imported from the package \
-        imported as 'bp' and valued by the data (dataframes) of parsing results.
-    Returns:
-        (tup): (Total number of articles (int), Number of articles tagged \
-        to be of the Institute).
-    """
-    # Setting parameters from globals
-    pub_id_col = bp.COL_NAMES['pub_id']
-
-    # Setting useful Institute's parameters
-    institute_cols = [col for col in org_tup[10] if not org_tup[10][col]]
-
-    # Getting useful parsing results
-    parsing_pub_df, authaddr_df = [dedup_parsing_dict[key]
-                                   for key in bm_pg.PARSING_KEYS_DIC['dedup_pub_nb']]
-
-    # Computing the total publications-number
-    all_pub_nb = len(parsing_pub_df)
-    all_pub_ids = parsing_pub_df[pub_id_col].to_list()
-
-    # Computing the number of articles tagged as of the Institute
-    return_tup = _compute_col_pub_number(institute_cols, authaddr_df, all_pub_ids)
-    institute_pub_nb, _, _ = return_tup
-    return all_pub_nb, institute_pub_nb
 
 
 def reorder_df(df, col_dict):
@@ -561,8 +488,7 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
     elif dfs_clean_nb==1:
         concat_df = dfs_clean_list[0].copy()
     else:
-        concat_df = pd.concat(dfs_clean_list, axis=axis,
-                              ignore_index=concat_ignore_index)
+        concat_df = pd.concat(dfs_clean_list, axis=axis, ignore_index=concat_ignore_index)
 
     if dedup:
         keep_type = keep
@@ -571,8 +497,7 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
         # Removing duplicates
         full_col_list = list(concat_df.columns)
         if dedup_cols and all(i in full_col_list for i in dedup_cols):
-            concat_df = concat_df.drop_duplicates(subset=dedup_cols,
-                                                  keep=keep_type,
+            concat_df = concat_df.drop_duplicates(subset=dedup_cols, keep=keep_type,
                                                   ignore_index=drop_ignore_index)
         else:
             concat_df = concat_df.drop_duplicates(keep=keep_type,
@@ -610,134 +535,6 @@ def standardize_txt(text):
     # Remove minus
     new_text = new_text.replace("-", " ").strip()
     return new_text
-
-
-def _get_database_file_path(database_folder_path, database_file_end):
-    """Selects the most recent file ending with 'database_file_end'.
-
-    This is done through the following steps:
-
-    1. Lists all the files with this ending present in the \
-    folder targeted by "database_folder_path".
-    2. Selects the most recent one in this list using date \
-    of last modification.
-
-    Args:
-        database_folder_path (path): The path to the folder where files \
-        with names ending with 'database_file_end' will be searched.
-        database_file_end (str): Ending of the names of the files \
-        to be searched.
-    Returns:
-        (path): Path targeting the file found and selected.
-    """
-    list_data_base = []
-    for file in os.listdir(database_folder_path):
-        if file.endswith(database_file_end):
-            list_data_base.append(file)
-    if list_data_base:
-        database_file_path = database_folder_path / Path(list_data_base[0])
-    else:
-        database_file_path = None
-    return database_file_path
-
-
-def _set_database_extract_info(wf_path, datatype, database):
-    """Builds the path to database extractions and the file 
-    names ending that are specific to the data type 'datatype'.
-
-    It also sets the folder name of the empty files required for 
-    specific data types (ex: using only "WoS" datatype requires 
-    empty files for Scopus extractions). 
-    To do that, it uses the global 'ARCHI_EXTRACT' defined 
-    in the module imported as bm_pg.
-
-    Args:
-        wf_path (path): The path to the working folder.
-        datatype (str): The data type of data combination type \
-        from databases.
-        database (str): The database selected for the analysis.
-    Returns:
-        (tup): (path to database extractions (path), \
-        file name ending (str), \
-        path to the folder of empty files (path)).
-    """
-
-    # Setting useful aliases
-    extraction_folder = bm_pg.ARCHI_EXTRACT["root"]
-    empty_file_folder = bm_pg.ARCHI_EXTRACT["empty-file folder"]
-    database_folder = bm_pg.ARCHI_EXTRACT[database]["root"]
-    database_file_base = bm_pg.ARCHI_EXTRACT[database][datatype]
-    database_file_extent = bm_pg.ARCHI_EXTRACT[database]["file_extent"]
-    database_file_end = database_file_base + database_file_extent
-
-    # Setting useful paths
-    extraction_folder_path = wf_path / Path(extraction_folder)
-    database_folder_path = extraction_folder_path / Path(database_folder)
-
-    return database_folder_path, database_file_end, empty_file_folder, database_file_extent
-
-
-def set_rawdata(wf_path, datatype, years_list, database):
-    """Sets the rawdata to be used for the data type 'datatype' analysis.
-
-    It copies the files ending with 'database_file_end' from database folder 
-    targeted by the path 'database_folder_path' to the rawdata folder 
-    targeted by the path 'rawdata_path'. 
-    To do that it uses the `_set_database_extract_info` internal function. 
-    When the data type to be analyzed is restricted to one of the possible rawdata,
-    empty files ending with 'database_file_end' are used as the unused rawdata.
-
-    Args:
-        wf_path (path): The path to the working folder.
-        datatype (str): The data type of data combination type \
-        from databases.
-        years_list (list): List of corpus years (4 digits str).
-        database (str): The database selected for the analysis.
-    Returns:
-        (str): End message recalling the database and data type used.
-    """
-    # Getting database extractions info
-    return_tup = _set_database_extract_info(wf_path, datatype, database)
-    database_folder_path, database_file_end, empty_file_folder, database_file_extent = return_tup
-
-    # Setting specific parameters for Scopus-HAL data
-    last_year_database_file_end = database_file_end
-    if datatype==bm_pg.DATATYPE_LIST[1] and database==bp.SCOPUS:
-        last_year_datatype = bm_pg.DATATYPE_LIST[0]
-        return_tup = _set_database_extract_info(wf_path, last_year_datatype,
-                                                database)
-        _, last_year_database_file_end, _, _ = return_tup
-
-    # Cycling on year
-    for year in years_list:
-        if database==bp.SCOPUS and datatype==bm_pg.DATATYPE_LIST[2]:
-            year_database_folder_path = database_folder_path / Path(empty_file_folder)
-            year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                              database_file_end)
-        elif database==bp.WOS and datatype==bm_pg.DATATYPE_LIST[3]:
-            year_database_folder_path = database_folder_path / Path(empty_file_folder)
-            year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                              database_file_end)
-        else:
-            year_database_folder_path = database_folder_path / Path(year)
-            year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                              database_file_end)
-            if not year_database_file_path:
-                year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                                  last_year_database_file_end)
-
-        rawdata_path_dict, _ = set_rawdata_and_parsing_paths(wf_path, year, bm_pg.BDD_LIST)
-        rawdata_path = rawdata_path_dict[database]
-        if os.path.exists(rawdata_path):
-            for item in os.listdir(rawdata_path):
-                if item.endswith(database_file_extent):
-                    os.remove(os.path.join(rawdata_path, item))
-        else:
-            os.makedirs(rawdata_path)
-        shutil.copy2(year_database_file_path, rawdata_path)
-
-    message = f"\n{database} rawdata set for {datatype} data type."
-    return message
 
 
 def create_folder(root_path, folder, verbose=False):
@@ -831,100 +628,3 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
     else:
         message = f"{corpus_year_folder} folder created"
     return message
-
-
-def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
-    """Reads the dataframes of the parsing results from files of a specified type.
-
-    Args:
-        parsing_path (path): Full path to the folder where the parsing \
-        results are located.
-        parsing_filenames_dict (dict): Dict keyed by the parsing items and valued \
-        by the file names of the parsing results.
-        save_extent (str): File type given by file extension without the dot separator \
-        (ex: "xlsx" for Excel file type).
-    Returns:
-        (dict): Parsing results keyed by parsing items \
-        given by 'PARSING_ITEMS_LIST' global imported from \
-        the package imported as bp and valued by the dataframes \
-        of parsing results.
-    """
-    parsing_dict = {}
-    # Cycling on parsing items
-    for item in bm_pg.PARSING_KEYS_DIC['parsing']:
-        item_df = None
-        if save_extent == "xlsx":
-            item_xlsx_file = parsing_filenames_dict[item] + ".xlsx"
-            item_xlsx_path = parsing_path / Path(item_xlsx_file)
-            if item_xlsx_path.is_file():
-                try:
-                    item_df = pd.read_excel(item_xlsx_path)
-                except pd.errors.EmptyDataError:
-                    item_df = pd.DataFrame()
-        elif save_extent=="dat":
-            item_tsv_file = parsing_filenames_dict[item] + ".dat"
-            item_tsv_path = parsing_path / Path(item_tsv_file)
-            if item_tsv_path.is_file():
-                try:
-                    item_df = pd.read_csv(item_tsv_path, sep = "\t")
-                except pd.errors.EmptyDataError:
-                    item_df = pd.DataFrame()
-
-        if item_df is not None:
-            parsing_dict[item] = item_df
-    return parsing_dict
-
-
-def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_infos):
-    """Builds and save the list of the database identifiers kept after the deduplication process.
-
-    It is based on the concatenation of the database identifiers through the `concat_dfs` function
-    of the same module and the selection of the identifiers kept after the deduplication process.
-
-    Args:
-        dedup_article_df (dataframe): The articles data resulting from the deduplication process.
-        parsing_path_dict (dict): The full path to the data resulting from all parsing steps.
-    Returns:
-        (dict): Keyed by database types and valued by number of kept publications for each database type.
-    """
-    # Setting parameters from globals
-    pub_id_col = bp.COL_NAMES['pub_id']
-    dbs_ids_col = bm_pg.DB_ID_COLS["all_dbs"]
-    source_col = bm_pg.COL_NAMES_BONUS['source']
-
-    # Building the list of identifiers data of each database type
-    db_ids_dfs_list = []
-    increment = 0
-    for db_type in bm_pg.BDD_LIST:
-        # Getting the identifiers list for the selected database-type
-        db_ids_file = f"{db_type.capitalize()}{bm_pg.IDS_FILE_BASE}"
-        db_ids_path = parsing_path_dict[db_type] / Path(db_ids_file)
-        db_ids_df = pd.read_excel(db_ids_path)
-
-        # Incrementing the Pub_id for the concatenation to align with the deduplication data
-        db_ids_df[pub_id_col] = db_ids_df[pub_id_col].apply(lambda x: x + increment)
-
-        # Enhancing the data with the database-type name set in a new column
-        db_ids_df[source_col] = db_type
-
-        # Setting the same column name for the database identifiers to allow data concatenation
-        db_ids_df.rename({bm_pg.DB_ID_COLS[db_type]: dbs_ids_col}, axis=1, inplace=True)
-        db_ids_dfs_list.append(db_ids_df)
-        increment += len(db_ids_df)
-
-    # Building the full identifiers data by concatenating the ones of each database type
-    all_db_ids_df = concat_dfs(db_ids_dfs_list, dedup=False)
-
-    # Selecting the identifiers data kept after the deduplication process
-    pub_ids_list = dedup_article_df[pub_id_col].to_list()
-    dedup_db_ids_df = all_db_ids_df[all_db_ids_df[pub_id_col].isin(pub_ids_list)]
-
-    # Saving the resulting identifiers data
-    save_db_ids_data(dedup_db_ids_df, parsing_path_dict["dedup"], "dedup", dedup_infos=dedup_db_infos)
-
-    # Computing the number of kept identifiers per database type
-    ids_nb_dict = {}
-    for db_type in bm_pg.BDD_LIST:
-        db_df = dedup_db_ids_df[dedup_db_ids_df[source_col]==db_type]
-        ids_nb_dict[db_type] = len(db_df)
-    return ids_nb_dict
