@@ -28,6 +28,7 @@ __all__ = ['build_list_from_str',
 
 
 # Standard library imports
+import numpy as np
 import os
 import xml.etree.ElementTree as ET
 import zipfile
