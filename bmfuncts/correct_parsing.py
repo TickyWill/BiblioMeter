@@ -559,7 +559,7 @@ def _correct_parsing_countries(countries_correct_dfs, parse_cols_dic):
         parse_cols_dic (dict): The dict giving the columns names for the \
         process of correcting parsing data.
     Returns:
-        (str): Final message.
+        (dataframe): The corrected parsing data of countries.
     """
     # Setting useful col names from 'parse_cols_dic' arg
     cols_keys = ['bp_pub_id_col', 'bp_address_id_col', 'bp_country_col']
@@ -598,7 +598,7 @@ def _correct_parsing_addresses(addresses_correct_dfs, parse_cols_dic):
         parse_cols_dic (dict): The dict giving the columns names for the \
         process of correcting parsing data.
     Returns:
-        (str): Final message.
+        (dataframe): The corrected parsing data of addresses.
     """
     # Setting useful col names from 'parse_cols_dic' arg
     cols_keys = ['bp_pub_id_col', 'bp_address_id_col', 'bp_address_col', 'correct_address_col']
@@ -644,12 +644,10 @@ def _correct_parsing_authaddr(authaddr_correct_dfs, parse_cols_dic,
         the addresses with unknown-country.
         parse_cols_dic (dict): The dict giving the columns names for the process \
         of correcting parsing data.
-        norm_dicts (list): Composed of the data (dict) per country for normalizing the authors' \
-        affiliations, the data (dict) of affiliations types and the data (dict) of towns \
-        per country.
+        affil_params_dic (dict): 
         unknown_country (str): Key word for unknown country.
     Returns:
-        (str): Final message.
+        (dataframe): The corrected parsing data of authors with addresses.
     """
     # Setting useful col names from 'parse_cols_dic' arg
     cols_keys = ['bp_pub_id_col', 'bp_country_col', 'bp_address_col', 'correct_address_col', 'bp_author_id_col',
@@ -726,21 +724,23 @@ def correct_parsing(params_list, parsing_path, parsing_dict, unknown_country, te
     imported from the `bmfuncts.config_utils` module, for the normalization of affiliations.
 
     Args:
-        params_list (list)/ The list composed of the Institute name (str), \
-        the full path to working folder (path), the database name (ex: 'wos' or 'scopus') \
-        and the corpus year defined by 4 digits (str).
-        parsing_path (path): Full path to the folder of the parsing results in the corpus folder.
-        parsing_dict (dict): Parsing results keyed by parsing items \
-        given by 'PARSING_ITEMS_LIST' global imported from the `BiblioParsing` package \
-        imported as 'bp' and valued by the data (dataframes) of parsing results.
-        parsing_filenames_dict (dict): Valued by the file names (str) of the parsing items.
+        params_list (list): The list composed of the name of the rawdata-database, \
+        of the 4 digits year of the corpus (str), of the print parameters (list), \
+        of the Institute's name (str), of the full path to working folder (path), \
+        of the dict giving the full paths to the Institute's files to use for \
+        affiliations parsing of Institute's authors at rawdata-parsing step, \
+        and of the dict giving the name of the parsing file for each parsed item.
+        parsing_path (path): Full path to the folder of the parsing results \
+        in the corpus folder.
+        parsing_dict (dict): Parsing results keyed by parsing items and valued by \
+        the data (dataframes) of parsing results.
         unknown_country (str): Key word for unknown country.
-        print_params (list): Parameters for the `print_step_text` function \
-        imported from the `bmfuncts.useful_functs` module.
         test_txt (str): For optional modification of the file names \
         for saving the corrected parsing data during code test (default="").
     Returns:
         (bool): True if the parsing data have been corrected.
+    Note:
+        The 'PARSING_KEYS_DIC' global is imported from the `bmfuncts.pub_globals` package.
     """
     # Setting parameters from 'params_list'
     (database, corpus_year, print_params, institute, wf_path,

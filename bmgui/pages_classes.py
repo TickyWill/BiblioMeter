@@ -12,8 +12,8 @@ __all__ = ['AnalyzeCorpusPage',
 
 
 # Standard library imports
+import datetime
 import tkinter as tk
-from datetime import datetime
 from tkinter import messagebox
 from tkinter import font as tkFont
 
@@ -133,11 +133,10 @@ class SetLaunchButton:
             master (class): `bmgui.main_page.AppMain` class.
         """
         # Setting run info
-        run_date_time = str(datetime.now())[:16]
-        run_date, run_time = run_date_time.split(" ")
-        master.log_file = f"{run_date}_{run_time.replace(':', '-')}_{bm_pg.LOG_FILE}"
+        run_date_time = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
+        master.log_file = f"{run_date_time.replace(' ', '_')}_{bm_pg.LOG_FILE}"
         log_title = f"BM ANALYSIS FOR {master.institute}"
-        print_txt = (f"\n\n    Date            : {run_date} {run_time}")
+        print_txt = f"\n\n    Date            : {run_date_time}"
 
         if not master.datatype:
             print_txt += ("\n    Data combination type not yet selected"
@@ -149,7 +148,7 @@ class SetLaunchButton:
                             "\nVeuillez le sélectionner avant de lancer l'application.")
             messagebox.showwarning(warning_title, warning_text)
         else:
-            print_txt += (f"\n    Data combination: {master.datatype}")
+            print_txt += f"\n    Data combination: {master.datatype}"
 
         if not master.wf_path:
             print_txt += ("\n    Working folder not yet defined"

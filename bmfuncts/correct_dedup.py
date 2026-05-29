@@ -101,6 +101,7 @@ def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_ad
         corrected_addresses_path (path): The full path to the file \
         of history of false addresses correction.
         corpus_year (str): Corpus year defined by 4 digits.
+        print_params (list): The print parameters.
         file_clean (bool): Optional, if True the existing file is \
         replaced by a formated empty file (default: False).
     """
@@ -115,9 +116,9 @@ def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_ad
     def _save_empty_file():
         # Setting false-addresses empty data
         cols_nb = len(addresses_to_correct_cols)
-        data_row = [""] * cols_nb
-        data = sum([], [data_row]*10)
-        addresses_to_correct_df = pd.DataFrame(data, columns=addresses_to_correct_cols)
+        empty_data_row = [""] * cols_nb
+        empty_data = sum([], [empty_data_row]*10)
+        addresses_to_correct_df = pd.DataFrame(empty_data, columns=addresses_to_correct_cols)
         _save_file(addresses_to_correct_df)
 
     # Setting useful column names
@@ -358,8 +359,8 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
         of correcting the data of parsings deduplication.
         parsing_authaddr_path (path): The full path for saving the corrected parsing data \
         of authors-addresses.
-        dedup_affil_params_dic (list): Composed of the data per country (dict) for normalizing the authors' \   #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        affiliations, the data (dict) of affiliations types and the data (dict) of towns per country.
+        dedup_affil_params_dic (dict): Gives the full paths to the Institute's files to use for \
+        authors' affiliations parsing at parsing deduplication step.
         corpus_year (str): Corpus year defined by 4 digits.
     """
     cols_keys = ['bp_pub_id_col', 'bp_address_col', 'bp_country_col', 'bp_author_id_col',
@@ -428,10 +429,13 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
     and `_correct_dedup_authaddr` internal functions.
 
     Args:
-        params_list (list): The list composed of the Institute's name (str), \   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        the full path to working folder (path), the corpus year defined \
-        by 4 digits (str) and the full path to the folder where the final \
-        results of parsings deduplication are saved.
+        params_list (list): The list composed of the 4 digits year of the corpus (str), \
+        of the print parameters (list), of the Institute's name (str), of the full path \
+        to working folder (path), of the dict giving the name of the parsing file for each \
+        parsed item, of the dict giving the full paths to the Institute's files to use for \
+        authors' affiliations parsing at parsing deduplication step, of the full path to \
+        the folder where the final results of parsings-deduplication are saved, and of \
+        the full path to the file for correcting false addresses.
         ids_dicts_list (list): The list composed of the data (dict) of hash ID \
         per publication ID and the data (dict) of DOI per publication ID.
         test_txt (str): For optional modification of the file names \
@@ -449,9 +453,9 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
             new_corrected_addresses_df = _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic,
                                                                              ids_dicts_list)
 
-        corrected_addresses_df = _update_corrected_addresses_history(new_corrected_addresses_df, corrected_addresses_path,
-                                                                     corpus_year, dedup_cols, print_params)
-        return corrected_addresses_df
+        _corrected_addresses_df = _update_corrected_addresses_history(new_corrected_addresses_df, corrected_addresses_path,
+                                                                      corpus_year, dedup_cols, print_params)
+        return _corrected_addresses_df
 
     # Setting useful column names
     dedup_cols_dic = _set_dedup_cols_dic()
@@ -486,9 +490,8 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
     # Getting data of the user's correction of the addresses to correct
     print_step_text("  - Building data for addresses correction...", print_params)
     corrected_addresses_df = _build_corrected_addresses_data()
-    empty_corrected_addresses = corrected_addresses_df.empty
 
-    if not empty_corrected_addresses:
+    if not corrected_addresses_df.empty:
         print_step_text("  - Correcting addresses in deduplication-parsing data...", print_params)
 
         # Correcting the countries parsing data using the user's correction of the addresses

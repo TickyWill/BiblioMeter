@@ -14,9 +14,6 @@ import json
 import os
 from pathlib import Path
 
-# 3rd party imports
-import BiblioParsing as bp
-
 # Local imports
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.institute_globals as bm_ig
@@ -119,7 +116,7 @@ def set_rawdata_and_parsing_paths(wf_path, year, db_list):
 
     rawdata_path_dict, parsing_path_dict = {}, {}
     # Getting the databases folders attributes
-    for db_num in list(parsing_folder_dict['corpus']['databases'].keys()):
+    for db_num in parsing_folder_dict['corpus']['databases'].keys():
 
         keys_list = ['corpus', 'databases', db_num, 'root']
         db_root_path, db_root_name = _get_folder_attributes(parsing_folder_dict,
@@ -185,20 +182,6 @@ def set_parsing_items_params():
     config_parsing_filenames_dict = config_dict['PARSING_FILE_NAMES']
     parsing_filenames_dict = {key: config_parsing_filenames_dict[bm_pg.PARSING_KEYS_CONVERT_DIC[key]]
                               for key in bm_pg.PARSING_KEYS_DIC['all']}
-
-#    # Setting the list of keys of parsing items for merge of publications list
-#    # with employees data
-#    merge_employees_items_keys = config_dict['MERGE_EMPLOYEES_PARSING_ITEMS']
-#
-#    # Setting the list of keys of parsing items for building data of addresses
-#    # with unknown-country
-#    unknown_countries_items_keys = config_dict['UNKNOWN_COUNTRIES_PARSING_ITEMS']
-#
-#    # Setting the list of keys of parsing items to be corrected
-#    correction_items_keys = config_dict['CORRECTION_PARSING_ITEMS']
-#
-#    parsing_items_params = (item_filename_dict, merge_employees_items_keys,
-#                            unknown_countries_items_keys, correction_items_keys)
     return parsing_filenames_dict
 
 
@@ -284,7 +267,7 @@ def set_org_params(institute, wf_path):
                                  for _, dpt_otp_df in dpt_attributes_dict.items()], [])))
     dpt_attributes_dict['DIR'] = {dpt_label_key: dpt_label_dict['DIR'],
                                  dpt_otp_key  : dpt_otp_list}
-    for dpt in list(col_names_dpt.keys()):
+    for dpt in col_names_dpt.keys():
         dpt_attributes_dict[dpt][dpt_otp_key] += [bm_ig.INVALIDE]
 
     institutions_filter_list = [tuple(x) for x in institute_org_dict["INSTITUTIONS_FILTER_LIST"]]
@@ -345,10 +328,6 @@ def set_affil_params(institute, wf_path):
         to use for authors' affiliations parsing at coupling analysis step.
     """
     affils_rep_utils, institute_affil_files_dic = _set_institute_affil_params(wf_path, institute)
-
-    # Setting the filename for the affiliations-per-country data for parsings deduplication step
-    dedup_norm_affil_file = institute_affil_files_dic['affiliations_file']
-    parse_norm_affil_file = institute_affil_files_dic['institute_affil_file']
 
     # Setting user's affiliations-parsing paths
     affil_types_file_path = affils_rep_utils / Path(institute_affil_files_dic['inst_types_file'])

@@ -7,7 +7,6 @@ import threading
 import tkinter as tk
 from functools import partial
 from pathlib import Path
-from tkinter.messagebox import showerror
 
 # 3rd party imports
 from screeninfo import get_monitors

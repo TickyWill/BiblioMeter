@@ -13,6 +13,7 @@ __all__ = ['build_and_save_dedup_db_ids',
 
 
 # Standard library imports
+import copy
 import os
 import shutil
 from pathlib import Path
@@ -302,6 +303,9 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
     Args:
         dedup_article_df (dataframe): The articles data resulting from the deduplication process.
         parsing_path_dict (dict): The full path to the data resulting from all parsing steps.
+        dedup_db_infos (list): Parameters for  final saving of deduplication results composed \
+        of the Full path to working folder (path), of the data combination type from \
+        corpuses databases (str), and of the 4 digits year of the corpus (str).
     Returns:
         (dict): Keyed by database types and valued by number of kept publications for each database type.
     """
@@ -319,16 +323,17 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
         db_ids_path = parsing_path_dict[db_type] / Path(db_ids_file)
         db_ids_df = pd.read_excel(db_ids_path)
 
-        # Incrementing the Pub_id for the concatenation to align with the deduplication data
-        db_ids_df[pub_id_col] = db_ids_df[pub_id_col].apply(lambda x: x + increment)
+        if not db_ids_df.empty:
+            # Incrementing the Pub_id for the concatenation to align with the deduplication data
+            db_ids_df[pub_id_col] = db_ids_df[pub_id_col].apply(lambda x: x + increment)
 
-        # Enhancing the data with the database-type name set in a new column
-        db_ids_df[source_col] = db_type
+            # Enhancing the data with the database-type name set in a new column
+            db_ids_df[source_col] = db_type
 
-        # Setting the same column name for the database identifiers to allow data concatenation
-        db_ids_df.rename({bm_pg.DB_ID_COLS[db_type]: dbs_ids_col}, axis=1, inplace=True)
-        db_ids_dfs_list.append(db_ids_df)
-        increment += len(db_ids_df)
+            # Setting the same column name for the database identifiers to allow data concatenation
+            db_ids_df.rename({bm_pg.DB_ID_COLS[db_type]: dbs_ids_col}, axis=1, inplace=True)
+            db_ids_dfs_list.append(db_ids_df)
+            increment += len(db_ids_df)
 
     # Building the full identifiers data by concatenating the ones of each database type
     all_db_ids_df = concat_dfs(db_ids_dfs_list, dedup=False)
@@ -382,7 +387,9 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
         save_rawdata_correction(correction_dict, rawdata_path, database)
         print_step_text("  - Data of correction in rawdata of authors and addresses saved for control",
                         print_params)
-    pubs_nb = fails_dict["number of article"]
+    pubs_nb = 0
+    if fails_dict:
+        pubs_nb = fails_dict["number of article"]
     if progress_callback:
         progress_callback(80)
 
@@ -408,7 +415,7 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
     return raw_parse_tup
 
 
-def deduplicate_parsing(dedup_params_list, progress_callback=None):
+def deduplicate_parsing_old(dedup_params_list, progress_callback=None):
     (corpus_year, print_params, institute, org_tup, wf_path, datatype,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
     base_params_list = [corpus_year, print_params, institute, wf_path,
@@ -472,6 +479,106 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     print_step_text("\nDeduplicating parsing data...", print_params)
     bp_dedup_parsing_dict = bp.deduplicate_parsing(bp_concat_parsing_dict, norm_affil_status=False,
                                                    affil_params_dic=dedup_affil_params_dic)
+
+    dedup_parsing_dict = convert_parsing_keys_to_bm(bp_dedup_parsing_dict)
+    dedup_pub_nb, dedup_institute_pub_nb = compute_dedup_pub_number(org_tup, dedup_parsing_dict)
+    _dedup_infos=(wf_path, datatype, corpus_year)
+    pubs_df = dedup_parsing_dict['pub']
+    ids_nb_dict = build_and_save_dedup_db_ids(pubs_df, parsing_path_dict, _dedup_infos)
+    if progress_callback:
+        progress_callback(90)
+
+    save_parsing_dict(dedup_parsing_dict, dedup_path, parsing_filenames_dict, bm_pg.TSV_SAVE_EXTENT,
+                      dedup_infos=_dedup_infos)
+    step_txt = ("  - All parsing results deduplicated and saved as final results "
+                f"for {dedup_pub_nb} publications "
+                f"including {dedup_institute_pub_nb} of {institute}"
+                "\n  - After deduplication, the number of kept publications from each database are:")
+    for db_type, db_nb in ids_nb_dict.items():
+        step_txt += f"\n      - {db_nb} for {db_type}"
+    print_step_text(step_txt, print_params)
+    return dedup_pub_nb, dedup_institute_pub_nb, ids_nb_dict
+
+
+def deduplicate_parsing(dedup_params_list, progress_callback=None):
+    (corpus_year, print_params, institute, org_tup, wf_path, datatype,
+     dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
+    base_params_list = [corpus_year, print_params, institute, wf_path,
+                        dedup_affil_params_dic, parsing_filenames_dict]
+
+    print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", print_params)
+
+    # Getting the full paths of the working folder architecture for the corpus "corpus_year"
+    _, parsing_path_dict = set_rawdata_and_parsing_paths(wf_path, corpus_year, bm_pg.BDD_LIST)
+
+    # Setting useful paths for corpus deduplication
+    scopus_parse_path, wos_parse_path = parsing_path_dict[bp.SCOPUS], parsing_path_dict[bp.WOS]
+    concat_path, dedup_path = parsing_path_dict["concat"], parsing_path_dict["dedup"]
+
+    # Setting the Scopus and WoS parsing results before correction
+    scopus_parsing_dict = read_parsing_dict(scopus_parse_path, parsing_filenames_dict,
+                                            bm_pg.TSV_SAVE_EXTENT)
+
+    wos_parsing_dict = read_parsing_dict(wos_parse_path, parsing_filenames_dict,
+                                             bm_pg.TSV_SAVE_EXTENT)
+
+    # Trying to correct the Scopus parsing results
+    if bp.SCOPUS.lower() in datatype.lower():
+        # Correcting the Scopus parsing results
+        scopus_params_list = [bp.SCOPUS] + base_params_list
+        correct_status = correct_parsing(scopus_params_list, scopus_parse_path,
+                                         scopus_parsing_dict, bp.UNKNOWN_COUNTRY)
+        if correct_status:
+            scopus_parsing_dict = read_parsing_dict(scopus_parse_path, parsing_filenames_dict,
+                                                    bm_pg.TSV_SAVE_EXTENT)
+    else:
+        # Managing the case of a single database by Linking Scopus parsings
+        # to WoS parsings what would be the changes in the WoS parsings
+        scopus_parsing_dict = copy.deepcopy(wos_parsing_dict)
+        print_step_text("  - Scopus parsing results set to WoS parsing results",
+                        print_params)
+
+    # Trying to correct the WoS parsing results
+    if bp.WOS.lower() in datatype.lower():
+        # Correcting the WoS parsing results
+        wos_params_list = [bp.WOS] + base_params_list
+        correct_status = correct_parsing(wos_params_list, wos_parse_path,
+                                         wos_parsing_dict, bp.UNKNOWN_COUNTRY)
+        if correct_status:
+            wos_parsing_dict = read_parsing_dict(wos_parse_path, parsing_filenames_dict,
+                                                 bm_pg.TSV_SAVE_EXTENT)
+    else:
+        # Managing the case of a single database by Linking WoS parsings
+        # to Scopus parsings what would be the changes in the Scopus parsings
+        wos_parsing_dict = copy.deepcopy(scopus_parsing_dict)
+        print_step_text("  - WoS parsing results set to Scopus parsing results",
+                        print_params)
+    if progress_callback:
+        progress_callback(15)
+
+    print_step_text("\nConcatenating parsing data...", print_params)
+    bp_scopus_parsing_dict = revers_parsing_keys_to_bp(scopus_parsing_dict)
+    bp_wos_parsing_dict = revers_parsing_keys_to_bp(wos_parsing_dict)
+    if bm_pg.FIRST_BDD==bp.SCOPUS:
+        bp_concat_parsing_dict = bp.concatenate_parsing(bp_scopus_parsing_dict, bp_wos_parsing_dict,
+                                                        affil_filter_list=org_tup[3])
+    else:
+        bp_concat_parsing_dict = bp.concatenate_parsing(bp_wos_parsing_dict, bp_scopus_parsing_dict,
+                                                        affil_filter_list=org_tup[3])
+    concat_parsing_dict = convert_parsing_keys_to_bm(bp_concat_parsing_dict)
+    if progress_callback:
+        progress_callback(25)
+
+    save_parsing_dict(concat_parsing_dict, concat_path,
+                      parsing_filenames_dict, bm_pg.TSV_SAVE_EXTENT)
+    print_step_text("  - Parsing data concatenated and saved", print_params)
+    if progress_callback:
+        progress_callback(30)
+
+    print_step_text("\nDeduplicating parsing data...", print_params)
+    bp_dedup_parsing_dict = bp.deduplicate_parsing(bp_concat_parsing_dict, norm_affil_status=False,
+                                                   affil_params_dic=dedup_affil_params_dic)
+
     dedup_parsing_dict = convert_parsing_keys_to_bm(bp_dedup_parsing_dict)
     dedup_pub_nb, dedup_institute_pub_nb = compute_dedup_pub_number(org_tup, dedup_parsing_dict)
     _dedup_infos=(wf_path, datatype, corpus_year)

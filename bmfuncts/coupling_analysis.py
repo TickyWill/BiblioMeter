@@ -243,7 +243,7 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
     # Setting parameters valu from 'addr_params'
     (corpus_year, print_params, institute, org_tup, wf_path,
      parsing_filenames_dict) = addr_params
-    final_results_path, norm_affil_file_path, raw_addr_file_path = addr_paths
+    final_results_path, norm_affil_file_path, raw_affil_file_path = addr_paths
 
     # Building data of all addresses of Institute's publications from parsing addresses data
     print_step_text("  - Building data of all addresses of Institute's publications...", print_params)
@@ -257,10 +257,10 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
     sub_institute_pub_raw_addr_df = institute_pub_raw_addr_df.copy()
     empty_raw_addr_df = pd.DataFrame()
     keep_norm_affil_df = pd.DataFrame(columns=norm_cols_list)
-    if raw_addr_file_path.is_file():
+    if raw_affil_file_path.is_file():
         print_step_text("  - Selecting data of addresses with affiliations remaining to be normalized...", print_params)
         # Reading the previously built data of remaining raw-addresses
-        init_raw_addr_df = pd.read_excel(raw_addr_file_path)
+        init_raw_addr_df = pd.read_excel(raw_affil_file_path)
 
         empty_raw_addr_df = init_raw_addr_df[init_raw_addr_df[affiliations_col]==bp.EMPTY]
         empty_pub_ids = empty_raw_addr_df[pub_id_col].to_list()
@@ -296,11 +296,11 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
     return addr_dfs_list
 
 
-def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
-    """Sets IFs specific file and folder.
+def _set_co_files_params(wf_path, corpus_year, final_results_path):
+    """Sets files, folders and full paths for the process of coupling analysis
+    for a given corpus.
 
     Args:
-        institute (str): Institute name.
         wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
     Returns:
@@ -324,20 +324,26 @@ def _set_co_files_params(institute, wf_path, corpus_year, final_results_path):
     year_folder_path = wf_path / Path(corpus_year)
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     affils_analysis_folder_path = analysis_folder_path / Path(affils_analysis_folder_alias)
+    addresses_to_correct_path = affils_analysis_folder_path / Path(addresses_to_correct_file_alias)
+
     year_final_results_path = final_results_path / Path(corpus_year)
     hash_ids_path = year_final_results_path / Path(hash_id_folder_alias) / Path(hash_id_file)
-    addresses_to_correct_path = affils_analysis_folder_path / Path(addresses_to_correct_file_alias)
+    final_affils_analysis_folder_path = year_final_results_path / Path(affils_analysis_folder_alias)
+    norm_affil_file_path = final_affils_analysis_folder_path / Path(norm_affils_file)
+    raw_affil_file_path = final_affils_analysis_folder_path / Path(raw_affils_file)
 
     # Creating required output folders
     if not os.path.exists(analysis_folder_path):
         os.makedirs(analysis_folder_path)
     if not os.path.exists(affils_analysis_folder_path):
         os.makedirs(affils_analysis_folder_path)
+    if not os.path.exists(final_affils_analysis_folder_path):
+        os.makedirs(final_affils_analysis_folder_path)
 
     files_list = [norm_affils_file, raw_affils_file]
     folders_list = [analysis_folder_alias, affils_analysis_folder_alias]
     paths_list = [analysis_folder_path, affils_analysis_folder_path, hash_ids_path,
-                  addresses_to_correct_path]
+                  addresses_to_correct_path, norm_affil_file_path, raw_affil_file_path]
     return files_list, folders_list, paths_list
 
 
@@ -398,15 +404,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     Args:
         params_list (list): The list composed of the 4 digits year of the corpus (str), \
-        of the print parameters (list), \
-        of the Institute name (str), \
-        of the org_tup (tup) that contains parameters of Institute organization, \
+        of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
         of the full path to working folder (path), \
         of the data combination type of corpuses databases (str), \
         of the dict giving the name of the parsing file for each parsed item, \
         of the dict giving the full paths to the Institute's files to use for \
-        authors' affiliations parsing at parsing deduplication step and \
-        of the dict giving the full paths to the Institute's complementary files \
+        authors' affiliations parsing at parsing deduplication step \
+        and of the dict giving the full paths to the Institute's complementary files \
         to use for authors' affiliations parsing at coupling analysis step.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default: None).
@@ -427,13 +432,11 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     # Setting useful files parameters
     final_results_path = set_results_folder_path(wf_path, datatype)
-    files_list, folders_list, paths_list = _set_co_files_params(institute, wf_path, corpus_year,
+    files_list, folders_list, paths_list = _set_co_files_params(wf_path, corpus_year,
                                                                 final_results_path)
-    (analysis_folder_path, affils_analysis_folder_path, hash_ids_path,
-     addresses_to_correct_path) = paths_list
     norm_affil_file, raw_addr_file = files_list
-    norm_affil_file_path = affils_analysis_folder_path / Path(norm_affil_file)
-    raw_addr_file_path = affils_analysis_folder_path / Path(raw_addr_file)
+    (analysis_folder_path, affils_analysis_folder_path, hash_ids_path,
+     addresses_to_correct_path, norm_affil_file_path, raw_affil_file_path) = paths_list
 
     # Setting useful column names
     co_cols_dic = _set_co_cols_dic(institute, org_tup)
@@ -474,7 +477,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
                     print_params)
     addr_params = [corpus_year, print_params, institute, org_tup, wf_path,
                    parsing_filenames_dict]
-    addr_paths = [final_results_path, norm_affil_file_path, raw_addr_file_path]
+    addr_paths = [final_results_path, norm_affil_file_path, raw_affil_file_path]
     addr_dfs_list = _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
                                                   verbose=verbose, progress_param=progress_param)
     institute_pub_raw_addr_df, empty_raw_addr_df, keep_norm_affil_df = addr_dfs_list
@@ -514,6 +517,13 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     sheet_name = 'Raw ' + corpus_year
     save_formatted_df_to_xlsx(affils_analysis_folder_path, raw_addr_file,
                               raw_addr_df, affils_df_title, sheet_name)
+
+    # Saving normalized and raw affiliations as final result
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["affiliations"] = True
+    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
+    save_final_results(save_params_list, results_to_save_dict)
     step_text = "      - Normalized-affiliations data and of raw-affiliations data saved "
     if raw_addr_status:
         step_text += "with no raw-affiliations"
@@ -522,14 +532,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     print_step_text(step_text, print_params)
 
     if not wrong_affil_types_dict and raw_addr_status:
-        # Building and saving addiliations stat data
+        # Building and saving affiliations stat data
         if progress_callback:
             inter_progress_4 = init_progress + (final_progress - init_progress) * 0.9
             progress_param = (progress_callback, inter_progress_3, inter_progress_4)
         pub_doctype_cols_list = [final_pub_id_col, final_doctype_col]
         pub_ids_dict = build_pub_ids_dict(final_results_path, corpus_year, pub_doctype_cols_list)
         affil_types_file_path = dedup_affil_params_dic['affil_types_file_path']
-        sub_paths_list = [final_results_path, affils_analysis_folder_path, affil_types_file_path]  #"""""" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        sub_paths_list = [final_results_path, affils_analysis_folder_path, affil_types_file_path]
         affils_stat_params = [institute, corpus_year, print_params]
         build_and_save_affiliations_stat(norm_affil_df, sub_paths_list, pub_ids_dict,
                                          affils_stat_params, progress_param=progress_param)
@@ -550,13 +560,13 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
             results_to_save_dict[key] = True
         save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
         _institute_country = bm_ig.INSTITUTES_COUNTRY_DICT[institute]
-        _ = save_final_results(save_params_list, results_to_save_dict,
-                               institute_country=_institute_country)
+        save_final_results(save_params_list, results_to_save_dict,
+                           institute_country=_institute_country)
     else:
         geo_analysis_folder_name = ""
 
-    return_folders_list = [folders_list[0], folders_list[1], geo_analysis_folder_name]
-    return_paths_list = [addresses_to_correct_path, raw_addr_file_path]
+    return_folders_list = folders_list + [geo_analysis_folder_name]
+    return_paths_list = [addresses_to_correct_path, raw_affil_file_path]
     return_tup = (wrong_affil_types_dict, raw_addr_status, return_folders_list, return_paths_list)
     if progress_callback:
         progress_callback(final_progress)

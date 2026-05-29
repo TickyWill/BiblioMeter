@@ -14,8 +14,8 @@ __all__ = ['build_final_pub_list',
 
 
 # Standard library imports
+import datetime
 import os
-from datetime import datetime
 from pathlib import Path
 
 # 3rd party imports
@@ -302,10 +302,11 @@ def build_final_pub_list(conso_params_list):
     internal function.
 
     Args:
-        conso_params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        conso_params_list (list): The list composed of the 4 digits year \
+        of the corpus (str), of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to working folder (path), and of the data combination \
+        type of corpuses databases (str).
     Returns :
         (tup): (end message recalling the full path to the saved file \
         of the publication final list, split ratio in % of the publications \
@@ -386,7 +387,7 @@ def build_final_pub_list(conso_params_list):
     for key in keys_list:
         results_to_save_dict[key] = True
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    _ = save_final_results(save_params_list, results_to_save_dict)
+    save_final_results(save_params_list, results_to_save_dict)
 
     step_txt = ("  - Consolidated publications lists saved as final results "
                 f"with IFs data complete: {if_database_complete}")
@@ -407,7 +408,7 @@ def _set_concat_pub_list_path(wf_path, available_pub_lists_str):
     """
     multi_year_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
     multi_year_base_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
-    date = str(datetime.now())[:16].replace(':', 'h')
+    date = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
     multi_year_file = (f"{date} {multi_year_base_alias} "
                        f"{os.getlogin()}_{available_pub_lists_str}.xlsx")
     multi_year_folder_path = wf_path / Path(multi_year_folder_alias)
@@ -427,6 +428,7 @@ def concatenate_pub_lists(print_params, wf_path, years_list):
     the `_set_concat_pub_list_path` internal function.
 
     Args:
+        print_params (list): The print parameters.
         wf_path (path): Full path to working folder.
         years_list (list): List of 4 digits years of the available \
         publications lists.

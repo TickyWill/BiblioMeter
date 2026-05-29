@@ -34,8 +34,8 @@ def _set_use_homonyms_cols(institute, org_tup):
     `bmfuncts.rename_cols` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains parameters of Institute organization.
+        institute (str): Institute's name.
+        org_tup (tup): Contains parameters of Institute's organization.
     Returns:
         (tup): The built dict and the full list of final column names \
         got from the `set_homonym_col_names` function.
@@ -95,26 +95,23 @@ def _save_shaped_homonyms_file(homonyms_df, save_cols_list, out_path):
 def solve_homonyms(solve_homonyms_params, in_path, out_path):
     """Creates the file for homonyms solving by the user.
 
-    First, a dataframe is built from specific columns 
-    of the list of publications merged with employees database 
-    given by the file pointed by 'in_path' path. 
-    In this dataframe the homonyms are tagged by 'HOMONYM_FLAG' 
-    global imported from `bmfuncts.pub_globals` module. 
-    Then this dataframe is saved as Excel file pointed 
-    by 'out_path' path through `_save_shaped_homonyms_file` 
-    internal function.
+    First, a dataframe is built from specific columns of the list of publications 
+    merged with employees database given by the file pointed by 'in_path' path. 
+    In these data the homonyms are tagged by the 'HOMONYM_FLAG' global 
+    imported from `bmfuncts.pub_globals` module. 
+    Then these data are saved as EXCEL file pointed by 'out_path' path 
+    through `_save_shaped_homonyms_file` internal function.
 
     Args:
-        institute (str): The Institute name.
-        org_tup (tup): The tuple of the organization structure of the Institute \
-        used here to set column names for homonyms.
+        solve_homonyms_params (list): The list composed of the print parameters (list), \
+        of the Institute's name (str) and of the org_tup (tup) that contains parameters \
+        of Institute's organization used here to set column names for homonyms.
         in_path (path): The full path to the input file of list of publications \
         merged with employees database.
-        out_path (path): The full path to the output file of homonyms solving \
+        out_path (path): The full path to the output file for homonyms solving \
         by the user.
     Returns:
-        (tup): The tuple composed of end message (str) \
-        and homonyms status (bool; True if homonyms are found).
+        (bool): The homonyms' status, True if homonyms are found.
     """
     # Setting parameters value from 'solve_homonyms_params'
     print_params, institute, org_tup = solve_homonyms_params
@@ -190,10 +187,11 @@ def save_homonyms(save_homonyms_params):
     Finally, saves the dataframe as Excel file.
 
     Args:
-        save_homonyms_params (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute \
-        organization, the full path to working folder (path) and the 4 digits \
-        year of the corpus (str).
+        save_homonyms_params (list): The list composed of the 4 digits \
+        year of the corpus (str), of the print parameters (list), \
+        of the Institute's name (str), of the org_tup (tup) that contains \
+        parameters of Institute's organization and of the full path \
+        to working folder (path).
     """
     # Setting params values from save_homonyms_params
     corpus_year, print_params, institute, org_tup, wf_path = save_homonyms_params
@@ -254,13 +252,14 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
     internal function.
 
     Args:
-        set_homonyms_params (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute \
-        organization, the full path to working folder (path) and the 4 digits \
-        year of the corpus (str).
-        homonyms_status (bool): True if homonyms exists.
+        save_homonyms_params (list): The list composed of the 4 digits \
+        year of the corpus (str), of the print parameters (list), \
+        of the Institute's name (str), of the org_tup (tup) that contains \
+        parameters of Institute's organization and of the full path \
+        to working folder (path).
+        homonyms_status (bool): True if homonyms exist.
     Returns:
-        (tup): (End message (str), actualized homonyms status (bool)).
+        (bool): Updated homonyms' status.
     """
     # Setting params values from set_homonyms_params
     corpus_year, print_params, institute, org_tup, wf_path = set_homonyms_params

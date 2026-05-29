@@ -197,13 +197,13 @@ def _add_authors_name_list(org_tup, in_df, otps_homonyms_cols_dic):
     out_df = pd.DataFrame()
     for _, pub_id_df in in_df.groupby(pub_id_col):
 
-        authors_tup_list = sorted(list(set(zip(pub_id_df[author_id_col],
-                                               pub_id_df[fullname_col],
-                                               pub_id_df[mat_col],
-                                               pub_id_df[author_type_col],
-                                               pub_id_df[dpt_col],
-                                               pub_id_df[srv_col],
-                                               pub_id_df[lab_col]))))
+        authors_tup_list = sorted(set(zip(pub_id_df[author_id_col],
+                                          pub_id_df[fullname_col],
+                                          pub_id_df[mat_col],
+                                          pub_id_df[author_type_col],
+                                          pub_id_df[dpt_col],
+                                          pub_id_df[srv_col],
+                                          pub_id_df[lab_col])))
 
         authors_str_list = [(f'{x[1]} ({x[2]},'
                              f'{x[3]},{_get_dpt_key(x[4])},{x[5]},{x[6]})')
@@ -785,7 +785,7 @@ def add_otp(otp_params, in_path, out_path, out_file_base):
         out_file_base (str): Base for building created-files names.
     """
     # Setting useful parameters value from 'otp_params'
-    corpus_year, print_params, institute, org_tup, wf_path = otp_params
+    print_params, institute, org_tup, wf_path = otp_params
 
     # Setting institute's parameters
     otp_level = org_tup[11]
@@ -793,9 +793,6 @@ def add_otp(otp_params, in_path, out_path, out_file_base):
     # Setting useful sub-lists of parameters
     set_otp_params = [institute, org_tup, wf_path]
     add_otp_params = [print_params, institute, org_tup]
-
-    # Saving the homonyms resolved by the user
-    save_homonyms(otp_params)
 
     if otp_level=="LAB":
         print_step_text("\nBuilding OTPs information for the attribution per lab...", print_params)

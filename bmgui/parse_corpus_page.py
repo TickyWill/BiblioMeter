@@ -201,8 +201,6 @@ def _launch_parsing(master, corpus_year, database, progress_callback):
         master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
         database (str): Database name (ex: 'wos' or 'scopus').
-        affils_param_tup (tup): Composed of the full path to the folder \
-        of affiliations files and of the full path to institutions-types file.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
@@ -316,8 +314,6 @@ def _launch_dedup(master, corpus_year, progress_callback):
     Args:
         master (class): `bmgui.main_page.AppMain` class.
         corpus_year (str): Corpus year defined by 4 digits.
-        affils_param_tup (tup): Composed of the full path to institute-affiliations \
-        file and of the full path to institutions-types file.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """

@@ -175,7 +175,7 @@ def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw
         institute_norm (str): The Institute's normalized name.
         institutions_col (list): The name of the column that contains \
         the normalized affiliations in the data to be analyzed.
-        raw_item_lists (list)/ The list of the publications IDs lists to be updated.
+        init_raw_item_lists (list): The list of the publications IDs lists to be updated.
     Returns:
         (tup): The two updated lists of the publications IDs.
     """
@@ -185,7 +185,7 @@ def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw
     for affils_idx, affils_str in enumerate(all_affiliations):
         item_at_least.append(False)
         affils_list = affils_str.split("; ")
-        if not institute_norm in affils_list:
+        if institute_norm not in affils_list:
             item_at_least[affils_idx] = True
             break
     new_raw_item_at_least = raw_item_at_least.copy()
@@ -215,7 +215,7 @@ def _set_stat_value(raw_pub_ids_list, all_status=False):
     Returns:
         (list): The formated statistics data.
     """
-    pub_ids_list = sorted(list(set(raw_pub_ids_list)))
+    pub_ids_list = sorted(set(raw_pub_ids_list))
     pub_ids_nb = len(pub_ids_list)
     pub_ids_str = "; ".join(pub_ids_list)
     if all_status:

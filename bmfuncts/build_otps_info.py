@@ -47,7 +47,7 @@ def _set_sorted_list1(lists):
         (list): Sorted list of summed lists.
     """
     init_list = sum(lists, [])
-    sorted_list = sorted(list(set(init_list)))
+    sorted_list = sorted(set(init_list))
     return sorted_list
 
 
@@ -469,7 +469,7 @@ def set_lab_otps(set_otp_params_list):
     for otps_dept, otps_dept_df in otps_data_df.groupby(otps_dept_col):
         dept_otps_list = _set_sorted_list2(otps_dept_df, otps_otp_col)
 
-        if not otps_dept in special_otps_depts_attr_dic.keys():
+        if otps_dept not in special_otps_depts_attr_dic.keys():
             dept_otps_dict = _build_dept_otps_dict(otps_dept, otps_dept_df,
                                                    build_otps_cols_dic, dept_otps_dict,
                                                    unknown_alias)

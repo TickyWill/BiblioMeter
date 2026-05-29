@@ -34,6 +34,7 @@ from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.merge_pub_employees import recursive_year_search
 from bmfuncts.update_employees import set_employees_data
 from bmfuncts.update_employees import update_employees
+from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.use_homonyms import set_saved_homonyms
 from bmfuncts.use_homonyms import solve_homonyms
 from bmfuncts.use_otps import set_saved_otps
@@ -136,7 +137,7 @@ def _launch_update_employees_try(self, master, progress_callback):
             messagebox.showinfo(info_title, info_text)
         else:
             update_status = False
-            step_txt = ("  - Update of employees data aborted because of the following errors:")
+            step_txt = "  - Update of employees data aborted because of the following errors:"
 
             # Displaying the status of the update of employees data
             warning_title = "!!! ATTENTION : Erreurs dans les fichiers des effectifs !!!"
@@ -587,18 +588,22 @@ def _launch_add_otp_try(master, year_select, progress_callback):
                          master.print_params)
         if os.path.isfile(homonyms_file_path):
             # Setting the list of useful params values selected by the user
-            otp_params = [year_select, master.print_params, master.institute,
-                          master.org_tup, master.wf_path]
+            full_params = [year_select, master.print_params, master.institute,
+                           master.org_tup, master.wf_path]
+
+            # Saving the homonyms resolved by the user
+            save_homonyms(full_params)
             _progress_callback(20)
 
             # Creating the files for OTPs attribution by the user
+            otp_params = full_params[1:]
             add_otp(otp_params, homonyms_file_path,
                     otp_folder_path, otp_file_base)
             _progress_callback(80)
 
             # Using the available history of OTPs attribution by the user
             # in the created files for this purpose
-            set_saved_otps(otp_params)
+            set_saved_otps(full_params)
             _progress_callback(100)
 
             # Displaying the status of the OTPs step

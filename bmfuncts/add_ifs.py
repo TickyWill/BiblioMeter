@@ -182,7 +182,7 @@ def _build_if_dict(if_dict, if_year, add_ifs_col_dic, unknown_kw):
     if eissn_col in list(if_dict[if_year].columns):
         eissn_if_dict = dict(zip(if_dict[if_year][eissn_col],
                                  if_dict[if_year][if_col]))
-        if unknown_kw in eissn_if_dict.keys():
+        if unknown_kw in eissn_if_dict:
             del eissn_if_dict[unknown_kw]
     year_if_dict = {**issn_if_dict, **eissn_if_dict}
     return year_if_dict
@@ -306,10 +306,9 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
 
     # Recasting column names
     otp_col, new_otp_col = add_ifs_col_dic['otp_col'], add_ifs_col_dic['new_otp_col']
-    new_base_col_list = list(map(lambda x: x.replace(otp_col, new_otp_col),
-                                 base_col_list))
+    new_base_col_list = [x.replace(otp_col, new_otp_col) for x in base_col_list]
     if otp_col in corpus_df.columns:
-        corpus_df = corpus_df.rename(columns={otp_col : new_otp_col})
+        corpus_df = corpus_df.rename(columns={otp_col: new_otp_col})
 
     # Initializing 'corpus_df_bis' as copy of 'corpus_df'
     corpus_df_bis = corpus_df[new_base_col_list].copy()
@@ -663,9 +662,9 @@ def add_if(add_if_params_list, paths_list):
     `_format_and_save_add_if_dfs` internal function.
 
     Args:
-        add_if_params_list (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path) and the 4 digits year of the corpus (str).
+        add_if_params_list (list): The list composed of the 4 digits year of the corpus (str), \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of \
+        the Institute's organization and of the full path to working folder (path).
         paths_list (list): The list composed of the full path to get the corpus data, \
         the full path to save the corpus data with the impact-factors information added, \
         the full path to save the missing ISSNs information and \

@@ -817,11 +817,12 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
     To do: Saving the results of co-publication with other affiliations \
     and publications per OTPs.
 
-    Args:  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        params_list (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+    Args:
+        params_list (list): The list composed of the 4 digits year of \
+        the corpus (str), of the Institute's name (str), of the org_tup (tup) \
+        that contains parameters of Institute's organization, \
+        of the full path to working folder (path), and of the data combination type \
+        of corpus databases (str).
         results_to_save_dict (dict): Dict keyed by the type of results \
         to save and valued by saving status (bool; True if the type of \
         results should be saved).
@@ -913,7 +914,3 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
                                       results_folder_path)
         if verbose:
             print("\n",message)
-
-    end_message = (f"Final results for year {corpus_year} saved in folder: "   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!remove return!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                   f"\n  '{results_folder_path}'")
-    return end_message

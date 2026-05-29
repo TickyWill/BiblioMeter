@@ -559,7 +559,7 @@ def doctype_analysis(doc_params_list, if_most_recent_year, progress_callback=Non
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["doctypes"] = True
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    _ = save_final_results(save_params_list, results_to_save_dict)
+    save_final_results(save_params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(50)
     final_return_tup = (pub_df_dict, by_journal_dict, if_analysis_col,

@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -249,7 +248,7 @@ def _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic, print_
     print("  - Building the data of publications number per Institute's author...", end="\r")
     for _, empl_df in sub_author_employee_df.groupby(empl_col):
         pub_id_list = list(empl_df[pub_id_col])
-        author_names_list = list(set(list(empl_df[institute_au_col])))
+        author_names_list = list(set(empl_df[institute_au_col]))
         author_names = author_names_list[0]
         if len(author_names_list)>1:
             author_names = "; ".join(author_names_list)
@@ -392,7 +391,7 @@ def authors_analysis(params_list, progress_callback=None):
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    _ = save_final_results(save_params_list, results_to_save_dict)
+    save_final_results(save_params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(100)
 

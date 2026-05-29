@@ -264,7 +264,10 @@ def _correct_institute_address(pubid_addid_authid_addresse_df, bm_full_cols_list
                 if "INES".lower() in addresses_str:
                     ines_rpl_str = "CEA, LITEN, INES"
                     unknown_rpl_str = "France"
+                    # Correcting Liten-Institute addresse when "CEA" and "LITEN" are missing
+                    # before replacing "INESCEA" by "ines_rpl-str" to avoid replacing "INES" in "ines_rpl-str"
                     new_addresses_list = [address.replace("INES", ines_rpl_str) for address in addresses_list]
+                    # Correcting Liten-Institute addresse when affiliation is "INESCEA" and "LITEN" is missing
                     new_addresses_list = [address.replace("INESCEA", ines_rpl_str) for address in addresses_list]
                     new_addresses_list = [address.replace(bp.UNKNOWN, unknown_rpl_str)
                                           for address in new_addresses_list]
@@ -519,9 +522,10 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
     imported from the `BiblioParsing` package.
 
     Args:
-        build_addr_params (list): Composed of the full path (path) to \
-        the working folder, of the 4 digits year (str) of the corpus and of \
-        the full path to the folder where final results are saved (path).
+        build_addr_params (list): Composed of the 4 digits year of the corpus, \
+        of the full path to working folder, of the dict giving the name of \
+        the parsing file for each parsed item and of the full path to the folder \
+        where final results are saved.
         pub_addresses_cols_dic (dict): The dict giving selected columns names \
         as built through the `_set_pub_addresses_cols_dic` internal function.
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
@@ -533,7 +537,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
         All useful column names (str) specific to 'BiblioMeter' (list), \
         Info for renaming 'BiblioParsing' columns into 'BiblioMeter' ones (dict)).
     """
-    # Setting parameters values from 'sub_addresses_params'
+    # Setting parameters values from 'build_addr_params'
     corpus_year, final_results_path = build_addr_params[0], build_addr_params[3]
 
     # Setting parameters from optional arg

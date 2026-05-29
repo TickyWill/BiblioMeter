@@ -116,7 +116,7 @@ def print_to_log(title, print_txt, print_params, log_init=True):
     full_print_txt = print_txt
     if log_init:
         full_title_len = len(title) + 4
-        title_line = "".join(["*"] * (full_title_len))
+        title_line = "".join(["*"] * full_title_len)
         title_sup_line = "\n" + title_line + "\n* "
         title_inf_line = " *\n" + title_line
         full_print_txt = f"\n{title_sup_line}{title}{title_inf_line}{print_txt}"

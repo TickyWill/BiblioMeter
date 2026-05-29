@@ -273,7 +273,7 @@ def _update_year_pub_if(master, corpus_year, names_tup, progress_params):
         results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
         results_to_save_dict["pub_lists"] = True
         if_analysis_name = None
-        _ = save_final_results(save_params_list, results_to_save_dict, if_analysis_name)
+        save_final_results(save_params_list, results_to_save_dict, if_analysis_name)
         step_txt = f"      - {corpus_year} updated and saved "
         if if_database_complete:
             step_txt += "with complete IFs data per journals"

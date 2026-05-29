@@ -32,7 +32,7 @@ def _set_affils_stat_cols():
     Returns:
         (dict): The built dict.
     """
-    affils_stat_cols_dic = {'pub_id_col'       : bp.COL_NAMES['pub_id'],
+    affils_stat_cols_dic = {'pub_id_col'        : bp.COL_NAMES['pub_id'],
                             'country_col'       : bp.COL_NAMES['country'][2],
                             'final_country_col' : bm_pg.COL_NAMES_BONUS['country'],
                             'affils_col'        : bm_pg.COL_NAMES_BONUS['institution'],

@@ -249,7 +249,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["kws"] = True
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    _ = save_final_results(save_params_list, results_to_save_dict)
+    save_final_results(save_params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(100)
     return kw_analysis_folder_path
