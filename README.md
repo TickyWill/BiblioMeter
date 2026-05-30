@@ -36,7 +36,11 @@ Open the following BiblioMeter sphinx-documentation HTML file:
 >docs/docbuild/html/index.html
 
 ## Building executable
-Either run the following batch file:
+Either run the following command from your BiblioMeter-project folder:
+```
+pyinstaller --onefile --add-data="./bmfuncts/.;bmfuncts/." --add-data="./bmgui/.;bmgui/." --add-data=".\venv\Lib\site-packages\BiblioParsing;BiblioParsing/." .\app.py
+```
+Or, if you succeed to install 'auto-py-to-exe', either run the following batch file:
 <p><a href=https://github.com/TickyWill/BiblioMeter/blob/main/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
 </a></p>
 Or refer to the following manual:

@@ -85,7 +85,6 @@ def _set_database_extract_info(wf_path, datatype, database):
         file name ending (str), \
         path to the folder of empty files (path)).
     """
-
     # Setting useful aliases
     extraction_folder = bm_pg.ARCHI_EXTRACT["root"]
     empty_file_folder = bm_pg.ARCHI_EXTRACT["empty-file folder"]
@@ -97,8 +96,14 @@ def _set_database_extract_info(wf_path, datatype, database):
     # Setting useful paths
     extraction_folder_path = wf_path / Path(extraction_folder)
     database_folder_path = extraction_folder_path / Path(database_folder)
+    database_folder_paths = [database_folder_path]
+    if database==bp.SCOPUS:
+        scopus_cat_folder_path = database_folder_path / Path(bm_pg.ARCHI_EXTRACT["categories"])
+        scopus_cat_codes_path = scopus_cat_folder_path / Path(bp.SCOPUS_CAT_CODES)
+        scopus_journals_issn_cat_path = scopus_cat_folder_path / Path(bp.SCOPUS_JOURNALS_ISSN_CAT)
+        database_folder_paths = database_folder_paths + [scopus_cat_codes_path, scopus_journals_issn_cat_path]
 
-    return database_folder_path, database_file_end, empty_file_folder, database_file_extent
+    return database_folder_paths, database_file_end, empty_file_folder, database_file_extent
 
 
 def _set_database_rawdata(set_rawdata_params, database):
@@ -126,7 +131,8 @@ def _set_database_rawdata(set_rawdata_params, database):
 
     # Getting database extractions info
     return_tup = _set_database_extract_info(wf_path, datatype, database)
-    database_folder_path, database_file_end, empty_file_folder, database_file_extent = return_tup
+    database_folder_paths, database_file_end, empty_file_folder, database_file_extent = return_tup
+    database_folder_path = database_folder_paths[0]
 
     # Setting specific parameters for Scopus-HAL data
     last_year_database_file_end = database_file_end
@@ -367,19 +373,52 @@ def revers_parsing_keys_to_bp(parsing_dict):
     return bp_parsing_dict
 
 
+def _set_scopus_cat_info(wf_path):
+    """Builds the path to database extractions and the file 
+    names ending that are specific to the data type 'datatype'.
+
+    It also sets the folder name of the empty files required for 
+    specific data types (ex: using only "WoS" datatype requires 
+    empty files for Scopus extractions). 
+    To do that, it uses the global 'ARCHI_EXTRACT' defined 
+    in the module imported as bm_pg.
+
+    Args:
+        wf_path (path): The path to the working folder.
+    Returns:
+        (tup): (path to database extractions (path), \
+        file name ending (str), \
+        path to the folder of empty files (path)).
+    """
+    # Setting useful aliases
+    extraction_folder = bm_pg.ARCHI_EXTRACT["root"]
+    database_folder = bm_pg.ARCHI_EXTRACT[bp.SCOPUS]["root"]
+
+    # Setting useful paths
+    extraction_folder_path = wf_path / Path(extraction_folder)
+    database_folder_path = extraction_folder_path / Path(database_folder)
+    scopus_cat_folder_path = database_folder_path / Path(bm_pg.ARCHI_EXTRACT["categories"])
+    scopus_cat_codes_path = scopus_cat_folder_path / Path(bp.SCOPUS_CAT_CODES)
+    scopus_journals_issn_cat_path = scopus_cat_folder_path / Path(bp.SCOPUS_JOURNALS_ISSN_CAT)
+
+    return scopus_cat_codes_path, scopus_journals_issn_cat_path
+
+
 def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
                     database, progress_callback=None):
 
     # Setting parameters values from params_list
-    (corpus_year, print_params, datatype,
+    (corpus_year, print_params, datatype, wf_path,
      parse_affil_params_dic, parsing_filenames_dict) = rawparse_params
 
     print_step_title(f"PARSING OF {database.upper()} DATA FOR {corpus_year}",
                      print_params)
 
     print_step_text("\nParsing...", print_params)
+    scopus_cat_paths = _set_scopus_cat_info(wf_path)
     parsing_tup = bp.biblio_parser(rawdata_path, database, affil_filter_list=None,
-                                   affil_params_dic=parse_affil_params_dic)
+                                   affil_params_dic=parse_affil_params_dic,
+                                   scopus_cat_paths=scopus_cat_paths)
     bp_parsing_dict, fails_dict, db_ids_df = parsing_tup[0:3]
     parsing_dict = convert_parsing_keys_to_bm(bp_parsing_dict)
     if len(parsing_tup)>3:

@@ -136,6 +136,7 @@ ARCHI_EXTRACT = {"root"             : "Extractions Institut",
                                       },
                  "empty-file folder": "Fichier vierge",
                  "archiv"           : "Archives",
+                 "categories"       : "Catégories"
                 }
 
 ARCHI_IF = {"root"                  : "Impact Factor",

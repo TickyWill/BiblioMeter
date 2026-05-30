@@ -207,7 +207,7 @@ def _launch_parsing(master, corpus_year, database, progress_callback):
     # Internal functions
     def _corpus_parsing(_raw_data_path, _parsing_path,
                         _database, _progress_callback):
-        rawparse_params = (corpus_year, master.print_params, master.datatype,
+        rawparse_params = (corpus_year, master.print_params, master.datatype, master.wf_path,
                            master.parse_affil_params_dic, master.parsing_filenames_dict)
         rawparse_tup = rawdata_parsing(rawparse_params, _raw_data_path, _parsing_path,
                                        _database, _progress_callback)
