@@ -9,12 +9,12 @@ __all__ = ['set_lab_otps',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # local imports
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.institute_globals as bm_ig
+import bmfuncts.pub_globals as bm_pg
 
 
 def _try_init_dict(dic, init_key, set_key):
@@ -447,12 +447,9 @@ def set_lab_otps(set_otp_params_list):
     # external to all the Institute's departments
     institute_dir = _set_dir(institute.upper())
 
-    # Setting useful aliases
-    unknown_alias = bp.UNKNOWN
-
     # Getting the OTPs infos from OTPs source file
     otps_data_df, build_otps_cols_dic = _read_otps_data(org_tup, wf_root_path,
-                                                        unknown_alias)
+                                                       bm_pg.UNKNOWN)
 
     # Setting useful col names
     otps_dept_col = build_otps_cols_dic['otps_dept_col']
@@ -472,7 +469,7 @@ def set_lab_otps(set_otp_params_list):
         if otps_dept not in special_otps_depts_attr_dic.keys():
             dept_otps_dict = _build_dept_otps_dict(otps_dept, otps_dept_df,
                                                    build_otps_cols_dic, dept_otps_dict,
-                                                   unknown_alias)
+                                                   bm_pg.UNKNOWN)
         else:
             dept, serv = special_otps_depts_attr_dic[otps_dept]
             lab = _set_dir(serv)

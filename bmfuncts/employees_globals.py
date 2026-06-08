@@ -2,8 +2,7 @@
 
 """
 
-__all__ = [
-           'CATEGORIES_DIC',
+__all__ = ['CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
            'EMPLOYEES_ARCHI',
            'EMPLOYEES_COL_TYPES',

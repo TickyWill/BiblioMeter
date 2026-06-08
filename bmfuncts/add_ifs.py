@@ -12,7 +12,6 @@ __all__ = ['add_if',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -120,7 +119,7 @@ def _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic, empty_kws_list)
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
         empty_kws_list (list): Composed of the 'UNKNOWN' global imported \
-        from the `BiblioParsing` package and of the 'NOT_AVAILABLE' global \
+        from the `biblioparsing` package and of the 'NOT_AVAILABLE' global \
         imported from the `bmfuncts.pub_globals` module.
     returns:
         (tup): (The recast IFs data (dict keyed by years and valued \
@@ -363,7 +362,7 @@ def _add_if_cols(corpus_df, if_dicts_list, corpus_year, add_ifs_col_dic, empty_k
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
         empty_kws_list (list): Composed of the 'UNKNOWN' global imported \
-        from the `BiblioParsing` package and of the 'NOT_AVAILABLE' global \
+        from the `biblioparsing` package and of the 'NOT_AVAILABLE' global \
         imported from the `bmfuncts.pub_globals` module.
     Returns:
         (dataframe): The corpus data added with the two IF columns.
@@ -657,7 +656,7 @@ def add_if(add_if_params_list, paths_list):
     The column 'most_recent_year_if_col' is filled with the impact-factors 
     values of the most recent year available in the 'if_dict' dict. 
     In these columns, the NaN values of impact-factors are replaced 
-    by 'UNKNOWN' global value imported from the `BiblioParsing` package. 
+    by 'UNKNOWN' global value imported from the `biblioparsing` package. 
     The results are saved as openpyxl workbook formatted through the 
     `_format_and_save_add_if_dfs` internal function.
 
@@ -688,7 +687,7 @@ def add_if(add_if_params_list, paths_list):
      corpus_year_if_col) = [add_ifs_col_dic[key] for key in init_col_keys]
 
     # Setting particular words list for empty values
-    empty_kws_list = [bp.UNKNOWN, bm_pg.NOT_AVAILABLE]
+    empty_kws_list = [bm_pg.UNKNOWN, bm_pg.NOT_AVAILABLE]
 
     # Cleaning IFs data
     return_tup = _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic,
@@ -700,11 +699,11 @@ def add_if(add_if_params_list, paths_list):
 
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year
     most_recent_year_if_dict = _build_if_dict(if_dict, if_most_recent_year,
-                                              add_ifs_col_dic, bp.UNKNOWN)
+                                              add_ifs_col_dic, bm_pg.UNKNOWN)
 
     # Cleaning corpus data
     corpus_df, institute_issn_df = _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup,
-                                                    bp.UNKNOWN)
+                                                    bm_pg.UNKNOWN)
 
     # Adding IFs cols to 'corpus_df'
     if_dicts_list = [if_dict, most_recent_year_if_dict]
@@ -726,7 +725,7 @@ def add_if(add_if_params_list, paths_list):
     # Removing from 'year_if_df' the rows which ISSN value is not in IF database
     # and keeping them in 'year_missing_issn_df'
     return_tup = _build_missing_issn_and_if_df(year_if_df, institute_issn_df,
-                                               add_ifs_col_dic, bp.UNKNOWN)
+                                               add_ifs_col_dic, bm_pg.UNKNOWN)
     year_missing_issn_df, year_missing_if_df = return_tup
 
     if_database_complete = True
@@ -734,12 +733,12 @@ def add_if(add_if_params_list, paths_list):
         if_database_complete = False
     else:
         # replace remaining unknown IF values by 'bm_pg.OUTSIDE_ANALYSIS' value
-        corpus_df = corpus_df.replace({most_recent_year_if_col: bp.UNKNOWN,
-                                       corpus_year_if_col: bp.UNKNOWN},
+        corpus_df = corpus_df.replace({most_recent_year_if_col: bm_pg.UNKNOWN,
+                                       corpus_year_if_col: bm_pg.UNKNOWN},
                                       bm_pg.OUTSIDE_ANALYSIS)
 
     # Formatting and saving the built dataframes as openpyxl workbooks
     dfs_list = [corpus_df, year_missing_issn_df, year_missing_if_df]
     _format_and_save_add_if_dfs(dfs_list, paths_list[1:], corpus_year, add_ifs_col_dic,
-                                bp.UNKNOWN)
+                                bm_pg.UNKNOWN)
     return if_database_complete

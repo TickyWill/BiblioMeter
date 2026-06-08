@@ -35,8 +35,8 @@ import zipfile
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+from bpfuncts import remove_special_symbol as bp_remove_special_symbol
 
 # local imports
 import bmfuncts.pub_globals as bm_pg
@@ -531,7 +531,7 @@ def standardize_txt(text):
     Returns:
         (str): The standardized string."""
     # Removing accentuated characters
-    new_text = bp.remove_special_symbol(text, only_ascii=True, strip=True)
+    new_text = bp_remove_special_symbol(text, only_ascii=True, strip=True)
 
     # Remove minus
     new_text = new_text.replace("-", " ").strip()

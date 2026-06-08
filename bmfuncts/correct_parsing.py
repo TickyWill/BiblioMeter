@@ -11,8 +11,9 @@ __all__ = ['build_and_save_unknown_country_data',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+from bpfuncts import standardize_address as bp_standardize_address
+from bpfuncts import build_addr_affils_tup as bp_build_addr_affils_tup
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -32,15 +33,15 @@ def _set_parse_cols_dic():
     Returns:
         (dict): The built dict.
     """
-    parse_cols_dic = {'bp_pub_id_col'      : bp.COL_NAMES['pub_id'],
-                      'bp_doi_col'         : bp.COL_NAMES['articles'][6],
-                      'bp_address_id_col'  : bp.COL_NAMES['address'][1],
-                      'bp_address_col'     : bp.COL_NAMES['address'][2],
-                      'bp_country_col'     : bp.COL_NAMES['country'][2],
-                      'bp_author_id_col'   : bp.COL_NAMES['auth_inst'][1],
-                      'bp_norm_affils_col' : bp.COL_NAMES['auth_inst'][4],
-                      'bp_raw_affils_col'  : bp.COL_NAMES['auth_inst'][5],
-                      'bp_author_col'      : bp.COL_NAMES['authors'][2],
+    parse_cols_dic = {'bp_pub_id_col'      : bm_pg.COL_NAMES['pub_id'],
+                      'bp_doi_col'         : bm_pg.COL_NAMES['articles'][6],
+                      'bp_address_id_col'  : bm_pg.COL_NAMES['address'][1],
+                      'bp_address_col'     : bm_pg.COL_NAMES['address'][2],
+                      'bp_country_col'     : bm_pg.COL_NAMES['country'][2],
+                      'bp_author_id_col'   : bm_pg.COL_NAMES['auth_inst'][1],
+                      'bp_norm_affils_col' : bm_pg.COL_NAMES['auth_inst'][4],
+                      'bp_raw_affils_col'  : bm_pg.COL_NAMES['auth_inst'][5],
+                      'bp_author_col'      : bm_pg.COL_NAMES['authors'][2],
                       'author_ids_col'     : 'Author IDs',
                       'authors_col'        : 'Author names',
                       'correct_address_col': "Correct address",
@@ -302,7 +303,7 @@ def _build_author_addresses_list(author_addresses_str, unknown_country):
     """
     # Building the author's addresses list (standardized without add of unknown country)
     author_addresses_list = build_list_from_str(author_addresses_str, "; ")
-    author_addresses_list = [bp.standardize_address(x, add_unknown_country=False)
+    author_addresses_list = [bp_standardize_address(x, add_unknown_country=False)
                              for x in author_addresses_list]
     author_addresses_list = [_remove_unknown_country(x, ", ", unknown_country)
                              for x in author_addresses_list]
@@ -473,7 +474,7 @@ def build_and_save_unknown_country_data(parsing_dict, parsing_path, unknown_coun
                 # setting the false address with standardization without add of unknown country
                 address_id_df = pub_addresses_df[pub_addresses_df[address_id_col]==false_address_id]
                 raw_false_address = address_id_df[address_col].to_list()[0]
-                std_false_address = bp.standardize_address(raw_false_address, add_unknown_country=False)
+                std_false_address = bp_standardize_address(raw_false_address, add_unknown_country=False)
 
                 # Building the IDs list and names list of authors
                 # that have the false address in their affiliations list
@@ -633,8 +634,8 @@ def _correct_parsing_authaddr(authaddr_correct_dfs, parse_cols_dic,
     of addresses with unknown-country corrected by the user.
 
     In addition, the normalized and raw affiliations are defined for 
-    the corrected addresses of authors using the `build_addr_affils_tup` 
-    function imported from the `BiblioParsing` package itself imported as bp. 
+    the corrected addresses of authors using the `bp_build_addr_affils_tup` 
+    function imported from the `biblioparsing` package. 
     This function requires data per country for normalizing the authors affiliations, 
     the data of affiliations types and the data of towns per country.
 
@@ -679,7 +680,7 @@ def _correct_parsing_authaddr(authaddr_correct_dfs, parse_cols_dic,
                         raw_author_addresses_list = build_list_from_str(raw_author_addresses_str, "; ")
                         author_addresses_list = []
                         for address in raw_author_addresses_list:
-                            std_address_str = bp.standardize_address(address, add_unknown_country=False)
+                            std_address_str = bp_standardize_address(address, add_unknown_country=False)
                             address_str = _remove_unknown_country(std_address_str, ", ", unknown_country)
                             author_addresses_list.append(address_str)
 
@@ -695,16 +696,16 @@ def _correct_parsing_authaddr(authaddr_correct_dfs, parse_cols_dic,
                         addr_norm_affils_list = []
                         full_raw_affils_list = []
                         for auth_address in author_addresses_list:
-                            author_addr_aff_tup = bp.build_addr_affils_tup(auth_address, affil_params_dic,
+                            author_addr_aff_tup = bp_build_addr_affils_tup(auth_address, affil_params_dic,
                                                                            drop_status=False)
                             auth_addr_norm_affils_list = author_addr_aff_tup.norm_affils_list
                             addr_norm_affils_list.append(auth_addr_norm_affils_list)
                             auth_addr_raw_affils_list = author_addr_aff_tup.raw_affils_list
                             full_raw_affils_list.append(auth_addr_raw_affils_list)
 
-                        addr_norm_affils_list = drop_multiple_item(addr_norm_affils_list, bp.EMPTY)
+                        addr_norm_affils_list = drop_multiple_item(addr_norm_affils_list, bm_pg.EMPTY)
                         norm_affils_str = build_string_from_list(addr_norm_affils_list, ";")
-                        full_raw_affils_list = drop_multiple_item(full_raw_affils_list, bp.EMPTY)
+                        full_raw_affils_list = drop_multiple_item(full_raw_affils_list, bm_pg.EMPTY)
                         raw_affils_str = build_string_from_list(full_raw_affils_list, ";")
 
                         pub_id_authaddr_df.loc[row_num, norm_affils_col] = norm_affils_str

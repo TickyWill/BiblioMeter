@@ -12,8 +12,8 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+from bpfuncts import build_norm_and_raw_affils as bp_build_norm_and_raw_affils
 
 # Local imports
 import bmfuncts.institute_globals as bm_ig
@@ -48,12 +48,12 @@ def _set_co_cols_dic(institute, org_tup):
     final_col_dic, _ = set_final_col_names(institute, org_tup)
 
     co_cols_dic = {'hash_id_col'      : bm_pg.COL_HASH['hash_id'],
-                   'pub_id_col'       : bp.COL_NAMES['pub_id'],
-                   'doi_col'          : bp.COL_NAMES['articles'][6],
-                   'address_col'      : bp.COL_NAMES['address'][2],
-                   'address_id_col'   : bp.COL_NAMES['institution'][1],
-                   'affiliations_col' : bp.COL_NAMES['institution'][2],
-                   'countries_col'    : bp.COL_NAMES['country'][2],
+                   'pub_id_col'       : bm_pg.COL_NAMES['pub_id'],
+                   'doi_col'          : bm_pg.COL_NAMES['articles'][6],
+                   'address_col'      : bm_pg.COL_NAMES['address'][2],
+                   'address_id_col'   : bm_pg.COL_NAMES['institution'][1],
+                   'affiliations_col' : bm_pg.COL_NAMES['institution'][2],
+                   'countries_col'    : bm_pg.COL_NAMES['country'][2],
                    'raw_affil_col'    : "Raw affiliations",
                    'final_pub_id_col' : final_col_dic['pub_id'],
                    'final_doctype_col': final_col_dic['doc_type'],
@@ -81,11 +81,11 @@ def _clean_unkept_affil(raw_affiliations_df, country_unkept_affil_file_path, col
     for country, country_raw_affil_df in raw_affiliations_df.groupby(countries_col):
         if country in unkept_country_list:
             unkept_affiliations_list = unkept_affiliations_dict[country][raw_affil_col].to_list()
-            unkept_affiliations_list_mod = [affiliation.translate(bp.SYMB_CHANGE).strip()
+            unkept_affiliations_list_mod = [affiliation.translate(bm_pg.SYMB_CHANGE).strip()
                                             for affiliation in unkept_affiliations_list]
             for idx_row, affil_row in country_raw_affil_df.iterrows():
                 affil_row_list = [x.strip() for x in affil_row[affiliation_col].split(";")]
-                affil_row_list_mod = [x.translate(bp.SYMB_CHANGE).lower() for x in affil_row_list]
+                affil_row_list_mod = [x.translate(bm_pg.SYMB_CHANGE).lower() for x in affil_row_list]
                 for unkept_affil in unkept_affiliations_list_mod:
                     if unkept_affil.lower() in affil_row_list_mod:
                         affil_idx = affil_row_list_mod.index(unkept_affil.lower())
@@ -96,7 +96,7 @@ def _clean_unkept_affil(raw_affiliations_df, country_unkept_affil_file_path, col
                         elif len(affil_row_list)==1:
                             country_raw_affil_df.loc[idx_row, affiliation_col] = affil_row_list[0]
                         else:
-                            country_raw_affil_df.loc[idx_row, affiliation_col] = bp.EMPTY
+                            country_raw_affil_df.loc[idx_row, affiliation_col] = bm_pg.EMPTY
         new_raw_affiliations_df = concat_dfs([new_raw_affiliations_df, country_raw_affil_df])
     return new_raw_affiliations_df
 
@@ -177,7 +177,7 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, affil_params_dics_list, co_col
     country_unkept_affil_file_path = co_affil_params_dic['unkept_affils_file_path']
 
     # Building countries, normalized affiliations and remaining raw-addresses data
-    return_tup = bp.build_norm_and_raw_affils(institute_pub_raw_addr_df, affil_params_dic=dedup_affil_params_dic,
+    return_tup = bp_build_norm_and_raw_affils(institute_pub_raw_addr_df, affil_params_dic=dedup_affil_params_dic,
                                               progress_param=progress_param)
     sub_countries_df, sub_norm_affil_df, sub_raw_addr_df, wrong_affil_types_dict = return_tup
 
@@ -217,7 +217,7 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, affil_params_dics_list, co_col
             empty_raw_addr_df = empty_raw_addr_df[sub_raw_addr_df.columns]
             raw_addr_df = concat_dfs([empty_raw_addr_df, sub_raw_addr_df])
         raw_addr_df = raw_addr_df.sort_values(by=[final_pub_id_col, address_id_col])
-        raw_addr_status = raw_addr_df[raw_addr_df[affiliations_col]!=bp.EMPTY].empty
+        raw_addr_status = raw_addr_df[raw_addr_df[affiliations_col]!=bm_pg.EMPTY].empty
         print_step_text("      - Existing data of raw-affiliations updated", print_params)
 
         norm_affil_df = sub_norm_affil_df.copy()
@@ -262,7 +262,7 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
         # Reading the previously built data of remaining raw-addresses
         init_raw_addr_df = pd.read_excel(raw_affil_file_path)
 
-        empty_raw_addr_df = init_raw_addr_df[init_raw_addr_df[affiliations_col]==bp.EMPTY]
+        empty_raw_addr_df = init_raw_addr_df[init_raw_addr_df[affiliations_col]==bm_pg.EMPTY]
         empty_pub_ids = empty_raw_addr_df[pub_id_col].to_list()
         empty_address_ids = empty_raw_addr_df[address_id_col].to_list()
         empty_pub_addr_tups = list(tuple(zip(empty_pub_ids, empty_address_ids)))
@@ -279,7 +279,7 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
             # Reading the previously built data of normalized affiliations
             init_norm_affil_df = pd.read_excel(norm_affil_file_path)
 
-            other_raw_addr_df = init_raw_addr_df[init_raw_addr_df[affiliations_col]!=bp.EMPTY]
+            other_raw_addr_df = init_raw_addr_df[init_raw_addr_df[affiliations_col]!=bm_pg.EMPTY]
             other_pub_ids = other_raw_addr_df[pub_id_col].to_list()
             other_address_ids = other_raw_addr_df[address_id_col].to_list()
             other_pub_addr_tups = list(tuple(zip(other_pub_ids, other_address_ids)))

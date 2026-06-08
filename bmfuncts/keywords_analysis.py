@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -198,8 +197,8 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(10)
 
     # Setting useful column names aliases
-    parsing_pub_id_col_alias = bp.COL_NAMES['pub_id']
-    keywords_col_alias = bp.COL_NAMES['keywords'][1]
+    parsing_pub_id_col_alias = bm_pg.COL_NAMES['pub_id']
+    keywords_col_alias = bm_pg.COL_NAMES['keywords'][1]
     weight_col_alias = bm_pg.COL_NAMES_BONUS['weight']
 
     # Setting useful column names

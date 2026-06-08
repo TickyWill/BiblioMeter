@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -25,8 +24,8 @@ def _set_geo_stat_cols():
     Returns:
         (dict): The built dict.
     """
-    geo_stat_cols_dic = {'pub_id_col'       : bp.COL_NAMES['pub_id'],
-                         'country_col'      : bp.COL_NAMES['country'][2],
+    geo_stat_cols_dic = {'pub_id_col'       : bm_pg.COL_NAMES['pub_id'],
+                         'country_col'      : bm_pg.COL_NAMES['country'][2],
                          'continent_col'    : bm_pg.COL_NAMES_BONUS['continent'],
                          'final_country_col': bm_pg.COL_NAMES_BONUS['country'],
                          'weight_col'       : bm_pg.COL_NAMES_BONUS['pub number'],
@@ -119,8 +118,8 @@ def _build_continents_stat(countries_df, institute_continent):
     (pub_id_col, country_col, continent_col,
      weight_col, pub_ids_col) = [geo_stat_cols_dic[key] for key in col_keys]
 
-    # Getting continent information by country from COUNTRIES_CONTINENT, a BiblioParsing global
-    country_conti_dict = bp.COUNTRIES_CONTINENT
+    # Getting continent information by country from COUNTRIES_CONTINENT global
+    country_conti_dict = bm_pg.COUNTRIES_CONTINENT
 
     # Replacing country by its continent in a copy of 'by_country_df'
     continents_df = countries_df.copy()
@@ -143,10 +142,10 @@ def _set_institute_country_stat_df_params():
     Returns:
         (dict): The built dict.
     """
-    inst_country_stat_cols_dic = {'pub_id_col'      : bp.COL_NAMES['pub_id'],
-                                  'address_id_col'  : bp.COL_NAMES['institution'][1],
-                                  'institutions_col': bp.COL_NAMES['institution'][2],
-                                  'countries_col'   : bp.COL_NAMES['country'][2],
+    inst_country_stat_cols_dic = {'pub_id_col'      : bm_pg.COL_NAMES['pub_id'],
+                                  'address_id_col'  : bm_pg.COL_NAMES['institution'][1],
+                                  'institutions_col': bm_pg.COL_NAMES['institution'][2],
+                                  'countries_col'   : bm_pg.COL_NAMES['country'][2],
                                   'pub_kind_col'    : bm_pg.COL_NAMES_BONUS['pub_type'],
                                   'weight_col'      : bm_pg.COL_NAMES_BONUS['pub number'],
                                   'pub_ids_col'     : bm_pg.COL_NAMES_BONUS["pub_ids list"],

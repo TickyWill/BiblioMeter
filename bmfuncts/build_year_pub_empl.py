@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -30,7 +29,7 @@ def _set_test_cols_dic():
     """
     test_cols_dic = {'pub_firstname_col' : bm_pg.COL_NAMES_BM['First_name'],
                      'pub_lastname_col'  : bm_pg.COL_NAMES_BM['Last_name'],
-                     'pub_fullname_col'  : bp.COL_NAMES['authors'][2],
+                     'pub_fullname_col'  : bm_pg.COL_NAMES['authors'][2],
                      'empl_mat_col'      : bm_eg.EMPLOYEES_USEFUL_COLS['matricule'],
                      'empl_lastname_col' : bm_eg.EMPLOYEES_USEFUL_COLS['name'],
                      'empl_firstname_col': bm_eg.EMPLOYEES_USEFUL_COLS['first_name'],

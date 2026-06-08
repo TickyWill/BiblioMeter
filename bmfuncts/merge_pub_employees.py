@@ -15,7 +15,6 @@ import warnings
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -213,9 +212,9 @@ def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, prin
     # Replace in "init_submit_df" data and "init_orphan_df" data, NaN values
     # except "NA" in first name initials
     init_submit_df = keep_initials(init_submit_df, submit_firstname_short_col,
-                                   missing_fill=bp.UNKNOWN)
+                                   missing_fill=bm_pg.UNKNOWN)
     init_orphan_df = keep_initials(init_orphan_df, submit_firstname_short_col,
-                                   missing_fill=bp.UNKNOWN)
+                                   missing_fill=bm_pg.UNKNOWN)
 
     # Initializing the data to be concatenated with init_submit_df
     # with same column names as init_submit_df
@@ -339,9 +338,9 @@ def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print
     # Replace in "init_submit_df" data and "init_orphan_df" data, NaN values
     # except "NA" in first name initials
     init_submit_df = keep_initials(init_submit_df, submit_firstname_short_col,
-                                   missing_fill=bp.UNKNOWN)
+                                   missing_fill=bm_pg.UNKNOWN)
     init_orphan_df = keep_initials(init_orphan_df, submit_firstname_short_col,
-                                   missing_fill=bp.UNKNOWN)
+                                   missing_fill=bm_pg.UNKNOWN)
 
     # Initializing the data to be concatenated to 'init_submit_df' data in 'new_submit_df' data
     # with same column names as init_submit_df
@@ -558,16 +557,16 @@ def _set_merge_cols_lists():
                                      bm_pg.COL_NAMES_BONUS['liste biblio'])
 
     # Setting the names of IDs columns
-    pub_id_col, author_id_col, mat_col = (bp.COL_NAMES['pub_id'],
-                                          bp.COL_NAMES['authors'][1],
+    pub_id_col, author_id_col, mat_col = (bm_pg.COL_NAMES['pub_id'],
+                                          bm_pg.COL_NAMES['authors'][1],
                                           bm_eg.EMPLOYEES_USEFUL_COLS['matricule'])
 
     # Setting the names of columns of publications info
-    pub_cols_list = [bp.COL_NAMES['articles'][1],
-                     bp.COL_NAMES['articles'][2],
-                     bp.COL_NAMES['articles'][3],
-                     bp.COL_NAMES['articles'][6],
-                     bp.COL_NAMES['articles'][9]]
+    pub_cols_list = [bm_pg.COL_NAMES['articles'][1],
+                     bm_pg.COL_NAMES['articles'][2],
+                     bm_pg.COL_NAMES['articles'][3],
+                     bm_pg.COL_NAMES['articles'][6],
+                     bm_pg.COL_NAMES['articles'][9]]
 
     # Setting the names of columns of job types in employees data
     job_cols_list = [bm_eg.EMPLOYEES_USEFUL_COLS['category'],
@@ -620,7 +619,7 @@ def _config_empl(empl_dict, years, initials_col, mat_col):
     new_empl_dict = {}
     for year in years:
         new_empl_dict[year] = keep_initials(empl_dict[year], initials_col,
-                                            missing_fill=bp.UNKNOWN)
+                                            missing_fill=bm_pg.UNKNOWN)
         new_empl_dict[year] = new_empl_dict[year].astype({mat_col: 'str'})
     return new_empl_dict
 
@@ -721,7 +720,7 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     pub_df = build_institute_pubs_authors(params_list)
 
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
-    pub_df = keep_initials(pub_df, initials_col, missing_fill=bp.UNKNOWN)
+    pub_df = keep_initials(pub_df, initials_col, missing_fill=bm_pg.UNKNOWN)
 
     # Setting the years list for recursive search of author-employee match
     years = _adapt_depth_search(empl_dict, corpus_year, search_depth)
@@ -780,8 +779,8 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
 
     print_step_text("\n  - Enhancing search results...", print_params)
     # Replace NaN values by UNKNOWN string except in first name initials
-    submit_df = keep_initials(submit_df, initials_col, missing_fill=bp.UNKNOWN)
-    orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bp.UNKNOWN)
+    submit_df = keep_initials(submit_df, initials_col, missing_fill=bm_pg.UNKNOWN)
+    orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bm_pg.UNKNOWN)
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year

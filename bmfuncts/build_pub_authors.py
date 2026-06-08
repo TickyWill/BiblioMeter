@@ -15,7 +15,6 @@ import warnings
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -31,15 +30,14 @@ from bmfuncts.useful_functs import standardize_txt
 
 
 def _set_useful_bp_cols():
-    """ Sets useful col names from globals 
-    of `BiblioParsing` package imported as bp.
+    """ Sets useful col names list from globals.
     """
-    pub_id_alias = bp.COL_NAMES['pub_id']
-    auth_idx_alias = bp.COL_NAMES['authors'][1]
-    co_auth_alias = bp.COL_NAMES['authors'][2]
-    doi_alias = bp.COL_NAMES['articles'][6]
-    address_alias = bp.COL_NAMES['auth_inst'][2]
-    norm_affil_alias = bp.COL_NAMES['auth_inst'][4]
+    pub_id_alias = bm_pg.COL_NAMES['pub_id']
+    auth_idx_alias = bm_pg.COL_NAMES['authors'][1]
+    co_auth_alias = bm_pg.COL_NAMES['authors'][2]
+    doi_alias = bm_pg.COL_NAMES['articles'][6]
+    address_alias = bm_pg.COL_NAMES['auth_inst'][2]
+    norm_affil_alias = bm_pg.COL_NAMES['auth_inst'][4]
 
     bp_cols_list = [pub_id_alias, auth_idx_alias,
                     co_auth_alias, doi_alias,
@@ -95,8 +93,8 @@ def _get_hal_added_dois(wf_path, corpus_year, doi_col):
         (list): The list of added DOIs.
     """
     extract_root_alias = bm_pg.ARCHI_EXTRACT["root"]
-    scopus_extract_root_alias = bm_pg.ARCHI_EXTRACT[bp.SCOPUS]["root"]
-    added_dois_file_base_alias = bm_pg.ARCHI_EXTRACT[bp.SCOPUS]["added_dois_file"]
+    scopus_extract_root_alias = bm_pg.ARCHI_EXTRACT[bm_pg.SCOPUS]["root"]
+    added_dois_file_base_alias = bm_pg.ARCHI_EXTRACT[bm_pg.SCOPUS]["added_dois_file"]
     added_dois_file = corpus_year + added_dois_file_base_alias
     extract_root_path = wf_path / Path(extract_root_alias)
     scopus_extract_path = extract_root_path / Path(scopus_extract_root_alias)

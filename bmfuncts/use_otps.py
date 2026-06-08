@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
@@ -520,7 +519,7 @@ def _use_doi_set_otps(dpt_df, otps_history_tup, use_otps_cols_dic, dfs_tup):
 
     for otp_idx, doi_to_check in enumerate(doi_to_check_list):
         if doi_to_check in otp_to_set_doi_list:
-            if doi_to_check!=bp.UNKNOWN:
+            if doi_to_check!=bm_pg.UNKNOWN:
                 # Case of known DOIs
                 doi_otp_to_set = doi_otp_to_set_list[otp_idx]
                 dfs_tup = _use_known_doi_otps(dfs_tup, use_otps_cols_dic, dpt_df,

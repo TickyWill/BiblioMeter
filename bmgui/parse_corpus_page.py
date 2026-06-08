@@ -11,7 +11,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 # 3rd party imports
-import BiblioParsing as bp
+import bpfuncts as bp
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg

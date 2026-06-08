@@ -11,7 +11,6 @@ from pathlib import Path
 
 # 3rd party imports
 import pandas as pd
-import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -155,7 +154,7 @@ def _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year):
                              'journal_col'            : final_col_dic['journal'],
                              'issn_col'               : final_col_dic['issn'],
                              'doctype_col'            : final_col_dic['doc_type'],
-                             'journal_norm_col'       : bp.COL_NAMES['temp_col'][1],
+                             'journal_norm_col'       : bm_pg.COL_NAMES['temp_col'][1],
                              'pub_ids_col'            : bm_pg.COL_NAMES_BONUS["pub_ids list"],
                              'most_recent_year_if_col': most_recent_year_if_col,
                              'corpus_year_if_col'     : corpus_year_if_col,
@@ -184,7 +183,7 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
         issn = issn_df[issn_col].to_list()[0]
         journal_names_list = issn_df[journal_col].to_list()
         if len(journal_names_list)>1:
-            if issn!=bp.UNKNOWN:
+            if issn!=bm_pg.UNKNOWN:
                 journal_length_list = [len(journal) for journal in journal_names_list]
                 journal_names_dict = dict(zip(journal_length_list, journal_names_list))
                 length_min = min(journal_length_list)
@@ -334,7 +333,7 @@ def _set_by_issn_df(by_doc_df, idx_doc, issn, dg, drop_dup_cols,
 
     # Managing unknown IF
     ifs_list = list(set(dg[if_analysis_col].tolist()))
-    ifs_new_list = [x for x in ifs_list if x!=bp.UNKNOWN]
+    ifs_new_list = [x for x in ifs_list if x!=bm_pg.UNKNOWN]
     if_value = bm_pg.NOT_AVAILABLE
     if ifs_new_list:
         if_value = ifs_new_list[0]
@@ -381,7 +380,7 @@ def _build_doctype_stat(doctype_df, doctype_col_keys_tup, doctype_cols_dic):
     by_doc_df = pd.DataFrame(columns=cols_list)
     idx_doc = 0
     for issn, issn_dg in doctype_df.groupby(issn_col):
-        if bp.UNKNOWN in issn:
+        if bm_pg.UNKNOWN in issn:
             issn = bm_pg.NOT_AVAILABLE
             for doc, doc_dg in issn_dg.groupby(journal_norm_col):
                 norm_doc = doc

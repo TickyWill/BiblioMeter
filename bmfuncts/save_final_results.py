@@ -27,7 +27,7 @@ import shutil
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
+#import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -518,17 +518,17 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
-    # Setting useful aliases
-    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
-    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
-    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-
-    # Setting useful filenames dict
-    kw_item_alias_dict = {'AK' : auth_kw_item_alias,
-                          'IK' : index_kw_item_alias,
-                          'TK' : title_kw_item_alias,
-                         }
-
+#    # Setting useful aliases
+#    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
+#    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
+#    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
+#
+#    # Setting useful filenames dict
+#    kw_item_alias_dict = {'AK' : auth_kw_item_alias,
+#                          'IK' : index_kw_item_alias,
+#                          'TK' : title_kw_item_alias,
+#                         }
+#
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["keywords"]
 
@@ -550,7 +550,7 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
         os.makedirs(target_kws_folder_path)
 
     for dept in [institute] + depts_col_list:
-        for kw_type, _ in kw_item_alias_dict.items():
+        for kw_type in ['AK', 'IK', 'TK']:
             # Setting origin and target file paths
             dept_file_name = f'{dept} {corpus_year}-{kw_type}.xlsx'
             origin_dept_file_path = Path(origin_kws_folder_path) / Path(dept_file_name)

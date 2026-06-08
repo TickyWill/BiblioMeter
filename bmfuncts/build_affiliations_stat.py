@@ -10,7 +10,6 @@ from pathlib import Path
 from string import Template
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
@@ -32,8 +31,8 @@ def _set_affils_stat_cols():
     Returns:
         (dict): The built dict.
     """
-    affils_stat_cols_dic = {'pub_id_col'        : bp.COL_NAMES['pub_id'],
-                            'country_col'       : bp.COL_NAMES['country'][2],
+    affils_stat_cols_dic = {'pub_id_col'        : bm_pg.COL_NAMES['pub_id'],
+                            'country_col'       : bm_pg.COL_NAMES['country'][2],
                             'final_country_col' : bm_pg.COL_NAMES_BONUS['country'],
                             'affils_col'        : bm_pg.COL_NAMES_BONUS['institution'],
                             'pub_nb_col'        : bm_pg.COL_NAMES_BONUS["pub number"],
@@ -75,8 +74,8 @@ def _build_distrib_affils_data(norm_affiliations_df, affiliations_col, affil_typ
         type and per publication.
     """
     # Getting affiliations types data
-    affil_types_df = pd.read_excel(affil_types_file_path, usecols=bp.AFFIL_TYPES_USECOLS)
-    full_affil_types_list = affil_types_df[bp.AFFIL_TYPES_USECOLS[1]].to_list()
+    affil_types_df = pd.read_excel(affil_types_file_path, usecols=bm_pg.AFFIL_TYPES_USECOLS)
+    full_affil_types_list = affil_types_df[bm_pg.AFFIL_TYPES_USECOLS[1]].to_list()
 
     progress_status, progress_step, progress_callback = [None] * 3
     if progress_param:
@@ -208,7 +207,7 @@ def _set_clean_country_col_values(init_df, country_col):
     country_to_set = countries_list[0]
     clean_df = init_df.copy()
     clean_df[country_col] = init_df[country_col].apply(lambda x: country_to_set
-                                                       if x==bp.UNKNOWN_COUNTRY else x)
+                                                       if x==bm_pg.UNKNOWN_COUNTRY else x)
     return clean_df
 
 

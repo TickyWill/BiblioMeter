@@ -7,8 +7,8 @@ __all__ = ['build_institute_addresses_df']
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+from bpfuncts import standardize_address as bp_standardize_address
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -36,15 +36,15 @@ def _set_pub_addresses_cols_dic(institute, org_tup):
     """
     _, submit_col_rename_dic, _ = build_col_conversion_dic(institute, org_tup)
 
-    pub_addresses_cols_dic = {'bp_pub_id_col'    : bp.COL_NAMES['address'][0],
-                              'bp_address_id_col': bp.COL_NAMES['address'][1],
-                              'bp_address_col'   : bp.COL_NAMES['address'][2],
-                              'bp_author_id_col' : bp.COL_NAMES['auth_inst'][1],
-                              'bm_pub_id_col'    : submit_col_rename_dic[bp.COL_NAMES['authors'][0]],
+    pub_addresses_cols_dic = {'bp_pub_id_col'    : bm_pg.COL_NAMES['address'][0],
+                              'bp_address_id_col': bm_pg.COL_NAMES['address'][1],
+                              'bp_address_col'   : bm_pg.COL_NAMES['address'][2],
+                              'bp_author_id_col' : bm_pg.COL_NAMES['auth_inst'][1],
+                              'bm_pub_id_col'    : submit_col_rename_dic[bm_pg.COL_NAMES['authors'][0]],
                               'bm_address_id_col': bm_pg.COL_NAMES_BONUS['address ID'],
-                              'bm_address_col'   : submit_col_rename_dic[bp.COL_NAMES['address'][2]],
-                              'bm_author_id_col' : submit_col_rename_dic[bp.COL_NAMES['authors'][1]],
-                              'bm_doctype_col'   : submit_col_rename_dic[bp.COL_NAMES['articles'][7]],
+                              'bm_address_col'   : submit_col_rename_dic[bm_pg.COL_NAMES['address'][2]],
+                              'bm_author_id_col' : submit_col_rename_dic[bm_pg.COL_NAMES['authors'][1]],
+                              'bm_doctype_col'   : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][7]],
                              }
 
     return pub_addresses_cols_dic
@@ -53,8 +53,8 @@ def _set_pub_addresses_cols_dic(institute, org_tup):
 def _set_col_lists_infos(pub_addresses_cols_dic):
     """Builds a dict giving useful col lists and a dict for renaming col names.
 
-    The col names set by the `BiblioParsing` package are renamed with the col names
-    set within the `bmfuncts` package.
+    The col names set at the parsing step are renamed with the col names
+    set within the step of the consolidation of the publications list.
 
     Args:
         pub_addresses_cols_dic (dict): The dict giving selected columns names \
@@ -269,7 +269,7 @@ def _correct_institute_address(pubid_addid_authid_addresse_df, bm_full_cols_list
                     new_addresses_list = [address.replace("INES", ines_rpl_str) for address in addresses_list]
                     # Correcting Liten-Institute addresse when affiliation is "INESCEA" and "LITEN" is missing
                     new_addresses_list = [address.replace("INESCEA", ines_rpl_str) for address in addresses_list]
-                    new_addresses_list = [address.replace(bp.UNKNOWN, unknown_rpl_str)
+                    new_addresses_list = [address.replace(bm_pg.UNKNOWN, unknown_rpl_str)
                                           for address in new_addresses_list]
                     addresses_dict = dict(zip(new_addresses_list, address_ids_list))
                     data = []
@@ -511,7 +511,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
 
     1. Builds the data of standardized addresses per publication and author \
     of the institute through the `_build_institute_authors_addresses` internal function.
-    2. Builds the dict for renaming 'BiblioParsing' columns into 'BiblioMeter' ones.
+    2. Builds the dict for renaming parsing columns into consolidation ones.
     3. Sets the standardized addresses data from the deduplication results \
     of the parsing step through the `_read_addresses_data` internal function \
     and the `set_year_pub_id` function imported from the `bmfuncts.useful_functs` \
@@ -519,7 +519,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
     4. Selects only addresses of the publications of the institute.
 
     All addresses are standardized through the `standardize_address` function \
-    imported from the `BiblioParsing` package.
+    imported from the `biblioparsing` package.
 
     Args:
         build_addr_params (list): Composed of the 4 digits year of the corpus, \
@@ -535,7 +535,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
         (tup): (Data of addresses of the institute per publications (dataframe), \
         Data of addresses per publication and author of the institute (dataframe), \
         All useful column names (str) specific to 'BiblioMeter' (list), \
-        Info for renaming 'BiblioParsing' columns into 'BiblioMeter' ones (dict)).
+        Info for renaming parsing columns into consolidation ones (dict)).
     """
     # Setting parameters values from 'build_addr_params'
     corpus_year, final_results_path = build_addr_params[0], build_addr_params[3]
@@ -562,14 +562,14 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
     # Getting the institute-authors IDs per publications of the institute
     input_dfs = [submit_df, authaddr_df]
     return_df = _build_institute_authors_addresses(corpus_year, input_dfs, pub_addresses_cols_dic)
-    return_df[bm_address_col] = return_df[bm_address_col].apply(bp.standardize_address)
+    return_df[bm_address_col] = return_df[bm_address_col].apply(bp_standardize_address)
     all_institute_author_addresses_df = return_df.copy()
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.50)
 
     # Setting the addresses data from the deduplication results of the parsing step
     all_addresses_df = set_year_pub_id(all_addresses_df, corpus_year, bp_pub_id_col)
-    all_addresses_df[bp_address_col] = all_addresses_df[bp_address_col].apply(bp.standardize_address)
+    all_addresses_df[bp_address_col] = all_addresses_df[bp_address_col].apply(bp_standardize_address)
     all_addresses_df.rename(columns=bp2bm_rename_cols_dict, inplace=True)
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.80)

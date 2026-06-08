@@ -10,7 +10,6 @@ import re
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 from openpyxl import Workbook as openpyxl_Workbook
 
@@ -267,7 +266,7 @@ def _build_previous_years_if_df(wf_path, if_db_dict,
     wb, first = save_params_tup
 
     # Setting useful aliases
-    unknown_alias = bp.UNKNOWN
+    unknown_alias = bm_pg.UNKNOWN
 
     # Building fully updated IFs data per journals for years
     # before the most recent year available for IFs
@@ -347,7 +346,7 @@ def _build_recent_year_if_df(wf_path, if_db_dict,
     wb, first = save_params_tup
 
     # Setting useful aliases
-    unknown_alias = bp.UNKNOWN
+    unknown_alias = bm_pg.UNKNOWN
 
     # Initializing 'most_recent_year_if_db_df' dataframe
     most_recent_year_if_db_df = if_db_dict[if_most_recent_year]

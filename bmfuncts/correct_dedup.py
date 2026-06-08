@@ -11,8 +11,9 @@ __all__ = ['correct_dedup',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
+from bpfuncts import standardize_address as bp_standardize_address
+from bpfuncts import build_addr_affils_tup as bp_build_addr_affils_tup
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -35,13 +36,13 @@ def _set_dedup_cols_dic():
         (dict): The built dict.
     """
     dedup_cols_dic = {'bm_hash_id_col'     : bm_pg.COL_HASH['hash_id'],
-                      'bp_pub_id_col'      : bp.COL_NAMES['pub_id'],
-                      'bp_doi_col'         : bp.COL_NAMES['articles'][6],
-                      'bp_address_id_col'  : bp.COL_NAMES['address'][1],
-                      'bp_address_col'     : bp.COL_NAMES['address'][2],
-                      'bp_country_col'     : bp.COL_NAMES['country'][2],
-                      'bp_author_id_col'   : bp.COL_NAMES['auth_inst'][1],
-                      'bp_norm_affils_col' : bp.COL_NAMES['auth_inst'][4],
+                      'bp_pub_id_col'      : bm_pg.COL_NAMES['pub_id'],
+                      'bp_doi_col'         : bm_pg.COL_NAMES['articles'][6],
+                      'bp_address_id_col'  : bm_pg.COL_NAMES['address'][1],
+                      'bp_address_col'     : bm_pg.COL_NAMES['address'][2],
+                      'bp_country_col'     : bm_pg.COL_NAMES['country'][2],
+                      'bp_author_id_col'   : bm_pg.COL_NAMES['auth_inst'][1],
+                      'bp_norm_affils_col' : bm_pg.COL_NAMES['auth_inst'][4],
                       'author_ids_col'     : "Author IDs",
                       'correct_address_col': "Correct address",
                      }
@@ -205,10 +206,10 @@ def _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic, ids_di
             # Building author's addresses-list
             author_addresses_str = authaddr_row[address_col]
             author_addresses_list = build_list_from_str(author_addresses_str, "; ")
-            author_addresses_list = [bp.standardize_address(x) for x in author_addresses_list]
+            author_addresses_list = [bp_standardize_address(x) for x in author_addresses_list]
 
             # Searching for false address in the author's addresses-list to append author's ID
-            std_false_address = bp.standardize_address(false_address)
+            std_false_address = bp_standardize_address(false_address)
 
             if std_false_address in author_addresses_list:
                 false_address_auth_ids_list.append(str(author_id))
@@ -347,8 +348,8 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
     of addresses corrected by the user.
 
     In addition, the normalized and raw affiliations are defined for 
-    the corrected addresses of authors using the `build_addr_affils_tup` 
-    function imported from the `BiblioParsing` package itself imported as bp. 
+    the corrected addresses of authors using the `bo_build_addr_affils_tup` 
+    function imported from the `biblioparsing` package. 
     This function requires data per country for normalizing the authors affiliations, 
     the data of affiliations types and the data of towns per country.
 
@@ -392,7 +393,7 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
                         raw_author_addresses_list = build_list_from_str(raw_author_addresses_str, "; ")
                         author_addresses_list = []
                         for address in raw_author_addresses_list:
-                            std_address_str = bp.standardize_address(address)
+                            std_address_str = bp_standardize_address(address)
                             author_addresses_list.append(std_address_str)
 
                         # Finding index of false address in 'author_addresses_list'
@@ -407,12 +408,12 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
                         # Correcting normalized affiliations
                         addr_norm_affils_list = []
                         for auth_address in author_addresses_list:
-                            author_addr_aff_tup = bp.build_addr_affils_tup(auth_address, dedup_affil_params_dic,
+                            author_addr_aff_tup = bp_build_addr_affils_tup(auth_address, dedup_affil_params_dic,
                                                                            drop_status=False)
                             auth_addr_norm_affils_list = author_addr_aff_tup.norm_affils_list
                             addr_norm_affils_list.append(auth_addr_norm_affils_list)
 
-                        addr_norm_affils_list = drop_multiple_item(addr_norm_affils_list, bp.EMPTY)
+                        addr_norm_affils_list = drop_multiple_item(addr_norm_affils_list, bm_pg.EMPTY)
                         norm_affils_str = build_string_from_list(addr_norm_affils_list, ";")
 
                         pub_id_authaddr_df.loc[row_num, norm_affils_col] = norm_affils_str

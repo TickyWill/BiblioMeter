@@ -47,5 +47,5 @@ setup(name='BiblioMeter',
                    + 'amal.chabli@orange.fr, '
                    + 'ludovic.desmeuzes@yahoo.com',
       url='https://github.com/TickyWill/BiblioMeter',
-      packages=find_packages(),
+      packages=find_packages(include=['bmfuncts', 'bmgui',]),
       )

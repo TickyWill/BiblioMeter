@@ -36,14 +36,19 @@ Open the following BiblioMeter sphinx-documentation HTML file:
 >docs/docbuild/html/index.html
 
 ## Building executable
-Either run the following command from your BiblioMeter-project folder:
+Run the following command from your BiblioMeter-project folder:
 ```
-pyinstaller --onefile --add-data="./bmfuncts/.;bmfuncts/." --add-data="./bmgui/.;bmgui/." --add-data=".\venv\Lib\site-packages\BiblioParsing;BiblioParsing/." .\app.py
+pyinstaller --noconfirm --onefile --console^
+ --icon="./bmfuncts/ConfigFiles/BM-logo.ico"^
+ --add-data "./bmfuncts/.;bmfuncts/.^
+ --add-data "./bmgui/.;bmgui/."^
+ --add-data ".\venv\Lib\site-packages\BiblioParsing;BiblioParsing/."^
+ .\app.py
 ```
-Or, if you succeed to install 'auto-py-to-exe', either run the following batch file:
+Either, run the following batch file:
 <p><a href=https://github.com/TickyWill/BiblioMeter/blob/main/BiblioMeterBuildExe.bat>BiblioMeter executable-building batch file
 </a></p>
-Or refer to the following manual:
+Or, if you succeed to install 'auto-py-to-exe', refer to the following manual:
 <p><a href=https://github.com/TickyWill/BiblioMeter/blob/main/BiblioMeterBuildExeManual-Fr.pdf>BiblioMeter executable-building manual
 </a></p>
 <span style="color:red">BEWARE:</span> Some security tools (e.g. McAfee) could place the EXE file in quarantine. If so you have to manually authorized the .exe file.
