@@ -25,7 +25,6 @@ from bmfuncts.format_files import format_wb_sheet
 from bmfuncts.format_files import get_col_letter
 from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.rename_cols import set_otp_col_names
-from bmfuncts.use_homonyms import save_homonyms
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import set_print_same_len

@@ -267,7 +267,7 @@ def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
     journal_col, doctype_col, issn_col, journal_norm_col = sub_cols_list[1:]
 
     # Getting articles data resulting from deduplication parsing
-    dedup_read_params = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    dedup_read_params = [corpus_year, parsing_filenames_dict, final_results_path]
     parsing_pub_df = _read_parsing_pub_data(dedup_read_params)
 
     # Building the dict {journal name : normalized journal name,}

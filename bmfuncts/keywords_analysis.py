@@ -208,8 +208,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(15)
 
     # Getting the dict of deduplication results
-    dedup_read_params = [corpus_year, wf_path, parsing_filenames_dict,
-                         final_results_path]
+    dedup_read_params = [corpus_year, parsing_filenames_dict, final_results_path]
     dedup_parsing_dict = read_final_dedup(dedup_read_params)
     if progress_callback:
         progress_callback(25)

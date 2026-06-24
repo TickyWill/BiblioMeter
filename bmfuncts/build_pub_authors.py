@@ -246,12 +246,13 @@ def _split_lastname_firstname(txt, digits_min=4):
     return last_name, first_name_initials
 
 
-def _build_filt_auth_affil(authaddr_auth_df, institute_col_list, main_status, institute_main_idx):
+def _build_filt_auth_affil(authaddr_auth_df, org_tup):
     """Builds the `filt_auth_affil_` filter to select the authors by their affiliation to the Institute.
 
     Args:
         authaddr_auth_df (dataframe): Data of combined name of author to author ID \
         with affiliation by publication ID.
+        org_tup (tup): Contains parameters of Institute's organization.
         institute_col_list (list): List of column names (str) that contains affiliation \
         status to the Institute.
         main_status (bool): Status of the combination of 'institute_col_list' columns \
@@ -266,6 +267,15 @@ def _build_filt_auth_affil(authaddr_auth_df, institute_col_list, main_status, in
         - True if any in these columns is equal to 1 for the author;
         - False otherwise.
     """
+    # Setting parameters' value of Institute's organisation from 'org_tup' tuple
+    # 1- List of column names (str) that contains affiliation status to the Institute at index 4
+    # 2- Index of the unique column name in 'institute_col_list' list to be used for the Institute-affiliation
+    # status when 'main_status' is set to False at index 7
+    # 3- Status of the combination of 'institute_col_list' columns to identify affiliation
+    # to the Institute at index 8
+    institute_col_list, institute_main_idx, main_status = org_tup[4], org_tup[7], org_tup[8]
+
+    # Building the filter
     main_institute_col = institute_col_list[institute_main_idx]
     if main_status:
         filt_auth_affil_ = authaddr_auth_df[main_institute_col]==1
@@ -500,9 +510,8 @@ def _read_useful_parsing_data(dedup_read_params):
 
     Args:
         dedup_read_params (list): Composed of the 4 digits year of the corpus, \
-        of the full path to working folder, of the dict giving the name of \
-        the parsing file for each parsed item and of the full path to the folder \
-        where final results are saved.
+        of the dict giving the name of the parsing file for each parsed item \
+        and of the full path to the folder where final results are saved.
     Returns:
         (dict): Keyed by the selected items-keys (str) and valued by the corresponding \
         parsing data (dataframe).
@@ -527,13 +536,13 @@ def _get_input_data(input_data_params, bp_cols_list):
         (tup): (The built data of articles, The built data of authors, The built data of authors with affiliations).
     """
     # Setting parameters values from params_list
-    corpus_year, wf_path, datatype, parsing_filenames_dict = input_data_params
+    corpus_year, institute, org_tup, wf_path, datatype, parsing_filenames_dict = input_data_params
 
     # Setting input-data paths
     final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Getting the useful parsing results
-    dedup_read_params = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    dedup_read_params = [corpus_year, parsing_filenames_dict, final_results_path]
     select_items_dict = _read_useful_parsing_data(dedup_read_params)
     articles_df, addresses_df, authors_df, authaddr_df = list(select_items_dict.values())
 
@@ -547,8 +556,8 @@ def _get_input_data(input_data_params, bp_cols_list):
         # Saving checked parsing data
         dedup_infos = [wf_path, datatype, corpus_year]
         _, addresses_key, _, authaddr_key = list(select_items_dict.keys())
-        addresses_file_name_base = item_filename_dict[addresses_key]
-        authaddr_file_name_base = item_filename_dict[authaddr_key]
+        addresses_file_name_base = parsing_filenames_dict[addresses_key]
+        authaddr_file_name_base = parsing_filenames_dict[authaddr_key]
         save_final_dedup(addresses_df, addresses_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
         save_final_dedup(authaddr_df, authaddr_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
 
@@ -679,10 +688,11 @@ def build_institute_pubs_authors(params_list):
     - The columns are reordered through the `_reorder_cols` internal function.
 
     Args:
-        params_list (list):  The list composed of the Institute's name (str), \
-        the org_tup (tup) that contains parameters of Institute's organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        params_list (list): The list composed of the 4 digits year of the corpus (str), \
+        of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to working folder (path), and of the data combination \
+        type of corpuses databases (str).
     Returns:
         (dataframe): Publications list with one row per author with correction \
         of author-names and drop of authors with inappropriate affiliation \
@@ -710,7 +720,7 @@ def build_institute_pubs_authors(params_list):
     replace_sheet, remove_sheet = sheets_list
 
     # Getting input-data from parsing ones
-    input_data_params = [corpus_year, wf_path, datatype, parsing_filenames_dict]
+    input_data_params = [corpus_year, institute, org_tup, wf_path, datatype, parsing_filenames_dict]
     return_tup = _get_input_data(input_data_params, bp_cols_list)
     articles_df, authors_df, authaddr_df = return_tup
 
@@ -739,9 +749,7 @@ def build_institute_pubs_authors(params_list):
                                          right_on=merge_cols)
 
     # Building the authors filter of the institution INSTITUTE
-    institute_col_list, institute_main_idx, main_status = org_tup[4], org_tup[7], org_tup[8]
-    filt_auth_affil = _build_filt_auth_affil(authaddr_auth_df, institute_col_list,
-                                             main_status, institute_main_idx)
+    filt_auth_affil = _build_filt_auth_affil(authaddr_auth_df, org_tup)
 
     # Associating each publication (including its complementary info) with each of its Institute's authors
     # The resulting data  contains a row for each Institute's author with the corresponding publication info

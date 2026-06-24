@@ -208,9 +208,11 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, affil_params_dics_list, co_col
         # Removing unkept affiliations from remaining raw-addresses data
         cols_list = [countries_col, raw_affil_col, affiliations_col]
         sub_raw_addr_df = _clean_unkept_affil(sub_raw_addr_df, country_unkept_affil_file_path, cols_list)
-        print_step_text("      - Unkept addresses-parts removed from the data of remaining raw-affiliations", print_params)
+        print_step_text("      - Unkept addresses-parts removed from the data of remaining raw-affiliations",
+                        print_params)
         sub_raw_addr_df = _enhance_raw_affiliations_data(sub_raw_addr_df, ids_dicts_list, co_cols_dic)
-        print_step_text("      - Data of the remaining raw-affiliations enhanced with complementary info", print_params)
+        print_step_text("      - Data of the remaining raw-affiliations enhanced with complementary info",
+                        print_params)
 
         raw_addr_df = sub_raw_addr_df.copy()
         if not empty_raw_addr_df.empty:
@@ -234,10 +236,10 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
                                   verbose=False, progress_param=None):
 
     # Setting useful column names
-    col_keys = ['pub_id_col', 'address_col', 'address_id_col', 'affiliations_col',
-                'countries_col', 'final_pub_id_col', 'raw_affil_col']
-    (pub_id_col, address_col, address_id_col, affiliations_col, countries_col,
-     final_pub_id_col, raw_affil_col) = [co_cols_dic[key] for key in col_keys]
+    col_keys = ['pub_id_col', 'address_id_col', 'affiliations_col',
+                'countries_col', 'final_pub_id_col']
+    (pub_id_col, address_id_col, affiliations_col, countries_col,
+     final_pub_id_col) = [co_cols_dic[key] for key in col_keys]
     norm_cols_list = [final_pub_id_col, address_id_col, countries_col, affiliations_col]
 
     # Setting parameters valu from 'addr_params'
@@ -273,7 +275,8 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
             if pub_addr_tup in empty_pub_addr_tups:
                 empty_rows.append(idx)
         sub_institute_pub_raw_addr_df = institute_pub_raw_addr_df.drop(empty_rows)
-        print_step_text("      - Data of addresses with affiliations remaining to be normalized selected", print_params)
+        print_step_text("      - Data of addresses with affiliations remaining to be normalized selected",
+                        print_params)
 
         if norm_affil_file_path.is_file():
             # Reading the previously built data of normalized affiliations
@@ -290,7 +293,8 @@ def _build_addresses_to_normalize(addr_params, co_cols_dic, addr_paths,
                 if pub_addr_tup in other_pub_addr_tups:
                     other_rows.append(idx)
             keep_norm_affil_df = init_norm_affil_df.drop(other_rows)
-            print_step_text("      - Data of normalized affiliations to be kept selected", print_params)
+            print_step_text("      - Data of normalized affiliations to be kept selected",
+                            print_params)
     addr_dfs_list = [sub_institute_pub_raw_addr_df, empty_raw_addr_df, keep_norm_affil_df]
 
     return addr_dfs_list
@@ -351,9 +355,9 @@ def _built_co_pub_identifiers_data(ids_params, hash_ids_path, identifiers_cols):
     """Builds data of publications identifiers specific to a given deduplicated corpus parsing.
 
     Args:
-        ids_params (list): The list composed of the full path to the working folder (path), \
-        of the 4 digits year of the corpus (str) and of the full path to the folder \
-        where the final results of parsings deduplication are saved.
+        ids_params (list): Composed of the 4 digits year of the corpus, \
+        of the dict giving the name of the parsing file for each parsed item \
+        and of the full path to the folder where final results are saved.
         hash_ids_path (path): The full path to the hash-IDs file.
         identifiers_cols (list): The column names of the publications identifiers.
     Returns:
@@ -452,13 +456,13 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         progress_callback(init_progress)
 
     # Building data of hash-ID and DOI per publication
-    ids_params = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    ids_params = [corpus_year, parsing_filenames_dict, final_results_path]
     identifiers_cols = [hash_id_col, pub_id_col, doi_col]
     ids_dicts_list = _built_co_pub_identifiers_data(ids_params, hash_ids_path, identifiers_cols)
 
     # Correcting false addresses in deduplication-parsing data as indicated by the user
     print_step_text("\nCorrecting false addresses...", print_params)
-    dedup_params = [corpus_year, print_params, institute, wf_path, parsing_filenames_dict,
+    dedup_params = [corpus_year, print_params, wf_path, parsing_filenames_dict,
                     dedup_affil_params_dic, final_results_path, addresses_to_correct_path]
     correct_status = correct_dedup(dedup_params, ids_dicts_list)
     if correct_status:
@@ -494,12 +498,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
 
     print_step_text("\nTrying to built affiliations stat and geographical stat...", print_params)
     if not institute_pub_raw_addr_df.empty:
-        print_step_text("  - Building normalized-affiliations data and remaining raw-affiliations data...", print_params)
+        print_step_text("  - Building normalized-affiliations data and remaining raw-affiliations data...",
+                        print_params)
         affil_params_dics_list = [dedup_affil_params_dic, co_affil_params_dic]
         return_tup = _build_norm_raw_affil_data(addr_dfs_list, affil_params_dics_list, co_cols_dic,
                                                 ids_dicts_list, print_params, progress_param=progress_param)
         norm_affil_df, raw_addr_df, wrong_affil_types_dict, raw_addr_status = return_tup
-        print_step_text("      - Normalized-affiliations data and remaining raw-affiliations built", print_params)
+        print_step_text("      - Normalized-affiliations data and remaining raw-affiliations built",
+                        print_params)
     else:
         raw_addr_status = True
         wrong_affil_types_dict = {}

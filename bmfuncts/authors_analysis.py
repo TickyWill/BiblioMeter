@@ -94,9 +94,8 @@ def _build_auth_nb_per_pub(au_stat_params_list, cols_list):
 
     Args:
         au_stat_params_list (list): Composed of the 4 digits year of the corpus, \
-        of the full path to working folder, of the dict giving the name of \
-        the parsing file for each parsed item and of the full path to the folder \
-        where final results are saved.
+        of the dict giving the name of the parsing file for each parsed item \
+        and of the full path to the folder where final results are saved.
         cols_list (list):  Composed of Pub-ID column name (str) and \
         of authors-number column name (str).
     Returns:
@@ -163,7 +162,7 @@ def _build_author_employee_df(auth_params_list, au_analysis_cols_dic):
     # Getting the number of authors per pub-ID from parsing results
     print("  - Computing the number of authors per publication from parsing results...", end="\r")
     count_select_cols = [pub_id_col, nb_au_col]
-    au_nb_params_list = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    au_nb_params_list = [corpus_year, parsing_filenames_dict, final_results_path]
     count_auth_df = _build_auth_nb_per_pub(au_nb_params_list, count_select_cols)
     print_step_text("  - Data of number of authors per publication built from parsing results       ",
                     print_params)

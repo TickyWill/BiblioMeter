@@ -422,7 +422,7 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
     new_authaddr_df.to_csv(parsing_authaddr_path, index=False, sep='\t')
 
 
-def correct_dedup(params_list, ids_dicts_list, test_txt=""):
+def correct_dedup(dedup_params_list, ids_dicts_list, test_txt=""):
     """Corrects the parsing data of countries, addresses and authors-addresses 
     using the data of addresses corrected by the user.
 
@@ -430,10 +430,10 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
     and `_correct_dedup_authaddr` internal functions.
 
     Args:
-        params_list (list): The list composed of the 4 digits year of the corpus (str), \
-        of the print parameters (list), of the Institute's name (str), of the full path \
-        to working folder (path), of the dict giving the name of the parsing file for each \
-        parsed item, of the dict giving the full paths to the Institute's files to use for \
+        dedup_params_list (list): The list composed of the 4 digits year of the corpus (str), \
+        of the print parameters (list), of the full path to working folder (path), \
+        of the dict giving the name of the parsing file for each parsed item, \
+        of the dict giving the full paths to the Institute's files to use for \
         authors' affiliations parsing at parsing deduplication step, of the full path to \
         the folder where the final results of parsings-deduplication are saved, and of \
         the full path to the file for correcting false addresses.
@@ -454,8 +454,9 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
             new_corrected_addresses_df = _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic,
                                                                              ids_dicts_list)
 
-        _corrected_addresses_df = _update_corrected_addresses_history(new_corrected_addresses_df, corrected_addresses_path,
-                                                                      corpus_year, dedup_cols, print_params)
+        _corrected_addresses_df = _update_corrected_addresses_history(new_corrected_addresses_df,
+                                                                      corrected_addresses_path, corpus_year,
+                                                                      dedup_cols, print_params)
         return _corrected_addresses_df
 
     # Setting useful column names
@@ -463,9 +464,9 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
     cols_keys = ['bm_hash_id_col', 'bp_address_id_col']
     dedup_cols = [dedup_cols_dic[key] for key in cols_keys]
 
-    # Setting params from "params_list"
-    (corpus_year, print_params, institute, wf_path, parsing_filenames_dict,
-     dedup_affil_params_dic, final_results_path, addresses_to_correct_path) = params_list
+    # Setting params from "dedup_params_list"
+    (corpus_year, print_params, wf_path, parsing_filenames_dict,
+     dedup_affil_params_dic, final_results_path, addresses_to_correct_path) = dedup_params_list
 
     # Setting keys for getting parsing-deduplication results
     correct_dedup_keys = bm_pg.PARSING_KEYS_DIC['correct_parsing']
@@ -474,11 +475,11 @@ def correct_dedup(params_list, ids_dicts_list, test_txt=""):
     correction_item_filenames = [parsing_filenames_dict[key] for key in correct_dedup_keys]
     correct_paths_list = _set_correct_dedup_paths(final_results_path, corpus_year,
                                                   correction_item_filenames, test_txt)
-    (corrected_addresses_path, parsing_countries_path,
-     parsing_addresses_path, parsing_authaddr_path) = correct_paths_list
+    (corrected_addresses_path, parsing_addresses_path,
+     parsing_authaddr_path, parsing_countries_path) = correct_paths_list
 
     # Setting parsing data for the correction process
-    dedup_read_params = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    dedup_read_params = [corpus_year, parsing_filenames_dict, final_results_path]
     parsing_dict = read_final_dedup(dedup_read_params)
     addresses_df, authaddr_df, countries_df = [parsing_dict[key] for key in correct_dedup_keys]
 

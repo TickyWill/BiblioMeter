@@ -506,4 +506,3 @@ PARSING_KEYS_DIC = {'all'             : ["pub", "auth", "addr", "countries", "af
 PARSING_KEYS_CONVERT_DIC = dict(zip(PARSING_KEYS_DIC['all'], PARSING_ITEMS_LIST))
 
 PARSING_KEYS_REVERT_DIC = {PARSING_KEYS_CONVERT_DIC[key]: key for key in PARSING_KEYS_DIC['all']}
-

@@ -179,14 +179,14 @@ def _set_database_rawdata(set_rawdata_params, database):
         step_txt = ("  - Try cancelled because rawdata are missing "
                     f"for {missing_rawdata}")
     else:
-        step_txt = f"  - Succeeded to set rawdata for all corpus-years"
+        step_txt = "  - Succeeded to set rawdata for all corpus-years"
     print_step_text(step_txt, print_params)
     return database_folder_path, missing_rawdata
 
 
 def set_rawdata(set_rawdata_params):
     # Setting parameters value from 'set_rawdata_params'
-    print_params, _, datatype, years_list = set_rawdata_params
+    print_params, _, _, years_list = set_rawdata_params
 
     print_step_title(f"TRY SETTING RAWDATA FOR {years_list}", print_params)
 
@@ -341,7 +341,7 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
             # Setting the same column name for the database identifiers to allow data concatenation
             db_ids_df.rename({bm_pg.DB_ID_COLS[db_type]: dbs_ids_col}, axis=1, inplace=True)
             db_ids_dfs_list.append(db_ids_df)
-            increment += len(db_ids_df)
+        increment += len(db_ids_df) # indent changed after pylint scan
 
     # Building the full identifiers data by concatenating the ones of each database type
     all_db_ids_df = concat_dfs(db_ids_dfs_list, dedup=False)
@@ -459,8 +459,7 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
 def deduplicate_parsing(dedup_params_list, progress_callback=None):
     (corpus_year, print_params, institute, org_tup, wf_path, datatype,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
-    base_params_list = [corpus_year, print_params, institute, wf_path,
-                        dedup_affil_params_dic, parsing_filenames_dict]
+    base_params_list = [corpus_year, print_params, dedup_affil_params_dic, parsing_filenames_dict]
 
     print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", print_params)
 

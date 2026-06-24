@@ -26,14 +26,12 @@ from bmfuncts.useful_functs import set_capwords_lambda
 def read_final_dedup(dedup_read_params):
     """Reads saved final-parsing data as dict resulting from the parsing step.
 
-    It uses the `read_parsing_dict` function of 
-    the `bmfuncts.useful_functs` module.
+    It uses the `read_parsing_dict` function of  the `bmfuncts.parse_data` module.
 
     Args:
         dedup_read_params (list): Composed of the 4 digits year of the corpus, \
-        of the full path to working folder, of the dict giving the name of \
-        the parsing file for each parsed item and of the full path to the folder \
-        where final results are saved.
+        of the dict giving the name of the parsing file for each parsed item \
+        and of the full path to the folder where final results are saved.
     Returns:
         (dict): Parsing results keyed by parsing items (str) and valued \
         by data (dataframe) of the parsing item.
@@ -43,7 +41,7 @@ def read_final_dedup(dedup_read_params):
     saved_dedup_parsing_folder_alias = bm_pg.ARCHI_RESULTS["dedup_parsing"]
 
     # Setting parameters value from 'dedup_read_params_list'
-    corpus_year, wf_path, parsing_filenames_dict, final_results_path = dedup_read_params
+    corpus_year, parsing_filenames_dict, final_results_path = dedup_read_params
 
     # Setting path of deduplicated parsings
     year_final_results_path = final_results_path / Path(corpus_year)

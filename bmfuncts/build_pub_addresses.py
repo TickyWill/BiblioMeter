@@ -433,7 +433,7 @@ def _read_final_data(dedup_read_params):
         (tup): The 3 read data (dataframe).
     """
     # Setting parameters values from 'read_data_params'
-    corpus_year, final_results_path = dedup_read_params[0], dedup_read_params[3]
+    corpus_year, final_results_path = dedup_read_params[0], dedup_read_params[2]
 
     # Getting the dict of deduplication results
     dedup_parsing_dict = read_final_dedup(dedup_read_params)
@@ -523,9 +523,8 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
 
     Args:
         build_addr_params (list): Composed of the 4 digits year of the corpus, \
-        of the full path to working folder, of the dict giving the name of \
-        the parsing file for each parsed item and of the full path to the folder \
-        where final results are saved.
+        of the dict giving the name of the parsing file for each parsed item \
+        and of the full path to the folder where final results are saved.
         pub_addresses_cols_dic (dict): The dict giving selected columns names \
         as built through the `_set_pub_addresses_cols_dic` internal function.
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
@@ -538,7 +537,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
         Info for renaming parsing columns into consolidation ones (dict)).
     """
     # Setting parameters values from 'build_addr_params'
-    corpus_year, final_results_path = build_addr_params[0], build_addr_params[3]
+    corpus_year, final_results_path = build_addr_params[0], build_addr_params[2]
 
     # Setting parameters from optional arg
     progress_callback, init_progress, final_progress = [None] * 3
@@ -630,7 +629,7 @@ def build_institute_addresses_df(institute_addr_params, verbose=False, progress_
     if progress_param:
         inter_progress_1 = init_progress + (final_progress - init_progress) * 0.20
         inter_progress_param_1 = (progress_callback, init_progress, inter_progress_1)
-    build_addr_params = [corpus_year, wf_path, parsing_filenames_dict, final_results_path]
+    build_addr_params = [corpus_year, parsing_filenames_dict, final_results_path]
     return_tup = _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic,
                                                     progress_param=inter_progress_param_1)
     (institute_pub_addresses_init_df, institute_author_addresses_df,
