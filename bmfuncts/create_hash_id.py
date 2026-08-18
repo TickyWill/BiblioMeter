@@ -31,14 +31,14 @@ def _set_hash_id_cols_dic(institute, org_tup):
         (dict): The built dict.
     """
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
-    submit_col_rename_dic = col_rename_tup[1]
+    merge_col_rename_dic = col_rename_tup[1]
 
-    hash_id_cols_dic = {'pub_id_col'    : submit_col_rename_dic[bm_pg.COL_NAMES["pub_id"]],
-                        'year_col'      : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][2]],
-                        'first_auth_col': submit_col_rename_dic[bm_pg.COL_NAMES['articles'][1]],
-                        'doi_col'       : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][6]],
-                        'title_col'     : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][9]],
-                        'issn_col'      : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][10]],
+    hash_id_cols_dic = {'pub_id_col'    : merge_col_rename_dic[bm_pg.COL_NAMES["pub_id"]],
+                        'year_col'      : merge_col_rename_dic[bm_pg.COL_NAMES['articles'][2]],
+                        'first_auth_col': merge_col_rename_dic[bm_pg.COL_NAMES['articles'][1]],
+                        'doi_col'       : merge_col_rename_dic[bm_pg.COL_NAMES['articles'][6]],
+                        'title_col'     : merge_col_rename_dic[bm_pg.COL_NAMES['articles'][9]],
+                        'issn_col'      : merge_col_rename_dic[bm_pg.COL_NAMES['articles'][10]],
                         'hash_id_col'   : bm_pg.COL_HASH['hash_id']
                        }
     return hash_id_cols_dic
@@ -77,15 +77,15 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
         in the employees database, The cleaned data of Hash IDs with related publication IDs).
     """
     # Setting parameters from args
-    submit_df, orphan_df, hash_id_df = dfs_tup
+    merge_df, orphan_df, hash_id_df = dfs_tup
     pub_id_col, hash_id_col = cols_tup
 
     # Setting publications IDs list
-    submit_pub_id_list = list(submit_df[pub_id_col])
+    merge_pub_id_list = list(merge_df[pub_id_col])
     orphan_pub_id_list = list(orphan_df[pub_id_col])
 
     new_hash_id_df = pd.DataFrame()
-    new_submit_df = submit_df.copy()
+    new_merge_df = merge_df.copy()
     new_orphan_df = orphan_df.copy()
     for _, hash_id_dg in hash_id_df.groupby(hash_id_col):
         add_hash_id_dg = hash_id_dg.copy()
@@ -94,17 +94,17 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
             pub_id_to_keep = pub_id_list[0]
             pub_id_to_drop_list = pub_id_list[1:]
             for pub_id_to_drop in pub_id_to_drop_list:
-                if pub_id_to_drop in submit_pub_id_list:
-                    new_submit_df = new_submit_df[new_submit_df[pub_id_col]!=pub_id_to_drop]
+                if pub_id_to_drop in merge_pub_id_list:
+                    new_merge_df = new_merge_df[new_merge_df[pub_id_col]!=pub_id_to_drop]
                 if pub_id_to_drop in orphan_pub_id_list:
                     new_orphan_df = new_orphan_df[new_orphan_df[pub_id_col]!=pub_id_to_drop]
             add_hash_id_dg = hash_id_dg[hash_id_dg[pub_id_col]==pub_id_to_keep].copy()
         new_hash_id_df = concat_dfs([new_hash_id_df, add_hash_id_dg])
 
-    # Adding column of Hash-IDs and reordering columns in new_submit_df
-    new_submit_df = new_submit_df.merge(new_hash_id_df, how="inner", on=pub_id_col)
+    # Adding column of Hash-IDs and reordering columns in new_merge_df
+    new_merge_df = new_merge_df.merge(new_hash_id_df, how="inner", on=pub_id_col)
     col_dict = {hash_id_col: 0}
-    new_submit_df = reorder_df(new_submit_df, col_dict)
+    new_merge_df = reorder_df(new_merge_df, col_dict)
 
     # Adding column of Hash-IDs and reordering columns in new_orphan_df
     new_orphan_df = new_orphan_df.merge(new_hash_id_df, how="inner", on=pub_id_col)
@@ -112,7 +112,7 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
                 pub_id_col : 1}
     new_orphan_df = reorder_df(new_orphan_df, col_dict)
 
-    return new_submit_df, new_orphan_df, new_hash_id_df
+    return new_merge_df, new_orphan_df, new_hash_id_df
 
 
 def create_hash_id(institute, org_tup, files_paths, print_params):
@@ -139,7 +139,7 @@ def create_hash_id(institute, org_tup, files_paths, print_params):
         (str): End message recalling path to the saved file.
     """
     # Setting paths from args
-    submit_path, orphan_path, hash_id_path = files_paths
+    merge_path, orphan_path, hash_id_path = files_paths
 
     # Setting useful col names
     hash_id_cols_dic = _set_hash_id_cols_dic(institute, org_tup)
@@ -152,13 +152,13 @@ def create_hash_id(institute, org_tup, files_paths, print_params):
     useful_cols = [pub_id_col, year_col, first_auth_col, title_col, issn_col, doi_col]
 
     # Getting dataframes to hash
-    submit_df = pd.read_excel(submit_path)
+    merge_df = pd.read_excel(merge_path)
     orphan_df = pd.read_excel(orphan_path)
 
     # Concatenate de dataframes to hash
-    submit_to_hash = submit_df[useful_cols].copy()
+    merge_to_hash = merge_df[useful_cols].copy()
     orphan_to_hash = orphan_df[useful_cols].copy()
-    dg_to_hash = concat_dfs([submit_to_hash, orphan_to_hash],
+    dg_to_hash = concat_dfs([merge_to_hash, orphan_to_hash],
                             dedup_cols=[pub_id_col], drop_ignore_index=True)
 
     hash_id_df = pd.DataFrame()
@@ -174,12 +174,12 @@ def create_hash_id(institute, org_tup, files_paths, print_params):
         hash_id_df.loc[idx, pub_id_col] = pub_id
 
     # Cleaning dataframe from publications with same hash ID
-    dfs_tup = (submit_df, orphan_df, hash_id_df)
+    dfs_tup = (merge_df, orphan_df, hash_id_df)
     cols_tup = (pub_id_col, hash_id_col)
-    new_submit_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
+    new_merge_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
 
     # Saving the data
-    new_submit_df.to_excel(submit_path, index=False)
+    new_merge_df.to_excel(merge_path, index=False)
     new_orphan_df.to_excel(orphan_path, index=False)
     new_hash_id_df.to_excel(hash_id_path, index=False)
     hash_id_nb = len(new_hash_id_df)

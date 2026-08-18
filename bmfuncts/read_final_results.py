@@ -6,7 +6,7 @@ __all__ = ['build_pub_ids_dict',
            'read_final_dedup',
            'read_final_pub_list_data',
            'read_final_set_homonyms_data',
-           'read_final_submit_data',
+           'read_final_merge_data',
           ]
 
 
@@ -53,7 +53,7 @@ def read_final_dedup(dedup_read_params):
     return dedup_parsing_dict
 
 
-def read_final_submit_data(final_results_path, corpus_year):
+def read_final_merge_data(final_results_path, corpus_year):
     """Reads saved publications list with one row per Institute author 
     and its attributes.
 
@@ -68,18 +68,18 @@ def read_final_submit_data(final_results_path, corpus_year):
         (dataframe): The resulting dataframe from the read.
     """
     # Setting useful aliases
-    saved_submit_folder_alias = bm_pg.ARCHI_RESULTS["submit"]
-    saved_submit_file_base_alias = bm_pg.ARCHI_YEAR["submit file name"]
-    year_submit_filename = corpus_year + " " + saved_submit_file_base_alias
+    saved_merge_folder_alias = bm_pg.ARCHI_RESULTS["merge"]
+    saved_merge_file_base_alias = bm_pg.ARCHI_YEAR["merge file name"]
+    year_merge_filename = corpus_year + " " + saved_merge_file_base_alias
 
     # Setting useful paths
     year_final_results_path = final_results_path / Path(corpus_year)
-    saved_submit_path = year_final_results_path / Path(saved_submit_folder_alias)
-    submit_file_path = saved_submit_path / Path(year_submit_filename)
+    saved_merge_path = year_final_results_path / Path(saved_merge_folder_alias)
+    merge_file_path = saved_merge_path / Path(year_merge_filename)
 
-    # Reading the submit file
-    submit_df = pd.read_excel(submit_file_path)
-    return submit_df
+    # Reading the file of publications-emplopyees merged data
+    merge_df = pd.read_excel(merge_file_path)
+    return merge_df
 
 
 def read_final_pub_list_data(final_results_path,
@@ -139,7 +139,7 @@ def read_final_set_homonyms_data(final_results_path, corpus_year):
     saved_homonyms_path = year_final_results_path / Path(saved_homonyms_folder_alias)
     homonyms_file_path = saved_homonyms_path / Path(year_homonyms_file)
 
-    # Reading the submit file
+    # Reading the file of publications-emplopyees merged data after resolution of honmonymies
     set_homonyms_df = pd.read_excel(homonyms_file_path)
     return set_homonyms_df
 

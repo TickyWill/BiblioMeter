@@ -785,6 +785,7 @@ def correct_parsing(db_params_list, parsing_path, parsing_dict, unknown_country,
 
         # Correcting the authors-institutions parsing data
         # using the user's correction of addresses with unknown-country
+        print_step_text("  - Correcting authors-with-affiliations parsing...", print_params)
         authaddr_correct_dfs = [authaddr_df, addresses_to_correct_df]
         new_authaddr_df = _correct_authaddr_parsing(authaddr_correct_dfs, parse_cols_dic,
                                                     affil_params_dic, unknown_country)

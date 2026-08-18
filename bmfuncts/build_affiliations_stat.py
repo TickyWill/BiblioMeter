@@ -51,9 +51,10 @@ def _set_affils_stat_cols():
 def _build_distrib_affils_data(norm_affiliations_df, affiliations_col, affil_types_file_path,
                                progress_param=None):
     """Distributes the column that contains the list of the normalized affiliations 
-    of a publication and an author address into a column for each affiliation type.
+    of a publication and an author address into columns, each column specific 
+    to an affiliation type.
 
-    ex: affiliationq col value = UGA Univ; USMB Univ; CNRS Nro; G-INP Sch; IMEP-LaHC Lab
+    ex: affiliations col value = UGA Univ; USMB Univ; CNRS Nro; G-INP Sch; IMEP-LaHC Lab
         => "Univ" col value = "['UGA Univ', 'USMB Univ']"
         => "Nro" col value = "['CNRS Nro']"
         => "Sch" col value = "['G-INP Sch']"
@@ -133,35 +134,34 @@ def _set_affil_names_list(affil_names):
     return final_affil_names_list
 
 
-def _build_pub_id_affil_types_data(institute, distrib_affiliations_df,
-                                   institute_pub_ids_list, cols_list):
-    """Builds the data with one row per affiliation name and its country 
-    for each publication for a given type of affiliations.
+def _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df, institute_pub_ids_list, cols_list):
+    """Builds the data with one row per affiliation name and its country, including the Institute's 
+    affiliation, for each publication for a given type of affiliations.
+
+    It also builds a full list of affiliations of the given type by concatenating 
+    the affiliations lists of this type found for each publication and country. 
+    The given type of affiliations is defined by the column name of the affiliation type 
+    listed in the 'cols_list' arg.
 
     Args:
-        institute (str): Institute's name.
-        distrib_affiliations_df (dataframe): data with distributed normalized \
+        distrib_affiliations_df (dataframe): The data with distributed normalized \
         affiliations per affiliation type and per publication.
         institute_pub_ids_list (list): All publication IDs (str) of the Institute.
-        cols_list (list): The columns names (str) list used to build the data.
+        cols_list (list): The columns names (str) list used to build the data and \
+        composed of the publication IDs, the countries and the affiliation type columns.
     Returns:
-        (dataframe): The built data.
+        (tup): The built data (dataframe) and the full list of affiliations of the given type.
     """
-    # Setting useful column names
+    # Setting useful column names from 'cols_list'
     pub_id_col, country_col, affil_type_col = cols_list
 
-    # Setting out-of-stat affiliations
-    out_affils = bm_ig.INSTITUTES_NORM_NAME_DICT[institute]
-
-    # Building the data with one row per list of affiliations of type
-    # 'affil_type' set through 'affil_type_col' per country for each publication
     full_affils_list = []
-    data_cols = cols_list
     full_data = []
     for pub_id, pub_id_df in distrib_affiliations_df.groupby(pub_id_col):
         pub_id_data = []
         if pub_id in institute_pub_ids_list:
             for country, country_df in pub_id_df.groupby(country_col):
+                # Initializing the 
                 pub_id_affils_list = []
                 for _, row in country_df.iterrows():
                     affil_names = str(row[affil_type_col])
@@ -172,15 +172,49 @@ def _build_pub_id_affil_types_data(institute, distrib_affiliations_df,
                 full_affils_list += pub_id_affils_list
                 pub_id_data.append([pub_id, country, str(pub_id_affils_list)])
         full_data = full_data + pub_id_data
-    pub_id_affil_types_df = pd.DataFrame(full_data, columns=data_cols)
+    affil_type_pub_id_affils_df = pd.DataFrame(full_data, columns=cols_list)
     full_affils_list = list(set(full_affils_list))
-    corrected_affils_list = [x for x in full_affils_list if x!=out_affils]
+    return affil_type_pub_id_affils_df, full_affils_list
+
+
+def _build_affil_type_pub_id_stat_affils_data(institute, distrib_affiliations_df,
+                                              institute_pub_ids_list, cols_list):
+    """Builds the data with one row per affiliation name and its country 
+    for each publication for a given type of affiliations.
+
+    The built data are composed of 3 columns that contain: the publication's identifier, 
+    the affiliation country and the normalized affiliation name. 
+    The Institute's normalized afffiliation name is removed from the data for a reliable 
+    computing of statistics. 
+    The given type of affiliations is defined by the column name of the affiliation type listed 
+    in the 'cols_list' arg.
+
+    Args:
+        institute (str): Institute's name.
+        distrib_affiliations_df (dataframe): The data with distributed normalized \
+        affiliations per affiliation type and per publication.
+        institute_pub_ids_list (list): All publication IDs (str) of the Institute.
+        cols_list (list): The columns names (str) list used to build the data.
+    Returns:
+        (dataframe): The built data.
+    """
+    # Setting useful column names
+    pub_id_col, country_col, affil_type_col = cols_list
+
+    # Building the data with one row per list of affiliations of type
+    # 'affil_type' set through 'affil_type_col' per country for each publication
+    affil_type_pub_id_affils_df, full_affils_list = _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df,
+                                                                                             institute_pub_ids_list,
+                                                                                             cols_list)
+
+    # Removing Institute's normalized name from the affiliations list for stat computing
+    stat_affils_list = [x for x in full_affils_list if x!=bm_ig.INSTITUTES_NORM_NAME_DICT[institute]]
 
     # Building the data with one row per affiliation name and country
     # for each publication
-    final_data = []
-    for affil_name in corrected_affils_list:
-        for _, row in pub_id_affil_types_df.iterrows():
+    stat_data = []
+    for affil_name in stat_affils_list:
+        for _, row in affil_type_pub_id_affils_df.iterrows():
             affil_names = str(row[affil_type_col])
             affil_name_data = []
             if affil_names!="[]":
@@ -188,9 +222,9 @@ def _build_pub_id_affil_types_data(institute, distrib_affiliations_df,
                 if affil_name in affil_names_list:
                     pub_id, country = str(row[pub_id_col]), str(row[country_col])
                     affil_name_data.append([pub_id, country, affil_name])
-            final_data = final_data + affil_name_data
-    final_pub_id_affil_types_df = pd.DataFrame(final_data, columns=data_cols)
-    return final_pub_id_affil_types_df
+            stat_data = stat_data + affil_name_data
+    affil_type_pub_id_stat_affils_df = pd.DataFrame(stat_data, columns=cols_list)
+    return affil_type_pub_id_stat_affils_df
 
 
 def _set_clean_country_col_values(init_df, country_col):
@@ -413,7 +447,7 @@ def _build_affils_stat_data(institute, distrib_affiliations_df, pub_ids_dict, af
 
     1. Building the data with one row per affiliation name and its \
     country for each publication for the type of affiliations through \
-    the `_build_pub_id_affil_types_data` internal function.
+    the `_build_affil_type_pub_id_stat_affils_data` internal function.
     2. Building the 3 sets of statistical data for the type of affiliations \
     through the `_build_affil_type_affils_data`, `_build_affil_type_pub_id_data` \
     and `_build_affil_type_country_data` internal functions.
@@ -453,19 +487,19 @@ def _build_affils_stat_data(institute, distrib_affiliations_df, pub_ids_dict, af
         # Building the data with one row per affiliation name and its country
         # for each publication for a given type of affiliations
         cols_list = base_cols_list + [affil_type]
-        final_pub_id_affil_types_df = _build_pub_id_affil_types_data(institute, distrib_affiliations_df,
-                                                                     all_pub_ids_list, cols_list)
+        affil_type_pub_id_stat_affils_df = _build_affil_type_pub_id_stat_affils_data(institute, distrib_affiliations_df,
+                                                                                     all_pub_ids_list, cols_list)
 
         # Building data with one row per affiliation and attached country, number of publications
         # and list of publications IDs for a given type of affiliations
         cols_list = affil_type_affils_cols + [affil_type]
-        affil_type_affils_df = _build_affil_type_affils_data(final_pub_id_affil_types_df, pub_ids_dict,
+        affil_type_affils_df = _build_affil_type_affils_data(affil_type_pub_id_stat_affils_df, pub_ids_dict,
                                                              cols_list)
 
         # Building data with one row per publication and country with attached number of affiliations
         # and list of affiliations for a given type of affiliations
         cols_list = affil_type_pub_ids_cols + [affil_type]
-        pub_country_affil_df = _build_affil_type_pub_id_data(final_pub_id_affil_types_df, cols_list)
+        pub_country_affil_df = _build_affil_type_pub_id_data(affil_type_pub_id_stat_affils_df, cols_list)
 
         # Building data with one row per country with attached number of publications
         # and list of publications IDs for a given type of affiliations.
@@ -613,12 +647,10 @@ def build_and_save_affiliations_stat(norm_affiliations_df, sub_paths_list, pub_i
         results are saved, of the full path (path) to the folder where the results of \
         the affiliations analysis are saved and of the full path (path) to the \
         affiliations-types file.
-        pub_ids_dict (tuple): (list of all publication IDs (str) of the institute, \
-        list of the IDs (str) of publications in journals, \
-        list of the IDs (str) of publications in conference proceedings, \
-        list of the IDs (str) of publications in books).
-        institute (str): Institute name.
-        corpus_year (str): 4 digits-year of the analyzed corpus.
+        pub_ids_dict (dict): The data of publications IDs as built through the `build_pub_ids_dict` \
+        finction of the `bmfuncts.read_final_results` module.
+        affils_stat_params (list): Composed of the Institute's name (str), of the 4 digits year of \
+        the corpus (str) and, of the print parameters (list) .
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
         (optional, default: None)

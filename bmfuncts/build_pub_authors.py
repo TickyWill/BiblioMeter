@@ -125,42 +125,52 @@ def _get_doi_pub_id(articles_df, dois_list, pub_id_col, doi_col):
     return dois_pub_id_df
 
 
-def _check_added_dois_affil(check_params, dfs_list, bp_cols_list):
-    """Checks if normalized affiliation attribution is correct for the added DOIs 
-    from HAL database and save the corrected files of parsing.
+def _correct_addr(addr, correct_params, norm_affil=None, institute_main_val=None):
+    """Corrects the given address if it contains the top affiliation and the town 
+    of the Institute and it doesn't contain any of the specified excluding items.
 
     Args:
-        check_params (list):  Composed of the 4 digits year of the corpus (str), \
-        of the Institute's name (str), of the org_tup (tup) that contains parameters of \
-        Institute's organization and of the full path to the working folder (path).
-        dfs_list (list): The publications data (dataframe), \
-        the addresses data (dataframe) and \
-        the authors with affiliations data (dataframe).
-        bp_cols_list (list): the list of useful col names as set by \
-        the `_set_useful_bp_cols` internal function.
+        addr (str): The address to be checked and corrected if required.
+        correct_params (list): Parameters set through the `_set_addr_correction_params` \
+        internal function.
+        norm_affil (str): Optional (default=None), initial normalized affiliation.
+        institute_main_val (int): Optional (default=None), initial value of the status \
+        of the affiliation of the author to the Institute.
     Returns:
-         (tup): (The corrected data of addresses (dataframe), \
-         The corrected data of authors with affiliations (dataframe)).
+        (tup): Composed of the possibly corrected items (address, normalized affiliation \
+        and the value of the status of the affiliation of the author to the Institute).
     """
-    # Setting parameters values from args
-    corpus_year, institute, org_tup, wf_path = check_params
-    articles_df, addresses_df, authaddr_df = dfs_list
-    pub_id_col = bp_cols_list[0]
-    doi_col, address_col, norm_affil_col = bp_cols_list[3:]
+    (institute, institute_col, institute_norm, top_affil,
+     town, excluding_items) = correct_params
+    correct_addr, correct_norm_affil, correct_institute_main_val = addr, norm_affil, institute_main_val
 
-    institute_norm = org_tup[3][0][0]
-    institute_col_list = org_tup[4]
-    institute_main_idx = org_tup[7]
+    addr_lw = addr.lower()
+    exclude_test = any(ext.lower() in addr_lw for ext in excluding_items)
+    correct_test = top_affil in addr_lw and town in addr_lw and not exclude_test
+    if correct_test:
+        correct_addr = institute + ', ' + addr
+        correct_norm_affil = institute_norm
+        correct_institute_main_val= 1
+    return correct_addr, correct_norm_affil, correct_institute_main_val
 
-    # Setting test parameters to include institute's name in address
-    top_institute = 'CEA'.lower()
-    town = 'Grenoble'.lower()
-    other_institutes = ['LITEN', 'LETI', 'IRIG', 'IBS']
 
-    hal_added_dois_list = _get_hal_added_dois(wf_path, corpus_year, doi_col)
-    hal_added_pub_id_df = _get_doi_pub_id(articles_df, hal_added_dois_list,
-                                          pub_id_col, doi_col)
-    hal_added_pub_id_list = hal_added_pub_id_df[pub_id_col].to_list()
+def _build_corrected_authaddr_data(authaddr_df, hal_added_pub_id_list, bp_cols_list, correct_params):
+    """Corrects the authors-with-addresses parsing data for the publications added from HAL 
+    through the `_correc_addr` internal function.
+
+    Args:
+        authaddr_df (dataframe): The initial data of authors with addresses.
+        hal_added_pub_id_list (list): The publication IDs added from HAL.
+        bp_cols_list (list): The list of useful col names as set by \
+        the `_set_useful_bp_cols` internal function.
+        correct_params (list): Parameters set through the `_set_addr_correction_params` \
+        internal function.
+    Returns:
+        (dataframe): The corrected data of authors with addresses.
+    """
+    pub_id_col, address_col, norm_affil_col = bp_cols_list[0], bp_cols_list[4], bp_cols_list[5]
+
+    institute_col = correct_params[1]
 
     new_authaddr_df = pd.DataFrame(columns=authaddr_df.columns)
     for pub_id, pub_df in authaddr_df.groupby(pub_id_col):
@@ -170,40 +180,115 @@ def _check_added_dois_affil(check_params, dfs_list, bp_cols_list):
                 addrs_list = addrs.split("; ")
                 new_addrs_list = []
                 for addr in addrs_list:
-                    addr_lw = addr.lower()
-                    exclude_test = any(ext.lower() in addr_lw for ext in other_institutes)
-                    include_test = top_institute in addr_lw and town in addr_lw and not exclude_test
-                    new_addr = addr
-                    new_norm_affil = addr_df[norm_affil_col]
-                    new_institute_main_idx = addr_df[institute_col_list[institute_main_idx]]
-                    if include_test:
-                        new_addr = institute + ', ' + addr
-                        new_norm_affil = institute_norm
-                        new_institute_main_idx = 1
-                    new_addrs_list.append(new_addr)
+                    return_tup = _correct_addr(addr, correct_params, norm_affil=addr_df[norm_affil_col],
+                                               institute_main_val=addr_df[institute_col])
+                    correct_addr, correct_norm_affil, correct_institute_main_val = return_tup
+                    new_addrs_list.append(correct_addr)
                     new_addrs = "; ".join(new_addrs_list)
                     addr_df[address_col] = new_addrs
-                    addr_df[norm_affil_col] = new_norm_affil
-                    addr_df[institute_col_list[institute_main_idx]] = new_institute_main_idx
+                    addr_df[norm_affil_col] = correct_norm_affil
+                    addr_df[institute_col] = correct_institute_main_val
                 new_pub_df = concat_dfs([new_pub_df, addr_df])
             new_authaddr_df = concat_dfs([new_authaddr_df, new_pub_df])
         else:
             new_authaddr_df = concat_dfs([new_authaddr_df, pub_df])
+    return new_authaddr_df
+
+
+def _build_corrected_addr_data(authaddr_df, hal_added_pub_id_list, bp_cols_list, correct_params):
+    """Corrects the addresses parsing data for the publications added from HAL 
+    through the `_correc_addr` internal function.
+
+    Args:
+        authaddr_df (dataframe): The initial data of addresses.
+        hal_added_pub_id_list (list): The publication IDs added from HAL.
+        bp_cols_list (list): The list of useful col names as set by \
+        the `_set_useful_bp_cols` internal function.
+        correct_params (list): Parameters set through the `_set_addr_correction_params` \
+        internal function.
+    Returns:
+        (dataframe): The corrected data of addresses.
+    """
+    pub_id_col, address_col = bp_cols_list[0], bp_cols_list[4]
 
     new_addresses_df = pd.DataFrame(columns=addresses_df.columns)
     for pub_id, pub_df in addresses_df.groupby(pub_id_col):
         if pub_id in hal_added_pub_id_list:
             new_pub_df = pd.DataFrame(columns=pub_df.columns)
             for addr, addr_df in pub_df.groupby(address_col):
-                addr_lw = addr.lower()
-                exclude_test = any(ext.lower() in addr_lw for ext in other_institutes)
-                include_test = top_institute in addr_lw and town in addr_lw and not exclude_test
-                if include_test:
-                    addr_df[address_col] = institute + ', ' + addr
+                correct_addr, _, _ = _correct_addr(addr, correct_params)
+                addr_df[address_col] = correct_addr
                 new_pub_df = concat_dfs([new_pub_df, addr_df])
             new_addresses_df = concat_dfs([new_addresses_df, new_pub_df])
         else:
             new_addresses_df = concat_dfs([new_addresses_df, pub_df])
+    return new_addresses_df
+
+
+def _set_addr_correction_params(institute, org_tup):
+    """Sets test parameters to include Institute's name in address from values 
+    defined in the `bmfuncts.institute-globals` module.
+
+    Args:
+        institute (str): The Institute's name.
+        org_tup (tup): Contains parameters of Institute's organization.
+    Return:
+        (list): Composed of the Institute's name (str), \
+        of the column name (str) that contains '1' value if the address \
+        belongs to the Institute, of the top affiliation (str) for the Institute, \
+        of the normalized affiliation name (str) of the Institute, \
+        of the town (str) of the Institute, the items (list of str) \
+        that exlude the address correction.
+    """
+    institute_col_list = org_tup[4]
+    institute_main_idx = org_tup[7]
+    institute_col = institute_col_list[institute_main_idx]
+    institute_norm = bm_ig.INSTITUTES_NORM_NAME_DICT[institute]
+    top_affil = bm_ig.INSTITUTES_TOP_AFFIL_DICT[institute].lower()
+    town = bm_ig.INSTITUTES_TOWN_DICT[institute].lower()
+    excluding_items = bm_ig.EXCLUDE_ADDR_ITEMS_LIST
+    correct_params = [institute, institute_col, institute_norm, top_affil, town, excluding_items]
+    return correct_params
+
+
+def _check_added_dois_affil(check_params, dfs_list, bp_cols_list):
+    """Checks if normalized-affiliation attribution is correct for the added DOIs 
+    from HAL database and builds the corrected files of parsing.
+
+    Args:
+        check_params (list):  Composed of the 4 digits year of the corpus (str), \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of \
+        Institute's organization and of the full path to the working folder (path).
+        dfs_list (list): Composed of the publications data (dataframe), \
+        of the addresses data (dataframe) and \
+        of the authors with addresses data (dataframe).
+        bp_cols_list (list): The list of useful col names as set by \
+        the `_set_useful_bp_cols` internal function.
+    Returns:
+         (tup): (The corrected data of addresses (dataframe), \
+         The corrected data of authors with addresses (dataframe)).
+    """
+    # Setting parameters values from args
+    corpus_year, institute, org_tup, wf_path = check_params
+    articles_df, addresses_df, authaddr_df = dfs_list
+    pub_id_col, doi_col = bp_cols_list[0], bp_cols_list[3]
+
+    # Setting test parameters to include Institute's name in address
+    correct_params = _set_addr_correction_params(institute, org_tup)
+
+    # Building the list of publications IDs for the publications added from HAL
+    hal_added_dois_list = _get_hal_added_dois(wf_path, corpus_year, doi_col)
+    hal_added_pub_id_df = _get_doi_pub_id(articles_df, hal_added_dois_list,
+                                          pub_id_col, doi_col)
+    hal_added_pub_id_list = hal_added_pub_id_df[pub_id_col].to_list()
+
+    # Correcting the authors-with-addresses data for the publications added from HAL
+    new_authaddr_df = _build_corrected_authaddr_data(authaddr_df, hal_added_pub_id_list,
+                                                     bp_cols_list, correct_params)
+
+    # Correcting the addresses data for the publications added from HAL
+    new_addresses_df = _build_corrected_addr_data(authaddr_df, hal_added_pub_id_list,
+                                                  bp_cols_list, correct_params)
     return new_addresses_df, new_authaddr_df
 
 

@@ -30,6 +30,7 @@ from bmfuncts.save_final_results import save_final_results
 from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import remove_file
 
 
 def _set_co_cols_dic(institute, org_tup):
@@ -201,8 +202,8 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, affil_params_dics_list, co_col
         if progress_param:
             inter_progress_2 =  _init_progress + (_final_progress - _init_progress) * 0.9
             progress_callback(inter_progress_2)
-        step_str = ("      - Countries column added to the data of normalized affiliations and to the data "
-                    "of remaing raw-affiliations")
+        step_str = ("      - Countries column added to the data of normalized affiliations\n"
+                    "        and to the data of remaing raw-affiliations")
         print_step_text(step_str, print_params)
 
         # Removing unkept affiliations from remaining raw-addresses data
@@ -523,18 +524,14 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     sheet_name = 'Raw ' + corpus_year
     save_formatted_df_to_xlsx(affils_analysis_folder_path, raw_addr_file,
                               raw_addr_df, affils_df_title, sheet_name)
-
-    # Saving normalized and raw affiliations as final result
-    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
-    results_to_save_dict["affiliations"] = True
-    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    save_final_results(save_params_list, results_to_save_dict)
     step_text = "      - Normalized-affiliations data and of raw-affiliations data saved "
     if raw_addr_status:
         step_text += "with no raw-affiliations"
+        remove_file(addresses_to_correct_path)
+        step_text += "\n      - File for correcting addresses by the user delated"
     else:
         step_text += "with remaining raw-affiliations"
+        step_text += "\n      - File for correcting addresses by the user available"
     print_step_text(step_text, print_params)
 
     if not wrong_affil_types_dict and raw_addr_status:

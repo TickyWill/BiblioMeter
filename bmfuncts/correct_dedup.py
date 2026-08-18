@@ -103,7 +103,7 @@ def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_ad
         of history of false addresses correction.
         corpus_year (str): Corpus year defined by 4 digits.
         print_params (list): The print parameters.
-        file_clean (bool): Optional, if True the existing file is \
+        file_clean 'bool): Optional, if True the existing file is \
         replaced by a formated empty file (default: False).
     """
     # internal functions
@@ -209,7 +209,7 @@ def _add_auth_ids_to_false_address_data(init_correct_dfs, dedup_cols_dic, ids_di
             author_addresses_list = [bp_standardize_address(x) for x in author_addresses_list]
 
             # Searching for false address in the author's addresses-list to append author's ID
-            std_false_address = bp_standardize_address(false_address)
+            std_false_address = bp_standardize_address(false_address, add_unknown_country=False)
 
             if std_false_address in author_addresses_list:
                 false_address_auth_ids_list.append(str(author_id))
@@ -507,6 +507,7 @@ def correct_dedup(dedup_params_list, ids_dicts_list, test_txt=""):
         print_step_text("    - Addresses parsing data corrected", print_params)
 
         # Correcting the authors-addresses parsing data using the user's correction of the addresses
+        print_step_text("    - Correcting authors-addresses parsing data...", print_params)
         authaddr_correct_dfs = [authaddr_df, corrected_addresses_df]
         _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authaddr_path,
                                 dedup_affil_params_dic, corpus_year)

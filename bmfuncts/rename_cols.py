@@ -48,14 +48,14 @@ def build_col_conversion_dic(institute, org_tup):
                                  bm_pg.COL_NAMES_BM['Last_name'],
                                  bm_pg.COL_NAMES_BM['First_name']]], [])
 
-    init_submit_col_list = sum([init_orphan_col_list,
+    init_merge_col_list = sum([init_orphan_col_list,
                                 [bm_pg.COL_NAMES_BONUS['homonym']],
                                 list(bm_eg.EMPLOYEES_USEFUL_COLS.values()),
                                 list(bm_eg.EMPLOYEES_ADD_COLS.values()),
                                 [bm_pg.COL_NAMES_BONUS['author_type'],
                                  bm_pg.COL_NAMES_BONUS['liste biblio']]], [])
 
-    init_bm_col_list = sum([init_submit_col_list,
+    init_bm_col_list = sum([init_merge_col_list,
                             [bm_pg.COL_NAMES_BONUS['nom prénom liste'],
                              bm_pg.COL_NAMES_BONUS['liste auteurs'],
                              bm_pg.COL_NAMES_BONUS['nom prénom'] + institute],
@@ -116,12 +116,12 @@ def build_col_conversion_dic(institute, org_tup):
                              dpt_col_list], [])
 
     all_col_rename_dic    = dict(zip(init_bm_col_list, final_bm_col_list))
-    final_submit_col_list = [all_col_rename_dic[col] for col in init_submit_col_list]
-    submit_col_rename_dic = dict(zip(init_submit_col_list, final_submit_col_list))
+    final_merge_col_list = [all_col_rename_dic[col] for col in init_merge_col_list]
+    merge_col_rename_dic = dict(zip(init_merge_col_list, final_merge_col_list))
     final_orphan_col_list = [all_col_rename_dic[col] for col in init_orphan_col_list]
     orphan_col_rename_dic = dict(zip(init_orphan_col_list, final_orphan_col_list))
 
-    return orphan_col_rename_dic, submit_col_rename_dic, all_col_rename_dic
+    return orphan_col_rename_dic, merge_col_rename_dic, all_col_rename_dic
 
 
 def set_homonym_col_names(institute, org_tup):

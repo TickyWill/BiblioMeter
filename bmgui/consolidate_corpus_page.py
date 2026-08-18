@@ -221,7 +221,7 @@ def _set_merge_year_files_param(wf_path, year_select):
     """
     # Setting useful aliases
     merge_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
-    submit_alias = bm_pg.ARCHI_YEAR["submit file name"]
+    merge_alias = bm_pg.ARCHI_YEAR["merge file name"]
     orphan_alias = bm_pg.ARCHI_YEAR["orphan file name"]
     hash_id_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
 
@@ -230,12 +230,12 @@ def _set_merge_year_files_param(wf_path, year_select):
     merge_folder_path = corpus_year_path / Path(merge_folder_alias)
 
     # Setting useful files paths dependant on year select
-    submit_path = merge_folder_path / Path(submit_alias)
+    merge_path = merge_folder_path / Path(merge_alias)
     orphan_path = merge_folder_path / Path(orphan_alias)
     hash_id_path = merge_folder_path / Path(hash_id_alias)
 
-    merge_files = [submit_alias, orphan_alias]
-    merge_paths = [merge_folder_path, submit_path, orphan_path, hash_id_path]
+    merge_files = [merge_alias, orphan_alias]
+    merge_paths = [merge_folder_path, merge_path, orphan_path, hash_id_path]
 
     return merge_files, merge_paths
 
@@ -316,7 +316,7 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
     # Setting files parameters dependent on year selection
     merge_files, merge_paths = _set_merge_year_files_param(master.wf_path, year_select)
     orphan_file = merge_files[1]
-    merge_folder_path, submit_path = merge_paths[:2]
+    merge_folder_path, merge_path = merge_paths[:2]
 
     progress_bar_state_init = None
     if progress_callback:
@@ -345,8 +345,8 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
                     "\n\nContinuer ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
-            submit_status = os.path.exists(submit_path)
-            if not submit_status:
+            merge_status = os.path.exists(merge_path)
+            if not merge_status:
                 print_step_text("\nConfirmed first time try", master.print_params)
                 _recursive_year_search_try(progress_callback, progress_bar_state_init)
             else:
@@ -393,7 +393,7 @@ def _set_homonymies_year_files_param(wf_path, year_select):
     """
     # Setting useful aliases
     merge_data_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
-    submit_alias = bm_pg.ARCHI_YEAR["submit file name"]
+    merge_alias = bm_pg.ARCHI_YEAR["merge file name"]
     homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
     homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
 
@@ -406,10 +406,10 @@ def _set_homonymies_year_files_param(wf_path, year_select):
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
 
     # Setting useful files paths dependant on year select
-    submit_path = merge_data_folder_path / Path(submit_alias)
+    merge_path = merge_data_folder_path / Path(merge_alias)
     homonyms_file_path = homonyms_folder_path / Path(homonyms_file)
 
-    return submit_path, homonyms_file_path, homonyms_folder_path, homonyms_file
+    return merge_path, homonyms_file_path, homonyms_folder_path, homonyms_file
 
 
 def _launch_resolution_homonymies_try(master, year_select, progress_callback):
@@ -431,11 +431,11 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
     def _resolution_homonymies_try(_progress_callback):
         print_step_title(f"CONSTRUCTION OF DATA FOR HOMONYMS RESOLUTION FOR {year_select}",
                          master.print_params)
-        if os.path.isfile(submit_path):
+        if os.path.isfile(merge_path):
             _progress_callback(20)
             # Creating the files for homonyms resolution by the user
             solve_homonyms_params = [master.print_params, master.institute, master.org_tup]
-            homonyms_status = solve_homonyms(solve_homonyms_params, submit_path,
+            homonyms_status = solve_homonyms(solve_homonyms_params, merge_path,
                                              homonyms_file_path)
             _progress_callback(80)
 
@@ -486,7 +486,7 @@ def _launch_resolution_homonymies_try(master, year_select, progress_callback):
 
     # Setting files parameters dependent on year selection
     return_tup = _set_homonymies_year_files_param(master.wf_path, year_select)
-    submit_path, homonyms_file_path, homonyms_folder_path, homonyms_file = return_tup
+    merge_path, homonyms_file_path, homonyms_folder_path, homonyms_file = return_tup
 
     if progress_callback:
         progress_bar_state_init = 10

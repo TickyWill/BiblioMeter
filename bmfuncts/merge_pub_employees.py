@@ -21,7 +21,7 @@ import pandas as pd
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_pub_authors import build_institute_pubs_authors
-from bmfuncts.build_year_pub_empl import build_submit_df
+from bmfuncts.build_year_pub_empl import build_pub_empl_data
 from bmfuncts.create_hash_id import create_hash_id
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
@@ -32,7 +32,7 @@ from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
 
 
-def _add_author_job_type(submit_df, empl_dict, years, cols_list):
+def _add_author_job_type(merge_df, empl_dict, years, cols_list):
     """Adds a new column containing the job type for each author 
     of the publications list with one row per author.
 
@@ -42,7 +42,7 @@ def _add_author_job_type(submit_df, empl_dict, years, cols_list):
     The name of the new column is given by 'author_type_col'. 
 
     Args:
-        submit_df (dataframe): The data of the publications list \
+        merge_df (dataframe): The data of the publications list \
         with one row per author with attributes as Institute employee.
         empl_dict (dict): The employees database as a dict keyed by the years \
         and valued by the employees data for each year.
@@ -109,8 +109,8 @@ def _add_author_job_type(submit_df, empl_dict, years, cols_list):
     author_types_dic = {category_col      : bm_eg.CATEGORIES_DIC,
                         status_col        : bm_eg.STATUS_DIC,
                         qualification_col : bm_eg.QUALIFICATION_DIC}
-    submit_df[author_type_col] = submit_df.apply(_get_author_type, axis=1)
-    return submit_df
+    merge_df[author_type_col] = merge_df.apply(_get_author_type, axis=1)
+    return merge_df
 
 
 def _set_full_ref(title, first_author, journal_name, pub_year, doi):
@@ -134,7 +134,7 @@ def _set_full_ref(title, first_author, journal_name, pub_year, doi):
     return full_ref
 
 
-def _add_biblio_list(submit_df, cols_list):
+def _add_biblio_list(merge_df, cols_list):
     """Adds a new column containing the full reference of each publication 
     of the publications list with one row per author.
 
@@ -146,7 +146,7 @@ def _add_biblio_list(submit_df, cols_list):
     The name of the new column is given by 'full_ref_col'.
 
     Args:
-        submit_df (dataframe): The data of the publications list \
+        merge_df (dataframe): The data of the publications list \
         with one row per author with attributes as Institute employee.
         cols_list (list): The useful column names.
     Returns:
@@ -157,9 +157,9 @@ def _add_biblio_list(submit_df, cols_list):
     (full_ref_col, pub_id_col, first_author_col,
      year_col, journal_col, doi_col, title_col) = cols_list
 
-    new_submit_df = pd.DataFrame()
+    new_merge_df = pd.DataFrame()
     # Splitting the data into subdata with same Pub_id
-    for _, pub_id_df in submit_df.groupby(pub_id_col):
+    for _, pub_id_df in merge_df.groupby(pub_id_col):
         # Select the first row and build the full reference
         pub_id_first_row = pub_id_df.iloc[0]
         title = str(pub_id_first_row[title_col])
@@ -170,11 +170,11 @@ def _add_biblio_list(submit_df, cols_list):
         doi = str(pub_id_first_row[doi_col])
         pub_id_df[full_ref_col] = _set_full_ref(title, first_author,
                                                 journal_name, pub_year, doi)
-        new_submit_df = concat_dfs([new_submit_df, pub_id_df])
-    return new_submit_df
+        new_merge_df = concat_dfs([new_merge_df, pub_id_df])
+    return new_merge_df
 
 
-def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, print_params):
+def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print_params):
     """Adds to the publications-list dataframe with one row per author 
     new rows containing the information of specific authors.
 
@@ -187,7 +187,7 @@ def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, prin
     with one row per author that has not been identified as Institute employee.
 
     Args:
-        init_submit_df (dataframe): The data of the publications list \
+        init_merge_df (dataframe): The data of the publications list \
         with one row per author with attributes as Institute employee.
         init_orphan_df (dataframe): The data of the publications list \
         with one row per author that has not been identified as Institute employee.
@@ -207,31 +207,31 @@ def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, prin
     # Setting col names from cols_list
     (pub_id_col, author_id_col, orphan_fullname_col, ext_empl_fullname_col,
      orphan_lastname_col, ext_auth_lastname_col,
-     submit_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
+     merge_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
 
-    # Replace in "init_submit_df" data and "init_orphan_df" data, NaN values
+    # Replace in "init_merge_df" data and "init_orphan_df" data, NaN values
     # except "NA" in first name initials
-    init_submit_df = keep_initials(init_submit_df, submit_firstname_short_col,
+    init_merge_df = keep_initials(init_merge_df, merge_firstname_short_col,
                                    missing_fill=bm_pg.UNKNOWN)
-    init_orphan_df = keep_initials(init_orphan_df, submit_firstname_short_col,
+    init_orphan_df = keep_initials(init_orphan_df, merge_firstname_short_col,
                                    missing_fill=bm_pg.UNKNOWN)
 
-    # Initializing the data to be concatenated with init_submit_df
-    # with same column names as init_submit_df
-    new_submit_adds_df = pd.DataFrame(columns=list(init_submit_df.columns))
+    # Initializing the data to be concatenated with init_merge_df
+    # with same column names as init_merge_df
+    new_merge_adds_df = pd.DataFrame(columns=list(init_merge_df.columns))
 
-    # Aligning column names between init_submit_df and init_orphan_df
-    # to feed new_submit_adds_df with same column names as init_submit_df
-    col_rename_dic = {submit_firstname_short_col : submit_firstname_short_col + "_x"}
+    # Aligning column names between init_merge_df and init_orphan_df
+    # to feed new_merge_adds_df with same column names as init_merge_df
+    col_rename_dic = {merge_firstname_short_col : merge_firstname_short_col + "_x"}
     init_orphan_df = init_orphan_df.rename(columns=col_rename_dic)
-    orphan_firstname_short_col = col_rename_dic[submit_firstname_short_col]
+    orphan_firstname_short_col = col_rename_dic[merge_firstname_short_col]
 
     # Initializing the dataframe to be droped from init_orphan_df
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
     # Reading of the external PhD students xlsx file
-    # using the same useful columns as init_submit_df defined by EXT_DOCS_USEFUL_COL_LIST
+    # using the same useful columns as init_merge_df defined by EXT_DOCS_USEFUL_COL_LIST
     # with dates conversion through converters_alias
     # and drop of empty rows
     ext_docs_usecols = sum([[ext_auth_lastname_col, ext_auth_firstname_short_cols],
@@ -249,7 +249,7 @@ def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, prin
     ext_docs_df = ext_docs_df.dropna(how='any')
 
     # Searching for last names of init_orphan_df in ext_docs_df
-    # to update 'submit_df' and 'orphan_df' data using 'new_submit_adds_df' and 'orphan_drop_df' data
+    # to update 'merge_df' and 'orphan_df' data using 'new_merge_adds_df' and 'orphan_drop_df' data
     for _, init_orphan_row in init_orphan_df.iterrows():
         author_last_name = str(init_orphan_row[orphan_lastname_col])
         author_last_name = standardize_txt(author_last_name)
@@ -276,31 +276,31 @@ def _add_ext_docs(init_submit_df, init_orphan_df, ext_docs_path, cols_list, prin
                                          right_on=[ext_empl_fullname_col],
                                          how='left')
 
-                # Appending the merged df to 'new_submit_adds_df' data
-                new_submit_adds_df = concat_dfs([new_submit_adds_df, row_to_add_df],
+                # Appending the merged df to 'new_merge_adds_df' data
+                new_merge_adds_df = concat_dfs([new_merge_adds_df, row_to_add_df],
                                                 concat_ignore_index=True)
 
                 # Appending row_to_move_df to 'orphan_drop_df' data
                 orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df],
                                             concat_ignore_index=True)
 
-    # Concatenating init_submit_df and new_submit_adds_df
-    new_submit_df = concat_dfs([init_submit_df, new_submit_adds_df])
-    new_submit_df = new_submit_df.sort_values([pub_id_col, author_id_col])
+    # Concatenating init_merge_df and new_merge_adds_df
+    new_merge_df = concat_dfs([init_merge_df, new_merge_adds_df])
+    new_merge_df = new_merge_df.sort_values([pub_id_col, author_id_col])
 
     # Dropping orphan_drop_df rows from init_orphan_df
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of init_orphan_df
-    col_invert_rename_dic = {submit_firstname_short_col + "_x":\
-                             submit_firstname_short_col}
+    col_invert_rename_dic = {merge_firstname_short_col + "_x":\
+                             merge_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
     print_step_text("      - External PhD students added", print_params)
-    return new_submit_df, new_orphan_df
+    return new_merge_df, new_orphan_df
 
 
-def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print_params):
+def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_params):
     """Adds to the publications-list dataframe with one row per author 
     new rows containing the information of specific authors.
 
@@ -313,7 +313,7 @@ def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print
     with one row per author that has not been identified as Institute employee.
 
     Args:
-        init_submit_df (dataframe): The data of the publications list \
+        init_merge_df (dataframe): The data of the publications list \
         with one row per author with attributes as Institute employee.
         init_orphan_df (dataframe): The data of the publications list \
         with one row per author that has not been identified as Institute employee.
@@ -333,31 +333,31 @@ def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print
     # Setting col names from cols_list
     (pub_id_col, author_id_col, orphan_fullname_col, ext_empl_fullname_col,
      orphan_lastname_col, ext_auth_lastname_col,
-     submit_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
+     merge_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
 
-    # Replace in "init_submit_df" data and "init_orphan_df" data, NaN values
+    # Replace in "init_merge_df" data and "init_orphan_df" data, NaN values
     # except "NA" in first name initials
-    init_submit_df = keep_initials(init_submit_df, submit_firstname_short_col,
-                                   missing_fill=bm_pg.UNKNOWN)
-    init_orphan_df = keep_initials(init_orphan_df, submit_firstname_short_col,
+    init_merge_df = keep_initials(init_merge_df, merge_firstname_short_col,
+                                  missing_fill=bm_pg.UNKNOWN)
+    init_orphan_df = keep_initials(init_orphan_df, merge_firstname_short_col,
                                    missing_fill=bm_pg.UNKNOWN)
 
-    # Initializing the data to be concatenated to 'init_submit_df' data in 'new_submit_df' data
-    # with same column names as init_submit_df
-    new_submit_adds_df = pd.DataFrame(columns=list(init_submit_df.columns))
+    # Initializing the data to be concatenated to 'init_merge_df' data in 'new_merge_df' data
+    # with same column names as init_merge_df
+    new_merge_adds_df = pd.DataFrame(columns=list(init_merge_df.columns))
 
-    # Aligning column names between init_submit_df and init_orphan_df
-    # to feed new_submit_adds_df with same column names as init_submit_df
-    col_rename_dic = {submit_firstname_short_col : submit_firstname_short_col + "_x"}
+    # Aligning column names between init_merge_df and init_orphan_df
+    # to feed new_merge_adds_df with same column names as init_merge_df
+    col_rename_dic = {merge_firstname_short_col : merge_firstname_short_col + "_x"}
     init_orphan_df = init_orphan_df.rename(columns=col_rename_dic)
-    orphan_firstname_short_col = col_rename_dic[submit_firstname_short_col]
+    orphan_firstname_short_col = col_rename_dic[merge_firstname_short_col]
 
     # Initializing the dataframe to be droped from init_orphan_df
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
     # Reading of the external PhD students xlsx file
-    # using the same useful columns as init_submit_df defined by EXT_DOCS_USEFUL_COL_LIST
+    # using the same useful columns as init_merge_df defined by EXT_DOCS_USEFUL_COL_LIST
     # with dates conversion through converters_alias
     # and drop of empty rows
     others_usecols = sum([[ext_auth_lastname_col, ext_auth_firstname_short_cols],
@@ -375,7 +375,7 @@ def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print
     others_df = others_df.dropna(how='any')
 
     # Searching for last names of init_orphan_df in others_df
-    # to update 'submit_df' and 'orphan_df' data using 'new_submit_adds_df' and 'orphan_drop_df' data
+    # to update 'merge_df' and 'orphan_df' data using 'new_merge_adds_df' and 'orphan_drop_df' data
     for _, orphan_row in init_orphan_df.iterrows():
         author_last_name = str(orphan_row[orphan_lastname_col])
         author_last_name = standardize_txt(author_last_name)
@@ -401,32 +401,32 @@ def _add_other_ext(init_submit_df, init_orphan_df, others_path, cols_list, print
                                          right_on=[ext_empl_fullname_col],
                                          how='left')
 
-                # Appending the merged df to 'new_submit_adds_df' data
-                new_submit_adds_df = concat_dfs([new_submit_adds_df, row_to_add_df],
+                # Appending the merged df to 'new_merge_adds_df' data
+                new_merge_adds_df = concat_dfs([new_merge_adds_df, row_to_add_df],
                                                 concat_ignore_index=True)
 
                 # Appending row_to_move_df to  'orphan_drop_df' data
                 orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df],
                                             concat_ignore_index=True)
 
-    # Concatenating 'init_submit_df' data and 'new_submit_adds_df' data
-    new_submit_df = concat_dfs([init_submit_df, new_submit_adds_df])
-    new_submit_df = new_submit_df.sort_values([pub_id_col, author_id_col])
+    # Concatenating 'init_merge_df' data and 'new_merge_adds_df' data
+    new_merge_df = concat_dfs([init_merge_df, new_merge_adds_df])
+    new_merge_df = new_merge_df.sort_values([pub_id_col, author_id_col])
 
     # Dropping 'orphan_drop_df' data from 'init_orphan_df' data
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of 'init_orphan_df' data
-    col_invert_rename_dic = {submit_firstname_short_col + "_x":\
-                             submit_firstname_short_col}
+    col_invert_rename_dic = {merge_firstname_short_col + "_x":\
+                             merge_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
     print_step_text("      - Other external collaborators added", print_params)
-    return new_submit_df, new_orphan_df
+    return new_merge_df, new_orphan_df
 
 
-def _change_col_names(institute, org_tup, submit_df, orphan_df):
-    """Sets new column names to the files pointed by 'submit_path' 
+def _change_col_names(institute, org_tup, merge_df, orphan_df):
+    """Sets new column names to the files pointed by 'merge_path' 
     and 'orphan_path' paths.
 
     For that it uses the `build_col_conversion_dic` function 
@@ -435,7 +435,7 @@ def _change_col_names(institute, org_tup, submit_df, orphan_df):
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        submit_df (dataframe): The data of the publications list \
+        merge_df (dataframe): The data of the publications list \
         with one row per author with attributes as Institute employee.
         orphan_df (dataframe): The data of the publications list \
         with one row per author that has not been identified as Institute employee.
@@ -445,12 +445,12 @@ def _change_col_names(institute, org_tup, submit_df, orphan_df):
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     orphan_col_rename_dic = col_rename_tup[0]
-    submit_col_rename_dic = col_rename_tup[1]
+    merge_col_rename_dic = col_rename_tup[1]
 
     # Renaming columns
-    submit_df = submit_df.rename(columns=submit_col_rename_dic)
+    merge_df = merge_df.rename(columns=merge_col_rename_dic)
     orphan_df = orphan_df.rename(columns=orphan_col_rename_dic)
-    return submit_df, orphan_df
+    return merge_df, orphan_df
 
 
 def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_df, verbose=False):
@@ -636,32 +636,32 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     publication is built from the results of the corpus parsing through \
     the `build_institute_pubs_authors` function imported from \
     the `bmfuncts.build_pub_authors` module.
-    2. The 'submit_df' dataframe of the publications list containing all matches \
+    2. The 'merge_df' dataframe of the publications list containing all matches \
     between Institute authors and employee names is initialized using the most recent year \
-    of the employees database through the `build_submit_df` function imported from \
+    of the employees database through the `build_pub_empl_data` function imported from \
     `bmfuncts.build_year_pub_empl` module; this is done together with the initialization \
     of 'orphan_df' dataframe of the publications list with authors not found in the \
     employees database; these two dataframes contains one row per author of each publication.
     3. New rows containing the information of authors that are PhD students \
     at the Institute but not as employees of it are added through the `_add_ext_docs` \
-    internal function updating 'submit_df' and 'orphan_df' dataframes.
+    internal function updating 'merge_df' and 'orphan_df' dataframes.
     4. New rows containing the information of authors that are under external hiring \
     contract at the Institute are added through the `_add_other_ext` internal function \
-    updating 'submit_df' and 'orphan_df' dataframes.
-    5. The 'submit_df' and 'orphan_df' dataframes are updated by search in the employees \
-    database through the `build_submit_df` function using recursively items from \
+    updating 'merge_df' and 'orphan_df' dataframes.
+    5. The 'merge_df' and 'orphan_df' dataframes are updated by search in the employees \
+    database through the `build_pub_empl_data` function using recursively items from \
     'years' list for the search year.
     6. The dataframes are refactored by replacing NaN values by the UNKNOWN global and \
     modifying the publications IDs through the `set_year_pub_id` function imported from \
     the `bmfuncts.useful_functs`module. Then they are saved as xlsx files which full \
-    paths are given by 'submit_path' and 'orphan_path', respectively.
+    paths are given by 'merge_path' and 'orphan_path', respectively.
     7. A new column containing the job type for each author is added in the file which \
-    full path is given by 'submit_path' through the `_add_author_job_type` internal function.
+    full path is given by 'merge_path' through the `_add_author_job_type` internal function.
     8. A new column containing the full reference of each publication is added \
-    in the file which full path is given by 'submit_path' through the `_add_biblio_list` \
+    in the file which full path is given by 'merge_path' through the `_add_biblio_list` \
     internal function.
     9. Column names are changed in the two files which full path are given by respectively, \
-    'submit_path' and 'orphan_path' through the `_change_col_names` internal function.
+    'merge_path' and 'orphan_path' through the `_change_col_names` internal function.
     10. An 'xlsx' file containing the unique hash ID built for each publication \
     is created through the `create_hash_id` function imported from "bmfuncts.create_hash_id" \
     module.
@@ -683,9 +683,9 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         tkinter widget status (optional, default = None).
         progress_bar_state (int): Initial status of ProgressBar tkinter widget \
         (optional, default = None).
-        set_test_case (str): Test case for testing the `build_submit_df` function \
+        set_test_case (str): Test case for testing the `build_pub_empl_data` function \
         (optional, default = "No test").
-        set_test_name (str): Author last-name for testing the `build_submit_df` function \
+        set_test_name (str): Author last-name for testing the `build_pub_empl_data` function \
         (optional, default = "No name").
     Returns:
         (tup): (end_message (str), empty status (bool) of the publications \
@@ -702,7 +702,7 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
                         print_params)
 
     # Setting useful params of merge files from args
-    merge_folder_path, submit_path, orphan_path = merge_paths[:3]
+    merge_folder_path, merge_path, orphan_path = merge_paths[:3]
 
     # Setting path to the file of external employees
     ext_empl_path = _set_ext_files_paths(wf_path)
@@ -734,27 +734,27 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         progress_callback(progress_bar_state + step * 10)
 
     # **************************************************************
-    # * Building recursively the `submit_df` and `orphan_df` data *
+    # * Building recursively the `merge_df` and `orphan_df` data *
     # *                 using `empl_dict` files of years          *
     # **************************************************************
 
     # Building the initial dataframes
     print_step_text("\n  - Initializing search of authors among employees data...",
                         print_params)
-    submit_df, orphan_df = build_submit_df(empl_dict[years[0]], pub_df, wf_path, print_params,
-                                           test_case=set_test_case, test_name=set_test_name, init_status=True)
+    merge_df, orphan_df = build_pub_empl_data(empl_dict[years[0]], pub_df, wf_path, print_params,
+                                              test_case=set_test_case, test_name=set_test_name, init_status=True)
     if progress_callback:
         progress_callback(progress_bar_state + step * 20)
 
     # Adding authors from list of external_phd students
-    # to 'submit_df' data and updating 'orphan_df' data
-    submit_df, orphan_df = _add_ext_docs(submit_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
+    # to 'merge_df' data and updating 'orphan_df' data
+    merge_df, orphan_df = _add_ext_docs(merge_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
         progress_callback(progress_bar_state + step * 25)
 
     # Adding authors from list of external employees under other hiring contract
-    # to 'submit_df' data  and updating 'orphan_df' data
-    submit_df, orphan_df = _add_other_ext(submit_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
+    # to 'merge_df' data  and updating 'orphan_df' data
+    merge_df, orphan_df = _add_other_ext(merge_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
         new_progress_bar_state = progress_bar_state + step * 30
         progress_callback(new_progress_bar_state)
@@ -764,12 +764,12 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     print(f"        Search period: {years[0]}...{years[-1]}")
     for _, year in enumerate(years):
         print(f"        Search year:   {year}", end="\r")
-        # Updating the 'submit_df_add' and 'orphan_df' data
-        submit_df_add, orphan_df = build_submit_df(empl_dict[year], orphan_df, wf_path, print_params,
-                                                   test_case=set_test_case, test_name=set_test_name)
+        # Updating the 'merge_df_add' and 'orphan_df' data
+        merge_df_add, orphan_df = build_pub_empl_data(empl_dict[year], orphan_df, wf_path, print_params,
+                                                      test_case=set_test_case, test_name=set_test_name)
 
-        # Updating the 'submit_df' data
-        submit_df = concat_dfs([submit_df, submit_df_add])
+        # Updating the 'merge_df' data
+        merge_df = concat_dfs([merge_df, merge_df_add])
 
         # Updating progress bar state
         if progress_callback:
@@ -779,34 +779,34 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
 
     print_step_text("\n  - Enhancing search results...", print_params)
     # Replace NaN values by UNKNOWN string except in first name initials
-    submit_df = keep_initials(submit_df, initials_col, missing_fill=bm_pg.UNKNOWN)
+    merge_df = keep_initials(merge_df, initials_col, missing_fill=bm_pg.UNKNOWN)
     orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bm_pg.UNKNOWN)
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
-    submit_df = set_year_pub_id(submit_df, corpus_year, pub_id_col)
+    merge_df = set_year_pub_id(merge_df, corpus_year, pub_id_col)
     print_step_text("      - Publication IDs tagged with corpus year", print_params)
     if not orphan_status:
         orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_col)
 
-    # Adding author job type to 'submit_df' data
-    submit_df = _add_author_job_type(submit_df, empl_dict, years, add_job_cols_list)
+    # Adding author job type to 'merge_df' data
+    merge_df = _add_author_job_type(merge_df, empl_dict, years, add_job_cols_list)
     print_step_text("      - Column with author job-type added", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 5)
 
-    # Adding full publication reference to 'submit_df' data
-    submit_df = _add_biblio_list(submit_df, add_ref_cols_list)
+    # Adding full publication reference to 'merge_df' data
+    merge_df = _add_biblio_list(merge_df, add_ref_cols_list)
     print_step_text("      - Column with full publication reference added", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 10)
 
-    # Renaming column names in submit_df' and 'orphan_df' data
-    submit_df, orphan_df = _change_col_names(institute, org_tup, submit_df, orphan_df)
+    # Renaming column names in merge_df' and 'orphan_df' data
+    merge_df, orphan_df = _change_col_names(institute, org_tup, merge_df, orphan_df)
     print_step_text("      - Columns renamed with final names", print_params)
 
-    # Saving submit_df' and 'orphan_df' data
-    submit_df.to_excel(submit_path, index=False)
+    # Saving merge_df' and 'orphan_df' data
+    merge_df.to_excel(merge_path, index=False)
     orphan_df.to_excel(orphan_path, index=False)
 
     # Splitting orphan file in subdivisions of Institute when indicated

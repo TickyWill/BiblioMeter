@@ -14,8 +14,9 @@ __all__ = ['save_db_ids_data',
            'save_final_pub_lists',
            'save_final_results',
            'save_final_set_homonyms',
-           'save_final_submit',
+           'save_final_merge',
            'save_parsing_dict',
+           'save_rawdata_correction',
            'set_results_folder_path',
           ]
 
@@ -106,7 +107,7 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
 
 
 def save_parsing_dict(parsing_dict, parsing_path, parsing_filenames_dict,
-                      save_extent, dedup_infos=[]):
+                      save_extent, dedup_infos=None):
     """Saves the data passed through the dict of parsing results 
     as files of a specified type.
 
@@ -152,7 +153,7 @@ def save_fails_dict(fails_dict, parsing_path):
         json.dump(fails_dict, write_json, indent=4)
 
 
-def save_db_ids_data(db_ids_df, parsing_path, database_type, dedup_infos=[]):
+def save_db_ids_data(db_ids_df, parsing_path, database_type, dedup_infos=None):
     """Saves database-IDs data as XLSX file.
 
     Args:
@@ -232,7 +233,7 @@ def save_final_hash_ids(wf_path, corpus_year, results_folder_path):
     return end_message
 
 
-def save_final_submit(wf_path, corpus_year, results_folder_path):
+def save_final_merge(wf_path, corpus_year, results_folder_path):
     """Saves final results of the list of publications with one row per author 
     for the corpus year.
 
@@ -246,34 +247,34 @@ def save_final_submit(wf_path, corpus_year, results_folder_path):
         the folder where final results have been saved.
     """
     # Setting aliases for saving results
-    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["submit"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["merge"]
 
     # Setting aliases of common parts of file names
-    origin_submit_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
-    submit_file_base_alias = bm_pg.ARCHI_YEAR["submit file name"]
-    year_submit_file_alias = corpus_year + " " + submit_file_base_alias
+    origin_merge_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    merge_file_base_alias = bm_pg.ARCHI_YEAR["merge file name"]
+    year_merge_file_alias = corpus_year + " " + merge_file_base_alias
 
     # Setting common paths
     origin_corpus_year_path = wf_path / Path(corpus_year)
-    origin_submit_path = origin_corpus_year_path / Path(origin_submit_folder_alias)
+    origin_merge_path = origin_corpus_year_path / Path(origin_merge_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
-    target_submit_path = year_target_folder_path / Path(results_sub_folder_alias)
+    target_merge_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Checking availability of required results folders
     if not os.path.exists(year_target_folder_path):
         os.makedirs(year_target_folder_path)
-    if not os.path.exists(target_submit_path):
-        os.makedirs(target_submit_path)
+    if not os.path.exists(target_merge_path):
+        os.makedirs(target_merge_path)
 
-    origin_path = origin_submit_path / Path(submit_file_base_alias)
-    target_path = target_submit_path / Path(year_submit_file_alias)
+    origin_path = origin_merge_path / Path(merge_file_base_alias)
+    target_path = target_merge_path / Path(year_merge_file_alias)
 
     # Copying file from origin path to target path
     shutil.copy2(origin_path, target_path)
 
     end_message = ("List of publications with one row per author "
                    f"for year {corpus_year} saved in folder: "
-                   f"\n  '{target_submit_path}'")
+                   f"\n  '{target_merge_path}'")
     return end_message
 
 
@@ -294,14 +295,14 @@ def save_final_set_homonyms(wf_path, corpus_year, results_folder_path):
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["homonyms"]
 
     # Setting aliases of common parts of file names
-    origin_submit_homonyms_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
+    origin_merge_homonyms_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
     homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
     origin_homonyms_file =  homonyms_file_base_alias + " " + corpus_year + ".xlsx"
     target_homonyms_file =  corpus_year + " " + homonyms_file_base_alias + ".xlsx"
 
     # Setting common paths
     origin_corpus_year_path = wf_path / Path(corpus_year)
-    origin_submit_path = origin_corpus_year_path / Path(origin_submit_homonyms_alias)
+    origin_merge_path = origin_corpus_year_path / Path(origin_merge_homonyms_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
     target_homonyms_path = year_target_folder_path / Path(results_sub_folder_alias)
 
@@ -311,7 +312,7 @@ def save_final_set_homonyms(wf_path, corpus_year, results_folder_path):
     if not os.path.exists(target_homonyms_path):
         os.makedirs(target_homonyms_path)
 
-    origin_path = origin_submit_path / Path(origin_homonyms_file)
+    origin_path = origin_merge_path / Path(origin_homonyms_file)
     target_path = target_homonyms_path / Path(target_homonyms_file)
 
     # Copying file from origin path to target path
@@ -847,8 +848,8 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
         if verbose:
             print(message)
 
-    if results_to_save_dict["submit"]:
-        message = save_final_submit(wf_path, corpus_year,
+    if results_to_save_dict["merge"]:
+        message = save_final_merge(wf_path, corpus_year,
                                     results_folder_path)
         if verbose:
             print(message)

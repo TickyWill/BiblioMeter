@@ -383,7 +383,7 @@ def build_final_pub_list(conso_params_list):
     # Saving pub list and hash-IDs as final results
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
-    keys_list = ["pub_lists", "hash_ids", "submit", "homonyms"]
+    keys_list = ["pub_lists", "hash_ids", "merge", "homonyms"]
     for key in keys_list:
         results_to_save_dict[key] = True
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]

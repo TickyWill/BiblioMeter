@@ -124,11 +124,11 @@ def solve_homonyms(solve_homonyms_params, in_path, out_path):
     col_keys = ['lastname_col', 'firstname_col', 'homonyms_col']
     save_cols_list = [use_homonyms_cols_dic[key] for key in col_keys]
 
-    # Reading the submit file
-    submit_df = pd.read_excel(in_path)
+    # Reading the merge file
+    merge_df = pd.read_excel(in_path)
 
     # Getting rid of the columns we don't want
-    homonyms_df = submit_df[homonyms_cols_list].copy()
+    homonyms_df = merge_df[homonyms_cols_list].copy()
 
     # Setting homonyms status
     homonyms_status = False

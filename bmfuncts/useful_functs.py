@@ -14,6 +14,7 @@ __all__ = ['build_list_from_str',
            'print_step_title',
            'print_to_console',
            'print_to_log',
+           'remove_file',
            'reorder_df',
            'save_xlsx_file',
            'set_bold_txt',
@@ -40,6 +41,14 @@ from bpfuncts import remove_special_symbol as bp_remove_special_symbol
 
 # local imports
 import bmfuncts.pub_globals as bm_pg
+
+
+def remove_file(path):
+    """ param <path> could either be relative or absolute. """
+    if os.path.isfile(path) or os.path.islink(path):
+        os.remove(path)  # remove the file
+    else:
+        raise ValueError("file {} is not a file.".format(path))
 
 
 def print_step_title(step_title, print_params):

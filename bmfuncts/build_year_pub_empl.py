@@ -3,7 +3,7 @@ of the Institute for a year corpus.
 
 """
 
-__all__ = ['build_submit_df']
+__all__ = ['build_pub_empl_data']
 
 # Standard Library imports
 import os
@@ -53,7 +53,7 @@ def _test_full_match(empl_pub_match_df, pub_lastname, test_cols_dic):
     empl_mat_col = test_cols_dic['empl_mat_col']
     empl_lastname_col = test_cols_dic['empl_lastname_col']
 
-    if len(empl_pub_match_df)!=0:
+    if not empl_pub_match_df.empty:
         print('\nMatch found for author lastname:', pub_lastname)
         print(' Nb of matches:', len(empl_pub_match_df))
         print(' Employee matricule:',
@@ -130,7 +130,7 @@ def _test_no_similarity(pub_df_row, pub_lastname, lastname_match_list,
 
 
 def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
-                                      eff_firstnames, list_idx, eff_lastnames_spec,
+                                      empl_firstnames, list_idx, empl_lastnames_spec,
                                       test_cols_dic):
     """Prints the info of the test on first name initials for all test cases.
 
@@ -141,10 +141,10 @@ def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
         firstname initials has been found.
         pub_firstname (str): The first name initials of the author matches of \
         firstname initials has been found.
-        eff_firstnames (list): The list of first name initials of the employees \
+        empl_firstnames (list): The list of first name initials of the employees \
         that matches the firstname initials of the author.
         list_idx (list): Indices (int) of matching initials.
-        eff_lastnames_spec (list): The list of last names of the employees \
+        empl_lastnames_spec (list): The list of last names of the employees \
         that matches the firstname initials of the author.
         test_cols_dic (dict): The selected columns names for the process \
         of testing match between employees data and publications data.
@@ -156,24 +156,31 @@ def _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
     print('  Author fullname:', pub_df_row[pub_fullname_col])
     print('  Author firstname initials:', pub_firstname)
     print('\nInitials of matching employees for author lastname:', pub_lastname)
-    print('  Employees firstname initials list:', eff_firstnames)
+    print('  Employees firstname initials list:', empl_firstnames)
     print('\nChecking initials matching for author lastname:', pub_lastname)
     print('  Nb of matching initials:', len(list_idx))
     print('  Index list of matching initials:', list_idx)
-    print('  Employees lastnames list:', eff_lastnames_spec)
+    print('  Employees lastnames list:', empl_lastnames_spec)
 
 
-def _set_match_test_info(wf_path, test_case):
+def _set_match_test_info(wf_path, test_case, test_name):
     """Sets the info for the test of the matching results.
 
-    Args: 
+    Args:
         wf_path (path): Full path to working folder.
         test_case (str): The case for the test selected \
         among the keys of the test dict.
+        test_name (str): The author's lastname for which tests are performed.
     Returns:
-        (tup): (The value of the test dict art 'test_case' key (list), \
-        The full path to the folder where test results will be saved).
+        (dict): keyed by ['cols', 'lastname', 'states', 'filespath'] and valued \
+        by the useful colums names (dict), the author's lastname (str), \
+        the value of the test dict at 'test_case' key (list), \
+        The full path to the folder where test results will be saved.
     """
+    # Setting col names for test results prints
+    test_cols_dic = _set_test_cols_dic()
+
+    # Setting test states info
     test_dict = {'Full match'            : [True, True, True, True, True],
                  'Lower value similarity': [False, True, True, True, True],
                  'Upper value similarity': [False, True, True, True, True],
@@ -181,12 +188,19 @@ def _set_match_test_info(wf_path, test_case):
                  'No test'               : [False, False, False, False, False]
                  }
     test_states = test_dict[test_case]
+
+    # Setting path for saving results of test
     checks_path = Path(wf_path) / Path('Temp_checks')
     if test_states[4]:
         # Creating temporary output folder
         if not os.path.exists(checks_path):
             os.makedirs(checks_path)
-    return test_states, checks_path
+    test_info_dic = {'cols'     : test_cols_dic,
+                     'lastname' : test_name,
+                     'states'   : test_states,
+                     'filespath': checks_path,
+                    }
+    return test_info_dic
 
 
 def _save_spec_dfs(temp_df, empl_pub_match_df, test_name, checks_path):
@@ -207,22 +221,22 @@ def _save_spec_dfs(temp_df, empl_pub_match_df, test_name, checks_path):
                               index=False)
 
 
-def _reduce_orphan_df(orphan_lastname, eff_lastname):
-    """Finds the list of employees last-names that matches \
-    with the author's last name.
+def _reduce_orphan_df(orphan_lastname, empl_lastnames):
+    """Finds the list of employees lastnames that matches \
+    with the author's lastname.
 
     Args:
-        orphan_lastname (str): The author last-name.
-        eff_lastname (list): The list of employees last-names (str).
+        orphan_lastname (str): The author lastname.
+        empl_lastnames (list): The list of employees lastnames (str).
     Returns:
-        (list): The list of employees last-names (str) that matches \
-        the author last_name.
+        (list): The list of employees lastnames (str) that matches \
+        the author lastname.
     """
     orphan_lastname = ' ' + orphan_lastname + ' '
     lastname_match_list = []
-    for eff_name in eff_lastname:
-        if (orphan_lastname in eff_name) or (eff_name in orphan_lastname):
-            lastname_match_list.append(eff_name.strip())
+    for empl_name in empl_lastnames:
+        if (orphan_lastname in empl_name) or (empl_name in orphan_lastname):
+            lastname_match_list.append(empl_name.strip())
     return lastname_match_list
 
 
@@ -237,15 +251,157 @@ def _set_merge_cols_dic():
     return merge_cols_dic
 
 
-def build_submit_df(empl_df, pub_df, wf_path, print_params,
-                    test_case="No test", test_name="No name", init_status=False):
+def _check_last_name_similarity(pub_lastname, empl_lastnames, empl_df, orphan_df, pub_author_row,
+                                empl_lastname_col, empl_fullname_col, pub_firstname_col,
+                                test_info_dic):
+    """Checks similarity of author's lastname and employees' lastnames when full-match not found."""
+
+    test_keys = ['cols', 'lastname', 'states']
+    test_cols_dic, test_name, test_states = [test_info_dic[key] for key in test_keys]
+
+    # Checking for a similarity
+    lastname_match_list = _reduce_orphan_df(pub_lastname, empl_lastnames)
+
+    if lastname_match_list:
+        # Concatenating in the dataframe 'empl_pub_match_df',
+        # the rows of the dataframe 'empl_df'
+        # corresponding to each of the found similarities by orphan reduction
+        frames = []
+        for lastname_match in lastname_match_list:
+            temp_df = empl_df[empl_df[empl_lastname_col]==lastname_match].copy()
+            # Replacing the employee last name by the publication last name
+            # for 'empl_pub_match_df' building
+            temp_df[empl_fullname_col]= pub_lastname + ' ' + temp_df[pub_firstname_col]
+            frames.append(temp_df)
+
+        empl_pub_match_df = concat_dfs(frames, concat_ignore_index=True)
+        flag_lastname_match = True
+
+        # Test of lastnames similarity found by '_reduce_orphan_df' function
+        if pub_lastname==test_name and test_states[1]:
+            _test_similarity(empl_pub_match_df, pub_lastname, lastname_match_list,
+                             flag_lastname_match, test_cols_dic)
+    else:
+        empl_pub_match_df = pd.DataFrame()
+        # Appending to dataframe orphan_df the row 'pub_author_row'
+        # as actual orphan after orphan reduction
+        orphan_df = concat_dfs([orphan_df, pub_author_row.to_frame().T])
+        flag_lastname_match = False
+
+        # Test of lastnames no-similarity by '_reduce_orphan_df' function
+        if pub_lastname==test_name and test_states[2]:
+            _test_no_similarity(pub_author_row, pub_lastname, lastname_match_list,
+                                flag_lastname_match, test_cols_dic)
+    return flag_lastname_match, empl_pub_match_df, orphan_df
+
+
+def _check_lastname_match(empl_df, orphan_df, pub_author_row, empl_lastnames,
+                          pub_lastname_col, pub_firstname_col, empl_lastname_col, empl_fullname_col,
+                          test_info_dic):
+    test_keys = ['cols', 'lastname', 'states']
+    test_cols_dic, test_name, test_states = [test_info_dic[key] for key in test_keys]
+
+    # Initializing the flag 'flag_lastname_match' as True by default
+    flag_lastname_match = True
+
+    # Getting the author's lastname
+    pub_lastname = pub_author_row[pub_lastname_col]
+
+    # Building the dataframe 'empl_pub_match_df' with rows of dataframe empl_df
+    # where item at EMPLOYEES_USEFUL_COLS['name'] matches author lastname 'pub_lastname'
+    empl_pub_match_df = empl_df[empl_df[empl_lastname_col]==pub_lastname].copy()
+
+    # Test of lastname full match
+    if pub_lastname==test_name and test_states[0]:
+        _test_full_match(empl_pub_match_df, pub_lastname, test_cols_dic)
+
+    if empl_pub_match_df.empty:
+        # No match found
+
+        # Checking for similarity between author's lastname and employees' lastnames
+        return_tup = _check_last_name_similarity(pub_lastname, empl_lastnames, empl_df, orphan_df, pub_author_row,
+                                                 empl_lastname_col, empl_fullname_col, pub_firstname_col,
+                                                 test_info_dic)
+        flag_lastname_match, empl_pub_match_df, orphan_df = return_tup
+    return flag_lastname_match, empl_pub_match_df, orphan_df
+
+
+def _check_firstname_initiales_match(empl_pub_match_df, pub_author_row,
+                                     pub_lastname_col, pub_firstname_col, empl_lastname_col,
+                                     test_info_dic):
+    # Checking match between the author's firstname and the employees' firstnames
+    # for the matching lastname either (by full match or similarity)
+
+    test_keys = ['cols', 'lastname', 'states']
+    test_cols_dic, test_name, test_states = [test_info_dic[key] for key in test_keys]
+
+    # Getting the author's lastname and firstname initials
+    pub_lastname = pub_author_row[pub_lastname_col]
+    pub_firstname = pub_author_row[pub_firstname_col]
+
+    # Building the list of firstnames initials of a given name in the employees data
+    empl_firstnames = empl_pub_match_df[pub_firstname_col].to_list()
+    empl_lastnames_spec = empl_pub_match_df[empl_lastname_col].to_list()
+
+    # Building the list of index of firstnames initials that match
+    initials_match_idx_list = []
+    for idx, empl_firstname in enumerate(empl_firstnames):
+        if pub_firstname==empl_firstname:
+            initials_match_idx_list.append(idx)
+
+    # Test of match of firstname initials for lastname match or similarity
+    if pub_lastname==test_name and test_states[3]:
+        _test_match_of_firstname_initials(pub_author_row, pub_lastname, pub_firstname,
+                                          empl_firstnames, initials_match_idx_list, empl_lastnames_spec,
+                                          test_cols_dic)
+    return initials_match_idx_list
+
+
+def _update_pub_empl_data(merge_df, pub_author_row, empl_pub_match_df, initials_match_idx_list,
+                          pub_lastname_col, pub_fullname_col, empl_fullname_col, homonyms_col,
+                          test_info_dic):
+
+    test_keys = ['lastname', 'states', 'filespath']
+    test_name, test_states, checks_path = [test_info_dic[key] for key in test_keys]
+
+    # Building a 'pub_author_df' data with the 'pub_author_row' row
+    # related to a given author's last name.
+    # Then adding the item value HOMONYM_FLAG global at 'homonyms_col' column
+    # when several matches on firstname initials are found.
+    pub_author_df = pub_author_row.to_frame().T
+    pub_author_df[homonyms_col]= bm_pg.HOMONYM_FLAG if len(initials_match_idx_list)>1 else '_'
+
+    # Getting the author's lastname and firstname initials
+    pub_lastname = pub_author_row[pub_lastname_col]
+
+    # Saving specific dataframes 'pub_author_df' and 'empl_pub_match_df' for function testing
+    if pub_lastname==test_name and test_states[4]:
+        _save_spec_dfs(pub_author_df, empl_pub_match_df, test_name, checks_path)
+
+    # Merging the 'empl_pub_match_df' data to the 'pub_author_df' data.
+    # The pub_lastname_col column of the 'pub_author_df' data
+    # is matched to the empl_fullname_col column of the 'empl_pub_match_df' data.
+    pub_auth_emp_join_df = pd.merge(pub_author_df,
+                                    empl_pub_match_df,
+                                    how='left',
+                                    left_on=[pub_fullname_col],
+                                    right_on=[empl_fullname_col])
+
+    # Appending to the dataframe 'merge_df' the dataframe 'pub_auth_emp_join_df'
+    # which is specific to a given publication
+    merge_df = concat_dfs([merge_df, pub_auth_emp_join_df], concat_ignore_index=True)
+    return merge_df
+
+
+def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
+                        test_case="No test", test_name="No name", init_status=False):
     """Builds a dataframe of the merged employees information with the publications 
     list with one row per author.
 
     The merge is based on test of similarities between last names and first names 
     of employees and authors. 
     The 'test_case' arg allows to print and save the results of the similarity 
-    test for a given author name defined by the 'test_name' arg. The test parameters  
+    test for a given author name defined by the 'test_name' arg. The test parameters 
     are set through the `_set_match_test_info` internal function. The values of the test 
     parameters are printed through the `_test_full_match`, `_test_similarity` and 
     `_test_no_similarity` internal functions. The results are saved through the 
@@ -277,33 +433,26 @@ def build_submit_df(empl_df, pub_df, wf_path, print_params,
     (pub_firstname_col, pub_lastname_col, pub_fullname_col, empl_lastname_col,
      empl_fullname_col, homonyms_col) = [merge_cols_dic[key] for key in col_keys]
 
-    # Replace in "pub_df" NaN values "NA" in first name initials
-    pub_df = keep_initials(pub_df, pub_firstname_col)
-
     # Initializing the Data that will contain all matches
     # between 'pub_df' author-name and 'empl_df' employee-name
-    submit_df = pd.DataFrame()
+    merge_df = pd.DataFrame()
 
     # Initializing the Data that will contain all 'pub_df' author-names
     # which do not match with any of the 'empl_df' employee-names
     orphan_df = pd.DataFrame(columns=list(pub_df.columns))
 
     # Building the set of lastnames (without duplicates) of the 'empl_df' data
-    eff_lastnames = set(empl_df[empl_lastname_col].to_list())
-    eff_lastnames = [' ' + x + ' ' for x in eff_lastnames]
+    empl_lastnames = set(empl_df[empl_lastname_col].to_list())
+    empl_lastnames = [' ' + x + ' ' for x in empl_lastnames]
 
     # Setting the useful info for testing the function
-    # - Setting col names for test results prints
-    test_cols_dic = _set_test_cols_dic()
-    # - Setting a dict keyed by type of test with values for test states and
-    # test name from column [COL_NAMES_BM['Last_name']] of the dataframe 'pub_df'
-    test_states, checks_path = _set_match_test_info(wf_path, test_case)
+    test_info_dic = _set_match_test_info(wf_path, test_case, test_name)
 
-    # Building 'submit_df' and 'orphan_df' data
+    # Building 'merge_df' and 'orphan_df' data
     if init_status:
         print_step_text("      - Searching of authors among employees data...", print_params)
         full_names_nb, names_nb = len(pub_df), 0
-    for _, pub_df_row in pub_df.iterrows():
+    for _, pub_author_row in pub_df.iterrows():
         if init_status:
             names_nb += 1
             print(f"              Number of searched authors:   {names_nb} / {full_names_nb}", end="\r")
@@ -311,119 +460,34 @@ def build_submit_df(empl_df, pub_df, wf_path, print_params,
         # The rows where the value in COL_NAMES_BM['Last_name'] column of the 'pub_df' data
         # matches with the value in EMPLOYEES_USEFUL_COLS['name'] column of the 'empl_df' data
 
-        # Initializing the flag 'flag_lastname_match' as True by default
-        flag_lastname_match = True
+        return_tup = _check_lastname_match(empl_df, orphan_df, pub_author_row, empl_lastnames,
+                                           pub_lastname_col, pub_firstname_col, empl_lastname_col, empl_fullname_col,
+                                           test_info_dic)
+        flag_lastname_match, empl_pub_match_df, orphan_df = return_tup
 
-        # Getting the lastname from pub_df_row row of the dataframe pub_df
-        pub_lastname = pub_df_row[pub_lastname_col]
-
-        # Building the dataframe 'empl_pub_match_df' with rows of dataframe empl_df
-        # where item at EMPLOYEES_USEFUL_COLS['name'] matches author lastname 'pub_lastname'
-        empl_pub_match_df = empl_df[empl_df[empl_lastname_col]==pub_lastname].copy()
-
-        # Test of lastname full match
-        if pub_lastname==test_name and test_states[0]:
-            _test_full_match(empl_pub_match_df, pub_lastname, test_cols_dic)
-
-        if len(empl_pub_match_df)==0: # No match found
-
-            # Checking for a similarity
-            lastname_match_list = _reduce_orphan_df(pub_lastname, eff_lastnames)
-
-            if lastname_match_list:
-                # Concatenating in the dataframe 'empl_pub_match_df',
-                # the rows of the dataframe 'empl_df'
-                # corresponding to each of the found similarities by orphan reduction
-                frames = []
-                for lastname_match in lastname_match_list:
-                    temp_df = empl_df[empl_df[empl_lastname_col]\
-                                      ==lastname_match].copy()
-                    # Replacing the employee last name by the publication last name
-                    # for 'pub_emp_join_df' building
-                    temp_df[empl_fullname_col]=\
-                        pub_lastname + ' ' + temp_df[pub_firstname_col]
-                    frames.append(temp_df)
-
-                empl_pub_match_df = concat_dfs(frames, concat_ignore_index=True)
-                flag_lastname_match = True
-
-                # Test of lastnames similarity found by '_reduce_orphan_df' function
-                if pub_lastname==test_name and test_states[1]:
-                    _test_similarity(empl_pub_match_df, pub_lastname, lastname_match_list,
-                                     flag_lastname_match, test_cols_dic)
-
-            else:
-                # Appending to dataframe orphan_df the row 'pub_df_row'
-                # as effective orphan after orphan reduction
-                orphan_df = concat_dfs([orphan_df, pub_df_row.to_frame().T])
-                flag_lastname_match = False
-
-                # Test of lastnames no-similarity by '_reduce_orphan_df' function
-                if pub_lastname==test_name and test_states[2]:
-                    _test_no_similarity(pub_df_row, pub_lastname, lastname_match_list,
-                                        flag_lastname_match, test_cols_dic)
-
-        # Checking match for a given lastname between the publication first-name
-        # and the employee first-name
         if flag_lastname_match:
+            # Checking match between the author's firstname and the employees' firstnames
+            # for the matching lastname either (by full match or similarity)
+            initials_match_idx_list = _check_firstname_initiales_match(empl_pub_match_df, pub_author_row,
+                                                                       pub_lastname_col, pub_firstname_col, empl_lastname_col,
+                                                                       test_info_dic)
 
-            # Finding the author name initials for the current publication
-            pub_firstname = pub_df_row[pub_firstname_col]
-
-            # List of firstnames initials of a given name in the employees data
-            eff_firstnames = empl_pub_match_df[pub_firstname_col].to_list()
-            eff_lastnames_spec = empl_pub_match_df[empl_lastname_col].to_list()
-
-            # Building the list of index of first names initials
-            list_idx = []
-            for idx, eff_firstname in enumerate(eff_firstnames):
-
-                if pub_firstname==eff_firstname:
-                    list_idx.append(idx)
-
-            # Test of match of firstname initials for lastname match or similarity
-            if pub_lastname==test_name and test_states[3]:
-                _test_match_of_firstname_initials(pub_df_row, pub_lastname, pub_firstname,
-                                                  eff_firstnames, list_idx, eff_lastnames_spec,
-                                                  test_cols_dic)
-
-            if list_idx:
-                # Building a 'temp_df' data with the 'pub_df_row' row
-                # related to a given publication.
-                # Then adding the item value HOMONYM_FLAG at COL_NAMES_BM['Homonym'] column
-                # when several matches on firstname initials are found.
-                temp_df = pub_df_row.to_frame().T
-                temp_df[homonyms_col]=\
-                    bm_pg.HOMONYM_FLAG if len(list_idx) > 1 else '_'
-
-                # Saving specific dataframes 'temp_df' and 'empl_pub_match_df' for function testing
-                if pub_lastname==test_name and test_states[4]:
-                    _save_spec_dfs(temp_df, empl_pub_match_df, test_name, checks_path)
-
-                # Merging the 'empl_pub_match_df' data to the 'temp_df' data.
-                # The COL_NAMES_BM['Last_name'] column of the 'temp_df' data
-                # is matched to the EMPLOYEES_ADD_COLS['employee_full_name']
-                # column of the 'empl_pub_match_df' data.
-                pub_emp_join_df = pd.merge(temp_df,
-                                           empl_pub_match_df,
-                                           how='left',
-                                           left_on=[pub_fullname_col],
-                                           right_on=[empl_fullname_col])
-
-                # Appending to the dataframe 'submit_df' the dataframe 'pub_emp_join_df'
-                # which is specific to a given publication
-                submit_df = concat_dfs([submit_df, pub_emp_join_df], concat_ignore_index=True)
+            if initials_match_idx_list:
+                # Updating merged data of publications and employees
+                merge_df = _update_pub_empl_data(merge_df, pub_author_row, empl_pub_match_df, initials_match_idx_list,
+                                                 pub_lastname_col, pub_fullname_col, empl_fullname_col, homonyms_col,
+                                                 test_info_dic)
             else:
-                # Appending to the dataframe orphan_df the row 'pub_df_row' as effective orphan
-                # after complementary checking of match via first name initials
-                orphan_df = concat_dfs([orphan_df, pub_df_row.to_frame().T], concat_ignore_index=True)
+                # Appending to the dataframe orphan_df the row 'pub_author_row' as actual orphan
+                # after the complementary checking of match via firstname initials
+                orphan_df = concat_dfs([orphan_df, pub_author_row.to_frame().T], concat_ignore_index=True)
 
     # Dropping duplicate rows in both dataframes (mandatory)
-    submit_df = submit_df.drop_duplicates()
+    merge_df = merge_df.drop_duplicates()
     orphan_df = orphan_df.drop_duplicates()
 
     if init_status:
         step_txt = ("      - Data of authors found as employees "
                     "and data of authors not found amond employees built")
         print_step_text(step_txt, print_params)
-    return submit_df, orphan_df
+    return merge_df, orphan_df
