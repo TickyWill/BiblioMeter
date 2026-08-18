@@ -1,5 +1,5 @@
 :: Creation: F. Bertin 2024-05-26
-:: Refactoring: A. Chabli 2024-11-13
+:: Refactoring: A. Chabli 2026-06-03
 
 @echo off 
 Title BiblioMeter.exe making
@@ -64,7 +64,7 @@ if exist %python_dir% (
     echo %TAB%Unable to access %python_dir% so we will use the default python version
     echo:
     python -m venv venv)
-    
+
 :: Upgrading pip version
 echo Upgrading pip version
 venv\Scripts\python.exe -m pip install --upgrade pip
@@ -104,14 +104,14 @@ echo The package BiblioMeter successfully installed >> %LOG%
 echo:
 echo The BiblioMeter packages successfully installed
 echo:
-echo Installing auto-py-to-exe packages
-echo:
-pip install auto-py-to-exe
-cls
-echo The package auto-py-to-exe successfully installed >> %LOG%
-echo:
-echo The package auto-py-to-exe successfully installed
-echo:    
+::echo Installing auto-py-to-exe packages
+::echo:
+::pip install auto-py-to-exe
+::cls
+::echo The package auto-py-to-exe successfully installed >> %LOG%
+::echo:
+::echo The package auto-py-to-exe successfully installed
+::echo:
 
 :: Getting the python program to launch the application
 echo Getting the python program to launch the application
@@ -126,8 +126,8 @@ curl.exe  -o %PGM% %pgm_origin%
 if exist %PGM% (
     echo The python program %PGM% successfully found >> %LOG%
     echo %TAB%The python program %PGM% successfully found
-    echo:         
-) else ( 
+    echo:
+) else (
     echo Unable to get the python program %PGM% >> %LOG%
     echo %TAB%Unable to get the python program %PGM%
     GOTO FIN)
@@ -159,7 +159,7 @@ if exist %working_dir%\dist\app.exe (
     echo %TAB%Making of the executable app.exe failed
     GOTO FIN)
 
-:: Renaming the directory dist to aaaa_mm_jj BiblioMeter 
+:: Renaming the directory dist to aaaa_mm_jj BiblioMeter
 :: adapted from http://stackoverflow.com/a/10945887/1810071
 echo Renaming the directory dist
 for /f "skip=1" %%x in ('wmic os get localdatetime') do if not defined MyDate set MyDate=%%x

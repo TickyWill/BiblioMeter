@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -28,31 +27,26 @@ from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import set_year_pub_id
 
 
-def _read_authors_data(wf_path, final_results_path,
-                       corpus_year):
-    """Reads saved authors data resulting from the parsing step.
+def _read_authors_data(dedup_read_params):
+    """Reads saved authors' data resulting from the parsing step.
 
     It uses the `read_final_dedup` function of 
-    the `bmfuncts.useful_functs` module.
+    the `bmfuncts.read_final_results` module.
 
     Args:
-        wf_path (path): Full path to working folder.
-        final_results_path (path): Full path to the folder \
+        dedup_read_params (list): Composed of the 4 digits year of the corpus, \
+        of the full path to working folder, of the dict giving the name of \
+        the parsing file for each parsed item and of the full path to the folder \
         where final results are saved.
-        corpus_year (str): 4 digits year of the corpus.
     Returns:
         (dataframe): The dataframe of the authors' data.
     """
-    # Setting useful aliases
-    authors_item_alias = bp.PARSING_ITEMS_LIST[1]
-
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_final_dedup(wf_path,
-                                          final_results_path,
-                                          corpus_year)
+    dedup_parsing_dict = read_final_dedup(dedup_read_params)
 
-    # Getting ID of each author with author name
-    authors_df = dedup_parsing_dict[authors_item_alias]
+    # Getting ID of each author with author name per publication
+    au_key = bm_pg.PARSING_KEYS_DIC['au_analysis'][0]
+    authors_df = dedup_parsing_dict[au_key]
     return authors_df
 
 
@@ -64,57 +58,57 @@ def _set_au_analysis_cols(institute, org_tup):
     `bmfuncts.rename_cols` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains parameters of Institute organization.
+        institute (str): Institute's name.
+        org_tup (tup): Contains parameters of Institute's organization.
     Returns:
         (dict): The built dict.
     """
     # Setting useful column names from homonyms file
     homonyms_col_dic = set_homonym_col_names(institute, org_tup)
 
-    au_analysis_cols_dic = {'pub_id_col'       : homonyms_col_dic['pub_id'],
-                            'au_id_col'        : homonyms_col_dic['author_id'],
-                            'inst_au_col'      : homonyms_col_dic['inst_author'],
-                            'first_au_col'     : homonyms_col_dic['first_author'],
-                            'mat_col'          : homonyms_col_dic['matricul'],
-                            'type_col'         : homonyms_col_dic['author_type'],
-                            'empl_col'         : homonyms_col_dic['empl_full_name'],
-                            'doctype_col'      : homonyms_col_dic['doc_type'],
-                            'nb_au_col'        : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb'],
-                            'is_first_col'     : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author'],
-                            'is_last_col'      : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author'],
-                            'nb_pub_col'       : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb'],
-                            'pub_list_col'     : bm_pg.COL_NAMES_BONUS['pub_ids list'],
-                            'final_inst_au_col': bm_pg.COL_NAMES_BONUS['name_as_auth'],
-                            'final_empl_col'   : bm_pg.COL_NAMES_BONUS['name_as_empl'],
+    au_analysis_cols_dic = {'pub_id_col'            : homonyms_col_dic['pub_id'],
+                            'au_id_col'             : homonyms_col_dic['author_id'],
+                            'institute_au_col'      : homonyms_col_dic['inst_author'],
+                            'first_au_col'          : homonyms_col_dic['first_author'],
+                            'mat_col'               : homonyms_col_dic['matricul'],
+                            'type_col'              : homonyms_col_dic['author_type'],
+                            'empl_col'              : homonyms_col_dic['empl_full_name'],
+                            'doctype_col'           : homonyms_col_dic['doc_type'],
+                            'nb_au_col'             : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['author_nb'],
+                            'is_first_col'          : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author'],
+                            'is_last_col'           : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author'],
+                            'nb_pub_col'            : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb'],
+                            'pub_list_col'          : bm_pg.COL_NAMES_BONUS['pub_ids list'],
+                            'final_institute_au_col': bm_pg.COL_NAMES_BONUS['name_as_auth'],
+                            'final_empl_col'        : bm_pg.COL_NAMES_BONUS['name_as_empl'],
                            }
 
     return au_analysis_cols_dic
 
 
-def _build_auth_nb_per_pub(wf_path, final_results_path,
-                           corpus_year, cols_list):
+def _build_auth_nb_per_pub(au_stat_params_list, cols_list):
     """Builds the data of authors number per publications.
 
     It uses the `_read_authors_data` internal function to get 
     the authors data resulting from the parsing step.
 
     Args:
-        wf_path (path): Full path to working folder.
-        final_results_path (path): Full path to the folder \
-        where final results are saved.
-        corpus_year (str): 4 digits year of the corpus.
+        au_stat_params_list (list): Composed of the 4 digits year of the corpus, \
+        of the dict giving the name of the parsing file for each parsed item \
+        and of the full path to the folder where final results are saved.
         cols_list (list):  Composed of Pub-ID column name (str) and \
         of authors-number column name (str).
     Returns:
         (dataframe): The dataframe of the authors number per publications.
     """
+    # Setting parameters value from 'au_nb_params_list'
+    corpus_year = au_stat_params_list[0]
+
     # Setting useful col list from args
     pub_id_col, nb_au_col = cols_list
 
     # Getting the authors per pub-ID file from parsing results
-    authors_df = _read_authors_data(wf_path, final_results_path,
-                                    corpus_year)
+    authors_df = _read_authors_data(au_stat_params_list)
 
     # Creating a dataframe with a column with number of authors per pub-ID
     count_auth_df = pd.DataFrame()
@@ -128,12 +122,12 @@ def _build_auth_nb_per_pub(wf_path, final_results_path,
     return count_auth_df
 
 
-def _build_author_employee_df(sub_params_list, au_analysis_cols_dic):
+def _build_author_employee_df(auth_params_list, au_analysis_cols_dic):
     """Builds data of authors per publication with corresponding employee name, 
     number of authors, author position in the authors list.
 
     The input data are as follows:
-    - The publications list with one row per Institute author and its attributes 
+    - The publications list with one row per Institute's author and its attributes 
     got through the `read_final_set_homonyms_data` internal function; this list 
     has been initially built through the `set_saved_homonyms` 
     function of the `bmfuncts.use_homonyms` module.
@@ -141,36 +135,39 @@ def _build_author_employee_df(sub_params_list, au_analysis_cols_dic):
     the `_build_auth_nb_per_pub` internal function.
 
     Args:
-        wf_path (path): Full path to working folder.
-        datatype (str): Data combination type from corpuses databases.
-        corpus_year (str): 4 digits year of the corpus.
+        auth_params_list (list): Composed of the 4 digits year of the corpus, \
+        of the print parameters, of the full path to working folder, \
+        of the data-combination type (str) from corpuses databases and \
+        of the dict giving the name of the parsing file for each parsed item.
         au_analysis_cols_dic (dict): The dict giving the columns names for the \
         process of building authors analysis data.
     Returns:
         (dataframe): The dataframe of the authors data per publications.
     """
-    wf_path, datatype, print_params, corpus_year = sub_params_list
+    # setting parameters value from 'auth_params_list'
+    corpus_year, print_params, wf_path, datatype, parsing_filenames_dict = auth_params_list
+
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
 
     # Setting useful columns names from 'au_analysis_cols_dic'
-    col_keys = ['pub_id_col', 'au_id_col', 'inst_au_col', 'first_au_col',
+    col_keys = ['pub_id_col', 'au_id_col', 'institute_au_col', 'first_au_col',
                 'mat_col', 'type_col', 'empl_col', 'nb_au_col',
                 'is_first_col', 'is_last_col', 'doctype_col']
     au_empl_cols = [au_analysis_cols_dic[key] for key in col_keys]
     homonyms_select_cols = au_empl_cols[0:7]
-    (pub_id_col, au_id_col, inst_au_col, first_au_col, mat_col, type_col, empl_col,
+    (pub_id_col, au_id_col, institute_au_col, first_au_col, mat_col, type_col, empl_col,
      nb_au_col, is_first_col, is_last_col, doctype_col) = au_empl_cols
 
     # Getting the number of authors per pub-ID from parsing results
     print("  - Computing the number of authors per publication from parsing results...", end="\r")
     count_select_cols = [pub_id_col, nb_au_col]
-    count_auth_df = _build_auth_nb_per_pub(wf_path, final_results_path,
-                                           corpus_year, count_select_cols)
+    au_nb_params_list = [corpus_year, parsing_filenames_dict, final_results_path]
+    count_auth_df = _build_auth_nb_per_pub(au_nb_params_list, count_select_cols)
     print_step_text("  - Data of number of authors per publication built from parsing results       ",
                     print_params)
 
-    # Getting the publications list with one row per Institute author
+    # Getting the publications list with one row per Institute's author
     # and its attributes columns
     print("  - Get the final results of homonyms resolution...", end="\r")
     all_pub_authors_df = read_final_set_homonyms_data(final_results_path, corpus_year)
@@ -207,12 +204,12 @@ def _build_author_employee_df(sub_params_list, au_analysis_cols_dic):
 
     author_employee_df = author_employee_df.sort_values(by=[pub_id_col, au_id_col],
                                                         axis=0)
-    cols_order = [pub_id_col, nb_au_col, au_id_col, inst_au_col,
+    cols_order = [pub_id_col, nb_au_col, au_id_col, institute_au_col,
                   first_au_col, empl_col, mat_col, type_col, is_first_col, is_last_col]
     author_employee_df = author_employee_df[cols_order]
 
     # Capitalize names
-    author_employee_df[inst_au_col] = author_employee_df[inst_au_col].apply(name_capwords)
+    author_employee_df[institute_au_col] = author_employee_df[institute_au_col].apply(name_capwords)
     author_employee_df[empl_col] = author_employee_df[empl_col].apply(name_capwords)
     print_step_text("  - Institute's authors data per publication enhanced       ", print_params)
     return author_employee_df
@@ -230,31 +227,31 @@ def _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic, print_
         (dataframe): The data of publications number per author.
     """
     # Setting useful columns names from 'au_analysis_cols_dic'
-    col_keys = ['pub_id_col', 'inst_au_col', 'mat_col', 'type_col',
+    col_keys = ['pub_id_col', 'institute_au_col', 'mat_col', 'type_col',
                 'empl_col', 'nb_pub_col', 'pub_list_col']
     au_pub_cols = [au_analysis_cols_dic[key] for key in col_keys]
-    (pub_id_col, inst_au_col, mat_col, type_col,
+    (pub_id_col, institute_au_col, mat_col, type_col,
      empl_col, nb_pub_col, pub_list_col) = au_pub_cols
 
     # Selecting useful columns in author_employee_df
     sub_au_empl_cols = [pub_id_col, empl_col, mat_col,
-                        type_col, inst_au_col]
+                        type_col, institute_au_col]
     sub_author_employee_df = author_employee_df[sub_au_empl_cols].copy()
 
     # Initializing the dataframe to built with useful columns
     au_pub_select_cols = [mat_col, type_col, empl_col,
-                          inst_au_col, nb_pub_col, pub_list_col]
+                          institute_au_col, nb_pub_col, pub_list_col]
     pub_nb_per_auth_df = pd.DataFrame(columns = au_pub_select_cols)
 
     # Building the targeted dataframe
     print("  - Building the data of publications number per Institute's author...", end="\r")
     for _, empl_df in sub_author_employee_df.groupby(empl_col):
         pub_id_list = list(empl_df[pub_id_col])
-        author_names_list = list(set(list(empl_df[inst_au_col])))
+        author_names_list = list(set(empl_df[institute_au_col]))
         author_names = author_names_list[0]
         if len(author_names_list)>1:
             author_names = "; ".join(author_names_list)
-        empl_df[inst_au_col] = author_names
+        empl_df[institute_au_col] = author_names
         empl_df[nb_pub_col] = len(pub_id_list)
         empl_df[pub_list_col] = "; ".join(pub_id_list)
         empl_df = empl_df[au_pub_select_cols]
@@ -263,8 +260,8 @@ def _build_pub_nb_per_author_df(author_employee_df, au_analysis_cols_dic, print_
     pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
     # Renaming cols
-    rename_dic = {empl_col   : au_analysis_cols_dic['final_empl_col'],
-                  inst_au_col: au_analysis_cols_dic['final_inst_au_col']}
+    rename_dic = {empl_col        : au_analysis_cols_dic['final_empl_col'],
+                  institute_au_col: au_analysis_cols_dic['final_institute_au_col']}
     author_employee_df = author_employee_df.rename(columns=rename_dic)
     pub_nb_per_auth_df = pub_nb_per_auth_df.rename(columns=rename_dic)
     print_step_text("  - Data of publications number per Institute's author built          ",
@@ -332,19 +329,20 @@ def authors_analysis(params_list, progress_callback=None):
     with the results of this analysis through the `_update_kpi_database` internal function.
 
     Args:
-        params_list (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        params_list (list): The list composed of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to working folder (path), of the data combination type \
+        of corpuses databases (str), of the printing parameters, of the 4 digits \
+        year of the corpus and of the item key for selecting authors' parsing results.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
     Returns:
         (path): Full path to the folder where results of authors analysis \
         are saved.
     """
-    # Setting parameters values from params_list
-    institute, org_tup, wf_path, datatype, print_params, corpus_year = params_list
-    sub_params_list = [wf_path, datatype, print_params, corpus_year]
+    # Setting parameters values from 'params_list'
+    (corpus_year, print_params, institute, org_tup, wf_path, datatype,
+     parsing_filenames_dict) = params_list
 
     # Setting useful paths
     return_tup = _set_au_files_params(wf_path, corpus_year)
@@ -358,7 +356,8 @@ def authors_analysis(params_list, progress_callback=None):
 
     # Building author_employee_df
     print_step_text("\nBuilding enhanced data of Institute's authors per publication...", print_params)
-    author_employee_df = _build_author_employee_df(sub_params_list, au_analysis_cols_dic)
+    auth_params_list = [corpus_year, print_params, wf_path, datatype, parsing_filenames_dict]
+    author_employee_df = _build_author_employee_df(auth_params_list, au_analysis_cols_dic)
     if progress_callback:
         progress_callback(50)
 
@@ -390,7 +389,8 @@ def authors_analysis(params_list, progress_callback=None):
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["authors"] = True
-    _ = save_final_results(params_list, results_to_save_dict)
+    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
+    save_final_results(save_params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(100)
 

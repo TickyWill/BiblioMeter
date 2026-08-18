@@ -1,7 +1,8 @@
 """Module for setting globals specific to publications management and analysis.
 """
 
-__all__ = ['ANALYSIS_IF',
+__all__ = ['AFFIL_TYPES_USECOLS',
+           'ANALYSIS_IF',
            'ARCHI_BACKUP',
            'ARCHI_BDD_MULTI_ANNUELLE',
            'ARCHI_EXTRACT',
@@ -14,6 +15,7 @@ __all__ = ['ANALYSIS_IF',
            'BDD_LIST',
            'BM_LOW_WORDS_LIST',
            'COL_HASH',
+           'COL_NAMES',
            'COL_NAMES_AUTHOR_ANALYSIS',
            'COL_NAMES_BM',
            'COL_NAMES_BONUS',
@@ -24,10 +26,12 @@ __all__ = ['ANALYSIS_IF',
            'COL_NAMES_ORTHO',
            'COL_NAMES_PUB_NAMES',
            'CONFIG_FOLDER',
+           'COUNTRIES_CONTINENT',
            'DATATYPE_LIST',
            'DB_ID_COLS',
            'DF_TITLES_LIST',
            'DOC_TYPE_DICT',
+           'EMPTY',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
            'FIRST_BDD',
@@ -43,32 +47,60 @@ __all__ = ['ANALYSIS_IF',
            'OTP_SHEET_NAME_BASE',
            'OUTSIDE_ANALYSIS',
            'PARSING_CONFIG_FILE',
+           'PARSING_ITEMS_LIST',
+           'PARSING_KEYS_CONVERT_DIC',
+           'PARSING_KEYS_DIC',
            'PARSING_PERF',
            'PRINT_DICT',
            'RAWDATA_CORRECT',
            'RESULTS_TO_SAVE',
            'ROW_COLORS',
+           'SCOPUS',
+           'SCOPUS_CAT_CODES',
+           'SCOPUS_JOURNALS_ISSN_CAT',
+           'SCOPUS_RAWDATA_EXTENT',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
            'STAT_FILE_DICT',
            'STAT_INST_TYPES_LIST',
            'STAT_ROW_NAMES',
+           'SYMB_CHANGE',
            'TSV_SAVE_EXTENT',
+           'UNKNOWN',
+           'UNKNOWN_COUNTRY',
+           'WOS',
+           'WOS_RAWDATA_EXTENT',
            'XL_INDEX_BASE',
           ]
 
 # 3rd party imports
-import BiblioParsing as bp
+import bpfuncts as bp
 
 # local imports
 import bmfuncts.employees_globals as bm_eg
 
-# Setting the databases of corpuses extraction
-BDD_LIST = [bp.SCOPUS, bp.WOS]
-FIRST_BDD = bp.SCOPUS
+# Setting globals imported from the `BiblioParsing` package
+AFFIL_TYPES_USECOLS = bp.AFFIL_TYPES_USECOLS
+COL_NAMES = bp.COL_NAMES
+COUNTRIES_CONTINENT = bp.COUNTRIES_CONTINENT
+EMPTY = bp.EMPTY
+PARSING_ITEMS_LIST = bp.PARSING_ITEMS_LIST
+SCOPUS = bp.SCOPUS
+SCOPUS_CAT_CODES = bp.SCOPUS_CAT_CODES
+SCOPUS_JOURNALS_ISSN_CAT = bp.SCOPUS_JOURNALS_ISSN_CAT
+SCOPUS_RAWDATA_EXTENT = bp.SCOPUS_RAWDATA_EXTENT
+SYMB_CHANGE = bp.SYMB_CHANGE
+UNKNOWN = bp.UNKNOWN
+UNKNOWN_COUNTRY = bp.UNKNOWN_COUNTRY
+WOS = bp.WOS
+WOS_RAWDATA_EXTENT = bp.WOS_RAWDATA_EXTENT
 
-DB_ID_COLS = {bp.WOS   : bp.COL_NAMES['wos_id'][0],
-              bp.SCOPUS: bp.COL_NAMES['scopus_id'][0],
+# Setting parameters of corpuses extraction
+BDD_LIST = [SCOPUS, WOS]
+FIRST_BDD = SCOPUS
+
+DB_ID_COLS = {WOS   : COL_NAMES['wos_id'][0],
+              SCOPUS: COL_NAMES['scopus_id'][0],
               "all_dbs" : "DB_id_col",
               }
 
@@ -117,23 +149,24 @@ ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
                            }
 
 ARCHI_EXTRACT = {"root"             : "Extractions Institut",
-                 bp.SCOPUS          : {"root"           : "ScopusExtractions_Files",
+                 SCOPUS             : {"root"           : "ScopusExtractions_Files",
                                        DATATYPE_LIST[0] : "scopus",
                                        DATATYPE_LIST[1] : "scopus_hal",
                                        DATATYPE_LIST[2] : "scopus",
                                        DATATYPE_LIST[3] : "scopus",
-                                       "file_extent"    : '.' + bp.SCOPUS_RAWDATA_EXTENT,
+                                       "file_extent"    : '.' + SCOPUS_RAWDATA_EXTENT,
                                        "added_dois_file": " hal_added_dois.xlsx",
                                       },
-                 bp.WOS             : {"root"           : "WosExtractions_Files",
+                 WOS                : {"root"           : "WosExtractions_Files",
                                        DATATYPE_LIST[0] : "wos",
                                        DATATYPE_LIST[1] : "wos",
                                        DATATYPE_LIST[2] : "wos",
                                        DATATYPE_LIST[3] : "wos",
-                                       "file_extent"    : '.' + bp.WOS_RAWDATA_EXTENT,
+                                       "file_extent"    : '.' + WOS_RAWDATA_EXTENT,
                                       },
                  "empty-file folder": "Fichier vierge",
                  "archiv"           : "Archives",
+                 "categories"       : "Catégories"
                 }
 
 ARCHI_IF = {"root"                  : "Impact Factor",
@@ -231,7 +264,7 @@ ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
 
 # Setting list of final results to save
 RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists", "ifs", "kws","countries", "continents",
-                   "authors", "institutions", "doctypes", "homonyms", "institute_country"]
+                   "authors", "affiliations", "doctypes", "homonyms", "institute_country"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
 
@@ -450,3 +483,26 @@ PRINT_DICT = {'purple'   : '\033[95m',
               'underline': '\033[4m',
               'end'      : '\033[0m',
              }
+
+
+# Order in the following lists should not be changed
+
+PARSING_KEYS_DIC = {'all'             : ["pub", "auth", "addr", "countries", "affils",
+                                         "authaddr", "aukw", "ikw", "tkw", "subj",
+                                         "subsubj", "refs", "normaffils", "rawaddr"],
+                    'parsing'         : ["pub", "auth", "addr", "countries", "affils",
+                                         "authaddr", "aukw", "ikw", "tkw", "subj",
+                                         "subsubj", "refs"],
+                    'parsing_pub'     : "pub",
+                    'dedup_pub_nb'    : ["pub", "authaddr"],
+                    'merge'           : ["pub", "addr", "auth", "authaddr"],
+                    'unknown_country' : ["addr", "auth", "authaddr", "countries"],
+                    'correct_parsing' : ["addr", "authaddr", "countries"],
+                    'build_addresses' : ["addr", "authaddr"],
+                    'au_analysis'     : ["auth"],
+                    'kw_analysis'     : ["aukw", "ikw", "tkw"],
+                   }
+
+PARSING_KEYS_CONVERT_DIC = dict(zip(PARSING_KEYS_DIC['all'], PARSING_ITEMS_LIST))
+
+PARSING_KEYS_REVERT_DIC = {PARSING_KEYS_CONVERT_DIC[key]: key for key in PARSING_KEYS_DIC['all']}

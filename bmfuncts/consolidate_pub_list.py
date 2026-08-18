@@ -6,7 +6,7 @@ in terms of:
 
 """
 
-__all__ = ['built_final_pub_list',
+__all__ = ['build_final_pub_list',
            'check_dedup_parsing_available',
            'concatenate_pub_lists',
            'split_pub_list_by_doc_type',
@@ -14,8 +14,8 @@ __all__ = ['built_final_pub_list',
 
 
 # Standard library imports
+import datetime
 import os
-from datetime import datetime
 from pathlib import Path
 
 # 3rd party imports
@@ -25,7 +25,7 @@ import pandas as pd
 import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.add_ifs import add_if
-from bmfuncts.config_utils import set_user_config
+from bmfuncts.config_utils import set_rawdata_and_parsing_paths
 from bmfuncts.format_files import format_page
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
@@ -132,14 +132,11 @@ def check_dedup_parsing_available(wf_path, year):
         (bool): Status of the deduplication parsing folder \
         (False if folder didn't exist or is empty).
     """
-    # To Do:  Checks if a specific parsing file is available not only if folder is empty
-
     # Setting default returned status
     dedup_parsing_status = False
 
     # Getting the full paths of the working folder architecture for the corpus "year select"
-    config_tup = set_user_config(wf_path, year, bm_pg.BDD_LIST)
-    parsing_path_dict = config_tup[1]
+    _, parsing_path_dict = set_rawdata_and_parsing_paths(wf_path, year, bm_pg.BDD_LIST)
 
     # Setting parsing files extension of saved results
     parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
@@ -180,7 +177,7 @@ def split_pub_list_by_doc_type(selected_params_list, pub_list_cols_dic=None):
         consolidated publications number (int)).
     """
     # Setting parameters values from 'selected_params_list'
-    institute, org_tup, wf_path, corpus_year = selected_params_list
+    corpus_year, institute, org_tup, wf_path = selected_params_list
 
     # Setting useful parameters for use of 'format_page' function
     common_df_title = bm_pg.DF_TITLES_LIST[0]
@@ -271,7 +268,7 @@ def _set_build_pub_files_params(wf_path, corpus_year):
     return paths_list
 
 
-def built_final_pub_list(params_list):
+def build_final_pub_list(conso_params_list):
     """Builds the dataframe of the publications final list
     of the 'corpus_year' corpus.
 
@@ -305,19 +302,18 @@ def built_final_pub_list(params_list):
     internal function.
 
     Args:
-        params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        conso_params_list (list): The list composed of the 4 digits year \
+        of the corpus (str), of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to working folder (path), and of the data combination \
+        type of corpuses databases (str).
     Returns :
         (tup): (end message recalling the full path to the saved file \
         of the publication final list, split ratio in % of the publications \
         final list, completion status of the impact-factors database).
     """
     # Setting parameters values from params_list
-    institute, org_tup, wf_path, _, print_params, corpus_year = params_list
-    otps_sub_params_list = [institute, org_tup, wf_path, print_params, corpus_year]
-    ifs_sub_params_list = [institute, org_tup, wf_path, corpus_year]
+    corpus_year, print_params, institute, org_tup, wf_path, datatype = conso_params_list
 
     # Setting useful column names
     pub_list_cols_dic = _set_pub_list_cols_dic(institute, org_tup)
@@ -330,7 +326,8 @@ def built_final_pub_list(params_list):
      missing_issn_path, missing_if_path) = paths_list
 
     # Saving the OTPs set by user
-    consolidate_pub_list_df = save_otps(otps_sub_params_list)
+    otps_params_list = [corpus_year, print_params, institute, org_tup, wf_path]
+    consolidate_pub_list_df = save_otps(otps_params_list)
 
     print_step_text("\nCleaning publications list...", print_params)
     # Setting pub ID as index for unique identification of rows
@@ -368,9 +365,10 @@ def built_final_pub_list(params_list):
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
     # this also for saving results files to complete IFs database
+    ifs_params_list = [corpus_year, institute, org_tup, wf_path]
     add_if_paths_list = [pub_list_file_path, pub_list_file_path,
                          missing_issn_path, missing_if_path]
-    if_database_complete = add_if(ifs_sub_params_list, add_if_paths_list)
+    if_database_complete = add_if(ifs_params_list, add_if_paths_list)
     step_txt = "  - IFs added to publications list "
     if if_database_complete:
         step_txt += "with complete IFs data"
@@ -379,8 +377,7 @@ def built_final_pub_list(params_list):
     print_step_text(step_txt, print_params)
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-    split_ratio, pub_nb = split_pub_list_by_doc_type(ifs_sub_params_list,
-                                                     pub_list_cols_dic)
+    split_ratio, pub_nb = split_pub_list_by_doc_type(ifs_params_list, pub_list_cols_dic)
     print_step_text("  - Publications list split performed", print_params)
 
     # Saving pub list and hash-IDs as final results
@@ -389,9 +386,12 @@ def built_final_pub_list(params_list):
     keys_list = ["pub_lists", "hash_ids", "submit", "homonyms"]
     for key in keys_list:
         results_to_save_dict[key] = True
-    _ = save_final_results(params_list, results_to_save_dict)
+    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
+    save_final_results(save_params_list, results_to_save_dict)
 
-    print_step_text("  - Consolidated publications lists saved as final results", print_params)
+    step_txt = ("  - Consolidated publications lists saved as final results "
+                f"with IFs data complete: {if_database_complete}")
+    print_step_text(step_txt, print_params)
     return pub_nb, invalids_nb, split_ratio, if_database_complete
 
 
@@ -408,7 +408,7 @@ def _set_concat_pub_list_path(wf_path, available_pub_lists_str):
     """
     multi_year_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
     multi_year_base_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["concat file name base"]
-    date = str(datetime.now())[:16].replace(':', 'h')
+    date = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
     multi_year_file = (f"{date} {multi_year_base_alias} "
                        f"{os.getlogin()}_{available_pub_lists_str}.xlsx")
     multi_year_folder_path = wf_path / Path(multi_year_folder_alias)
@@ -416,7 +416,7 @@ def _set_concat_pub_list_path(wf_path, available_pub_lists_str):
     return multi_year_file_path
 
 
-def concatenate_pub_lists(wf_path, print_params, years_list):
+def concatenate_pub_lists(print_params, wf_path, years_list):
     """Builds the concatenated publications list of the corpuses 
     listed in 'years_list'.
 
@@ -428,6 +428,7 @@ def concatenate_pub_lists(wf_path, print_params, years_list):
     the `_set_concat_pub_list_path` internal function.
 
     Args:
+        print_params (list): The print parameters.
         wf_path (path): Full path to working folder.
         years_list (list): List of 4 digits years of the available \
         publications lists.
@@ -435,6 +436,7 @@ def concatenate_pub_lists(wf_path, print_params, years_list):
         (str): End message recalling folder and file name \
         where the file is saved.
     """
+    print_step_text("\nConcatenating all available publications lists...", print_params)
     # Setting useful aliases
     pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
@@ -458,6 +460,6 @@ def concatenate_pub_lists(wf_path, print_params, years_list):
     wb, ws = format_page(concat_df, concat_df_title)
     ws.title = "Publications de " + available_pub_lists_str
     wb.save(multi_year_file_path)
-    step_txt = ("  - Concatenation of consolidated publications lists under: "
+    step_txt = ("  - Concatenation of consolidated publications lists saved as: "
                 f"\n\n    '{multi_year_file_path}'")
     print_step_text(step_txt, print_params)

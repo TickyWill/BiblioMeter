@@ -12,7 +12,6 @@ __all__ = ['add_if',
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
@@ -120,7 +119,7 @@ def _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic, empty_kws_list)
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
         empty_kws_list (list): Composed of the 'UNKNOWN' global imported \
-        from the `BiblioParsing` package and of the 'NOT_AVAILABLE' global \
+        from the `biblioparsing` package and of the 'NOT_AVAILABLE' global \
         imported from the `bmfuncts.pub_globals` module.
     returns:
         (tup): (The recast IFs data (dict keyed by years and valued \
@@ -182,13 +181,13 @@ def _build_if_dict(if_dict, if_year, add_ifs_col_dic, unknown_kw):
     if eissn_col in list(if_dict[if_year].columns):
         eissn_if_dict = dict(zip(if_dict[if_year][eissn_col],
                                  if_dict[if_year][if_col]))
-        if unknown_kw in eissn_if_dict.keys():
+        if unknown_kw in eissn_if_dict:
             del eissn_if_dict[unknown_kw]
     year_if_dict = {**issn_if_dict, **eissn_if_dict}
     return year_if_dict
 
 
-def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
+def _build_institute_issn_df(if_dict, journal_id_cols_list, unknown_kw):
     """Builds data making the link between journal names and ISSNs and 
     eISSNs.
 
@@ -211,17 +210,17 @@ def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
     journal_col, issn_col, eissn_col = journal_id_cols_list
     if_available_years_list = list(if_dict.keys())
 
-    # Initializing 'inst_issn_df'
-    init_inst_issn_df = pd.DataFrame(columns=journal_id_cols_list)
+    # Initializing 'institute_issn_df'
+    init_institute_issn_df = pd.DataFrame(columns=journal_id_cols_list)
 
     for year in if_available_years_list:
         year_sub_df = if_dict[year][journal_id_cols_list].copy()
-        init_inst_issn_df = concat_dfs([init_inst_issn_df, year_sub_df])
-    init_inst_issn_df[journal_col] = init_inst_issn_df.apply(lambda row:
-                                                             (row[journal_col].upper()),
-                                                             axis=1)
-    inst_issn_df = pd.DataFrame()
-    for _, dg in init_inst_issn_df.groupby(journal_col):
+        init_institute_issn_df = concat_dfs([init_institute_issn_df, year_sub_df])
+    init_institute_issn_df[journal_col] = init_institute_issn_df.apply(lambda row:
+                                                                       (row[journal_col].upper()),
+                                                                       axis=1)
+    institute_issn_df = pd.DataFrame()
+    for _, dg in init_institute_issn_df.groupby(journal_col):
 
         issn_list = list(set(dg[issn_col].to_list()) - {unknown_kw})
         if not issn_list:
@@ -233,11 +232,11 @@ def _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw):
             eissn_list = [unknown_kw]
         dg[eissn_col] = eissn_list[0]
 
-        inst_issn_df = concat_dfs([inst_issn_df, dg.iloc[:1]])
+        institute_issn_df = concat_dfs([institute_issn_df, dg.iloc[:1]])
 
-    inst_issn_df = inst_issn_df.sort_values(by=[journal_col])
-    inst_issn_df = inst_issn_df.drop_duplicates()
-    return inst_issn_df
+    institute_issn_df = institute_issn_df.sort_values(by=[journal_col])
+    institute_issn_df = institute_issn_df.drop_duplicates()
+    return institute_issn_df
 
 
 def _fullfill_issn(corpus_df, issn_df, journal_id_cols_list, unknown_kw):
@@ -278,7 +277,7 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
     empty values in ISSN column.
 
     The ISSNs completion is donne through the `_fullfill_issn` internal function 
-    using the ISSN provided by the `_build_inst_issn_df` internal function.
+    using the ISSN provided by the `_build_institute_issn_df` internal function.
 
     Args:
         in_file_path (path): The full path to get the corpus data.
@@ -306,22 +305,21 @@ def _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup, unknown_kw):
 
     # Recasting column names
     otp_col, new_otp_col = add_ifs_col_dic['otp_col'], add_ifs_col_dic['new_otp_col']
-    new_base_col_list = list(map(lambda x: x.replace(otp_col, new_otp_col),
-                                 base_col_list))
+    new_base_col_list = [x.replace(otp_col, new_otp_col) for x in base_col_list]
     if otp_col in corpus_df.columns:
-        corpus_df = corpus_df.rename(columns={otp_col : new_otp_col})
+        corpus_df = corpus_df.rename(columns={otp_col: new_otp_col})
 
     # Initializing 'corpus_df_bis' as copy of 'corpus_df'
     corpus_df_bis = corpus_df[new_base_col_list].copy()
 
-    # Getting the df of ISSN and eISSN database of the institut
-    inst_issn_df = _build_inst_issn_df(if_dict, journal_id_cols_list, unknown_kw)
+    # Getting the df of ISSN and eISSN database of the institute
+    institute_issn_df = _build_institute_issn_df(if_dict, journal_id_cols_list, unknown_kw)
 
-    # Filling unknown ISSN in 'corpus_df_bis' using 'inst_issn_df'
+    # Filling unknown ISSN in 'corpus_df_bis' using 'institute_issn_df'
     # through _fullfill_issn function
-    corpus_df_bis = _fullfill_issn(corpus_df_bis, inst_issn_df, journal_id_cols_list,
+    corpus_df_bis = _fullfill_issn(corpus_df_bis, institute_issn_df, journal_id_cols_list,
                                    unknown_kw)
-    return corpus_df_bis, inst_issn_df
+    return corpus_df_bis, institute_issn_df
 
 
 def _create_if_column(issn_column, year_if_dict, unknown_kw):
@@ -364,7 +362,7 @@ def _add_if_cols(corpus_df, if_dicts_list, corpus_year, add_ifs_col_dic, empty_k
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
         empty_kws_list (list): Composed of the 'UNKNOWN' global imported \
-        from the `BiblioParsing` package and of the 'NOT_AVAILABLE' global \
+        from the `biblioparsing` package and of the 'NOT_AVAILABLE' global \
         imported from the `bmfuncts.pub_globals` module.
     Returns:
         (dataframe): The corpus data added with the two IF columns.
@@ -500,7 +498,7 @@ def _get_id(issn_df, journal_name, journal_col, id_col, unknown_kw):
     return id_journal
 
 
-def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_kw):
+def _build_missing_issn_and_if_df(if_df, institute_issn_df, add_ifs_col_dic, unknown_kw):
     """Builds a dataframe 'missing_if_df' by removing from 'if_df' the rows 
     which ISSN value is not in IF database and keeping them in the dataframe 
     'missing_issn_df'.
@@ -510,7 +508,7 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_
     Args:
         if_df (dataframe): The built data through the `_build_issn_df` \
         internal function.
-        inst_issn_df (dataframe): The built data through the \
+        institute_issn_df (dataframe): The built data through the \
         `_clean_corpus_df` internal function.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
@@ -527,19 +525,19 @@ def _build_missing_issn_and_if_df(if_df, inst_issn_df, add_ifs_col_dic, unknown_
 
     missing_issn_df = pd.DataFrame(columns=if_df.columns)
     missing_if_df = pd.DataFrame(columns=if_df.columns)
-    inst_issn_list = inst_issn_df[issn_col].to_list()
-    inst_eissn_list = inst_issn_df[eissn_col].to_list()
+    institute_issn_list = institute_issn_df[issn_col].to_list()
+    institute_eissn_list = institute_issn_df[eissn_col].to_list()
     for _, row in if_df.iterrows():
         row_issn = row[issn_col]
         row_most_recent_year_if = row[most_recent_year_if_col]
         row_corpus_year_if = row[corpus_year_if_col]
-        if row_issn in inst_issn_list or row_issn in inst_eissn_list:
+        if row_issn in institute_issn_list or row_issn in institute_eissn_list:
             if unknown_kw in [row_most_recent_year_if, row_corpus_year_if]:
                 row_journal = row[journal_col]
-                row[issn_col] = _get_id(inst_issn_df, row_journal,
+                row[issn_col] = _get_id(institute_issn_df, row_journal,
                                         journal_col, issn_col,
                                         unknown_kw)
-                row[eissn_col] = _get_id(inst_issn_df, row_journal,
+                row[eissn_col] = _get_id(institute_issn_df, row_journal,
                                          journal_col, eissn_col,
                                          unknown_kw)
                 missing_if_df = concat_dfs([missing_if_df, row.to_frame().T])
@@ -658,14 +656,14 @@ def add_if(add_if_params_list, paths_list):
     The column 'most_recent_year_if_col' is filled with the impact-factors 
     values of the most recent year available in the 'if_dict' dict. 
     In these columns, the NaN values of impact-factors are replaced 
-    by 'UNKNOWN' global value imported from the `BiblioParsing` package. 
+    by 'UNKNOWN' global value imported from the `biblioparsing` package. 
     The results are saved as openpyxl workbook formatted through the 
     `_format_and_save_add_if_dfs` internal function.
 
     Args:
-        add_if_params_list (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path) and the 4 digits year of the corpus (str).
+        add_if_params_list (list): The list composed of the 4 digits year of the corpus (str), \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of \
+        the Institute's organization and of the full path to working folder (path).
         paths_list (list): The list composed of the full path to get the corpus data, \
         the full path to save the corpus data with the impact-factors information added, \
         the full path to save the missing ISSNs information and \
@@ -674,7 +672,7 @@ def add_if(add_if_params_list, paths_list):
         (bool):  Completion status of the impact-factors data (True if complete).
     """
     # Setting parameters values from fct_params_list
-    institute, org_tup, wf_path, corpus_year = add_if_params_list
+    corpus_year, institute, org_tup, wf_path = add_if_params_list
 
     # Setting parameters from args
     in_file_path = paths_list[0]
@@ -689,7 +687,7 @@ def add_if(add_if_params_list, paths_list):
      corpus_year_if_col) = [add_ifs_col_dic[key] for key in init_col_keys]
 
     # Setting particular words list for empty values
-    empty_kws_list = [bp.UNKNOWN, bm_pg.NOT_AVAILABLE]
+    empty_kws_list = [bm_pg.UNKNOWN, bm_pg.NOT_AVAILABLE]
 
     # Cleaning IFs data
     return_tup = _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic,
@@ -701,11 +699,11 @@ def add_if(add_if_params_list, paths_list):
 
     # Building the IF dict keyed by issn or e-issn of journals for the most recent year
     most_recent_year_if_dict = _build_if_dict(if_dict, if_most_recent_year,
-                                              add_ifs_col_dic, bp.UNKNOWN)
+                                              add_ifs_col_dic, bm_pg.UNKNOWN)
 
     # Cleaning corpus data
-    corpus_df, inst_issn_df = _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup,
-                                               bp.UNKNOWN)
+    corpus_df, institute_issn_df = _clean_corpus_df(in_file_path, if_dict, add_ifs_col_tup,
+                                                    bm_pg.UNKNOWN)
 
     # Adding IFs cols to 'corpus_df'
     if_dicts_list = [if_dict, most_recent_year_if_dict]
@@ -726,8 +724,8 @@ def add_if(add_if_params_list, paths_list):
 
     # Removing from 'year_if_df' the rows which ISSN value is not in IF database
     # and keeping them in 'year_missing_issn_df'
-    return_tup = _build_missing_issn_and_if_df(year_if_df, inst_issn_df,
-                                               add_ifs_col_dic, bp.UNKNOWN)
+    return_tup = _build_missing_issn_and_if_df(year_if_df, institute_issn_df,
+                                               add_ifs_col_dic, bm_pg.UNKNOWN)
     year_missing_issn_df, year_missing_if_df = return_tup
 
     if_database_complete = True
@@ -735,12 +733,12 @@ def add_if(add_if_params_list, paths_list):
         if_database_complete = False
     else:
         # replace remaining unknown IF values by 'bm_pg.OUTSIDE_ANALYSIS' value
-        corpus_df = corpus_df.replace({most_recent_year_if_col: bp.UNKNOWN,
-                                       corpus_year_if_col: bp.UNKNOWN},
+        corpus_df = corpus_df.replace({most_recent_year_if_col: bm_pg.UNKNOWN,
+                                       corpus_year_if_col: bm_pg.UNKNOWN},
                                       bm_pg.OUTSIDE_ANALYSIS)
 
     # Formatting and saving the built dataframes as openpyxl workbooks
     dfs_list = [corpus_df, year_missing_issn_df, year_missing_if_df]
     _format_and_save_add_if_dfs(dfs_list, paths_list[1:], corpus_year, add_ifs_col_dic,
-                                bp.UNKNOWN)
+                                bm_pg.UNKNOWN)
     return if_database_complete

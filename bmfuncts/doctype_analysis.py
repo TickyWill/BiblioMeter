@@ -11,7 +11,6 @@ from pathlib import Path
 
 # 3rd party imports
 import pandas as pd
-import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -26,7 +25,7 @@ from bmfuncts.useful_functs import concat_dfs
 
 
 def _set_doctype_files_params(wf_path, corpus_year):
-    """Sets doctype analysis specific files and folder paths. 
+    """Sets doctype analysis specific files and folder paths.
 
     Args:
         wf_path (path): Full path to working folder.
@@ -155,7 +154,7 @@ def _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year):
                              'journal_col'            : final_col_dic['journal'],
                              'issn_col'               : final_col_dic['issn'],
                              'doctype_col'            : final_col_dic['doc_type'],
-                             'journal_norm_col'       : bp.COL_NAMES['temp_col'][1],
+                             'journal_norm_col'       : bm_pg.COL_NAMES['temp_col'][1],
                              'pub_ids_col'            : bm_pg.COL_NAMES_BONUS["pub_ids list"],
                              'most_recent_year_if_col': most_recent_year_if_col,
                              'corpus_year_if_col'     : corpus_year_if_col,
@@ -184,7 +183,7 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
         issn = issn_df[issn_col].to_list()[0]
         journal_names_list = issn_df[journal_col].to_list()
         if len(journal_names_list)>1:
-            if issn!=bp.UNKNOWN:
+            if issn!=bm_pg.UNKNOWN:
                 journal_length_list = [len(journal) for journal in journal_names_list]
                 journal_names_dict = dict(zip(journal_length_list, journal_names_list))
                 length_min = min(journal_length_list)
@@ -199,29 +198,27 @@ def _unique_journal_name(init_analysis_df, journal_col, issn_col):
     return analysis_df
 
 
-def _read_articles_data(wf_path, final_results_path, corpus_year):
+def _read_parsing_pub_data(dedup_read_params):
     """Reads saved data of publications list resulting from the parsing step.
 
     It uses the `read_final_dedup` function imported from 
-    the `bmfuncts.useful_functs` module.
+    the `bmfuncts.read_final_results` module.
 
     Args:
-        wf_path (path): Full path to working folder.
-        final_results_path (path): Full path to the folder \
+        dedup_read_params (list): Composed of the 4 digits year of the corpus, \
+        of the full path to working folder, of the dict giving the name of \
+        the parsing file for each parsed item and of the full path to the folder \
         where final results are saved.
-        corpus_year (str): 4 digits year of the corpus.
     Returns:
         (dataframe): The data of the publications list.
     """
-    # Setting useful aliases
-    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
-
     # Getting the dict of deduplication results
-    dedup_parsing_dict = read_final_dedup(wf_path, final_results_path, corpus_year)
+    dedup_parsing_dict = read_final_dedup(dedup_read_params)
 
-    # Getting ID of each author with author name
-    articles_df = dedup_parsing_dict[articles_item_alias]
-    return articles_df
+    # Getting ID of each publication with associated main metadata
+    parsing_pub_key = bm_pg.PARSING_KEYS_DIC['parsing_pub']
+    parsing_pub_df = dedup_parsing_dict[parsing_pub_key]
+    return parsing_pub_df
 
 
 def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
@@ -252,7 +249,8 @@ def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
         by the data (dataframe) built for each document type.
     """
     # Setting parameters values from data_params_list
-    wf_path, datatype, corpus_year = data_params_list
+    (corpus_year, wf_path, datatype, parsing_filenames_dict,
+     final_results_path) = data_params_list
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
@@ -269,13 +267,13 @@ def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
     journal_col, doctype_col, issn_col, journal_norm_col = sub_cols_list[1:]
 
     # Getting articles data resulting from deduplication parsing
-    parsing_articles_df = _read_articles_data(wf_path,
-                                              final_results_path, corpus_year)
+    dedup_read_params = [corpus_year, parsing_filenames_dict, final_results_path]
+    parsing_pub_df = _read_parsing_pub_data(dedup_read_params)
 
     # Building the dict {journal name : normalized journal name,}
     # from the deduplication results
-    journal_norm_dict = dict(zip(parsing_articles_df[journal_col],
-                                 parsing_articles_df[journal_norm_col]))
+    journal_norm_dict = dict(zip(parsing_pub_df[journal_col],
+                                 parsing_pub_df[journal_norm_col]))
 
     # Initializing the data to be analyzed
     pub_df = read_final_pub_list_data(final_results_path,
@@ -335,7 +333,7 @@ def _set_by_issn_df(by_doc_df, idx_doc, issn, dg, drop_dup_cols,
 
     # Managing unknown IF
     ifs_list = list(set(dg[if_analysis_col].tolist()))
-    ifs_new_list = [x for x in ifs_list if x!=bp.UNKNOWN]
+    ifs_new_list = [x for x in ifs_list if x!=bm_pg.UNKNOWN]
     if_value = bm_pg.NOT_AVAILABLE
     if ifs_new_list:
         if_value = ifs_new_list[0]
@@ -382,7 +380,7 @@ def _build_doctype_stat(doctype_df, doctype_col_keys_tup, doctype_cols_dic):
     by_doc_df = pd.DataFrame(columns=cols_list)
     idx_doc = 0
     for issn, issn_dg in doctype_df.groupby(issn_col):
-        if bp.UNKNOWN in issn:
+        if bm_pg.UNKNOWN in issn:
             issn = bm_pg.NOT_AVAILABLE
             for doc, doc_dg in issn_dg.groupby(journal_norm_col):
                 norm_doc = doc
@@ -499,7 +497,7 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
     return by_journal_dict, doctypes_analysis_folder_path
 
 
-def doctype_analysis(params_list, if_most_recent_year, progress_callback=None):
+def doctype_analysis(doc_params_list, if_most_recent_year, progress_callback=None):
     """Performs the analysis per documents-types of the Institute 
     publications of the 'year' corpus.
 
@@ -517,7 +515,7 @@ def doctype_analysis(params_list, if_most_recent_year, progress_callback=None):
     `bmfuncts.save_final_results` module.
 
     Args:
-        params_list (list):  The list composed of the Institute name (str), \
+        doc_params_list (list):  The list composed of the Institute name (str), \
         the org_tup (tup) that contains parameters of Institute organization, \
         the full path to working folder (path), the data combination type \
         of corpuses databases (str) and the 4 digits year of the corpus (str).
@@ -533,8 +531,9 @@ def doctype_analysis(params_list, if_most_recent_year, progress_callback=None):
         4 digits-year (str) of IFs analysis, Full path to the folder \
         where IFs analysis final results are saved).
     """
-    # Setting params values from params_list
-    institute, org_tup, wf_path, datatype, _, corpus_year = params_list
+    # Setting params values from doc_params_list
+    (corpus_year, institute, org_tup, wf_path, datatype,
+     parsing_filenames_dict, final_results_path) = doc_params_list
 
     # Setting useful columns info
     return_tup = _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year)
@@ -543,7 +542,7 @@ def doctype_analysis(params_list, if_most_recent_year, progress_callback=None):
     doctype_cols_tup = (doctype_cols_dic, depts_col_list)
 
     # Building the dataframe of publications data to be analyzed
-    data_params_list = [wf_path, datatype, corpus_year]
+    data_params_list = [corpus_year, wf_path, datatype, parsing_filenames_dict, final_results_path]
     pub_df_dict = _build_doctype_analysis_data(data_params_list, doctype_cols_tup)
     if progress_callback:
         progress_callback(20)
@@ -558,7 +557,8 @@ def doctype_analysis(params_list, if_most_recent_year, progress_callback=None):
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
     results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
     results_to_save_dict["doctypes"] = True
-    _ = save_final_results(params_list, results_to_save_dict)
+    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
+    save_final_results(save_params_list, results_to_save_dict)
     if progress_callback:
         progress_callback(50)
     final_return_tup = (pub_df_dict, by_journal_dict, if_analysis_col,

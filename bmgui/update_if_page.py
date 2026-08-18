@@ -78,7 +78,7 @@ def _launch_update_if_db(self, master, progress_callback):
     Returns:
         (bool): Status of impact-factors database.
     """
-    print_step_title("UPDATING IMPACT-FACTORS DATA FILE", master.print_params)
+    print_step_title("TRY OF UPDATE OF IMPACT-FACTORS DATA OF JOURNALS", master.print_params)
     # Setting files parameters
     if_file_name = self.files_list[0]
     pub_list_folder = self.folders_list[0]
@@ -100,6 +100,7 @@ def _launch_update_if_db(self, master, progress_callback):
                     " \n\nEffectuer la mise à jour ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
+            print_step_text("  - Confirmed update try", master.print_params)
             progress_callback(15)
             # Mise à jour de la base de données des IFs
             update_db_params_list = [master.institute, master.org_tup, master.wf_path,
@@ -116,7 +117,7 @@ def _launch_update_if_db(self, master, progress_callback):
             messagebox.showinfo(info_title, info_text)
             update_status = True
         else:
-            print_step_text("  - Update of IFs-data file cancelled", master.print_params)
+            print_step_text("  - Update try cancelled by the user", master.print_params)
             progress_callback(100)
             # Arrêt de la procédure
             info_title = "- Information -"
@@ -124,7 +125,7 @@ def _launch_update_if_db(self, master, progress_callback):
             messagebox.showwarning(info_title, info_text)
             update_status = False
     else:
-        print_step_text("  - Update of IFs data file aborted because of IFs file missing",
+        print_step_text("  - Update try cancelled because of journals-IFs file is missing",
                         master.print_params)
         progress_callback(100)
         warning_title = "!!! ATTENTION : fichier absent !!!"
@@ -153,7 +154,7 @@ def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress
     Args:
         master (class): `bmgui.main_page.AppMain` class.
         if_tup (tup): (year of the missing publications list (str),\
-        status of IFs database (bool), unused parameter).
+        status of IFs data per journals (bool), unused parameter).
         all_years_list_folder (str): The folder name where \
         concatenation of all-years publications lists is saved.
         progress_callback (function): Function for updating \
@@ -161,12 +162,12 @@ def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress
     Returns:
         (bool): Status of impact-factors database.
     """
-    missing_pub_file_year, if_database_complete, _ = if_tup
-    if not missing_pub_file_year:
+    missing_pub_file_years_list, if_database_complete, _ = if_tup
+    if not missing_pub_file_years_list:
         print_step_text("  - IFs updated in all consolidated lists of publications",
                         master.print_params)
         if bm_pg.LISTES_CONCAT:
-            concatenate_pub_lists(master.wf_path, master.print_params, master.years_list)
+            concatenate_pub_lists(master.print_params, master.wf_path, master.years_list)
             print_step_text("  - Consolidated lists of publications concatenated after IFs update",
                             master.print_params)
         progress_callback(100)
@@ -196,14 +197,15 @@ def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress
 
     else:
         step_text = ("  - IFs updated in some consolidated lists of publications "
-                     "but interrupted because of missing of a consolidated list file")
+                     "but interrupted because of missing of the consolidated-list "
+                     f"files of {missing_pub_file_years_list}")
         print_step_text(step_text, master.print_params)
         progress_callback(100)
         info_title = '- Information -'
         info_text = ("La mise à jour des IFs a été effectuée dans une partie des listes "
                      "consolidées existantes mais a été interrompue par l'absence "
-                     "de la liste consolidée des publications du corpus :"
-                     f" {missing_pub_file_year}")
+                     "de la liste consolidée des publications des corpus :"
+                     f" {missing_pub_file_years_list}")
         messagebox.showinfo(info_title, info_text)
 
 
@@ -239,6 +241,85 @@ def _set_year_files_params(wf_path, corpus_year, names_tup):
     return paths_tup
 
 
+def _update_year_pub_if(master, corpus_year, names_tup, progress_params):
+    print(f"      {corpus_year}...", end="\r")
+    # Setting parameters value from 'progress_params'
+    progress_callback, progress_bar_loop_progression, progress_bar_state = progress_params
+
+    # Setting corpus dependant paths
+    return_tup = _set_year_files_params(master.wf_path, corpus_year, names_tup)
+    (year_pub_list_folder_path, pub_list_file_path,
+     missing_issn_path, missing_if_path) = return_tup
+
+    # Setting default value for returned parameters
+    if_database_complete, missing_pub_file_year = None, None
+
+    # Checking availability of publications-list file of the year
+    out_file_status = os.path.exists(pub_list_file_path)
+    if out_file_status:
+        # Updating Impact Factors and saving new consolidated list of publications
+        # this also for saving results files to complete IFs data per journals
+        paths_list = [pub_list_file_path, pub_list_file_path, missing_issn_path, missing_if_path]
+        ifs_params_list = [corpus_year, master.institute, master.org_tup, master.wf_path]
+        if_database_complete = add_if(ifs_params_list, paths_list)
+
+        # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
+        split_pub_list_by_doc_type(ifs_params_list)
+
+        # Saving pub list as final result
+        save_params_list = [corpus_year, master.institute, master.org_tup, master.wf_path,
+                            master.datatype]
+        status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+        results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
+        results_to_save_dict["pub_lists"] = True
+        if_analysis_name = None
+        save_final_results(save_params_list, results_to_save_dict, if_analysis_name)
+        step_txt = f"      - {corpus_year} updated and saved "
+        if if_database_complete:
+            step_txt += "with complete IFs data per journals"
+        else:
+            step_txt += "with partial IFs data per journals"
+        print_step_text(step_txt, master.print_params)
+
+        # Updating progress bar state
+        progress_bar_state += progress_bar_loop_progression
+        progress_callback(progress_bar_state)
+
+        if not if_database_complete:
+            info_title = "- Information -"
+            info_text = ("La base de données des facteurs d'impact étant incomplète, "
+                         "les listes des journaux avec IFs ou ISSNs inconnus "
+                         f"ont été créées dans le dossier \n\n '{year_pub_list_folder_path}' "
+                         "\n\nsous les noms :"
+                         f"\n\n '{missing_if_path}' "
+                         f"\n\n '{missing_issn_path}' "
+                         "\n\n Ces fichiers peuvent être modifiés pour compléter "
+                         "la base de donnée des IFs :"
+                         "\n\n1- Ouvrez chacun de ces fichiers, "
+                         "\n2- Complétez manuellement les IFs inconnus ou les ISSNs "
+                         "et IFs inconnus, selon le fichier,"
+                         "\n3- Puis sauvegardez les fichiers sous le même nom."
+                         "\n\nChaque fois que ces compléments sont apportés, "
+                         "la base de données des IFs doit être mise à jour, "
+                         "ainsi que toutes les listes consolidées des publications existantes."
+                         "\n\nCependant, la mise à jour va être poursuivie avec la base "
+                         "de données des IFs incomplète.")
+            messagebox.showinfo(info_title, info_text)
+    else:
+        print_step_text(f"      - {corpus_year} update cancelled because of missing publications list",
+                        master.print_params)
+        progress_bar_state = 90
+        warning_title = "!!! ATTENTION : fichier absent !!!"
+        warning_text = ("La liste consolidée des publications du corpus "
+                        f"de l'année {corpus_year} "
+                        "\nn'est pas disponible à l'emplacement attendu. "
+                        "\n1- Relancer la consolidation annuelle pour ce corpus ;"
+                        "\n2- Puis relancez la mise à jour des IFs des listes consolidées.")
+        messagebox.showwarning(warning_title, warning_text)
+        missing_pub_file_year = corpus_year
+    return if_database_complete, missing_pub_file_year, progress_bar_state
+
+
 def _update_pub_if(self, master, progress_callback):
     """Updates impact factors of publications final list of the corpuses years.
 
@@ -254,95 +335,28 @@ def _update_pub_if(self, master, progress_callback):
     Returns:
         (bool): Status of impact-factors database.
     """
+    print_step_text(f"\nTrying to update IFs in publications list of {master.years_list} years...",
+                    master.print_params)
+
     # Setting files parameters
     [_, pub_list_file_base, missing_if_base, missing_issn_base] = self.files_list
     pub_list_folder = self.folders_list[0]
     all_years_list_folder = self.folders_list[1]
-    names_tup = (pub_list_folder, pub_list_file_base,
-                 missing_if_base, missing_issn_base)
+    names_tup = (pub_list_folder, pub_list_file_base, missing_if_base, missing_issn_base)
     progress_callback(5)
     progress_bar_state = 5
     progress_bar_loop_progression = 90 // len(master.years_list)
 
     if_database_complete = None
-    missing_pub_file_year = None
-    print_step_text(f"\nTrying to updated IFs in publications list of {master.years_list} years...",
-                    master.print_params)
+    missing_pub_file_years_list = []
     for corpus_year in master.years_list:
-        print(f"      {corpus_year}...", end="\r")
-        # Setting corpus dependant paths
-        return_tup = _set_year_files_params(master.wf_path, corpus_year, names_tup)
-        (year_pub_list_folder_path, pub_list_file_path,
-         missing_issn_path, missing_if_path) = return_tup
-
-        # Checking availability of publications-list file of the year
-        out_file_status = os.path.exists(pub_list_file_path)
-        if out_file_status:
-
-            # Updating Impact Factors and saving new consolidated list of publications
-            # this also for saving results files to complete IFs database
-            paths_list = [pub_list_file_path, pub_list_file_path,
-                         missing_issn_path, missing_if_path]
-            sub_params_list = [master.institute, master.org_tup,
-                               master.wf_path, corpus_year]
-            if_database_complete = add_if(sub_params_list, paths_list)
-
-            # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
-            split_pub_list_by_doc_type(sub_params_list)
-
-            # Saving pub list as final result
-            params_list = [master.institute, master.org_tup, master.wf_path,
-                           master.datatype, master.print_params, corpus_year]
-            status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
-            results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
-            results_to_save_dict["pub_lists"] = True
-            if_analysis_name = None
-            _ = save_final_results(params_list, results_to_save_dict, if_analysis_name)
-            step_txt = f"      - {corpus_year} updated and saved "
-            if if_database_complete:
-                step_txt += "with complete IFs data"
-            else:
-                step_txt += "with partial IFs data"
-            print_step_text(step_txt, master.print_params)
-
-            # Updating progress bar state
-            progress_bar_state += progress_bar_loop_progression
-            progress_callback(progress_bar_state)
-
-            if not if_database_complete:
-                info_title = "- Information -"
-                info_text = ("La base de données des facteurs d'impact étant incomplète, "
-                             "les listes des journaux avec IFs ou ISSNs inconnus "
-                             f"ont été créées dans le dossier \n\n '{year_pub_list_folder_path}' "
-                             "\n\nsous les noms :"
-                             f"\n\n '{missing_if_path}' "
-                             f"\n\n '{missing_issn_path}' "
-                             "\n\n Ces fichiers peuvent être modifiés pour compléter "
-                             "la base de donnée des IFs :"
-                             "\n\n1- Ouvrez chacun de ces fichiers, "
-                             "\n2- Complétez manuellement les IFs inconnus ou les ISSNs "
-                             "et IFs inconnus, selon le fichier,"
-                             "\n3- Puis sauvegardez les fichiers sous le même nom."
-                             "\n\nChaque fois que ces compléments sont apportés, "
-                             "la base de données des IFs doit être mise à jour, "
-                             "ainsi que toutes les listes consolidées des publications existantes."
-                             "\n\nCependant, la mise à jour va être poursuivie avec la base "
-                             "de données des IFs incomplète.")
-                messagebox.showinfo(info_title, info_text)
-        else:
-            print_step_text(f"      - {corpus_year} update aborted because of missing publications list",
-                            master.print_params)
-            progress_bar_state = 100
-            warning_title = "!!! ATTENTION : fichier absent !!!"
-            warning_text = ("La liste consolidée des publications du corpus "
-                            f"de l'année {corpus_year} "
-                            "\nn'est pas disponible à l'emplacement attendu. "
-                            "\n1- Relancer la consolidation annuelle pour ce corpus ;"
-                            "\n2- Puis relancez la mise à jour des IFs des listes consolidées.")
-            messagebox.showwarning(warning_title, warning_text)
-            missing_pub_file_year = corpus_year
+        progress_params = [progress_callback, progress_bar_loop_progression, progress_bar_state]
+        year_return_tup = _update_year_pub_if(master, corpus_year, names_tup, progress_params)
+        if_database_complete, missing_pub_file_year, progress_bar_state = year_return_tup
+        if missing_pub_file_year:
+            missing_pub_file_years_list.append(missing_pub_file_year)
         progress_callback(progress_bar_state)
-    if_tup = missing_pub_file_year, if_database_complete, progress_bar_state
+    if_tup = missing_pub_file_years_list, if_database_complete, progress_bar_state
     _set_if_update_final_message(master, if_tup, all_years_list_folder, progress_callback)
 
 
@@ -357,8 +371,11 @@ def _launch_update_pub_if(self, master, progress_callback):
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     """
-    print_step_title("UPDATING IMPACT-FACTORS IN CONSOLIDATED LISTS OF PUBLICATIONS", master.print_params)
+    print_step_title("TRY of IMPACT-FACTORS UPDATE IN CONSOLIDATED LISTS OF PUBLICATIONS",
+                     master.print_params)
     if self.if_db_update_status:
+        print_step_text("  - Try with an updated IFs data per journals",
+                        master.print_params)
         _update_pub_if(self, master, progress_callback)
         progress_callback(100)
     else:
@@ -376,10 +393,12 @@ def _launch_update_pub_if(self, master, progress_callback):
                     " \n\nEffectuer la mise à jour ?")
         answer = messagebox.askokcancel(ask_title, ask_text)
         if answer:
+            print_step_text("  - Confirmed try without update of IFs data per journals",
+                            master.print_params)
             _update_pub_if(self, master, progress_callback)
             progress_callback(100)
         else:
-            print_step_text("  - IFs update in consolidated lists of publications cancelled",
+            print_step_text("  - Cancelled try without update of IFs data per journals",
                             master.print_params)
             progress_callback(100)
             info_title = '- Information -'
@@ -410,7 +429,7 @@ def create_update_ifs(self, master, page_name):
 
     # ****************************** GENERAL SETTNGS
 
-    # Initializing update status of IFs database
+    # Initializing update status of IFs data per journals
     self.if_db_update_status = False
 
     # Creating and setting widgets for page title and exit button
@@ -459,7 +478,7 @@ def create_update_ifs(self, master, page_name):
     def _launch_update_pub_if_try(progress_callback):
         _launch_update_pub_if(self, master, progress_callback)
 
-        # Re-initializing status of IFs database update
+        # Re-initializing update status of IFs data per journals
         self.if_db_update_status = False
         self.progress_bar.place_forget()
 

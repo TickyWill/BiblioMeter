@@ -10,6 +10,7 @@ from bmfuncts.useful_functs import *
 from bmfuncts.employees_globals import *
 from bmfuncts.pub_globals import *
 from bmfuncts.rename_cols import *
+from bmfuncts.parse_data import *
 from bmfuncts.build_otps_info import *
 from bmfuncts.correct_parsing import *
 from bmfuncts.correct_dedup import *
@@ -26,7 +27,7 @@ from bmfuncts.consolidate_pub_list import *
 from bmfuncts.update_impact_factors import *
 from bmfuncts.authors_analysis import *
 from bmfuncts.build_pub_addresses import *
-from bmfuncts.build_institutions_stat import *
+from bmfuncts.build_affiliations_stat import *
 from bmfuncts.build_geo_stat import *
 from bmfuncts.coupling_analysis import *
 from bmfuncts.keywords_analysis import *

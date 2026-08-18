@@ -1,7 +1,7 @@
 {
     "Description": [
-        "The field 'PARSING_FOLDER_ARCHI' sets the default architecture of the working folder for BiblioParsing.",
-        "The field 'PARSING_FILE_NAMES' sets the default file names for each of the parsed items."
+        "The field 'PARSING_FOLDER_ARCHI' sets the architecture of the working folder for parsing steps.",
+        "The field 'PARSING_FILE_NAMES' sets the file names for each of the parsed items."
     ],
     "PARSING_FOLDER_ARCHI": {
         "folder_root": "BiblioParsing_Files",
@@ -36,5 +36,5 @@
         "references"            : "references",
 		"norm_institutions"     : "addressesnorminst",
         "raw_institutions"      : "addressesrawinst"
-    }
+    }  
 }

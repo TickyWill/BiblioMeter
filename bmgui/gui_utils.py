@@ -30,13 +30,10 @@ from pathlib import Path
 from tkinter import font as tkFont
 from tkinter import messagebox
 
-# 3rd party imports
-import BiblioParsing as bp
-
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
-from bmfuncts.config_utils import set_user_config
+from bmfuncts.config_utils import set_rawdata_and_parsing_paths
 
 
 def disable_buttons(buttons_list):
@@ -59,7 +56,7 @@ def show_frame(self, page_name):
 
 def font_size(size, scale_factor):
     """Sets the font-size based on scale_factor.
-    
+
     If the font-size is less than minimum_size, 
     it is set to the minimum size.
     """
@@ -359,11 +356,11 @@ def existing_corpuses(wf_path, corpuses_number=None):
         return rawdata_path / Path(filenames_list[0])
 
     def _get_parsing_file_paths(parsing_path):
-        """Returns the full path to the file named 'articles_item_alias' 
+        """Returns the full path to the file named through 'pub_item' 
         given the full path to the parsing folder 'parsing_path' 
         and the extension 'parsing_save_extent' of the file.
         """
-        file_name = articles_item_alias + "." + parsing_save_extent
+        file_name = pub_item + "." + parsing_save_extent
         parsing_file_path = parsing_path / Path(file_name)
         return parsing_file_path
 
@@ -374,11 +371,11 @@ def existing_corpuses(wf_path, corpuses_number=None):
 
     # Setting the files type of raw data and saved parsing results
     parsing_save_extent = bm_pg.TSV_SAVE_EXTENT
-    wos_rawdata_extent = bp.WOS_RAWDATA_EXTENT
-    scopus_rawdata_extent = bp.SCOPUS_RAWDATA_EXTENT
+    wos_rawdata_extent = bm_pg.WOS_RAWDATA_EXTENT
+    scopus_rawdata_extent = bm_pg.SCOPUS_RAWDATA_EXTENT
 
     # Setting articles item alias for checking availability of parsing
-    articles_item_alias = bp.PARSING_ITEMS_LIST[0]
+    pub_item = bm_pg.PARSING_KEYS_CONVERT_DIC['pub']
 
     # Initialization of lists
     years_list = []
@@ -389,10 +386,9 @@ def existing_corpuses(wf_path, corpuses_number=None):
     dedup_parsing_list = []
 
     for year in years_folder_list:
-
         # Getting the full paths of the working folder architecture for the corpus "year"
-        config_tup = set_user_config(wf_path, year, bm_pg.BDD_LIST)
-        rawdata_path_dict, parsing_path_dict = config_tup[0], config_tup[1]
+        rawdata_path_dict, parsing_path_dict = set_rawdata_and_parsing_paths(wf_path, year,
+                                                                             bm_pg.BDD_LIST)
 
         # Setting useful paths for database 'database_type'
         scopus_rawdata_path = rawdata_path_dict["scopus"]
@@ -404,24 +400,24 @@ def existing_corpuses(wf_path, corpuses_number=None):
         years_list.append(year)
 
         # Wos
-        database_type = bp.WOS
+        database_type = bm_pg.WOS
         wos_rawdata_file_path = _get_rawdata_file_path(wos_rawdata_path,
                                                        wos_rawdata_extent)
-        wos_parsing_articles_path = _get_parsing_file_paths(wos_parsing_path)
+        pub_wos_parsing_path = _get_parsing_file_paths(wos_parsing_path)
         wos_rawdata_list.append(wos_rawdata_file_path.is_file())
-        wos_parsing_list.append(wos_parsing_articles_path.is_file())
+        wos_parsing_list.append(pub_wos_parsing_path.is_file())
 
         # Scopus
-        database_type = bp.SCOPUS
+        database_type = bm_pg.SCOPUS
         scopus_rawdata_file_path = _get_rawdata_file_path(scopus_rawdata_path,
                                                           scopus_rawdata_extent)
-        scopus_parsing_articles_path = _get_parsing_file_paths(scopus_parsing_path)
+        pub_scopus_parsing_path = _get_parsing_file_paths(scopus_parsing_path)
         scopus_rawdata_list.append(scopus_rawdata_file_path.is_file())
-        scopus_parsing_list.append(scopus_parsing_articles_path.is_file())
+        scopus_parsing_list.append(pub_scopus_parsing_path.is_file())
 
         # Concatenation and deduplication
-        dedup_parsing_articles_path = _get_parsing_file_paths(dedup_parsing_path)
-        dedup_parsing_list.append(dedup_parsing_articles_path.is_file())
+        pub_dedup_parsing_path = _get_parsing_file_paths(dedup_parsing_path)
+        dedup_parsing_list.append(pub_dedup_parsing_path.is_file())
 
     return (years_list, wos_rawdata_list, wos_parsing_list,
             scopus_rawdata_list, scopus_parsing_list, dedup_parsing_list)

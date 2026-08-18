@@ -1,6 +1,8 @@
-git+https://github.com/TickyWill/BiblioParsing.git@main
-auto_py_to_exe==2.42.0
+git+https://github.com/TickyWill/BiblioParsing.git@python_version_update
 notebook==6.4.4
+numpy==1.26.3
+openpyxl==3.1.2
+pandas==2.1.4
 screeninfo==0.8.1
 sphinx==7.4.7
 sphinx_rtd_theme==3.0.1

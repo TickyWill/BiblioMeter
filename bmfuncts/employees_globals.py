@@ -2,8 +2,7 @@
 
 """
 
-__all__ = [
-           'CATEGORIES_DIC',
+__all__ = ['CATEGORIES_DIC',
            'EMPLOYEES_ADD_COLS',
            'EMPLOYEES_ARCHI',
            'EMPLOYEES_COL_TYPES',
@@ -15,6 +14,7 @@ __all__ = [
            'STATUS_DIC',
            'SEARCH_DEPTH',
           ]
+
 
 SEARCH_DEPTH = 10
 

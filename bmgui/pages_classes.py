@@ -12,8 +12,8 @@ __all__ = ['AnalyzeCorpusPage',
 
 
 # Standard library imports
+import datetime
 import tkinter as tk
-from datetime import datetime
 from tkinter import messagebox
 from tkinter import font as tkFont
 
@@ -22,10 +22,12 @@ import bmfuncts.pub_globals as bm_pg
 import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
+from bmfuncts.config_utils import set_affil_params
 from bmfuncts.config_utils import set_org_params
+from bmfuncts.config_utils import set_parsing_items_params
+from bmfuncts.parse_data import set_rawdata
 from bmfuncts.useful_functs import print_to_console
 from bmfuncts.useful_functs import print_to_log
-from bmfuncts.useful_functs import set_rawdata
 from bmgui.analyze_corpus_page import create_analysis
 from bmgui.consolidate_corpus_page import create_consolidate_corpus
 from bmgui.parse_corpus_page import create_parsing_concat
@@ -130,13 +132,33 @@ class SetLaunchButton:
         Args:
             master (class): `bmgui.main_page.AppMain` class.
         """
-        if master.wf_path=='':
-            warning_title = "!!! Attention !!!"
-            warning_text =  ("Chemin non renseigné."
-                             "\nL'application ne peut pas être lancée."
-                             "\nVeuillez le définir.")
-            messagebox.showwarning(warning_title, warning_text)
+        # Setting run info
+        run_date_time = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
+        master.log_file = f"{run_date_time.replace(' ', '_')}_{bm_pg.LOG_FILE}"
+        log_title = f"BM ANALYSIS FOR {master.institute}"
+        print_txt = f"\n\n    Date            : {run_date_time}"
 
+        if not master.datatype:
+            print_txt += ("\n    Data combination type not yet selected"
+                          "\n    Log file not yet created")
+            print_to_console(log_title, print_txt)
+            warning_title = "!!! ATTENTION !!!"
+            warning_text = ("Type de données non selectionné."
+                            "\nL'application ne peut pas être lancée."
+                            "\nVeuillez le sélectionner avant de lancer l'application.")
+            messagebox.showwarning(warning_title, warning_text)
+        else:
+            print_txt += f"\n    Data combination: {master.datatype}"
+
+        if not master.wf_path:
+            print_txt += ("\n    Working folder not yet defined"
+                          "\n    Log file not yet created")
+            print_to_console(log_title, print_txt)
+            warning_title = "!!! ATTENTION !!!"
+            warning_text = ("Chemin non renseigné."
+                            "\nL'application ne peut pas être lancée."
+                            "\nVeuillez le définir avant de lancer l'application.")
+            messagebox.showwarning(warning_title, warning_text)
         else:
             master.wf_root_path = master.wf_path.parent
             if master.set_inst_param:
@@ -148,25 +170,36 @@ class SetLaunchButton:
                                                            bm_gg.CORPUSES_NUMBER)
 
             # Printing run info to console and log file
-            run_date_time = str(datetime.now())[:16]
-            run_date, run_time = run_date_time.split(" ")
-            master.log_file = f"{run_date}_{run_time.replace(':', '-')}_{bm_pg.LOG_FILE}"
             master.print_params = [master.log_file, bm_pg.LOG_FOLDER, master.wf_path]
-            log_title = f"BM ANALYSIS FOR {master.institute}"
-            print_txt = (f"\n\n    Working folder  : {master.wf_path}"
-                         f"\n    Data combination: {master.datatype}"
-                         f"\n    Corpus list     : {master.years_list}"
-                         f"\n    Date            : {run_date} {run_time}")
+            print_txt += (f"\n    Working folder  : {master.wf_path}"
+                          f"\n    Corpus list     : {master.years_list}")
 
             print_to_console(log_title, print_txt)
             print_to_log(log_title, print_txt, master.print_params)
 
-            if master.datatype:
-                # Setting rawdata for datatype
-                for database in bm_pg.BDD_LIST:
-                    _ = set_rawdata(master.wf_path, master.datatype,
-                                    master.years_list, database)
+            # Setting affiliations parsing data
+            return_tup = set_affil_params(master.institute, master.wf_path)
+            (master.parse_affil_params_dic, master.dedup_affil_params_dic,
+             master.co_affil_params_dic) = return_tup
 
+            # Setting parsing items parameters
+            master.parsing_filenames_dict = set_parsing_items_params()
+
+            # Setting rawdata for datatype
+            set_rawdata_params = [master.print_params, master.wf_path,
+                                  master.datatype, master.years_list]
+            missing_rawdata_dic, rawdata_status = set_rawdata(set_rawdata_params)
+
+            if not rawdata_status:
+                warning_title = "!!! ATTENTION : Données indisponibles !!!"
+                warning_text = "Des extractions de bases de données sont manquantes.\n"
+                for db, db_info in missing_rawdata_dic.items():
+                    warning_text += (f"\n - {db_info[1]} manquent dans le dossier de {db}:\n"
+                                     f"    {db_info[0]}\n")
+                warning_text += ("\nL'application ne peut pas être lancée."
+                                 "\nVeuillez ajouter ces données avant de relancer l'application.")
+                messagebox.showwarning(warning_title, warning_text)
+            else:
                 # Setting existing corpuses status
                 files_status = bm_gu.existing_corpuses(master.wf_path)
                 master.list_corpus_year = files_status[0]
@@ -176,27 +209,27 @@ class SetLaunchButton:
                 master.list_scopus_parsing = files_status[4]
                 master.list_dedup = files_status[5]
 
-            # Creating two frames in the tk window
-            pagebutton_height = bm_gu.set_item_pos(master, bm_gg.PAGE_BUTTON_HEIGHT, 1)
-            pagebutton_frame = tk.Frame(master, bg='red',
-                                        height=pagebutton_height)
-            pagebutton_frame.pack(side="top", fill="both", expand=False)
+                # Creating two frames in the tk window
+                pagebutton_height = bm_gu.set_item_pos(master, bm_gg.PAGE_BUTTON_HEIGHT, 1)
+                pagebutton_frame = tk.Frame(master, bg='red',
+                                            height=pagebutton_height)
+                pagebutton_frame.pack(side="top", fill="both", expand=False)
 
-            page_frame = tk.Frame(master)
-            page_frame.pack(side="top", fill="both", expand=True)
-            page_frame.grid_rowconfigure(0, weight=1)
-            page_frame.grid_columnconfigure(0, weight=1)
+                page_frame = tk.Frame(master)
+                page_frame.pack(side="top", fill="both", expand=True)
+                page_frame.grid_rowconfigure(0, weight=1)
+                page_frame.grid_columnconfigure(0, weight=1)
 
-            self.frames = {}
-            for page in master.pages:
-                page_name = page.__name__
-                frame = page(master, pagebutton_frame, page_frame)
-                self.frames[page_name] = frame
+                self.frames = {}
+                for page in master.pages:
+                    page_name = page.__name__
+                    frame = page(master, pagebutton_frame, page_frame)
+                    self.frames[page_name] = frame
 
-                # Putting all the pages in the same location
-                # The one visible is the one on the top of the stacking order
-                frame.grid(row=0, column=0, sticky="nsew")
-            master.frames = self.frames
+                    # Putting all the pages in the same location
+                    # The one visible is the one on the top of the stacking order
+                    frame.grid(row=0, column=0, sticky="nsew")
+                master.frames = self.frames
 
 
 class PageButton(tk.Frame):

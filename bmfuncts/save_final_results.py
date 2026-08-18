@@ -8,7 +8,7 @@ __all__ = ['save_db_ids_data',
            'save_final_dedup',
            'save_final_doctypes',
            'save_final_ifs',
-           'save_final_institutions',
+           'save_final_affiliations',
            'save_final_kws',
            'save_final_hash_ids',
            'save_final_pub_lists',
@@ -27,7 +27,7 @@ import shutil
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
+#import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -105,7 +105,8 @@ def save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos):
     _save_item(item_df, item_filename_base, save_extent, target_parsing_path)
 
 
-def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_extent, dedup_infos=[]):
+def save_parsing_dict(parsing_dict, parsing_path, parsing_filenames_dict,
+                      save_extent, dedup_infos=[]):
     """Saves the data passed through the dict of parsing results 
     as files of a specified type.
 
@@ -118,7 +119,7 @@ def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_exten
         imported as bp and valued by the data (dataframes) of parsing results.
         parsing_path (path): Full path to the folder for saving \
         the parsing results.
-        item_filename_dict (dict): Dict keyed by the parsing items \
+        parsing_filenames_dict (dict): Dict keyed by the parsing items \
         and valued by the file names for saving the parsing results.
         save_extent (str): File type given by file extension without \
         the dot separator (ex: "xlsx" for Excel file type).
@@ -128,14 +129,13 @@ def save_parsing_dict(parsing_dict, parsing_path, item_filename_dict, save_exten
         4 digits year of the corpus (str) ] (default=[]).
     """
     # Cycling on parsing items
-    for item in bp.PARSING_ITEMS_LIST:
-        if item in parsing_dict.keys():
-            item_df = parsing_dict[item]
-            item_filename_base = item_filename_dict[item]
-            _save_item(item_df, item_filename_base, save_extent, parsing_path)
+    for item in bm_pg.PARSING_KEYS_DIC['parsing']:
+        item_df = parsing_dict[item]
+        item_filename_base = parsing_filenames_dict[item]
+        _save_item(item_df, item_filename_base, save_extent, parsing_path)
 
-            if dedup_infos:
-                save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
+        if dedup_infos:
+            save_final_dedup(item_df, item_filename_base, save_extent, dedup_infos)
 
 
 def save_fails_dict(fails_dict, parsing_path):
@@ -518,17 +518,17 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
-    # Setting useful aliases
-    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
-    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
-    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-
-    # Setting useful filenames dict
-    kw_item_alias_dict = {'AK' : auth_kw_item_alias,
-                          'IK' : index_kw_item_alias,
-                          'TK' : title_kw_item_alias,
-                         }
-
+#    # Setting useful aliases
+#    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
+#    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
+#    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
+#
+#    # Setting useful filenames dict
+#    kw_item_alias_dict = {'AK' : auth_kw_item_alias,
+#                          'IK' : index_kw_item_alias,
+#                          'TK' : title_kw_item_alias,
+#                         }
+#
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["keywords"]
 
@@ -550,7 +550,7 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
         os.makedirs(target_kws_folder_path)
 
     for dept in [institute] + depts_col_list:
-        for kw_type, _ in kw_item_alias_dict.items():
+        for kw_type in ['AK', 'IK', 'TK']:
             # Setting origin and target file paths
             dept_file_name = f'{dept} {corpus_year}-{kw_type}.xlsx'
             origin_dept_file_path = Path(origin_kws_folder_path) / Path(dept_file_name)
@@ -712,8 +712,8 @@ def save_final_institute_country(wf_path, corpus_year, results_folder_path, inst
     return end_message
 
 
-def save_final_institutions(wf_path, corpus_year, results_folder_path):
-    """Saves final results of publications per institution for the corpus year.
+def save_final_affiliations(wf_path, corpus_year, results_folder_path):
+    """Saves final results of publications per affiliation for the corpus year.
 
     Args:
         wf_path (path): Full path to working folder.
@@ -729,20 +729,20 @@ def save_final_institutions(wf_path, corpus_year, results_folder_path):
 
     # Setting aliases of common parts of file names
     origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    origin_inst_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    origin_affils_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
 
     # Setting common paths
     origin_corpus_year_path = wf_path / Path(corpus_year)
     origin_analysis_folder_path = origin_corpus_year_path / Path(origin_analysis_folder_alias)
-    origin_inst_folder_path = origin_analysis_folder_path / Path(origin_inst_folder_alias)
+    origin_affils_folder_path = origin_analysis_folder_path / Path(origin_affils_folder_alias)
     year_target_folder_path = results_folder_path / Path(corpus_year)
-    target_inst_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
+    target_affils_folder_path = year_target_folder_path / Path(results_sub_folder_alias)
 
     # Copying origin dir into target dir
-    shutil.copytree(origin_inst_folder_path, target_inst_folder_path, dirs_exist_ok=True)
+    shutil.copytree(origin_affils_folder_path, target_affils_folder_path, dirs_exist_ok=True)
 
-    end_message = (f"Final stat per institutions for year {corpus_year} saved in folder: "
-                   f"\n  '{target_inst_folder_path}'")
+    end_message = (f"Final stat per affiliation for year {corpus_year} saved in folder: "
+                   f"\n  '{target_affils_folder_path}'")
     return end_message
 
 
@@ -814,14 +814,15 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
     The results types are the following: publications lists, \
     impact factors, authors, keywords, countries and continents.
 
-    To do: Saving the results of co-publication with other institutions \
+    To do: Saving the results of co-publication with other affiliations \
     and publications per OTPs.
 
     Args:
-        params_list (list): The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        params_list (list): The list composed of the 4 digits year of \
+        the corpus (str), of the Institute's name (str), of the org_tup (tup) \
+        that contains parameters of Institute's organization, \
+        of the full path to working folder (path), and of the data combination type \
+        of corpus databases (str).
         results_to_save_dict (dict): Dict keyed by the type of results \
         to save and valued by saving status (bool; True if the type of \
         results should be saved).
@@ -835,7 +836,7 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
         the folder where final results have been saved.
     """
     # Setting parameters values from 'params_list'
-    institute, org_tup, wf_path, datatype, _, corpus_year = params_list
+    corpus_year, institute, org_tup, wf_path, datatype = params_list
 
     # Setting path for saving results
     results_folder_path = set_results_folder_path(wf_path, datatype)
@@ -902,8 +903,8 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
         if verbose:
             print("\n",message)
 
-    if results_to_save_dict["institutions"]:
-        message = save_final_institutions(wf_path, corpus_year,
+    if results_to_save_dict["affiliations"]:
+        message = save_final_affiliations(wf_path, corpus_year,
                                           results_folder_path)
         if verbose:
             print("\n",message)
@@ -913,7 +914,3 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
                                       results_folder_path)
         if verbose:
             print("\n",message)
-
-    end_message = (f"Final results for year {corpus_year} saved in folder: "
-                   f"\n  '{results_folder_path}'")
-    return end_message

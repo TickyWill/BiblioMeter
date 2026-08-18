@@ -8,7 +8,6 @@ __all__ = ['create_hash_id']
 
 # 3rd party imports
 import pandas as pd
-import BiblioParsing as bp
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
@@ -34,12 +33,12 @@ def _set_hash_id_cols_dic(institute, org_tup):
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
     submit_col_rename_dic = col_rename_tup[1]
 
-    hash_id_cols_dic = {'pub_id_col'    : submit_col_rename_dic[bp.COL_NAMES["pub_id"]],
-                        'year_col'      : submit_col_rename_dic[bp.COL_NAMES['articles'][2]],
-                        'first_auth_col': submit_col_rename_dic[bp.COL_NAMES['articles'][1]],
-                        'doi_col'       : submit_col_rename_dic[bp.COL_NAMES['articles'][6]],
-                        'title_col'     : submit_col_rename_dic[bp.COL_NAMES['articles'][9]],
-                        'issn_col'      : submit_col_rename_dic[bp.COL_NAMES['articles'][10]],
+    hash_id_cols_dic = {'pub_id_col'    : submit_col_rename_dic[bm_pg.COL_NAMES["pub_id"]],
+                        'year_col'      : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][2]],
+                        'first_auth_col': submit_col_rename_dic[bm_pg.COL_NAMES['articles'][1]],
+                        'doi_col'       : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][6]],
+                        'title_col'     : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][9]],
+                        'issn_col'      : submit_col_rename_dic[bm_pg.COL_NAMES['articles'][10]],
                         'hash_id_col'   : bm_pg.COL_HASH['hash_id']
                        }
     return hash_id_cols_dic

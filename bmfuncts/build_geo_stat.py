@@ -8,10 +8,10 @@ import os
 from pathlib import Path
 
 # 3rd party imports
-import BiblioParsing as bp
 import pandas as pd
 
 # Local imports
+import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.format_files import save_formatted_df_to_xlsx
 from bmfuncts.useful_functs import print_step_text
@@ -24,8 +24,8 @@ def _set_geo_stat_cols():
     Returns:
         (dict): The built dict.
     """
-    geo_stat_cols_dic = {'pub_id_col'       : bp.COL_NAMES['pub_id'],
-                         'country_col'      : bp.COL_NAMES['country'][2],
+    geo_stat_cols_dic = {'pub_id_col'       : bm_pg.COL_NAMES['pub_id'],
+                         'country_col'      : bm_pg.COL_NAMES['country'][2],
                          'continent_col'    : bm_pg.COL_NAMES_BONUS['continent'],
                          'final_country_col': bm_pg.COL_NAMES_BONUS['country'],
                          'weight_col'       : bm_pg.COL_NAMES_BONUS['pub number'],
@@ -118,8 +118,8 @@ def _build_continents_stat(countries_df, institute_continent):
     (pub_id_col, country_col, continent_col,
      weight_col, pub_ids_col) = [geo_stat_cols_dic[key] for key in col_keys]
 
-    # Getting continent information by country from COUNTRIES_CONTINENT, a BiblioParsing global
-    country_conti_dict = bp.COUNTRIES_CONTINENT
+    # Getting continent information by country from COUNTRIES_CONTINENT global
+    country_conti_dict = bm_pg.COUNTRIES_CONTINENT
 
     # Replacing country by its continent in a copy of 'by_country_df'
     continents_df = countries_df.copy()
@@ -142,10 +142,10 @@ def _set_institute_country_stat_df_params():
     Returns:
         (dict): The built dict.
     """
-    inst_country_stat_cols_dic = {'pub_id_col'      : bp.COL_NAMES['pub_id'],
-                                  'address_id_col'  : bp.COL_NAMES['institution'][1],
-                                  'institutions_col': bp.COL_NAMES['institution'][2],
-                                  'countries_col'   : bp.COL_NAMES['country'][2],
+    inst_country_stat_cols_dic = {'pub_id_col'      : bm_pg.COL_NAMES['pub_id'],
+                                  'address_id_col'  : bm_pg.COL_NAMES['institution'][1],
+                                  'institutions_col': bm_pg.COL_NAMES['institution'][2],
+                                  'countries_col'   : bm_pg.COL_NAMES['country'][2],
                                   'pub_kind_col'    : bm_pg.COL_NAMES_BONUS['pub_type'],
                                   'weight_col'      : bm_pg.COL_NAMES_BONUS['pub number'],
                                   'pub_ids_col'     : bm_pg.COL_NAMES_BONUS["pub_ids list"],
@@ -174,7 +174,7 @@ def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw
         institute_norm (str): The Institute's normalized name.
         institutions_col (list): The name of the column that contains \
         the normalized affiliations in the data to be analyzed.
-        raw_item_lists (list)/ The list of the publications IDs lists to be updated.
+        init_raw_item_lists (list): The list of the publications IDs lists to be updated.
     Returns:
         (tup): The two updated lists of the publications IDs.
     """
@@ -184,7 +184,7 @@ def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw
     for affils_idx, affils_str in enumerate(all_affiliations):
         item_at_least.append(False)
         affils_list = affils_str.split("; ")
-        if not institute_norm in affils_list:
+        if institute_norm not in affils_list:
             item_at_least[affils_idx] = True
             break
     new_raw_item_at_least = raw_item_at_least.copy()
@@ -214,7 +214,7 @@ def _set_stat_value(raw_pub_ids_list, all_status=False):
     Returns:
         (list): The formated statistics data.
     """
-    pub_ids_list = sorted(list(set(raw_pub_ids_list)))
+    pub_ids_list = sorted(set(raw_pub_ids_list))
     pub_ids_nb = len(pub_ids_list)
     pub_ids_str = "; ".join(pub_ids_list)
     if all_status:
@@ -329,8 +329,8 @@ def _set_geo_files_params(analysis_folder_path, institute_country):
     return filenames_list, folder_params
 
 
-def build_and_save_geo_stat(countries_df, norm_institutions_df, institute_geo_dict,
-                            analysis_folder_path, year, print_params):
+def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
+                            analysis_folder_path):
     """Builds the publications statistics dataframes per country and per continent
     including for the Institute country.
 
@@ -340,26 +340,28 @@ def build_and_save_geo_stat(countries_df, norm_institutions_df, institute_geo_di
     function imported from the `bmfuncts.format_files` module.
 
     Args:
+        geo_stat_params (list): Composed of the 4 digits-year of the analyzed corpus, \
+        of the print parameters (list) and of the Institute's name (str).
         countries_df (dataframe): Data of countries per publications.
-        norm_institutions_df (dataframe): Data of the normalized institutions per publication.
-        institute_geo_dict (dict): Geographic data of the institute (keys: 'country', 'continent' \
-        and 'norm_name'; values: country, continent and normalized name of Institute).
+        norm_affiliations_df (dataframe): Data of the normalized affiliations per publication.
         analysis_folder_path (path): The full path to the folder where analysis data are saved.
-        year (str): 4 digits-year of the analyzed corpus.
     returns:
         (path): The full path to the folder where the results of the geographical analysis \
         are saved.
     """
+    # Setting parameters value from 'geo_stat_params'
+    corpus_year, print_params, institute = geo_stat_params
+
     # Setting Institute's country and continent
-    institute_country = institute_geo_dict['country']
-    institute_continent = institute_geo_dict['continent']
-    institute_norm = institute_geo_dict['norm_name']
+    institute_country = bm_ig.INSTITUTES_COUNTRY_DICT[institute]
+    institute_continent = bm_ig.INSTITUTES_CONTINENT_DICT[institute]
+    institute_norm = bm_ig.INSTITUTES_NORM_NAME_DICT[institute]
 
     # Building stat dataframes
     print("  - Computing geographical statistics...", end="\r")
     by_country_df = _build_countries_stat(countries_df, institute_country)
     by_continent_df = _build_continents_stat(countries_df, institute_continent)
-    inst_country_stat_df = _build_institute_country_stat(norm_institutions_df,
+    inst_country_stat_df = _build_institute_country_stat(norm_affiliations_df,
                                                          institute_country, institute_norm)
 
     # Setting files params
@@ -370,13 +372,13 @@ def build_and_save_geo_stat(countries_df, norm_institutions_df, institute_geo_di
 
     # Saving formatted stat dataframes
     geo_df_title = bm_pg.DF_TITLES_LIST[8]
-    sheet_name = 'Pays ' + year
+    sheet_name = 'Pays ' + corpus_year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, country_weight_filename,
                               by_country_df, geo_df_title, sheet_name)
-    sheet_name = 'Continent ' + year
+    sheet_name = 'Continent ' + corpus_year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, continent_weight_filename,
                               by_continent_df, geo_df_title, sheet_name)
-    sheet_name = institute_country + " " + year
+    sheet_name = institute_country + " " + corpus_year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, institute_country_weight_filename,
                               inst_country_stat_df, geo_df_title, sheet_name)
     print_step_text("  - Geo statistics built and saved      ", print_params)
