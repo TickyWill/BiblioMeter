@@ -263,7 +263,7 @@ ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
              }
 
 # Setting list of final results to save
-RESULTS_TO_SAVE = ["hash_ids", "submit", "pub_lists", "ifs", "kws","countries", "continents",
+RESULTS_TO_SAVE = ["hash_ids", "merge", "pub_lists", "ifs", "kws","countries", "continents",
                    "authors", "affiliations", "doctypes", "homonyms", "institute_country"]
 
 BM_LOW_WORDS_LIST = ["of", "and", "on"]
