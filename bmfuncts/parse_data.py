@@ -456,6 +456,67 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
     return raw_parse_tup
 
 
+def _set_db_parsing_data(db, datatype, db_parse_path, base_params_list):
+    _, print_params, _, parsing_filenames_dict = base_params_list
+
+    db_single_status = False
+    db_parsing_dict = {}
+    other_dbs_list = list(set(bm_pg.BDD_LIST) - {db})
+
+    if db.lower() in datatype.lower():
+        # Setting the 'db' database parsing results before correction
+        db_parsing_dict = read_parsing_dict(db_parse_path, parsing_filenames_dict,
+                                             bm_pg.TSV_SAVE_EXTENT)
+        # Correcting the 'db' database parsing results
+        db_params_list = [db] + base_params_list
+        correct_status = correct_parsing(db_params_list, db_parse_path,
+                                         db_parsing_dict, bm_pg.UNKNOWN_COUNTRY)
+        if correct_status:
+            db_parsing_dict = read_parsing_dict(db_parse_path, parsing_filenames_dict,
+                                                bm_pg.TSV_SAVE_EXTENT)
+
+        if not any([db.lower() in datatype.lower() for db in other_dbs_list]):
+            # Managing the case of a single database by Linking other parsings
+            # to Scopus parsings what would be the changes in the Scopus parsings
+            db_single_status = True
+    return db_parsing_dict, db_single_status
+
+
+def _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list):
+    # Setting and correcting the parsing results to concatenate
+    dbs_parsings_dict = {}
+    single_db = ""
+    for db in bm_pg.BDD_LIST:
+        return_tup = _set_db_parsing_data(db, datatype, parsing_path_dict[db], base_params_list)
+        db_parsing_dict, db_single_status = return_tup
+        if db_single_status:
+            single_db = db
+        dbs_parsings_dict[db] = db_parsing_dict
+    return dbs_parsings_dict, single_db
+
+
+def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
+    """Deduplicates cancatenated parsings results for the case of single database parsing use.
+
+    Args:
+        bp_concat_parsing_dict (dict): Parsing data with original keys of BiblioParsing package.
+        concat_parsing_dict (dict): Parsing data with keys of BiblioMeter package.
+    Returns:
+        (tup): Composed of the deduplicated parsing data (dict) keyyed \
+        with the dedicated keys of the two packages. 
+    """
+    pub_id_col = bm_pg.COL_NAMES['pub_id']
+    pub_parsing_item = bm_pg.PARSING_KEYS_DIC['parsing_pub']
+    pub_df = concat_parsing_dict[pub_parsing_item]
+    droping_cols = list(set(pub_df.keys()) - {pub_id_col})
+    pub_df = pub_df.drop_duplicates(subset=droping_cols)
+    pub_ids_to_keep = list(set(pub_df[pub_id_col]))
+    for key, key_df in bp_concat_parsing_dict.items():
+        bp_concat_parsing_dict[key] = key_df[key_df[pub_id_col].isin(pub_ids_to_keep)]
+    concat_parsing_dict = convert_parsing_keys_to_bm(bp_concat_parsing_dict)
+    return bp_concat_parsing_dict, concat_parsing_dict
+
+
 def deduplicate_parsing(dedup_params_list, progress_callback=None):
     (corpus_year, print_params, institute, org_tup, wf_path, datatype,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
@@ -470,50 +531,19 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     scopus_parse_path, wos_parse_path = parsing_path_dict[bm_pg.SCOPUS], parsing_path_dict[bm_pg.WOS]
     concat_path, dedup_path = parsing_path_dict["concat"], parsing_path_dict["dedup"]
 
-    # Setting the Scopus and WoS parsing results before correction
-    scopus_parsing_dict = read_parsing_dict(scopus_parse_path, parsing_filenames_dict,
-                                            bm_pg.TSV_SAVE_EXTENT)
-
-    wos_parsing_dict = read_parsing_dict(wos_parse_path, parsing_filenames_dict,
-                                             bm_pg.TSV_SAVE_EXTENT)
-
-    # Trying to correct the Scopus parsing results
-    if bm_pg.SCOPUS.lower() in datatype.lower():
-        # Correcting the Scopus parsing results
-        scopus_params_list = [bm_pg.SCOPUS] + base_params_list
-        correct_status = correct_parsing(scopus_params_list, scopus_parse_path,
-                                         scopus_parsing_dict, bm_pg.UNKNOWN_COUNTRY)
-        if correct_status:
-            scopus_parsing_dict = read_parsing_dict(scopus_parse_path, parsing_filenames_dict,
-                                                    bm_pg.TSV_SAVE_EXTENT)
-    else:
-        # Managing the case of a single database by Linking Scopus parsings
-        # to WoS parsings what would be the changes in the WoS parsings
-        scopus_parsing_dict = copy.deepcopy(wos_parsing_dict)
-        print_step_text("  - Scopus parsing results set to WoS parsing results",
-                        print_params)
-
-    # Trying to correct the WoS parsing results
-    if bm_pg.WOS.lower() in datatype.lower():
-        # Correcting the WoS parsing results
-        wos_params_list = [bm_pg.WOS] + base_params_list
-        correct_status = correct_parsing(wos_params_list, wos_parse_path,
-                                         wos_parsing_dict, bm_pg.UNKNOWN_COUNTRY)
-        if correct_status:
-            wos_parsing_dict = read_parsing_dict(wos_parse_path, parsing_filenames_dict,
-                                                 bm_pg.TSV_SAVE_EXTENT)
-    else:
-        # Managing the case of a single database by Linking WoS parsings
-        # to Scopus parsings what would be the changes in the Scopus parsings
-        wos_parsing_dict = copy.deepcopy(scopus_parsing_dict)
-        print_step_text("  - WoS parsing results set to Scopus parsing results",
-                        print_params)
+    # Setting and correcting the parsing results to concatenate
+    dbs_parsings_dict, single_db = _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list)
     if progress_callback:
         progress_callback(15)
 
     print_step_text("\nConcatenating parsing data...", print_params)
-    bp_scopus_parsing_dict = revers_parsing_keys_to_bp(scopus_parsing_dict)
-    bp_wos_parsing_dict = revers_parsing_keys_to_bp(wos_parsing_dict)
+    if single_db:
+        bp_scopus_parsing_dict = revers_parsing_keys_to_bp(dbs_parsings_dict[single_db])
+        bp_wos_parsing_dict = revers_parsing_keys_to_bp(dbs_parsings_dict[single_db])
+    else:
+        bp_scopus_parsing_dict = revers_parsing_keys_to_bp(dbs_parsings_dict[bm_pg.SCOPUS])
+        bp_wos_parsing_dict = revers_parsing_keys_to_bp(dbs_parsings_dict[bm_pg.WOS])
+
     if bm_pg.FIRST_BDD==bm_pg.SCOPUS:
         bp_concat_parsing_dict = bp_concatenate_parsing(bp_scopus_parsing_dict, bp_wos_parsing_dict,
                                                         affil_filter_list=org_tup[3])
@@ -521,6 +551,10 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
         bp_concat_parsing_dict = bp_concatenate_parsing(bp_wos_parsing_dict, bp_scopus_parsing_dict,
                                                         affil_filter_list=org_tup[3])
     concat_parsing_dict = convert_parsing_keys_to_bm(bp_concat_parsing_dict)
+    if single_db:
+        bp_concat_parsing_dict, concat_parsing_dict = _dedup_concat_single_parsing(bp_concat_parsing_dict,
+                                                                                   concat_parsing_dict)
+        print_step_text("  - Single parsing data concatenated and deduplicated", print_params)
     if progress_callback:
         progress_callback(25)
 
