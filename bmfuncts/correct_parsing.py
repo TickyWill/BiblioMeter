@@ -209,7 +209,7 @@ def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correc
     wb.save(addresses_to_correct_path)
 
 
-def _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_hist_df, unknown_country):
+def _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_path, unknown_country):
     """Uses the history of the corrected-addresses data to pre-correct the data of addresses 
     with unknown-country before completion by the user.
 
@@ -219,27 +219,47 @@ def _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_h
     Args:
         init_addresses_to_correct_df (dataframe): Addresses with unknown-country data before \
         the pre-correction using the history of corrected addresses.
-        corrected_addresses_hist_df (dataframe): History of corrected data of addresses \
-        with unknown-country.
+        corrected_addresses_path (path): The full path to the file of the addresses \
+        correction history.
         unknown_country (str): Key word for unknown-country.
     Returns:
         (tuple): (The pre-corrected data (dataframe) of the addresses with unknown-country, \
         the status of the corrected addesses (bool))
     """
+    # setting useful parameters for columns management
     unknown_countries_cols = init_addresses_to_correct_df.columns
-    (database_id_col, pub_id_col, doi_col, address_id_col, country_col,
+    (db_id_col, pub_id_col, doi_col, address_id_col, country_col,
      address_col, correct_address_col, author_ids_col, authors_col) = unknown_countries_cols
+    merge_on_cols = [db_id_col, pub_id_col, doi_col, address_col, author_ids_col, authors_col]
+    merge_cols_to_drop = [country_col + "_x", correct_address_col + "_x", address_id_col + "_y"]
+    merge_cols_rename = {address_id_col + "_x"     : address_id_col,
+                         country_col + "_y"        : country_col,
+                         correct_address_col + "_y": correct_address_col,
+                         }
 
-    corrected_db_ids = corrected_addresses_hist_df[database_id_col].to_list()
+    # Getting the data of addresses' correction history
+    corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path, converters={author_ids_col:str})
+
+    # Setting the list of database IDs of publications for which addresses have to be corrected
+    corrected_db_ids = corrected_addresses_hist_df[db_id_col].to_list()
 
     unknown_countries_df = pd.DataFrame(columns=unknown_countries_cols)
-    for db_id, db_id_df in init_addresses_to_correct_df.groupby(database_id_col):
+    for db_id, db_id_df in init_addresses_to_correct_df.groupby(db_id_col):
         if db_id in corrected_db_ids:
-            corrected_db_id_df = corrected_addresses_hist_df[corrected_addresses_hist_df[database_id_col]==db_id]
-            correct_countries_dict = dict(zip(corrected_db_id_df[address_id_col],
-                                              corrected_db_id_df[country_col]))
-            correct_addresses_dict = dict(zip(corrected_db_id_df[address_id_col],
-                                              corrected_db_id_df[correct_address_col]))
+            corrected_db_id_df = corrected_addresses_hist_df[corrected_addresses_hist_df[db_id_col]==db_id]
+
+            # Mapping the history of corrected addresses to the authors IDs
+            # while keeping the addresses IDs of the parsing results to be corrected
+            db_id_addresses_to_correct_df = init_addresses_to_correct_df[init_addresses_to_correct_df[db_id_col]==db_id]
+            new_corrected_db_id_df = pd.merge(db_id_addresses_to_correct_df, corrected_db_id_df, how='inner', on=merge_on_cols)
+            new_corrected_db_id_df.drop(columns=merge_cols_to_drop, inplace=True)
+            new_corrected_db_id_df.rename(columns=merge_cols_rename, inplace=True)
+            new_corrected_db_id_df = new_corrected_db_id_df[unknown_countries_cols]
+
+            correct_countries_dict = dict(zip(new_corrected_db_id_df[address_id_col],
+                                              new_corrected_db_id_df[country_col]))
+            correct_addresses_dict = dict(zip(new_corrected_db_id_df[address_id_col],
+                                              new_corrected_db_id_df[correct_address_col]))
             data = []
             for _, row in db_id_df.iterrows():
                 pub_id = row[pub_id_col]
@@ -375,8 +395,7 @@ def _check_unknown_country_data(init_addresses_to_correct_df, corrected_addresse
         all_addresses_corrected = True
         step_text = "  - No addresses with unknown-country found"
     elif corrected_addresses_path.is_file():
-        corrected_addresses_hist_df = pd.read_excel(corrected_addresses_path)
-        return_tup = _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_hist_df,
+        return_tup = _use_corrected_addresses(init_addresses_to_correct_df, corrected_addresses_path,
                                               unknown_country)
         addresses_to_correct_df, all_addresses_corrected = return_tup
         step_text = "  - History of corrected addresses with unknown-country used"
