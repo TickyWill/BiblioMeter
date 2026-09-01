@@ -202,7 +202,7 @@ def _concat_dept_otps_dfs(dpt_label_list, set_hist_file_params_list):
 def set_pub_otp_df(dpt_label_list, set_hist_file_params_list, final_col_list, pub_id_col):
     """Builds the data of publications list with OTPs from the files where OTPs 
     have been set by the user for each department.
- 
+
     For that it uses the `_concat_dept_otps_dfs` internal function.
 
     Args:
@@ -214,7 +214,7 @@ def set_pub_otp_df(dpt_label_list, set_hist_file_params_list, final_col_list, pu
         final_col_list (list): The list of column names of the built data.
         pub_id_col (str): The column name of publications IDs.
     Returns:
-        (dataframe): The built data. 
+        (dataframe): The built data.
     """
     # Getting dept OTPs df and concatenating them
     init_pub_otp_df = _concat_dept_otps_dfs(dpt_label_list, set_hist_file_params_list)
@@ -905,6 +905,8 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     # Getting the kept OTPs dataframe by hash_id
     hash_otp_history_df = pd.read_excel(kept_otps_file_path,
                                         sheet_name=hash_otp_sheet)
+    hash_otp_history_df.drop_duplicates(subset=hash_id_col, keep='first',
+                                        inplace=True)
 
     # Building data of pub_id and OTPs to set related to hash_id
     pub_id_otp_to_set_df = pd.merge(hash_id_df,
@@ -922,6 +924,8 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     # Getting the kept OTPs dataframe by DOI and first author
     doi_otp_history_df = pd.read_excel(kept_otps_file_path,
                                        sheet_name=doi_otp_sheet)
+    doi_otp_history_df.drop_duplicates(subset=[author_col, doi_col], keep='first',
+                                        inplace=True)
     author_to_check_list = doi_otp_history_df[author_col].to_list()
     doi_to_check_list = doi_otp_history_df[doi_col].to_list()
     doi_otp_to_set_list = doi_otp_history_df[otp_col].to_list()
