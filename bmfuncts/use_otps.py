@@ -921,11 +921,19 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     otp_to_set_list = [str(row[otp_col]) for _,row
                        in pub_id_otp_to_set_df.iterrows()]
 
-    # Getting the kept OTPs dataframe by DOI and first author
-    doi_otp_history_df = pd.read_excel(kept_otps_file_path,
-                                       sheet_name=doi_otp_sheet)
-    doi_otp_history_df.drop_duplicates(subset=[author_col, doi_col], keep='first',
-                                        inplace=True)
+    # Getting the kept OTPs data by DOI and first author as stored by previous data treatments
+    init_doi_otp_history_df = pd.read_excel(kept_otps_file_path, sheet_name=doi_otp_sheet)
+
+    # Dropping duplicates from history of otps' attribution for unknown DOIs
+    unknown_doi_otp_histoty_df = init_doi_otp_history_df[init_doi_otp_history_df[doi_col]==bm_pg.UNKNOWN].copy()
+    unknown_doi_otp_histoty_df.drop_duplicates(subset=[author_col, doi_col], keep='first', inplace=True)
+
+    # Dropping duplicates from history of otps' attribution for known DOIs
+    known_doi_otp_histoty_df = init_doi_otp_history_df[init_doi_otp_history_df[doi_col]!=bm_pg.UNKNOWN].copy()
+    known_doi_otp_histoty_df.drop_duplicates(subset=[doi_col], keep='first', inplace=True)
+
+    # Setting data of clean history of otps' attribution
+    doi_otp_history_df = pd.concat([known_doi_otp_histoty_df, unknown_doi_otp_histoty_df])
     author_to_check_list = doi_otp_history_df[author_col].to_list()
     doi_to_check_list = doi_otp_history_df[doi_col].to_list()
     doi_otp_to_set_list = doi_otp_history_df[otp_col].to_list()
