@@ -348,7 +348,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
         # Saving after formatting the updated dataframe as openpyxl workbook
         file_name = f'{new_if_col}-{dept}'
         dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
-        if_anal_df_title = bm_pg.DF_TITLES_LIST[10]
+        if_anal_df_title = 'if_analysis'
         wb, ws = format_page(dept_if_df, if_anal_df_title)
         ws.title = dept + ' IFs '
         wb.save(dept_xlsx_file_path)
@@ -485,16 +485,17 @@ def update_kpi_database(kpi_params, kpi_dict, if_key, depts_col_list, verbose=Fa
         file_path = results_kpis_folder_path / Path(filename)
         if os.path.isfile(file_path):
             db_dept_kpi_df = pd.read_excel(file_path)
+
             # Updating the dataframe with the column to append
             if corpus_year in db_dept_kpi_df.columns:
                 db_dept_kpi_df = db_dept_kpi_df.drop(columns=[corpus_year])
-            db_dept_kpi_df = db_dept_kpi_df.merge(dept_kpi_df, how="outer",
+            db_dept_kpi_df = db_dept_kpi_df.merge(dept_kpi_df, how="left",
                                                   on=corpus_year_row_alias)
         else:
             db_dept_kpi_df = dept_kpi_df
 
         # Saving after formatting the updated dataframe
-        kpi_df_title = bm_pg.DF_TITLES_LIST[6]
+        kpi_df_title = 'kpi'
         wb, ws = format_page(db_dept_kpi_df, kpi_df_title)
         ws.title = dept + ' KPIs '
         wb.save(file_path)

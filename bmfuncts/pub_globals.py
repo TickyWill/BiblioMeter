@@ -4,10 +4,9 @@
 __all__ = ['AFFIL_TYPES_USECOLS',
            'ANALYSIS_IF',
            'ARCHI_BACKUP',
-           'ARCHI_BDD_MULTI_ANNUELLE',
            'ARCHI_EXTRACT',
            'ARCHI_IF',
-           "ARCHI_INSTITUTIONS",
+           "ARCHI_AFFILIATIONS",
            'ARCHI_ORPHAN',
            'ARCHI_RESULTS',
            'ARCHI_YEAR',
@@ -16,9 +15,8 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'BM_LOW_WORDS_LIST',
            'COL_HASH',
            'COL_NAMES',
+           'COL_NAMES_ADD',
            'COL_NAMES_AUTHOR_ANALYSIS',
-           'COL_NAMES_BM',
-           'COL_NAMES_BONUS',
            'COL_NAMES_COMPL',
            'COL_NAMES_DOCTYPE_ANALYSIS',
            'COL_NAMES_EXT',
@@ -29,7 +27,6 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'COUNTRIES_CONTINENT',
            'DATATYPE_LIST',
            'DB_ID_COLS',
-           'DF_TITLES_LIST',
            'DOC_TYPE_DICT',
            'EMPTY',
            'EXT_DOCS_COL_ADDS_LIST',
@@ -39,7 +36,6 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'IDS_FILE_BASE',
            'KPI_KEYS_DICT',
            'KPI_KEYS_ORDER_DICT',
-           'LISTES_CONCAT',
            'LOG_FILE',
            'LOG_FOLDER',
            'NOT_AVAILABLE',
@@ -62,7 +58,6 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
            'STAT_FILE_DICT',
-           'STAT_INST_TYPES_LIST',
            'STAT_ROW_NAMES',
            'SYMB_CHANGE',
            'TSV_SAVE_EXTENT',
@@ -79,7 +74,8 @@ import bpfuncts as bp
 # local imports
 import bmfuncts.employees_globals as bm_eg
 
-# Setting globals imported from the `BiblioParsing` package
+
+# Setting 3rd party globals
 AFFIL_TYPES_USECOLS = bp.AFFIL_TYPES_USECOLS
 COL_NAMES = bp.COL_NAMES
 COUNTRIES_CONTINENT = bp.COUNTRIES_CONTINENT
@@ -99,23 +95,13 @@ WOS_RAWDATA_EXTENT = bp.WOS_RAWDATA_EXTENT
 BDD_LIST = [SCOPUS, WOS]
 FIRST_BDD = SCOPUS
 
-DB_ID_COLS = {WOS   : COL_NAMES['wos_id'][0],
-              SCOPUS: COL_NAMES['scopus_id'][0],
-              "all_dbs" : "DB_id_col",
+DB_ID_COLS = {WOS      : COL_NAMES['wos_id'][0],
+              SCOPUS   : COL_NAMES['scopus_id'][0],
+              "all_dbs": "DB_id_col",
               }
 
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS", "Scopus"]
-
-DF_TITLES_LIST = ["Pub_df", "Homonyms_df", "OTP_df", "IF_db_df",
-                  "Authors_df", "Authors_stat_df", "KPI_df",
-                  "KW_df", "Geo_df", "norm_institutions_df",
-                  "IF_anal_df", "Distrib_inst_df",
-                  "inst_country_pub_df", "doctype_stat_df",
-                  "pub_country_inst_df", "country_inst_pub_df",
-                  "raw_institutions_df", "invalids_df",
-                  "missing_if_issn_df", "false_addresses_df",
-                  "inst_type_pub_list_df"]
 
 LOG_FILE = "Log"
 LOG_FOLDER = "BM-Log files"
@@ -136,17 +122,10 @@ TSV_SAVE_EXTENT = "dat"
 
 XL_INDEX_BASE = 1
 
-LISTES_CONCAT = False
-
 # Setting if the full list of authors is based on the corrected author names
 AUTHORS_FULL_LIST_NAME_CORRECTION = False
 
 ARCHI_BACKUP = {"root": "Sauvegarde de secours"}
-
-ARCHI_BDD_MULTI_ANNUELLE = {"root"                 : "BDD multi annuelle",
-                            "concat file name base": "Concaténation par",
-                            "kpis file name base"  : "Synthèse des KPIs",
-                           }
 
 ARCHI_EXTRACT = {"root"             : "Extractions Institut",
                  SCOPUS             : {"root"           : "ScopusExtractions_Files",
@@ -177,7 +156,7 @@ ARCHI_IF = {"root"                  : "Impact Factor",
             "institute_if_all_years": "_IF all years.xlsx",
            }
 
-ARCHI_INSTITUTIONS = {"root"                : "Traitement Institutions",
+ARCHI_AFFILIATIONS = {"root"                : "Traitement Institutions",
                       "institute_affil_base": "Institute_affiliations.xlsx",
                       "inst_types_base"     : "Institutions_types.xlsx",
                       "affiliations_base"   : "Country_affiliations.xlsx",
@@ -204,7 +183,7 @@ ARCHI_RESULTS = {"root"                    : "Sauvegarde des résultats",
                  "authors_prod"            : "Analyse par auteurs",
                  "keywords"                : "Analyse des mots clefs",
                  "countries"               : "Analyse géographique",
-                 "institutions"            : "Analyse des collaborations",
+                 "affiliations"            : "Analyse des collaborations",
                  "subjects"                : "Analyse des thématiques",
                  "kpis"                    : "Synthèse des indicateurs",
                  "kpis file name base"     : "Synthèse des KPIs",
@@ -222,7 +201,7 @@ ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
               "subjects analysis"                  : "Thématique",
               "countries analysis"                 : "Géographique",
               "institute-country weight file base" : "Statistiques_",
-              "institutions analysis"              : "Collaborations",
+              "affiliations analysis"              : "Collaborations",
               "authors file name"                  : "Informations auteur par publication",
               "authors weight file name"           : "Statistiques par auteurs",
               "countries file name"                : "Pays par publication",
@@ -231,11 +210,10 @@ ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
               "continent weight file name"         : "Statistiques par continent",
               "journal weight file name"           : "Statistiques par journal",
               "proceedings weight file name"       : "Statistiques par actes de conférence",
-              "norm inst file name"                : "Institutions normalisées",
-              "raw inst file name"                 : "Institutions brutes",
-              "institutions distribution file name": "Distribution institutions par types",
-              "institution weight file name"       : "Statistiques par institutions",
-              "bdd mensuelle"                      : "0 - BDD multi mensuelle",
+              "norm affils file name"              : "Institutions normalisées",
+              "raw affils file name"               : "Institutions brutes",
+              "affiliations distribution file name": "Distribution institutions par types",
+              "merge folder name"                  : "0 - BDD multi mensuelle",
               "merge file name"                    : "submit.xlsx",
               "orphan file name"                   : "orphan.xlsx",
               "hash_id file name"                  : "hash_id.xlsx",
@@ -259,7 +237,7 @@ ARCHI_YEAR = {"analyses"                           : "5 - Analyses",
               "addresses_to_correct_file_base"     : '_Adresses à corriger.xlsx',
               "corrected_addresses_file_base"      : '_Adresses corrigées conservées.xlsx',
               "drop articles file name"            : "drop_articles.xlsx",
-              "drop authsinst file name"           : "drop_authsinst.xlsx",
+              "drop authaffils file name"          : "drop_authsinst.xlsx",
              }
 
 # Setting list of final results to save
@@ -310,47 +288,41 @@ SHEET_SAVE_OTP = {'hash_OTP': 'Hash_ID-OTP',
                   'doi_OTP' : 'DOI-OTP'}
 
 
-COL_NAMES_BONUS = {'nom prénom'        : "Nom, Prénom de l'auteur ",
-                   'nom prénom liste'  : "Liste ordonnée des auteurs de l'institut",
-                   'liste biblio'      : "Référence bibliographique complète",
-                   'liste auteurs'     : "Liste ordonnée de tous les auteurs",
-                   'author_type'       : "Type de l'auteur",
-                   'homonym'           : "Homonymes",
-                   'list OTP'          : "Choix de l'OTP",
-                   'final OTP'         : "OTP",
-                   'corpus_year'       : "Année de première publication",
-                   'IF en cours'       : "IF en cours",
-                   'IF année publi'    : "IF de l'année de première publication",
-                   'IF clarivate'      : "IF",
-                   'e-ISSN'            : "e-ISSN",
-                   'database ISSN'     : "ISSN via source",
-                   'pub number'        : "Nombre de publications",
-                   'weight'            : "Weight",
-                   'country'           : "Pays",
-                   'continent'         : "Continent",
-                   'institution'       : "Institution",
-                   'inst number'       : "Nombre d'entités",
-                   'pub_ids list'      : "Liste des Pub_ids",
-                   'inst list'         : "Liste des entités",
-                   'co-auth inst'      : "Institutions co-autrices",
-                   'address ID'        : "Adresse_id",
-                   'journal_pub_nb'    : "Nombre de publications de journal",
-                   'proceedings_pub_nb': "Nombre de publications d'actes de conférence",
-                   'book_pub_nb'       : "Nombre d'ouvrages ou de chapitres",
-                   'name_as_auth'      : "Nom d'auteur",
-                   'name_as_empl'      : "Nom de salarié",
-                   'pub_type'          : "Type des co-auteurs",
-                   'source'            : "Extraction",
-                  }
-
-
-COL_NAMES_BM = {'Dpts'      : bm_eg.EMPLOYEES_ADD_COLS['dpts_list'],
-                'Servs'     : bm_eg.EMPLOYEES_ADD_COLS['servs_list'],
-                'First_name': bm_eg.EMPLOYEES_ADD_COLS['first_name_initials'],
-                'Last_name' : 'Co_author_joined',
-                'Full_name' : 'Full_name',
-                'Homonym'   : COL_NAMES_BONUS['homonym'],
-               }
+COL_NAMES_ADD = {'nom prénom'        : "Nom, Prénom de l'auteur ",
+                 'nom prénom liste'  : "Liste ordonnée des auteurs de l'institut",
+                 'liste biblio'      : "Référence bibliographique complète",
+                 'liste auteurs'     : "Liste ordonnée de tous les auteurs",
+                 'author_type'       : "Type de l'auteur",
+                 'homonym'           : "Homonymes",
+                 'list OTP'          : "Choix de l'OTP",
+                 'final OTP'         : "OTP",
+                 'corpus_year'       : "Année de première publication",
+                 'IF en cours'       : "IF en cours",
+                 'IF année publi'    : "IF de l'année de première publication",
+                 'IF clarivate'      : "IF",
+                 'e-ISSN'            : "e-ISSN",
+                 'database ISSN'     : "ISSN via source",
+                 'pub number'        : "Nombre de publications",
+                 'weight'            : "Weight",
+                 'country'           : "Pays",
+                 'continent'         : "Continent",
+                 'affiliations'      : "Institution",
+                 'affils number'     : "Nombre d'entités",
+                 'affils list'       : "Liste des entités",
+                 'pub_ids list'      : "Liste des Pub_ids",
+                 'co-auth affils'    : "Institutions co-autrices",
+                 'address ID'        : "Adresse_id",
+                 'journal_pub_nb'    : "Nombre de publications de journal",
+                 'proceedings_pub_nb': "Nombre de publications d'actes de conférence",
+                 'book_pub_nb'       : "Nombre d'ouvrages ou de chapitres",
+                 'name_as_auth'      : "Nom d'auteur",
+                 'name_as_empl'      : "Nom de salarié",
+                 'pub_type'          : "Type des co-auteurs",
+                 'source'            : "Extraction",
+                 'full_name'         : 'Full_name',
+                 'last_name'         : 'Co_author_joined',
+                 'first_name'        : bm_eg.EMPLOYEES_ADD_COLS['first_name_initials'],
+                }
 
 PUB_LAST_NAME      = 'Nom pub'
 PUB_INITIALS       = 'Initiales pub'
@@ -390,10 +362,10 @@ COL_NAMES_PUB_NAMES = {'last name': PUB_LAST_NAME,
                        'initials' : PUB_INITIALS,
                       }
 
-EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_BONUS['homonym'],
-                          COL_NAMES_BONUS['author_type'],]
+EXT_DOCS_COL_ADDS_LIST = [COL_NAMES_ADD['homonym'],
+                          COL_NAMES_ADD['author_type'],]
 
-ANALYSIS_IF = COL_NAMES_BONUS['IF année publi']
+ANALYSIS_IF = COL_NAMES_ADD['IF année publi']
 
 COL_NAMES_IF_ANALYSIS = {'corpus_year'  : "Corpus year",
                          'journal_short': "Journal_court",
@@ -447,23 +419,19 @@ KPI_KEYS_DICT = {'articles'   : [6,3,9,12],
                 }
 
 
-stat_keys_list = ["country per pub",
-                  "inst per country per pub",
-                  "inst and pub per country"]
+STAT_KEYS_LIST = ["country per pub",
+                  "affils per country per pub",
+                  "affils and pub per country"]
 
-stat_names_list = ["Stat-Publications par institutions",
+STAT_NAMES_LIST = ["Stat-Publications par institutions",
                    "Stat-Institutions par publication",
                    "Stat_Institutions & Publications par pays",]
 
-stat_df_titles_list = [12, 14, 15]
+STAT_DF_TITLES_LIST = ['affil_country_pub', 'pub_country_affils', 'country_affils_pub']
 
-values_tup_list = tuple(zip(stat_names_list, stat_df_titles_list))
+STAT_VALUES_TUP = tuple(zip(STAT_NAMES_LIST, STAT_DF_TITLES_LIST))
 
-STAT_FILE_DICT = dict(zip(stat_keys_list, values_tup_list))
-
-
-STAT_INST_TYPES_LIST = ["Firm", "Chu", "Nro", "Rto", "Univ", "Inst",
-                        "CNRS-Lab", "Univ-Lab", "Jlab", "CEA-Inst"]
+STAT_FILE_DICT = dict(zip(STAT_KEYS_LIST, STAT_VALUES_TUP))
 
 STAT_ROW_NAMES = {'all'                : "Au moins un de l'Institut",
                   'institute_only'     : "Uniquement de l'Institut",

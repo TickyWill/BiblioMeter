@@ -14,6 +14,7 @@ __all__ = ['CONFIG_JSON_FILES_DICT',
            'INSTITUTES_TOWN_DICT',
            'INVALIDE',
            'ROOT_FOLDERS_DICT',
+           'STAT_AFFIL_TYPES_DICT',
            'WORKING_FOLDERS_DICT',
           ]
 
@@ -42,7 +43,7 @@ EXCLUDE_ADDR_ITEMS_LIST = ['LITEN', 'LETI', 'IRIG', 'IBS']
 # Setting default working folder of each institute
 FILES_FOLDER = "BiblioMeter_Files"
 ROOT_FOLDERS_LIST = [("S:\\130-LITEN\\130.1-Direction\\130.1.2-Direction Scientifique\\"
-                      "130.1.2.2-Infos communes\\BiblioMeter\\Bibliometry"),
+                      "130.1.2.2-Infos communes\\30-Publis et Confs\\BiblioMeter\\Bibliometry"),
                      "S:\\120-LETI\\120.38-BiblioMeter\\Bibliometry",
                     ]
 ROOT_FOLDERS_DICT =  dict(zip(INSTITUTES_LIST, ROOT_FOLDERS_LIST))
@@ -53,6 +54,12 @@ WORKING_FOLDERS_DICT = dict(zip(INSTITUTES_LIST, [ROOT_FOLDERS_DICT[inst] + "\\"
 # Setting file names of institutes' organization description
 CONFIG_JSON_FILES_LIST = [x + 'Org_config.json' for x in INSTITUTES_LIST]
 CONFIG_JSON_FILES_DICT = dict(zip(INSTITUTES_LIST, CONFIG_JSON_FILES_LIST))
+
+# Setting list of affiliations' types to use for collaborations analysis
+STAT_AFFIL_TYPES_LIST = ["Firm", "Chu", "Nro", "Rto", "Univ", "Inst",
+                         "CNRS-Lab", "Univ-Lab", "Jlab", "CEA-Inst"]
+STAT_AFFIL_TYPES_LISTS = [STAT_AFFIL_TYPES_LIST, STAT_AFFIL_TYPES_LIST]
+STAT_AFFIL_TYPES_DICT = dict(zip(INSTITUTES_LIST, STAT_AFFIL_TYPES_LISTS))
 
 # Setting organization parameters of all institutes
 DPT_LABEL_KEY = 'dpt_label'

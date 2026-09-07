@@ -106,14 +106,14 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
             if raw_addr_status:
                 print_step_text("\nAnalysis completed", master.print_params)
                 return_folders_list = co_return_tup[2]
-                analysis_folder, inst_analysis_folder, geo_analysis_folder = return_folders_list
+                analysis_folder, affils_analysis_folder, geo_analysis_folder = return_folders_list
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été effectuée pour l'année {year_select}."
                              "\nToutes les affiliations ont été normalisées."
                              "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
                              f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
-                             f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
+                             f"\n\n    '{analysis_folder}/{affils_analysis_folder}'")
             else:
                 print_step_text("\nAnalysis interrupted because affiliations remain to be normalized",
                                 master.print_params)
@@ -178,7 +178,7 @@ def _launch_if_analysis(master, year_select, progress_callback):
                                           master.wf_path)
 
     analysis_if = "IF " + if_most_recent_year
-    if bm_pg.ANALYSIS_IF==bm_pg.COL_NAMES_BONUS['IF année publi']:
+    if bm_pg.ANALYSIS_IF==bm_pg.COL_NAMES_ADD['IF année publi']:
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 

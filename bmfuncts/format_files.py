@@ -152,9 +152,8 @@ def format_heading(ws, df_title):
     head_font = openpyxl_Font(bold=True)
     head_align = openpyxl_Alignment(wrap_text=True, horizontal="center",
                                     vertical="center")
-    pub_alias = bm_pg.DF_TITLES_LIST[0]
     cells_list = ws['A'] + ws[1]
-    if df_title!=pub_alias:
+    if df_title!='pub_list':
         cells_list = ws[1]
     for cell in cells_list:
         cell.font = head_font
@@ -343,10 +342,11 @@ def _set_pub_list_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_inst_type_pub_list_attributes(cols_list, add_cols_nb):
+def _set_affil_type_pub_list_attributes(cols_list, add_cols_nb):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
-    for formatting the publications list data to be saved.
+    for formatting the data to be saved for the publications list 
+    per affiliation type.
 
     Args:
         cols_list (list): The columns names (str) of the data.
@@ -680,10 +680,10 @@ def _set_geo_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_norm_inst_attributes(cols_list):
+def _set_norm_affils_attributes(cols_list):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
-    for formatting the normalized-institutions data to be saved.
+    for formatting the normalized-affiliations data to be saved.
 
     The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
@@ -710,10 +710,10 @@ def _set_norm_inst_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_raw_inst_attributes(cols_list):
+def _set_raw_affils_attributes(cols_list):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
-    for formatting the raw-institutions data to be saved.
+    for formatting the raw-affiliations data to be saved.
 
     The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
@@ -740,10 +740,10 @@ def _set_raw_inst_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_distrib_inst_attributes(cols_list):
+def _set_affils_distrib_attributes(cols_list):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
-    for formatting the distributed-institutions data to be saved.
+    for formatting the distributed-affiliations data to be saved.
 
     The widths and horizontal alignement of each column are 
     set through `_set_attr_dict` internal function.
@@ -770,11 +770,11 @@ def _set_distrib_inst_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_inst_country_pub_attributes(cols_list):
+def _set_affil_country_pub_attributes(cols_list):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
     for formatting the data of publication IDs per country and 
-    per institution to be saved.
+    per affiliation to be saved.
 
     Args:
         cols_list (list): The columns names (str) of the data.
@@ -799,10 +799,10 @@ def _set_inst_country_pub_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_pub_country_inst_attributes(cols_list):
+def _set_pub_country_affils_attributes(cols_list):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
-    for formatting the data of institutions per country and per 
+    for formatting the data of affiliations per country and per 
     publication ID to be saved.
 
     Args:
@@ -827,10 +827,10 @@ def _set_pub_country_inst_attributes(cols_list):
     return col_attr_dict, row_heights_dict, col_idx_init
 
 
-def _set_country_inst_pub_attributes(cols_list):
+def _set_country_affils_pub_attributes(cols_list):
     """Sets the widths and horizontal alignment of each column
     and the heights of the first row and other rows to be used 
-    for formatting the data of publication IDs per institutions 
+    for formatting the data of publication IDs per affiliations 
     types and per country to be saved.
 
     Args:
@@ -900,86 +900,65 @@ def set_df_attributes(df_title, df_cols_list, add_cols_nb=0):
         The rows attributes as dict keyed by "first_row" and "other_rows" \
         and valued by rows height (int), Num of first column to be formatted (int)).
     """
-    # Setting useful aliases
-    pub_list_alias = bm_pg.DF_TITLES_LIST[0]
-    def_otp_alias = bm_pg.DF_TITLES_LIST[2]
-    if_db_alias = bm_pg.DF_TITLES_LIST[3]
-    auth_alias = bm_pg.DF_TITLES_LIST[4]
-    auth_stat_alias = bm_pg.DF_TITLES_LIST[5]
-    kpi_alias = bm_pg.DF_TITLES_LIST[6]
-    kw_alias = bm_pg.DF_TITLES_LIST[7]
-    geo_alias = bm_pg.DF_TITLES_LIST[8]
-    norm_inst_alias = bm_pg.DF_TITLES_LIST[9]
-    if_ana_alias = bm_pg.DF_TITLES_LIST[10]
-    distrib_inst_alias = bm_pg.DF_TITLES_LIST[11]
-    inst_country_pub_alias = bm_pg.DF_TITLES_LIST[12]
-    doctype_stat_alias = bm_pg.DF_TITLES_LIST[13]
-    pub_country_inst_alias = bm_pg.DF_TITLES_LIST[14]
-    country_inst_pub_alias = bm_pg.DF_TITLES_LIST[15]
-    raw_inst_alias = bm_pg.DF_TITLES_LIST[16]
-    invalids_alias = bm_pg.DF_TITLES_LIST[17]
-    missing_if_issn_alias = bm_pg.DF_TITLES_LIST[18]
-    false_addr_alias = bm_pg.DF_TITLES_LIST[19]
-    pub_inst_type_list_alias = bm_pg.DF_TITLES_LIST[20]
 
-    if df_title==pub_list_alias:
+    if df_title=='pub_list':
         attr_tup = _set_pub_list_attributes(df_cols_list)
 
-    if df_title==pub_inst_type_list_alias:
-        attr_tup = _set_inst_type_pub_list_attributes(df_cols_list, add_cols_nb)
+    if df_title=='affil_type_pub_list':
+        attr_tup = _set_affil_type_pub_list_attributes(df_cols_list, add_cols_nb)
 
-    elif df_title==invalids_alias:
+    elif df_title=='invalids':
         attr_tup = _set_invalid_list_attributes(df_cols_list)
 
-    elif df_title==missing_if_issn_alias:
+    elif df_title=='missing_if_issn':
         attr_tup = _set_if_issn_attributes(df_cols_list)
 
-    elif df_title==def_otp_alias:
+    elif df_title=='def_otp':
         attr_tup = _set_def_otp_attributes(df_cols_list)
 
-    elif df_title==if_db_alias:
+    elif df_title=='if_db':
         attr_tup = _set_if_db_attributes(df_cols_list)
 
-    elif df_title==auth_alias:
+    elif df_title=='authors':
         attr_tup = _set_auth_attributes(df_cols_list)
 
-    elif df_title==auth_stat_alias:
+    elif df_title=='authors_stat':
         attr_tup = _set_auth_stat_attributes(df_cols_list)
 
-    elif df_title==kpi_alias:
+    elif df_title=='kpi':
         attr_tup = _set_kpi_attributes(df_cols_list)
 
-    elif df_title==if_ana_alias:
+    elif df_title=='if_analysis':
         attr_tup = _set_if_ana_attributes(df_cols_list)
 
-    elif df_title==kw_alias:
+    elif df_title=='kw':
         attr_tup = _set_kw_attributes(df_cols_list)
 
-    elif df_title==geo_alias:
+    elif df_title=='geo':
         attr_tup = _set_geo_attributes(df_cols_list)
 
-    elif df_title==norm_inst_alias:
-        attr_tup = _set_norm_inst_attributes(df_cols_list)
+    elif df_title=='norm_affils':
+        attr_tup = _set_norm_affils_attributes(df_cols_list)
 
-    elif df_title==inst_country_pub_alias:
-        attr_tup = _set_inst_country_pub_attributes(df_cols_list)
+    elif df_title=='affil_country_pub':
+        attr_tup = _set_affil_country_pub_attributes(df_cols_list)
 
-    elif df_title==pub_country_inst_alias:
-        attr_tup = _set_pub_country_inst_attributes(df_cols_list)
+    elif df_title=='pub_country_affils':
+        attr_tup = _set_pub_country_affils_attributes(df_cols_list)
 
-    elif df_title==country_inst_pub_alias:
-        attr_tup = _set_country_inst_pub_attributes(df_cols_list)
+    elif df_title=='country_affils_pub':
+        attr_tup = _set_country_affils_pub_attributes(df_cols_list)
 
-    elif df_title==distrib_inst_alias:
-        attr_tup = _set_distrib_inst_attributes(df_cols_list)
+    elif df_title=='affils_distrib':
+        attr_tup = _set_affils_distrib_attributes(df_cols_list)
 
-    elif df_title==doctype_stat_alias:
+    elif df_title=='doctype_stat':
         attr_tup = _set_doctype_stat_attributes(df_cols_list)
 
-    elif df_title==raw_inst_alias:
-        attr_tup = _set_raw_inst_attributes(df_cols_list)
+    elif df_title=='raw_affils':
+        attr_tup = _set_raw_affils_attributes(df_cols_list)
 
-    elif df_title==false_addr_alias:
+    elif df_title=='false_addr':
         attr_tup = _set_false_addresses_attributes(df_cols_list)
 
     else:
@@ -990,8 +969,8 @@ def set_df_attributes(df_title, df_cols_list, add_cols_nb=0):
 def format_page(df, df_title, wb=None, header=True,
                 cell_colors=None, idx_wrap=None, add_cols_nb=0):
     """Formats a worksheet of an openpyxl workbook using 
-    columns attributes got through the `set_df_attributes`  
-    internal function.
+    columns attributes got through the `set_df_attributes` 
+    function of the same module.
 
     When the workbook wb is not None, this is applied 
     to the active worksheet of the passed workbook. 
@@ -1000,8 +979,8 @@ def format_page(df, df_title, wb=None, header=True,
     Args:
         df (dataframe): The dataframe to be formatted.
         df_title (str): Name of data to be formatted for setting \
-        columns attributes, to be specified using the 'DF_TITLES_LIST' \
-        global defined in `bmfuncts.pub_globals` module.
+        columns attributes, to be specified among case values \
+        of the `set_df_attributes` function of the same module.
         wb (openpyxl workbook): Workbook of the worksheet \
         to be formatted (default = None).
         header (bool): Value of the 'header' arg of the \
@@ -1072,8 +1051,8 @@ def format_wb_sheet(sheet_name, df, df_title, wb, first, idx_wrap=None):
         sheet_name (str): 4-digits IFs sheet-name.
         df (dataframe): Data to be saved.
         df_title (str): Name of data to be formatted for setting \
-        columns attributes, to be specified using the 'DF_TITLES_LIST' \
-        global defined in `bmfuncts.pub_globals` module.
+        columns attributes, to be specified among case values \
+        of the `set_df_attributes` function of the same module.
         wb (openpyxl workbook): Workbook to be updated with the 'sheet_name' sheet.
         first (bool): True if the sheet to add is the first of the workbook.
         idx_wrap (int): The optional maximum index of the rows \
@@ -1101,9 +1080,9 @@ def save_formatted_df_to_xlsx(save_path, item_filename, item_df,
         item_filename (str): Name of the file for saving the data.
         item_df (dataframe): Data to be saved.
         item_df_title (str): Name of data to be formatted for setting \
-        columns attributes, to be specified using the 'DF_TITLES_LIST' \
-        global defined in `bmfuncts.pub_globals` module.
-        sheet_name (str): 4-digits IFs sheet-name. 
+        columns attributes, to be specified among case values \
+        of the `set_df_attributes` function of the same module.
+        sheet_name (str): 4-digits IFs sheet-name.
         idx_wrap (int): The optional maximum index of the rows \
         for which text is wrapped in the last column.
     """

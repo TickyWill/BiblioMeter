@@ -99,7 +99,7 @@ class SetLaunchButton:
         wf_path (path): The full path to the selected working folder.
         datatype (str): The selected type of Data combination of corpuses databases.
         set_inst_param (bool): Parameter for getting rid of setting \
-        Institute parameters if False.
+        Institute's parameters if False.
     """
 
     def __init__(self, master, institute, wf_path, datatype, set_inst_param):
@@ -162,7 +162,7 @@ class SetLaunchButton:
         else:
             master.wf_root_path = master.wf_path.parent
             if master.set_inst_param:
-                # Getting Institute parameters
+                # Getting Institute's parameters
                 master.org_tup = set_org_params(master.institute, master.wf_root_path)
 
             # Setting years list

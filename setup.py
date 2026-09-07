@@ -25,7 +25,7 @@ with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
 # This setup is suitable for "python setup.py develop".
 
 setup(name='BiblioMeter',
-      version='6.2.0',
+      version='6.3.0',
       description='An application for bibliometry',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -34,7 +34,7 @@ setup(name='BiblioMeter',
       classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.14',
         'Topic :: Scientific/Engineering :: Information Analysis :: Visualization',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research'

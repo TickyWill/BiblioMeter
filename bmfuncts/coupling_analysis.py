@@ -316,9 +316,9 @@ def _set_co_files_params(wf_path, corpus_year, final_results_path):
     hash_id_folder_alias = bm_pg.ARCHI_RESULTS["hash_id"]
     addresses_to_correct_file_alias = bm_pg.ARCHI_RESULTS["false_addresses_file"]
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    affils_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
-    norm_affils_file_base_alias = bm_pg.ARCHI_YEAR["norm inst file name"]
-    raw_affils_file_base_alias = bm_pg.ARCHI_YEAR["raw inst file name"]
+    affils_analysis_folder_alias = bm_pg.ARCHI_YEAR["affiliations analysis"]
+    norm_affils_file_base_alias = bm_pg.ARCHI_YEAR["norm affils file name"]
+    raw_affils_file_base_alias = bm_pg.ARCHI_YEAR["raw affils file name"]
 
     # Setting useful file names
     hash_id_file = f'{corpus_year} {bm_pg.ARCHI_YEAR["hash_id file name"]}'
@@ -516,11 +516,11 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     countries_df = norm_affil_df[[final_pub_id_col, address_id_col, countries_col]]
 
     # Saving formatted df of normalized and raw affiliations
-    affils_df_title = bm_pg.DF_TITLES_LIST[9]
+    affils_df_title = 'norm_affils'
     sheet_name = 'Norm ' + corpus_year
     save_formatted_df_to_xlsx(affils_analysis_folder_path, norm_affil_file,
                               norm_affil_df, affils_df_title, sheet_name)
-    affils_df_title = bm_pg.DF_TITLES_LIST[16]
+    affils_df_title = 'raw_affils'
     sheet_name = 'Raw ' + corpus_year
     save_formatted_df_to_xlsx(affils_analysis_folder_path, raw_addr_file,
                               raw_addr_df, affils_df_title, sheet_name)

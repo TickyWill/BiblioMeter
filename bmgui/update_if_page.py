@@ -15,7 +15,6 @@ import bmgui.gui_globals as bm_gg
 import bmgui.gui_utils as bm_gu
 import bmgui.pages_utils as bm_pu
 from bmfuncts.add_ifs import add_if
-from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.consolidate_pub_list import split_pub_list_by_doc_type
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.update_impact_factors import update_inst_if_database
@@ -35,7 +34,6 @@ def _set_if_files_params(master):
         name for building names of missing-ISSNs files.
     """
     # Setting useful aliases
-    all_years_folder_alias = bm_pg.ARCHI_BDD_MULTI_ANNUELLE["root"]
     pub_list_folder_alias = bm_pg.ARCHI_YEAR["pub list folder"]
     pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
     backup_folder_name_alias = bm_pg.ARCHI_BACKUP["root"]
@@ -59,7 +57,7 @@ def _set_if_files_params(master):
                   pub_list_file_base_alias,
                   missing_if_base_alias,
                   missing_issn_base_alias]
-    folders_list = [pub_list_folder_alias, all_years_folder_alias]
+    folders_list = [pub_list_folder_alias]
     files_paths_list = [if_db_path]
     folders_paths_list = [backup_if_folder_path, if_root_path]
     return files_list, folders_list, files_paths_list, folders_paths_list
@@ -142,21 +140,15 @@ def _launch_update_if_db(self, master, progress_callback):
     return update_status
 
 
-def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress_callback):
+def _set_if_update_final_message(master, if_tup, progress_callback):
     """Builds message about update status of IFs in the publications list 
     of each corpus depending on the availability of the publications list 
     and the completion status of the IFs data.
-
-    In addition, the IFs are updated in the full publications list resulting 
-    from the concatenation over the corpus years depending on status of 
-    the 'bm_pg.LISTES_CONCAT' global.
 
     Args:
         master (class): `bmgui.main_page.AppMain` class.
         if_tup (tup): (year of the missing publications list (str),\
         status of IFs data per journals (bool), unused parameter).
-        all_years_list_folder (str): The folder name where \
-        concatenation of all-years publications lists is saved.
         progress_callback (function): Function for updating \
         ProgressBar tkinter widget status.
     Returns:
@@ -166,10 +158,6 @@ def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress
     if not missing_pub_file_years_list:
         print_step_text("  - IFs updated in all consolidated lists of publications",
                         master.print_params)
-        if bm_pg.LISTES_CONCAT:
-            concatenate_pub_lists(master.print_params, master.wf_path, master.years_list)
-            print_step_text("  - Consolidated lists of publications concatenated after IFs update",
-                            master.print_params)
         progress_callback(100)
         info_title = '- Information -'
         info_text = ("La mise à jour des IFs dans les listes consolidées "
@@ -186,13 +174,6 @@ def _set_if_update_final_message(master, if_tup, all_years_list_folder, progress
                       "aux différentes classes de documents "
                       "(les classes n'étant pas exhaustives, "
                       "la décomposition peut être partielle).")
-        if bm_pg.LISTES_CONCAT:
-            info_text += ("\n\nEnfin, la concaténation des listes consolidées "
-                          "de publications disponibles, à été créée dans le dossier :"
-                          f"\n\n '{all_years_list_folder}' "
-                          "\n\nsous un nom vous identifiant "
-                          "et caractérisé par la date et l'heure de sa création "
-                          "ainsi que la liste des années prises en compte.")
         messagebox.showinfo(info_title, info_text)
 
     else:
@@ -341,7 +322,7 @@ def _update_pub_if(self, master, progress_callback):
     # Setting files parameters
     [_, pub_list_file_base, missing_if_base, missing_issn_base] = self.files_list
     pub_list_folder = self.folders_list[0]
-    all_years_list_folder = self.folders_list[1]
+#    all_years_list_folder = self.folders_list[1]
     names_tup = (pub_list_folder, pub_list_file_base, missing_if_base, missing_issn_base)
     progress_callback(5)
     progress_bar_state = 5
@@ -357,7 +338,7 @@ def _update_pub_if(self, master, progress_callback):
             missing_pub_file_years_list.append(missing_pub_file_year)
         progress_callback(progress_bar_state)
     if_tup = missing_pub_file_years_list, if_database_complete, progress_bar_state
-    _set_if_update_final_message(master, if_tup, all_years_list_folder, progress_callback)
+    _set_if_update_final_message(master, if_tup, progress_callback)
 
 
 def _launch_update_pub_if(self, master, progress_callback):

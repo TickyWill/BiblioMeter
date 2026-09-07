@@ -90,8 +90,8 @@ def _set_analysis_if_cols_info(corpus_year, if_most_recent_year):
         analysis results, 4 digits-year (str) of IFs analysis).
     """
     # Setting useful aliases
-    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
-    corpus_year_if_col_alias = bm_pg.COL_NAMES_BONUS['IF année publi']
+    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_ADD["IF en cours"]
+    corpus_year_if_col_alias = bm_pg.COL_NAMES_ADD['IF année publi']
 
     # Setting IFs column names info
     most_recent_year_if_col = f'{most_recent_year_if_col_base_alias}, {if_most_recent_year}'
@@ -155,7 +155,7 @@ def _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year):
                              'issn_col'               : final_col_dic['issn'],
                              'doctype_col'            : final_col_dic['doc_type'],
                              'journal_norm_col'       : bm_pg.COL_NAMES['temp_col'][1],
-                             'pub_ids_col'            : bm_pg.COL_NAMES_BONUS["pub_ids list"],
+                             'pub_ids_col'            : bm_pg.COL_NAMES_ADD["pub_ids list"],
                              'most_recent_year_if_col': most_recent_year_if_col,
                              'corpus_year_if_col'     : corpus_year_if_col,
                              'if_analysis_col'        : if_analysis_col
@@ -484,7 +484,7 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
                 by_journal_dict[dept] = by_doc_dept_df
 
             # Saving formatted stat data
-            doctype_stat_title = bm_pg.DF_TITLES_LIST[13]
+            doctype_stat_title = 'doctype_stat'
             sheet_name_base = f"{bm_pg.COL_NAMES_DOCTYPE_ANALYSIS[doctype]['doctype_col']}"
             sheet_name = f'{sheet_name_base} {corpus_year}'
             dept_doctype_file = f'{dept}-{doctype_file}'

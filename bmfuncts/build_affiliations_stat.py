@@ -33,22 +33,22 @@ def _set_affils_stat_cols():
     """
     affils_stat_cols_dic = {'pub_id_col'        : bm_pg.COL_NAMES['pub_id'],
                             'country_col'       : bm_pg.COL_NAMES['country'][2],
-                            'final_country_col' : bm_pg.COL_NAMES_BONUS['country'],
-                            'affils_col'        : bm_pg.COL_NAMES_BONUS['institution'],
-                            'pub_nb_col'        : bm_pg.COL_NAMES_BONUS["pub number"],
-                            'pub_ids_col'       : bm_pg.COL_NAMES_BONUS["pub_ids list"],
-                            'affils_nb_col'     : bm_pg.COL_NAMES_BONUS["inst number"],
-                            'affils_list_col'   : bm_pg.COL_NAMES_BONUS["inst list"],
-                            'co_auth_affils_col': bm_pg.COL_NAMES_BONUS['co-auth inst'],
-                            'journal_nb_col'    : bm_pg.COL_NAMES_BONUS['journal_pub_nb'],
-                            'proc_nb_col'       : bm_pg.COL_NAMES_BONUS['proceedings_pub_nb'],
-                            'book_nb_col'       : bm_pg.COL_NAMES_BONUS['book_pub_nb'],
+                            'final_country_col' : bm_pg.COL_NAMES_ADD['country'],
+                            'affils_col'        : bm_pg.COL_NAMES_ADD['affiliations'],
+                            'pub_nb_col'        : bm_pg.COL_NAMES_ADD["pub number"],
+                            'pub_ids_col'       : bm_pg.COL_NAMES_ADD["pub_ids list"],
+                            'affils_nb_col'     : bm_pg.COL_NAMES_ADD["affils number"],
+                            'affils_list_col'   : bm_pg.COL_NAMES_ADD["affils list"],
+                            'co_auth_affils_col': bm_pg.COL_NAMES_ADD['co-auth affils'],
+                            'journal_nb_col'    : bm_pg.COL_NAMES_ADD['journal_pub_nb'],
+                            'proc_nb_col'       : bm_pg.COL_NAMES_ADD['proceedings_pub_nb'],
+                            'book_nb_col'       : bm_pg.COL_NAMES_ADD['book_pub_nb'],
                            }
 
     return affils_stat_cols_dic
 
 
-def _build_distrib_affils_data(norm_affiliations_df, affiliations_col, affil_types_file_path,
+def _build_affils_distrib_data(norm_affiliations_df, affiliations_col, affil_types_file_path,
                                progress_param=None):
     """Distributes the column that contains the list of the normalized affiliations 
     of a publication and an author address into columns, each column specific 
@@ -88,7 +88,7 @@ def _build_distrib_affils_data(norm_affiliations_df, affiliations_col, affil_typ
 
     norm_affils_nb, norm_affil_num = len(norm_affiliations_df), 0
     set_words_template = Template(r'[\s]$word$$')
-    distrib_affiliations_df = pd.DataFrame()
+    affils_distrib_df = pd.DataFrame()
     norm_affil_num = 0
     for _, row in norm_affiliations_df.iterrows():
         norm_affil_num += 1
@@ -102,19 +102,19 @@ def _build_distrib_affils_data(norm_affiliations_df, affiliations_col, affil_typ
                 progress_status += progress_step
                 progress_callback(progress_status)
         row_df = row.to_frame().T.astype(str)
-        distrib_affiliations_df = concat_dfs([distrib_affiliations_df, row_df])
-    distrib_affiliations_df = distrib_affiliations_df.astype(str)
+        affils_distrib_df = concat_dfs([affils_distrib_df, row_df])
+    affils_distrib_df = affils_distrib_df.astype(str)
     print(" " * len(txt), end="\r")
-    return distrib_affiliations_df
+    return affils_distrib_df
 
 
-def _save_distrib_affils_data(distrib_affiliations_df, corpus_year, distrib_affils_file_path):
+def _save_affils_distrib_data(affils_distrib_df, corpus_year, affils_distrib_file_path):
     # Saving formatted data of distributed affiliations
-    distrib_affils_df_title = bm_pg.DF_TITLES_LIST[11]
+    affils_distrib_df_title = 'affils_distrib'
     sheet_name = 'Distributed Affils ' + corpus_year
-    wb, ws = format_page(distrib_affiliations_df, distrib_affils_df_title)
+    wb, ws = format_page(affils_distrib_df, affils_distrib_df_title)
     ws.title = sheet_name
-    wb.save(distrib_affils_file_path)
+    wb.save(affils_distrib_file_path)
 
 
 def _set_affil_names_list(affil_names):
@@ -134,7 +134,7 @@ def _set_affil_names_list(affil_names):
     return final_affil_names_list
 
 
-def _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df, institute_pub_ids_list, cols_list):
+def _build_affil_type_pub_id_all_affils_data(affils_distrib_df, institute_pub_ids_list, cols_list):
     """Builds the data with one row per affiliation name and its country, including the Institute's 
     affiliation, for each publication for a given type of affiliations.
 
@@ -144,7 +144,7 @@ def _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df, institute_
     listed in the 'cols_list' arg.
 
     Args:
-        distrib_affiliations_df (dataframe): The data with distributed normalized \
+        affils_distrib_df (dataframe): The data with distributed normalized \
         affiliations per affiliation type and per publication.
         institute_pub_ids_list (list): All publication IDs (str) of the Institute.
         cols_list (list): The columns names (str) list used to build the data and \
@@ -157,7 +157,7 @@ def _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df, institute_
 
     full_affils_list = []
     full_data = []
-    for pub_id, pub_id_df in distrib_affiliations_df.groupby(pub_id_col):
+    for pub_id, pub_id_df in affils_distrib_df.groupby(pub_id_col):
         pub_id_data = []
         if pub_id in institute_pub_ids_list:
             for country, country_df in pub_id_df.groupby(country_col):
@@ -177,7 +177,7 @@ def _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df, institute_
     return affil_type_pub_id_affils_df, full_affils_list
 
 
-def _build_affil_type_pub_id_stat_affils_data(institute, distrib_affiliations_df,
+def _build_affil_type_pub_id_stat_affils_data(institute, affils_distrib_df,
                                               institute_pub_ids_list, cols_list):
     """Builds the data with one row per affiliation name and its country 
     for each publication for a given type of affiliations.
@@ -191,7 +191,7 @@ def _build_affil_type_pub_id_stat_affils_data(institute, distrib_affiliations_df
 
     Args:
         institute (str): Institute's name.
-        distrib_affiliations_df (dataframe): The data with distributed normalized \
+        affils_distrib_df (dataframe): The data with distributed normalized \
         affiliations per affiliation type and per publication.
         institute_pub_ids_list (list): All publication IDs (str) of the Institute.
         cols_list (list): The columns names (str) list used to build the data.
@@ -203,7 +203,7 @@ def _build_affil_type_pub_id_stat_affils_data(institute, distrib_affiliations_df
 
     # Building the data with one row per list of affiliations of type
     # 'affil_type' set through 'affil_type_col' per country for each publication
-    affil_type_pub_id_affils_df, full_affils_list = _build_affil_type_pub_id_all_affils_data(distrib_affiliations_df,
+    affil_type_pub_id_affils_df, full_affils_list = _build_affil_type_pub_id_all_affils_data(affils_distrib_df,
                                                                                              institute_pub_ids_list,
                                                                                              cols_list)
 
@@ -439,7 +439,7 @@ def _build_useful_cols_lists(affils_stat_cols_dic):
     return cols_list_1, cols_list_2, cols_list_3, cols_list_4
 
 
-def _build_affils_stat_data(institute, distrib_affiliations_df, pub_ids_dict, affils_stat_cols_dic):
+def _build_affils_stat_data(institute, affils_distrib_df, pub_ids_dict, affils_stat_cols_dic):
     """Builds 3 dataframes of affiliations statistics for each affiliation type.
 
     This done through the cycling on the list of the affiliations type 
@@ -454,7 +454,7 @@ def _build_affils_stat_data(institute, distrib_affiliations_df, pub_ids_dict, af
 
     Args:
         institute (str): Institute name.
-        distrib_affiliations_df (dataframe): data with distributed normalized \
+        affils_distrib_df (dataframe): data with distributed normalized \
         affiliations per affiliation type and per publication.
         pub_ids_dict (dict): (list of all publication IDs (str) of the institute, \
         list of the IDs (str) of publications in journals, \
@@ -475,10 +475,10 @@ def _build_affils_stat_data(institute, distrib_affiliations_df, pub_ids_dict, af
     (base_cols_list, affil_type_affils_cols, affil_type_pub_ids_cols,
      affil_type_countries_cols) = lists_tup
 
-    affil_types_nb, affil_type_num = len(bm_pg.STAT_INST_TYPES_LIST), 0
+    affil_types_nb, affil_type_num = len(bm_ig.STAT_AFFIL_TYPES_DICT[institute]), 0
     stat_keys = list(bm_pg.STAT_FILE_DICT.keys())
     affil_type_data_dict = {}
-    for affil_type in bm_pg.STAT_INST_TYPES_LIST:
+    for affil_type in bm_ig.STAT_AFFIL_TYPES_DICT[institute]:
         affil_type_num += 1
         txt = f"              Number of analyzed affiliations type:   {affil_type_num} / {affil_types_nb}"
         print(txt, end="\r")
@@ -487,7 +487,7 @@ def _build_affils_stat_data(institute, distrib_affiliations_df, pub_ids_dict, af
         # Building the data with one row per affiliation name and its country
         # for each publication for a given type of affiliations
         cols_list = base_cols_list + [affil_type]
-        affil_type_pub_id_stat_affils_df = _build_affil_type_pub_id_stat_affils_data(institute, distrib_affiliations_df,
+        affil_type_pub_id_stat_affils_df = _build_affil_type_pub_id_stat_affils_data(institute, affils_distrib_df,
                                                                                      all_pub_ids_list, cols_list)
 
         # Building data with one row per affiliation and attached country, number of publications
@@ -534,7 +534,7 @@ def _save_affils_stat_data(affil_type_data_dict, affils_stat_path):
     """
     stat_affil_types_list = affil_type_data_dict.keys()
     for stat_key, value_tup in bm_pg.STAT_FILE_DICT.items():
-        stat_file, df_title_idx = value_tup
+        stat_file, affils_stat_title = value_tup
         # Initialize parameters for saving results as multisheet workbook
         first = True
         wb = openpyxl_Workbook()
@@ -544,7 +544,6 @@ def _save_affils_stat_data(affil_type_data_dict, affils_stat_path):
             affil_type_stat_df = affil_type_data_dict[affil_type][stat_key]
 
             affils_sheet_name = affil_type
-            affils_stat_title = bm_pg.DF_TITLES_LIST[df_title_idx]
             wb = format_wb_sheet(affils_sheet_name, affil_type_stat_df,
                                  affils_stat_title, wb, first)
             first = False
@@ -556,21 +555,21 @@ def _build_stat_files_paths(corpus_year, final_results_path, affils_analysis_fol
     # Setting aliases to folder and file names
     pub_lists_folder_alias = bm_pg.ARCHI_RESULTS["pub-lists"]
     full_pub_list_file_base_alias = bm_pg.ARCHI_YEAR["pub list file name base"]
-    distrib_affils_file_alias = bm_pg.ARCHI_YEAR["institutions distribution file name"]
+    affils_distrib_file_alias = bm_pg.ARCHI_YEAR["affiliations distribution file name"]
 
     # Setting file names
     full_pub_list_file = f"{full_pub_list_file_base_alias} {corpus_year}.xlsx"
     collab_pub_list_file = f"{full_pub_list_file_base_alias} {corpus_year}_Collaborations.xlsx"
-    distrib_affils_file = f"{distrib_affils_file_alias}.xlsx"
+    affils_distrib_file = f"{affils_distrib_file_alias}.xlsx"
 
     # Setting paths
     year_final_results_path = final_results_path / Path(corpus_year)
     pub_lists_folder_path = year_final_results_path / Path(pub_lists_folder_alias)
     full_pub_list_file_path = pub_lists_folder_path / Path(full_pub_list_file)
     collab_pub_list_path = pub_lists_folder_path / Path(collab_pub_list_file)
-    distrib_affils_file_path = affils_analysis_folder_path / Path(distrib_affils_file)
+    affils_distrib_file_path = affils_analysis_folder_path / Path(affils_distrib_file)
 
-    return full_pub_list_file_path, collab_pub_list_path, distrib_affils_file_path
+    return full_pub_list_file_path, collab_pub_list_path, affils_distrib_file_path
 
 
 def _build_collab_pub_list_data(full_pub_list_file_path, affil_type_data_dict, affils_stat_cols_dic):
@@ -615,7 +614,7 @@ def _build_collab_pub_list_data(full_pub_list_file_path, affil_type_data_dict, a
 
 
 def _save_collab_pub_list_data(collab_pub_list_df, collab_pub_list_path, affil_types_nb, corpus_year):
-    df_title = bm_pg.DF_TITLES_LIST[20]
+    df_title = 'affil_type_pub_list'
     wb, ws = format_page(collab_pub_list_df, df_title, add_cols_nb=affil_types_nb)
     ws.title = f"Collaborations {corpus_year}"
     # Saving workbook
@@ -631,8 +630,8 @@ def build_and_save_affiliations_stat(norm_affiliations_df, sub_paths_list, pub_i
 
     1. Builds data from the publications data with normalized affiliations \
     by distributing the affiliations list of each address by affiliation type \
-    through the `_build_distrib_affils_data` internal function.
-    2. Saves the built data through `_save_distrib_affils_data` internal function.
+    through the `_build_affils_distrib_data` internal function.
+    2. Saves the built data through `_save_affils_distrib_data` internal function.
     3. Computes the affiliations statistics through the `_build_affils_stat_data` \
     internal function.
     4. Saves the built data through `_save_affils_stat_data` internal function.
@@ -665,7 +664,7 @@ def build_and_save_affiliations_stat(norm_affiliations_df, sub_paths_list, pub_i
     # Setting files paths
     final_results_path, affils_analysis_folder_path, affil_types_file_path = sub_paths_list
     paths_tup = _build_stat_files_paths(corpus_year, final_results_path, affils_analysis_folder_path)
-    full_pub_list_file_path, collab_pub_list_path, distrib_affils_file_path = paths_tup
+    full_pub_list_file_path, collab_pub_list_path, affils_distrib_file_path = paths_tup
 
     # Setting optional values
     progress_callback, init_progress, final_progress, progress_inter = [None] * 4
@@ -680,17 +679,17 @@ def build_and_save_affiliations_stat(norm_affiliations_df, sub_paths_list, pub_i
         inter_progress_param = (progress_callback, init_progress, progress_inter)
     print_step_text("  - Distributing normalized affiliations per address and publications...",
                     print_params)
-    distrib_affiliations_df = _build_distrib_affils_data(norm_affiliations_df, affiliations_col,
-                                                         affil_types_file_path,
-                                                         progress_param=inter_progress_param)
+    affils_distrib_df = _build_affils_distrib_data(norm_affiliations_df, affiliations_col,
+                                                   affil_types_file_path,
+                                                   progress_param=inter_progress_param)
     print_step_text("      - Distributed normalized affiliations built", print_params)
     print("      - Saving the built distribution...", end="\r")
-    _save_distrib_affils_data(distrib_affiliations_df, corpus_year,distrib_affils_file_path)
+    _save_affils_distrib_data(affils_distrib_df, corpus_year, affils_distrib_file_path)
     print_step_text("      - Distributed normalized affiliations saved", print_params)
 
     # Building and saving as multisheet openpyxl files the data of affiliations statistics
     print_step_text("  - Computing affiliations statistics...", print_params)
-    affil_type_data_dict = _build_affils_stat_data(institute, distrib_affiliations_df,
+    affil_type_data_dict = _build_affils_stat_data(institute, affils_distrib_df,
                                                    pub_ids_dict, affils_stat_cols_dic)
     _save_affils_stat_data(affil_type_data_dict, affils_analysis_folder_path)
     print_step_text("      - Affiliations statistics built and saved", print_params)

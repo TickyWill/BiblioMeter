@@ -63,7 +63,7 @@ def _set_use_otps_cols(institute, org_tup):
                          'author_col'   : otp_col_dic['first_author'],
                          'doi_col'      : otp_col_dic['doi'],
                          'otp_list_col' : otp_col_dic['otp_list'],
-                         'otp_col'      : bm_pg.COL_NAMES_BONUS['final OTP'],
+                         'otp_col'      : bm_pg.COL_NAMES_ADD['final OTP'],
                         }
 
     final_col_list = list(final_col_dic.values())
@@ -85,7 +85,7 @@ def _set_save_otp_file_params(wf_path, corpus_year):
         The sheet names (dict) of the file of history of attributed OTPs).
     """
     # Setting useful folder and file aliases
-    merge_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    merge_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     otp_folder_alias = bm_pg.ARCHI_YEAR["OTP folder"]
     otp_file_base_alias = bm_pg.ARCHI_YEAR["OTP file name base"]
     history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
@@ -554,7 +554,7 @@ def _set_otp_save_params(use_otps_cols_dic):
     xl_idx_base = bm_pg.XL_INDEX_BASE
 
     # Setting formatting attributes
-    df_title = bm_pg.DF_TITLES_LIST[2]
+    df_title = 'def_otp'
 
     # Setting cell colors
     cell_colors = build_cell_fill_patterns()

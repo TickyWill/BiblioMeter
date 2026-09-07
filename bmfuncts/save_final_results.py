@@ -206,7 +206,7 @@ def save_final_hash_ids(wf_path, corpus_year, results_folder_path):
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["hash_id"]
 
     # Setting aliases of common parts of file names
-    origin_hash_id_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    origin_hash_id_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     hash_id_file_base_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
     year_hash_id_file_alias = corpus_year + " " + hash_id_file_base_alias
 
@@ -250,7 +250,7 @@ def save_final_merge(wf_path, corpus_year, results_folder_path):
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["merge"]
 
     # Setting aliases of common parts of file names
-    origin_merge_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    origin_merge_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     merge_file_base_alias = bm_pg.ARCHI_YEAR["merge file name"]
     year_merge_file_alias = corpus_year + " " + merge_file_base_alias
 
@@ -519,17 +519,6 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
-#    # Setting useful aliases
-#    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
-#    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
-#    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-#
-#    # Setting useful filenames dict
-#    kw_item_alias_dict = {'AK' : auth_kw_item_alias,
-#                          'IK' : index_kw_item_alias,
-#                          'TK' : title_kw_item_alias,
-#                         }
-#
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["keywords"]
 
@@ -726,11 +715,11 @@ def save_final_affiliations(wf_path, corpus_year, results_folder_path):
         the folder where final results have been saved.
     """
     # Setting aliases for saving results
-    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["institutions"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["affiliations"]
 
     # Setting aliases of common parts of file names
     origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    origin_affils_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    origin_affils_folder_alias = bm_pg.ARCHI_YEAR["affiliations analysis"]
 
     # Setting common paths
     origin_corpus_year_path = wf_path / Path(corpus_year)

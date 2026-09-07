@@ -78,9 +78,9 @@ def _set_au_analysis_cols(institute, org_tup):
                             'is_first_col'          : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_first_author'],
                             'is_last_col'           : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['is_last_author'],
                             'nb_pub_col'            : bm_pg.COL_NAMES_AUTHOR_ANALYSIS['pub_nb'],
-                            'pub_list_col'          : bm_pg.COL_NAMES_BONUS['pub_ids list'],
-                            'final_institute_au_col': bm_pg.COL_NAMES_BONUS['name_as_auth'],
-                            'final_empl_col'        : bm_pg.COL_NAMES_BONUS['name_as_empl'],
+                            'pub_list_col'          : bm_pg.COL_NAMES_ADD['pub_ids list'],
+                            'final_institute_au_col': bm_pg.COL_NAMES_ADD['name_as_auth'],
+                            'final_empl_col'        : bm_pg.COL_NAMES_ADD['name_as_empl'],
                            }
 
     return au_analysis_cols_dic
@@ -370,7 +370,7 @@ def authors_analysis(params_list, progress_callback=None):
 
     print_step_text("\nSaving author's scientific production data...", print_params)
     # Saving the author-employee dataframe as formatted EXCEL file
-    auth_df_title = bm_pg.DF_TITLES_LIST[4]
+    auth_df_title = 'authors'
     wb, ws = format_page(author_employee_df, auth_df_title)
     ws.title = 'Auteurs ' + corpus_year
     wb.save(au_empl_xlsx_file_path)
@@ -378,7 +378,7 @@ def authors_analysis(params_list, progress_callback=None):
         progress_callback(70)
 
     # Saving the author-statistics dataframe as formatted EXCEL file
-    auth_stat_df_title = bm_pg.DF_TITLES_LIST[5]
+    auth_stat_df_title = 'authors_stat'
     wb, ws = format_page(pub_nb_per_author_df, auth_stat_df_title)
     ws.title = 'Stat auteurs ' + corpus_year
     wb.save(au_stat_xlsx_file_path)

@@ -203,7 +203,7 @@ def _save_addresses_to_correct_data(addresses_to_correct_df, addresses_to_correc
         save_addresses_to_correct_df = save_addresses_to_correct_df.sort_values(by=sorting_cols, axis=0)
         save_addresses_to_correct_df = save_addresses_to_correct_df.drop(columns=temp_col)
 
-    df_title = bm_pg.DF_TITLES_LIST[19]
+    df_title = 'false_addr'
     wb, ws = format_page(save_addresses_to_correct_df, df_title)
     ws.title = database + " " + corpus_year
     wb.save(addresses_to_correct_path)
@@ -563,7 +563,7 @@ def _update_corrected_addresses_history(user_addresses_to_correct_df, corrected_
 
     # Saving data of addresses with unknown-country
     new_corrected_addresses_hist_df.sort_values(by=dedup_cols, axis=0, inplace=True)
-    df_title = bm_pg.DF_TITLES_LIST[19]
+    df_title = 'false_addr'
     wb, ws = format_page(new_corrected_addresses_hist_df, df_title)
     ws.title = database + " " + corpus_year
     wb.save(corrected_addresses_path)
@@ -639,7 +639,7 @@ def _correct_addresses_and_countries_parsing(addresses_correct_dfs, parse_cols_d
 
 def _correct_authaddr_parsing(authaddr_correct_dfs, parse_cols_dic,
                               affil_params_dic, unknown_country):
-    """Corrects the parsing data of authors-institutions using the data 
+    """Corrects the parsing data of authors-affiliations using the data 
     of addresses with unknown-country corrected by the user.
 
     In addition, the normalized and raw affiliations are defined for 
@@ -650,7 +650,7 @@ def _correct_authaddr_parsing(authaddr_correct_dfs, parse_cols_dic,
 
     Args:
         authaddr_correct_dfs (list): Composed of the parsing data (dataframe) of \
-        authors-institutions and of the user's correction data (dataframe) of \
+        authors-affiliations and of the user's correction data (dataframe) of \
         the addresses with unknown-country.
         parse_cols_dic (dict): The dict giving the columns names for the process \
         of correcting parsing data.
@@ -725,7 +725,7 @@ def _correct_authaddr_parsing(authaddr_correct_dfs, parse_cols_dic,
 
 
 def correct_parsing(db_params_list, parsing_path, parsing_dict, unknown_country, test_txt=""):
-    """Corrects the parsing data of countries, addresses and authors-institutions 
+    """Corrects the parsing data of countries, addresses and authors-affiliations 
     using the data of addresses with unknown-country corrected by the user.
 
     This is done through the `_correct_addresses_and_countries_parsing` and 
@@ -802,7 +802,7 @@ def correct_parsing(db_params_list, parsing_path, parsing_dict, unknown_country,
         new_countries_df.to_csv(parsing_countries_path, index=False, sep='\t')
         print_step_text("  - Addresses and countries parsing corrected", print_params)
 
-        # Correcting the authors-institutions parsing data
+        # Correcting the authors-affiliations parsing data
         # using the user's correction of addresses with unknown-country
         print_step_text("  - Correcting authors-with-affiliations parsing...", print_params)
         authaddr_correct_dfs = [authaddr_df, addresses_to_correct_df]

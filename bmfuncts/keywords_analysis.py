@@ -94,7 +94,7 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
 
         # Saving the keywords dataframe as EXCEL file
         dept_xlsx_file_path = Path(kw_analysis_folder_path) / Path(f'{dept} {corpus_year}-{kw_type}.xlsx')
-        kw_df_title = bm_pg.DF_TITLES_LIST[7]
+        kw_df_title = 'kw'
         wb, ws = format_page(dept_kw_df, kw_df_title)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
@@ -199,7 +199,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     # Setting useful column names aliases
     parsing_pub_id_col_alias = bm_pg.COL_NAMES['pub_id']
     keywords_col_alias = bm_pg.COL_NAMES['keywords'][1]
-    weight_col_alias = bm_pg.COL_NAMES_BONUS['weight']
+    weight_col_alias = bm_pg.COL_NAMES_ADD['weight']
 
     # Setting useful column names
     final_col_dic, depts_col_list = set_final_col_names(institute, org_tup)

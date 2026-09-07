@@ -49,13 +49,13 @@ def _set_useful_bm_cols():
     """ Sets useful col names from globals 
     of `bmfuncts.pub_globals` module imported as bm_pg.
     """
-    corpus_year_alias = bm_pg.COL_NAMES_BONUS['corpus_year']
-    authors_list_alias = bm_pg.COL_NAMES_BONUS['liste auteurs']
+    corpus_year_alias = bm_pg.COL_NAMES_ADD['corpus_year']
+    authors_list_alias = bm_pg.COL_NAMES_ADD['liste auteurs']
     bm_bonus_cols_list = [corpus_year_alias, authors_list_alias]
 
-    fullname_alias = bm_pg.COL_NAMES_BM['Full_name']
-    lastname_alias = bm_pg.COL_NAMES_BM['Last_name']
-    firstname_alias = bm_pg.COL_NAMES_BM['First_name']
+    fullname_alias = bm_pg.COL_NAMES_ADD['full_name']
+    lastname_alias = bm_pg.COL_NAMES_ADD['last_name']
+    firstname_alias = bm_pg.COL_NAMES_ADD['first_name']
     bm_auth_names_list = [fullname_alias, lastname_alias, firstname_alias]
 
     ortho_lastname_init_alias = bm_pg.COL_NAMES_ORTHO['last name init']
@@ -387,9 +387,9 @@ def _set_correction_file_params(institute, wf_path, corpus_year):
         metadata errors and the sheet name containing the authors to remove.
     """
     # Setting useful aliases
-    drop_articles_folder = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    drop_articles_folder = bm_pg.ARCHI_YEAR["merge folder name"]
     drop_articles_file = bm_pg.ARCHI_YEAR["drop articles file name"]
-    drop_authaddr_file = bm_pg.ARCHI_YEAR["drop authsinst file name"]
+    drop_authaddr_file = bm_pg.ARCHI_YEAR["drop authaffils file name"]
     orphan_treat_root = bm_pg.ARCHI_ORPHAN["root"]
     orthograph_file_name = bm_pg.ARCHI_ORPHAN["orthograph file"]
     complements_file_name = bm_pg.ARCHI_ORPHAN["complementary file"]

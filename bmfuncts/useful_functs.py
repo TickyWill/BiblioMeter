@@ -604,7 +604,7 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
             _ = create_folder(year_bdd_extract_folder_path, archiv_folder_alias, verbose=verbose)
 
         # Creating architecture for corpus-year working-folder
-        _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose=verbose)
+        _ = create_folder(corpus_year_folder_path, archi_alias["merge folder name"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose=verbose)
@@ -616,7 +616,7 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
         _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose=verbose)
         _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose=verbose)
         _ = create_folder(analysis_folder, archi_alias["countries analysis"], verbose=verbose)
-        _ = create_folder(analysis_folder, archi_alias["institutions analysis"], verbose=verbose)
+        _ = create_folder(analysis_folder, archi_alias["affiliations analysis"], verbose=verbose)
 
         corpus_folder = create_folder(corpus_year_folder_path, archi_alias["corpus"], verbose=verbose)
 

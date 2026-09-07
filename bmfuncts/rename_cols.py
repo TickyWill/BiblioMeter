@@ -20,20 +20,20 @@ def build_col_conversion_dic(institute, org_tup):
     given the initial column names of 3 dataframes.
 
     Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
         (tup): (dict for renaming the specific columns of the dataframe \
         of publications list with one row per author that has not been \
-        identified as Institute employee, \
+        identified as Institute's employee, \
         dict for renaming the specific columns of the dataframe of merged \
         employees information with the publications list with one \
-        row per Institute author, \
+        row per Institute's author, \
         dict for renaming the columns of all the results dataframes).
     """
 
-    # Setting institute parameters
+    # Setting institute's parameters
     col_names_dpt  = org_tup[0]
     dpt_col_list   = list(col_names_dpt.values())
     inst_col_list  = org_tup[4]
@@ -43,25 +43,25 @@ def build_col_conversion_dic(institute, org_tup):
                                 inst_col_list,
                                 [bm_pg.COL_NAMES['authors'][2]],
                                 bm_pg.COL_NAMES['articles'][1:11],
-                                [bm_pg.COL_NAMES_BONUS['corpus_year']],
-                                [bm_pg.COL_NAMES_BM['Full_name'],
-                                 bm_pg.COL_NAMES_BM['Last_name'],
-                                 bm_pg.COL_NAMES_BM['First_name']]], [])
+                                [bm_pg.COL_NAMES_ADD['corpus_year']],
+                                [bm_pg.COL_NAMES_ADD['full_name'],
+                                 bm_pg.COL_NAMES_ADD['last_name'],
+                                 bm_pg.COL_NAMES_ADD['first_name']]], [])
 
     init_merge_col_list = sum([init_orphan_col_list,
-                                [bm_pg.COL_NAMES_BONUS['homonym']],
-                                list(bm_eg.EMPLOYEES_USEFUL_COLS.values()),
-                                list(bm_eg.EMPLOYEES_ADD_COLS.values()),
-                                [bm_pg.COL_NAMES_BONUS['author_type'],
-                                 bm_pg.COL_NAMES_BONUS['liste biblio']]], [])
+                               [bm_pg.COL_NAMES_ADD['homonym']],
+                               list(bm_eg.EMPLOYEES_USEFUL_COLS.values()),
+                               list(bm_eg.EMPLOYEES_ADD_COLS.values()),
+                               [bm_pg.COL_NAMES_ADD['author_type'],
+                                bm_pg.COL_NAMES_ADD['liste biblio']]], [])
 
     init_bm_col_list = sum([init_merge_col_list,
-                            [bm_pg.COL_NAMES_BONUS['nom prénom liste'],
-                             bm_pg.COL_NAMES_BONUS['liste auteurs'],
-                             bm_pg.COL_NAMES_BONUS['nom prénom'] + institute],
-                            [bm_pg.COL_NAMES_BONUS['list OTP'],
-                             bm_pg.COL_NAMES_BONUS['IF en cours'],
-                             bm_pg.COL_NAMES_BONUS['IF année publi']],
+                            [bm_pg.COL_NAMES_ADD['nom prénom liste'],
+                             bm_pg.COL_NAMES_ADD['liste auteurs'],
+                             bm_pg.COL_NAMES_ADD['nom prénom'] + institute],
+                            [bm_pg.COL_NAMES_ADD['list OTP'],
+                             bm_pg.COL_NAMES_ADD['IF en cours'],
+                             bm_pg.COL_NAMES_ADD['IF année publi']],
                             dpt_col_list], [])
 
     final_bm_col_list = sum([["Hash_id",
@@ -69,7 +69,7 @@ def build_col_conversion_dic(institute, org_tup):
                               "Auteur_id",
                               "Adresse",
                               "Pays",
-                              "Institutions"],
+                              "Affiliations"],
                              inst_col_list,
                              ["Co_auteur " + institute,
                               "Premier auteur",
@@ -83,9 +83,9 @@ def build_col_conversion_dic(institute, org_tup):
                               "Titre",
                               "ISSN",
                               "Année de première publication"],
-                             [bm_pg.COL_NAMES_BM['Full_name'],
-                              bm_pg.COL_NAMES_BM['Last_name'],
-                              bm_pg.COL_NAMES_BM['First_name']],
+                             [bm_pg.COL_NAMES_ADD['full_name'],
+                              bm_pg.COL_NAMES_ADD['last_name'],
+                              bm_pg.COL_NAMES_ADD['first_name']],
                              ["Homonymes",
                               "Matricule",
                               "Nom",
@@ -105,14 +105,14 @@ def build_col_conversion_dic(institute, org_tup):
                               "Date de naissance",
                               "Tranche d'age (5 ans)"],
                              list(bm_eg.EMPLOYEES_ADD_COLS.values()),
-                             [bm_pg.COL_NAMES_BONUS['author_type'],
-                              bm_pg.COL_NAMES_BONUS['liste biblio'],
-                              bm_pg.COL_NAMES_BONUS['nom prénom liste'],
-                              bm_pg.COL_NAMES_BONUS['liste auteurs'],
-                              bm_pg.COL_NAMES_BONUS['nom prénom'] + institute],
-                             [bm_pg.COL_NAMES_BONUS['list OTP'],
-                              bm_pg.COL_NAMES_BONUS['IF en cours'],
-                              bm_pg.COL_NAMES_BONUS['IF année publi']],
+                             [bm_pg.COL_NAMES_ADD['author_type'],
+                              bm_pg.COL_NAMES_ADD['liste biblio'],
+                              bm_pg.COL_NAMES_ADD['nom prénom liste'],
+                              bm_pg.COL_NAMES_ADD['liste auteurs'],
+                              bm_pg.COL_NAMES_ADD['nom prénom'] + institute],
+                             [bm_pg.COL_NAMES_ADD['list OTP'],
+                              bm_pg.COL_NAMES_ADD['IF en cours'],
+                              bm_pg.COL_NAMES_ADD['IF année publi']],
                              dpt_col_list], [])
 
     all_col_rename_dic    = dict(zip(init_bm_col_list, final_bm_col_list))
@@ -132,7 +132,7 @@ def set_homonym_col_names(institute, org_tup):
     the same module.
 
     Args:
-        institute (str): The Intitute name.
+        institute (str): The Intitute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -145,27 +145,27 @@ def set_homonym_col_names(institute, org_tup):
 
     homonyms_col_dic_init = {'hash_id'       : bm_pg.COL_HASH['hash_id'],
                              'pub_id'        : bm_pg.COL_NAMES['pub_id'],
-                             'corpus_year'   : bm_pg.COL_NAMES_BONUS['corpus_year'],
+                             'corpus_year'   : bm_pg.COL_NAMES_ADD['corpus_year'],
                              'final_year'    : bm_pg.COL_NAMES['articles'][2],
                              'inst_author'   : bm_pg.COL_NAMES['authors'][2],
-                             "all_authors"   : bm_pg.COL_NAMES_BONUS['liste auteurs'],
+                             "all_authors"   : bm_pg.COL_NAMES_ADD['liste auteurs'],
                              'first_author'  : bm_pg.COL_NAMES['articles'][1],
                              'title'         : bm_pg.COL_NAMES['articles'][9],
                              'journal'       : bm_pg.COL_NAMES['articles'][3],
                              'doc_type'      : bm_pg.COL_NAMES['articles'][7],
                              'doi'           : bm_pg.COL_NAMES['articles'][6],
-                             'full_ref'      : bm_pg.COL_NAMES_BONUS['liste biblio'],
+                             'full_ref'      : bm_pg.COL_NAMES_ADD['liste biblio'],
                              'issn'          : bm_pg.COL_NAMES['articles'][10],
                              'author_id'     : bm_pg.COL_NAMES['auth_inst'][1],
                              'matricul'      : bm_eg.EMPLOYEES_USEFUL_COLS['matricule'],
                              'last_name'     : bm_eg.EMPLOYEES_USEFUL_COLS['name'],
                              'first_name'    : bm_eg.EMPLOYEES_USEFUL_COLS['first_name'],
-                             'author_type'   : bm_pg.COL_NAMES_BONUS['author_type'],
+                             'author_type'   : bm_pg.COL_NAMES_ADD['author_type'],
                              'dpt'           : bm_eg.EMPLOYEES_USEFUL_COLS['dpt'],
                              'serv'          : bm_eg.EMPLOYEES_USEFUL_COLS['serv'],
                              'lab'           : bm_eg.EMPLOYEES_USEFUL_COLS['lab'],
                              'empl_full_name': bm_eg.EMPLOYEES_ADD_COLS['employee_full_name'],
-                             'homonym'       : bm_pg.COL_NAMES_BONUS['homonym'],
+                             'homonym'       : bm_pg.COL_NAMES_ADD['homonym'],
                              }
 
     homonyms_col_list = [all_col_rename_dic[name] for _, name in homonyms_col_dic_init.items()]
@@ -181,14 +181,14 @@ def set_otp_col_names(institute, org_tup):
     the same module.
 
     Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
         (dict): To be used for setting the final column names of the \
         dataframes built for OTPs attribution by the user.
     """
-    # Setting institute parameters
+    # Setting institute's parameters
     dpt_col_names = org_tup[0]
 
     #  Setting useful col names
@@ -197,20 +197,20 @@ def set_otp_col_names(institute, org_tup):
 
     otp_col_dic_init = {'hash_id'           : bm_pg.COL_HASH['hash_id'],
                         'pub_id'            : bm_pg.COL_NAMES['pub_id'],
-                        'corpus_year'       : bm_pg.COL_NAMES_BONUS['corpus_year'],
+                        'corpus_year'       : bm_pg.COL_NAMES_ADD['corpus_year'],
                         'final_year'        : bm_pg.COL_NAMES['articles'][2],
                         'first_author'      : bm_pg.COL_NAMES['articles'][1],
-                        "institute_authors" : bm_pg.COL_NAMES_BONUS['nom prénom liste'],
-                        "all_authors"       : bm_pg.COL_NAMES_BONUS['liste auteurs'],
+                        "institute_authors" : bm_pg.COL_NAMES_ADD['nom prénom liste'],
+                        "all_authors"       : bm_pg.COL_NAMES_ADD['liste auteurs'],
                         'title'             : bm_pg.COL_NAMES['articles'][9],
                         'journal'           : bm_pg.COL_NAMES['articles'][3],
                         'doc_type'          : bm_pg.COL_NAMES['articles'][7],
                         'doi'               : bm_pg.COL_NAMES['articles'][6],
-                        'full_ref'          : bm_pg.COL_NAMES_BONUS['liste biblio'],
+                        'full_ref'          : bm_pg.COL_NAMES_ADD['liste biblio'],
                         'issn'              : bm_pg.COL_NAMES['articles'][10],
                         'author_id'         : bm_pg.COL_NAMES['auth_inst'][1],
                         'matricul'          : bm_eg.EMPLOYEES_USEFUL_COLS['matricule'],
-                        'institute_author'  : bm_pg.COL_NAMES_BONUS['nom prénom'] + institute,
+                        'institute_author'  : bm_pg.COL_NAMES_ADD['nom prénom'] + institute,
                         'dpt'               : bm_eg.EMPLOYEES_USEFUL_COLS['dpt'],
                         'serv'              : bm_eg.EMPLOYEES_USEFUL_COLS['serv'],
                         'lab'               : bm_eg.EMPLOYEES_USEFUL_COLS['lab'],
@@ -219,7 +219,7 @@ def set_otp_col_names(institute, org_tup):
     otp_col_dic = dict(zip(otp_col_dic_init.keys(), otp_col_list))
     for _,dpt_col_name in dpt_col_names.items():
         otp_col_dic[dpt_col_name] = dpt_col_names[dpt_col_name]
-    otp_col_dic['otp_list'] = bm_pg.COL_NAMES_BONUS['list OTP']
+    otp_col_dic['otp_list'] = bm_pg.COL_NAMES_ADD['list OTP']
 
     return otp_col_dic
 
@@ -232,7 +232,7 @@ def set_final_col_names(institute, org_tup):
     of the same module.
 
     Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -240,7 +240,7 @@ def set_final_col_names(institute, org_tup):
         column names of the final publications-list dataframe, \
         list of the final column names of the departments).
     """
-    # Setting institute parameters
+    # Setting institute's parameters
     dpt_col_names = org_tup[0]
 
     #  Setting useful col names
@@ -249,16 +249,16 @@ def set_final_col_names(institute, org_tup):
 
     final_col_dic_init = {'hash_id'           : bm_pg.COL_HASH['hash_id'],
                           'pub_id'            : bm_pg.COL_NAMES['pub_id'],
-                          'corpus_year'       : bm_pg.COL_NAMES_BONUS['corpus_year'],
+                          'corpus_year'       : bm_pg.COL_NAMES_ADD['corpus_year'],
                           'final_year'        : bm_pg.COL_NAMES['articles'][2],
                           'first_author'      : bm_pg.COL_NAMES['articles'][1],
-                          'institute_authors' : bm_pg.COL_NAMES_BONUS['nom prénom liste'],
-                          "all_authors"       : bm_pg.COL_NAMES_BONUS['liste auteurs'],
+                          'institute_authors' : bm_pg.COL_NAMES_ADD['nom prénom liste'],
+                          "all_authors"       : bm_pg.COL_NAMES_ADD['liste auteurs'],
                           'title'             : bm_pg.COL_NAMES['articles'][9],
                           'journal'           : bm_pg.COL_NAMES['articles'][3],
                           'doc_type'          : bm_pg.COL_NAMES['articles'][7],
                           'doi'               : bm_pg.COL_NAMES['articles'][6],
-                          'full_ref'          : bm_pg.COL_NAMES_BONUS['liste biblio'],
+                          'full_ref'          : bm_pg.COL_NAMES_ADD['liste biblio'],
                           'issn'              : bm_pg.COL_NAMES['articles'][10],
                          }
 
@@ -266,7 +266,7 @@ def set_final_col_names(institute, org_tup):
     final_col_dic = dict(zip(final_col_dic_init.keys(), final_col_list))
     for _,dpt_col_name in dpt_col_names.items():
         final_col_dic[dpt_col_name] = dpt_col_names[dpt_col_name]
-    final_col_dic['otp'] = bm_pg.COL_NAMES_BONUS['list OTP']
+    final_col_dic['otp'] = bm_pg.COL_NAMES_ADD['list OTP']
 
     # Setting the final dept column names in case of getting changed
     # in this function from initial 'dpt_col_names' list
@@ -285,7 +285,7 @@ def set_if_col_names(institute, org_tup):
     the same module.
 
     Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -294,8 +294,8 @@ def set_if_col_names(institute, org_tup):
     """
 
     if_maj_col_dic, _ = set_final_col_names(institute, org_tup)
-    if_maj_col_dic['current_if']  = bm_pg.COL_NAMES_BONUS['IF en cours']
-    if_maj_col_dic['pub_year_if'] = bm_pg.COL_NAMES_BONUS['IF année publi']
+    if_maj_col_dic['current_if']  = bm_pg.COL_NAMES_ADD['IF en cours']
+    if_maj_col_dic['pub_year_if'] = bm_pg.COL_NAMES_ADD['IF année publi']
 
     return if_maj_col_dic
 
@@ -309,7 +309,7 @@ def set_col_attr(institute, org_tup, columns_list):
     `build_col_conversion_dic` internal function.
 
     Args:
-        institute (str): The Institute name.
+        institute (str): The Institute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
         columns_list (): The full list of column names (str) \
@@ -320,7 +320,7 @@ def set_col_attr(institute, org_tup, columns_list):
         list of the final column names that have attributes).
     """
 
-    # Setting institute parameters
+    # Setting institute's parameters
     col_names_dpt = org_tup[0]
 
     #  Setting useful col names
@@ -329,28 +329,28 @@ def set_col_attr(institute, org_tup, columns_list):
 
     init_col_attr   = {bm_pg.COL_HASH['hash_id']                 : [25, "center"],
                        bm_pg.COL_NAMES['pub_id']                 : [20, "center"],
-                       bm_pg.COL_NAMES_BONUS['nom prénom liste'] : [40, "left"],
-                       bm_pg.COL_NAMES_BONUS['liste auteurs']    : [40, "left"],
+                       bm_pg.COL_NAMES_ADD['nom prénom liste']   : [40, "left"],
+                       bm_pg.COL_NAMES_ADD['liste auteurs']      : [40, "left"],
                        bm_pg.COL_NAMES['authors'][1]             : [15, "center"],
                        bm_eg.EMPLOYEES_USEFUL_COLS['matricule']  : [15, "center"],
                        bm_eg.EMPLOYEES_USEFUL_COLS['name']       : [20, "center"],
                        bm_eg.EMPLOYEES_USEFUL_COLS['first_name'] : [20, "center"],
                        bm_pg.COL_NAMES['articles'][9]            : [40, "left"],
                        bm_pg.COL_NAMES['articles'][1]            : [20, "center"],
-                       bm_pg.COL_NAMES_BONUS['IF en cours']      : [15, "center"],
-                       bm_pg.COL_NAMES_BONUS['IF année publi']   : [15, "center"],
+                       bm_pg.COL_NAMES_ADD['IF en cours']        : [15, "center"],
+                       bm_pg.COL_NAMES_ADD['IF année publi']     : [15, "center"],
                        bm_pg.COL_NAMES['articles'][6]            : [20, "left"],
                        bm_pg.COL_NAMES['articles'][10]           : [15, "center"],
                        bm_pg.COL_NAMES['articles'][2]            : [15, "center"],
                        bm_pg.COL_NAMES['articles'][3]            : [40, "left"],
                        bm_pg.COL_NAMES['articles'][7]            : [20, "center"],
-                       bm_pg.COL_NAMES_BONUS['corpus_year']      : [15, "center"],
+                       bm_pg.COL_NAMES_ADD['corpus_year']        : [15, "center"],
                        bm_eg.EMPLOYEES_USEFUL_COLS['dpt']        : [15, "center"],
                        bm_eg.EMPLOYEES_USEFUL_COLS['serv']       : [15, "center"],
                        bm_eg.EMPLOYEES_USEFUL_COLS['lab']        : [15, "center"],
-                       bm_pg.COL_NAMES_BONUS['liste biblio']     : [55, 'left'],
-                       bm_pg.COL_NAMES_BONUS['homonym']          : [20, "center"],
-                       bm_pg.COL_NAMES_BONUS['list OTP']         : [75, "center"],
+                       bm_pg.COL_NAMES_ADD['liste biblio']       : [55, 'left'],
+                       bm_pg.COL_NAMES_ADD['homonym']            : [20, "center"],
+                       bm_pg.COL_NAMES_ADD['list OTP']           : [75, "center"],
                       }
     for _,dpt_col_name in col_names_dpt.items():
         init_col_attr[col_names_dpt[dpt_col_name]] = [10, "center"]

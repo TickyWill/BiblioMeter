@@ -553,8 +553,8 @@ def _set_merge_cols_lists():
     """Sets lists of names of useful columns for the module from globals.
     """
     # Setting the names of columns that will be added to the data
-    author_type_col, full_ref_col = (bm_pg.COL_NAMES_BONUS['author_type'],
-                                     bm_pg.COL_NAMES_BONUS['liste biblio'])
+    author_type_col, full_ref_col = (bm_pg.COL_NAMES_ADD['author_type'],
+                                     bm_pg.COL_NAMES_ADD['liste biblio'])
 
     # Setting the names of IDs columns
     pub_id_col, author_id_col, mat_col = (bm_pg.COL_NAMES['pub_id'],
@@ -574,11 +574,11 @@ def _set_merge_cols_lists():
                      bm_eg.EMPLOYEES_USEFUL_COLS['qualification']]
 
     # Setting the names of columns of full names in data
-    fullname_cols_list = [bm_pg.COL_NAMES_BM['Full_name'],
+    fullname_cols_list = [bm_pg.COL_NAMES_ADD['full_name'],
                           bm_eg.EMPLOYEES_ADD_COLS['employee_full_name']]
 
     # Setting the names of columns of last names in data
-    lastname_cols_list = [bm_pg.COL_NAMES_BM['Last_name'],
+    lastname_cols_list = [bm_pg.COL_NAMES_ADD['last_name'],
                           bm_pg.COL_NAMES_PUB_NAMES['last name']]
 
     # Setting the names of columns of initials of first names in data

@@ -30,7 +30,6 @@ import bmgui.pages_utils as bm_pu
 from bmfuncts.add_otps import add_otp
 from bmfuncts.consolidate_pub_list import build_final_pub_list
 from bmfuncts.consolidate_pub_list import check_dedup_parsing_available
-from bmfuncts.consolidate_pub_list import concatenate_pub_lists
 from bmfuncts.merge_pub_employees import recursive_year_search
 from bmfuncts.update_employees import set_employees_data
 from bmfuncts.update_employees import update_employees
@@ -48,7 +47,7 @@ def _set_empl_files_params(root_path):
 
     Args:
         root_path (path): The full path to the folder where the folder \
-        of Institute parameters are saved.
+        of Institute's parameters are saved.
     Returns:
         (tup): (The folder (path) of full employees data of all available years,\
         The folder (path) of employees data used for the update of the full data, \
@@ -71,11 +70,11 @@ def _set_empl_files_params(root_path):
 
 
 def _launch_update_employees_try(self, master, progress_callback):
-    """Launches update of Institute employees database.
+    """Launches update of Institute's employees database.
 
     This is done through the `update_employees` function imported from 
     `bmfuncts.update_employees` module after check of available 
-    files for update (should be single) and check of Institute 
+    files for update (should be single) and check of Institute's 
     employees database file.
 
     Args:
@@ -220,7 +219,7 @@ def _set_merge_year_files_param(wf_path, year_select):
         to the folder where the results of the merge are saved).
     """
     # Setting useful aliases
-    merge_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    merge_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     merge_alias = bm_pg.ARCHI_YEAR["merge file name"]
     orphan_alias = bm_pg.ARCHI_YEAR["orphan file name"]
     hash_id_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
@@ -241,7 +240,7 @@ def _set_merge_year_files_param(wf_path, year_select):
 
 
 def _launch_recursive_year_search_try(self, master, year_select, progress_callback):
-    """Launches merge of publications list with Institute employees.
+    """Launches merge of publications list with Institute's employees.
 
     This is done through the `recursive_year_search` function imported from 
     `bmfuncts.merge_pub_employees` module after:
@@ -392,7 +391,7 @@ def _set_homonymies_year_files_param(wf_path, year_select):
         homonymies resolution).
     """
     # Setting useful aliases
-    merge_data_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    merge_data_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     merge_alias = bm_pg.ARCHI_YEAR["merge file name"]
     homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
     homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
@@ -641,7 +640,7 @@ def _launch_add_otp_try(master, year_select, progress_callback):
         progress_bar_state_init = 10
         progress_callback(progress_bar_state_init)
 
-    # Getting institute parameters
+    # Getting institute's parameters
     dpt_label_list = list(master.org_tup[1].keys())
 
     # Setting dialogs and checking answers
@@ -759,10 +758,6 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
             # Consolidating publications list
             conso_tup = build_final_pub_list(conso_params_list)
             (pub_nb, invalids_nb, split_ratio, if_database_complete) = conso_tup
-            _progress_callback(70)
-            if bm_pg.LISTES_CONCAT:
-                # Concatenating all available publications lists
-                concatenate_pub_lists(master.print_params, master.wf_path, master.years_list)
             _progress_callback(100)
 
             # Displaying the status of the consolidation step of the publications list
@@ -798,13 +793,6 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
                           "la décomposition peut être partielle)."
                           "\n\nLa liste des publications invalides a été créée "
                           "dans le même dossier.")
-            if bm_pg.LISTES_CONCAT:
-                all_years_data_folder = bm_pg.ARCHI_BDD_MULTI_ANNUELLE
-                _info_text += ("\n\nEnfin, la concaténation des listes consolidées des publications "
-                              "disponibles, a été créée dans le dossier :"
-                              f"\n\n '{all_years_data_folder}' "
-                              "\n\nsous un nom vous identifiant ainsi que la liste des années "
-                              "prises en compte et caractérisé par la date et l'heure de la création.")
             messagebox.showinfo(_info_title, _info_text)
 
         else:
@@ -874,7 +862,7 @@ def _launch_pub_list_conso_try(master, year_select, progress_callback):
 
 def create_consolidate_corpus(self, master, page_name):
     """Manages creation and use of widgets for corpus consolidation 
-    through merge with Institute employees database.
+    through merge with Institute's employees database.
 
     Useful files parameters are set through the `_set_empl_files_params`
     internal function.
@@ -954,7 +942,7 @@ def create_consolidate_corpus(self, master, page_name):
 
     # *********************** STEP 1: MERGE AUTHORS-EMPLOYEES
     def _launch_recursive_year_search(progress_callback):
-        """Command of the 'merge_button' button.        
+        """Command of the 'merge_button' button.
         """
         # Getting year selection
         year_select = self.variable_years.get()

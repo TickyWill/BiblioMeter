@@ -45,16 +45,16 @@ def _set_add_ifs_col_dic(institute, org_tup, corpus_year):
     add_ifs_col_dic = {'year_col'          : final_col_dic['corpus_year'],
                        'pub_id_col'        : final_col_dic['pub_id'],
                        'doctype_col'       : final_col_dic['doc_type'],
-                       'pub_id_nb_col'     : bm_pg.COL_NAMES_BONUS['pub number'],
+                       'pub_id_nb_col'     : bm_pg.COL_NAMES_ADD['pub number'],
                        'journal_col'       : final_col_dic['journal'],
                        'issn_col'          : final_col_dic['issn'],
-                       'eissn_col'         : bm_pg.COL_NAMES_BONUS['e-ISSN'],
-                       'corpus_issn_col'   : bm_pg.COL_NAMES_BONUS["database ISSN"],
+                       'eissn_col'         : bm_pg.COL_NAMES_ADD['e-ISSN'],
+                       'corpus_issn_col'   : bm_pg.COL_NAMES_ADD["database ISSN"],
                        'current_if_col'    : if_maj_col_dic['current_if'],
                        'corpus_year_if_col': if_maj_col_dic['pub_year_if'],
-                       'database_if_col'   : bm_pg.COL_NAMES_BONUS['IF clarivate'],
+                       'database_if_col'   : bm_pg.COL_NAMES_ADD['IF clarivate'],
                        'otp_col'           : final_col_dic['otp'],
-                       'new_otp_col'       : bm_pg.COL_NAMES_BONUS['final OTP'],
+                       'new_otp_col'       : bm_pg.COL_NAMES_ADD['final OTP'],
                       }
     add_ifs_col_dic['final_year_col'] = add_ifs_col_dic['year_col'][0:5]
     add_ifs_col_dic['journal_upper_col'] = f"{add_ifs_col_dic['journal_col']}_Upper"
@@ -620,19 +620,19 @@ def _format_and_save_add_if_dfs(dfs_list, out_paths_list, corpus_year,
                                                    unknown_kw, add_cols=False)
 
     # Formatting and saving 'corpus_df' as openpyxl file at full path 'out_file_path'
-    corpus_df_title = bm_pg.DF_TITLES_LIST[0]
+    corpus_df_title = 'pub_list'
     wb, ws = format_page(corpus_df, corpus_df_title)
     ws.title = "Publications " +  corpus_year
     wb.save(out_file_path)
 
     # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
-    missing_issn_df_title = bm_pg.DF_TITLES_LIST[18]
+    missing_issn_df_title = 'missing_if_issn'
     wb, ws = format_page(sorted_year_missing_issn_df, missing_issn_df_title)
     ws.title = "ISSNs manquants " +  corpus_year
     wb.save(missing_issn_path)
 
     # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
-    missing_if_df_title = bm_pg.DF_TITLES_LIST[18]
+    missing_if_df_title = 'missing_if_issn'
     wb, ws = format_page(sorted_year_missing_if_df, missing_if_df_title)
     ws.title = "IFs manquants " +  corpus_year
     wb.save(missing_if_path)

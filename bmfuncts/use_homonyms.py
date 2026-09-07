@@ -156,7 +156,7 @@ def _set_homonyms_file_params(wf_path, corpus_year):
         the full path to the file of history of homonyms resolution).
     """
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    merge_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
     homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
     history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
@@ -166,7 +166,7 @@ def _set_homonyms_file_params(wf_path, corpus_year):
 
     # Setting useful paths
     corpus_year_path = wf_path / Path(corpus_year)
-    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
+    bdd_mensuelle_path = corpus_year_path / Path(merge_folder_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
     homonyms_file_path = homonyms_folder_path / Path(homonyms_file_alias)

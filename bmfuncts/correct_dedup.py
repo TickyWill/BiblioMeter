@@ -109,7 +109,7 @@ def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_ad
     # internal functions
     def _save_file(_addresses_to_correct_df):
         # Saving false-addresses data
-        df_title = bm_pg.DF_TITLES_LIST[19]
+        df_title = 'false_addr'
         wb, ws = format_page(_addresses_to_correct_df, df_title)
         ws.title = "False addr " + corpus_year
         wb.save(addresses_to_correct_path)
@@ -249,7 +249,7 @@ def _update_corrected_addresses_history(addresses_to_correct_df, corrected_addre
     print_step_text(step_txt, print_params)
 
     # Saving false addresses data
-    df_title = bm_pg.DF_TITLES_LIST[19]
+    df_title = 'false_addr'
     wb, ws = format_page(new_corrected_addresses_hist_df, df_title)
     ws.title = 'Correct addresses ' + corpus_year
     wb.save(corrected_addresses_path)

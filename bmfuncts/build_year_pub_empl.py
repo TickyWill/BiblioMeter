@@ -27,8 +27,8 @@ def _set_test_cols_dic():
     Returns:
         (dict): The built dict.
     """
-    test_cols_dic = {'pub_firstname_col' : bm_pg.COL_NAMES_BM['First_name'],
-                     'pub_lastname_col'  : bm_pg.COL_NAMES_BM['Last_name'],
+    test_cols_dic = {'pub_firstname_col' : bm_pg.COL_NAMES_ADD['first_name'],
+                     'pub_lastname_col'  : bm_pg.COL_NAMES_ADD['last_name'],
                      'pub_fullname_col'  : bm_pg.COL_NAMES['authors'][2],
                      'empl_mat_col'      : bm_eg.EMPLOYEES_USEFUL_COLS['matricule'],
                      'empl_lastname_col' : bm_eg.EMPLOYEES_USEFUL_COLS['name'],
@@ -241,12 +241,12 @@ def _reduce_orphan_df(orphan_lastname, empl_lastnames):
 
 
 def _set_merge_cols_dic():
-    merge_cols_dic = {'pub_firstname_col': bm_pg.COL_NAMES_BM['First_name'],
-                      'pub_lastname_col' : bm_pg.COL_NAMES_BM['Last_name'],
-                      'pub_fullname_col' : bm_pg.COL_NAMES_BM['Full_name'],
-                      'empl_lastname_col': bm_eg.EMPLOYEES_USEFUL_COLS['name'],
+    merge_cols_dic = {'empl_lastname_col': bm_eg.EMPLOYEES_USEFUL_COLS['name'],
                       'empl_fullname_col': bm_eg.EMPLOYEES_ADD_COLS['employee_full_name'],
-                      'homonyms_col'     : bm_pg.COL_NAMES_BM['Homonym'],
+                      'pub_firstname_col': bm_pg.COL_NAMES_ADD['first_name'],
+                      'pub_lastname_col' : bm_pg.COL_NAMES_ADD['last_name'],
+                      'pub_fullname_col' : bm_pg.COL_NAMES_ADD['full_name'],
+                      'homonyms_col'     : bm_pg.COL_NAMES_ADD['homonym'],
                      }
     return merge_cols_dic
 
@@ -430,8 +430,8 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
     # Setting useful col names for building merged data
     merge_cols_dic = _set_merge_cols_dic()
     col_keys = merge_cols_dic.keys()
-    (pub_firstname_col, pub_lastname_col, pub_fullname_col, empl_lastname_col,
-     empl_fullname_col, homonyms_col) = [merge_cols_dic[key] for key in col_keys]
+    (empl_lastname_col, empl_fullname_col, pub_firstname_col, pub_lastname_col,
+     pub_fullname_col, homonyms_col) = [merge_cols_dic[key] for key in col_keys]
 
     # Initializing the Data that will contain all matches
     # between 'pub_df' author-name and 'empl_df' employee-name

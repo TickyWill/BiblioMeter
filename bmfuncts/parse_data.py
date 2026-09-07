@@ -320,7 +320,7 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
     # Setting parameters from globals
     pub_id_col = bm_pg.COL_NAMES['pub_id']
     dbs_ids_col = bm_pg.DB_ID_COLS["all_dbs"]
-    source_col = bm_pg.COL_NAMES_BONUS['source']
+    source_col = bm_pg.COL_NAMES_ADD['source']
 
     # Building the list of identifiers data of each database type
     db_ids_dfs_list = []

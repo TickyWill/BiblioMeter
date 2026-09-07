@@ -41,7 +41,7 @@ def _set_pub_addresses_cols_dic(institute, org_tup):
                               'bp_address_col'   : bm_pg.COL_NAMES['address'][2],
                               'bp_author_id_col' : bm_pg.COL_NAMES['auth_inst'][1],
                               'bm_pub_id_col'    : merge_col_rename_dic[bm_pg.COL_NAMES['authors'][0]],
-                              'bm_address_id_col': bm_pg.COL_NAMES_BONUS['address ID'],
+                              'bm_address_id_col': bm_pg.COL_NAMES_ADD['address ID'],
                               'bm_address_col'   : merge_col_rename_dic[bm_pg.COL_NAMES['address'][2]],
                               'bm_author_id_col' : merge_col_rename_dic[bm_pg.COL_NAMES['authors'][1]],
                               'bm_doctype_col'   : merge_col_rename_dic[bm_pg.COL_NAMES['articles'][7]],
@@ -415,7 +415,7 @@ def _set_save_folder_path(wf_path, corpus_year):
     """
     # Setting useful aliases
     analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    affils_analysis_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    affils_analysis_folder_alias = bm_pg.ARCHI_YEAR["affiliations analysis"]
 
     # Setting root for saving intermediate results
     year_folder_path = wf_path / Path(corpus_year)

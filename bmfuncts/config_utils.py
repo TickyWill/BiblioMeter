@@ -158,7 +158,6 @@ def set_rawdata_and_parsing_paths(wf_path, year, db_list):
     return rawdata_path_dict, parsing_path_dict
 
 
-
 def set_parsing_items_params():
     """ Sets the names of the parsing file for each parsed item.
 
@@ -197,7 +196,7 @@ def _get_institute_config(institute, wf_path):
     The global 'EMPLOYEES_ARCHI' is defined in the `employees_globals.py` module 
     of the `bmfuncts` package.
 
-Args:
+    Args:
         institute (str): The Institute's name.
         wf_path (path): The full path to the working folder.
     Returns:
@@ -302,11 +301,11 @@ def _build_institute_file_name(institute, file_base):
 
 def _set_institute_affil_params(wf_path, institute):
     # Setting user's affiliations root path
-    affils_rep_utils = wf_path / Path(bm_pg.ARCHI_INSTITUTIONS['root'])
+    affils_rep_utils = wf_path / Path(bm_pg.ARCHI_AFFILIATIONS['root'])
 
     # Setting user's affiliations-parsing files
-    affil_files_keys = [x[:-5] + "_file" for x in list(bm_pg.ARCHI_INSTITUTIONS.keys())[1:]]
-    affil_file_base_values = list(bm_pg.ARCHI_INSTITUTIONS.values())[1:]
+    affil_files_keys = [x[:-5] + "_file" for x in list(bm_pg.ARCHI_AFFILIATIONS.keys())[1:]]
+    affil_file_base_values = list(bm_pg.ARCHI_AFFILIATIONS.values())[1:]
     institute_affil_files_values = [_build_institute_file_name(institute, v) for v in affil_file_base_values]
     institute_affil_files_dic = dict(zip(affil_files_keys, institute_affil_files_values))
 

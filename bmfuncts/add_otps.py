@@ -370,7 +370,7 @@ def _save_dpt_otp_file(dpt, save_otp_cols_tup, dpt_df, dpt_otp_list, xl_dpt_path
     dpt_df = dpt_df.reindex(columns=otp_base_col_list)
 
     # Formatting 'dpt_df' as openpyxl workbook
-    dpt_df_title = bm_pg.DF_TITLES_LIST[2]
+    dpt_df_title = 'def_otp'
     wb, ws = format_page(dpt_df, dpt_df_title)
     ws.title = bm_pg.OTP_SHEET_NAME_BASE + " " +  dpt
 
@@ -524,7 +524,7 @@ def _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, dpt_df,
             # Formatting 'otp_lab_df' as a new sheet of the 'wb'
             # multisheet openpyxl workbook
             sheet_name = otp_lab
-            otp_lab_df_title = bm_pg.DF_TITLES_LIST[2]
+            otp_lab_df_title = 'def_otp'
             wb = format_wb_sheet(sheet_name, otp_lab_df,
                                  otp_lab_df_title, wb, first)
             ws = wb.active
@@ -542,7 +542,7 @@ def _save_dpt_lab_otp_file(institute, dpt, save_otp_cols_tup, dpt_df,
         dpt_df = dpt_df.reindex(columns=otp_base_col_list)
 
         # Formatting 'dpt_df' as openpyxl workbook
-        dpt_df_title = bm_pg.DF_TITLES_LIST[2]
+        dpt_df_title = 'def_otp'
         wb, ws = format_page(dpt_df, dpt_df_title)
         dpt_label = dpt
         if dpt=="DIR":

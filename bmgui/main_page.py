@@ -27,7 +27,7 @@ from bmgui.pages_classes import SetMasterTitle
 class AppMain(tk.Tk):
     """Main class of the application.
 
-    Traces changes in institute selection to update page parameters. 
+    Traces changes in institute's selection to update page parameters. 
     'wf' stands for working folder.
     """
     def __init__(self):
@@ -84,15 +84,15 @@ class AppMain(tk.Tk):
         SetMasterTitle(self)
         SetAuthorCopyright(self)
 
-        # Setting default values for Institute selection
+        # Setting default values for Institute's selection
         default_institute = "   "
         institute_val = tk.StringVar(self)
         institute_val.set(default_institute)
         bm_mu.set_institute_widgets(self, institute_val)
 
-        # Tracing Institute selection
-        institute_val.trace('w', partial(bm_mu.update_app_page, self,
-                                         institute_val))
+        # Tracing Institute's selection
+        institute_val.trace_add('write', partial(bm_mu.update_app_page, self,
+                                                 institute_val))
 
         # Handling exception
         threading.excepthook = bm_mu.except_hook
