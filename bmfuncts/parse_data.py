@@ -13,7 +13,6 @@ __all__ = ['build_and_save_dedup_db_ids',
 
 
 # Standard library imports
-import copy
 import os
 import shutil
 from pathlib import Path
@@ -176,10 +175,10 @@ def _set_database_rawdata(set_rawdata_params, database):
         else:
             missing_rawdata.append(year)
     if missing_rawdata:
-        step_txt = ("  - Try cancelled because rawdata are missing "
+        step_txt = (f"{bm_pg.TAB}- Try cancelled because rawdata are missing "
                     f"for {missing_rawdata}")
     else:
-        step_txt = "  - Succeeded to set rawdata for all corpus-years"
+        step_txt = f"{bm_pg.TAB}- Succeeded to set rawdata for all corpus-years"
     print_step_text(step_txt, print_params)
     return database_folder_path, missing_rawdata
 
@@ -269,7 +268,7 @@ def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
 def compute_dedup_pub_number(org_tup, dedup_parsing_dict):
     """Computes publications numbers resulting from the deduplication of parsing results.
 
-    The function builts a dictionary keyed by the tags of Institute's publications as given 
+    The function builds a dictionary keyed by the tags of Institute's publications as given
     by the 'org_tup' parameter and valued by corresponding computed number of publications. 
     The total number of publication is given at key "all".
 
@@ -421,12 +420,12 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
     parsing_tup = bp_biblio_parser(rawdata_path, database, affil_filter_list=None,
                                    affil_params_dic=parse_affil_params_dic,
                                    scopus_cat_paths=scopus_cat_paths)
-    bp_parsing_dict, fails_dict, db_ids_df = parsing_tup[0:3]
+    bp_parsing_dict, fails_dict, db_ids_df = parsing_tup[0], parsing_tup[1], parsing_tup[2]
     parsing_dict = convert_parsing_keys_to_bm(bp_parsing_dict)
     if len(parsing_tup)>3:
         correction_dict = dict(zip(list(bm_pg.RAWDATA_CORRECT.keys()), parsing_tup[3:]))
         save_rawdata_correction(correction_dict, rawdata_path, database)
-        print_step_text("  - Data of correction in rawdata of authors and addresses saved for control",
+        print_step_text(f"{bm_pg.TAB}- Data of correction in rawdata of authors and addresses saved for control",
                         print_params)
     pubs_nb = 0
     if fails_dict:
@@ -440,7 +439,7 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
 
     save_fails_dict(fails_dict, parsing_path)
     save_db_ids_data(db_ids_df, parsing_path, database)
-    print_step_text(f"  - Parsing results built and saved for {pubs_nb} publications",
+    print_step_text(f"{bm_pg.TAB}- Parsing results built and saved for {pubs_nb} publications",
                     print_params)
     if progress_callback:
         progress_callback(95)
@@ -456,8 +455,8 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
     return raw_parse_tup
 
 
-def _set_db_parsing_data(db, datatype, db_parse_path, base_params_list):
-    _, print_params, _, parsing_filenames_dict = base_params_list
+def _set_db_parsing_data(db, datatype, db_parse_path, parse_base_params_list):
+    parsing_filenames_dict = parse_base_params_list[3]
 
     db_single_status = False
     db_parsing_dict = {}
@@ -468,26 +467,27 @@ def _set_db_parsing_data(db, datatype, db_parse_path, base_params_list):
         db_parsing_dict = read_parsing_dict(db_parse_path, parsing_filenames_dict,
                                              bm_pg.TSV_SAVE_EXTENT)
         # Correcting the 'db' database parsing results
-        db_params_list = [db] + base_params_list
+        db_params_list = [db] + parse_base_params_list
         correct_status = correct_parsing(db_params_list, db_parse_path,
                                          db_parsing_dict, bm_pg.UNKNOWN_COUNTRY)
         if correct_status:
             db_parsing_dict = read_parsing_dict(db_parse_path, parsing_filenames_dict,
                                                 bm_pg.TSV_SAVE_EXTENT)
 
-        if not any([db.lower() in datatype.lower() for db in other_dbs_list]):
+        if not any(db.lower() in datatype.lower() for db in other_dbs_list):
             # Managing the case of a single database by Linking other parsings
             # to Scopus parsings what would be the changes in the Scopus parsings
             db_single_status = True
     return db_parsing_dict, db_single_status
 
 
-def _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list):
+def _set_parsings_to_concat(datatype, parsing_path_dict, parse_base_params_list):
     # Setting and correcting the parsing results to concatenate
     dbs_parsings_dict = {}
     single_db = ""
     for db in bm_pg.BDD_LIST:
-        return_tup = _set_db_parsing_data(db, datatype, parsing_path_dict[db], base_params_list)
+        return_tup = _set_db_parsing_data(db, datatype, parsing_path_dict[db],
+                                          parse_base_params_list)
         db_parsing_dict, db_single_status = return_tup
         if db_single_status:
             single_db = db
@@ -496,13 +496,13 @@ def _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list):
 
 
 def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
-    """Deduplicates cancatenated parsings results for the case of single database parsing use.
+    """Deduplicates concatenated parsings results for the case of single database parsing use.
 
     Args:
         bp_concat_parsing_dict (dict): Parsing data with original keys of BiblioParsing package.
         concat_parsing_dict (dict): Parsing data with keys of BiblioMeter package.
     Returns:
-        (tup): Composed of the deduplicated parsing data (dict) keyyed \
+        (tup): Composed of the deduplicated parsing data (dict) keyed \
         with the dedicated keys of the two packages. 
     """
     pub_id_col = bm_pg.COL_NAMES['pub_id']
@@ -518,9 +518,10 @@ def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
 
 
 def deduplicate_parsing(dedup_params_list, progress_callback=None):
-    (corpus_year, print_params, institute, org_tup, wf_path, datatype,
+    (corpus_year, print_params, institute, org_tup, wf_path, datatype, parse_affil_params_dic,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
-    base_params_list = [corpus_year, print_params, dedup_affil_params_dic, parsing_filenames_dict]
+    parse_base_params_list = [corpus_year, print_params, parse_affil_params_dic, parsing_filenames_dict]
+#    dedup_base_params_list = [corpus_year, print_params, dedup_affil_params_dic, parsing_filenames_dict]
 
     print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", print_params)
 
@@ -528,11 +529,10 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     _, parsing_path_dict = set_rawdata_and_parsing_paths(wf_path, corpus_year, bm_pg.BDD_LIST)
 
     # Setting useful paths for corpus deduplication
-    scopus_parse_path, wos_parse_path = parsing_path_dict[bm_pg.SCOPUS], parsing_path_dict[bm_pg.WOS]
     concat_path, dedup_path = parsing_path_dict["concat"], parsing_path_dict["dedup"]
 
     # Setting and correcting the parsing results to concatenate
-    dbs_parsings_dict, single_db = _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list)
+    dbs_parsings_dict, single_db = _set_parsings_to_concat(datatype, parsing_path_dict, parse_base_params_list)
     if progress_callback:
         progress_callback(15)
 
@@ -554,13 +554,13 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     if single_db:
         bp_concat_parsing_dict, concat_parsing_dict = _dedup_concat_single_parsing(bp_concat_parsing_dict,
                                                                                    concat_parsing_dict)
-        print_step_text("  - Single parsing data concatenated and deduplicated", print_params)
+        print_step_text(f"{bm_pg.TAB}- Single parsing data concatenated and deduplicated", print_params)
     if progress_callback:
         progress_callback(25)
 
     save_parsing_dict(concat_parsing_dict, concat_path,
                       parsing_filenames_dict, bm_pg.TSV_SAVE_EXTENT)
-    print_step_text("  - Parsing data concatenated and saved", print_params)
+    print_step_text(f"{bm_pg.TAB}- Parsing data concatenated and saved", print_params)
     if progress_callback:
         progress_callback(30)
 
@@ -578,11 +578,11 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
 
     save_parsing_dict(dedup_parsing_dict, dedup_path, parsing_filenames_dict, bm_pg.TSV_SAVE_EXTENT,
                       dedup_infos=_dedup_infos)
-    step_txt = ("  - All parsing results deduplicated and saved as final results "
-                f"for {dedup_pub_nb} publications "
-                f"including {dedup_institute_pub_nb} of {institute}"
-                "\n  - After deduplication, the number of kept publications from each database are:")
+
+    # Setting text to print at step end
+    step_txt = f"{bm_pg.TAB}- All parsing results saved as final results for {dedup_pub_nb} publications"
     for db_type, db_nb in ids_nb_dict.items():
-        step_txt += f"\n      - {db_nb} for {db_type}"
+        step_txt += f"\n{bm_pg.TAB}- The number of kept publications for {db_type} is {db_nb}"
+    step_txt += f"\n{bm_pg.TAB}- Only {dedup_institute_pub_nb} include an author affiliated to the {institute}"
     print_step_text(step_txt, print_params)
     return dedup_pub_nb, dedup_institute_pub_nb, ids_nb_dict

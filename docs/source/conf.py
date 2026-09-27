@@ -21,11 +21,15 @@ sys.path.insert(0, os.path.abspath(BiblioMeter_path))
 sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmfuncts"))
 sys.path.insert(0, os.path.abspath(BiblioMeter_path + "/bmgui"))
 
+project = 'BiblioMeter'
+author = 'Amal Chabli'
+copyright = '2026, Amal Chabli'
+release = '6.2.0'
 
 PROJECT = 'BiblioMeter'
-RELEASE = '6.1.0'
-AUTHORS = 'Amal CHABLI, François BERTIN, Ludovic DESMEUZES, Baptiste REFALO'
-COPYRIGHT = '2021, BiblioMeter team, Liten, Leti, CEA'
+COPYRIGHT = '2026, Amal Chabli'
+AUTHORS = 'Amal Chabli'
+RELEASE = '6.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -42,8 +46,13 @@ templates_path = ['_templates']
 exclude_patterns = ['.ipynb_checkpoints']
 
 
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+html_theme = 'sphinx_rtd_theme'
+#html_static_path = ['_static']
+html_logo = 'BM-logo_doc.ico'
 
 latex_elements = {
     'preamble': r'''

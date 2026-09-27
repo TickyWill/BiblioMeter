@@ -106,7 +106,8 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
             if raw_addr_status:
                 print_step_text("\nAnalysis completed", master.print_params)
                 return_folders_list = co_return_tup[2]
-                analysis_folder, affils_analysis_folder, geo_analysis_folder = return_folders_list
+                (analysis_folder, affils_analysis_folder,
+                 geo_analysis_folder) = return_folders_list[0], return_folders_list[1], return_folders_list[2]
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été effectuée pour l'année {year_select}."

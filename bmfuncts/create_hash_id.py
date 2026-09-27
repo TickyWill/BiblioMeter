@@ -13,7 +13,6 @@ import pandas as pd
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import reorder_df
 
 
@@ -115,32 +114,28 @@ def _clean_hash_id_df(dfs_tup, cols_tup):
     return new_merge_df, new_orphan_df, new_hash_id_df
 
 
-def create_hash_id(institute, org_tup, files_paths, print_params):
-    """Creates a dataframe which columns are given by 'hash_id_alias' and 'pub_id_alias'.
+def create_hash_id(institute, org_tup, merge_df, orphan_df):
+    """Creates the data of hash ID per publication's ID.
 
     The content of these columns is as follows:
-
-    - The 'hash_id_alias' column contains the unique hash ID built for each publication \
-    through the `_my_hash` internal function. The values of 'year_alias', \
-    'first_auth_alias', 'title_alias', 'issn_alias' and 'doi_alias' columns are used.
-    - The 'pub_id_alias' column contains the publication order number in the publications list.
-
+    - The 'hash_id_col' column contains the unique hash ID built for each publication \
+    through the `_my_hash` internal function. The values of 'year_col', \
+    'first_auth_col', 'title_col', 'issn_col' and 'doi_col' columns are used for building the hash ID.
+    - The 'pub_id_col' column contains the publication order number in the publications list (identifier).
     Finally, the data are cleaned from the publications that have same hash ID through \
-    the `_clean_hash_id_df` internal function and the dataframes are saved as Excel files.
+    the `_clean_hash_id_df` internal function.
 
     Args:
         institute (str): Institute name.
         org_tup (tup): Contains Institute parameters.
-        files_paths (list): Full paths (path) to (1) the publications list with one row per \
-        Institute author that has been identified as Institute employee, \
-        (2) the publications list with one row per author that has not \
-        been identified as Institute employee and (3) for saving the created Hash-IDs data.
+        merge_df (dataframe): The data of the publications list with one row per author \
+        with attributes as Institute employee.
+        orphan_df (dataframe): The data of the publications list with one row per author \
+        that has not been identified as Institute employee.
     Returns:
-        (str): End message recalling path to the saved file.
+        (tup): Composed of the cleaned data (dataframe) of the two publications list, \
+        of the built hash IDs data (dataframe) and of the number (int) of the created hash IDs.
     """
-    # Setting paths from args
-    merge_path, orphan_path, hash_id_path = files_paths
-
     # Setting useful col names
     hash_id_cols_dic = _set_hash_id_cols_dic(institute, org_tup)
     col_keys = ['pub_id_col', 'year_col', 'first_auth_col', 'title_col',
@@ -150,10 +145,6 @@ def create_hash_id(institute, org_tup, files_paths, print_params):
 
     # Setting useful columns list
     useful_cols = [pub_id_col, year_col, first_auth_col, title_col, issn_col, doi_col]
-
-    # Getting dataframes to hash
-    merge_df = pd.read_excel(merge_path)
-    orphan_df = pd.read_excel(orphan_path)
 
     # Concatenate de dataframes to hash
     merge_to_hash = merge_df[useful_cols].copy()
@@ -178,10 +169,6 @@ def create_hash_id(institute, org_tup, files_paths, print_params):
     cols_tup = (pub_id_col, hash_id_col)
     new_merge_df, new_orphan_df, new_hash_id_df = _clean_hash_id_df(dfs_tup, cols_tup)
 
-    # Saving the data
-    new_merge_df.to_excel(merge_path, index=False)
-    new_orphan_df.to_excel(orphan_path, index=False)
-    new_hash_id_df.to_excel(hash_id_path, index=False)
     hash_id_nb = len(new_hash_id_df)
-    print_step_text("\nPublications hash IDs created and saved", print_params)
-    print_step_text(f"  - Number of publications hash-IDs: {hash_id_nb}", print_params)
+
+    return new_merge_df, new_orphan_df, new_hash_id_df, hash_id_nb

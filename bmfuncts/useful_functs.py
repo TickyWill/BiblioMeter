@@ -12,6 +12,7 @@ __all__ = ['build_list_from_str',
            'name_capwords',
            'print_step_text',
            'print_step_title',
+           'print_temp_text',
            'print_to_console',
            'print_to_log',
            'remove_file',
@@ -29,13 +30,13 @@ __all__ = ['build_list_from_str',
 
 
 # Standard library imports
-import numpy as np
 import os
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
 # 3rd party imports
+import numpy as np
 import pandas as pd
 from bpfuncts import remove_special_symbol as bp_remove_special_symbol
 
@@ -48,11 +49,11 @@ def remove_file(path):
     if os.path.isfile(path) or os.path.islink(path):
         os.remove(path)  # remove the file
     else:
-        raise ValueError("file {} is not a file.".format(path))
+        raise ValueError(f"file {path} is not a file.")
 
 
 def print_step_title(step_title, print_params):
-    """Prints to console and to log file the step title
+    """Prints to console and to log file the step title.
 
     Args:
         step_title (str)= The title to print.
@@ -66,8 +67,10 @@ def print_step_title(step_title, print_params):
     print_to_log(step_title, print_txt, print_params, log_init=False)
 
 
-def print_step_text(step_txt, print_params):
+def print_step_text(step_txt, print_params, prev_txt_len=None):
     """Prints to console and to log file the step text.
+
+    If 'prev_txt' is set, it first clean the previous printed line to console.
 
     Args:
         step_txt (str)= The text to print.
@@ -75,10 +78,29 @@ def print_step_text(step_txt, print_params):
         to which ".txt" extension is added, of the name of the log folder \
         where the TXT log file is saved and of the full path to the working \
         folder where the log folder is saved.
+        prev_txt_len (int): Optional length of the previously print text (default: None).
     """
+    if prev_txt_len:
+        print(" " * prev_txt_len, end="\r")
     print_title = ""
     print_to_console(print_title, step_txt)
     print_to_log(print_title, step_txt, print_params, log_init=False)
+
+
+def print_temp_text(txt, txt_end=False):
+    """Prints to console the text.
+
+    Args:
+        txt (str): The text to print.
+        txt_end (bool): Optional cleaning text status (default: False).
+    Returns:
+        (int): Length of the printed text.
+    """
+    if txt_end:
+        print(txt, end="\r")
+    else:
+        print(txt)
+    return len(txt)
 
 
 def print_to_console(title, print_txt):
@@ -107,12 +129,11 @@ def print_to_log(title, print_txt, print_params, log_init=True):
         title (str): Title of the prints.
         print_txt (str): Corps of the prints.
         print_params (list): Composed of the name of the TXT log file \
-        to which ".txt" extension is added, of the name of the log folder \
+        to which '.txt' extension is added, of the name of the log folder \
         where the TXT log file is saved and of the full path to the working \
         folder where the log folder is saved.
-        log_init (bool): Optional (default: true), if True, the title is surrounded by \
-        "*" lines and it is headed by "* " and ended by " *", "otherwise, \
-        the title is only headed by '# '.
+        log_init (bool): Optional (default: True), if True, the title is \
+        highlighted through surrounding by stars.
     """
     log_file, log_folder, wf_path = print_params
     txt_log_file = log_file +'.txt'
@@ -162,12 +183,12 @@ def try_save_excel_data(df, file_path):
             closed = True
         except PermissionError:
             while rep!="Y":
-                rep = input("    !!!-Permission denied-!!! Close all opened XLSX files (Y/N)?")
+                rep = input("\t\t!!!-Permission denied-!!! Close all opened XLSX files (Y/N)?")
             os.system('TASKKILL /F /IM excel.exe')
 
 
 def get_sheet_names(file_path):
-    """Gets the sheet names of an multisheet XLSX file whithout loading it.
+    """Gets the sheet names of a multisheet XLSX file without loading it.
 
     Args:
         file_path (path): The full path to the file.
@@ -442,12 +463,12 @@ def save_xlsx_file(root_path, df, file_name):
 
 
 def set_year_pub_id(df, year, pub_id_col):
-    """Transforms the pub-ID column of 'df' data by adding "yyyy_" 
+    """Transforms the pub-ID column of 'df' data by adding <yyyy>_
     (year in 4 digits) to the values.
 
     Args:
         df (pandas.DataFrame): The data we want to modify.
-        year (str): The 4 digits year to add as "yyyy".
+        year (str): The 4 digits year to add as <yyyy>.
         pub_id_col (str): The name of the pub-ID column to transform.
     Returns:
         (pandas.DataFrame): The data with its changed column.

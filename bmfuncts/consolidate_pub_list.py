@@ -2,7 +2,7 @@
 in terms of:
 
 - effective affiliation of the authors to the Institute;
-- attributing department affiliation to the Institute authors.
+- attributing department affiliation to the Institute's authors.
 """
 
 __all__ = ['build_final_pub_list',
@@ -12,7 +12,6 @@ __all__ = ['build_final_pub_list',
 
 
 # Standard library imports
-import datetime
 import os
 from pathlib import Path
 
@@ -41,8 +40,8 @@ def _set_pub_list_cols_dic(institute, org_tup):
     from the `bmfuncts.rename_cols` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains parameters of Institute organization.
+        institute (str): Institute's name.
+        org_tup (tup): Contains parameters of Institute's organization.
     Returns:
         (dict): The built dict.
     """
@@ -164,8 +163,8 @@ def split_pub_list_by_doc_type(selected_params_list, pub_list_cols_dic=None):
     or through the `_set_pub_list_cols_dic` internal function. 
 
     Args:
-        selected_params_list (list):  The list composed of the Institute name (str), \
-        of the org_tup (tup) that contains parameters of Institute organization, \
+        selected_params_list (list):  The list composed of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
         of the full path to working folder (path) and of the 4 digits year of \
         the corpus (str).
         pub_list_cols_dic (dict): Optional dict giving col names \
@@ -275,7 +274,7 @@ def build_final_pub_list(conso_params_list):
     1. A 'consolidate_pub_list_df' dataframe is built through \
     the concatenation of the dataframes got from the files of \
     OTPs attribution to publications of each of the Institute \
-    departments and the set OTPS are saved through the `save_otps` \
+    departments and the set OTPs are saved through the `save_otps` \
     function imported from the `bmfuncts.use_otps` module. 
     2. The publications attributed with 'INVALIDE' OTP value, \
     (imported from `bmfuncts.institute_globals` module) are dropped \
@@ -348,8 +347,8 @@ def build_final_pub_list(conso_params_list):
 
     # Saving df to EXCEL file
     consolidate_pub_list_df.to_excel(pub_list_file_path, index=False)
-    print_step_text(f"  - Number of confirmed publications: {valids_nb}", print_params)
-    print_step_text(f"  - Number of removed invalid publications: {invalids_nb}",
+    print_step_text(f"{bm_pg.TAB}- Number of confirmed publications: {valids_nb}", print_params)
+    print_step_text(f"{bm_pg.TAB}- Number of removed invalid publications: {invalids_nb}",
                     print_params)
 
     # Formatting and saving 'invalids_df' as openpyxl file
@@ -359,7 +358,7 @@ def build_final_pub_list(conso_params_list):
     wb, ws = format_page(invalids_df, invalids_df_title)
     ws.title = "Invalides " +  corpus_year
     wb.save(invalids_file_path)
-    print_step_text("  - Data of invalid publications saved", print_params)
+    print_step_text(f"{bm_pg.TAB}- Data of invalid publications saved", print_params)
 
     # Adding Impact Factors and saving new consolidate_pub_list_df
     # this also for saving results files to complete IFs database
@@ -367,7 +366,7 @@ def build_final_pub_list(conso_params_list):
     add_if_paths_list = [pub_list_file_path, pub_list_file_path,
                          missing_issn_path, missing_if_path]
     if_database_complete = add_if(ifs_params_list, add_if_paths_list)
-    step_txt = "  - IFs added to publications list "
+    step_txt = f"{bm_pg.TAB}- IFs added to publications list "
     if if_database_complete:
         step_txt += "with complete IFs data"
     else:
@@ -376,7 +375,7 @@ def build_final_pub_list(conso_params_list):
 
     # Splitting saved file by documents types (ARTICLES, BOOKS and PROCEEDINGS)
     split_ratio, pub_nb = split_pub_list_by_doc_type(ifs_params_list, pub_list_cols_dic)
-    print_step_text("  - Publications list split performed", print_params)
+    print_step_text(f"{bm_pg.TAB}- Publications list split performed", print_params)
 
     # Saving pub list and hash-IDs as final results
     status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
@@ -387,28 +386,6 @@ def build_final_pub_list(conso_params_list):
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
     save_final_results(save_params_list, results_to_save_dict)
 
-    step_txt = ("  - Consolidated publications lists saved as final results "
-                f"with IFs data complete: {if_database_complete}")
+    step_txt = (f"{bm_pg.TAB}- Consolidated publications lists saved as final results")
     print_step_text(step_txt, print_params)
     return pub_nb, invalids_nb, split_ratio, if_database_complete
-
-
-def _set_concat_pub_list_path(wf_path, available_pub_lists_str):
-    """Sets the full path to the file of the concatenation 
-    of the consolidated publications list.
-
-    Args:
-        wf_path (path): Full path to working folder.
-        available_pub_lists_str (str): The list of the available \
-        corpus years (4 digits string) in the working folder.
-    Returns:
-        (tup): (Base of OTPs files names (str), The full paths list (list).
-    """
-    multi_year_folder_alias = bm_pg.MULTI_YEARS_DATA_ARCHI["root"]
-    multi_year_base_alias = bm_pg.MULTI_YEARS_DATA_ARCHI["concat file name base"]
-    date = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
-    multi_year_file = (f"{date} {multi_year_base_alias} "
-                       f"{os.getlogin()}_{available_pub_lists_str}.xlsx")
-    multi_year_folder_path = wf_path / Path(multi_year_folder_alias)
-    multi_year_file_path = multi_year_folder_path / Path(multi_year_file)
-    return multi_year_file_path

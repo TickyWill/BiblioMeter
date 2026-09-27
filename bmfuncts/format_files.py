@@ -219,7 +219,7 @@ def _set_false_addresses_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -249,7 +249,7 @@ def _set_if_issn_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -279,7 +279,7 @@ def _set_invalid_list_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -315,7 +315,7 @@ def _set_pub_list_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -352,7 +352,7 @@ def _set_affil_type_pub_list_attributes(cols_list, add_cols_nb):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -389,7 +389,7 @@ def _set_def_otp_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -427,7 +427,7 @@ def _set_auth_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -456,7 +456,7 @@ def _set_auth_stat_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -475,7 +475,7 @@ def _set_auth_stat_attributes(cols_list):
 
 
 def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
-    """ Sets the width and horizontal alignment of each column
+    """Sets the width and horizontal alignment of each column
     to be used for formatting the data to be saved.
 
     The specified widths are at least the following:
@@ -496,7 +496,7 @@ def _set_attr_dict(cols_list, widths_list, last_cols_nb=1):
         (optional, default = 1).
     Returns:
         (dict): The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str).
+        by the width (int) and the horizontal alignment (str).
     """
     # Computing number of other columns than first and last ones
     cols_nb = len(cols_list)
@@ -531,14 +531,14 @@ def _set_if_db_attributes(cols_list):
     for formatting the impact-factors (IFs) data to be saved 
     for the update of the IFs database.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -593,14 +593,14 @@ def _set_if_ana_attributes(cols_list):
     for formatting the analysis results to be saved for the 
     impact-factors data.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -624,14 +624,14 @@ def _set_kw_attributes(cols_list):
     for formatting the analysis results to be saved for the 
     keywords' data.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -655,14 +655,14 @@ def _set_geo_attributes(cols_list):
     for formatting the analysis results to be saved for the 
     geographical data.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -685,14 +685,14 @@ def _set_norm_affils_attributes(cols_list):
     and the heights of the first row and other rows to be used 
     for formatting the normalized-affiliations data to be saved.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -715,14 +715,14 @@ def _set_raw_affils_attributes(cols_list):
     and the heights of the first row and other rows to be used 
     for formatting the raw-affiliations data to be saved.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -745,14 +745,14 @@ def _set_affils_distrib_attributes(cols_list):
     and the heights of the first row and other rows to be used 
     for formatting the distributed-affiliations data to be saved.
 
-    The widths and horizontal alignement of each column are 
+    The widths and horizontal alignment of each column are
     set through `_set_attr_dict` internal function.
 
     Args:
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -780,7 +780,7 @@ def _set_affil_country_pub_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -809,7 +809,7 @@ def _set_pub_country_affils_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -837,7 +837,7 @@ def _set_country_affils_pub_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """
@@ -866,7 +866,7 @@ def _set_doctype_stat_attributes(cols_list):
         cols_list (list): The columns names (str) of the data.
     Returns:
         (tup): (The dict keyed by columns names (str) and valued (list) \
-        by the width (int) and the horizontal alignement (str), 
+        by the width (int) and the horizontal alignment (str),
         The dict keyed by given row types (str) and valued by row heights (int), 
         The value (int) for initializing columns index).
     """

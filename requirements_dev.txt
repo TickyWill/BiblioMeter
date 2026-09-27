@@ -1,4 +1,4 @@
-git+https://github.com/TickyWill/BiblioParsing.git@test_upgrade_py_version
+git+https://github.com/TickyWill/BiblioParsing.git@python_version_update
 notebook==7.6.2
 numpy==2.5.2
 openpyxl==3.1.5

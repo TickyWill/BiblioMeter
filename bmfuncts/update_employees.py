@@ -19,6 +19,7 @@ import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_sheet_names
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 from bmfuncts.useful_functs import standardize_txt
 
 
@@ -76,7 +77,7 @@ def _check_sheet_month(df, sheet_name):
     """Checks if the mandatory column names are present in the dataframe 
     'df' and if the sheet name is correctly formatted.
 
-    The sheet name should be formatted as mmyyyy where yyyy stands for
+    The sheet name should be formatted as 'mmyyyy' where 'yyyy' stands for
     the 'year' and mm stands for the month (always written with two digits). 
     It returns messages related to the check status. 
     The year returned is None if the sheet name is not correctly formatted 
@@ -125,7 +126,7 @@ def _add_sheets_to_workbook(file_full_path, df_to_add, sheet_name):
 
     If the sheet name already exists it is overwritten by the new one.
     """
-    with pd.ExcelWriter(file_full_path,  # https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
+    with pd.ExcelWriter(file_full_path,# https://github.com/PyCQA/pylint/issues/3060 pylint: disable=abstract-class-instantiated
                         engine='openpyxl',
                         mode='a',
                         if_sheet_exists='replace') as writer:
@@ -142,7 +143,7 @@ def _update_months_history(months2add_file_path,
 
     More specifically only the new months contained in the EXCEL file 
     pointed by 'months2add_file_path' are added as new sheets 
-    named mmyyyy where mm stands for the month and yyyy for the year.
+    named 'mmyyyy' where 'mm' stands for the month and 'yyyy' for the year.
 
     The sheets are checked using the local function '_check_sheet_month' 
     of the module 'BiblioMeterUpdateEmployees' of the package 'bmfuncts'.
@@ -206,8 +207,8 @@ def _update_months_history(months2add_file_path,
         df_months_dict = pd.read_excel(year_months_file_path, sheet_name=None)
         if not replace: # we only add missing months
             months_present = list(df_months_dict.keys())
-            months_to_add  = list(set(months_to_add) - set(months_present))
-            months_to_add  = sorted(months_to_add)
+            months_to_add = list(set(months_to_add) - set(months_present))
+            months_to_add = sorted(months_to_add)
         for month in months_to_add:
             _add_sheets_to_workbook(year_months_file_path, df_months_to_add[month], month)
             if progress_callback:
@@ -293,7 +294,7 @@ def _add_column_keep_history(df):
 
 def _add_column_firstname_initial(df):
     """Adds a new column defined by the global 'EMPLOYEES_ADD_COLS' 
-    at the key 'first_name_initials' containing the initials of the firstname.    
+    at the key 'first_name_initials' containing the initials of the firstname.
 
     It uses the columns defined by the global `EMPLOYEES_USEFUL_COLS` at key 'first_name' 
     that contains the full first name for each employee:
@@ -418,7 +419,7 @@ def _build_year_month_dpt(year_months_file_path, print_params,
     Returns:
         (dataframe): The built employees data.
     """
-    print_step_text("  - Updating employees data of current year with the additionnal data",
+    print_step_text(f"{bm_pg.TAB}- Updating employees data of current year with the additional data",
                     print_params)
     # Internal functions
     def _set_tup(_month, _year):
@@ -465,7 +466,7 @@ def _build_year_month_dpt(year_months_file_path, print_params,
             progress_callback(progress_bar_state)
 
     year_empl_df = concat_dfs(month_empl_df_list)
-    print_step_text("      - Concatenated the additionnal data of the year months",
+    print_step_text(f"{bm_pg.TAB*2}- Concatenated the additionnal data of the year months",
                     print_params)
 
     # Aggregating all the information related to one employee's identifier
@@ -487,18 +488,18 @@ def _build_year_month_dpt(year_months_file_path, print_params,
     # Dealing with same matriculate for different lastnames and firstnames
     employees_df = singlemat_year_empl_df.explode([name_col_alias])
     employees_df = employees_df.explode([firstname_col_alias])
-    print_step_text("      - Cleeaned the additionnal data from duplicate information per employee",
+    print_step_text(f"{bm_pg.TAB*2}- Cleaned the additional data from duplicate information per employee",
                     print_params)
 
     # Adding 6 new columns
     employees_df = _add_column_keep_history(employees_df)
-    print_step_text("      - Added column with employee's affiliation history", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Added column with employee's affiliation history", print_params)
     employees_df = _add_column_firstname_initial(employees_df)
-    print_step_text("      - Added column with employee's firstname initials", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Added column with employee's firstname initials", print_params)
     employees_df = _add_column_full_name(employees_df)
-    print_step_text("      - Added column with employee's full name", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Added column with employee's full name", print_params)
     employees_df = _select_employee_dpt_and_serv(employees_df)
-    print_step_text("      - Selected employee's department and service", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Selected employee's department and service", print_params)
 
     employees_df = employees_df[useful_col_list + add_col_list]
     if progress_callback:
@@ -545,7 +546,7 @@ def update_employees(wf_path, print_params, progress_callback=None,
     # Setting the list of files available to add (expected only one)
     months2add_files = [file for file in os.listdir(months2add_employees_folder_path)
                         if file.endswith(".xlsx") and file[0] != '~']
-    print_step_text("  - Files for additionnal data to add checked", print_params)
+    print_step_text(f"{bm_pg.TAB}- Files for additionnal data to add checked", print_params)
 
     if len(months2add_files)>1:
         files_number_error = (f"Too many files present in  '{months2add_employees_folder_path}' "
@@ -569,10 +570,10 @@ def update_employees(wf_path, print_params, progress_callback=None,
                                                     replace,
                                                     progress_callback=progress_callback,
                                                     progress_bar_state=progress_bar_state_init)
-    print_step_text("  - Additionnal data to add checked", print_params)
+    print_step_text(f"{bm_pg.TAB}- Additional data to add checked", print_params)
 
     if employees_year is None or year_months_file_path is None:
-        print_step_text("  - Format errors of additionnal data found", print_params)
+        print_step_text(f"{bm_pg.TAB}- Format errors of additional data found", print_params)
         return None, None, sheet_name_error, column_error, years2add_error, None
 
     # Building the dataframe employees_df by concatenating
@@ -580,7 +581,7 @@ def update_employees(wf_path, print_params, progress_callback=None,
     employees_df, progress_bar_state_2 = _build_year_month_dpt(year_months_file_path, print_params,
                                                                progress_callback=progress_callback,
                                                                progress_bar_state=progress_bar_state_1)
-    print_step_text("  - Employees data of current year updated with the additionnal data", print_params)
+    print_step_text(f"{bm_pg.TAB}- Employees data of current year updated with the additional data", print_params)
 
     # Saving employees_df as a sheet mame after employees_year,
     # in the workbook pointed by all_years_file_path
@@ -588,24 +589,24 @@ def update_employees(wf_path, print_params, progress_callback=None,
     all_years_file_backup_status = os.path.exists(all_years_file_backup_path)
     all_years_file_error = None
     if all_years_file_status:
-        print_step_text("  - Updating the employees data with the updated current-year data...", print_params)
+        txt_len = print_temp_text(f"{bm_pg.TAB}- Updating the employees data with the updated current-year data...",
+                                  end_txt=True)
         _add_sheets_to_workbook(all_years_file_path, employees_df, employees_year)
-        print_step_text("      - Employees data updated", print_params)
+        print_step_text(f"{bm_pg.TAB}- Employees data updated", print_params, prev_txt_len=txt_len)
     elif all_years_file_backup_status:
-        print_step_text("  - Creating the employees data with the updated current-year data from the backup file...", print_params)
+        txt_len = print_temp_text(f"{bm_pg.TAB}- Creating the employees data with the updated current-year data "
+                                  "from the backup file...", end_txt=True)
         _ = shutil.copy(all_years_file_backup_path, all_years_file_path)
         _add_sheets_to_workbook(all_years_file_path, employees_df, employees_year)
-        all_years_file_error  = ("The file:"
-                                 f"\n '{all_years_file_path}' \n"
-                                 "\nhas been copied from the backup file:"
-                                 f"\n '{all_years_file_backup_path}' \n"
-                                 "\nand then updated.")
-        print_step_text("  - Employees data from backup file copied and updated", print_params)
+        all_years_file_error = (f"The file:\n '{all_years_file_path}' \n\nhas been copied from the backup file:"
+                                f"\n '{all_years_file_backup_path}' \n\nand then updated.")
+        print_step_text(f"{bm_pg.TAB}- Employees data from backup file copied and updated",
+                         print_params, prev_txt_len=txt_len)
     else:
         employees_df.to_excel(all_years_file_path, sheet_name=employees_year)
         all_years_file_error  = f"The file '{all_years_file_path}' has been "
         all_years_file_error += f"created with a sheet named '{employees_year}'"
-        print_step_text("  - Employees data created with the current-year data", print_params)
+        print_step_text(f"{bm_pg.TAB}- Employees data created with the current-year data", print_params)
     if progress_callback:
         progress_bar_left = 100 - progress_bar_state_2
         progress_callback(progress_bar_state_2 + progress_bar_left * 0.5)
@@ -614,7 +615,7 @@ def update_employees(wf_path, print_params, progress_callback=None,
     shutil.copy(all_years_file_path, backup_folder_path)
     if progress_callback:
         progress_callback(100)
-    print_step_text("  - Updated employees database saved", print_params)
+    print_step_text(f"{bm_pg.TAB}- Updated employees data saved", print_params)
 
     return employees_year, None, None, None, None, all_years_file_error
 
@@ -682,12 +683,11 @@ def set_employees_data(corpus_year, empl_file_path, init_search_depth, print_par
                                   usecols=useful_col_list, keep_default_na=False)
 
         # Standardizing employee last name and consequently updating employee full name
-        print_step_text(f"  - Selected years of employees data: {empl_years[0]}...{empl_years[-1]}",
+        print_step_text(f"{bm_pg.TAB}- Selected years of employees data: {empl_years[0]}...{empl_years[-1]}",
                         print_params)
-        print_step_text("  - Update of employees full name...", print_params)
         new_empl_dict = {}
         for year in empl_years:
-            print(f"            Employees full name update for:   {year}", end="\r")
+            txt_len = print_temp_text(f"{bm_pg.TAB}- Employees full name update for:{bm_pg.TAB}{year}", txt_end=True)
             year_empl_df = empl_dict[year].copy()
             year_empl_df[last_name_col_alias] = year_empl_df[last_name_col_alias].apply(standardize_txt)
             for row_num, row in year_empl_df.iterrows():
@@ -696,5 +696,5 @@ def set_employees_data(corpus_year, empl_file_path, init_search_depth, print_par
                 full_name = last_name + " " + first_name
                 year_empl_df.loc[row_num, full_name_col_alias] = full_name
             new_empl_dict[year] = year_empl_df
-        print_step_text("  - Employees full name updated for the selected years", print_params)
+        print_step_text(f"{bm_pg.TAB}- Employees full name updated for the selected years", print_params, prev_txt_len= txt_len)
     return new_empl_dict, search_depth, available_int_years

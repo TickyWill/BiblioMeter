@@ -139,7 +139,7 @@ def read_final_set_homonyms_data(final_results_path, corpus_year):
     saved_homonyms_path = year_final_results_path / Path(saved_homonyms_folder_alias)
     homonyms_file_path = saved_homonyms_path / Path(year_homonyms_file)
 
-    # Reading the file of publications-emplopyees merged data after resolution of honmonymies
+    # Reading the file of publications-employees merged data after resolution of homonymies
     set_homonyms_df = pd.read_excel(homonyms_file_path)
     return set_homonyms_df
 

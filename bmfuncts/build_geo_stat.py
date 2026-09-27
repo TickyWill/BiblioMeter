@@ -1,7 +1,8 @@
 """Module of functions for geographical collaborations analysis.
 """
 
-__all__ = ['build_and_save_geo_stat']
+__all__ = ['build_and_save_geo_stat',
+          ]
 
 # Standard Library imports
 import os
@@ -44,9 +45,9 @@ def _build_items_stat(items_df, institute_item, items_cols, stat_cols):
         institute_item (str): Value of the Institute's item.
         items_cols (list): The two column names of the item data useful \
         to compute de statistics, i.e. publications IDs and publications items.
-        stat_cols (list): The column names of the data of the built statisctics.
+        stat_cols (list): The column names of the data of the built statistics.
     Returns:
-        (dataframe): The data of the built statisctics.
+        (dataframe): The data of the built statistics.
     """
     [pub_id_col, item_col] = items_cols
     data = []
@@ -78,7 +79,7 @@ def _build_countries_stat(countries_df, institute_country):
         institute_country (str): The country of the institute.
     Returns:
         (dataframe): Countries statistics where each row gives the country name, \
-        the Institute-publications number with address from the country \
+        the Institute's publications number with address from the country \
         and a string listing the concerned publications IDs separated by semicolon.
     """
     # Setting col names
@@ -109,7 +110,7 @@ def _build_continents_stat(countries_df, institute_continent):
         institute_continent (str): The continent of the institute
     Returns:
         (dataframe): Continents statistics where each row gives the continent name, \
-        the Institute-publications number with address from the continent \
+        the Institute's publications number with address from the continent \
         and a string listing the concerned publications IDs separated by semicolon.
     """
     # Setting col names
@@ -137,7 +138,7 @@ def _build_continents_stat(countries_df, institute_continent):
 
 def _set_institute_country_stat_df_params():
     """Builds a dict setting selected columns names for the process 
-    of building statistics within Institute country .
+    of building statistics within Institute's country .
 
     Returns:
         (dict): The built dict.
@@ -233,7 +234,7 @@ def _build_institute_country_stat(norm_affil_df, institute_country, institute_no
         - all types of co-authors,
         - no co-authors,
         - only co-authors of the country of the Institute,
-        - co-authors from the Institute country together with co-authors from other countries,
+        - co-authors from the Institute's country together with co-authors from other countries,
         - only co-authors from other countries;
     - The number of publications;
     - The list of publication IDs.
@@ -243,7 +244,7 @@ def _build_institute_country_stat(norm_affil_df, institute_country, institute_no
         institute_country (str): The country of the institute
     Returns:
         (dataframe): Institute's country statistics where each row gives the co-authors type, \
-        the Institute-publications number related to the co-authors type \
+        the Institute's publications number related to the co-authors type \
         and a string listing the concerned publications IDs separated by semicolon.
     """
     inst_country_stat_cols_dic, inst_country_stat_rows_dic = _set_institute_country_stat_df_params()
@@ -332,7 +333,7 @@ def _set_geo_files_params(analysis_folder_path, institute_country):
 def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
                             analysis_folder_path):
     """Builds the publications statistics dataframes per country and per continent
-    including for the Institute country.
+    including for the Institute's country.
 
     First, it builds the statistics dataframes through the `_build_countries_stat` 
     and the `_build_continents_stat` internal functions.
@@ -351,6 +352,7 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     """
     # Setting parameters value from 'geo_stat_params'
     corpus_year, print_params, institute = geo_stat_params
+    print_step_text("\nBuilding geographical stat...", print_params)
 
     # Setting Institute's country and continent
     institute_country = bm_ig.INSTITUTES_COUNTRY_DICT[institute]
@@ -358,7 +360,7 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     institute_norm = bm_ig.INSTITUTES_NORM_NAME_DICT[institute]
 
     # Building stat dataframes
-    print("  - Computing geographical statistics...", end="\r")
+    print_step_text(f"{bm_pg.TAB}- Computing geographical statistics...", print_params)
     by_country_df = _build_countries_stat(countries_df, institute_country)
     by_continent_df = _build_continents_stat(countries_df, institute_continent)
     inst_country_stat_df = _build_institute_country_stat(norm_affiliations_df,
@@ -381,5 +383,5 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     sheet_name = institute_country + " " + corpus_year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, institute_country_weight_filename,
                               inst_country_stat_df, geo_df_title, sheet_name)
-    print_step_text("  - Geo statistics built and saved      ", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Geo statistics built and saved", print_params)
     return geo_analysis_folder

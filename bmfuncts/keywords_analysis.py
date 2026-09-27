@@ -23,7 +23,7 @@ from bmfuncts.save_final_results import set_results_folder_path
 
 
 def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df, cols_tup,
-                             kw_analysis_folder_path, verbose=False):
+                             kw_analysis_folder_path):
     """Creates publications-keywords (KW) data for the 'kw_type' KW type 
     for each department of the Institute including itself.
 
@@ -41,7 +41,7 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
     module.
 
     Args:
-        institute (str): Institute name.
+        institute (str): Institute's name.
         corpus_year (str): 4 digits year of the corpus.
         analysis_df (dataframe): Publications list to be analyzed.
         kw_type (str): Type of keyword to be analyzed.
@@ -51,7 +51,6 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
         publication-IDs column name in 'kw_df' dataframe, \
         keywords column name, keyword-weight column name).
         kw_analysis_folder_path (path): Full path to the folder for saving results.
-        verbose (bool): Status of prints (default = False).
     """
 
     # Setting useful column names aliases
@@ -89,7 +88,7 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
             else:
                 kw_drop += 1
         if kw_drop and dept == institute:
-            print(f"    WARNING: {kw_drop} dropped keywords of 1 character "
+            print(f"{bm_pg.TAB}WARNING: {kw_drop} dropped keywords of 1 character "
                   f"among {len(dept_kw_set_to_list)} {kw_type} ones of {institute}")
 
         # Saving the keywords dataframe as EXCEL file
@@ -98,11 +97,7 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
         wb, ws = format_page(dept_kw_df, kw_df_title)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
-
-    message = ("\n    Keywords of all types and all departments "
-               f"saved in : \n {kw_analysis_folder_path}")
-    if verbose:
-        print(message, "\n")
+    print_step_text(f"\n{bm_pg.TAB}Keywords of all types and all departments saved")
 
 
 def _get_clean_kw_data(kw_df, keywords_col):
@@ -156,8 +151,8 @@ def _set_kw_files_params(wf_path, corpus_year):
     return kw_items_dict, kw_analysis_folder_path
 
 
-def keywords_analysis(params_list, progress_callback=None, verbose=False):
-    """ Performs the analysis of publications keywords (KWs) of the corpus.
+def keywords_analysis(params_list, progress_callback=None):
+    """Performs the analysis of publications keywords (KWs) of the corpus.
 
     This is done through the following steps:
 
@@ -175,13 +170,12 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
-        params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
+        params_list (list):  The list composed of the Institute's name (str), \
+        the org_tup (tup) that contains parameters of Institute's organization, \
         the full path to working folder (path), the data combination type \
         of corpuses databases (str) and the 4 digits year of the corpus (str).
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
-        verbose (bool): Status of prints (default = False).
     Returns:
         (path): Full path to the folder where results of keywords analysis are saved.
     """
@@ -235,7 +229,7 @@ def keywords_analysis(params_list, progress_callback=None, verbose=False):
         cols_tup = (depts_col_list, final_pub_id_col, parsing_pub_id_col_alias,
                     keywords_col_alias, weight_col_alias)
         _create_kw_analysis_data(institute, corpus_year, pub_df, kw_type, kw_df, cols_tup,
-                                 kw_analysis_folder_path, verbose=verbose)
+                                 kw_analysis_folder_path)
 
         # Updating progress bar state
         if progress_callback:

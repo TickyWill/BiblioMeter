@@ -1,4 +1,4 @@
-"""The `gui_globals` module  defines the global parameters useful for the GUI settings.
+"""The `gui_globals` module defines the global parameters useful for the GUI settings.
 """
 
 __all__ = ['APP_WIN_TITLE',
@@ -85,15 +85,18 @@ APP_WIN_TITLE = "Analyse de la production scientifique d'un institut"
 # *****************************************
 
 def _get_displays(in_to_mm):
-    """ The function `get_displays` allows to identify the set of displays
-        available within the user hardware and to get their parameters.
-        If the width or the height of a display are not available in mm
-        through the `get_monitors` method (as for Darwin platforms),
-        the user is asked to specify the displays diagonal size to compute them.
+    """Allows to identify the set of displays available within the user hardware 
+    and to get their parameters.
 
+    If the width or the height of a display are not available in mm 
+    through the `get_monitors` method (as for Darwin platforms), 
+    the user is asked to specify the displays diagonal size to compute them.
+
+    Args:
+        in_to_mm (float): Factor for conversion of inches into millimeters.
     Returns:
-        `list`: list of dicts with one dict per detected display,
-                each dict is keyed by 8 display parameters.
+        (list): Dicts with one dict per detected display, each dict is keyed \
+        by 8 display parameters.
     """
     displays = [{'x': m.x, 'y': m.y, 'width': m.width,
                  'height': m.height, 'width_mm': m.width_mm,

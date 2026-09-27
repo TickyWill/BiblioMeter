@@ -159,7 +159,7 @@ def set_rawdata_and_parsing_paths(wf_path, year, db_list):
 
 
 def set_parsing_items_params():
-    """ Sets the names of the parsing file for each parsed item.
+    """Sets the names of the parsing file for each parsed item.
 
     It also sets two lists of keys:
     - keys of parsing items for building data of addresses with unknown-country;

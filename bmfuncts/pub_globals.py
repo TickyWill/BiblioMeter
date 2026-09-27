@@ -60,6 +60,7 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'STAT_FILE_DICT',
            'STAT_ROW_NAMES',
            'SYMB_CHANGE',
+           'TAB',
            'TSV_SAVE_EXTENT',
            'UNKNOWN',
            'UNKNOWN_COUNTRY',
@@ -91,6 +92,10 @@ UNKNOWN_COUNTRY = bp.UNKNOWN_COUNTRY
 WOS = bp.WOS
 WOS_RAWDATA_EXTENT = bp.WOS_RAWDATA_EXTENT
 
+# Setting the number of spaces for indentation of prints
+# Use of "\t" in prints will set 8 spaces by default
+TAB = bp.TAB
+
 # Setting parameters of corpuses extraction
 BDD_LIST = [SCOPUS, WOS]
 FIRST_BDD = SCOPUS
@@ -103,23 +108,16 @@ DB_ID_COLS = {WOS      : COL_NAMES['wos_id'][0],
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS", "Scopus"]
 
+# Setting general parameters of file names
 LOG_FILE = "Log"
 LOG_FOLDER = "BM-Log files"
-
 CONFIG_FOLDER = 'ConfigFiles'
-
 PARSING_CONFIG_FILE = 'BiblioParsing_config.json'
-
 PARSING_PERF = "Parsing_perf.json"
-
 IDS_FILE_BASE = "_IDs.xlsx"
-
 RAWDATA_CORRECT = {'authors'  : "_Auteurs corrigés.xlsx",
-                   'addresses': "_Adresses corrigées.xlsx",
-                  }
-
+                   'addresses': "_Adresses corrigées.xlsx",}
 TSV_SAVE_EXTENT = "dat"
-
 XL_INDEX_BASE = 1
 
 # Setting if the full list of authors is based on the corrected author names

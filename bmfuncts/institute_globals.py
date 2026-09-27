@@ -37,7 +37,7 @@ INSTITUTES_CONTINENT_DICT = dict(zip(INSTITUTES_LIST, INSTITUTES_CONTINENTS_LIST
 INSTITUTES_NORM_NAME_DICT = dict(zip(INSTITUTES_LIST, INSTITUTES_NORM_NAMES_LIST))
 INSTITUTES_TOP_AFFIL_DICT = dict(zip(INSTITUTES_LIST, INSTITUTES_TOP_AFFILS_LIST))
 
-# Setting list of address items that exlude affiliation correction of added data from HAL database
+# Setting list of address items that exclude affiliation correction of added data from HAL database
 EXCLUDE_ADDR_ITEMS_LIST = ['LITEN', 'LETI', 'IRIG', 'IBS']
 
 # Setting default working folder of each institute

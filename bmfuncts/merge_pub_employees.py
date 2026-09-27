@@ -7,7 +7,8 @@ of the Institute taking care of:
 
 """
 
-__all__ = ['recursive_year_search']
+__all__ = ['recursive_year_search',
+          ]
 
 
 # Standard Library imports
@@ -20,13 +21,14 @@ import pandas as pd
 # Local imports
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
-from bmfuncts.build_pub_authors import build_institute_pubs_authors
+from bmfuncts.build_pub_authors import build_institute_pubs_authors_data
 from bmfuncts.build_year_pub_empl import build_pub_empl_data
 from bmfuncts.create_hash_id import create_hash_id
 from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 from bmfuncts.useful_functs import set_year_pub_id
 from bmfuncts.useful_functs import standardize_full_name_order
 from bmfuncts.useful_functs import standardize_txt
@@ -126,11 +128,11 @@ def _set_full_ref(title, first_author, journal_name, pub_year, doi):
     Returns:
         (str): Full reference of the publication.
     """
-    full_ref  = f'{title}, '                     # add the reference's title
-    full_ref += f'{first_author} et al., '       # add the reference's first author
-    full_ref += f'{journal_name.capitalize()}, ' # add the reference's journal name
-    full_ref += f'{pub_year}, '                  # add the reference's publication year
-    full_ref += f'{doi}'                         # add the reference's DOI
+    full_ref  = f'{title}, '                     # adds the reference's title
+    full_ref += f'{first_author} et al., '       # adds the reference's first author
+    full_ref += f'{journal_name.capitalize()}, ' # adds the reference's journal name
+    full_ref += f'{pub_year}, '                  # adds the reference's publication year
+    full_ref += f'{doi}'                         # adds the reference's DOI
     return full_ref
 
 
@@ -174,6 +176,31 @@ def _add_biblio_list(merge_df, cols_list):
     return new_merge_df
 
 
+def _add_ext_auth(ext_row, orphan_row, new_merge_adds_df, orphan_drop_df, cols_list):
+    (ext_auth_lastname_col, ext_auth_firstname_short_cols, orphan_fullname_col,
+     ext_empl_fullname_col) = cols_list
+
+    # Setting the row to move from init_orphan_df as a dataframe
+    row_to_move_df = orphan_row.to_frame().T
+
+    # Setting the row to copy from ext_docs_df as a dataframe
+    row_to_copy_df = ext_row.to_frame().T
+
+    # Dropping the columns of 'row_to_copy_df' data that should not be present in 'row_to_add_df' data
+    row_to_copy_df = row_to_copy_df.drop([ext_auth_lastname_col, ext_auth_firstname_short_cols], axis=1)
+
+    # Merging the two dataframes on respective full name column
+    row_to_add_df = pd.merge(row_to_move_df, row_to_copy_df, left_on=[orphan_fullname_col],
+                             right_on=[ext_empl_fullname_col], how='left')
+
+    # Appending the merged df to 'new_merge_adds_df' data
+    new_merge_adds_df = concat_dfs([new_merge_adds_df, row_to_add_df], concat_ignore_index=True)
+
+    # Appending row_to_move_df to 'orphan_drop_df' data
+    orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df], concat_ignore_index=True)
+    return new_merge_adds_df, orphan_drop_df
+
+
 def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print_params):
     """Adds to the publications-list dataframe with one row per author 
     new rows containing the information of specific authors.
@@ -205,16 +232,13 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
         imported from "bmfuncts.useful_functs" internal module.
     """
     # Setting col names from cols_list
-    (pub_id_col, author_id_col, orphan_fullname_col, ext_empl_fullname_col,
-     orphan_lastname_col, ext_auth_lastname_col,
-     merge_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
+    (pub_id_col, author_id_col, orphan_fullname_col, ext_empl_fullname_col, orphan_lastname_col,
+     ext_auth_lastname_col, merge_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
 
     # Replace in "init_merge_df" data and "init_orphan_df" data, NaN values
     # except "NA" in first name initials
-    init_merge_df = keep_initials(init_merge_df, merge_firstname_short_col,
-                                   missing_fill=bm_pg.UNKNOWN)
-    init_orphan_df = keep_initials(init_orphan_df, merge_firstname_short_col,
-                                   missing_fill=bm_pg.UNKNOWN)
+    init_merge_df = keep_initials(init_merge_df, merge_firstname_short_col, missing_fill=bm_pg.UNKNOWN)
+    init_orphan_df = keep_initials(init_orphan_df, merge_firstname_short_col, missing_fill=bm_pg.UNKNOWN)
 
     # Initializing the data to be concatenated with init_merge_df
     # with same column names as init_merge_df
@@ -230,19 +254,14 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
-    # Reading of the external PhD students xlsx file
-    # using the same useful columns as init_merge_df defined by EXT_DOCS_USEFUL_COL_LIST
-    # with dates conversion through converters_alias
-    # and drop of empty rows
+    # Reading of the external-PhD-students XLSX file using the same useful columns
+    # as init_merge_df defined by EXT_DOCS_USEFUL_COL_LIST with dates conversion
+    # through converters_alias and drop of empty rows
     ext_docs_usecols = sum([[ext_auth_lastname_col, ext_auth_firstname_short_cols],
-                            bm_pg.EXT_DOCS_COL_ADDS_LIST,
-                            bm_eg.EXT_DOCS_USEFUL_COL_LIST,],
-                           [])
+                            bm_pg.EXT_DOCS_COL_ADDS_LIST, bm_eg.EXT_DOCS_USEFUL_COL_LIST,], [])
     warnings.simplefilter(action='ignore', category=UserWarning)
-    ext_docs_df = pd.read_excel(ext_docs_path,
-                                sheet_name=bm_pg.SHEET_NAMES_ORPHAN["docs to add"],
-                                usecols=ext_docs_usecols,
-                                converters=bm_eg.EMPLOYEES_CONVERTERS_DIC)
+    ext_docs_df = pd.read_excel(ext_docs_path, sheet_name=bm_pg.SHEET_NAMES_ORPHAN["docs to add"],
+                                usecols=ext_docs_usecols, converters=bm_eg.EMPLOYEES_CONVERTERS_DIC)
 
     # Replace in "ext_docs_df" NaN values "NA" in first name initials
     ext_docs_df = keep_initials(ext_docs_df, ext_auth_firstname_short_cols)
@@ -250,39 +269,22 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
 
     # Searching for last names of init_orphan_df in ext_docs_df
     # to update 'merge_df' and 'orphan_df' data using 'new_merge_adds_df' and 'orphan_drop_df' data
-    for _, init_orphan_row in init_orphan_df.iterrows():
-        author_last_name = str(init_orphan_row[orphan_lastname_col])
+    sub_cols_list = [ext_auth_lastname_col, ext_auth_firstname_short_cols, orphan_fullname_col, ext_empl_fullname_col]
+    orphan_lines_nb, orphan_nb = len(init_orphan_df), 0
+    for _, orphan_row in init_orphan_df.iterrows():
+        orphan_nb += 1
+        txt_len = print_temp_text(f"{bm_pg.TAB*2}- Search authors as external PhD students of the Institute:"
+                                  f"{bm_pg.TAB}{orphan_nb} / {orphan_lines_nb}", txt_end=True)
+        author_last_name = str(orphan_row[orphan_lastname_col])
         author_last_name = standardize_txt(author_last_name)
-        author_initials = str(init_orphan_row[orphan_firstname_short_col])
+        author_initials = str(orphan_row[orphan_firstname_short_col])
         for _, ext_docs_row in ext_docs_df.iterrows():
             ext_docs_pub_last_name = str(ext_docs_row[ext_auth_lastname_col])
             ext_docs_pub_last_name = standardize_txt(ext_docs_pub_last_name)
             ext_docs_pub_initials = str(ext_docs_row[ext_auth_firstname_short_cols])
-            if (ext_docs_pub_last_name==author_last_name
-                    and ext_docs_pub_initials==author_initials):
-                # Setting the row to move from init_orphan_df as a dataframe
-                row_to_move_df = init_orphan_row.to_frame().T
-
-                # Setting the row to copy from ext_docs_df as a dataframe
-                row_to_copy_df = ext_docs_row.to_frame().T
-
-                # Dropping the columns of 'row_to_copy_df' data that should not be present in 'row_to_add_df' data
-                row_to_copy_df = row_to_copy_df.drop([ext_auth_lastname_col, ext_auth_firstname_short_cols],
-                                                     axis=1)
-
-                # Merging the two dataframes on respective full name column
-                row_to_add_df = pd.merge(row_to_move_df, row_to_copy_df,
-                                         left_on=[orphan_fullname_col],
-                                         right_on=[ext_empl_fullname_col],
-                                         how='left')
-
-                # Appending the merged df to 'new_merge_adds_df' data
-                new_merge_adds_df = concat_dfs([new_merge_adds_df, row_to_add_df],
-                                                concat_ignore_index=True)
-
-                # Appending row_to_move_df to 'orphan_drop_df' data
-                orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df],
-                                            concat_ignore_index=True)
+            if (ext_docs_pub_last_name==author_last_name and ext_docs_pub_initials==author_initials):
+                return_tup = _add_ext_auth(ext_docs_row, orphan_row, new_merge_adds_df, orphan_drop_df, sub_cols_list)
+                new_merge_adds_df, orphan_drop_df = return_tup
 
     # Concatenating init_merge_df and new_merge_adds_df
     new_merge_df = concat_dfs([init_merge_df, new_merge_adds_df])
@@ -296,7 +298,7 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
                              merge_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
-    print_step_text("      - External PhD students added", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Authors searched as external PhD students", print_params, prev_txt_len=txt_len)
     return new_merge_df, new_orphan_df
 
 
@@ -331,16 +333,13 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
         imported from "bmfuncts.useful_functs" internal module.
     """
     # Setting col names from cols_list
-    (pub_id_col, author_id_col, orphan_fullname_col, ext_empl_fullname_col,
-     orphan_lastname_col, ext_auth_lastname_col,
-     merge_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
+    (pub_id_col, author_id_col, orphan_fullname_col, ext_empl_fullname_col, orphan_lastname_col,
+     ext_auth_lastname_col, merge_firstname_short_col, ext_auth_firstname_short_cols) = cols_list
 
     # Replace in "init_merge_df" data and "init_orphan_df" data, NaN values
     # except "NA" in first name initials
-    init_merge_df = keep_initials(init_merge_df, merge_firstname_short_col,
-                                  missing_fill=bm_pg.UNKNOWN)
-    init_orphan_df = keep_initials(init_orphan_df, merge_firstname_short_col,
-                                   missing_fill=bm_pg.UNKNOWN)
+    init_merge_df = keep_initials(init_merge_df, merge_firstname_short_col, missing_fill=bm_pg.UNKNOWN)
+    init_orphan_df = keep_initials(init_orphan_df, merge_firstname_short_col, missing_fill=bm_pg.UNKNOWN)
 
     # Initializing the data to be concatenated to 'init_merge_df' data in 'new_merge_df' data
     # with same column names as init_merge_df
@@ -356,19 +355,14 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
     # with same column names as init_orphan_df
     orphan_drop_df = pd.DataFrame(columns=list(init_orphan_df.columns))
 
-    # Reading of the external PhD students xlsx file
-    # using the same useful columns as init_merge_df defined by EXT_DOCS_USEFUL_COL_LIST
-    # with dates conversion through converters_alias
-    # and drop of empty rows
+    # Reading of the external-collaborators XLSX file using the same useful columns
+    # as init_merge_df defined by EXT_DOCS_USEFUL_COL_LIST with dates conversion
+    # through converters_alias and drop of empty rows
     others_usecols = sum([[ext_auth_lastname_col, ext_auth_firstname_short_cols],
-                          bm_pg.EXT_DOCS_COL_ADDS_LIST,
-                          bm_eg.EXT_DOCS_USEFUL_COL_LIST,],
-                         [])
+                          bm_pg.EXT_DOCS_COL_ADDS_LIST, bm_eg.EXT_DOCS_USEFUL_COL_LIST,], [])
     warnings.simplefilter(action='ignore', category=UserWarning)
-    others_df = pd.read_excel(others_path,
-                              sheet_name=bm_pg.SHEET_NAMES_ORPHAN["others to add"],
-                              usecols=others_usecols,
-                              converters=bm_eg.EMPLOYEES_CONVERTERS_DIC)
+    others_df = pd.read_excel(others_path, sheet_name=bm_pg.SHEET_NAMES_ORPHAN["others to add"],
+                              usecols=others_usecols, converters=bm_eg.EMPLOYEES_CONVERTERS_DIC)
 
     # Replace in "other_df" NaN values "NA" in first name initials
     others_df = keep_initials(others_df, ext_auth_firstname_short_cols)
@@ -376,7 +370,12 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
 
     # Searching for last names of init_orphan_df in others_df
     # to update 'merge_df' and 'orphan_df' data using 'new_merge_adds_df' and 'orphan_drop_df' data
+    sub_cols_list = [ext_auth_lastname_col, ext_auth_firstname_short_cols, orphan_fullname_col, ext_empl_fullname_col]
+    orphan_lines_nb, orphan_nb = len(init_orphan_df), 0
     for _, orphan_row in init_orphan_df.iterrows():
+        orphan_nb += 1
+        txt_len = print_temp_text(f"{bm_pg.TAB*2}- Search authors as other external collaborators:"
+                                  f"{bm_pg.TAB}{orphan_nb} / {orphan_lines_nb}", txt_end=True)
         author_last_name = str(orphan_row[orphan_lastname_col])
         author_last_name = standardize_txt(author_last_name)
         author_initials = str(orphan_row[orphan_firstname_short_col])
@@ -385,29 +384,8 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
             others_pub_last_name = standardize_txt(others_pub_last_name)
             others_pub_initials = str(others_row[ext_auth_firstname_short_cols])
             if others_pub_last_name==author_last_name and others_pub_initials==author_initials:
-                # Setting the row to move from init_orphan_df as a dataframe
-                row_to_move_df = orphan_row.to_frame().T
-
-                # Setting the row to copy from others_df as a dataframe
-                row_to_copy_df = others_row.to_frame().T
-
-                # Dropping the columns of 'row_to_copy_df' data that should not be present in 'row_to_add_df' data
-                row_to_copy_df = row_to_copy_df.drop([ext_auth_lastname_col, ext_auth_firstname_short_cols],
-                                                     axis=1)
-
-                # Merging the two dataframes on respective full name column
-                row_to_add_df = pd.merge(row_to_move_df, row_to_copy_df,
-                                         left_on=[orphan_fullname_col],
-                                         right_on=[ext_empl_fullname_col],
-                                         how='left')
-
-                # Appending the merged df to 'new_merge_adds_df' data
-                new_merge_adds_df = concat_dfs([new_merge_adds_df, row_to_add_df],
-                                                concat_ignore_index=True)
-
-                # Appending row_to_move_df to  'orphan_drop_df' data
-                orphan_drop_df = concat_dfs([orphan_drop_df, row_to_move_df],
-                                            concat_ignore_index=True)
+                return_tup = _add_ext_auth(others_row, orphan_row, new_merge_adds_df, orphan_drop_df, sub_cols_list)
+                new_merge_adds_df, orphan_drop_df = return_tup
 
     # Concatenating 'init_merge_df' data and 'new_merge_adds_df' data
     new_merge_df = concat_dfs([init_merge_df, new_merge_adds_df])
@@ -417,11 +395,10 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
     new_orphan_df = concat_dfs([init_orphan_df, orphan_drop_df], keep='False')
 
     # Recovering the initial column names of 'init_orphan_df' data
-    col_invert_rename_dic = {merge_firstname_short_col + "_x":\
-                             merge_firstname_short_col}
+    col_invert_rename_dic = {merge_firstname_short_col + "_x": merge_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
-    print_step_text("      - Other external collaborators added", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Authors searched as other external collaborators", print_params, prev_txt_len=txt_len)
     return new_merge_df, new_orphan_df
 
 
@@ -486,7 +463,7 @@ def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_d
             file_path = merge_folder_path / Path(file_name)
         df_to_save.to_excel(file_path, index=False)
         if verbose:
-            message = f"    File of orphan authors created for Institute subdivision: {_inst_col}"
+            message = f"\tFile of orphan authors created for Institute subdivision: {_inst_col}"
             print(message)
 
     # Setting useful column names list and dropping status
@@ -601,7 +578,7 @@ def _config_empl(empl_dict, years, initials_col, mat_col):
     in first name initials and set the values type in the "mat_col" 
     col as string.
 
-    Care is taken to keep 'NA' value for the first name initiales 
+    Care is taken to keep 'NA' value for the first name initials
     through the `keep_initials` function imported from the 
     "bmfuncts.useful_functs" internal module. This is done to avoid 
     this value to be set to NaN by default.
@@ -631,10 +608,9 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     of the publications of a corpus.
 
     This is done through the following steps:
-
     1. The publications list dataframe with one row per Institute author for each \
     publication is built from the results of the corpus parsing through \
-    the `build_institute_pubs_authors` function imported from \
+    the `build_institute_pubs_authors_data` function imported from \
     the `bmfuncts.build_pub_authors` module.
     2. The 'merge_df' dataframe of the publications list containing all matches \
     between Institute authors and employee names is initialized using the most recent year \
@@ -698,11 +674,10 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     # Setting parameters values from params_list
     corpus_year, print_params, institute, org_tup, wf_path = params_list[0:5]
 
-    print_step_text("\nMerge publications authors and employees information...",
-                        print_params)
+    print_step_text("\nMerge publications authors and employees information...", print_params)
 
     # Setting useful params of merge files from args
-    merge_folder_path, merge_path, orphan_path = merge_paths[:3]
+    merge_folder_path, merge_path, orphan_path, hash_id_path = merge_paths
 
     # Setting path to the file of external employees
     ext_empl_path = _set_ext_files_paths(wf_path)
@@ -717,7 +692,7 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     orphan_split_status = org_tup[9]
 
     # Building the articles dataframe
-    pub_df = build_institute_pubs_authors(params_list)
+    pub_df = build_institute_pubs_authors_data(params_list)
 
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
     pub_df = keep_initials(pub_df, initials_col, missing_fill=bm_pg.UNKNOWN)
@@ -733,14 +708,13 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         step = (100 - progress_bar_state) / 100
         progress_callback(progress_bar_state + step * 10)
 
-    # **************************************************************
+    # ************************************************************
     # * Building recursively the `merge_df` and `orphan_df` data *
-    # *                 using `empl_dict` files of years          *
-    # **************************************************************
+    # *                 using `empl_dict` files of years         *
+    # ************************************************************
 
     # Building the initial dataframes
-    print_step_text("\n  - Initializing search of authors among employees data...",
-                        print_params)
+    print_step_text(f"\n{bm_pg.TAB}- Initializing search of authors among employees data...", print_params)
     merge_df, orphan_df = build_pub_empl_data(empl_dict[years[0]], pub_df, wf_path, print_params,
                                               test_case=set_test_case, test_name=set_test_name, init_status=True)
     if progress_callback:
@@ -760,10 +734,10 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         progress_callback(new_progress_bar_state)
         progress_bar_loop_progression = step * 50 // len(years)
 
-    print_step_text("\n  - Recursive search of authors among employees data...", print_params)
-    print(f"        Search period: {years[0]}...{years[-1]}")
-    for _, year in enumerate(years):
-        print(f"        Search year:   {year}", end="\r")
+    print_step_text(f"\n{bm_pg.TAB}- Recursive search of authors among employees data of {years[1]}...{years[-1]} period",
+                    print_params)
+    for _, year in enumerate(years[1:]):
+        txt_len = print_temp_text(f"{bm_pg.TAB*2}Search year:{bm_pg.TAB}{year}", txt_end=True)
         # Updating the 'merge_df_add' and 'orphan_df' data
         merge_df_add, orphan_df = build_pub_empl_data(empl_dict[year], orphan_df, wf_path, print_params,
                                                       test_case=set_test_case, test_name=set_test_name)
@@ -775,55 +749,64 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         if progress_callback:
             new_progress_bar_state += progress_bar_loop_progression
             progress_callback(new_progress_bar_state)
-    print_step_text("      - Search period results used to update data", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Search period results used to update publications' data of the Institute",
+                    print_params, prev_txt_len=txt_len)
 
-    print_step_text("\n  - Enhancing search results...", print_params)
+    print_step_text(f"\n{bm_pg.TAB}- Enhancing search results...", print_params)
+
     # Replace NaN values by UNKNOWN string except in first name initials
     merge_df = keep_initials(merge_df, initials_col, missing_fill=bm_pg.UNKNOWN)
     orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bm_pg.UNKNOWN)
+    print_step_text(f"{bm_pg.TAB*2}- Initials NA kept and not set to NaN", print_params)
     orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
     merge_df = set_year_pub_id(merge_df, corpus_year, pub_id_col)
-    print_step_text("      - Publication IDs tagged with corpus year", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Publication IDs tagged with corpus year", print_params)
     if not orphan_status:
         orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_col)
 
     # Adding author job type to 'merge_df' data
     merge_df = _add_author_job_type(merge_df, empl_dict, years, add_job_cols_list)
-    print_step_text("      - Column with author job-type added", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Column with author job-type added", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 5)
 
     # Adding full publication reference to 'merge_df' data
     merge_df = _add_biblio_list(merge_df, add_ref_cols_list)
-    print_step_text("      - Column with full publication reference added", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Column with full publication reference added", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 10)
 
     # Renaming column names in merge_df' and 'orphan_df' data
     merge_df, orphan_df = _change_col_names(institute, org_tup, merge_df, orphan_df)
-    print_step_text("      - Columns renamed with final names", print_params)
-
-    # Saving merge_df' and 'orphan_df' data
-    merge_df.to_excel(merge_path, index=False)
-    orphan_df.to_excel(orphan_path, index=False)
+    print_step_text(f"{bm_pg.TAB*2}- Columns renamed with final names", print_params)
 
     # Splitting orphan file in subdivisions of Institute when indicated
     if orphan_split_status:
         orphan_status = _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_df)
-        print_step_text("      - Not found authors split in the specified subdivisions", print_params)
+        print_step_text(f"{bm_pg.TAB*2}- Not-found authors split in the specified subdivisions", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identifiers of publications independent of data extraction
-    create_hash_id(institute, org_tup, merge_paths[1:], print_params)
+    return_tup = create_hash_id(institute, org_tup, merge_df, orphan_df)
+    merge_df, orphan_df, hash_id_df, hash_id_nb = return_tup
+
+    # Saving the data
+    merge_df.to_excel(merge_path, index=False)
+    orphan_df.to_excel(orphan_path, index=False)
+    hash_id_df.to_excel(hash_id_path, index=False)
+
+    print_step_text(f"{bm_pg.TAB*2}- Number of publications' hash-IDs created and saved: {hash_id_nb}",
+                    print_params)
+    step_txt = f"\n{bm_pg.TAB}- Results of search of authors among employees data saved "
+    if orphan_status:
+        step_txt += "with all authors identified as employees or close collaborators."
+    else:
+        step_txt += "with remaining authors not identified as employees or close collaborators."
+    print_step_text(step_txt, print_params)
+
     if progress_callback:
         progress_callback(100)
-    step_txt = "\nResults of search of authors in employees list saved"
-    if orphan_status:
-        step_txt += " with all authors identified as employees."
-    else:
-        step_txt += " with remaining authors not identified as employees."
-    print_step_text(step_txt, print_params)
     return orphan_status

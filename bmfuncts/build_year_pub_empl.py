@@ -1,4 +1,4 @@
-"""Module of functions for the merge of employees information with the publications list 
+"""Module of functions for the merge of employees information with the publications' list 
 of the Institute for a year corpus.
 
 """
@@ -16,8 +16,8 @@ import pandas as pd
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 
 
 def _set_test_cols_dic():
@@ -173,7 +173,7 @@ def _set_match_test_info(wf_path, test_case, test_name):
         test_name (str): The author's lastname for which tests are performed.
     Returns:
         (dict): keyed by ['cols', 'lastname', 'states', 'filespath'] and valued \
-        by the useful colums names (dict), the author's lastname (str), \
+        by the useful columns names (dict), the author's lastname (str), \
         the value of the test dict at 'test_case' key (list), \
         The full path to the folder where test results will be saved.
     """
@@ -422,10 +422,6 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
         the publications list with one row per Institute's author with \
         identified homonyms, dataframe of publications list with \
         one row per author that has not been identified as Institute's employee).
-    Note:
-        Care is taken to keep 'NA' value for the first name initials \
-        (that are set to NaN otherwise) through the `keep_initials` function \
-        imported from `bmfuncts.useful_functs` module.
     """
     # Setting useful col names for building merged data
     merge_cols_dic = _set_merge_cols_dic()
@@ -450,12 +446,12 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
 
     # Building 'merge_df' and 'orphan_df' data
     if init_status:
-        print_step_text("      - Searching of authors among employees data...", print_params)
+        txt_base = f"{bm_pg.TAB*2}- Searching of authors among employees data of the corpus-year:"
         full_names_nb, names_nb = len(pub_df), 0
     for _, pub_author_row in pub_df.iterrows():
         if init_status:
             names_nb += 1
-            print(f"              Number of searched authors:   {names_nb} / {full_names_nb}", end="\r")
+            txt_len = print_temp_text(f"{txt_base}{bm_pg.TAB}{names_nb} / {full_names_nb}", txt_end=True)
         # Building an 'empl_pub_match_df' data with rows of 'empl_df' data
         # The rows where the value in COL_NAMES_BM['Last_name'] column of the 'pub_df' data
         # matches with the value in EMPLOYEES_USEFUL_COLS['name'] column of the 'empl_df' data
@@ -469,8 +465,8 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
             # Checking match between the author's firstname and the employees' firstnames
             # for the matching lastname either (by full match or similarity)
             initials_match_idx_list = _check_firstname_initiales_match(empl_pub_match_df, pub_author_row,
-                                                                       pub_lastname_col, pub_firstname_col, empl_lastname_col,
-                                                                       test_info_dic)
+                                                                       pub_lastname_col, pub_firstname_col,
+                                                                       empl_lastname_col, test_info_dic)
 
             if initials_match_idx_list:
                 # Updating merged data of publications and employees
@@ -487,7 +483,7 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
     orphan_df = orphan_df.drop_duplicates()
 
     if init_status:
-        step_txt = ("      - Data of authors found as employees "
-                    "and data of authors not found amond employees built")
-        print_step_text(step_txt, print_params)
+        print_step_text(f"{bm_pg.TAB*2}- Publications' data of authors found as employees initialized",
+                        print_params, prev_txt_len=txt_len)
+        print_step_text(f"{bm_pg.TAB*2}- Publications' data of authors not found amond employees initialized", print_params)
     return merge_df, orphan_df

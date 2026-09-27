@@ -34,9 +34,9 @@ def build_col_conversion_dic(institute, org_tup):
     """
 
     # Setting institute's parameters
-    col_names_dpt  = org_tup[0]
-    dpt_col_list   = list(col_names_dpt.values())
-    inst_col_list  = org_tup[4]
+    col_names_dpt = org_tup[0]
+    dpt_col_list = list(col_names_dpt.values())
+    inst_col_list = org_tup[4]
 
     init_orphan_col_list = sum([[bm_pg.COL_HASH['hash_id']],
                                 bm_pg.COL_NAMES['auth_inst'][:5],
@@ -115,7 +115,7 @@ def build_col_conversion_dic(institute, org_tup):
                               bm_pg.COL_NAMES_ADD['IF année publi']],
                              dpt_col_list], [])
 
-    all_col_rename_dic    = dict(zip(init_bm_col_list, final_bm_col_list))
+    all_col_rename_dic = dict(zip(init_bm_col_list, final_bm_col_list))
     final_merge_col_list = [all_col_rename_dic[col] for col in init_merge_col_list]
     merge_col_rename_dic = dict(zip(init_merge_col_list, final_merge_col_list))
     final_orphan_col_list = [all_col_rename_dic[col] for col in init_orphan_col_list]
@@ -132,7 +132,7 @@ def set_homonym_col_names(institute, org_tup):
     the same module.
 
     Args:
-        institute (str): The Intitute's name.
+        institute (str): The Institute's name.
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
@@ -148,7 +148,7 @@ def set_homonym_col_names(institute, org_tup):
                              'corpus_year'   : bm_pg.COL_NAMES_ADD['corpus_year'],
                              'final_year'    : bm_pg.COL_NAMES['articles'][2],
                              'inst_author'   : bm_pg.COL_NAMES['authors'][2],
-                             "all_authors"   : bm_pg.COL_NAMES_ADD['liste auteurs'],
+                             'all_authors'   : bm_pg.COL_NAMES_ADD['liste auteurs'],
                              'first_author'  : bm_pg.COL_NAMES['articles'][1],
                              'title'         : bm_pg.COL_NAMES['articles'][9],
                              'journal'       : bm_pg.COL_NAMES['articles'][3],
@@ -200,8 +200,8 @@ def set_otp_col_names(institute, org_tup):
                         'corpus_year'       : bm_pg.COL_NAMES_ADD['corpus_year'],
                         'final_year'        : bm_pg.COL_NAMES['articles'][2],
                         'first_author'      : bm_pg.COL_NAMES['articles'][1],
-                        "institute_authors" : bm_pg.COL_NAMES_ADD['nom prénom liste'],
-                        "all_authors"       : bm_pg.COL_NAMES_ADD['liste auteurs'],
+                        'institute_authors' : bm_pg.COL_NAMES_ADD['nom prénom liste'],
+                        'all_authors'       : bm_pg.COL_NAMES_ADD['liste auteurs'],
                         'title'             : bm_pg.COL_NAMES['articles'][9],
                         'journal'           : bm_pg.COL_NAMES['articles'][3],
                         'doc_type'          : bm_pg.COL_NAMES['articles'][7],
@@ -226,7 +226,7 @@ def set_otp_col_names(institute, org_tup):
 
 def set_final_col_names(institute, org_tup):
     """Sets the dict for setting the final column names to be used for building 
-    the final publications-list dataframe.
+    the final publications' list dataframe.
 
     This is done through the `build_col_conversion_dic` function 
     of the same module.
@@ -237,7 +237,7 @@ def set_final_col_names(institute, org_tup):
         of the Institute.
     Returns:
         (tup): (dict to be used for setting the final \
-        column names of the final publications-list dataframe, \
+        column names of the final publications' list dataframe, \
         list of the final column names of the departments).
     """
     # Setting institute's parameters
@@ -253,7 +253,7 @@ def set_final_col_names(institute, org_tup):
                           'final_year'        : bm_pg.COL_NAMES['articles'][2],
                           'first_author'      : bm_pg.COL_NAMES['articles'][1],
                           'institute_authors' : bm_pg.COL_NAMES_ADD['nom prénom liste'],
-                          "all_authors"       : bm_pg.COL_NAMES_ADD['liste auteurs'],
+                          'all_authors'       : bm_pg.COL_NAMES_ADD['liste auteurs'],
                           'title'             : bm_pg.COL_NAMES['articles'][9],
                           'journal'           : bm_pg.COL_NAMES['articles'][3],
                           'doc_type'          : bm_pg.COL_NAMES['articles'][7],
@@ -279,7 +279,7 @@ def set_final_col_names(institute, org_tup):
 def set_if_col_names(institute, org_tup):
     """Sets the dict for setting the final column names, including 
     columns specific to impact-factors, to be used for updating the 
-    final publications-list dataframe with impact factors values.
+    final publications' list dataframe with impact factors values.
 
     This is done through the `set_final_col_names` function of 
     the same module.
@@ -289,7 +289,7 @@ def set_if_col_names(institute, org_tup):
         org_tup (tup): The tuple of the organization structure \
         of the Institute.
     Returns:
-        (dict): To be used for updating the final publications-list \
+        (dict): To be used for updating the final publications' list \
         dataframe with impact factors values.
     """
 
