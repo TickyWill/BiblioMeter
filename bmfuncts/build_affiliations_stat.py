@@ -123,7 +123,7 @@ def _save_affils_distrib_data(affils_distrib_df, corpus_year, affils_distrib_fil
     wb, ws = format_page(affils_distrib_df, affils_distrib_df_title)
     ws.title = sheet_name
     wb.save(affils_distrib_file_path)
-    print_step_text(f"{bm_pg.TAB*2}-  Distributed normalized affiliations saved", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Distributed normalized affiliations saved", print_params)
 
 
 def _set_affil_names_list(affil_names):

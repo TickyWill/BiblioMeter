@@ -105,9 +105,6 @@ DB_ID_COLS = {WOS      : COL_NAMES['wos_id'][0],
               "all_dbs": "DB_id_col",
               }
 
-# Setting list of raw data types
-DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS", "Scopus"]
-
 # Setting general parameters of file names
 LOG_FILE = "Log"
 LOG_FOLDER = "BM-Log files"
@@ -122,6 +119,9 @@ XL_INDEX_BASE = 1
 
 # Setting if the full list of authors is based on the corrected author names
 AUTHORS_FULL_LIST_NAME_CORRECTION = False
+
+# Setting list of raw data types
+DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS", "Scopus"]
 
 ARCHI_BACKUP = {"root": "Sauvegarde de secours"}
 

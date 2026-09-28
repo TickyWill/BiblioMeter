@@ -136,11 +136,11 @@ class SetLaunchButton:
         run_date_time = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
         master.log_file = f"{run_date_time.replace(' ', '_')}_{bm_pg.LOG_FILE}"
         log_title = f"BM ANALYSIS FOR {master.institute}"
-        print_txt = f"\n\n    Date            : {run_date_time}"
+        print_txt = f"\n\n{bm_pg.TAB}Date{bm_pg.TAB*3}: {run_date_time}"
 
         if not master.datatype:
-            print_txt += ("\n    Data combination type not yet selected"
-                          "\n    Log file not yet created")
+            print_txt += (f"\n{bm_pg.TAB}Data combination type not yet selected"
+                          f"\n{bm_pg.TAB}Log file not yet created")
             print_to_console(log_title, print_txt)
             warning_title = "!!! ATTENTION !!!"
             warning_text = ("Type de données non selectionné."
@@ -148,11 +148,11 @@ class SetLaunchButton:
                             "\nVeuillez le sélectionner avant de lancer l'application.")
             messagebox.showwarning(warning_title, warning_text)
         else:
-            print_txt += f"\n    Data combination: {master.datatype}"
+            print_txt += f"\n{bm_pg.TAB}Data combination: {master.datatype}"
 
         if not master.wf_path:
-            print_txt += ("\n    Working folder not yet defined"
-                          "\n    Log file not yet created")
+            print_txt += (f"\n{bm_pg.TAB}Working folder not yet defined"
+                          f"\n{bm_pg.TAB}Log file not yet created")
             print_to_console(log_title, print_txt)
             warning_title = "!!! ATTENTION !!!"
             warning_text = ("Chemin non renseigné."
@@ -171,8 +171,8 @@ class SetLaunchButton:
 
             # Printing run info to console and log file
             master.print_params = [master.log_file, bm_pg.LOG_FOLDER, master.wf_path]
-            print_txt += (f"\n    Working folder  : {master.wf_path}"
-                          f"\n    Corpus list     : {master.years_list}")
+            print_txt += (f"\n{bm_pg.TAB}Working folder  : {master.wf_path}"
+                          f"\n{bm_pg.TAB}Corpus list     : {master.years_list}")
 
             print_to_console(log_title, print_txt)
             print_to_log(log_title, print_txt, master.print_params)

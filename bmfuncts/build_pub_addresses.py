@@ -20,6 +20,7 @@ from bmfuncts.rename_cols import build_col_conversion_dic
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import save_xlsx_file
 from bmfuncts.useful_functs import set_year_pub_id
+from bmfuncts.useful_functs import print_step_text
 
 
 def _set_pub_addresses_cols_dic(institute, org_tup):
@@ -178,7 +179,7 @@ def _save_step_df(save_params_dic, step_df):
 
 def _build_pubid_addid_authid_addresse_data(clean_dfs, bm_full_cols_list):
     """Builds the data of addresses per author ID, per address ID and per 
-    publication ID.
+    publication ID useful for Institute's specific correction of authors' addresses.
 
     Author_id is set to "_" for authors not affiliated to the Institute.
     The input data are built through the `_build_init_institute_addresses_df` 
@@ -240,12 +241,9 @@ def _build_pubid_addid_authid_addresse_data(clean_dfs, bm_full_cols_list):
     return pubid_addid_authid_addresse_df
 
 
-def _correct_ines_in_liten_address(pubid_addid_authid_addresse_df, bm_full_cols_list):
+def _correct_liten_auth_address(pub_id, author_id_df, bm_full_cols_list):
     """Corrects addresses of the authors of LITEN institute by replacing 
     'INES' and 'INESCEA' with "CEA, LITEN, INES".
-
-    The authors not affilated to the LITEN institute are given the "_" identifier in the 
-    'pubid_addid_authid_addresse_df' data.
 
     Args:
         pubid_addid_authid_addresse_df (dataframe): The data of addresses \
@@ -253,38 +251,52 @@ def _correct_ines_in_liten_address(pubid_addid_authid_addresse_df, bm_full_cols_
         bm_full_cols_list (list): All useful column names (str) set within \
         the application.
     Returns:
+        (dataframe): The data with kept or corrected author's addresses.
+    """
+    # Setting col names from 'bm_full_cols_list' arg
+    bm_address_id_col, bm_address_col = bm_full_cols_list[1], bm_full_cols_list[3]
+
+    address_ids_list = author_id_df[bm_address_id_col].to_list()
+    addresses_list = author_id_df[bm_address_col].to_list()
+    addresses_str = str(addresses_list).lower()
+    new_author_id_df = author_id_df.copy()
+    if "INES".lower() in addresses_str:
+        ines_rpl_str = "CEA, LITEN, INES"
+        # Correcting Liten-Institute's addresse when "CEA" and "LITEN" are missing
+        # before replacing "INESCEA" by "ines_rpl-str" to avoid replacing "INES" in "ines_rpl_str"
+        new_addresses_list = [address.replace("INES", ines_rpl_str) for address in addresses_list]
+        # Correcting Liten-Institute's addresse when affiliation is "INESCEA" and "LITEN" is missing
+        new_addresses_list = [address.replace("INESCEA", ines_rpl_str) for address in new_addresses_list]
+        addresses_dict = dict(zip(new_addresses_list, address_ids_list))
+        data = []
+        for address in new_addresses_list:
+            data.append([pub_id, addresses_dict[address], author_id, address])
+        new_author_id_df = pd.DataFrame(data, columns=bm_full_cols_list)
+    return new_author_id_df
+
+
+def _correct_liten_addresses(pubid_addid_authid_addresse_df, bm_full_cols_list):
+    """Corrects addresses of the authors of LITEN institute.
+
+    The authors not affilated to the LITEN institute are given the "_" identifier in the 
+    'pubid_addid_authid_addresse_df' data.
+
+    Args:
+        pubid_addid_authid_addresse_df (dataframe): The data of addresses per author ID, \
+        per address ID and per publication ID of the Institute's corpus.
+        bm_full_cols_list (list): All useful column names (str) set within the application.
+    Returns:
         (dataframe): The corrected data.
     """
     # Setting col names from 'bm_full_cols_list' arg
-    bm_pub_id_col, bm_address_id_col, bm_author_id_col, bm_address_col = bm_full_cols_list
+    bm_pub_id_col, bm_address_id_col, bm_author_id_col = bm_full_cols_list[-1]
 
     out_df = pd.DataFrame()
     for pub_id, pub_id_df in pubid_addid_authid_addresse_df.groupby(bm_pub_id_col):
         new_pub_id_df = pd.DataFrame()
         for author_id, author_id_df in pub_id_df.groupby(bm_author_id_col):
             if author_id!="_":
-                address_ids_list = author_id_df[bm_address_id_col].to_list()
-                addresses_list = author_id_df[bm_address_col].to_list()
-                addresses_str = str(addresses_list).lower()
-                new_author_id_df = pd.DataFrame()
-                if "INES".lower() in addresses_str:
-                    ines_rpl_str = "CEA, LITEN, INES"
-                    unknown_rpl_str = "France"
-                    # Correcting Liten-Institute's addresse when "CEA" and "LITEN" are missing
-                    # before replacing "INESCEA" by "ines_rpl-str" to avoid replacing "INES" in "ines_rpl_str"
-                    new_addresses_list = [address.replace("INES", ines_rpl_str) for address in addresses_list]
-                    # Correcting Liten-Institute's addresse when affiliation is "INESCEA" and "LITEN" is missing
-                    new_addresses_list = [address.replace("INESCEA", ines_rpl_str) for address in new_addresses_list]
-                    new_addresses_list = [address.replace(bm_pg.UNKNOWN, unknown_rpl_str)
-                                          for address in new_addresses_list]
-                    addresses_dict = dict(zip(new_addresses_list, address_ids_list))
-                    data = []
-                    for address in new_addresses_list:
-                        data.append([pub_id, addresses_dict[address], author_id, address])
-                    addresses_df = pd.DataFrame(data, columns=bm_full_cols_list)
-                    new_author_id_df = pd.concat([new_author_id_df, addresses_df])
-                else:
-                    new_author_id_df = author_id_df.copy()
+                new_author_id_df = _correct_liten_auth_address(pub_id, author_id_df, bm_full_cols_list)
                 new_pub_id_df = concat_dfs([new_pub_id_df, new_author_id_df])
             else:
                 new_pub_id_df = concat_dfs([new_pub_id_df, author_id_df])
@@ -328,25 +340,25 @@ def _build_final_institute_addresses_data(corr_pubid_addid_authid_addresse_df, b
     return institute_pub_addresses_df
 
 
-def _clean_institute_addresses_data(institute, clean_dfs, col_lists_dic,
-                                    verbose, save_params_dic, progress_param=None):
+def _clean_institute_addresses_data(clean_params, clean_dfs, col_lists_dic,
+                                    save_params_dic, progress_param=None):
     """Cleans the data of addresses per publication ID depending on the Institute.
 
     Up to now, the cleaning concerns only the LITEN institute. 
-    No correction is performed yet for the other Institutes. 
-    It uses the `_build_pubid_addid_authid_addresse_data`, `_correct_ines_in_liten_address` 
+    No correction is performed yet for the other institutes. 
+    It uses the `_build_pubid_addid_authid_addresse_data`, `_correct_liten_addresses` 
     and `_build_final_institute_addresses_data` internal functions to do that. 
     The resulting data may be saved for control through the `save_xlsx_file` 
     function imported from `bmfuncts.useful_functs` and the use of 'verbose' arg.
 
     Args:
-        institute (str): The Institute's name.
+        clean_params (list): Composed of the print parameters (list), of the Institute's name (str) \
+        and of the status (bool) of prints and saving intermediate results.
         clean_dfs (list): Composed of the initial data (dataframe) of addresses \
         per publications of the Institute and of the data (dataframe) of addresses \
         per publication and author of the Institute.
         col_lists_dic (dict): The dict giving the final col list and the full \
         col list as built through the `_set_col_lists_infos` internal function.
-        verbose (bool): Status of prints and saving intermediate results.
         save_params_dic (dict): The parameters dict for saving intermediate \
         results and initialized through the `_initializing_save_params_dic` \
         internal function.
@@ -357,9 +369,10 @@ def _clean_institute_addresses_data(institute, clean_dfs, col_lists_dic,
         (tup): (The cleaned data, the updated index of the already-saved \
         intermediate results).
     """
-    # Setting parameters values from 'col_lists_dic' arg
+    # Setting parameters values from args
     bm_full_cols_list = col_lists_dic['bm_full_cols_list']
     bm_final_cols_list = col_lists_dic['bm_final_cols_list']
+    print_params, institute, verbose = clean_params
 
     # Setting parameters from 'progress_param' optional arg
     progress_callback, init_progress, final_progress, progress_step, progress_status = [None] * 5
@@ -378,8 +391,8 @@ def _clean_institute_addresses_data(institute, clean_dfs, col_lists_dic,
             progress_callback(progress_status)
 
         # Correcting "pubid_addid_authid_addresse_df" data for LITEN institute addresses
-        corr_pubid_addid_authid_addresse_df = _correct_ines_in_liten_address(pubid_addid_authid_addresse_df,
-                                                                             bm_full_cols_list)
+        corr_pubid_addid_authid_addresse_df = _correct_liten_addresses(pubid_addid_authid_addresse_df,
+                                                                       bm_full_cols_list)
         if progress_param:
             progress_status += progress_step
             progress_callback(progress_status)
@@ -387,6 +400,9 @@ def _clean_institute_addresses_data(institute, clean_dfs, col_lists_dic,
         # Building the cleaned data of Institute's addresses
         institute_pub_addresses_df = _build_final_institute_addresses_data(corr_pubid_addid_authid_addresse_df,
                                                                            bm_final_cols_list)
+        print_step_text(f"{bm_pg.TAB*2}- Data of addresses of Institute's authors updated "
+                        f"after {institute}'s specific corrections",
+                        print_params)
     else:
         pubid_addid_authid_addresse_df = pd.DataFrame()
         corr_pubid_addid_authid_addresse_df = pd.DataFrame()
@@ -394,6 +410,9 @@ def _clean_institute_addresses_data(institute, clean_dfs, col_lists_dic,
         # Setting the cleaned data of Institute's addresses to the initial Institute's data
         # of addresses per publications
         institute_pub_addresses_df = clean_dfs[0].copy()
+        print_step_text(f"{bm_pg.TAB*2}- Data of addresses of Institute's authors unchanged "
+                        f"because no {institute}'s specific corrections are available",
+                        print_params)
 
     if verbose:
         save_params_dic['save_num'] = _save_step_df(save_params_dic,
@@ -483,7 +502,7 @@ def _build_institute_authors_addresses(corpus_year, input_dfs, pub_addresses_col
     bm_cols = [bm_pub_id_col, bm_author_id_col, bm_address_col]
     sub_merge_df = merge_df[bm_cols]
 
-    # building {pub_id, institute_auth_ids_list} dict
+    # Building the dict of Institute's authors IDs per publications
     institute_auth_dict = {}
     for pub_id, pub_id_df in sub_merge_df.groupby(bm_pub_id_col):
         auth_ids_list = pub_id_df[bm_author_id_col].to_list()
@@ -495,7 +514,7 @@ def _build_institute_authors_addresses(corpus_year, input_dfs, pub_addresses_col
     sub_authaddr_df = authaddr_df[bp_cols]
     sub_authaddr_df = set_year_pub_id(sub_authaddr_df, corpus_year, bp_pub_id_col)
 
-    # Building the dict of Institute's authors IDs per publications
+    # Selecting the data of addresses of Institute's authors per publications
     full_data = []
     for _, sub_authaddr_row in sub_authaddr_df.iterrows():
         pub_id = sub_authaddr_row[bp_pub_id_col]
@@ -546,7 +565,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
         Info for renaming parsing columns into consolidation ones (dict)).
     """
     # Setting parameters values from 'build_addr_params'
-    corpus_year, final_results_path = build_addr_params[0], build_addr_params[2]
+    corpus_year, print_params, parsing_filenames_dict, final_results_path = build_addr_params
 
     # Setting parameters from optional arg
     progress_callback, init_progress, final_progress = [None] * 3
@@ -565,13 +584,15 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
         progress_callback(init_progress + (final_progress - init_progress) * 0.05)
 
     # Getting useful final data
-    all_addresses_df, authaddr_df, merge_df = _read_final_data(build_addr_params)
+    read_params = [corpus_year, parsing_filenames_dict, final_results_path]
+    all_addresses_df, authaddr_df, merge_df = _read_final_data(read_params)
 
     # Getting the Institute's authors IDs per publications of the Institute
     input_dfs = [merge_df, authaddr_df]
     return_df = _build_institute_authors_addresses(corpus_year, input_dfs, pub_addresses_cols_dic)
     return_df[bm_address_col] = return_df[bm_address_col].apply(bp_standardize_address)
     all_institute_author_addresses_df = return_df.copy()
+    print_step_text(f"{bm_pg.TAB*2}- Data of addresses of Institute's authors per publication built", print_params)
     if progress_param:
         progress_callback(init_progress + (final_progress - init_progress) * 0.50)
 
@@ -593,6 +614,7 @@ def _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic
 
     return_tup = (institute_pub_addresses_init_df, institute_author_addresses_df,
                   col_lists_dic, bp2bm_rename_cols_dict)
+    print_step_text(f"{bm_pg.TAB*2}- Data of the publications of the consolidated list selected from the above ones", print_params)
     return return_tup
 
 
@@ -606,19 +628,24 @@ def build_institute_addresses_data(institute_addr_params, verbose=False, progres
     function imported from `bmfuncts.useful_functs` and the use of 'verbose' arg.
 
     Args:
-        addresses_params (list): The Institute's name (str), \
-        the full path to the working folder (path), \
-        4 digits year of the corpus (str).
-        verbose (bool): Status of prints (optional, default = False).
+        institute_addr_params (list): Composed of the 4 digits year of the corpus (str), \
+        of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to the orking folder, of the data (dict) giving the name of \
+        the parsing file for each parsed item and of of full path to the folder \
+        where final results are saved.
+        verbose (bool): Status of control prints (optional, default: False).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
-        (optional, default = None)
+        (optional, default: None)
     Returns:
         (dataframe): The built data.
     """
     # Setting parameters values from "addresses_params"
-    (corpus_year, institute, org_tup, wf_path, parsing_filenames_dict,
+    (corpus_year, print_params, institute, org_tup, wf_path, parsing_filenames_dict,
      final_results_path) = institute_addr_params
+
+    print_step_text(f"{bm_pg.TAB}- Building data of all addresses of Institute's publications...", print_params)
 
     # Setting dict giving column names
     pub_addresses_cols_dic = _set_pub_addresses_cols_dic(institute, org_tup)
@@ -638,7 +665,7 @@ def build_institute_addresses_data(institute_addr_params, verbose=False, progres
     if progress_param:
         inter_progress_1 = init_progress + (final_progress - init_progress) * 0.20
         inter_progress_param_1 = (progress_callback, init_progress, inter_progress_1)
-    build_addr_params = [corpus_year, parsing_filenames_dict, final_results_path]
+    build_addr_params = [corpus_year, print_params, parsing_filenames_dict, final_results_path]
     return_tup = _build_init_institute_addresses_df(build_addr_params, pub_addresses_cols_dic,
                                                     progress_param=inter_progress_param_1)
     (institute_pub_addresses_init_df, institute_author_addresses_df,
@@ -647,7 +674,6 @@ def build_institute_addresses_data(institute_addr_params, verbose=False, progres
         progress_callback(inter_progress_1)
 
     if verbose:
-        print(f"{bm_pg.TAB}col_lists_dic built")
         for step_df in [institute_pub_addresses_init_df, institute_author_addresses_df]:
             save_params_dic['save_num'] = _save_step_df(save_params_dic, step_df)
 
@@ -656,8 +682,8 @@ def build_institute_addresses_data(institute_addr_params, verbose=False, progres
         inter_progress_2 = init_progress + (final_progress - init_progress) * 0.80
         inter_progress_param_2 = (progress_callback, inter_progress_1, inter_progress_2)
     clean_dfs = [institute_pub_addresses_init_df, institute_author_addresses_df]
-    return_tup = _clean_institute_addresses_data(institute, clean_dfs, col_lists_dic,
-                                                 verbose, save_params_dic,
+    clean_params = [print_params, institute, verbose]
+    return_tup = _clean_institute_addresses_data(clean_params, clean_dfs, col_lists_dic, save_params_dic,
                                                  progress_param=inter_progress_param_2)
     institute_pub_addresses_df, save_params_dic['save_num'] = return_tup
     if progress_param:

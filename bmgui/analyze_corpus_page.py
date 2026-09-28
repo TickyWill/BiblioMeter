@@ -131,9 +131,9 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
         else:
             country_affils_file_path = master.dedup_affil_params_dic['country_affils_file_path']
             step_txt = ("\nAnalysis cancelled because wrong types of affiliations found in:"
-                        f"\n   {country_affils_file_path}")
+                        f"\n{bm_pg.TAB}{country_affils_file_path}")
             for k,v in wrong_affil_types_dict.items():
-                step_txt += f"\n        {k}: {v}"
+                step_txt += f"\n{bm_pg.TAB*2}{k}: {v}"
             print_step_text(step_txt, master.print_params)
             info_title = "- Attention -"
             info_text = ("L'analyse des collaborations "
@@ -142,7 +142,7 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                          f"suivant : \n    '{country_affils_file_path}"
                          f"\n\n1- Corrigez dans ce fichier les types d'affiliation suivants:")
             for k,v in wrong_affil_types_dict.items():
-                info_text += f"\n        {k}: {v}"
+                info_text += f"\n{bm_pg.TAB*2}{k}: {v}"
             info_text +="\n\n2- Relancez l'analyse des collaborations"
         messagebox.showinfo(info_title, info_text)
     else:

@@ -4,6 +4,7 @@
 __all__ = ['build_list_from_str',
            'build_string_from_list',
            'concat_dfs',
+           'copy_dg_col_to_df',
            'create_archi',
            'create_folder',
            'drop_multiple_item',
@@ -42,6 +43,22 @@ from bpfuncts import remove_special_symbol as bp_remove_special_symbol
 
 # local imports
 import bmfuncts.pub_globals as bm_pg
+
+
+def copy_dg_col_to_df(df, dg, cols_list, copy_col):
+    """Copies a column of 'dg' data in initial 'df' data.
+
+    Args:
+         df (dataframe): The initial data.
+         dg (dataframe): The data from which the column is copied
+         cols_list (list): The names of useful columns.
+         copy_col (str): The name of the column that is copied.
+    Returns:
+        (dataframe): The modified data.
+    """
+    df[copy_col] = dg[copy_col]
+    df = df[cols_list]
+    return df
 
 
 def remove_file(path):
