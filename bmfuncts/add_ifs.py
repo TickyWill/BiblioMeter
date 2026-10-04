@@ -409,7 +409,7 @@ def _build_only_if_doctype_df(org_tup, corpus_df, add_ifs_col_dic):
         process as set through the `_set_add_ifs_col_dic` internal function.
     Returns:
         (dataframe): The corpus data with only the documents \
-        that may be attributed impact_factors. 
+        that may be attributed impact_factors.
     """
     # Setting parameters value from args
     col_keys = ['pub_id_col', 'year_col', 'journal_col', 'doctype_col', 'issn_col',

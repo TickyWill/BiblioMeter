@@ -325,6 +325,7 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
     if_anal_df_title = 'if_analysis'
     save_params = [new_if_col, if_analysis_folder_path, if_anal_df_title]
 
+    txt_len = 0
     for dept in [institute] + depts_col_list:
         # Setting the statistics by journals data for 'dept'
         dept_by_journal_df = by_journal_dict[dept]
@@ -558,7 +559,7 @@ def _save_if_analysis_final_results(new_if_analysis_col, save_params):
     print_step_text(f"{bm_pg.TAB}- Updated full records of KPIs data saved as final results", print_params)
 
 
-def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbose=False):
+def if_analysis(params_list, if_most_recent_year, progress_callback=None):
     """Performs the analysis per document types together with 
     the analysis of the journals impact-factors (IFs) and update 
     the key performance indicators (KPIs).
@@ -586,7 +587,6 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
         if_most_recent_year (str): Most recent year of impact factors.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
-        verbose (bool): Status of prints (default = False).
     Returns:
         (tup): (full path to the folder where results of analysis per doctypes are saved,\
         full path to the folder where results of impact-factors analysis are saved, \
@@ -595,8 +595,7 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
         of these keys)).
     """
     # Setting params values from params_list
-    (corpus_year, print_params, institute, org_tup, wf_path,
-     datatype, parsing_filenames_dict) = params_list
+    corpus_year, print_params, institute, org_tup, wf_path, datatype = params_list[:-1]
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
@@ -642,7 +641,7 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
         progress_callback(90)
 
     # Saving IFs analysis as final results
-    save_params = [corpus_year, print_params, institute, org_tup, wf_path, datatype]
+    save_params = params_list[:-1]
     _save_if_analysis_final_results(new_if_analysis_col, save_params)
     if progress_callback:
         progress_callback(100)

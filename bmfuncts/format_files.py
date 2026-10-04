@@ -990,6 +990,7 @@ def format_page(df, df_title, wb=None, header=True,
         (default = None).
         idx_wrap (int): The optional maximum index of the rows \
         for which text is wrapped in the last column.
+        add_cols_nb (int): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
     Returns:
         (tup): (workbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).

@@ -32,7 +32,7 @@ __all__ = ['build_list_from_str',
 
 # Standard library imports
 import os
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as xml_et
 import zipfile
 from pathlib import Path
 
@@ -87,7 +87,7 @@ def print_step_title(step_title, print_params):
 def print_step_text(step_txt, print_params, prev_txt_len=None):
     """Prints to console and to log file the step text.
 
-    If 'prev_txt' is set, it first clean the previous printed line to console.
+    If 'prev_txt' is set, it first cleans the previously printed line to console.
 
     Args:
         step_txt (str)= The text to print.
@@ -215,7 +215,7 @@ def get_sheet_names(file_path):
     search_str = ".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet"
     with zipfile.ZipFile(file_path, "r") as z:
         xml_content = z.read("xl/workbook.xml")
-        root = ET.fromstring(xml_content)
+        root = xml_et.fromstring(xml_content)
         sheet_names = [sheet.attrib["name"] for sheet in root.findall(search_str)]
         return sheet_names
 
@@ -468,10 +468,10 @@ def keep_initials(df, initials_col_base, missing_fill=None):
 
 
 def save_xlsx_file(root_path, df, file_name):
-    """Saves data as an xlsx file that is one sheet and not formatted.
+    """Saves data as a XLSX file that is one sheet and not formatted.
 
     Args:
-        root_path (path): The path to the folder where the Excel file is saved.
+        root_path (path): The path to the folder where the XLSX file is saved.
         df (dataframe): The data to save.
         file_name (str): The name of the file including '.xlsx' extent.
     """

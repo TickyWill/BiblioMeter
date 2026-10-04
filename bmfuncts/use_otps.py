@@ -21,7 +21,6 @@ from openpyxl import Workbook as openpyxl_Workbook
 import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.add_otps import add_data_val
-from bmfuncts.build_otps_info import set_lab_otps
 from bmfuncts.format_files import align_cell
 from bmfuncts.format_files import build_data_val
 from bmfuncts.format_files import build_cell_fill_patterns
@@ -925,15 +924,15 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     init_doi_otp_history_df = pd.read_excel(kept_otps_file_path, sheet_name=doi_otp_sheet)
 
     # Dropping duplicates from history of otps' attribution for unknown DOIs
-    unknown_doi_otp_histoty_df = init_doi_otp_history_df[init_doi_otp_history_df[doi_col]==bm_pg.UNKNOWN].copy()
-    unknown_doi_otp_histoty_df.drop_duplicates(subset=[author_col, doi_col], keep='first', inplace=True)
+    unknown_doi_otp_history_df = init_doi_otp_history_df[init_doi_otp_history_df[doi_col]==bm_pg.UNKNOWN].copy()
+    unknown_doi_otp_history_df.drop_duplicates(subset=[author_col, doi_col], keep='first', inplace=True)
 
     # Dropping duplicates from history of otps' attribution for known DOIs
-    known_doi_otp_histoty_df = init_doi_otp_history_df[init_doi_otp_history_df[doi_col]!=bm_pg.UNKNOWN].copy()
-    known_doi_otp_histoty_df.drop_duplicates(subset=[doi_col], keep='first', inplace=True)
+    known_doi_otp_history_df = init_doi_otp_history_df[init_doi_otp_history_df[doi_col]!=bm_pg.UNKNOWN].copy()
+    known_doi_otp_history_df.drop_duplicates(subset=[doi_col], keep='first', inplace=True)
 
-    # Setting data of clean history of otps' attribution
-    doi_otp_history_df = pd.concat([known_doi_otp_histoty_df, unknown_doi_otp_histoty_df])
+    # Setting data of clean history of OTPs' attribution
+    doi_otp_history_df = pd.concat([known_doi_otp_history_df, unknown_doi_otp_history_df])
     author_to_check_list = doi_otp_history_df[author_col].to_list()
     doi_to_check_list = doi_otp_history_df[doi_col].to_list()
     doi_otp_to_set_list = doi_otp_history_df[otp_col].to_list()
@@ -954,28 +953,24 @@ def set_saved_otps(saved_otps_params, lab_otps_dict):
     before submitting to the user the file for attributing the not yet
     attributed OTPs.
 
-    First, it gets the history of the previously set OTPs through \
+    First, it gets the history of the previously set OTPs through 
     the `_get_otps_history` internal function. 
-    Then, if the level at which the OTPs are set by the user is the laboratory:
-
-    1. The data of OTPs data given by laboratory of each department are set \
-    through `set_lab_otps` function imported from the `bmfuncts.build_otps_info` module.
-    2. The history of the attributed OTPs is used to build the files to be submitted \
+    If the data of OTPs information by laboratory of each department are not empty, 
+    then, the history of the attributed OTPs is used to build the files to be submitted 
     to the user through the `_set_saved_lab_otps` internal function.
-
-    Otherwise, The level is kept to the department. Then, the history of the attributed \
-    OTPs is used to build the files to be submitted to the user through \
-    the `_set_saved_dept_otps` internal function.
+    Otherwise, the history of the attributed OTPs is used through the `_set_saved_dept_otps` 
+    internal function to build these files.
 
     Args:
         saved_otps_params (list): The list composed of the Institute's name (str), \
         the org_tup (tup) that contains parameters of Institute's \
         organization, the full path to working folder (path) and the 4 digits \
         year of the corpus (str).
+        lab_otps_dict (dict): The data of OTPs information given by laboratory of each \
+        department set through `set_lab_otps` function of the `bmfuncts.build_otps_info` module.
     """
     # Setting useful params values and lists from 'saved_otps_params'
     corpus_year, print_params, institute, org_tup, wf_path = saved_otps_params
-#    set_otp_params = [print_params, institute, org_tup, wf_path]
     txt_len = print_temp_text(f"{bm_pg.TAB}- Using data of history of OTPs attribution...",
                               txt_end=True)
 

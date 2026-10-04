@@ -30,7 +30,7 @@ def _try_init_dict(dic, init_key, set_key):
         set_key (str): the key to be used for the existing dict.
     Returns:
         (tup): (the final key to be used for the dict, the potentially \
-        updated dict).
+        updated dict at that key as empty dict).
     """
     key = init_key
     if key:

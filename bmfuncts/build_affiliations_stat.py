@@ -91,6 +91,7 @@ def _build_affils_distrib_data(norm_affiliations_df, affiliations_col, affil_typ
         progress_status = progress_init
         progress_callback(progress_status)
 
+    txt_len = 0
     norm_affils_nb, norm_affil_num = len(norm_affiliations_df), 0
     set_words_template = Template(r'[\s]$word$$')
     affils_distrib_df = pd.DataFrame()
@@ -487,6 +488,7 @@ def _build_affils_stat_data(institute, affils_distrib_df, pub_ids_dict, affils_s
     (base_cols_list, affil_type_affils_cols, affil_type_pub_ids_cols,
      affil_type_countries_cols) = lists_tup
 
+    txt_len = 0
     affil_types_nb, affil_type_num = len(bm_ig.STAT_AFFIL_TYPES_DICT[institute]), 0
     stat_keys = list(bm_pg.STAT_FILE_DICT.keys())
     affil_type_data_dict = {}
@@ -600,6 +602,7 @@ def _build_collab_pub_list_data(full_pub_list_file_path, affil_type_data_dict,
     # Selecting the statistics results to use
     stat_type = list(bm_pg.STAT_FILE_DICT.keys())[1]
 
+    txt_len = 0
     sep_str = "; "
     affil_types_list = list(affil_type_data_dict.keys())
     affil_types_nb = len(affil_types_list)
@@ -672,10 +675,10 @@ def build_and_save_affiliations_stat(norm_affiliations_df, sub_paths_list, pub_i
         pub_ids_dict (dict): The data of publications IDs as built through the `build_pub_ids_dict` \
         finction of the `bmfuncts.read_final_results` module.
         affils_stat_params (list): Composed of the 4 digits year of the corpus (str), \
-        of the print parameters (list) and, of the Institute's name (str), .
+        of the print parameters (list) and, of the Institute's name (str).
         progress_param (tup): (Function for updating ProgressBar tkinter widget status, \
         The initial progress status (int), The final progress status (int)) \
-        (optional, default: None)
+        (optional, default: None).
     """
     # setting parameters value from 'affils_stat_params'
     corpus_year, print_params, institute = affils_stat_params

@@ -236,8 +236,9 @@ def _build_previous_years_if_df(wf_path, if_db_dict,
         and capitalizes the journal-names main words through the `set_capwords_lambda` \
         function imported from `bmfuncts.useful_functs` module.
         2. Builds the fully updated dataframes of IFs data per journals for the IFs-year and \
-        the partial dataframe of most-recent-year IFs limited to the corpus journals data \
-        through the `_update_year_if_database` internal function, with corpus year set to IFs' year.
+        the partial dataframe of most-recent-year IFs limited to the corpus journals data. \
+        This is done through the `_update_year_if_database` internal function, with corpus year \
+        set to the year of the IFs.
         3. Appends the partial dataframe of most-recent-year IFs to the dataframe to add \
         for building the IFs data per journals of the most-recent year.
         4. Formats IFs sheet in the 'wb' Openpyxl workbook with sheet name set to IFs-year \
@@ -525,7 +526,7 @@ def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
     # Setting unique data per journal name and per ISSN
     new_all_journals_df = _clean_journals_data(if_db_dict, journal_cols_list)
 
-    # Initialize parameters for saving new IIFs data per journals as multisheet workbook
+    # Initialize parameters for saving new IFs data per journals as multisheet workbook
     first = True
     wb = openpyxl_Workbook()
 

@@ -198,7 +198,7 @@ def split_pub_list_by_doc_type(selected_params_list, pub_list_cols_dic=None):
         key_dg = pd.DataFrame(columns=full_pub_list_df.columns)
 
         for doc_type, dg in full_pub_list_df.groupby(doc_type_col):
-            if doc_type.upper() in doctype_list:
+            if str(doc_type).upper() in doctype_list:
                 key_dg = concat_dfs([key_dg, dg])
                 other_dg = other_dg.drop(dg.index)
 
@@ -386,6 +386,5 @@ def build_final_pub_list(conso_params_list):
     save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
     save_final_results(save_params_list, results_to_save_dict)
 
-    step_txt = (f"{bm_pg.TAB}- Consolidated publications lists saved as final results")
-    print_step_text(step_txt, print_params)
+    print_step_text(f"{bm_pg.TAB}- Consolidated publications lists saved as final results", print_params)
     return pub_nb, invalids_nb, split_ratio, if_database_complete

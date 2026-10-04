@@ -139,7 +139,7 @@ def _get_doi_pub_id(articles_df, dois_list, pub_id_col, doi_col):
 
 def _correct_addr(addr, correct_params, norm_affil=None, institute_main_val=None):
     """Corrects the given address if it contains the top affiliation and the town 
-    of the Institute and it doesn't contain any of the specified excluding items.
+    of the Institute, and it doesn't contain any of the specified excluding items.
 
     Args:
         addr (str): The address to be checked and corrected if required.
@@ -168,7 +168,7 @@ def _correct_addr(addr, correct_params, norm_affil=None, institute_main_val=None
 
 def _build_corrected_authaddr_data(authaddr_df, hal_added_pub_id_list, bp_cols_list, correct_params):
     """Corrects the authors-with-addresses parsing data for the publications added from HAL 
-    through the `_correc_addr` internal function.
+    through the `_correct_addr` internal function.
 
     Args:
         authaddr_df (dataframe): The initial data of authors with addresses.
@@ -209,7 +209,7 @@ def _build_corrected_authaddr_data(authaddr_df, hal_added_pub_id_list, bp_cols_l
 
 def _build_corrected_addr_data(addresses_df, hal_added_pub_id_list, bp_cols_list, correct_params):
     """Corrects the addresses parsing data for the publications added from HAL 
-    through the `_correc_addr` internal function.
+    through the `_correct_addr` internal function.
 
     Args:
         addresses_df (dataframe): The initial data of addresses.
@@ -239,7 +239,7 @@ def _build_corrected_addr_data(addresses_df, hal_added_pub_id_list, bp_cols_list
 
 def _set_addr_correction_params(institute, org_tup):
     """Sets test parameters to include Institute's name in address from values 
-    defined in the `bmfuncts.institute-globals` module.
+    defined in the `bmfuncts.institute_globals` module.
 
     Args:
         institute (str): The Institute's name.
@@ -263,7 +263,7 @@ def _set_addr_correction_params(institute, org_tup):
     return correct_params
 
 
-def _check_added_dois_affil(params_list, dfs_list, bp_cols_list, select_items_dict):
+def _check_added_dois_affil(params_list, select_items_dict, bp_cols_list):
     """Checks if normalized-affiliation attribution is correct for the added DOIs 
     from HAL database and builds the corrected files of parsing.
 
@@ -271,20 +271,19 @@ def _check_added_dois_affil(params_list, dfs_list, bp_cols_list, select_items_di
         params_list (list):  Composed of the 4 digits year of the corpus (str), \
         of the Institute's name (str), of the org_tup (tup) that contains parameters of \
         Institute's organization and of the full path to the working folder (path).
-        dfs_list (list): Composed of the publications data (dataframe), \
+        select_items_dict (dict): !!!!Composed of the publications data (dataframe), \
         of the addresses data (dataframe) and \
-        of the authors with addresses data (dataframe).
+        of the authors with addresses data (dataframe)!!!.
         bp_cols_list (list): The list of useful col names as set by \
         the `_set_useful_bp_cols` internal function.
     Returns:
-         (tup): (The corrected data of addresses (dataframe), \
-         The corrected data of authors with addresses (dataframe)).
+         (dataframe): The corrected data of authors with addresses.
     """
     # Setting parameters values from args
     (corpus_year, print_params, institute, org_tup, wf_path, datatype,
      parsing_filenames_dict) = params_list
-    articles_df, addresses_df, authaddr_df = dfs_list
     pub_id_col, doi_col = bp_cols_list[0], bp_cols_list[3]
+    articles_df, addresses_df, _, authaddr_df = list(select_items_dict.values())
 
     txt_len = print_temp_text(f"{bm_pg.TAB*2}- Checking affiliations of HAL added "
                               "DOIs in deduplication's parsing results...", txt_end=True)
@@ -311,20 +310,20 @@ def _check_added_dois_affil(params_list, dfs_list, bp_cols_list, select_items_di
     _, addresses_key, _, authaddr_key = list(select_items_dict.keys())
     addresses_file_name_base = parsing_filenames_dict[addresses_key]
     authaddr_file_name_base = parsing_filenames_dict[authaddr_key]
-    save_final_dedup(addresses_df, addresses_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
-    save_final_dedup(authaddr_df, authaddr_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
+    save_final_dedup(new_addresses_df, addresses_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
+    save_final_dedup(new_authaddr_df, authaddr_file_name_base, bm_pg.TSV_SAVE_EXTENT, dedup_infos)
 
     print_step_text(f"{bm_pg.TAB*2}- Affiliations of HAL added DOIs in parsing data"
                     "checked and saved as final deduplication's results",
                     print_params, prev_txt_len=txt_len)
-    return new_addresses_df, new_authaddr_df
+    return new_authaddr_df
 
 
 def _retain_firstname_initials(txt):
-    """Removes '-' from the initials of the author's first name.
+    """Removes '-' from the initials of the author's firstname.
 
     Args:
-        txt (str): The raw initials of the author's first name.
+        txt (str): The raw initials of the author's firstname.
     Returns:
         (str): The modified initials.
     """
@@ -340,11 +339,11 @@ def _split_lastname_firstname(txt, digits_min=4):
     imported from the `bmfuncts.useful_functs` module.
 
     Args:
-        txt (str): The txt from which last name and first-name initials of the author are extracted.
+        txt (str): The txt from which lastname and first-name initials of the author are extracted.
         digits_min (int): The minimum length of the names that contains '-' symbol to be kept \
-        in author's last name.
+        in author's lastname.
     Returns:
-        (tup): (The extracted last name, the extracted first-name initials).
+        (tup): (The extracted lastname, the extracted first-name initials).
     """
     names_list = txt.split()
     first_names_list = names_list[-1:]
@@ -360,39 +359,42 @@ def _split_lastname_firstname(txt, digits_min=4):
 
 
 def _build_filt_auth_affil(authaddr_auth_df, org_tup):
-    """Builds the `filt_auth_affil_` filter to select the authors by their affiliation to the Institute.
+    """Builds the filter to select the authors by their affiliation to the Institute.
+
+    The filter returns True if any of the specified columns contains 1 for the author, 
+    otherwise it returns False.
+    To do that, the function needs the following parameters of the Institute's organization:
+    1- The list of columns' names that contains the status of the author's affiliation to the Institute;
+    2- The index in this list of the column name that contains the status of the author's affiliation \
+    via the main Institute's affiliation name.
+    3- The checking mode given for the Institute for either using only the main-affiliation status \
+    or using the status of all the possible names of the Institute's affiliation.
 
     Args:
         authaddr_auth_df (dataframe): Data of combined name of author to author ID \
         with affiliation by publication ID.
         org_tup (tup): Contains parameters of Institute's organization.
-        institute_col_list (list): List of column names (str) that contains affiliation \
-        status to the Institute.
-        main_status (bool): Status of the combination of 'institute_col_list' columns \
-        to identify affiliation to the Institute.
-        institute_main_idx (int): Index of the unique column name in 'institute_col_list' list \
-        to be used for the Institute affiliation status when 'main_status' is set to False.
     Returns:
-        (Pandas Series): A filter on specified columns depending on the status \
-        of the combination of 'institute_col_list' columns of the 'authaddr_auth_df' \
-        dataframe that sets:
-
-        - True if any in these columns is equal to 1 for the author;
-        - False otherwise.
+        (Pandas Series): The built filter.
     """
-    # Setting parameters' value of Institute's organisation from 'org_tup' tuple
-    # 1- List of column names (str) that contains affiliation status to the Institute at index 4
-    # 2- Index of the unique column name in 'institute_col_list' list to be used for the Institute-affiliation
-    # status when 'main_status' is set to False at index 7
-    # 3- Status of the combination of 'institute_col_list' columns to identify affiliation
-    # to the Institute at index 8
+    # Setting parameters' values of Institute's organization from 'org_tup' tuple
+    # 1- List of column names (str) the status of the author's affiliation
+    # to the Institute
+    # 2- Index in this list of the column name that contains the status of the author's affiliation
+    # via the main Institute's affiliation name
+    # 3- checking mode given for the Institute for either using only the main-affiliation status
+    # or using the status of all the possible names of the Institute's affiliation
     institute_col_list, institute_main_idx, main_status = org_tup[4], org_tup[7], org_tup[8]
 
     # Building the filter
     main_institute_col = institute_col_list[institute_main_idx]
     if main_status:
+        # Setting the identification of affiliation to the Institute only from the column
+        # of the status in the main-affiliation's column
         filt_auth_affil_ = authaddr_auth_df[main_institute_col]==1
     else:
+        # Setting the identification of affiliation to the Institute from the status in all
+        # the possible columns of the Institute's affiliations
         first_institute_col = institute_col_list[0]
         filt_auth_affil_ = authaddr_auth_df[first_institute_col]==1
         for institute_col_idx, institute_col in enumerate(institute_col_list):
@@ -480,11 +482,11 @@ def _get_parsing_data(params_list, bp_cols_list):
         bp_cols_list (list): the list of useful col names as set through the `_set_useful_bp_cols` \
         internal function.
     Returns:
-        (list): Composed of the the publications' main data (dataframe), of the authors' data (dataframe), \
+        (list): Composed of the publications' main data (dataframe), of the authors' data (dataframe), \
         and of the authors-with-affiliations' data (dataframe).
     """
     # Setting parameters values from params_list
-    (corpus_year, print_params, institute, org_tup, wf_path, datatype,
+    (corpus_year, print_params, _, _, wf_path, datatype,
      parsing_filenames_dict) = params_list
 
     txt_len = print_temp_text(f"{bm_pg.TAB*2}- Reading useful parsing data...", txt_end=True)
@@ -495,25 +497,23 @@ def _get_parsing_data(params_list, bp_cols_list):
     # Getting the useful parsing results
     dedup_read_params = [corpus_year, parsing_filenames_dict, final_results_path]
     select_items_dict = _read_useful_parsing_data(dedup_read_params)
-    articles_df, addresses_df, authors_df, authaddr_df = list(select_items_dict.values())
+    articles_df, _, authors_df, authaddr_df = list(select_items_dict.values())
 
     print_step_text(f"{bm_pg.TAB*2}- Publications' main data, authors's data and "
-                    "authors-with_affiliations got from parsing results",
+                    "authors-with-affiliations got from parsing results",
                     print_params, prev_txt_len=txt_len)
 
     if datatype=="Scopus-HAL & WoS":
         # Checking affiliations for added DOIs from HAL
-        dfs_list = [articles_df, addresses_df, authaddr_df]
-        return_tup = _check_added_dois_affil(params_list, dfs_list, bp_cols_list)
-        addresses_df, authaddr_df = return_tup
+        authaddr_df = _check_added_dois_affil(params_list, select_items_dict, bp_cols_list)
     parsing_dfs_list = [articles_df, authors_df, authaddr_df]
     return parsing_dfs_list
 
 
 def _recasting_authors_data(authors_df, recast_cols_list, print_params):
     """Recasts the data with one row per Institute's author for each publication 
-    by formatting the authors full names and their redistribution into last names 
-    and first-names initials.
+    by formatting the authors fullnames and their redistribution into lastnames 
+    and firstnames' initials.
 
     Args:
         authors_df (dataframe): Data of publication IDs list with one row per author \
@@ -545,16 +545,16 @@ def _recasting_authors_data(authors_df, recast_cols_list, print_params):
     # Recasting tuples (NAME, INITIALS) into a single string 'NAME INITIALS'
     col_in = fullname_col
     authors_df[col_in] = authors_df[col_in].apply(lambda x: ' '.join(x))  # pylint: disable=unnecessary-lambda
-    print_step_text(f"{bm_pg.TAB*3}- Author's name recast to last name and first-name initials "
+    print_step_text(f"{bm_pg.TAB*3}- Author's name recast to lastname and first-name initials "
                     "in authors' data of parsing results", print_params, prev_txt_len=txt_len)
     return authors_df
 
 
-def _check_names_spelling(init_df, ortho_path, enhance_cols_list, print_params):
+def _check_names_spelling(init_df, ortho_path, enhance_cols_list, print_params, progress_params):
     """Replace author names in 'init_df' dataframe by the employee's name.
 
     This is done when a name-spelling discrepancy is given in the dedicated XLSX file. 
-    Beforehand, the full name given by this file is standardized through the `standardize_txt` 
+    Beforehand, the fullname given by this file is standardized through the `standardize_txt` 
     function imported from `bmfuncts.useful_functs` module.
 
     Args:
@@ -564,6 +564,7 @@ def _check_names_spelling(init_df, ortho_path, enhance_cols_list, print_params):
         enhance_cols_list (list): Two lists of column names as set in the `_enhance_input_data` \
         internal function.
         print_params (list): The parameters for the prints to the log file and to the console.
+        progress_params (list): # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
     Returns:
         (dataframe): Publications list with one row per author where \
         spelling of author names have been corrected.
@@ -583,11 +584,15 @@ def _check_names_spelling(init_df, ortho_path, enhance_cols_list, print_params):
     for col in bm_ortho_cols_list:
         ortho_df[col] = ortho_df[col]. apply(standardize_txt)
 
-    full_names_nb, names_nb = len(init_df), 0
+    txt_len, full_names_nb, names_nb, progress_step = 0, len(init_df), 0, 0
+    progress_callback, init_progress_state, final_progress_state = progress_params
+    if progress_callback:
+        progress_step = (final_progress_state - init_progress_state) / full_names_nb
+
     new_df = pd.DataFrame()
     for _, pub_row in init_df.iterrows():
         names_nb += 1
-        txt_len = print_temp_text(f"{bm_pg.TAB*3}- Correcting misspelling of authors' names...:"
+        txt_len = print_temp_text(f"{bm_pg.TAB*3}- Correcting misspelling of authors' names:"
                                   f"{bm_pg.TAB}{names_nb} / {full_names_nb}", txt_end=True)
         lastname_init = str(pub_row[pub_last_name_col])
         initials_init = str(pub_row[pub_first_name_col])
@@ -602,6 +607,8 @@ def _check_names_spelling(init_df, ortho_path, enhance_cols_list, print_params):
                 new_pub_row[pub_first_name_col] = initials_eff_ortho
                 new_pub_row[pub_fullname_col] = lastname_eff_ortho + ' ' + initials_eff_ortho
         new_df = concat_dfs([new_df, new_pub_row.to_frame().T], concat_ignore_index=True)
+        if progress_callback:
+            progress_callback(init_progress_state + progress_step * names_nb)
     print_step_text(f"{bm_pg.TAB*3}- Misspelling of authors' names corrected",
                     print_params, prev_txt_len=txt_len)
     return new_df
@@ -619,7 +626,8 @@ def _build_authors_full_list(authors_df, full_authors_cols_list, print_params):
     Returns:
         (dataframe): The built data.
     """
-    print_step_text(f"{bm_pg.TAB*3}- Building Full list of authors per publication...", print_params)
+    txt_len = print_temp_text(f"{bm_pg.TAB*3}- Building Full list of authors per publication...",
+                              txt_end=True)
     (pub_id_col, co_auth_col, fullname_col,
      authors_list_col) = full_authors_cols_list
     if bm_pg.AUTHORS_FULL_LIST_NAME_CORRECTION:
@@ -634,12 +642,13 @@ def _build_authors_full_list(authors_df, full_authors_cols_list, print_params):
         authors_str = ", ".join(authors_list)
         data.append([pub_id, authors_str])
     pub_authors_df = pd.DataFrame(data, columns=[pub_id_col, authors_list_col])
-    print_step_text(f"{bm_pg.TAB*3}- Full list of authors per publication built", print_params)
+    print_step_text(f"{bm_pg.TAB*3}- Full list of authors per publication built",
+                    print_params, prev_txt_len=txt_len)
     return pub_authors_df
 
 
 def _enhance_input_data(parsing_dfs_list, enhance_params,
-                        enhance_cols, enhance_cols_list, ortho_path):
+                        enhance_cols, enhance_cols_list, ortho_path, progress_params):
     """Enhances the publications' main data, the authors' data and the authors-with-affiliations' data 
     resulting from the parsing process.
 
@@ -654,18 +663,23 @@ def _enhance_input_data(parsing_dfs_list, enhance_params,
     5. Finally, the authors' data are merged into the authors-with-affiliations' data.
 
     Args:
-        parsing_dfs_list (list): Composed of the the publications' main data (dataframe), \
+        parsing_dfs_list (list): Composed of the publications' main data (dataframe), \
         of the authors' data (dataframe), and of the authors-with-affiliations' data (dataframe).
         enhance_params (list): Composed of the 4 digits year of the corpus (str) and of the print parameters (list).
         enhance_cols (list): Column names as set in the `build_institute_pubs_authors_data` \
         main function of this module through the `_set_useful_bp_cols` internal function.
         enhance_cols_list (list): Lists of column names as set in the `build_institute_pubs_authors_data` \
         main function of this module through the `_set_useful_bm_cols` internal function.
-        ortho_path (path): The full path to the file for corection of misspelled author names.
+        ortho_path (path): The full path to the file for correction of misspelled author names.
+        progress_params (list): # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
     Returns:
         (list): Composed of the enhanced publications' main data (dataframe) and of \
         the merged data (dataframe) of the authors' data into the authors-with-affiliations' data.
     """
+    progress_callback, init_progress_state, final_progress_state = [None] * 3
+    if progress_params:
+        progress_callback, init_progress_state, final_progress_state = progress_params
+
     # Setting parameters values from args
     articles_df, authors_df, authaddr_df = parsing_dfs_list
     corpus_year, print_params = enhance_params
@@ -680,21 +694,31 @@ def _enhance_input_data(parsing_dfs_list, enhance_params,
     # Recasting the authors data
     recast_cols_list = bm_auth_names_list + [co_auth_col]
     authors_df = _recasting_authors_data(authors_df, recast_cols_list, print_params)
+    inter_progress_params = [None] * 3
+    if progress_params:
+        inter_progress_state = (final_progress_state - init_progress_state) / 3
+        inter_progress_params = [progress_callback, inter_progress_state, final_progress_state]
+        progress_callback(inter_progress_state)
 
     # Checking authors name spelling and correct them
-    authors_df = _check_names_spelling(authors_df, ortho_path, enhance_cols_list, print_params)
+    authors_df = _check_names_spelling(authors_df, ortho_path, enhance_cols_list, print_params,
+                                       inter_progress_params)
 
     # Adding column of full authors list
     fullname_col = bm_auth_names_list[0]
     full_authors_cols_list = [pub_id_col, co_auth_col, fullname_col, authors_list_col]
     pub_authors_df = _build_authors_full_list(authors_df, full_authors_cols_list, print_params)
     enhanced_articles_df =  articles_df.merge(pub_authors_df, how='right', on=pub_id_col)
+    if progress_params:
+        progress_callback(final_progress_state)
 
     # Combining name of author to author ID with affiliation by publication ID
     merge_cols = [pub_id_col, auth_idx_col]
     authaddr_auth_df = authaddr_df.merge(authors_df, how='inner', left_on=merge_cols,
                                          right_on=merge_cols)
     enhanced_dfs_list = [enhanced_articles_df, authaddr_auth_df]
+    if progress_params:
+        progress_callback(final_progress_state)
     return enhanced_dfs_list
 
 
@@ -710,9 +734,9 @@ def _check_names_to_replace(corpus_year, init_df, complements_path, replace_shee
         should be corrected.
         complements_path (path): The full path to the file where the metadata errors are reported.
         replace_sheet (str): The name of the sheet where the metadata errors are reported.
-        bm_auth_names_list (list): Useful column names in 'init_df' data (full name, last name, first name).
-        bm_compl_cols_list (list): Useful column names in the complementary (publication last name, \
-        publication first name, employee last name, employee first name, corpus year).
+        bm_auth_names_list (list): Useful column names in 'init_df' data (fullname, lastname, firstname).
+        bm_compl_cols_list (list): Useful column names in the complementary (publication lastname, \
+        publication firstname, employee lastname, employee firstname, corpus year).
         print_params (list): The parameters for the prints to the log file and to the console.
     Returns:
         (dataframe): Publications list with one row per author where author names have been \
@@ -737,6 +761,7 @@ def _check_names_to_replace(corpus_year, init_df, complements_path, replace_shee
     year_compl_df = compl_df[compl_df[compl_year_pub]==int(corpus_year)]
     year_compl_df = year_compl_df.reset_index()
 
+    txt_len = 0
     full_names_nb, names_nb = len(init_df), 0
     new_df = pd.DataFrame()
     for _, pub_row in init_df.iterrows():
@@ -771,7 +796,7 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_name
         pub_df (dataframe): Publications' list with one row per author where rows should be dropped.
         outliers_path (path): The full path to the file where the authors to remove are reported.
         outliers_sheet (str): The name of the sheet where the authors to remove are reported.
-        bm_auth_names_list (list): Useful column names in 'pub_df' data (last name col, first name col).
+        bm_auth_names_list (list): Useful column names in 'pub_df' data (lastname col, firstname col).
         bm_outliers_cols_list (list): Useful column names in the outliers (lastname col, firstname-initials col).
         print_params (list): The parameters for the prints to the log file and to the console.
     Returns:
@@ -791,6 +816,7 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_name
         outliers_df[col] = outliers_df[col].apply(standardize_txt)
 
     # Searching for the outliers in the data to update by lastname and initials
+    txt_len = 0
     full_names_nb, names_nb = len(pub_df), 0
     drop_df = pd.DataFrame(columns=list(pub_df.columns))
     for _, pub_row in pub_df.iterrows():
@@ -818,14 +844,14 @@ def _check_authors_to_remove(pub_df, outliers_path, outliers_sheet, bm_auth_name
 def _reorder_cols(institute_merged_df, reorder_cols_list, print_params):
     """Reorders the columns of the data with one row per Institute's author for each publication.
 
-    The columns of full name, last name and first-name initials are set at the end of the data. 
+    The columns of fullname, lastname and firstname initials are set at the end of the data. 
     The column of full-authors list is set just before the first author of the publication in place 
     of the initial position of the full-name column. It uses the `reorder_df` function imported 
     from `bmfuncts.useful_functs` module.
 
     Args:
         institute_merged_df (dataframe): Data of publication IDs list with one row per author where \
-        authors full name has been formatted and split into last name and firstname initials \
+        authors fullname has been formatted and split into lastname and firstname initials \
         and the misspelled names have been corrected.
         reorder_cols_list (list): The names of the columns to be reordered as set in the \
         `_select_institute_auth_pub_data` internal function.
@@ -916,9 +942,8 @@ def _build_and_save_dropped_pub_data(pub_id_col, pub_drop_dfs, pub_drop_paths, p
     and authors_with_affiliations data for further control.
 
     Args:
-        institute_merged_df (dataframe): Publications list with one row per author \
-        where publications have been dropped.
         pub_id_col (str): The name of the columns of publication's identifiers.
+        pub_drop_dfs (list): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
         pub_drop_paths (list): Composed of the full paths to the files for saving \
         the main data and the authors_with_affiliations data of the dropped publications.
         print_params (list): The parameters for the prints to the log file and to the console.
@@ -938,7 +963,7 @@ def _build_and_save_dropped_pub_data(pub_id_col, pub_drop_dfs, pub_drop_paths, p
                     print_params, prev_txt_len=txt_len)
 
 
-def build_institute_pubs_authors_data(params_list):
+def build_institute_pubs_authors_data(params_list, progress_params):
     """Builds the publications' data with one row per Institute's author for each publication 
     from the results of the corpus parsing.
 
@@ -953,11 +978,13 @@ def build_institute_pubs_authors_data(params_list):
     the `_build_and_save_dropped_pub_data` internal function.
 
     Args:
-        params_list (list): The list composed of the 4 digits year of the corpus (str), \
-        of the print parameters (list), of the Institute's name (str), \
-        of the org_tup (tup) that contains parameters of Institute's organization, \
-        of the full path to working folder (path), and of the data combination \
-        type of corpuses databases (str).
+        params_list (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
+        for the `print_step_text` function imported from the `bmfuncts.useful_functs` module, \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of Institute's \
+        organization, of the full path to working folder (path), of the data combination type \
+        of corpuses databases (str), and of the dict giving the name of the parsing file for each parsed item.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar tkinter widget, \
+        of its initial status and of its final status (optional, default: None).
     Returns:
         (dataframe): Publications' list with one row per author with correction of authors' names \
         and drop of authors with inappropriate affiliation to the Institute.
@@ -988,8 +1015,7 @@ def build_institute_pubs_authors_data(params_list):
     enhance_cols_list = [bm_auth_names_list, bm_ortho_cols_list]
     ortho_path = paths_list[2]
     enhanced_dfs_list = _enhance_input_data(parsing_dfs_list, enhance_params, enhance_cols,
-                                            enhance_cols_list, ortho_path)
-    # enhanced_dfs_list = [enhanced_articles_df, authaddr_auth_df]
+                                            enhance_cols_list, ortho_path, progress_params)
 
     # Building publications' data with one row for each Institute's author
     merge_params = [corpus_year, print_params, org_tup]

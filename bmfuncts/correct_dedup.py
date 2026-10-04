@@ -14,6 +14,7 @@ from pathlib import Path
 
 # 3rd party imports
 import pandas as pd
+from bpfuncts import build_affils_useful_dicts as bp_build_affils_useful_dicts
 from bpfuncts import standardize_address as bp_standardize_address
 
 # Local imports
@@ -100,62 +101,48 @@ def _save_false_addr_data(addresses_to_correct_df, addresses_to_correct_path, co
     wb.save(addresses_to_correct_path)
 
 
-def _save_empty_false_addr_data(corpus_year, addresses_to_correct_path):
+def _save_empty_false_addr_data(addresses_to_correct_cols, addresses_to_correct_path, corpus_year):
     # Setting false-addresses empty data
     cols_nb = len(addresses_to_correct_cols)
     empty_data_row = [""] * cols_nb
     empty_data = sum([], [empty_data_row]*10)
     addresses_to_correct_df = pd.DataFrame(empty_data, columns=addresses_to_correct_cols)
-    _save_file(aaddresses_to_correct_df, addresses_to_correct_path, corpus_year)
+    _save_false_addr_data(addresses_to_correct_df, addresses_to_correct_path, corpus_year)
 
 
 def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_addresses_path,
                                          corpus_year, print_params, file_clean=False):
-    """Manages the initialization of the file for correcting 
-    false addresses identified by the user.
+    """Manages the initialization of the file for correcting false addresses identified by the user.
 
     Args:
-        addresses_to_correct_path (path): The full path to the file \
-        for correcting false addresses.
-        corrected_addresses_path (path): The full path to the file \
-        of history of false addresses correction.
+        addresses_to_correct_path (path): The full path to the file for correcting false addresses.
+        corrected_addresses_path (path): The full path to the file of history of false addresses correction.
         corpus_year (str): Corpus year defined by 4 digits.
         print_params (list): The print parameters.
-        file_clean 'bool): Optional, if True the existing file is \
-        replaced by a formated empty file (default: False).
+        file_clean (bool): Optional, if True the existing file is replaced by a formated empty file \
+        (default: False).
     """
-
     # Setting useful column names
     dedup_cols_dic = _set_dedup_cols_dic()
     cols_keys = ['bm_hash_id_col', 'bp_pub_id_col', 'bp_doi_col', 'bp_address_id_col',
                  'bp_country_col', 'bp_address_col', 'correct_address_col']
     addresses_to_correct_cols = [dedup_cols_dic[key] for key in cols_keys]
 
-    # Setting status of data for addresses correction
-    corrected_addresses_isfile = corrected_addresses_path.is_file()
-    addresses_to_correct_isfile = addresses_to_correct_path.is_file()
-
     txt_base = "for correction of false addresses by the user"
     txt_add = "with history of corrected addresses"
     step_txt = f"{bm_pg.TAB*2}- File {txt_base} unchanged"
     if file_clean:
         print_step_text(f"{bm_pg.TAB}- Cleaning file {txt_base}...", print_params)
-        _save_empty_false_addr_data(corpus_year, addresses_to_correct_path)
+        _save_empty_false_addr_data(addresses_to_correct_cols, addresses_to_correct_path, corpus_year)
         step_txt = f"{bm_pg.TAB*2}- File cleaned"
     else:
-        # Setting useful column names
-        dedup_cols_dic = _set_dedup_cols_dic()
-        cols_keys = ['bm_hash_id_col', 'bp_pub_id_col', 'bp_doi_col', 'bp_address_id_col',
-                     'bp_country_col', 'bp_address_col', 'correct_address_col']
-        addresses_to_correct_cols = [dedup_cols_dic[key] for key in cols_keys]
-
         # Setting status of files for addresses correction
         corrected_addresses_isfile = corrected_addresses_path.is_file()
         addresses_to_correct_isfile = addresses_to_correct_path.is_file()
 
         print_step_text(f"{bm_pg.TAB}- Initializing file {txt_base}...", print_params)
         if not corrected_addresses_isfile and not addresses_to_correct_isfile:
-            _save_empty_false_addr_data(corpus_year, addresses_to_correct_path)
+            _save_empty_false_addr_data(addresses_to_correct_cols, addresses_to_correct_path, corpus_year)
             step_txt = f"{bm_pg.TAB*2}- Empty file created"
         elif corrected_addresses_isfile:
             # Using the history of corrected addresses
@@ -166,9 +153,9 @@ def initialize_addresses_to_correct_file(addresses_to_correct_path, corrected_ad
             if addresses_to_correct_isfile:
                 user_addresses_to_correct_df = pd.read_excel(addresses_to_correct_path)
                 addresses_to_correct_df = concat_dfs([addresses_to_correct_hist_df, user_addresses_to_correct_df])
-                step_txt = (f"{bm_pg.TAB*2}- File updated {txt_add}")
+                step_txt = f"{bm_pg.TAB*2}- File updated {txt_add}"
             else:
-                step_txt = (f"{bm_pg.TAB*2}- File created {txt_add}")
+                step_txt = f"{bm_pg.TAB*2}- File created {txt_add}"
             _save_false_addr_data(addresses_to_correct_df, addresses_to_correct_path, corpus_year)
     print_step_text(step_txt, print_params)
 
@@ -382,19 +369,18 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
         authors' affiliations parsing at parsing deduplication step.
         corpus_year (str): Corpus year defined by 4 digits.
     """
-    cols_keys = ['bp_pub_id_col', 'bp_address_col', 'bp_country_col', 'bp_author_id_col',
-                 'author_ids_col', 'bp_norm_affils_col', 'correct_address_col']
-    (pub_id_col, address_col, country_col, author_id_col, author_ids_col,
-     norm_affils_col, correct_address_col) = [dedup_cols_dic[key] for key in cols_keys]
-
     # Setting useful col names from 'parse_cols_dic' arg
     cols_keys = ['bp_country_col', 'bp_address_col', 'correct_address_col', 'bp_author_id_col',
                  'author_ids_col', 'bp_norm_affils_col', 'bp_raw_affils_col']
-    cols_list = [parse_cols_dic[key] for key in cols_keys]
-    pub_id_col = parse_cols_dic['bp_pub_id_col']
+    cols_list = [dedup_cols_dic[key] for key in cols_keys]
+    pub_id_col = dedup_cols_dic['bp_pub_id_col']
 
+    # Setting data for parsing deduplication correction from 'authaddr_correct_dfs' arg
     authaddr_df, corrected_addresses_df = authaddr_correct_dfs
     correct_pub_ids_list = corrected_addresses_df[pub_id_col].to_list()
+
+    # Getting useful data for affiliations normalization
+    affil_dicts = bp_build_affils_useful_dicts(dedup_affil_params_dic)
 
     new_authaddr_df = pd.DataFrame(columns=authaddr_df.columns)
     for _, pub_id_df in authaddr_df.groupby(pub_id_col):
@@ -410,7 +396,7 @@ def _correct_dedup_authaddr(authaddr_correct_dfs, dedup_cols_dic, parsing_authad
 
             # Correcting authors-with-addresses data for pub_id
             pub_id_dfs = [pub_id_corrected_address_df, pub_id_authaddr_df]
-            pub_id_authaddr_df = build_pub_correct_authaddr_data(pub_id_dfs, cols_list, dedup_affil_params_dic)
+            pub_id_authaddr_df = build_pub_correct_authaddr_data(pub_id_dfs, cols_list, affil_dicts)
 
         new_authaddr_df = concat_dfs([new_authaddr_df, pub_id_authaddr_df])
     new_authaddr_df.to_csv(parsing_authaddr_path, index=False, sep='\t')

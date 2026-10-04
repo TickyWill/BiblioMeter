@@ -3,18 +3,42 @@ using corrected addresses by the user.
 """
 
 __all__ = ['build_pub_correct_authaddr_data',
+           'remove_unknown_country',
           ]
 
 
 # 3rd party imports
 from bpfuncts import standardize_address as bp_standardize_address
 from bpfuncts import build_addr_affils_tup as bp_build_addr_affils_tup
+from bpfuncts import build_affils_useful_dicts as bp_build_affils_useful_dicts
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import build_list_from_str
 from bmfuncts.useful_functs import build_string_from_list
 from bmfuncts.useful_functs import drop_multiple_item
+
+
+def remove_unknown_country(input_addr_str, sep_str, unknown_country):
+    """Removes unknown-country key from an address.
+
+    The unknown-country key is potentially added when 
+    the address is standardized.
+    The split of the address and the join of the items uses 
+    the specified separator.
+
+    Args:
+        input_addr_str (str): The list of string items to be joined.
+        sep_str (str): The separator to be used for the split and join \
+        including space if required.
+        unknown_country (str): Key word for unknown country.
+    Returns:
+        (str): The built final address.
+    """
+    output_addr_list = build_list_from_str(input_addr_str, sep_str)
+    output_addr_list = drop_multiple_item(output_addr_list, unknown_country)
+    output_addr_str = build_string_from_list(output_addr_list, sep_str)
+    return output_addr_str
 
 
 def _correct_auth_addresses(authaddr_row, address_col, false_address, correct_address,
@@ -25,7 +49,7 @@ def _correct_auth_addresses(authaddr_row, address_col, false_address, correct_ad
     for address in raw_author_addresses_list:
         std_address_str = bp_standardize_address(address, add_unknown_country=False)
         if unknown_country:
-            std_address_str = _remove_unknown_country(std_address_str, ", ", unknown_country)
+            std_address_str = remove_unknown_country(std_address_str, ", ", unknown_country)
         author_addresses_list.append(std_address_str)
 
     # Finding index of false address in 'author_addresses_list'
@@ -36,11 +60,11 @@ def _correct_auth_addresses(authaddr_row, address_col, false_address, correct_ad
     return author_addresses_list, author_addresses_str
 
 
-def _correct_auth_norm_raw_affils(author_addresses_list, affil_params_dic):
+def _correct_auth_norm_raw_affils(author_addresses_list, affil_dicts):
     # Correcting normalized affiliations
     full_norm_affils_list, full_raw_affils_list = [], []
     for auth_address in author_addresses_list:
-        author_addr_aff_tup = bp_build_addr_affils_tup(auth_address, affil_params_dic,
+        author_addr_aff_tup = bp_build_addr_affils_tup(auth_address, affil_dicts,
                                                        drop_status=False)
         auth_addr_norm_affils_list = author_addr_aff_tup.norm_affils_list
         full_norm_affils_list.append(auth_addr_norm_affils_list)
@@ -55,7 +79,7 @@ def _correct_auth_norm_raw_affils(author_addresses_list, affil_params_dic):
 
 
 def _correct_auth_pub_id_authaddr(authaddr_row, address_col, false_address, correct_address,
-                                  affil_params_dic, unknown_country):
+                                  affil_dicts, unknown_country):
     # Correcting author's addresses
     return_tup = _correct_auth_addresses(authaddr_row, address_col, false_address,
                                          correct_address, unknown_country)
@@ -63,11 +87,11 @@ def _correct_auth_pub_id_authaddr(authaddr_row, address_col, false_address, corr
 
     # Correcting normalized affiliations of author
     norm_affils_str, raw_affils_str = _correct_auth_norm_raw_affils(author_addresses_list,
-                                                                    affil_params_dic)
+                                                                    affil_dicts)
     return author_addresses_str, norm_affils_str, raw_affils_str
 
 
-def build_pub_correct_authaddr_data(pub_id_dfs, cols_list, affil_params_dic, unknown_country=None):
+def build_pub_correct_authaddr_data(pub_id_dfs, cols_list, affil_dicts, unknown_country=None):
     """Builds the correct author-with-addresses data for a given publication.
     """
     # Setting column names from args
@@ -91,7 +115,7 @@ def build_pub_correct_authaddr_data(pub_id_dfs, cols_list, affil_params_dic, unk
             if author_id in auth_ids_list:
                 # Building the correct author-with-addresses data for the author
                 return_tup = _correct_auth_pub_id_authaddr(authaddr_row, address_col, false_address,
-                                                           correct_address, affil_params_dic, unknown_country)
+                                                           correct_address, affil_dicts, unknown_country)
                 author_addresses_str, norm_affils_str, raw_affils_str = return_tup
 
                 # Updating author-with-addresses data of the author with corrected data

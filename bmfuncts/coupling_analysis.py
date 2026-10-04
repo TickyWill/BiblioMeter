@@ -16,7 +16,6 @@ import pandas as pd
 from bpfuncts import build_norm_and_raw_affils as bp_build_norm_and_raw_affils
 
 # Local imports
-import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.build_geo_stat import build_and_save_geo_stat
 from bmfuncts.build_affiliations_stat import build_and_save_affiliations_stat
@@ -95,8 +94,6 @@ def _set_co_files_params(wf_path, corpus_year, final_results_path):
     analysis_folder_path = year_folder_path / Path(analysis_folder_alias)
     affils_analysis_folder_path = analysis_folder_path / Path(affils_analysis_folder_alias)
     addresses_to_correct_path = affils_analysis_folder_path / Path(addresses_to_correct_file_alias)
-    norm_affil_file_path = affils_analysis_folder_path / Path(norm_affils_file)
-    raw_affil_file_path = affils_analysis_folder_path / Path(raw_affils_file)
 
     # Setting useful paths for the data in the corpus' folder of the final-results folder
     f_year_folder_path = final_results_path / Path(corpus_year)
@@ -115,9 +112,8 @@ def _set_co_files_params(wf_path, corpus_year, final_results_path):
 
     files_list = [norm_affils_file, raw_affils_file]
     folders_list = [analysis_folder_alias, affils_analysis_folder_alias]
-    paths_list = [analysis_folder_path, affils_analysis_folder_path, f_hash_ids_path,
-                  addresses_to_correct_path, norm_affil_file_path, raw_affil_file_path,
-                  f_norm_affil_file_path, f_raw_affil_file_path]
+    paths_list = [analysis_folder_path, affils_analysis_folder_path, addresses_to_correct_path,
+                  f_hash_ids_path, f_norm_affil_file_path, f_raw_affil_file_path]
     return files_list, folders_list, paths_list
 
 
@@ -234,8 +230,7 @@ def _enhance_raw_affiliations_data(init_raw_addr_df, ids_dicts_list, co_cols_dic
     return raw_addr_df
 
 
-def _select_addrs_to_normalize(addr_params, co_cols_dic, addr_paths,
-                               verbose=False, progress_param=None):
+def _select_addrs_to_normalize(addr_params, co_cols_dic, addr_paths, addr_progress_params, verbose):
 
     # Setting useful column names
     col_keys = ['pub_id_col', 'address_id_col', 'affiliations_col',
@@ -245,45 +240,44 @@ def _select_addrs_to_normalize(addr_params, co_cols_dic, addr_paths,
     norm_cols_list = [final_pub_id_col, address_id_col, countries_col, affiliations_col]
 
     # Setting parameters value from 'addr_params'
-    (corpus_year, print_params, institute, org_tup, wf_path,
-     parsing_filenames_dict) = addr_params
+    print_params = addr_params[1]
     final_results_path, f_norm_affil_file_path, f_raw_affil_file_path = addr_paths
 
     # Building data of all addresses of Institute's publications from parsing addresses data
-    sub_addr_params = addr_params + [final_results_path]
-    return_tup = build_institute_addresses_data(sub_addr_params, verbose=verbose,
-                                                progress_param=progress_param)
+    institute_addr_params = addr_params + [final_results_path]
+    return_tup = build_institute_addresses_data(institute_addr_params, progress_params=addr_progress_params,
+                                                verbose=verbose)
     institute_pub_addr_df = return_tup[2]
 
     sub_institute_pub_addr_df = institute_pub_addr_df.copy()
     empty_raw_addr_df = pd.DataFrame()
     keep_norm_affil_df = pd.DataFrame(columns=norm_cols_list)
     if f_raw_affil_file_path.is_file():
-        print_step_text(f"{bm_pg.TAB}- Selecting data of addresses with remaining raw-affiliations...", print_params)
+        print_step_text(f"{bm_pg.TAB}- Selecting addresses with remaining raw-affiliations...", print_params)
 
         # Reading the previously built data of remaining raw-addresses
         init_raw_addr_df = pd.read_excel(f_raw_affil_file_path)
 
         # Building the list of tuple (publication-ID, address-ID) of addresses fully normalized
-        # by identifying the publications'IDs with no remaining raw affiliation in the  e
+        # by identifying the publications' IDs with no remaining raw affiliation in the  e
         empty_raw_addr_df = init_raw_addr_df[init_raw_addr_df[affiliations_col]==bm_pg.EMPTY]
         empty_pub_ids = empty_raw_addr_df[pub_id_col].to_list()
         empty_address_ids = empty_raw_addr_df[address_id_col].to_list()
         empty_pub_addr_tups = list(tuple(zip(empty_pub_ids, empty_address_ids)))
 
-        # Droping the rows of the addresses fully normalized from the Institute's addresses data per publication
+        # Dropping the rows of the addresses fully normalized from the Institute's addresses data per publication
         empty_rows_idx = []
         for row_idx, row in institute_pub_addr_df.iterrows():
             pub_addr_tup = (row[pub_id_col], row[address_id_col])
             if pub_addr_tup in empty_pub_addr_tups:
                 empty_rows_idx.append(row_idx)
         sub_institute_pub_addr_df = institute_pub_addr_df.drop(empty_rows_idx)
-        print_step_text(f"{bm_pg.TAB*2}- Data of addresses with remaining raw-affiliations selected",
+        print_step_text(f"{bm_pg.TAB*2}- Addresses with remaining raw-affiliations selected",
                         print_params)
 
         if f_norm_affil_file_path.is_file():
-            print_step_text(f"{bm_pg.TAB}- Selecting data of normalized affiliations of addresses "
-                            "with no remaining raw-ffiliations...", print_params)
+            print_step_text(f"{bm_pg.TAB}- Selecting normalized affiliations of addresses "
+                            "with no remaining raw-affiliations...", print_params)
             # Reading the previously built data of normalized affiliations
             init_norm_affil_df = pd.read_excel(f_norm_affil_file_path)
 
@@ -298,8 +292,8 @@ def _select_addrs_to_normalize(addr_params, co_cols_dic, addr_paths,
                 if pub_addr_tup in other_pub_addr_tups:
                     other_rows.append(idx)
             keep_norm_affil_df = init_norm_affil_df.drop(other_rows)
-            print_step_text(f"{bm_pg.TAB*2}- Data of normalized affiliations of addresses with no remaining raw-ffiliations selected",
-                            print_params)
+            print_step_text(f"{bm_pg.TAB*2}- Normalized affiliations of addresses with no remaining "
+                            "raw-affiliations selected", print_params)
     addr_dfs_list = [sub_institute_pub_addr_df, empty_raw_addr_df, keep_norm_affil_df]
 
     return addr_dfs_list
@@ -318,17 +312,16 @@ def _build_addrs_to_normalize(addr_params, addr_paths, co_cols_dic, ids_dicts_li
     correct_status = correct_dedup(dedup_params, ids_dicts_list)
     print_step_text(step_text_dic['correct_status'][correct_status], print_params)
 
-    progress_callback, addr_progress_params = progress_params[0], None
+    progress_callback, inter_progress = progress_params
+    addr_progress_params = [progress_callback, inter_progress[0], inter_progress[1]]
     if progress_callback:
-        inter_progress = progress_params[1]
-        addr_progress_params = (progress_callback, inter_progress[0], inter_progress[1])
         progress_callback(inter_progress[0])
 
     # Selecting addresses of Institute's publications remaining to be normalized
     print_step_text("\nBuilding data of authors' addresses remaining to be analyzed "
                     "for affiliations normalization...", print_params)
     addr_dfs_list = _select_addrs_to_normalize(addr_params[0:6], co_cols_dic, addr_paths[1:],
-                                               verbose=verbose, progress_param=addr_progress_params)
+                                               addr_progress_params, verbose)
     print_step_text(f"{bm_pg.TAB}- Data of authors' addresses remaining to be analyzed selected", print_params)
 
     if progress_callback:
@@ -342,30 +335,44 @@ def _set_inter_progress(init_progress, final_progress, progress_fact):
 
 
 def _set_step_text_dic():
-    step_text_dic = {'correct_status'  : {True : f"{bm_pg.TAB}- False addresses in deduplication-parsing data corrected",
-                                          False: f"{bm_pg.TAB}- No correction of false addresses in deduplication-parsing data",
+    step_text_dic = {'correct_status'  : {True : (f"{bm_pg.TAB}- False addresses in deduplication-parsing "
+                                                  "data corrected"),
+                                          False: (f"{bm_pg.TAB}- No correction of false addresses "
+                                                  "in deduplication-parsing data"),
                                          },
                      'raw_affils_empty': {True : {"1": f"{bm_pg.TAB}- No address remains to be analyzed",
                                                   "2": f"{bm_pg.TAB}- Normalized-affiliations data unchanged",
-                                                  "3": (f"{bm_pg.TAB}- Normalized-affiliations data saved with no remaning raw-affiliations\n"
-                                                        f"{bm_pg.TAB}- File for correcting addresses by the user deleted"),
+                                                  "3": (f"{bm_pg.TAB}- Normalized-affiliations data saved "
+                                                        "with no remaining raw-affiliations\n"
+                                                        f"{bm_pg.TAB}- File for correcting addresses by the user "
+                                                        "deleted"),
                                                  },
                                           False: {"1": f"{bm_pg.TAB}- Addresses remain to be analyzed",
-                                                  "2": f"{bm_pg.TAB}- Normalized-affiliations data and remaining raw-affiliations updated",
-                                                  "3": (f"{bm_pg.TAB}- Normalized-affiliations data saved with remaining raw-affiliations\n"
-                                                        f"{bm_pg.TAB}- File for correcting addresses by the user available")
+                                                  "2": (f"{bm_pg.TAB}- Normalized-affiliations data and remaining "
+                                                        "raw-affiliations updated"),
+                                                  "3": (f"{bm_pg.TAB}- Normalized-affiliations data saved with "
+                                                        "remaining raw-affiliations\n"
+                                                        f"{bm_pg.TAB}- File for correcting addresses by the user "
+                                                        "available")
                                                  },
                                           },
-                     'wrong_affil_types_empty':{True : {"1": f"{bm_pg.TAB}- Correct useful data for normalization of authors' affiliations available",
-                                                        "2": f"{bm_pg.TAB}- Updating the analysis taking into account previous collaborations analysis",
-                                                        "3": f"{bm_pg.TAB*2}- Countries column added to the analysis data",
-                                                        "4": f"{bm_pg.TAB*2}- Unkept addresses-parts removed from the data of remaining raw-affiliations",
-                                                        "5": f"{bm_pg.TAB*2}- Data of the remaining raw-affiliations enhanced with complementary info",
-                                                        "6": f"{bm_pg.TAB*2}- Existing data of raw affiliations updated",
-                                                        "7": f"{bm_pg.TAB*2}- Existing data of normalized affiliations updated",
+                     'wrong_affil_types_empty':{True : {"1": (f"{bm_pg.TAB}- Correct useful data for normalization "
+                                                              "of authors' affiliations available"),
+                                                        "2": (f"{bm_pg.TAB}- Updating the analysis taking into "
+                                                              "account previous collaborations analysis"),
+                                                        "3": (f"{bm_pg.TAB*2}- Countries column added to the analysis "
+                                                              "data"),
+                                                        "4": (f"{bm_pg.TAB*2}- Unkept addresses-parts removed from "
+                                                              "the data of remaining raw-affiliations"),
+                                                        "5": (f"{bm_pg.TAB*2}- Data of the remaining raw-affiliations "
+                                                              "enhanced with complementary info"),
+                                                        "6": (f"{bm_pg.TAB*2}- Existing data of raw affiliations "
+                                                              "updated"),
+                                                        "7": (f"{bm_pg.TAB*2}- Existing data of normalized "
+                                                              "affiliations updated"),
                                                        },
-                                                False: {"1": (f"{bm_pg.TAB}- Wrong affiliations' types are set by the user "
-                                                              "and affiliations' normalization is aborted"),
+                                                False: {"1": (f"{bm_pg.TAB}- Wrong affiliations' types are set by "
+                                                              "the user and affiliations' normalization is aborted"),
                                                        },
                                                },
                     }
@@ -377,12 +384,10 @@ def _build_norm_raw_affil_data(raw_addr_dfs_list, affil_params_dics_list, co_col
 
     print_step_text("\nUpdating analysis data of authors' addresses...", print_params)
 
-    progress_callback = progress_params[0]
-    if progress_callback:
-        inter_progress = progress_params[1]
-        _init_progress, _final_progress = inter_progress[1], inter_progress[2]
-        _inter_progress = [_set_inter_progress(_init_progress, _final_progress, fact)
-                           for fact in [0.75, 0.9]]
+    progress_callback, inter_progress = progress_params
+    _init_progress, _final_progress = inter_progress[1], inter_progress[2]
+    _inter_progress = [_set_inter_progress(_init_progress, _final_progress, fact)
+                       for fact in [0.75, 0.9]]
 
     # Setting useful column names
     col_keys = ['address_col', 'address_id_col', 'affiliations_col',
@@ -485,13 +490,11 @@ def _save_formatted_norm_raw_affil_data(format_params, norm_affil_df, raw_addr_d
 
 def _build_affils_and_geo_stat(stat_params, stat_paths, stat_dfs, stat_cols, progress_params):
     # Setting parameter values from args
-    corpus_year, print_params, institute, dedup_affil_params_dic = stat_params
+    corpus_year, _, _, dedup_affil_params_dic = stat_params
     final_results_path, affils_analysis_folder_path, analysis_folder_path = stat_paths
     norm_affil_df, countries_df = stat_dfs
-    progress_callback, affils_progress_params = progress_params[0], None
-    if progress_callback:
-        inter_progress = progress_params[1]
-        affils_progress_params = (progress_callback, inter_progress[2], inter_progress[3])
+    progress_callback, inter_progress = progress_params
+    affils_progress_params = [progress_callback, inter_progress[2], inter_progress[3]]
 
     # Building and saving affiliations stat data
     pub_ids_dict = build_pub_ids_dict(final_results_path, corpus_year, stat_cols)
@@ -588,9 +591,8 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     files_list, folders_list, paths_list = _set_co_files_params(wf_path, corpus_year,
                                                                 final_results_path)
     norm_affil_file, raw_addr_file = files_list
-    (analysis_folder_path, affils_analysis_folder_path, f_hash_ids_path,
-     addresses_to_correct_path, norm_affil_file_path, raw_affil_file_path,
-     f_norm_affil_file_path, f_raw_affil_file_path) = paths_list
+    (analysis_folder_path, affils_analysis_folder_path, addresses_to_correct_path,
+     f_hash_ids_path, f_norm_affil_file_path, f_raw_affil_file_path) = paths_list
 
     # Setting useful column names
     co_cols_dic = _set_co_cols_dic(institute, org_tup)
@@ -599,14 +601,13 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     (hash_id_col, pub_id_col, doi_col, final_pub_id_col, final_doctype_col,
      address_id_col, countries_col) = [co_cols_dic[key] for key in col_keys]
 
-    # Setting parameters from optional arg
-    init_progress, final_progress, inter_progress = [None] * 3
+    # Setting parameters for optional 'progress_callback' function calls
+    init_progress, final_progress = 5, 100
+    inter_progress = [_set_inter_progress(init_progress, final_progress, fact)
+                      for fact in [0.2, 0.5, 0.8, 0.9, 0.98]]
+    progress_params = [progress_callback, inter_progress]
     if progress_callback:
-        init_progress, final_progress = 5, 100
-        inter_progress = [_set_inter_progress(init_progress, final_progress, fact)
-                          for fact in [0.2, 0.5, 0.8, 0.9, 0.98]]
         progress_callback(init_progress)
-    progress_params = (progress_callback, inter_progress)
 
     # Building steps' texts
     step_text_dic = _set_step_text_dic()
@@ -625,7 +626,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
     addr_dfs_list = _build_addrs_to_normalize(addr_params, addr_paths, co_cols_dic, ids_dicts_list,
                                               step_text_dic, progress_params, verbose)
 
-    # Setting the data of normalized affiliations and remaininig raw affiliations
+    # Setting the data of normalized affiliations and remaining raw affiliations
     affil_params_dics_list = [dedup_affil_params_dic, co_affil_params_dic]
     return_tup = _set_norm_raw_affil_data(addr_dfs_list, ids_dicts_list, affil_params_dics_list, co_cols_dic,
                                           step_text_dic, print_params, progress_params)
@@ -659,7 +660,7 @@ def coupling_analysis(params_list, progress_callback=None, verbose=False):
         print_step_text(f"\n{status_txt} saved as final results", print_params)
 
     return_folders_list = folders_list + [geo_analysis_folder_name]
-    return_paths_list = [addresses_to_correct_path, raw_affil_file_path]
+    return_paths_list = [addresses_to_correct_path, f_raw_affil_file_path]
     return_tup = (wrong_affil_types_dict, raw_addr_status, return_folders_list, return_paths_list)
     if progress_callback:
         progress_callback(final_progress)

@@ -233,7 +233,7 @@ def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
             item_tsv_path = parsing_path / Path(item_tsv_file)
             if item_tsv_path.is_file():
                 try:
-                    item_df = pd.read_csv(item_tsv_path, sep = "\t")
+                    item_df = pd.read_csv(item_tsv_path, sep="\t")
                 except pd.errors.EmptyDataError:
                     item_df = pd.DataFrame()
 
@@ -508,8 +508,8 @@ def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
     pub_id_col = bm_pg.COL_NAMES['pub_id']
     pub_parsing_item = bm_pg.PARSING_KEYS_DIC['parsing_pub']
     pub_df = concat_parsing_dict[pub_parsing_item]
-    droping_cols = list(set(pub_df.keys()) - {pub_id_col})
-    pub_df = pub_df.drop_duplicates(subset=droping_cols)
+    dropping_cols = list(set(pub_df.keys()) - {pub_id_col})
+    pub_df = pub_df.drop_duplicates(subset=dropping_cols)
     pub_ids_to_keep = list(set(pub_df[pub_id_col]))
     for key, key_df in bp_concat_parsing_dict.items():
         bp_concat_parsing_dict[key] = key_df[key_df[pub_id_col].isin(pub_ids_to_keep)]

@@ -270,6 +270,7 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
     # Searching for last names of init_orphan_df in ext_docs_df
     # to update 'merge_df' and 'orphan_df' data using 'new_merge_adds_df' and 'orphan_drop_df' data
     sub_cols_list = [ext_auth_lastname_col, ext_auth_firstname_short_cols, orphan_fullname_col, ext_empl_fullname_col]
+    txt_len = 0
     orphan_lines_nb, orphan_nb = len(init_orphan_df), 0
     for _, orphan_row in init_orphan_df.iterrows():
         orphan_nb += 1
@@ -282,7 +283,7 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
             ext_docs_pub_last_name = str(ext_docs_row[ext_auth_lastname_col])
             ext_docs_pub_last_name = standardize_txt(ext_docs_pub_last_name)
             ext_docs_pub_initials = str(ext_docs_row[ext_auth_firstname_short_cols])
-            if (ext_docs_pub_last_name==author_last_name and ext_docs_pub_initials==author_initials):
+            if ext_docs_pub_last_name==author_last_name and ext_docs_pub_initials==author_initials:
                 return_tup = _add_ext_auth(ext_docs_row, orphan_row, new_merge_adds_df, orphan_drop_df, sub_cols_list)
                 new_merge_adds_df, orphan_drop_df = return_tup
 
@@ -298,7 +299,8 @@ def _add_ext_docs(init_merge_df, init_orphan_df, ext_docs_path, cols_list, print
                              merge_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
-    print_step_text(f"{bm_pg.TAB*2}- Authors searched as external PhD students", print_params, prev_txt_len=txt_len)
+    print_step_text(f"{bm_pg.TAB*2}- Authors searched as external PhD students",
+                    print_params, prev_txt_len=txt_len)
     return new_merge_df, new_orphan_df
 
 
@@ -371,6 +373,7 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
     # Searching for last names of init_orphan_df in others_df
     # to update 'merge_df' and 'orphan_df' data using 'new_merge_adds_df' and 'orphan_drop_df' data
     sub_cols_list = [ext_auth_lastname_col, ext_auth_firstname_short_cols, orphan_fullname_col, ext_empl_fullname_col]
+    txt_len = 0
     orphan_lines_nb, orphan_nb = len(init_orphan_df), 0
     for _, orphan_row in init_orphan_df.iterrows():
         orphan_nb += 1
@@ -398,7 +401,8 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
     col_invert_rename_dic = {merge_firstname_short_col + "_x": merge_firstname_short_col}
     new_orphan_df = new_orphan_df.rename(columns=col_invert_rename_dic)
 
-    print_step_text(f"{bm_pg.TAB*2}- Authors searched as other external collaborators", print_params, prev_txt_len=txt_len)
+    print_step_text(f"{bm_pg.TAB*2}- Authors searched as other external collaborators",
+                    print_params, prev_txt_len=txt_len)
     return new_merge_df, new_orphan_df
 
 
@@ -470,16 +474,16 @@ def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_d
     inst_col_list = org_tup[4]
     orphan_drop_dict = org_tup[10]
 
-    # Creating, and saving as an 'xlsx' file, orphan authors for each Institute subdivision
+    # Creating, and saving as a XLSX file, orphan authors for each Institute subdivision
     institute_df = orphan_df.copy()
     new_orphan_df = orphan_df.copy()
-    droped_indexes = set()
+    dropped_indexes = set()
     for inst_col in inst_col_list[1:]:
         inst_col_df = orphan_df[orphan_df[inst_col]==1]
         _save_inst_col_df(inst_col, inst_col_df)
-        indexes_to_drop = list(set(inst_col_df.index) - droped_indexes)
+        indexes_to_drop = list(set(inst_col_df.index) - dropped_indexes)
         institute_df = institute_df.drop(indexes_to_drop)
-        droped_indexes = set(inst_col_df.index)
+        dropped_indexes = set(inst_col_df.index)
         if orphan_drop_dict[inst_col]:
             new_orphan_df = new_orphan_df.drop(inst_col_df.index)
     _save_inst_col_df(inst_col_list[0], institute_df)
@@ -487,26 +491,7 @@ def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_d
 
     # Updating orphan status
     orphan_status = new_orphan_df.empty
-    return orphan_status
-
-
-def _adapt_depth_search(empl_dict, corpus_year, search_depth):
-    """Sets the list of years for recursive search of author-employee match.
-
-    Args:
-        empl_dict (dict): The employees database as a dict keyed by the years \
-        and valued by the employees data for each year.
-        corpus_year (str): Contains the corpus year defined by 4 digits.
-        search_depth (int): Depth for search in 'empl_dict'.
-    """
-    eff_available_years = list(empl_dict.keys())
-    corpus_year_status = corpus_year in eff_available_years
-    year_start = int(corpus_year)
-    if not corpus_year_status:
-        year_start = int(corpus_year)-1
-    year_stop = year_start - (search_depth - 1)
-    years = [str(i) for i in range(year_start, year_stop-1,-1)]
-    return years
+    return new_orphan_df, orphan_status
 
 
 def _set_ext_files_paths(wf_path):
@@ -638,7 +623,7 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     internal function.
     9. Column names are changed in the two files which full path are given by respectively, \
     'merge_path' and 'orphan_path' through the `_change_col_names` internal function.
-    10. An 'xlsx' file containing the unique hash ID built for each publication \
+    10. A XLSX file containing the unique hash ID built for each publication \
     is created through the `create_hash_id` function imported from "bmfuncts.create_hash_id" \
     module.
 
@@ -649,20 +634,19 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         (2, 3 and 4) the files of the built data including the Hash-IDs data.
         empl_dict (dict): The employees database as a dict keyed by the years \
         and valued by the employees data for each year.
-        params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str), the pParameters (list) for the `print_step_text` function \
-        imported from the `bmfuncts.useful_functs` module and the 4 digits year of the corpus (str).
+        params_list (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
+        for the `print_step_text` function imported from the `bmfuncts.useful_functs` module, \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of Institute's \
+        organization, of the full path to working folder (path), of the data combination type \
+        of corpuses databases (str), and of the dict giving the name of the parsing file for each parsed item.
         search_depth (int): Depth for search in 'empl_dict' using 'years' list.
-        progress_callback (function): Function for updating ProgressBar \
-        tkinter widget status (optional, default = None).
-        progress_bar_state (int): Initial status of ProgressBar tkinter widget \
-        (optional, default = None).
-        set_test_case (str): Test case for testing the `build_pub_empl_data` function \
-        (optional, default = "No test").
-        set_test_name (str): Author last-name for testing the `build_pub_empl_data` function \
-        (optional, default = "No name").
+        progress_callback (function): Function for updating the status of the ProgressBar tkinter widget (optional, \
+        default: None).
+        progress_bar_state (int): Initial status of ProgressBar tkinter widget (optional, default: None).
+        set_test_case (str): Test case for testing the `build_pub_empl_data` function (optional, \
+        default: "No test").
+        set_test_name (str): Author last-name for testing the `build_pub_empl_data` function (optional, \
+        default: "No name").
     Returns:
         (tup): (end_message (str), empty status (bool) of the publications \
         list with authors not found in the employees database).
@@ -684,29 +668,32 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
 
     # Setting useful parameters for setting col names
     cols_param_tup = _set_merge_cols_lists()
-    (reshape_cols_list, add_ext_cols_list,
-     add_job_cols_list, add_ref_cols_list) = cols_param_tup
+    (reshape_cols_list, add_ext_cols_list, add_job_cols_list, add_ref_cols_list) = cols_param_tup
     pub_id_col, mat_col, initials_col = reshape_cols_list
 
     # Setting local parameters
     orphan_split_status = org_tup[9]
 
     # Building the articles dataframe
-    pub_df = build_institute_pubs_authors_data(params_list)
+    progress_params, inter_progress_bar_state = [None] * 2
+    if progress_callback:
+        inter_progress_bar_state = 70
+        progress_params = [progress_callback, progress_bar_state, inter_progress_bar_state]
+    pub_df = build_institute_pubs_authors_data(params_list, progress_params)
 
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
     pub_df = keep_initials(pub_df, initials_col, missing_fill=bm_pg.UNKNOWN)
 
     # Setting the years list for recursive search of author-employee match
-    years = _adapt_depth_search(empl_dict, corpus_year, search_depth)
+    years = list(empl_dict.keys())
 
     # Replace in "empl_dict" NaN values by UNKNOWN string except in first name initials
     # and set type of employees IDs to string
     empl_dict = _config_empl(empl_dict, years, initials_col, mat_col)
     step, new_progress_bar_state, progress_bar_loop_progression = [None] * 3
     if progress_callback:
-        step = (100 - progress_bar_state) / 100
-        progress_callback(progress_bar_state + step * 10)
+        step = (100 - inter_progress_bar_state) / 100
+        progress_callback(inter_progress_bar_state + step * 10)
 
     # ************************************************************
     # * Building recursively the `merge_df` and `orphan_df` data *
@@ -718,25 +705,26 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     merge_df, orphan_df = build_pub_empl_data(empl_dict[years[0]], pub_df, wf_path, print_params,
                                               test_case=set_test_case, test_name=set_test_name, init_status=True)
     if progress_callback:
-        progress_callback(progress_bar_state + step * 20)
+        progress_callback(inter_progress_bar_state + step * 20)
 
     # Adding authors from list of external_phd students
     # to 'merge_df' data and updating 'orphan_df' data
     merge_df, orphan_df = _add_ext_docs(merge_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
-        progress_callback(progress_bar_state + step * 25)
+        progress_callback(inter_progress_bar_state + step * 25)
 
     # Adding authors from list of external employees under other hiring contract
     # to 'merge_df' data  and updating 'orphan_df' data
     merge_df, orphan_df = _add_other_ext(merge_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
-        new_progress_bar_state = progress_bar_state + step * 30
+        new_progress_bar_state = inter_progress_bar_state + step * 30
         progress_callback(new_progress_bar_state)
         progress_bar_loop_progression = step * 50 // len(years)
 
-    print_step_text(f"\n{bm_pg.TAB}- Recursive search of authors among employees data of {years[1]}...{years[-1]} period",
-                    print_params)
-    for _, year in enumerate(years[1:]):
+    print_step_text(f"\n{bm_pg.TAB}- Recursive search of authors among employees data "
+                    f"on {years[1]}...{years[-1]} period", print_params)
+    txt_len = 0
+    for year in years:
         txt_len = print_temp_text(f"{bm_pg.TAB*2}Search year:{bm_pg.TAB}{year}", txt_end=True)
         # Updating the 'merge_df_add' and 'orphan_df' data
         merge_df_add, orphan_df = build_pub_empl_data(empl_dict[year], orphan_df, wf_path, print_params,
@@ -783,19 +771,21 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     print_step_text(f"{bm_pg.TAB*2}- Columns renamed with final names", print_params)
 
     # Splitting orphan file in subdivisions of Institute when indicated
+    split_orphan_df = orphan_df.copy()
     if orphan_split_status:
-        orphan_status = _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_df)
+        split_orphan_df, orphan_status = _split_orphan(org_tup, merge_folder_path, orphan_path,
+                                                     orphan_file, orphan_df)
         print_step_text(f"{bm_pg.TAB*2}- Not-found authors split in the specified subdivisions", print_params)
     if progress_callback:
         progress_callback(new_progress_bar_state + step * 15)
 
     # Creating universal identifiers of publications independent of data extraction
-    return_tup = create_hash_id(institute, org_tup, merge_df, orphan_df)
-    merge_df, orphan_df, hash_id_df, hash_id_nb = return_tup
+    return_tup = create_hash_id(institute, org_tup, merge_df, split_orphan_df)
+    final_merge_df, final_orphan_df, hash_id_df, hash_id_nb = return_tup
 
     # Saving the data
-    merge_df.to_excel(merge_path, index=False)
-    orphan_df.to_excel(orphan_path, index=False)
+    final_merge_df.to_excel(merge_path, index=False)
+    final_orphan_df.to_excel(orphan_path, index=False)
     hash_id_df.to_excel(hash_id_path, index=False)
 
     print_step_text(f"{bm_pg.TAB*2}- Number of publications' hash-IDs created and saved: {hash_id_nb}",

@@ -63,10 +63,9 @@ def _launch_kw_analysis(master, year_select, progress_callback):
     print_step_title(f"KEYWORDS ANALYSIS FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
-    params_list = [year_select, master.institute, master.org_tup, master.wf_path,
-                   master.datatype, master.parsing_filenames_dict]
-    kw_analysis_folder_path = keywords_analysis(params_list, progress_callback,
-                                                verbose=False)
+    params_list = [year_select, master.print_params, master.institute, master.org_tup,
+                   master.wf_path, master.datatype, master.parsing_filenames_dict]
+    kw_analysis_folder_path = keywords_analysis(params_list, progress_callback)
 
     info_title = "- Information -"
     info_text = (f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
@@ -184,7 +183,7 @@ def _launch_if_analysis(master, year_select, progress_callback):
             analysis_if = "IF " + year_select
 
     return_tup = if_analysis(params_list, if_most_recent_year,
-                             progress_callback, verbose=False)
+                             progress_callback)
     doctypes_analysis_folder_path, if_analysis_folder_path, _, _ = return_tup
     info_title = "- Information -"
     info_text = ("L'analyse par type de documents et l'analyse des IFs "

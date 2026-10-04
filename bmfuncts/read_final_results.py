@@ -77,7 +77,7 @@ def read_final_merge_data(final_results_path, corpus_year):
     saved_merge_path = year_final_results_path / Path(saved_merge_folder_alias)
     merge_file_path = saved_merge_path / Path(year_merge_filename)
 
-    # Reading the file of publications-emplopyees merged data
+    # Reading the file of publications-employees merged data
     merge_df = pd.read_excel(merge_file_path)
     return merge_df
 

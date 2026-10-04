@@ -20,6 +20,7 @@ from bmfuncts.read_final_results import read_final_pub_list_data
 from bmfuncts.rename_cols import set_final_col_names
 from bmfuncts.save_final_results import save_final_results
 from bmfuncts.save_final_results import set_results_folder_path
+from bmfuncts.useful_functs import print_step_text
 
 
 def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df, cols_tup,
@@ -97,7 +98,6 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
         wb, ws = format_page(dept_kw_df, kw_df_title)
         ws.title = dept + ' ' + kw_type
         wb.save(dept_xlsx_file_path)
-    print_step_text(f"\n{bm_pg.TAB}Keywords of all types and all departments saved")
 
 
 def _get_clean_kw_data(kw_df, keywords_col):
@@ -180,7 +180,8 @@ def keywords_analysis(params_list, progress_callback=None):
         (path): Full path to the folder where results of keywords analysis are saved.
     """
     # Setting parameters values from params_list
-    corpus_year, institute, org_tup, wf_path, datatype, parsing_filenames_dict = params_list
+    (corpus_year, print_params, institute, org_tup, wf_path, datatype,
+     parsing_filenames_dict) = params_list
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
@@ -230,6 +231,8 @@ def keywords_analysis(params_list, progress_callback=None):
                     keywords_col_alias, weight_col_alias)
         _create_kw_analysis_data(institute, corpus_year, pub_df, kw_type, kw_df, cols_tup,
                                  kw_analysis_folder_path)
+        print_step_text(f"\n{bm_pg.TAB}Keywords of all types and all departments saved",
+                        print_params)
 
         # Updating progress bar state
         if progress_callback:

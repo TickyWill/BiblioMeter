@@ -228,13 +228,13 @@ def set_wf_widget_param(self, institute_select, inst_wf,
     # Setting button for changing Wf
     wf_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=self.disp_font_size_tup[1])
-    wf_button = tk.Button(self,
-                          text=bm_gg.MAIN_BUT_LABEL_DICT['wf_change'],
-                          font=wf_button_font,
-                          command=lambda: _get_file(self, institute_select,
-                                                    datatype_select, set_inst_param,
-                                                    create_archi_param))
-    bm_gu.place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
+    self.wf_button = tk.Button(self,
+                               text=bm_gg.MAIN_BUT_LABEL_DICT['wf_change'],
+                               font=wf_button_font,
+                               command=lambda: _get_file(self, institute_select,
+                                                         datatype_select, set_inst_param,
+                                                         create_archi_param))
+    bm_gu.place_bellow(wf_entry, self.wf_button, dy=self.buttons_dy)
 
 
 def try_wf_access(wf_path):
@@ -333,13 +333,13 @@ def set_corpuses_widgets_param(self, inst_wf, create_archi_param):
 
     # Setting button for corpus creation
     corpuses_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                    size=self.disp_font_size_tup[1])
-    corpuses_button = tk.Button(self,
-                             text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
-                             font=corpuses_button_font,
-                             command=lambda: _create_corpus(self, inst_wf,
-                                                            create_archi_param))
-    bm_gu.place_bellow(corpuses_entry, corpuses_button, dy=self.buttons_dy)
+                                       size=self.disp_font_size_tup[1])
+    self.corpuses_button = tk.Button(self,
+                                     text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
+                                     font=corpuses_button_font,
+                                     command=lambda: _create_corpus(self, inst_wf,
+                                                                    create_archi_param))
+    bm_gu.place_bellow(corpuses_entry, self.corpuses_button, dy=self.buttons_dy)
     return corpuses_val
 
 

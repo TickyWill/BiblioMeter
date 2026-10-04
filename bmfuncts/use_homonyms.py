@@ -255,7 +255,7 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
     internal function.
 
     Args:
-        save_homonyms_params (list): The list composed of the 4 digits \
+        set_homonyms_params (list): The list composed of the 4 digits \
         year of the corpus (str), of the print parameters (list), \
         of the Institute's name (str), of the org_tup (tup) that contains \
         parameters of Institute's organization and of the full path \
@@ -266,7 +266,7 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
     """
     # Setting params values from set_homonyms_params
     corpus_year, print_params, institute, org_tup, wf_path = set_homonyms_params
-    txt_len = print_temp_text(f"{bm_pg.TAB}-Using history of resolved homonyms...", txt_end=True)
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Using history of resolved homonyms...", txt_end=True)
 
     # Setting useful col names
     use_homonyms_cols_dic, _ = _set_use_homonyms_cols(institute, org_tup)

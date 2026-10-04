@@ -170,6 +170,8 @@ def _build_author_employee_data(auth_params_list, au_analysis_cols_dic):
     """Builds data of authors per publication with corresponding employee name, 
     number of authors, author position in the authors list.
 
+    Specifically, it uses the `_build_auth_nb_per_pub` and `_enhance_author_employee_data` 
+    internal functions. 
     The input data are as follows:
     - The publications list with one row per Institute's author and its attributes 
     got through the `read_final_set_homonyms_data` internal function; this list 
@@ -207,7 +209,7 @@ def _build_author_employee_data(auth_params_list, au_analysis_cols_dic):
     print_step_text(f"{bm_pg.TAB}- Employees data of Institute's authors set from homonyms-resolution results",
                     print_params, prev_txt_len=txt_len)
 
-    # Getting the number of authors per pub-ID from parsing results
+    # Computing the number of authors per pub-ID from parsing results
     txt_len = print_temp_text(f"{bm_pg.TAB}- Computing the number of authors per publication from parsing results...",
                               txt_end=True)
     count_select_cols = [pub_id_col, nb_au_col]
@@ -230,27 +232,33 @@ def _build_author_employee_data(auth_params_list, au_analysis_cols_dic):
     return author_employee_df
 
 
-def _set_empl_pub_nb_data(empl_df, au_pub_cols):
-    """Enhances the publications data of the employee with its number of publications, 
+def _set_empl_pub_nb_data(au_empl_df, au_pub_cols):
+    """Enhances the publications data of the author-employee with its number of publications, 
     the corresponding list of publications' IDs and the list of its names as author 
     in these publications.
+
+    Args:
+        au_empl_df (dataframe): The data to enhance.
+        au_pub_cols (list): The useful col names.
+    Returns:
+        (dataframe): The enhanced data.
     """
     # Setting useful column names from 'au_pub_cols'
     (pub_id_col, institute_au_col, nb_pub_col,
      pub_list_col) = [au_pub_cols[idx] for idx in [0,4,5,6]]
 
     # Enhancing the publications data of the employee
-    pub_id_list = list(empl_df[pub_id_col])
-    author_names_list = list(set(empl_df[institute_au_col]))
+    pub_id_list = list(au_empl_df[pub_id_col])
+    author_names_list = list(set(au_empl_df[institute_au_col]))
     author_names = author_names_list[0]
     if len(author_names_list)>1:
         author_names = "; ".join(author_names_list)
-    empl_df[institute_au_col] = author_names
-    empl_df[nb_pub_col] = len(pub_id_list)
-    empl_df[pub_list_col] = "; ".join(pub_id_list)
-    empl_df = empl_df[au_pub_cols[1:]]
-    empl_df.drop_duplicates()
-    return empl_df
+    au_empl_df[institute_au_col] = author_names
+    au_empl_df[nb_pub_col] = len(pub_id_list)
+    au_empl_df[pub_list_col] = "; ".join(pub_id_list)
+    au_empl_df = au_empl_df[au_pub_cols[1:]]
+    au_empl_df.drop_duplicates()
+    return au_empl_df
 
 
 def _build_pub_nb_per_author_data(author_employee_df, au_analysis_cols_dic, print_params):
@@ -277,9 +285,9 @@ def _build_pub_nb_per_author_data(author_employee_df, au_analysis_cols_dic, prin
 
     # Building the targeted dataframe
     pub_nb_per_auth_df = pd.DataFrame()
-    for _, empl_df in sub_author_employee_df.groupby(empl_col):
-        empl_df = _set_empl_pub_nb_data(empl_df, au_pub_cols)
-        pub_nb_per_auth_df = concat_dfs([pub_nb_per_auth_df, empl_df])
+    for _, au_empl_df in sub_author_employee_df.groupby(empl_col):
+        au_empl_df = _set_empl_pub_nb_data(au_empl_df, au_pub_cols)
+        pub_nb_per_auth_df = concat_dfs([pub_nb_per_auth_df, au_empl_df])
     pub_nb_per_auth_df = pub_nb_per_auth_df.drop_duplicates()
 
     # Renaming cols
