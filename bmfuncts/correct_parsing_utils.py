@@ -10,7 +10,6 @@ __all__ = ['build_pub_correct_authaddr_data',
 # 3rd party imports
 from bpfuncts import standardize_address as bp_standardize_address
 from bpfuncts import build_addr_affils_tup as bp_build_addr_affils_tup
-from bpfuncts import build_affils_useful_dicts as bp_build_affils_useful_dicts
 
 # Local imports
 import bmfuncts.pub_globals as bm_pg

@@ -184,6 +184,14 @@ def _set_database_rawdata(set_rawdata_params, database):
 
 
 def set_rawdata(set_rawdata_params):
+    """ # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+        Args:
+            set_rawdata_params: # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+        Returns:
+            (tup):  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        """
     # Setting parameters value from 'set_rawdata_params'
     print_params, _, _, years_list = set_rawdata_params
 
@@ -243,6 +251,16 @@ def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
 
 
 def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
+    """!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        cols: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        in_left_authorsinst_df: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        in_left_pub_ids: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     # Setting parameters from globals
     pub_id_col = bm_pg.COL_NAMES['pub_id']
 
@@ -251,7 +269,7 @@ def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
     for col in cols:
         sub_data_dict[col] = in_left_authorsinst_df[in_left_authorsinst_df[col]==1]
         sub_data_dict[col] = sub_data_dict[col].drop_duplicates(subset=[pub_id_col])
-    sub_data_df = concat_dfs(sub_data_dict.values())
+    sub_data_df = concat_dfs(list(sub_data_dict.values()))
     sub_data_df = sub_data_df.drop_duplicates(subset=[pub_id_col])
 
     # Computing the number of publications tagged in 'col' column
@@ -361,6 +379,14 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
 
 
 def convert_parsing_keys_to_bm(bp_parsing_dict):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        bp_parsing_dict: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (dict): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     parsing_dict = {key: bp_parsing_dict[bm_pg.PARSING_KEYS_CONVERT_DIC[key]]
                     for key in bm_pg.PARSING_KEYS_DIC['all']
                     if bm_pg.PARSING_KEYS_CONVERT_DIC[key] in bp_parsing_dict.keys()}
@@ -368,6 +394,14 @@ def convert_parsing_keys_to_bm(bp_parsing_dict):
 
 
 def revers_parsing_keys_to_bp(parsing_dict):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        parsing_dict: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (dict): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     bp_parsing_dict = {key: parsing_dict[bm_pg.PARSING_KEYS_REVERT_DIC[key]]
                        for key in bm_pg.PARSING_ITEMS_LIST
                        if bm_pg.PARSING_KEYS_REVERT_DIC[key] in parsing_dict.keys()}
@@ -407,6 +441,18 @@ def _set_scopus_cat_info(wf_path):
 
 def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
                     database, progress_callback=None):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        rawparse_params: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        rawdata_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parsing_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        database: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        progress_callback: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
 
     # Setting parameters values from params_list
     (corpus_year, print_params, datatype, wf_path,
@@ -456,6 +502,17 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
 
 
 def _set_db_parsing_data(db, datatype, db_parse_path, parse_base_params_list):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        db: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        datatype: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        db_parse_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parse_base_params_list: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     parsing_filenames_dict = parse_base_params_list[3]
 
     db_single_status = False
@@ -482,6 +539,16 @@ def _set_db_parsing_data(db, datatype, db_parse_path, parse_base_params_list):
 
 
 def _set_parsings_to_concat(datatype, parsing_path_dict, parse_base_params_list):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        datatype: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parsing_path_dict: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parse_base_params_list: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     # Setting and correcting the parsing results to concatenate
     dbs_parsings_dict = {}
     single_db = ""
@@ -518,6 +585,15 @@ def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
 
 
 def deduplicate_parsing(dedup_params_list, progress_callback=None):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        dedup_params_list: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        progress_callback: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     (corpus_year, print_params, institute, org_tup, wf_path, datatype, parse_affil_params_dic,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
     parse_base_params_list = [corpus_year, print_params, parse_affil_params_dic, parsing_filenames_dict]
@@ -570,7 +646,7 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
 
     dedup_parsing_dict = convert_parsing_keys_to_bm(bp_dedup_parsing_dict)
     dedup_pub_nb, dedup_institute_pub_nb = compute_dedup_pub_number(org_tup, dedup_parsing_dict)
-    _dedup_infos=(wf_path, datatype, corpus_year)
+    _dedup_infos= [wf_path, datatype, corpus_year]
     pubs_df = dedup_parsing_dict['pub']
     ids_nb_dict = build_and_save_dedup_db_ids(pubs_df, parsing_path_dict, _dedup_infos)
     if progress_callback:

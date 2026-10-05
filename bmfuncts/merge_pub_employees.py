@@ -586,8 +586,7 @@ def _config_empl(empl_dict, years, initials_col, mat_col):
     return new_empl_dict
 
 
-def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, search_depth,
-                          progress_callback=None, progress_bar_state=None,
+def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, progress_params=None,
                           set_test_case="No test", set_test_name="No name"):
     """Searches in the employees database of the Institute the information for the authors 
     of the publications of a corpus.
@@ -639,14 +638,11 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
         of the Institute's name (str), of the org_tup (tup) that contains parameters of Institute's \
         organization, of the full path to working folder (path), of the data combination type \
         of corpuses databases (str), and of the dict giving the name of the parsing file for each parsed item.
-        search_depth (int): Depth for search in 'empl_dict' using 'years' list.
-        progress_callback (function): Function for updating the status of the ProgressBar tkinter widget (optional, \
-        default: None).
-        progress_bar_state (int): Initial status of ProgressBar tkinter widget (optional, default: None).
-        set_test_case (str): Test case for testing the `build_pub_empl_data` function (optional, \
-        default: "No test").
-        set_test_name (str): Author last-name for testing the `build_pub_empl_data` function (optional, \
-        default: "No name").
+        progress_params (list): Composed of the function for updating the status of the ProgressBar tkinter widget \
+        and of the initial status of ProgressBar tkinter widget (optional, default: None).
+        set_test_case (str): Optional test case for testing the `build_pub_empl_data` function (default: "No test").
+        set_test_name (str): Optional author's lastname for testing the `build_pub_empl_data` function \
+        (default: "No name").
     Returns:
         (tup): (end_message (str), empty status (bool) of the publications \
         list with authors not found in the employees database).
@@ -675,11 +671,12 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, s
     orphan_split_status = org_tup[9]
 
     # Building the articles dataframe
-    progress_params, inter_progress_bar_state = [None] * 2
-    if progress_callback:
+    progress_callback, progress_bar_state, inter_progress_bar_state, inter_progress_params = [None] * 4
+    if progress_params:
+        progress_callback, progress_bar_state = progress_params
         inter_progress_bar_state = 70
-        progress_params = [progress_callback, progress_bar_state, inter_progress_bar_state]
-    pub_df = build_institute_pubs_authors_data(params_list, progress_params)
+        inter_progress_params = [progress_callback, progress_bar_state, inter_progress_bar_state]
+    pub_df = build_institute_pubs_authors_data(params_list, inter_progress_params)
 
     # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
     pub_df = keep_initials(pub_df, initials_col, missing_fill=bm_pg.UNKNOWN)

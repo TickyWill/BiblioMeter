@@ -212,11 +212,10 @@ def get_sheet_names(file_path):
     Returns:
         (list): Composed of the sheet names(str).
     """
-    search_str = ".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet"
     with zipfile.ZipFile(file_path, "r") as z:
         xml_content = z.read("xl/workbook.xml")
         root = xml_et.fromstring(xml_content)
-        sheet_names = [sheet.attrib["name"] for sheet in root.findall(search_str)]
+        sheet_names = [sheet.attrib["name"] for sheet in root.findall(bm_pg.SHEETS_SEARCH)]
         return sheet_names
 
 
@@ -524,10 +523,7 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
     """
 
     # Setting list of not empty dataframes
-    dfs_clean_list = []
-    for df in dfs_list:
-        if not df.empty:
-            dfs_clean_list.append(df)
+    dfs_clean_list = [df for df in dfs_list if not df.empty]
     dfs_clean_nb = len(dfs_clean_list)
 
     # Concatenating dataframes

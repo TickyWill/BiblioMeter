@@ -106,8 +106,8 @@ def _launch_update_employees_try(self, master, progress_callback):
     if answer_1:
         print_step_title("UPDATE OF EMPLOYEES DATABASE", master.print_params)
 
-        update_employees_tup = update_employees(master.wf_path, master.print_params,
-                                                progress_callback, progress_bar_state_init)
+        progress_params = [progress_callback, progress_bar_state_init]
+        update_employees_tup = update_employees(master.wf_path, master.print_params, progress_params)
         (employees_year, files_number_error, sheet_name_error, column_error,
          years2add_error, all_years_file_error) = update_employees_tup
         progress_callback(100)
@@ -271,12 +271,10 @@ def _launch_recursive_year_search_try(self, master, year_select, progress_callba
             merge_params_list = [year_select] + base_params_list
 
             # Searching recursively the authors in the employees data
+            _progress_params = [_progress_callback, progress_bar_state]
             orphan_status = recursive_year_search(orphan_file=orphan_file, merge_paths=merge_paths,
-                                                  empl_dict=year_select_empl_dict,
-                                                  params_list=merge_params_list,
-                                                  search_depth=year_select_search_depth,
-                                                  progress_callback=_progress_callback,
-                                                  progress_bar_state=progress_bar_state)
+                                                  empl_dict=year_select_empl_dict, params_list=merge_params_list,
+                                                  progress_params=_progress_params)
             _progress_callback(100)
 
             # Displaying the status of the recursive search of authors

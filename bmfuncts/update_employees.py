@@ -9,7 +9,6 @@ import os
 import re
 import shutil
 from pathlib import Path
-from tkinter import messagebox
 
 # 3rd party imports
 import pandas as pd
@@ -165,7 +164,7 @@ def _add_sheets_to_workbook(file_full_path, df_to_add, sheet_name):
         df_to_add.to_excel(writer, sheet_name=sheet_name, index=False)
 
 
-def _update_months_history(year, year_months_file_path, all_months_to_add, df_months_to_add,
+def _update_months_history(year_months_file_path, all_months_to_add, df_months_to_add,
                            not_replace, update_progress_params):
     progress_callback, progress_bar_state, step = update_progress_params
     if os.path.isfile(year_months_file_path):
@@ -267,7 +266,7 @@ def _try_update_months_history(months2add_file_path, year_empl_folder_path, year
             file_name = f'{year}' + year_empl_base_name
             year_months_file_path = year_empl_folder_path / Path(file_name)
             update_progress_params = [progress_callback, progress_bar_state, step]
-            update_return = _update_months_history(year, year_months_file_path, all_months_to_add,
+            update_return = _update_months_history(year_months_file_path, all_months_to_add,
                                                    df_months_to_add, not_replace, update_progress_params)
             year_months_file_path, progress_bar_state = update_return
             months_errors_list = [year, year_months_file_path, None, None, None]
@@ -361,16 +360,17 @@ def _add_column_firstname_initial(df, firstname_col, firstname_initials_col):
 
 
 def _add_column_full_name(df, lastname_col, firstname_initials_col, fullname_col):
-    """Adds a new column key containing the employee full name
-    composed by the last name and the first name initials.
+    """Adds a new column key containing the employee fullname
+    composed by the lastname and the firstname's initials.
 
-    The employee lastname is first standardized through the `standardize_txt` 
+    The employee's lastname is first standardized through the `standardize_txt`
     function imported from `bmfuncts.useful_functs` module.
 
     Args:
         df (dataframe): The data to which the column is added.
-        empl_cols_dic (dict): Useful columns' names as built through \
-        the `_set_employees_cols` internal function.
+        lastname_col: The col name of employees' lastnames.
+        firstname_initials_col: The col name of employees' firstnames-initials.
+        fullname_col: The col name to add of employees' fullnames.
     Returns:
         (dataframe): The updated data.
     """
@@ -531,16 +531,13 @@ def _build_year_month_dpt(year_months_file_path, print_params, empl_cols_dic, em
 
 
 def _check_available_empl_file_path(check_paths, print_params):
-    all_years_file_path, backup_folder_path, all_years_file_backup_path = check_paths
-
-    all_years_file_status = os.path.exists(all_years_file_path)
-    all_years_file_backup_status = os.path.exists(all_years_file_backup_path)
+    all_years_file_path, all_years_file_backup_path = check_paths
     if os.path.exists(all_years_file_path):
         all_years_file_status = "exists"
         all_empl_years = get_sheet_names(all_years_file_path)
         print_step_text(f"{bm_pg.TAB}- Employees-data file available for "
                         f"{all_empl_years[0]} to {all_empl_years[-1]}", print_params)
-    elif all_years_file_backup_status:
+    elif os.path.exists(all_years_file_backup_path):
         all_years_file_status = "backup-copy"
         all_empl_years = get_sheet_names(all_years_file_backup_path)
         _ = shutil.copy(all_years_file_backup_path, all_years_file_path)
@@ -581,7 +578,7 @@ def _save_empl_data(all_years_file_params, empl_df, empl_year, print_params):
                         print_params, prev_txt_len=txt_len)
     else:
         empl_df.to_excel(all_years_file_path, sheet_name=empl_year)
-        all_years_file_error = f"Employees' file created with the current-year data"
+        all_years_file_error = f"{bm_pg.TAB}- file created with the current-year data"
         print_step_text(f"{bm_pg.TAB}- {all_years_file_error}", print_params)
 
     # Copying the all-years employees' file updated to the backup folder
@@ -590,8 +587,7 @@ def _save_empl_data(all_years_file_params, empl_df, empl_year, print_params):
     return all_years_file_error
 
 
-def update_employees(wf_path, print_params, progress_callback=None, progress_bar_state_init=None,
-                     replace=True):
+def update_employees(wf_path, print_params, progress_params=None, replace=True):
     """Updates the file of employees' data with the potentially available data to add.
 
     Args:
@@ -610,6 +606,10 @@ def update_employees(wf_path, print_params, progress_callback=None, progress_bar
     """
     print_step_text("\nTrying to update employees' data...", print_params)
 
+    progress_callback = None
+    if progress_params:
+        progress_callback = progress_params[0]
+
     # Setting useful cols parameters
     empl_cols_dic, empl_col_lists_dic = _set_employees_cols()
     useful_col_list = empl_col_lists_dic['useful_col_list']
@@ -620,14 +620,11 @@ def update_employees(wf_path, print_params, progress_callback=None, progress_bar
     all_years_file_path, all_years_file_backup_path = file_paths
 
     # Checking the availability of employees' data
-    check_paths = [all_years_file_path, backup_folder_path, all_years_file_backup_path]
+    check_paths = [all_years_file_path, all_years_file_backup_path]
     all_years_file_status, _ = _check_available_empl_file_path(check_paths, print_params)
 
     # Setting the list of files available to add (expected only one)
     months2add_files, files_number_error =  _set_empl_data_to_add_file(months2add_empl_folder_path)
-
-    # Initializing the returned errors
-    update_errors = [None] * 6
 
     if files_number_error:
         print_step_text(f"{bm_pg.TAB}- {files_number_error}", print_params)
@@ -635,7 +632,6 @@ def update_employees(wf_path, print_params, progress_callback=None, progress_bar
     else:
         print_step_text(f"{bm_pg.TAB}- A file is available for the update", print_params)
         months2add_file_path = months2add_empl_folder_path / Path(months2add_files[0])
-        progress_params = [progress_callback, progress_bar_state_init]
         try_return = _try_update_months_history(months2add_file_path, year_empl_folder_path, year_empl_name_base,
                                                 useful_col_list, replace, progress_params)
         months_errors, progress_bar_state_1 = try_return
@@ -648,10 +644,11 @@ def update_employees(wf_path, print_params, progress_callback=None, progress_bar
         else:
             print_step_text(f"{bm_pg.TAB}- Format of data to add is correct", print_params)
             # Concatenating the months' data of the current year to the employees' data of the current year
-            progress_params = [progress_callback, progress_bar_state_1]
+            progress_params_1 = [progress_callback, progress_bar_state_1]
             empl_df, progress_bar_state_2 = _build_year_month_dpt(year_months_file_path, print_params, empl_cols_dic,
-                                                                  empl_col_lists_dic, progress_params)
-            print_step_text(f"{bm_pg.TAB}- Employees' data of current year updated with the additional data", print_params)
+                                                                  empl_col_lists_dic, progress_params_1)
+            print_step_text(f"{bm_pg.TAB}- Employees' data of current year updated with the additional data",
+                            print_params)
 
             # Saving empl_df as a sheet name after empl_year,
             # in the workbook pointed by all_years_file_path
@@ -688,6 +685,16 @@ def _select_empl_years(empl_file_path, corpus_years):
 
 
 def set_empl_data(empl_file_path, corpus_years, print_params):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        empl_file_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        corpus_years: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        print_params: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (dict): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     print_step_text(f"\nSetting the employees' 'data for {corpus_years[0]} to {corpus_years[-1]} corpus...",
                     print_params)
 
@@ -702,6 +709,7 @@ def set_empl_data(empl_file_path, corpus_years, print_params):
 
     # Getting the employees' data for the useful available years
     print_step_text(f"{bm_pg.TAB}- Reading the multisheet file of employees' data...", print_params)
+    txt_len = 0
     empl_dict = {}
     for year in empl_years:
         txt_len = print_temp_text(f"{bm_pg.TAB*2}- Reading sheet: {year}", txt_end=True)
@@ -737,13 +745,11 @@ def set_corpus_empl_data(corpus_year, empl_dict, init_search_depth, print_params
 
     Args:
         corpus_year (str): Corpus year defined by 4 digits.
-        empl_file_path (path): Full path to file of Institute \
-        employees' data.
+        empl_dict (dict): The Institute employees' data keyed by years (str) and valued by employees' data (dataframe).
         init_search_depth (int): Initial search depth.
         print_params (list): The prints' parameters.
     Returns:
-        (tup): (employees' data (df), adapted search depth (int), \
-        list of available years of employees' data).
+        (tup): (employees' data (df), adapted search depth (int), list of available years of employees' data).
     """
     print_step_text("\nSetting the adequate years-selection of employees' data...", print_params)
 

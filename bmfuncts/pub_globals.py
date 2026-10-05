@@ -57,6 +57,7 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'SCOPUS_RAWDATA_EXTENT',
            'SHEET_NAMES_ORPHAN',
            'SHEET_SAVE_OTP',
+           'SHEETS_SEARCH',
            'STAT_FILE_DICT',
            'STAT_ROW_NAMES',
            'SYMB_CHANGE',
@@ -105,7 +106,7 @@ DB_ID_COLS = {WOS      : COL_NAMES['wos_id'][0],
               "all_dbs": "DB_id_col",
               }
 
-# Setting general parameters of file names
+# Setting general parameters for files
 LOG_FILE = "Log"
 LOG_FOLDER = "BM-Log files"
 CONFIG_FOLDER = 'ConfigFiles'
@@ -114,6 +115,7 @@ PARSING_PERF = "Parsing_perf.json"
 IDS_FILE_BASE = "_IDs.xlsx"
 RAWDATA_CORRECT = {'authors'  : "_Auteurs corrigés.xlsx",
                    'addresses': "_Adresses corrigées.xlsx",}
+SHEETS_SEARCH = ".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet"
 TSV_SAVE_EXTENT = "dat"
 XL_INDEX_BASE = 1
 

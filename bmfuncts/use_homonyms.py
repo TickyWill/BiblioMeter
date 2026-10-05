@@ -327,7 +327,8 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
         homonyms_status = False
         if bm_pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col].to_list():
             homonyms_status = True
-        step_txt = f"{bm_pg.TAB}- No remaining homonyms"
+            step_txt = f"{bm_pg.TAB}- No remaining homonyms"
+            print_step_text(f"{step_txt} after using history of resolution", print_params)
         if homonyms_status:
             step_txt = f"{bm_pg.TAB}- Remaining homonyms"
             print_step_text(f"{step_txt} after using history of resolution", print_params)

@@ -900,11 +900,10 @@ def set_df_attributes(df_title, df_cols_list, add_cols_nb=0):
         The rows attributes as dict keyed by "first_row" and "other_rows" \
         and valued by rows height (int), Num of first column to be formatted (int)).
     """
-
     if df_title=='pub_list':
         attr_tup = _set_pub_list_attributes(df_cols_list)
 
-    if df_title=='affil_type_pub_list':
+    elif df_title=='affil_type_pub_list':
         attr_tup = _set_affil_type_pub_list_attributes(df_cols_list, add_cols_nb)
 
     elif df_title=='invalids':
