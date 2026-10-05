@@ -1,7 +1,8 @@
 """Module of functions for building key performance indicators (KPIs) 
 including impact-factors KPIs.
 """
-__all__ = ['if_analysis']
+__all__ = ['if_analysis',
+          ]
 
 
 # Standard Library imports
@@ -21,6 +22,7 @@ from bmfuncts.save_final_results import save_final_results
 from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 
 
 def _set_build_kpi_cols(institute, org_tup, if_analysis_col, if_analysis_year):
@@ -120,11 +122,10 @@ def _build_doctype_kpi(doctype, doctype_df, institute, build_kpi_cols_dic):
 
     The doctype KPIs dict is built by cycling on each department label, 
     including the Institute's name, through the following steps:
-
     1. Sets the publications list of the given document type for the department.
     2. Builds the document-type data of a department of the Institute 
     with the number of publications per the document-type values through \
-    the `_build_dept_doctype_df` internal function. 
+    the `_build_dept_doctype_df` internal function.
     3. Builds the doctype KPIs dict at the department-label key through the \
     `_build_dept_doctype_kpi` internal function.
 
@@ -133,7 +134,7 @@ def _build_doctype_kpi(doctype, doctype_df, institute, build_kpi_cols_dic):
         doctype_df (dataframe): Publications list of the given document-type.
         institute (str): The name of the institute.
         build_kpi_cols_dic (dict): The selected columns names for the process \
-        of building KPIs data
+        of building KPIs data.
     Returns:
         (dict): Hierarchical dict keyed by departments and valued at each \
         key by KPIs dict of the department for the given document type.
@@ -162,7 +163,7 @@ def _build_doctype_kpi(doctype, doctype_df, institute, build_kpi_cols_dic):
     return doctype_kpi_dict
 
 
-def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic):
+def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic, print_params):
     """Builds the basic key performance indicators (KPIs) 
     data of each department of the Institute including itself.
 
@@ -194,6 +195,7 @@ def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic):
         the Institute including itself and valued with basic-KPIs \
         dict of each department.
     """
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Building basic KPIs...", txt_end=True)
     # Setting useful columns infos
     depts_col_list = build_kpi_cols_dic['depts_col_list']
 
@@ -241,6 +243,7 @@ def _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic):
         kpi_dict[dept]['complements'][art_proc_nb_key] = art_proc_nb
         kpi_dict[dept]['complements'][proc_ratio_key] = proc_ratio
         kpi_dict[dept]['complements'][chapt_ratio_key] = chapt_ratio
+    print_step_text(f"{bm_pg.TAB}- Basic KPIs built", print_params, prev_txt_len=txt_len)
     return kpi_dict
 
 
@@ -268,16 +271,24 @@ def _build_dept_if_df(dept_by_journal_df, cols_list):
     return dept_if_df
 
 
+def _save_dept_ifs_kpis(dept, dept_if_df, save_params):
+    new_if_col, if_analysis_folder_path, if_anal_df_title = save_params
+    file_name = f'{new_if_col}-{dept}'
+    dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
+    wb, ws = format_page(dept_if_df, if_anal_df_title)
+    ws.title = dept + ' IFs '
+    wb.save(dept_xlsx_file_path)
+
+
 def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
-                           kpi_dict, build_kpi_cols_dic, verbose=False):
+                           kpi_dict, build_kpi_cols_dic, print_params):
     """Builds the key performance indicators (KPIs) data specific to 
     the impact factors (IFs) for each department of the Institute 
     including itself.
 
     This is done through the following steps by cycling on the department:
-
     1. The IFs data for the department is set through the `_build_dept_if_df` \
-    internal function. 
+    internal function.
     2. The IF KPIs data are computed for the department and the KPIs dict is \
     filled with the computed values at the key corresponding to the label of \
     the department.
@@ -294,11 +305,12 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
         including itself and valued with KPIs dict of these keys.
         build_kpi_cols_dic (dict): The selected columns names for the process \
         of building KPIs data.
-        verbose (bool): Status of prints (default: False).
     Returns:
         (tup): (KPIs updated data with IFs data (hierarchical dict), name of the column \
         of IFs in the IFs analysis results).
     """
+    print_step_text("\nAnalysing IFs of journals of the publications' list...", print_params)
+
     # Setting useful columns info from args
     col_keys = ['depts_col_list', 'journal_col', 'issn_col', 'articles_nb_col',
                 'init_if_col', 'new_if_col']
@@ -309,6 +321,11 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
     cols_list = [journal_col, issn_col, articles_nb_col,
                  init_if_col, new_if_col]
 
+    # Setting shared parameters for saving results as XLSX Files
+    if_anal_df_title = 'if_analysis'
+    save_params = [new_if_col, if_analysis_folder_path, if_anal_df_title]
+
+    txt_len = 0
     for dept in [institute] + depts_col_list:
         # Setting the statistics by journals data for 'dept'
         dept_by_journal_df = by_journal_dict[dept]
@@ -346,18 +363,11 @@ def _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
         kpi_dict[dept] = dept_kpi_dict
 
         # Saving after formatting the updated dataframe as openpyxl workbook
-        file_name = f'{new_if_col}-{dept}'
-        dept_xlsx_file_path = Path(if_analysis_folder_path) / Path(file_name + '.xlsx')
-        if_anal_df_title = bm_pg.DF_TITLES_LIST[10]
-        wb, ws = format_page(dept_if_df, if_anal_df_title)
-        ws.title = dept + ' IFs '
-        wb.save(dept_xlsx_file_path)
-
-        if verbose:
-            message = (f"\n    EXCEL file of {new_if_col} "
-                       f"for {dept} department "
-                       f"saved in : \n {if_analysis_folder_path}")
-            print(message, "\n")
+        _save_dept_ifs_kpis(dept, dept_if_df, save_params)
+        txt_len = print_temp_text(f"{bm_pg.TAB}- IFs KPIs built and saved for {dept}",
+                                  txt_end=True)
+    print_step_text(f"{bm_pg.TAB}- IFs KPIs built and saved as formatted XLSX file for all Institute's departments",
+                    print_params, prev_txt_len=txt_len)
     return kpi_dict, new_if_col
 
 
@@ -439,7 +449,7 @@ def _set_kpi_files_params(final_results_path):
     return kpi_file_base_alias, results_kpis_folder_path
 
 
-def update_kpi_database(kpi_params, kpi_dict, if_key, depts_col_list, verbose=False):
+def update_kpi_database(kpi_params, kpi_dict, if_key, depts_col_list):
     """Updates the database of the key performance indicators (KPIs) with the KPIs data 
     of the given corpus.
 
@@ -457,12 +467,13 @@ def update_kpi_database(kpi_params, kpi_dict, if_key, depts_col_list, verbose=Fa
         if_key (str): Column name of the analyzed impact factors (either those of \
         the publication year or the last available ones).
         depts_col_list (list): The list of the Institute's departments.
-        verbose (bool): Status of prints (default = False).
     Returns:
         (dataframe): Institute's KPIs data.
     """
     # Setting parameters values from kpi_params
-    institute, final_results_path, corpus_year = kpi_params
+    corpus_year, print_params, institute, final_results_path = kpi_params
+
+    print_step_text("\nUpdating the full-records of KPIs data with the KPIs of the analyzed corpus...", print_params)
 
     # Setting file name and path for saving results
     kpi_file_base, results_kpis_folder_path = _set_kpi_files_params(final_results_path)
@@ -475,6 +486,7 @@ def update_kpi_database(kpi_params, kpi_dict, if_key, depts_col_list, verbose=Fa
     institute_kpi_df = pd.DataFrame()
 
     # Building as a dataframe the column of KPIs of each 'dept'
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Building full KPIs data...", txt_end=True)
     for dept in [institute] + depts_col_list:
         # Building 'dept_kpi_df' using keys of 'kpi_dict' as indexes
         dept_kpi_df = _build_dept_kpi_data(dept, kpi_dict, if_key, ordered_keys,
@@ -485,26 +497,25 @@ def update_kpi_database(kpi_params, kpi_dict, if_key, depts_col_list, verbose=Fa
         file_path = results_kpis_folder_path / Path(filename)
         if os.path.isfile(file_path):
             db_dept_kpi_df = pd.read_excel(file_path)
+
             # Updating the dataframe with the column to append
             if corpus_year in db_dept_kpi_df.columns:
                 db_dept_kpi_df = db_dept_kpi_df.drop(columns=[corpus_year])
-            db_dept_kpi_df = db_dept_kpi_df.merge(dept_kpi_df, how="outer",
+            db_dept_kpi_df = db_dept_kpi_df.merge(dept_kpi_df, how="left",
                                                   on=corpus_year_row_alias)
         else:
             db_dept_kpi_df = dept_kpi_df
 
         # Saving after formatting the updated dataframe
-        kpi_df_title = bm_pg.DF_TITLES_LIST[6]
+        kpi_df_title = 'kpi'
         wb, ws = format_page(db_dept_kpi_df, kpi_df_title)
         ws.title = dept + ' KPIs '
         wb.save(file_path)
 
         if dept==institute:
             institute_kpi_df = db_dept_kpi_df.copy()
-        if verbose:
-            message = f"    - {dept} KPIs database updated and saved in folder: \n {file_path}"
-            print(message)
-
+    print_step_text(f"{bm_pg.TAB}- Full records of KPIs built for each Institute's department",
+                    print_params, prev_txt_len=txt_len)
     return institute_kpi_df
 
 
@@ -537,7 +548,18 @@ def _set_if_files_params(wf_path, corpus_year):
     return if_analysis_folder_path
 
 
-def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbose=False):
+def _save_if_analysis_final_results(new_if_analysis_col, save_params):
+    corpus_year, print_params, institute, org_tup, wf_path, datatype = save_params
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["ifs"] = True
+    final_save_params = [corpus_year, institute, org_tup, wf_path, datatype]
+    save_final_results(final_save_params, results_to_save_dict,
+                       if_analysis_name=new_if_analysis_col)
+    print_step_text(f"{bm_pg.TAB}- Updated full records of KPIs data saved as final results", print_params)
+
+
+def if_analysis(params_list, if_most_recent_year, progress_callback=None):
     """Performs the analysis per document types together with 
     the analysis of the journals impact-factors (IFs) and update 
     the key performance indicators (KPIs).
@@ -556,14 +578,15 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
     `save_final_results` function imported from `bmfuncts.save_final_results` module.
 
     Args:
-        params_list (list): The list composed of the Institute's name (str), \
-        the org_tup (tup) that contains parameters of Institute's organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        params_list (list): The list composed of the 4 digits year of the corpus (str), \
+        of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to working folder (path), the data combination type \
+        of corpuses databases (str) and of the dict giving the name of the parsing file \
+        for each parsed item.
         if_most_recent_year (str): Most recent year of impact factors.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
-        verbose (bool): Status of prints (default = False).
     Returns:
         (tup): (full path to the folder where results of analysis per doctypes are saved,\
         full path to the folder where results of impact-factors analysis are saved, \
@@ -572,8 +595,7 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
         of these keys)).
     """
     # Setting params values from params_list
-    (corpus_year, print_params, institute, org_tup, wf_path,
-     datatype, parsing_filenames_dict) = params_list
+    corpus_year, print_params, institute, org_tup, wf_path, datatype = params_list[:-1]
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
@@ -583,17 +605,12 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
     if progress_callback:
         progress_callback(5)
 
-    print_step_text("\nAnalysing publications per document types...", print_params)
-
     # Building analysis dicts
-    print("  - Building data per document types...", end="\r")
-    doc_params_list = [corpus_year, institute, org_tup, wf_path, datatype,
-                       parsing_filenames_dict, final_results_path]
+    doc_params_list = params_list + [final_results_path]
     return_tup = doctype_analysis(doc_params_list, if_most_recent_year,
                                   progress_callback=progress_callback)
     (pub_df_dict, by_journal_dict, if_analysis_col,
      if_analysis_year, doctypes_analysis_folder_path) = return_tup
-    print_step_text("  - Data of doctype analysis saved as final results", print_params)
     if progress_callback:
         progress_callback(55)
 
@@ -604,44 +621,28 @@ def if_analysis(params_list, if_most_recent_year, progress_callback=None, verbos
         progress_callback(60)
 
     # Building the basic KPIs
-    print("  - Building basic KPIs...", end="\r")
-    kpi_dict = _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic)
-    print_step_text("  - Basic KPIs built      ", print_params)
+    kpi_dict = _build_basic_kpi(institute, pub_df_dict, build_kpi_cols_dic, print_params)
     if progress_callback:
         progress_callback(70)
 
-    print_step_text("\nAnalysing journals IFs of publications...", print_params)
-
     # Building the IFs KPIs
-    print("  - Building IFs KPIs...", end="\r")
-    return_tup = _build_articles_if_kpi(institute, by_journal_dict,
-                                        if_analysis_folder_path, kpi_dict,
-                                        build_kpi_cols_dic)
+    return_tup = _build_articles_if_kpi(institute, by_journal_dict, if_analysis_folder_path,
+                                        kpi_dict, build_kpi_cols_dic, print_params)
     kpi_dict, new_if_analysis_col = return_tup
-    print_step_text("  - IFs KPIs built      ", print_params)
     if progress_callback:
         progress_callback(75)
 
-    print_step_text("\nUpdating KPIs data per Institute's department...", print_params)
-
     # Updating the KPIs data
-    print("  - Building full KPIs data...", end="\r")
     depts_col_list = build_kpi_cols_dic['depts_col_list']
-    kpi_params = [institute, final_results_path, corpus_year]
+    kpi_params = [corpus_year, print_params, institute, final_results_path]
     institute_kpi_df = update_kpi_database(kpi_params, kpi_dict, new_if_analysis_col,
-                                           depts_col_list, verbose=verbose)
-    print_step_text("  - Full KPIs built for each Institute's department", print_params)
+                                           depts_col_list)
     if progress_callback:
         progress_callback(90)
 
-    # Saving IFs analysis as final result
-    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
-    results_to_save_dict["ifs"] = True
-    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    save_final_results(save_params_list, results_to_save_dict,
-                       if_analysis_name=new_if_analysis_col)
-    print_step_text("  - KPIs data saved as final results", print_params)
+    # Saving IFs analysis as final results
+    save_params = params_list[:-1]
+    _save_if_analysis_final_results(new_if_analysis_col, save_params)
     if progress_callback:
         progress_callback(100)
     return doctypes_analysis_folder_path, if_analysis_folder_path, institute_kpi_df, kpi_dict

@@ -15,6 +15,8 @@ import pandas as pd
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
+from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 
 
 def _try_init_dict(dic, init_key, set_key):
@@ -28,7 +30,7 @@ def _try_init_dict(dic, init_key, set_key):
         set_key (str): the key to be used for the existing dict.
     Returns:
         (tup): (the final key to be used for the dict, the potentially \
-        updated dict).
+        updated dict at that key as empty dict).
     """
     key = init_key
     if key:
@@ -52,7 +54,7 @@ def _set_sorted_list1(lists):
 
 
 def _set_sorted_list2(df, col):
-    """Sets sorted list from column of df.
+    """Sets sorted list of values from a column of df.
 
     Args:
         df (dataframe): Dataframe from which the list is built.
@@ -112,12 +114,12 @@ def _add_invalide(new_lab_otps_dict):
 
 
 def _set_final_otps_dict(institute, lab_otps_dict):
-    """ Sets the final dict of OTPs specifically for 
+    """Sets the final dict of OTPs specifically for 
     the 'Leti' institute taking care of the effective 
     structure of the Institute.
 
     In addition, it adds a specific OTP value for tagging 
-    publications as invalide through the `_add_invalide` 
+    publications as invalid through the `_add_invalide`
     internal function.
 
     Args:
@@ -321,7 +323,7 @@ def _build_dept_otps_dict(otps_dept, otps_dept_df, build_otps_cols_dic,
 
 
 def _build_special_depts_labels(otps_data_df, otps_dept_col, institute_dir):
-    """Builds a dict keyed by special labels of OTPS departments and 
+    """Builds a dict keyed by special labels of OTPs departments and
     valued for each key by a tuple composed of the department label 
     and service label to be used for the OTPs attribution.
 
@@ -333,10 +335,10 @@ def _build_special_depts_labels(otps_data_df, otps_dept_col, institute_dir):
     the tuple value '("DIR", institute_dir)'.
 
     Args:
-        otps_data_df (dataframe): The data of OTPS got through \
+        otps_data_df (dataframe): The data of OTPs got through \
         the `_read_otps_data` internal function.
         otps_dept_col (str): The name of the column of departments \
-        in the data of OTPS.
+        in the data of OTPs.
         institute_dir (str): The label used for the part of the \
         Institute external to all the Institute's departments.
     Returns:
@@ -412,7 +414,7 @@ def _read_otps_data(org_tup, wf_root_path, unknown_kw):
     return otps_data_df, build_otps_cols_dic
 
 
-def set_lab_otps(set_otp_params_list):
+def set_lab_otps(otp_params):
     """Builds the dict that gives the OTPs list to be used for each lab 
     of each department of the Institute.
 
@@ -429,18 +431,21 @@ def set_lab_otps(set_otp_params_list):
     and `_build_dept_otps_dict`.
 
     Args:
-        set_otp_params_list (list): The list composed of the Institute's name (str), \
-        the org_tup that contains parameters of Institute's organization (tup), \
-        and of the full path (path) to the root folder of the working folder \
-        where the OTPs data should be available.
+        otp_params (list): The list composed of the print parameters (list), \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters \
+        of Institute's organization and of the full path to working folder (path).
     Returns:
         (dict): OTPs hierarchical dict keyed by departments \
         and valued by dicts keyed by labs and valued by OTPs lists.
     """
-    # Setting params values from set_otp_params_list
-    institute, org_tup, wf_path = set_otp_params_list
+    # Setting params values from otp_params
+    print_params, institute, org_tup, wf_path = otp_params
+
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Building OTPs information for the attribution per lab...",
+                              txt_end=True)
 
     # Setting folder of the Institute's parameters
+    # where the file of the OTPs' data  should be available
     wf_root_path = wf_path.parent
 
     # Setting the label used for the part of the Institute
@@ -482,4 +487,6 @@ def set_lab_otps(set_otp_params_list):
 
     # Setting final dict of OTPs
     final_lab_otps_dict = _set_final_otps_dict(institute, lab_otps_dict)
+    print_step_text(f"{bm_pg.TAB}- OTPs information for the attribution per lab built",
+                    print_params, prev_txt_len=txt_len)
     return final_lab_otps_dict

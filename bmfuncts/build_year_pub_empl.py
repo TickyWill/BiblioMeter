@@ -1,4 +1,4 @@
-"""Module of functions for the merge of employees information with the publications list 
+"""Module of functions for the merge of employees information with the publications' list 
 of the Institute for a year corpus.
 
 """
@@ -16,8 +16,9 @@ import pandas as pd
 import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
-from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
+from bmfuncts.useful_functs import standardize_txt
 
 
 def _set_test_cols_dic():
@@ -27,8 +28,8 @@ def _set_test_cols_dic():
     Returns:
         (dict): The built dict.
     """
-    test_cols_dic = {'pub_firstname_col' : bm_pg.COL_NAMES_BM['First_name'],
-                     'pub_lastname_col'  : bm_pg.COL_NAMES_BM['Last_name'],
+    test_cols_dic = {'pub_firstname_col' : bm_pg.COL_NAMES_ADD['first_name'],
+                     'pub_lastname_col'  : bm_pg.COL_NAMES_ADD['last_name'],
                      'pub_fullname_col'  : bm_pg.COL_NAMES['authors'][2],
                      'empl_mat_col'      : bm_eg.EMPLOYEES_USEFUL_COLS['matricule'],
                      'empl_lastname_col' : bm_eg.EMPLOYEES_USEFUL_COLS['name'],
@@ -173,7 +174,7 @@ def _set_match_test_info(wf_path, test_case, test_name):
         test_name (str): The author's lastname for which tests are performed.
     Returns:
         (dict): keyed by ['cols', 'lastname', 'states', 'filespath'] and valued \
-        by the useful colums names (dict), the author's lastname (str), \
+        by the useful columns names (dict), the author's lastname (str), \
         the value of the test dict at 'test_case' key (list), \
         The full path to the folder where test results will be saved.
     """
@@ -241,12 +242,12 @@ def _reduce_orphan_df(orphan_lastname, empl_lastnames):
 
 
 def _set_merge_cols_dic():
-    merge_cols_dic = {'pub_firstname_col': bm_pg.COL_NAMES_BM['First_name'],
-                      'pub_lastname_col' : bm_pg.COL_NAMES_BM['Last_name'],
-                      'pub_fullname_col' : bm_pg.COL_NAMES_BM['Full_name'],
-                      'empl_lastname_col': bm_eg.EMPLOYEES_USEFUL_COLS['name'],
+    merge_cols_dic = {'empl_lastname_col': bm_eg.EMPLOYEES_USEFUL_COLS['name'],
                       'empl_fullname_col': bm_eg.EMPLOYEES_ADD_COLS['employee_full_name'],
-                      'homonyms_col'     : bm_pg.COL_NAMES_BM['Homonym'],
+                      'pub_firstname_col': bm_pg.COL_NAMES_ADD['first_name'],
+                      'pub_lastname_col' : bm_pg.COL_NAMES_ADD['last_name'],
+                      'pub_fullname_col' : bm_pg.COL_NAMES_ADD['full_name'],
+                      'homonyms_col'     : bm_pg.COL_NAMES_ADD['homonym'],
                      }
     return merge_cols_dic
 
@@ -413,6 +414,7 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute's publications-list with one row per author.
         wf_path (path): Full path to working folder.
+        print_params (list): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
         test_case (str): Optional test case for testing the function (default: "No test").
         test_name (str): Optional author's last-name for testing the function \
         (default: "No name").
@@ -422,16 +424,12 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
         the publications list with one row per Institute's author with \
         identified homonyms, dataframe of publications list with \
         one row per author that has not been identified as Institute's employee).
-    Note:
-        Care is taken to keep 'NA' value for the first name initials \
-        (that are set to NaN otherwise) through the `keep_initials` function \
-        imported from `bmfuncts.useful_functs` module.
     """
     # Setting useful col names for building merged data
     merge_cols_dic = _set_merge_cols_dic()
     col_keys = merge_cols_dic.keys()
-    (pub_firstname_col, pub_lastname_col, pub_fullname_col, empl_lastname_col,
-     empl_fullname_col, homonyms_col) = [merge_cols_dic[key] for key in col_keys]
+    (empl_lastname_col, empl_fullname_col, pub_firstname_col, pub_lastname_col,
+     pub_fullname_col, homonyms_col) = [merge_cols_dic[key] for key in col_keys]
 
     # Initializing the Data that will contain all matches
     # between 'pub_df' author-name and 'empl_df' employee-name
@@ -442,6 +440,8 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
     orphan_df = pd.DataFrame(columns=list(pub_df.columns))
 
     # Building the set of lastnames (without duplicates) of the 'empl_df' data
+    # after standardization of employees' lastnames
+    empl_df[empl_lastname_col] = empl_df[empl_lastname_col].apply(standardize_txt)
     empl_lastnames = set(empl_df[empl_lastname_col].to_list())
     empl_lastnames = [' ' + x + ' ' for x in empl_lastnames]
 
@@ -449,13 +449,14 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
     test_info_dic = _set_match_test_info(wf_path, test_case, test_name)
 
     # Building 'merge_df' and 'orphan_df' data
+    txt_base, txt_len = "", 0
+    full_names_nb, names_nb = len(pub_df), 0
     if init_status:
-        print_step_text("      - Searching of authors among employees data...", print_params)
-        full_names_nb, names_nb = len(pub_df), 0
+        txt_base = f"{bm_pg.TAB*2}- Searching of authors among employees data of the corpus-year:"
     for _, pub_author_row in pub_df.iterrows():
         if init_status:
             names_nb += 1
-            print(f"              Number of searched authors:   {names_nb} / {full_names_nb}", end="\r")
+            txt_len = print_temp_text(f"{txt_base}{bm_pg.TAB}{names_nb} / {full_names_nb}", txt_end=True)
         # Building an 'empl_pub_match_df' data with rows of 'empl_df' data
         # The rows where the value in COL_NAMES_BM['Last_name'] column of the 'pub_df' data
         # matches with the value in EMPLOYEES_USEFUL_COLS['name'] column of the 'empl_df' data
@@ -469,8 +470,8 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
             # Checking match between the author's firstname and the employees' firstnames
             # for the matching lastname either (by full match or similarity)
             initials_match_idx_list = _check_firstname_initiales_match(empl_pub_match_df, pub_author_row,
-                                                                       pub_lastname_col, pub_firstname_col, empl_lastname_col,
-                                                                       test_info_dic)
+                                                                       pub_lastname_col, pub_firstname_col,
+                                                                       empl_lastname_col, test_info_dic)
 
             if initials_match_idx_list:
                 # Updating merged data of publications and employees
@@ -487,7 +488,8 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
     orphan_df = orphan_df.drop_duplicates()
 
     if init_status:
-        step_txt = ("      - Data of authors found as employees "
-                    "and data of authors not found amond employees built")
-        print_step_text(step_txt, print_params)
+        print_step_text(f"{bm_pg.TAB*2}- Publications' data of authors found as employees initialized",
+                        print_params, prev_txt_len=txt_len)
+        print_step_text(f"{bm_pg.TAB*2}- Publications' data of authors not found among employees initialized",
+                        print_params)
     return merge_df, orphan_df

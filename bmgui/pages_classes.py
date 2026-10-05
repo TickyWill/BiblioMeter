@@ -99,7 +99,7 @@ class SetLaunchButton:
         wf_path (path): The full path to the selected working folder.
         datatype (str): The selected type of Data combination of corpuses databases.
         set_inst_param (bool): Parameter for getting rid of setting \
-        Institute parameters if False.
+        Institute's parameters if False.
     """
 
     def __init__(self, master, institute, wf_path, datatype, set_inst_param):
@@ -117,14 +117,21 @@ class SetLaunchButton:
         launch_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                   size=launch_but_font_size_tup[0],
                                   weight='bold')
-        launch_button = tk.Button(master,
+        self.launch_button = tk.Button(master,
                                   text=bm_gg.MAIN_BUT_LABEL_DICT['launch'],
                                   font=launch_font,
                                   command=lambda: self._generate_pages(master,))
         # Placing launch button
-        launch_button.place(x=launch_but_pos_tup[0],
+        self.launch_button.place(x=launch_but_pos_tup[0],
                             y=launch_but_pos_tup[1],
                             anchor="s")
+
+        # ****************************** Setting buttons list for status change
+        self.launch_buttons_list = [self.launch_button,
+                                    master.inst_optionbutton,
+                                    master.datatype_optionbutton,
+                                    master.wf_button,
+                                    master.corpuses_button,]
 
     def _generate_pages(self, master,):
         """Generates pages after working folder setting.
@@ -132,15 +139,18 @@ class SetLaunchButton:
         Args:
             master (class): `bmgui.main_page.AppMain` class.
         """
+        # Disabling all buttons of main page
+        bm_gu.disable_buttons(self.launch_buttons_list)
+
         # Setting run info
         run_date_time = datetime.datetime.now().strftime('%Y-%m-%d %Hh%M')
         master.log_file = f"{run_date_time.replace(' ', '_')}_{bm_pg.LOG_FILE}"
         log_title = f"BM ANALYSIS FOR {master.institute}"
-        print_txt = f"\n\n    Date            : {run_date_time}"
+        print_txt = f"\n\n{bm_pg.TAB}Date{bm_pg.TAB*3}: {run_date_time}"
 
         if not master.datatype:
-            print_txt += ("\n    Data combination type not yet selected"
-                          "\n    Log file not yet created")
+            print_txt += (f"\n{bm_pg.TAB}Data combination type not yet selected"
+                          f"\n{bm_pg.TAB}Log file not yet created")
             print_to_console(log_title, print_txt)
             warning_title = "!!! ATTENTION !!!"
             warning_text = ("Type de données non selectionné."
@@ -148,11 +158,11 @@ class SetLaunchButton:
                             "\nVeuillez le sélectionner avant de lancer l'application.")
             messagebox.showwarning(warning_title, warning_text)
         else:
-            print_txt += f"\n    Data combination: {master.datatype}"
+            print_txt += f"\n{bm_pg.TAB}Data combination: {master.datatype}"
 
         if not master.wf_path:
-            print_txt += ("\n    Working folder not yet defined"
-                          "\n    Log file not yet created")
+            print_txt += (f"\n{bm_pg.TAB}Working folder not yet defined"
+                          f"\n{bm_pg.TAB}Log file not yet created")
             print_to_console(log_title, print_txt)
             warning_title = "!!! ATTENTION !!!"
             warning_text = ("Chemin non renseigné."
@@ -160,9 +170,19 @@ class SetLaunchButton:
                             "\nVeuillez le définir avant de lancer l'application.")
             messagebox.showwarning(warning_title, warning_text)
         else:
+            print_txt += (f"\n{bm_pg.TAB}Working folder defined"
+                          f"\n{bm_pg.TAB}Log file created")
+            print_to_console(log_title, print_txt)
+            info_title = "- Information -"
+            info_text = ("L'application a été lancée."
+                         "\nLes extractions des bases données vont être mises en place "
+                         f"dans les dossiers de corpus annuels pour la combinaison de données {master.datatype}"
+                         "\n\nCette opération peut prendre quelques minutes."
+                         "\nVeuillez patienter.")
+            messagebox.showinfo(info_title, info_text)
             master.wf_root_path = master.wf_path.parent
             if master.set_inst_param:
-                # Getting Institute parameters
+                # Getting Institute's parameters
                 master.org_tup = set_org_params(master.institute, master.wf_root_path)
 
             # Setting years list
@@ -171,8 +191,8 @@ class SetLaunchButton:
 
             # Printing run info to console and log file
             master.print_params = [master.log_file, bm_pg.LOG_FOLDER, master.wf_path]
-            print_txt += (f"\n    Working folder  : {master.wf_path}"
-                          f"\n    Corpus list     : {master.years_list}")
+            print_txt += (f"\n{bm_pg.TAB}Working folder  : {master.wf_path}"
+                          f"\n{bm_pg.TAB}Corpus list     : {master.years_list}")
 
             print_to_console(log_title, print_txt)
             print_to_log(log_title, print_txt, master.print_params)
@@ -200,6 +220,13 @@ class SetLaunchButton:
                                  "\nVeuillez ajouter ces données avant de relancer l'application.")
                 messagebox.showwarning(warning_title, warning_text)
             else:
+                info_title = "- Information -"
+                info_text = ("Les extractions des bases données ont été mises en place."
+                             "\nLes données des employées vont être préparées "
+                             "puis les onglets de traitement mis à disposition."
+                             "\n\nCette opération peut prendre quelques minutes."
+                             "\nVeuillez patienter.")
+                messagebox.showinfo(info_title, info_text)
                 # Setting existing corpuses status
                 files_status = bm_gu.existing_corpuses(master.wf_path)
                 master.list_corpus_year = files_status[0]

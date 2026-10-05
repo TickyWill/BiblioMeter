@@ -63,10 +63,9 @@ def _launch_kw_analysis(master, year_select, progress_callback):
     print_step_title(f"KEYWORDS ANALYSIS FOR {year_select}", master.print_params)
 
     # Setting params values selected by the user
-    params_list = [year_select, master.institute, master.org_tup, master.wf_path,
-                   master.datatype, master.parsing_filenames_dict]
-    kw_analysis_folder_path = keywords_analysis(params_list, progress_callback,
-                                                verbose=False)
+    params_list = [year_select, master.print_params, master.institute, master.org_tup,
+                   master.wf_path, master.datatype, master.parsing_filenames_dict]
+    kw_analysis_folder_path = keywords_analysis(params_list, progress_callback)
 
     info_title = "- Information -"
     info_text = (f"L'analyse des mots clefs a été effectuée pour l'année {year_select}."
@@ -106,14 +105,15 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
             if raw_addr_status:
                 print_step_text("\nAnalysis completed", master.print_params)
                 return_folders_list = co_return_tup[2]
-                analysis_folder, inst_analysis_folder, geo_analysis_folder = return_folders_list
+                (analysis_folder, affils_analysis_folder,
+                 geo_analysis_folder) = return_folders_list[0], return_folders_list[1], return_folders_list[2]
                 info_title = "- Information -"
                 info_text = ("L'analyse des collaborations "
                              f"a été effectuée pour l'année {year_select}."
                              "\nToutes les affiliations ont été normalisées."
                              "\n\nLes fichiers obtenus ont été créés dans les dossiers :"
                              f"\n\n    '{analysis_folder}/{geo_analysis_folder}'"
-                             f"\n\n    '{analysis_folder}/{inst_analysis_folder}'")
+                             f"\n\n    '{analysis_folder}/{affils_analysis_folder}'")
             else:
                 print_step_text("\nAnalysis interrupted because affiliations remain to be normalized",
                                 master.print_params)
@@ -130,9 +130,9 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
         else:
             country_affils_file_path = master.dedup_affil_params_dic['country_affils_file_path']
             step_txt = ("\nAnalysis cancelled because wrong types of affiliations found in:"
-                        f"\n   {country_affils_file_path}")
+                        f"\n{bm_pg.TAB}{country_affils_file_path}")
             for k,v in wrong_affil_types_dict.items():
-                step_txt += f"\n        {k}: {v}"
+                step_txt += f"\n{bm_pg.TAB*2}{k}: {v}"
             print_step_text(step_txt, master.print_params)
             info_title = "- Attention -"
             info_text = ("L'analyse des collaborations "
@@ -141,7 +141,7 @@ def _launch_coupling_analysis(master, year_select, progress_callback):
                          f"suivant : \n    '{country_affils_file_path}"
                          f"\n\n1- Corrigez dans ce fichier les types d'affiliation suivants:")
             for k,v in wrong_affil_types_dict.items():
-                info_text += f"\n        {k}: {v}"
+                info_text += f"\n{bm_pg.TAB*2}{k}: {v}"
             info_text +="\n\n2- Relancez l'analyse des collaborations"
         messagebox.showinfo(info_title, info_text)
     else:
@@ -178,12 +178,12 @@ def _launch_if_analysis(master, year_select, progress_callback):
                                           master.wf_path)
 
     analysis_if = "IF " + if_most_recent_year
-    if bm_pg.ANALYSIS_IF==bm_pg.COL_NAMES_BONUS['IF année publi']:
+    if bm_pg.ANALYSIS_IF==bm_pg.COL_NAMES_ADD['IF année publi']:
         if if_most_recent_year>=year_select:
             analysis_if = "IF " + year_select
 
     return_tup = if_analysis(params_list, if_most_recent_year,
-                             progress_callback, verbose=False)
+                             progress_callback)
     doctypes_analysis_folder_path, if_analysis_folder_path, _, _ = return_tup
     info_title = "- Information -"
     info_text = ("L'analyse par type de documents et l'analyse des IFs "

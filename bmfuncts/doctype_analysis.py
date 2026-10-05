@@ -22,6 +22,8 @@ from bmfuncts.save_final_results import save_final_results
 from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import set_capwords_lambda
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 
 
 def _set_doctype_files_params(wf_path, corpus_year):
@@ -90,8 +92,8 @@ def _set_analysis_if_cols_info(corpus_year, if_most_recent_year):
         analysis results, 4 digits-year (str) of IFs analysis).
     """
     # Setting useful aliases
-    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
-    corpus_year_if_col_alias = bm_pg.COL_NAMES_BONUS['IF année publi']
+    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_ADD["IF en cours"]
+    corpus_year_if_col_alias = bm_pg.COL_NAMES_ADD['IF année publi']
 
     # Setting IFs column names info
     most_recent_year_if_col = f'{most_recent_year_if_col_base_alias}, {if_most_recent_year}'
@@ -155,7 +157,7 @@ def _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year):
                              'issn_col'               : final_col_dic['issn'],
                              'doctype_col'            : final_col_dic['doc_type'],
                              'journal_norm_col'       : bm_pg.COL_NAMES['temp_col'][1],
-                             'pub_ids_col'            : bm_pg.COL_NAMES_BONUS["pub_ids list"],
+                             'pub_ids_col'            : bm_pg.COL_NAMES_ADD["pub_ids list"],
                              'most_recent_year_if_col': most_recent_year_if_col,
                              'corpus_year_if_col'     : corpus_year_if_col,
                              'if_analysis_col'        : if_analysis_col
@@ -249,8 +251,10 @@ def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
         by the data (dataframe) built for each document type.
     """
     # Setting parameters values from data_params_list
-    (corpus_year, wf_path, datatype, parsing_filenames_dict,
+    (corpus_year, print_params, wf_path, datatype, parsing_filenames_dict,
      final_results_path) = data_params_list
+
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Building data per document types...", txt_end=True)
 
     # Setting input-data path
     final_results_path = set_results_folder_path(wf_path, datatype)
@@ -292,6 +296,7 @@ def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
     pub_df_dict = {}
     for doctype, docname_list in bm_pg.DOC_TYPE_DICT.items():
         pub_df_dict[doctype] = analysis_df[analysis_df[doctype_col].isin(docname_list)]
+    print_step_text(f"{bm_pg.TAB}- Data per document types built", print_params, prev_txt_len=txt_len)
     return pub_df_dict
 
 
@@ -419,6 +424,22 @@ def _build_dept_df(institute, dept, df):
     return dept_df
 
 
+def _save_dept_doctype_stat(doctype, doctype_file, dept_params, save_params):
+    # Setting parameters' values from args
+    corpus_year, institute, sub_folder_path, doctype_folders_dict = save_params
+    dept, by_doc_dept_df, idx_wrap = dept_params
+
+    doctype_stat_title = 'doctype_stat'
+    sheet_name_base = f"{bm_pg.COL_NAMES_DOCTYPE_ANALYSIS[doctype]['doctype_col']}"
+    sheet_name = f'{sheet_name_base} {corpus_year}'
+    dept_doctype_file = f'{dept}-{doctype_file}'
+    doctype_folder = doctype_folders_dict[doctype] / sub_folder_path
+    if dept==institute:
+        doctype_folder = doctype_folders_dict[doctype]
+    save_formatted_df_to_xlsx(doctype_folder, dept_doctype_file, by_doc_dept_df,
+                              doctype_stat_title, sheet_name, idx_wrap=idx_wrap)
+
+
 def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
                                  doctype_cols_tup, doctype_cols_keys_dic):
     """Builds the statistics data of publications per documents types for each 
@@ -439,9 +460,9 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
     function imported from `bmfuncts.format_files` module.
 
     Args:
-        stat_params_list (list): The list composed of the Institute name (str), \
-        the full path to working folder (path), and the 4 digits year \
-        of the corpus (str).
+        stat_params_list (list): The list composed of the print parameters (list), \
+        the Institute's name (str), the full path to working folder (path), \
+        and the 4 digits year of the corpus (str).
         pub_df_dict (dict): The dict keyed by documents types and valued \
         by the publications list data of each documents type.
         doctype_cols_tup (tup): The columns info as returned by \
@@ -453,7 +474,9 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
         are saved).
     """
     # Setting parameters values from 'stat_params_list'
-    institute, wf_path, corpus_year = stat_params_list
+    print_params, institute, wf_path, corpus_year = stat_params_list
+
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Computing stat from data per document types...", txt_end=True)
 
     # Setting parameters values from 'doctype_cols_tup'
     doctype_cols_dic, depts_col_list = doctype_cols_tup
@@ -462,6 +485,9 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
     files_params = _set_doctype_files_params(wf_path, corpus_year)
     (doctype_filenames_dict, doctype_folders_dict,
      doctypes_analysis_folder_path, sub_folder_path) = files_params
+
+    # Setting shared parameters for XLSX file saving
+    save_params = [corpus_year, institute, sub_folder_path, doctype_folders_dict]
 
     by_journal_dict = {}
     for dept in [institute] + depts_col_list:
@@ -484,17 +510,25 @@ def _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
                 by_journal_dict[dept] = by_doc_dept_df
 
             # Saving formatted stat data
-            doctype_stat_title = bm_pg.DF_TITLES_LIST[13]
-            sheet_name_base = f"{bm_pg.COL_NAMES_DOCTYPE_ANALYSIS[doctype]['doctype_col']}"
-            sheet_name = f'{sheet_name_base} {corpus_year}'
-            dept_doctype_file = f'{dept}-{doctype_file}'
-            doctype_folder = doctype_folders_dict[doctype] / sub_folder_path
-            if dept==institute:
-                doctype_folder = doctype_folders_dict[doctype]
-            save_formatted_df_to_xlsx(doctype_folder, dept_doctype_file,
-                                      by_doc_dept_df, doctype_stat_title,
-                                      sheet_name, idx_wrap=idx_wrap)
+            dept_params = [dept, by_doc_dept_df, idx_wrap]
+            _save_dept_doctype_stat(doctype, doctype_file, dept_params, save_params)
+    print_step_text(f"{bm_pg.TAB}- Stat from data per document types computed and saved as XLSX formatted files",
+                    print_params, prev_txt_len=txt_len)
     return by_journal_dict, doctypes_analysis_folder_path
+
+
+def _save_doctype_analysis_results(save_params):
+    # Setting params values from save_params
+    corpus_year, print_params, institute, org_tup, wf_path, datatype = save_params
+
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Saving data per document types as final results...", txt_end=True)
+    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
+    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
+    results_to_save_dict["doctypes"] = True
+    final_save_params = [corpus_year, institute, org_tup, wf_path, datatype]
+    save_final_results(final_save_params, results_to_save_dict)
+    print_step_text(f"{bm_pg.TAB}- Data per document types saved as final results",
+                    print_params, prev_txt_len=txt_len)
 
 
 def doctype_analysis(doc_params_list, if_most_recent_year, progress_callback=None):
@@ -515,10 +549,12 @@ def doctype_analysis(doc_params_list, if_most_recent_year, progress_callback=Non
     `bmfuncts.save_final_results` module.
 
     Args:
-        doc_params_list (list):  The list composed of the Institute name (str), \
-        the org_tup (tup) that contains parameters of Institute organization, \
-        the full path to working folder (path), the data combination type \
-        of corpuses databases (str) and the 4 digits year of the corpus (str).
+        doc_params_list (list):  The list composed of the 4 digits year of the corpus (str), \
+        of the print parameters (list), of the Institute's name (str), \
+        of the org_tup (tup) that contains parameters of Institute's organization, \
+        of the full path to working folder (path), the data combination type \
+        of corpuses databases (str), of the dict giving the name of the parsing file \
+        for each parsed item and of the full path to the folder for saving final results.
         if_most_recent_year (str): Most recent year of impact factors.
         progress_callback (function): Function for updating ProgressBar \
         tkinter widget status (default = None).
@@ -532,8 +568,10 @@ def doctype_analysis(doc_params_list, if_most_recent_year, progress_callback=Non
         where IFs analysis final results are saved).
     """
     # Setting params values from doc_params_list
-    (corpus_year, institute, org_tup, wf_path, datatype,
-     parsing_filenames_dict, final_results_path) = doc_params_list
+    (corpus_year, print_params, institute, org_tup, wf_path,
+     datatype, parsing_filenames_dict, final_results_path) = doc_params_list
+
+    print_step_text("\nAnalysing publications per document types for the corpus...", print_params)
 
     # Setting useful columns info
     return_tup = _set_doctype_cols_dic(institute, org_tup, corpus_year, if_most_recent_year)
@@ -542,23 +580,22 @@ def doctype_analysis(doc_params_list, if_most_recent_year, progress_callback=Non
     doctype_cols_tup = (doctype_cols_dic, depts_col_list)
 
     # Building the dataframe of publications data to be analyzed
-    data_params_list = [corpus_year, wf_path, datatype, parsing_filenames_dict, final_results_path]
+    data_params_list = [corpus_year, print_params, wf_path, datatype,
+                        parsing_filenames_dict, final_results_path]
     pub_df_dict = _build_doctype_analysis_data(data_params_list, doctype_cols_tup)
     if progress_callback:
         progress_callback(20)
 
     # Building and saving statistics for each doctype
-    stat_params_list = [institute, wf_path, corpus_year]
+    stat_params_list = [print_params, institute, wf_path, corpus_year]
     return_tup = _build_and_save_doctype_stat(stat_params_list, pub_df_dict,
                                               doctype_cols_tup, doctype_cols_keys_dic)
     by_journal_dict, doctypes_analysis_folder_path = return_tup
 
     # Saving stat analysis as final result
-    status_values = len(bm_pg.RESULTS_TO_SAVE) * [False]
-    results_to_save_dict = dict(zip(bm_pg.RESULTS_TO_SAVE, status_values))
-    results_to_save_dict["doctypes"] = True
-    save_params_list = [corpus_year, institute, org_tup, wf_path, datatype]
-    save_final_results(save_params_list, results_to_save_dict)
+    save_params = doc_params_list[0:6]
+    _save_doctype_analysis_results(save_params)
+
     if progress_callback:
         progress_callback(50)
     final_return_tup = (pub_df_dict, by_journal_dict, if_analysis_col,

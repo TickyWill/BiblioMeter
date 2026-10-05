@@ -27,11 +27,59 @@ bmfuncts.authors\_analysis
    :members:
    :undoc-members:
    :show-inheritance:
-   
+
+bmfuncts.build\_affiliations\_stat
+----------------------------------
+
+.. automodule:: bmfuncts.build_affiliations_stat
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.build\_geo\_stat
+-------------------------
+
+.. automodule:: bmfuncts.build_geo_stat
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.build\_kpi
+-------------------
+
+.. automodule:: bmfuncts.build_kpi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bmfuncts.build\_otps\_info
 --------------------------
 
 .. automodule:: bmfuncts.build_otps_info
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.build\_pub\_addresses
+------------------------------
+
+.. automodule:: bmfuncts.build_pub_addresses
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.build\_pub\_authors
+----------------------------
+
+.. automodule:: bmfuncts.build_pub_authors
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.build\_year\_pub\_empl
+-------------------------------
+
+.. automodule:: bmfuncts.build_year_pub_empl
    :members:
    :undoc-members:
    :show-inheritance:
@@ -52,10 +100,42 @@ bmfuncts.consolidate\_pub\_list
    :undoc-members:
    :show-inheritance:
 
+bmfuncts.correct\_dedup
+-----------------------
+
+.. automodule:: bmfuncts.correct_dedup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.correct\_parsing
+-------------------------
+
+.. automodule:: bmfuncts.correct_parsing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bmfuncts.coupling\_analysis
 ---------------------------
 
 .. automodule:: bmfuncts.coupling_analysis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.create\_hash\_id
+-------------------------
+
+.. automodule:: bmfuncts.create_hash_id
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.doctype\_analysis
+--------------------------
+
+.. automodule:: bmfuncts.doctype_analysis
    :members:
    :undoc-members:
    :show-inheritance:
@@ -72,14 +152,6 @@ bmfuncts.format\_files
 ----------------------
 
 .. automodule:: bmfuncts.format_files
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-bmfuncts.impact\_factors\_analysis
-----------------------------------
-
-.. automodule:: bmfuncts.impact_factors_analysis
    :members:
    :undoc-members:
    :show-inheritance:
@@ -108,10 +180,26 @@ bmfuncts.merge\_pub\_employees
    :undoc-members:
    :show-inheritance:
 
+bmfuncts.parse\_data
+--------------------
+
+.. automodule:: bmfuncts.parse_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bmfuncts.pub\_globals
 ---------------------
 
 .. automodule:: bmfuncts.pub_globals
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmfuncts.read\_final\_results
+-----------------------------
+
+.. automodule:: bmfuncts.read_final_results
    :members:
    :undoc-members:
    :show-inheritance:

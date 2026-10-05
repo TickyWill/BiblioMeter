@@ -4,6 +4,7 @@
 __all__ = ['build_list_from_str',
            'build_string_from_list',
            'concat_dfs',
+           'copy_dg_col_to_df',
            'create_archi',
            'create_folder',
            'drop_multiple_item',
@@ -12,6 +13,7 @@ __all__ = ['build_list_from_str',
            'name_capwords',
            'print_step_text',
            'print_step_title',
+           'print_temp_text',
            'print_to_console',
            'print_to_log',
            'remove_file',
@@ -29,13 +31,13 @@ __all__ = ['build_list_from_str',
 
 
 # Standard library imports
-import numpy as np
 import os
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as xml_et
 import zipfile
 from pathlib import Path
 
 # 3rd party imports
+import numpy as np
 import pandas as pd
 from bpfuncts import remove_special_symbol as bp_remove_special_symbol
 
@@ -43,16 +45,32 @@ from bpfuncts import remove_special_symbol as bp_remove_special_symbol
 import bmfuncts.pub_globals as bm_pg
 
 
+def copy_dg_col_to_df(df, dg, cols_list, copy_col):
+    """Copies a column of 'dg' data in initial 'df' data.
+
+    Args:
+         df (dataframe): The initial data.
+         dg (dataframe): The data from which the column is copied
+         cols_list (list): The names of useful columns.
+         copy_col (str): The name of the column that is copied.
+    Returns:
+        (dataframe): The modified data.
+    """
+    df[copy_col] = dg[copy_col]
+    df = df[cols_list]
+    return df
+
+
 def remove_file(path):
     """ param <path> could either be relative or absolute. """
     if os.path.isfile(path) or os.path.islink(path):
         os.remove(path)  # remove the file
     else:
-        raise ValueError("file {} is not a file.".format(path))
+        raise ValueError(f"file {path} is not a file.")
 
 
 def print_step_title(step_title, print_params):
-    """Prints to console and to log file the step title
+    """Prints to console and to log file the step title.
 
     Args:
         step_title (str)= The title to print.
@@ -66,8 +84,10 @@ def print_step_title(step_title, print_params):
     print_to_log(step_title, print_txt, print_params, log_init=False)
 
 
-def print_step_text(step_txt, print_params):
+def print_step_text(step_txt, print_params, prev_txt_len=None):
     """Prints to console and to log file the step text.
+
+    If 'prev_txt' is set, it first cleans the previously printed line to console.
 
     Args:
         step_txt (str)= The text to print.
@@ -75,10 +95,29 @@ def print_step_text(step_txt, print_params):
         to which ".txt" extension is added, of the name of the log folder \
         where the TXT log file is saved and of the full path to the working \
         folder where the log folder is saved.
+        prev_txt_len (int): Optional length of the previously print text (default: None).
     """
+    if prev_txt_len:
+        print(" " * prev_txt_len, end="\r")
     print_title = ""
     print_to_console(print_title, step_txt)
     print_to_log(print_title, step_txt, print_params, log_init=False)
+
+
+def print_temp_text(txt, txt_end=False):
+    """Prints to console the text.
+
+    Args:
+        txt (str): The text to print.
+        txt_end (bool): Optional cleaning text status (default: False).
+    Returns:
+        (int): Length of the printed text.
+    """
+    if txt_end:
+        print(txt, end="\r")
+    else:
+        print(txt)
+    return len(txt)
 
 
 def print_to_console(title, print_txt):
@@ -107,12 +146,11 @@ def print_to_log(title, print_txt, print_params, log_init=True):
         title (str): Title of the prints.
         print_txt (str): Corps of the prints.
         print_params (list): Composed of the name of the TXT log file \
-        to which ".txt" extension is added, of the name of the log folder \
+        to which '.txt' extension is added, of the name of the log folder \
         where the TXT log file is saved and of the full path to the working \
         folder where the log folder is saved.
-        log_init (bool): Optional (default: true), if True, the title is surrounded by \
-        "*" lines and it is headed by "* " and ended by " *", "otherwise, \
-        the title is only headed by '# '.
+        log_init (bool): Optional (default: True), if True, the title is \
+        highlighted through surrounding by stars.
     """
     log_file, log_folder, wf_path = print_params
     txt_log_file = log_file +'.txt'
@@ -162,23 +200,22 @@ def try_save_excel_data(df, file_path):
             closed = True
         except PermissionError:
             while rep!="Y":
-                rep = input("    !!!-Permission denied-!!! Close all opened XLSX files (Y/N)?")
+                rep = input("\t\t!!!-Permission denied-!!! Close all opened XLSX files (Y/N)?")
             os.system('TASKKILL /F /IM excel.exe')
 
 
 def get_sheet_names(file_path):
-    """Gets the sheet names of an multisheet XLSX file whithout loading it.
+    """Gets the sheet names of a multisheet XLSX file without loading it.
 
     Args:
         file_path (path): The full path to the file.
     Returns:
         (list): Composed of the sheet names(str).
     """
-    search_str = ".//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet"
     with zipfile.ZipFile(file_path, "r") as z:
         xml_content = z.read("xl/workbook.xml")
-        root = ET.fromstring(xml_content)
-        sheet_names = [sheet.attrib["name"] for sheet in root.findall(search_str)]
+        root = xml_et.fromstring(xml_content)
+        sheet_names = [sheet.attrib["name"] for sheet in root.findall(bm_pg.SHEETS_SEARCH)]
         return sheet_names
 
 
@@ -430,10 +467,10 @@ def keep_initials(df, initials_col_base, missing_fill=None):
 
 
 def save_xlsx_file(root_path, df, file_name):
-    """Saves data as an xlsx file that is one sheet and not formatted.
+    """Saves data as a XLSX file that is one sheet and not formatted.
 
     Args:
-        root_path (path): The path to the folder where the Excel file is saved.
+        root_path (path): The path to the folder where the XLSX file is saved.
         df (dataframe): The data to save.
         file_name (str): The name of the file including '.xlsx' extent.
     """
@@ -442,12 +479,12 @@ def save_xlsx_file(root_path, df, file_name):
 
 
 def set_year_pub_id(df, year, pub_id_col):
-    """Transforms the pub-ID column of 'df' data by adding "yyyy_" 
+    """Transforms the pub-ID column of 'df' data by adding <yyyy>_
     (year in 4 digits) to the values.
 
     Args:
         df (pandas.DataFrame): The data we want to modify.
-        year (str): The 4 digits year to add as "yyyy".
+        year (str): The 4 digits year to add as <yyyy>.
         pub_id_col (str): The name of the pub-ID column to transform.
     Returns:
         (pandas.DataFrame): The data with its changed column.
@@ -486,10 +523,7 @@ def concat_dfs(dfs_list, dedup=True, dedup_cols=None, keep='first', axis=0,
     """
 
     # Setting list of not empty dataframes
-    dfs_clean_list = []
-    for df in dfs_list:
-        if not df.empty:
-            dfs_clean_list.append(df)
+    dfs_clean_list = [df for df in dfs_list if not df.empty]
     dfs_clean_nb = len(dfs_clean_list)
 
     # Concatenating dataframes
@@ -604,7 +638,7 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
             _ = create_folder(year_bdd_extract_folder_path, archiv_folder_alias, verbose=verbose)
 
         # Creating architecture for corpus-year working-folder
-        _ = create_folder(corpus_year_folder_path, archi_alias["bdd mensuelle"], verbose=verbose)
+        _ = create_folder(corpus_year_folder_path, archi_alias["merge folder name"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["homonymes folder"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["OTP folder"], verbose=verbose)
         _ = create_folder(corpus_year_folder_path, archi_alias["pub list folder"], verbose=verbose)
@@ -616,7 +650,7 @@ def create_archi(wf_path, corpus_year_folder, create_archi_param=True, verbose=F
         _ = create_folder(analysis_folder, archi_alias["keywords analysis"], verbose=verbose)
         _ = create_folder(analysis_folder, archi_alias["subjects analysis"], verbose=verbose)
         _ = create_folder(analysis_folder, archi_alias["countries analysis"], verbose=verbose)
-        _ = create_folder(analysis_folder, archi_alias["institutions analysis"], verbose=verbose)
+        _ = create_folder(analysis_folder, archi_alias["affiliations analysis"], verbose=verbose)
 
         corpus_folder = create_folder(corpus_year_folder_path, archi_alias["corpus"], verbose=verbose)
 

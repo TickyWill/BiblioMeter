@@ -31,8 +31,8 @@ def _set_add_ifs_col_dic(institute, org_tup, corpus_year):
     imported from the `bmfuncts.rename_cols` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): Institute's name.
+        org_tup (tup): Contains Institute's parameters.
         corpus_year (str): 4 digits-year of the corpus.
     Returns:
         (tup): The built dict and the full list of final column names \
@@ -45,16 +45,16 @@ def _set_add_ifs_col_dic(institute, org_tup, corpus_year):
     add_ifs_col_dic = {'year_col'          : final_col_dic['corpus_year'],
                        'pub_id_col'        : final_col_dic['pub_id'],
                        'doctype_col'       : final_col_dic['doc_type'],
-                       'pub_id_nb_col'     : bm_pg.COL_NAMES_BONUS['pub number'],
+                       'pub_id_nb_col'     : bm_pg.COL_NAMES_ADD['pub number'],
                        'journal_col'       : final_col_dic['journal'],
                        'issn_col'          : final_col_dic['issn'],
-                       'eissn_col'         : bm_pg.COL_NAMES_BONUS['e-ISSN'],
-                       'corpus_issn_col'   : bm_pg.COL_NAMES_BONUS["database ISSN"],
+                       'eissn_col'         : bm_pg.COL_NAMES_ADD['e-ISSN'],
+                       'corpus_issn_col'   : bm_pg.COL_NAMES_ADD["database ISSN"],
                        'current_if_col'    : if_maj_col_dic['current_if'],
                        'corpus_year_if_col': if_maj_col_dic['pub_year_if'],
-                       'database_if_col'   : bm_pg.COL_NAMES_BONUS['IF clarivate'],
+                       'database_if_col'   : bm_pg.COL_NAMES_ADD['IF clarivate'],
                        'otp_col'           : final_col_dic['otp'],
-                       'new_otp_col'       : bm_pg.COL_NAMES_BONUS['final OTP'],
+                       'new_otp_col'       : bm_pg.COL_NAMES_ADD['final OTP'],
                       }
     add_ifs_col_dic['final_year_col'] = add_ifs_col_dic['year_col'][0:5]
     add_ifs_col_dic['journal_upper_col'] = f"{add_ifs_col_dic['journal_col']}_Upper"
@@ -69,8 +69,8 @@ def get_if_db(institute, org_tup, wf_path):
     of impact-factor per journal for the Institute.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): Institute's name.
+        org_tup (tup): Contains Institute's parameters.
         wf_path (path): Full path to working folder.
     Returns:
         (tup): (impact-factors (dict), available-years of impact-factors \
@@ -113,14 +113,13 @@ def _clean_if_dict(institute, org_tup, wf_path, add_ifs_col_dic, empty_kws_list)
     The starting IFs data are got through the `get_if_db` function of this module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): Institute's name.
+        org_tup (tup): Contains Institute's parameters.
         wf_path (path): Full path to working folder.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
-        empty_kws_list (list): Composed of the 'UNKNOWN' global imported \
-        from the `biblioparsing` package and of the 'NOT_AVAILABLE' global \
-        imported from the `bmfuncts.pub_globals` module.
+        empty_kws_list (list): Composed of the 'UNKNOWN' and 'NOT_AVAILABLE' \
+        globals imported from the `bmfuncts.pub_globals` module.
     returns:
         (tup): (The recast IFs data (dict keyed by years and valued \
         by dataframes),  the list of available years (4-digits strings) \
@@ -164,7 +163,7 @@ def _build_if_dict(if_dict, if_year, add_ifs_col_dic, unknown_kw):
         the database of impact-factors.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
-        unknown_kw (str): The word to identifie unknown values.
+        unknown_kw (str): The word to identify unknown values.
     Returns:
         (dict): Dict keyed by ISSN (str) or eISSN (str) values \
         and valued by impact factors (float).
@@ -361,9 +360,8 @@ def _add_if_cols(corpus_df, if_dicts_list, corpus_year, add_ifs_col_dic, empty_k
         corpus_year (str): The 4-digits year of the corpus.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
-        empty_kws_list (list): Composed of the 'UNKNOWN' global imported \
-        from the `biblioparsing` package and of the 'NOT_AVAILABLE' global \
-        imported from the `bmfuncts.pub_globals` module.
+        empty_kws_list (list): Composed of the  'UNKNOWN' and 'NOT_AVAILABLE' \
+        globals imported from the `bmfuncts.pub_globals` module.
     Returns:
         (dataframe): The corpus data added with the two IF columns.
     """
@@ -404,14 +402,14 @@ def _build_only_if_doctype_df(org_tup, corpus_df, add_ifs_col_dic):
     `DOC_TYPE_DICT` global imported from the `bmfunct.pub_globals` module.
 
     Args:
-        org_tup (tup): Contains Institute parameters.
+        org_tup (tup): Contains Institute's parameters.
         corpus_df (dataframe): The corpus data as updated through \
         the `_add_if_cols` internal function.
         add_ifs_col_dic (dict): Useful columns names for the IFs-attribution \
         process as set through the `_set_add_ifs_col_dic` internal function.
     Returns:
         (dataframe): The corpus data with only the documents \
-        that may be attributed impact_factors. 
+        that may be attributed impact_factors.
     """
     # Setting parameters value from args
     col_keys = ['pub_id_col', 'year_col', 'journal_col', 'doctype_col', 'issn_col',
@@ -620,19 +618,19 @@ def _format_and_save_add_if_dfs(dfs_list, out_paths_list, corpus_year,
                                                    unknown_kw, add_cols=False)
 
     # Formatting and saving 'corpus_df' as openpyxl file at full path 'out_file_path'
-    corpus_df_title = bm_pg.DF_TITLES_LIST[0]
+    corpus_df_title = 'pub_list'
     wb, ws = format_page(corpus_df, corpus_df_title)
     ws.title = "Publications " +  corpus_year
     wb.save(out_file_path)
 
     # Saving 'year_missing_issn_df' as openpyxl file at full path 'missing_issn_path'
-    missing_issn_df_title = bm_pg.DF_TITLES_LIST[18]
+    missing_issn_df_title = 'missing_if_issn'
     wb, ws = format_page(sorted_year_missing_issn_df, missing_issn_df_title)
     ws.title = "ISSNs manquants " +  corpus_year
     wb.save(missing_issn_path)
 
     # Saving 'year_missing_if_df' as openpyxl file at full path 'missing_if_path'
-    missing_if_df_title = bm_pg.DF_TITLES_LIST[18]
+    missing_if_df_title = 'missing_if_issn'
     wb, ws = format_page(sorted_year_missing_if_df, missing_if_df_title)
     ws.title = "IFs manquants " +  corpus_year
     wb.save(missing_if_path)
@@ -656,7 +654,7 @@ def add_if(add_if_params_list, paths_list):
     The column 'most_recent_year_if_col' is filled with the impact-factors 
     values of the most recent year available in the 'if_dict' dict. 
     In these columns, the NaN values of impact-factors are replaced 
-    by 'UNKNOWN' global value imported from the `biblioparsing` package. 
+    by 'UNKNOWN' global from the `bmfuncts.pub_globals` module.
     The results are saved as openpyxl workbook formatted through the 
     `_format_and_save_add_if_dfs` internal function.
 

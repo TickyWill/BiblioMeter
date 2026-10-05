@@ -40,7 +40,7 @@ def _get_if(if_updated_file_path, useful_col_list):
         (dataframe): Dataframe of IFs which columns are given by 'useful_col_list'.
     """
     # Setting useful aliases
-    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
+    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_ADD["IF en cours"]
 
     # Setting useful column names
     journal_col = useful_col_list[0]
@@ -105,13 +105,13 @@ def _set_if_col_names(corpus_year, if_most_recent_year):
         if_most_recent_year (str): The 4-digits most recent year \
         of available IFs.
     Returns:
-        (list): [IFs column name (str) of corpus year, \
-        Initial IFs column name (str) of IFs most-recent year, \
-        Final IFs column name (str) of IFs most-recent year].
+        (list): [IFs' column name (str) of corpus year, \
+        Initial IFs' column name (str) of IFs' most-recent year, \
+        Final IFs column name (str) of IFs' most-recent year].
     """
     # Setting useful columns aliases
-    database_if_col_alias = bm_pg.COL_NAMES_BONUS["IF clarivate"]
-    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_BONUS["IF en cours"]
+    database_if_col_alias = bm_pg.COL_NAMES_ADD["IF clarivate"]
+    most_recent_year_if_col_base_alias = bm_pg.COL_NAMES_ADD["IF en cours"]
 
     # Setting specific column names
     corpus_year_if_col = database_if_col_alias + " " + corpus_year
@@ -236,8 +236,9 @@ def _build_previous_years_if_df(wf_path, if_db_dict,
         and capitalizes the journal-names main words through the `set_capwords_lambda` \
         function imported from `bmfuncts.useful_functs` module.
         2. Builds the fully updated dataframes of IFs data per journals for the IFs-year and \
-        the partial dataframe of most-recent-year IFs limited to the corpus journals data \
-        through the `_update_year_if_database` internal function, with corpus year set to IFs-year.
+        the partial dataframe of most-recent-year IFs limited to the corpus journals data. \
+        This is done through the `_update_year_if_database` internal function, with corpus year \
+        set to the year of the IFs.
         3. Appends the partial dataframe of most-recent-year IFs to the dataframe to add \
         for building the IFs data per journals of the most-recent year.
         4. Formats IFs sheet in the 'wb' Openpyxl workbook with sheet name set to IFs-year \
@@ -289,7 +290,7 @@ def _build_previous_years_if_df(wf_path, if_db_dict,
                                                     keep='last')
         fully_updated_year_if_db_df = dfs_tup[0]
         if_sheet_name = if_db_year
-        if_db_title = bm_pg.DF_TITLES_LIST[3]
+        if_db_title = 'if_db'
         wb = format_wb_sheet(if_sheet_name, fully_updated_year_if_db_df,
                              if_db_title, wb, first)
         first = False
@@ -379,7 +380,7 @@ def _build_recent_year_if_df(wf_path, if_db_dict,
                                             keep='last')
     most_recent_year_if_db_df = most_recent_year_if_db_df.sort_values(by=journal_col)
     if_sheet_name = if_most_recent_year
-    if_db_title = bm_pg.DF_TITLES_LIST[3]
+    if_db_title = 'if_db'
     wb = format_wb_sheet(if_sheet_name, most_recent_year_if_db_df,
                          if_db_title, wb, first)
     return wb
@@ -525,7 +526,7 @@ def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
     # Setting unique data per journal name and per ISSN
     new_all_journals_df = _clean_journals_data(if_db_dict, journal_cols_list)
 
-    # Initialize parameters for saving new IIFs data per journals as multisheet workbook
+    # Initialize parameters for saving new IFs data per journals as multisheet workbook
     first = True
     wb = openpyxl_Workbook()
 
@@ -544,7 +545,7 @@ def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
                               inplace=True)
         new_year_if_df = new_year_if_df[year_if_df.columns.to_list()]
         if_sheet_name = if_year
-        if_db_title = bm_pg.DF_TITLES_LIST[3]
+        if_db_title = 'if_db'
         wb = format_wb_sheet(if_sheet_name, new_year_if_df,
                              if_db_title, wb, first)
         first = False
@@ -586,7 +587,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
     # Setting useful columns names
     final_col_dic, _ = set_final_col_names(institute, org_tup)
     journal_cols_list = [final_col_dic['journal'], final_col_dic['issn'],
-                         bm_pg.COL_NAMES_BONUS['e-ISSN']]
+                         bm_pg.COL_NAMES_ADD['e-ISSN']]
 
     # Setting IFs files parameters
     files_list, folders_list, paths_list = _set_if_files_param(institute, wf_path)
@@ -611,7 +612,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
     if kept_if_db_years_list:
         for if_year in kept_if_db_years_list:
             if_sheet_name = if_year
-            if_db_title = bm_pg.DF_TITLES_LIST[3]
+            if_db_title = 'if_db'
             wb = format_wb_sheet(if_sheet_name, if_db_dict[if_year],
                                  if_db_title, wb, first)
             first = False
@@ -620,7 +621,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Building fully updated IFs data per journals for years
     # before the most recent year available for IFs
-    print_step_text(f"  - For years before {if_most_recent_year}", print_params)
+    print_step_text(f"{bm_pg.TAB}- For years before {if_most_recent_year}", print_params)
     save_params_tup = (wb, first)
     return_tup = _build_previous_years_if_df(wf_path, if_db_dict,
                                              if_db_years_list, if_most_recent_year,
@@ -632,8 +633,7 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
 
     # Building fully updated IFs data per journals for years beginning
     # from the most recent year available for IFs
-    print_step_text(f"  - For years from {if_most_recent_year} and after",
-                    print_params)
+    print_step_text(f"{bm_pg.TAB}- For years from {if_most_recent_year} and after", print_params)
     save_params_tup = (wb, first)
     wb = _build_recent_year_if_df(wf_path, if_db_dict,
                                   off_if_db_years_list, if_most_recent_year,
@@ -652,6 +652,5 @@ def update_inst_if_database(update_db_params_list, progress_callback=None):
     _clean_and_save_if_db(inst_all_if_path, journal_cols_list)
     if progress_callback:
         progress_callback(100)
-    print_step_text(f"  - IFs data updated in file : \n  '{inst_all_if_path}'",
-                    print_params)
+    print_step_text(f"{bm_pg.TAB}- IFs data updated in the Institute's file", print_params)
     return if_db_years_list

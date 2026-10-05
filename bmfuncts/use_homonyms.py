@@ -1,6 +1,5 @@
 """Module of functions for using publications attributes
 such as homonyms and OTPs.
-
 """
 
 __all__ = ['save_homonyms',
@@ -24,6 +23,7 @@ import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import set_homonym_col_names
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import print_step_text
+from bmfuncts.useful_functs import print_temp_text
 
 
 def _set_use_homonyms_cols(institute, org_tup):
@@ -78,8 +78,7 @@ def _save_shaped_homonyms_file(homonyms_df, save_cols_list, out_path):
     yellow_ft = openpyxl_PatternFill(fgColor=bm_pg.ROW_COLORS['highlight'],
                                      fill_type="solid")
 
-    for idx, row in enumerate(openpyxl_dataframe_to_rows(homonyms_df,
-                                                         index=False,
+    for idx, row in enumerate(openpyxl_dataframe_to_rows(homonyms_df, index=False,
                                                          header=True)):
         ws.append(row)
         last_row = ws[ws.max_row]
@@ -134,13 +133,16 @@ def solve_homonyms(solve_homonyms_params, in_path, out_path):
     homonyms_status = False
     if bm_pg.HOMONYM_FLAG in homonyms_df[homonyms_col].to_list():
         homonyms_status = True
+    step_txt = f"{bm_pg.TAB}- No homonyms"
+    if homonyms_status:
+        step_txt = f"{bm_pg.TAB}- Existing homonyms"
+    print_step_text(f"{step_txt} before using history of resolution", print_params)
 
     # Saving shaped homonyms_df
-    print_step_text("  - Saving homonyms data as shaped openpyxl file...", print_params)
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Saving homonyms data as shaped openpyxl file...", txt_end=True)
     _save_shaped_homonyms_file(homonyms_df, save_cols_list, out_path)
-    step_text = ("  - File for solving homonymies saved"
-                 f"\n  - Homonyms existing before using resolution history: {homonyms_status}")
-    print_step_text(step_text, print_params)
+    print_step_text(f"{bm_pg.TAB}- Homonyms data saved as shaped openpyxl file",
+                    print_params, prev_txt_len=txt_len)
     return homonyms_status
 
 
@@ -156,7 +158,7 @@ def _set_homonyms_file_params(wf_path, corpus_year):
         the full path to the file of history of homonyms resolution).
     """
     # Setting useful folder and file aliases
-    bdd_mensuelle_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    merge_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     homonyms_folder_alias = bm_pg.ARCHI_YEAR["homonymes folder"]
     homonyms_file_base_alias = bm_pg.ARCHI_YEAR["homonymes file name base"]
     history_folder_alias = bm_pg.ARCHI_YEAR["history folder"]
@@ -166,7 +168,7 @@ def _set_homonyms_file_params(wf_path, corpus_year):
 
     # Setting useful paths
     corpus_year_path = wf_path / Path(corpus_year)
-    bdd_mensuelle_path = corpus_year_path / Path(bdd_mensuelle_alias)
+    bdd_mensuelle_path = corpus_year_path / Path(merge_folder_alias)
     hash_id_file_path = bdd_mensuelle_path / Path(hash_id_file_alias)
     homonyms_folder_path = corpus_year_path / Path(homonyms_folder_alias)
     homonyms_file_path = homonyms_folder_path / Path(homonyms_file_alias)
@@ -195,7 +197,7 @@ def save_homonyms(save_homonyms_params):
     """
     # Setting params values from save_homonyms_params
     corpus_year, print_params, institute, org_tup, wf_path = save_homonyms_params
-    print_step_text("\nUpdating history of solved homonyms...", print_params)
+    txt_len = print_temp_text(f"{bm_pg.TAB}-Updating history of solved homonyms...", txt_end=True)
 
     # Setting useful col names
     use_homonyms_cols_dic, _ = _set_use_homonyms_cols(institute, org_tup)
@@ -239,7 +241,8 @@ def save_homonyms(save_homonyms_params):
 
     # Saving the concatenated dataframe
     homonyms_history_df.to_excel(kept_homonyms_file_path, index=False)
-    print_step_text("  - History of homonyms resolution saved", print_params)
+    print_step_text(f"{bm_pg.TAB}- History of homonyms resolution saved", print_params,
+                    prev_txt_len=txt_len)
 
 
 def set_saved_homonyms(set_homonyms_params, homonyms_status):
@@ -252,7 +255,7 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
     internal function.
 
     Args:
-        save_homonyms_params (list): The list composed of the 4 digits \
+        set_homonyms_params (list): The list composed of the 4 digits \
         year of the corpus (str), of the print parameters (list), \
         of the Institute's name (str), of the org_tup (tup) that contains \
         parameters of Institute's organization and of the full path \
@@ -263,7 +266,7 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
     """
     # Setting params values from set_homonyms_params
     corpus_year, print_params, institute, org_tup, wf_path = set_homonyms_params
-    print_step_text("\nUsing history of resolved homonyms...", print_params)
+    txt_len = print_temp_text(f"{bm_pg.TAB}- Using history of resolved homonyms...", txt_end=True)
 
     # Setting useful col names
     use_homonyms_cols_dic, _ = _set_use_homonyms_cols(institute, org_tup)
@@ -304,18 +307,16 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
                     # Keeping row of authors without homonyms
                     homonyms_df_new = concat_dfs([homonyms_df_new, author_df])
                 else:
-                    pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col]\
-                                                             ==pub_id]
+                    pub_id_mats_to_keep_df = mats_to_keep_df[mats_to_keep_df[pub_id_col]==pub_id]
                     pub_id_mats_to_keep_list = list(pub_id_mats_to_keep_df[mat_col])
                     mats_to_check_list = list(author_df[mat_col])
-                    mats_to_keep_list = [x for x in mats_to_check_list\
+                    mats_to_keep_list = [x for x in mats_to_check_list
                                          if x in pub_id_mats_to_keep_list]
 
                     if mats_to_keep_list:
                         # Keeping only row of matricule to keep when homonymies have been resolved
                         mat_to_keep = mats_to_keep_list[0]
-                        new_author_df = author_df[author_df[mat_col]\
-                                                  ==mat_to_keep].copy()
+                        new_author_df = author_df[author_df[mat_col]==mat_to_keep].copy()
                         new_author_df[homonyms_col] = "_"
                         homonyms_df_new = concat_dfs([homonyms_df_new, new_author_df])
                     else:
@@ -326,11 +327,16 @@ def set_saved_homonyms(set_homonyms_params, homonyms_status):
         homonyms_status = False
         if bm_pg.HOMONYM_FLAG in homonyms_df_new[homonyms_col].to_list():
             homonyms_status = True
+            step_txt = f"{bm_pg.TAB}- No remaining homonyms"
+            print_step_text(f"{step_txt} after using history of resolution", print_params)
+        if homonyms_status:
+            step_txt = f"{bm_pg.TAB}- Remaining homonyms"
+            print_step_text(f"{step_txt} after using history of resolution", print_params)
+
         # Saving updated homonyms_df
         _save_shaped_homonyms_file(homonyms_df_new, save_cols_list, homonyms_file_path)
-        step_text = ("  - History of resolved homonyms used"
-                     f"\n  - Homonyms remains after using resolution history: {homonyms_status}")
+        step_text = f"{bm_pg.TAB}- History of resolved homonyms used"
     else:
-        step_text = "  - No history of resolved homonyms available"
-    print_step_text(step_text, print_params)
+        step_text = f"{bm_pg.TAB}- No history of resolved homonyms available"
+    print_step_text(step_text, print_params, prev_txt_len=txt_len)
     return homonyms_status

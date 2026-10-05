@@ -1,7 +1,8 @@
 """Module of functions for geographical collaborations analysis.
 """
 
-__all__ = ['build_and_save_geo_stat']
+__all__ = ['build_and_save_geo_stat',
+          ]
 
 # Standard Library imports
 import os
@@ -26,10 +27,10 @@ def _set_geo_stat_cols():
     """
     geo_stat_cols_dic = {'pub_id_col'       : bm_pg.COL_NAMES['pub_id'],
                          'country_col'      : bm_pg.COL_NAMES['country'][2],
-                         'continent_col'    : bm_pg.COL_NAMES_BONUS['continent'],
-                         'final_country_col': bm_pg.COL_NAMES_BONUS['country'],
-                         'weight_col'       : bm_pg.COL_NAMES_BONUS['pub number'],
-                         'pub_ids_col'      : bm_pg.COL_NAMES_BONUS["pub_ids list"],
+                         'continent_col'    : bm_pg.COL_NAMES_ADD['continent'],
+                         'final_country_col': bm_pg.COL_NAMES_ADD['country'],
+                         'weight_col'       : bm_pg.COL_NAMES_ADD['pub number'],
+                         'pub_ids_col'      : bm_pg.COL_NAMES_ADD["pub_ids list"],
                         }
 
     return geo_stat_cols_dic
@@ -44,9 +45,9 @@ def _build_items_stat(items_df, institute_item, items_cols, stat_cols):
         institute_item (str): Value of the Institute's item.
         items_cols (list): The two column names of the item data useful \
         to compute de statistics, i.e. publications IDs and publications items.
-        stat_cols (list): The column names of the data of the built statisctics.
+        stat_cols (list): The column names of the data of the built statistics.
     Returns:
-        (dataframe): The data of the built statisctics.
+        (dataframe): The data of the built statistics.
     """
     [pub_id_col, item_col] = items_cols
     data = []
@@ -78,7 +79,7 @@ def _build_countries_stat(countries_df, institute_country):
         institute_country (str): The country of the institute.
     Returns:
         (dataframe): Countries statistics where each row gives the country name, \
-        the Institute-publications number with address from the country \
+        the Institute's publications number with address from the country \
         and a string listing the concerned publications IDs separated by semicolon.
     """
     # Setting col names
@@ -109,7 +110,7 @@ def _build_continents_stat(countries_df, institute_continent):
         institute_continent (str): The continent of the institute
     Returns:
         (dataframe): Continents statistics where each row gives the continent name, \
-        the Institute-publications number with address from the continent \
+        the Institute's publications number with address from the continent \
         and a string listing the concerned publications IDs separated by semicolon.
     """
     # Setting col names
@@ -137,18 +138,18 @@ def _build_continents_stat(countries_df, institute_continent):
 
 def _set_institute_country_stat_df_params():
     """Builds a dict setting selected columns names for the process 
-    of building statistics within Institute country .
+    of building statistics within Institute's country .
 
     Returns:
         (dict): The built dict.
     """
     inst_country_stat_cols_dic = {'pub_id_col'      : bm_pg.COL_NAMES['pub_id'],
                                   'address_id_col'  : bm_pg.COL_NAMES['institution'][1],
-                                  'institutions_col': bm_pg.COL_NAMES['institution'][2],
+                                  'affiliations_col': bm_pg.COL_NAMES['institution'][2],
                                   'countries_col'   : bm_pg.COL_NAMES['country'][2],
-                                  'pub_kind_col'    : bm_pg.COL_NAMES_BONUS['pub_type'],
-                                  'weight_col'      : bm_pg.COL_NAMES_BONUS['pub number'],
-                                  'pub_ids_col'     : bm_pg.COL_NAMES_BONUS["pub_ids list"],
+                                  'pub_kind_col'    : bm_pg.COL_NAMES_ADD['pub_type'],
+                                  'weight_col'      : bm_pg.COL_NAMES_ADD['pub number'],
+                                  'pub_ids_col'     : bm_pg.COL_NAMES_ADD["pub_ids list"],
                                  }
 
     inst_country_stat_rows_dic = {'all_key'                : bm_pg.STAT_ROW_NAMES['all'],
@@ -161,7 +162,7 @@ def _set_institute_country_stat_df_params():
     return inst_country_stat_cols_dic, inst_country_stat_rows_dic
 
 
-def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw_item_lists):
+def _update_pub_ids_lists(pub_id, df, institute_norm, affiliations_col, init_raw_item_lists):
     """Updates two lists of publications IDs with the passed publication ID 
     depending on the Institute's normalized name occurrence in the analyzed data.
 
@@ -172,7 +173,7 @@ def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw
         pub_id (str): The publication ID tagged with the corpus year value.
         df (dataframe): The data to be analyzed.
         institute_norm (str): The Institute's normalized name.
-        institutions_col (list): The name of the column that contains \
+        affiliations_col (list): The name of the column that contains \
         the normalized affiliations in the data to be analyzed.
         init_raw_item_lists (list): The list of the publications IDs lists to be updated.
     Returns:
@@ -180,7 +181,7 @@ def _update_pub_ids_lists(pub_id, df, institute_norm, institutions_col, init_raw
     """
     raw_item_at_least, raw_out_of_item_only = init_raw_item_lists
     item_at_least = []
-    all_affiliations = [str(x) for x in df[institutions_col].to_list()]
+    all_affiliations = [str(x) for x in df[affiliations_col].to_list()]
     for affils_idx, affils_str in enumerate(all_affiliations):
         item_at_least.append(False)
         affils_list = affils_str.split("; ")
@@ -225,7 +226,7 @@ def _set_stat_value(raw_pub_ids_list, all_status=False):
 
 def _build_institute_country_stat(norm_affil_df, institute_country, institute_norm):
     """Builds the statistics of publications per combination types of co-authors countries 
-    from the analysis of the data of the normalized institutions per publication.
+    from the analysis of the data of the normalized affiliations per publication.
 
     Each row of the built data contains:
 
@@ -233,23 +234,23 @@ def _build_institute_country_stat(norm_affil_df, institute_country, institute_no
         - all types of co-authors,
         - no co-authors,
         - only co-authors of the country of the Institute,
-        - co-authors from the Institute country together with co-authors from other countries,
+        - co-authors from the Institute's country together with co-authors from other countries,
         - only co-authors from other countries;
     - The number of publications;
     - The list of publication IDs.
 
     Args:
-        norm_affil_df (dataframe): Data of the normalized institutions per publication.
+        norm_affil_df (dataframe): Data of the normalized affiliations per publication.
         institute_country (str): The country of the institute
     Returns:
         (dataframe): Institute's country statistics where each row gives the co-authors type, \
-        the Institute-publications number related to the co-authors type \
+        the Institute's publications number related to the co-authors type \
         and a string listing the concerned publications IDs separated by semicolon.
     """
     inst_country_stat_cols_dic, inst_country_stat_rows_dic = _set_institute_country_stat_df_params()
-    col_keys = ['pub_id_col', 'countries_col', 'institutions_col', 'pub_kind_col',
+    col_keys = ['pub_id_col', 'countries_col', 'affiliations_col', 'pub_kind_col',
                 'weight_col', 'pub_ids_col']
-    (pub_id_col, countries_col, institutions_col, pub_kind_col,
+    (pub_id_col, countries_col, affiliations_col, pub_kind_col,
      weight_col, pub_ids_col) = [inst_country_stat_cols_dic[key] for key in col_keys]
 
     row_keys = ['all_key', 'institute_only_key', 'country_only_key',
@@ -266,13 +267,13 @@ def _build_institute_country_stat(norm_affil_df, institute_country, institute_no
         if len(countries_list)==1:
             init_country_raw_item_lists = [raw_institute_only.copy(), raw_country_only.copy()]
             return_tup = _update_pub_ids_lists(pub_id, pub_id_df, institute_norm,
-                                              institutions_col, init_country_raw_item_lists)
+                                              affiliations_col, init_country_raw_item_lists)
             raw_institute_only, raw_country_only = return_tup
         else:
             institute_country_df = pub_id_df[pub_id_df[countries_col]==institute_country]
             init_raw_item_lists = [raw_country_at_least.copy(), raw_out_of_country_only.copy()]
             return_tup = _update_pub_ids_lists(pub_id, institute_country_df, institute_norm,
-                                               institutions_col, init_raw_item_lists)
+                                               affiliations_col, init_raw_item_lists)
             raw_country_at_least, raw_out_of_country_only = return_tup
 
     inst_country_stat_dic = {all_key                : _set_stat_value(raw_all_pub_ids_list, all_status=True),
@@ -332,7 +333,7 @@ def _set_geo_files_params(analysis_folder_path, institute_country):
 def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
                             analysis_folder_path):
     """Builds the publications statistics dataframes per country and per continent
-    including for the Institute country.
+    including for the Institute's country.
 
     First, it builds the statistics dataframes through the `_build_countries_stat` 
     and the `_build_continents_stat` internal functions.
@@ -351,6 +352,7 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     """
     # Setting parameters value from 'geo_stat_params'
     corpus_year, print_params, institute = geo_stat_params
+    print_step_text("\nBuilding geographical stat...", print_params)
 
     # Setting Institute's country and continent
     institute_country = bm_ig.INSTITUTES_COUNTRY_DICT[institute]
@@ -358,7 +360,7 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     institute_norm = bm_ig.INSTITUTES_NORM_NAME_DICT[institute]
 
     # Building stat dataframes
-    print("  - Computing geographical statistics...", end="\r")
+    print_step_text(f"{bm_pg.TAB}- Computing geographical statistics...", print_params)
     by_country_df = _build_countries_stat(countries_df, institute_country)
     by_continent_df = _build_continents_stat(countries_df, institute_continent)
     inst_country_stat_df = _build_institute_country_stat(norm_affiliations_df,
@@ -371,7 +373,7 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     geo_analysis_folder, geo_analysis_folder_path = folder_params
 
     # Saving formatted stat dataframes
-    geo_df_title = bm_pg.DF_TITLES_LIST[8]
+    geo_df_title = 'geo'
     sheet_name = 'Pays ' + corpus_year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, country_weight_filename,
                               by_country_df, geo_df_title, sheet_name)
@@ -381,5 +383,5 @@ def build_and_save_geo_stat(geo_stat_params, countries_df, norm_affiliations_df,
     sheet_name = institute_country + " " + corpus_year
     save_formatted_df_to_xlsx(geo_analysis_folder_path, institute_country_weight_filename,
                               inst_country_stat_df, geo_df_title, sheet_name)
-    print_step_text("  - Geo statistics built and saved      ", print_params)
+    print_step_text(f"{bm_pg.TAB*2}- Geo statistics built and saved", print_params)
     return geo_analysis_folder
