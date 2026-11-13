@@ -361,7 +361,6 @@ def _check_firstname_initiales_match(empl_pub_match_df, pub_author_row,
 def _update_pub_empl_data(merge_df, pub_author_row, empl_pub_match_df, initials_match_idx_list,
                           pub_lastname_col, pub_fullname_col, empl_fullname_col, homonyms_col,
                           test_info_dic):
-
     test_keys = ['lastname', 'states', 'filespath']
     test_name, test_states, checks_path = [test_info_dic[key] for key in test_keys]
 
@@ -414,7 +413,10 @@ def build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
         empl_df (dataframe): Employees database of a given year.
         pub_df (dataframe): Institute's publications-list with one row per author.
         wf_path (path): Full path to working folder.
-        print_params (list): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        print_params (list): The parameters (list) for the `print_step_text` function \
+        imported from the `bmfuncts.useful_functs` module; it is composed of the name \
+        of the log file, of the name of the log folder where the log file is saved and \
+        of the full path to the working folder where the log folder is saved.
         test_case (str): Optional test case for testing the function (default: "No test").
         test_name (str): Optional author's last-name for testing the function \
         (default: "No name").

@@ -18,6 +18,7 @@ import bmfuncts.employees_globals as bm_eg
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.useful_functs import concat_dfs
 from bmfuncts.useful_functs import get_sheet_names
+from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import print_temp_text
 from bmfuncts.useful_functs import standardize_txt
@@ -445,7 +446,7 @@ def _build_year_month_dpt(year_months_file_path, print_params, empl_cols_dic, em
         print_params (list): The print parameters.
         empl_cols_dic (dict): Useful columns' names as built through \
         the `_set_employees_cols` internal function.
-        empl_col_lists_dic (dict) : Useful lists of columns' names as built through \
+        empl_col_lists_dic (dict): Useful lists of columns' names as built through \
         the `_set_employees_cols` internal function.
         progress_params (list): Composed of the function for updating ProgressBar \
         tkinter widget status and of the initial status of ProgressBar tkinter widget.
@@ -684,22 +685,61 @@ def _select_empl_years(empl_file_path, corpus_years):
     return empl_years
 
 
-def set_empl_data(empl_file_path, corpus_years, print_params):
-    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+def _config_empl(empl_dict, empl_cols_dic):
+    """Replace in "empl_dict" NaN values by UNKNOWN string except 
+    in first name initials and set the values type in the "mat_col" 
+    col as string.
+
+    Care is taken to keep 'NA' value for the first name initials
+    through the `keep_initials` function imported from the 
+    "bmfuncts.useful_functs" internal module. This is done to avoid 
+    this value to be set to NaN by default.
 
     Args:
-        empl_file_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
-        corpus_years: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
-        print_params: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        empl_dict (dict): The employees dict keyed by year \
+        and valued by employees data (dataframe).
+        empl_cols_dics (dict): Useful columns' names as built through \
+        the `_set_employees_cols` internal function.
+    Returns:
+        (dict): The modified dict.
+    """
+    initials_col = empl_cols_dic['firstname_initials_col']
+    mat_col = empl_cols_dic['mat_col']
+
+    new_empl_dict = {}
+    for year in empl_dict.keys():
+        new_empl_dict[year] = keep_initials(empl_dict[year], initials_col,
+                                            missing_fill=bm_pg.UNKNOWN)
+        new_empl_dict[year] = new_empl_dict[year].astype({mat_col: 'str'})
+    return new_empl_dict
+
+
+def set_empl_data(empl_file_path, corpus_years, print_params):
+    """Sets the employees' data useful for the given corpus years .
+
+    The useful employees'data are read from the existing XLSX file of 
+    the full employees' data with one sheet per year. 
+    The sheets to be read are limited to the useful years list built 
+    through the `_select_empl_years`internal function. 
+    The read data are reconfigurated through the `_config_empl`internal function.
+
+    Args:
+        empl_file_path (path): The full path to the XLSX file of \
+        the full employees' data with one sheet per year.
+        corpus_years (list): Composed of the 4-digits year (str) of each corpus \
+        of interest.
+        print_params (list): The parameters for the `print_step_text` function \
+        imported from the `bmfuncts.useful_functs` module.
 
     Returns:
-        (dict): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        (dict): The employees' data as a dict keyed by the years \
+        and valued by the employees data for each year.
     """
-    print_step_text(f"\nSetting the employees' 'data for {corpus_years[0]} to {corpus_years[-1]} corpus...",
+    print_step_text(f"\nSetting the employees' data for {corpus_years[0]} to {corpus_years[-1]} corpus...",
                     print_params)
 
     # Setting useful columns' names
-    _, empl_col_lists_dic = _set_employees_cols()
+    empl_cols_dic, empl_col_lists_dic = _set_employees_cols()
     full_cols_list = list(empl_col_lists_dic['useful_col_list']) + list(empl_col_lists_dic['add_col_list'])
 
     # Selecting the useful available years in employees' data for the corpus list
@@ -716,6 +756,10 @@ def set_empl_data(empl_file_path, corpus_years, print_params):
         empl_dict[year] = pd.read_excel(empl_file_path, sheet_name=year,
                           dtype=bm_eg.EMPLOYEES_COL_TYPES,
                           usecols=full_cols_list, keep_default_na=False)
+
+    # Replace in the employees data NaN values by UNKNOWN string except for first name initials
+    # and set type of employees IDs to string
+    empl_dict = _config_empl(empl_dict, empl_cols_dic)
     print_step_text(f"{bm_pg.TAB*2}- Employees' data of the selected years available", print_params,
                     prev_txt_len=txt_len)
     return empl_dict

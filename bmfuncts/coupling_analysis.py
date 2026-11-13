@@ -147,6 +147,12 @@ def _built_co_pub_identifiers_data(ids_params, f_hash_ids_path, identifiers_cols
     return ids_dicts_list
 
 
+def _standardize_affil_items(affils_list):
+    std_affils_list = [affiliation.translate(bm_pg.SYMB_CHANGE).lower().strip()
+                       for affiliation in affils_list]
+    return std_affils_list
+
+
 def _clean_unkept_affil(raw_affiliations_df, country_unkept_affil_file_path, cols_list):
     """Removes the affiliation items given in the file pointed by 'country_unkept_affil_file_path' 
     path from the raw-affiliations data.
@@ -159,28 +165,44 @@ def _clean_unkept_affil(raw_affiliations_df, country_unkept_affil_file_path, col
     Returns:
         (dataframe): The cleaned data of raw affiliations.
     """
+    # Setting columns' names from 'cols_list' arg
     countries_col, raw_affil_col, affiliation_col = cols_list
-    unkept_affiliations_dict = pd.read_excel(country_unkept_affil_file_path, sheet_name=None)
-    unkept_country_list = list(unkept_affiliations_dict.keys())
+
+    # Getting the affiliation items to remove as a dict keyed by country
+    unkept_affil_items_dict = pd.read_excel(country_unkept_affil_file_path, sheet_name=None)
+    unkept_countries_list = list(unkept_affil_items_dict.keys())
 
     new_raw_affiliations_df = pd.DataFrame()
+    # Cycling on countries of the raw-affiliations data
     for country, country_raw_affil_df in raw_affiliations_df.groupby(countries_col):
-        if country in unkept_country_list:
-            unkept_affiliations_list = unkept_affiliations_dict[country][raw_affil_col].to_list()
-            unkept_affiliations_list_mod = [affiliation.translate(bm_pg.SYMB_CHANGE).strip()
-                                            for affiliation in unkept_affiliations_list]
-            for idx_row, affil_row in country_raw_affil_df.iterrows():
-                affil_row_list = [x.strip() for x in affil_row[affiliation_col].split(";")]
-                affil_row_list_mod = [x.translate(bm_pg.SYMB_CHANGE).lower() for x in affil_row_list]
-                for unkept_affil in unkept_affiliations_list_mod:
-                    if unkept_affil.lower() in affil_row_list_mod:
-                        affil_idx = affil_row_list_mod.index(unkept_affil.lower())
-                        del affil_row_list_mod[affil_idx]
-                        del affil_row_list[affil_idx]
-                        if len(affil_row_list)>1:
-                            country_raw_affil_df.loc[idx_row, affiliation_col] = "; ".join(affil_row_list)
-                        elif len(affil_row_list)==1:
-                            country_raw_affil_df.loc[idx_row, affiliation_col] = affil_row_list[0]
+        # Check if country is concerned by affiliation items removal
+        if country in unkept_countries_list:
+            # Setting the list of affiliation items to remove for the country and standardizing them
+            unkept_affil_items_list = unkept_affil_items_dict[country][raw_affil_col].to_list()
+            std_unkept_affil_items_list = _standardize_affil_items(unkept_affil_items_list)
+
+            # Cycling on rows of the raw-affiliations data of the country
+            for idx_row, raw_affil_row in country_raw_affil_df.iterrows():
+                # Setting the list of the raw-affiliation items of the data row and standardizing them
+                raw_affil_items_list = raw_affil_row[affiliation_col].split(";")
+                std_raw_affil_items_list = _standardize_affil_items(raw_affil_items_list)
+
+                # Cycling on the affiliation items to remove for the country
+                # to drop them from the list of the raw-affiliation items if present
+                for unkept_affil in std_unkept_affil_items_list:
+                    if unkept_affil in std_raw_affil_items_list:
+                        # Getting the index of the affiliation item to remove in the list of raw-affiliation items
+                        affil_idx = std_raw_affil_items_list.index(unkept_affil)
+
+                        # Droping by index the affiliation item to remove in the lists of raw-affiliation items
+                        del std_raw_affil_items_list[affil_idx]
+                        del raw_affil_items_list[affil_idx]
+
+                        # Updating the raw-affiliations data of the country with the cleaned list of raw-affiliation items
+                        if len(raw_affil_items_list)>1:
+                            country_raw_affil_df.loc[idx_row, affiliation_col] = "; ".join(raw_affil_items_list)
+                        elif len(raw_affil_items_list)==1:
+                            country_raw_affil_df.loc[idx_row, affiliation_col] = raw_affil_items_list[0]
                         else:
                             country_raw_affil_df.loc[idx_row, affiliation_col] = bm_pg.EMPTY
         new_raw_affiliations_df = concat_dfs([new_raw_affiliations_df, country_raw_affil_df])

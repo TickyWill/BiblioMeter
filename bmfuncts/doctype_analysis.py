@@ -256,9 +256,6 @@ def _build_doctype_analysis_data(data_params_list, doctype_cols_tup):
 
     txt_len = print_temp_text(f"{bm_pg.TAB}- Building data per document types...", txt_end=True)
 
-    # Setting input-data path
-    final_results_path = set_results_folder_path(wf_path, datatype)
-
     # Setting useful column names list
     doctype_cols_dic, depts_cols_list = doctype_cols_tup
     col_keys = ['pub_id_col', 'journal_col', 'doctype_col', 'issn_col', 'journal_norm_col']

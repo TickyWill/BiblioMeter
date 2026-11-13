@@ -206,9 +206,10 @@ class SetLaunchButton:
             master.parsing_filenames_dict = set_parsing_items_params()
 
             # Setting rawdata for datatype
-            set_rawdata_params = [master.print_params, master.wf_path,
-                                  master.datatype, master.years_list]
-            missing_rawdata_dic, rawdata_status = set_rawdata(set_rawdata_params)
+            set_rawdata_params = [master.years_list, master.print_params,
+                                  master.wf_path, master.datatype]
+            (bck_rawdata_dic, bck_status,
+             missing_rawdata_dic, rawdata_status) = set_rawdata(set_rawdata_params)
 
             if not rawdata_status:
                 warning_title = "!!! ATTENTION : Données indisponibles !!!"
@@ -221,8 +222,15 @@ class SetLaunchButton:
                 messagebox.showwarning(warning_title, warning_text)
             else:
                 info_title = "- Information -"
-                info_text = ("Les extractions des bases données ont été mises en place."
-                             "\nLes données des employées vont être préparées "
+                info_text = "Les extractions des bases données ont été mises en place."
+                if bck_status:
+                    info_text += ("\n\nATTENTION, certaines extractions ne correspondent "
+                                  "au type de combinaison de données sélectionné.")
+                    for db, db_info in bck_rawdata_dic.items():
+                        info_text += (f"\n - {db_info[1]} manquent dans le dossier de {db}:\n"
+                                      f"    {db_info[0]}\n")
+                    info_text += "\nL'application est lancée mais évitez de traiter ces corpus."
+                info_text += ("\n\nLes données des employées vont être préparées "
                              "puis les onglets de traitement mis à disposition."
                              "\n\nCette opération peut prendre quelques minutes."
                              "\nVeuillez patienter.")

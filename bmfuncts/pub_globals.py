@@ -29,6 +29,7 @@ __all__ = ['AFFIL_TYPES_USECOLS',
            'DB_ID_COLS',
            'DOC_TYPE_DICT',
            'EMPTY',
+           'EMPTY_FILE_DATATYPE_DIC',
            'EXT_DOCS_COL_ADDS_LIST',
            'FILL_EMPTY_KEY_WORD',
            'FIRST_BDD',
@@ -124,6 +125,10 @@ AUTHORS_FULL_LIST_NAME_CORRECTION = False
 
 # Setting list of raw data types
 DATATYPE_LIST = ["Scopus & WoS", "Scopus-HAL & WoS", "WoS", "Scopus"]
+
+EMPTY_FILE_DATATYPE_DIC = {SCOPUS: DATATYPE_LIST[2],
+                           WOS   : DATATYPE_LIST[3],
+                          }
 
 ARCHI_BACKUP = {"root": "Sauvegarde de secours"}
 

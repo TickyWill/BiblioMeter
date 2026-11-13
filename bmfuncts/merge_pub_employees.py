@@ -407,21 +407,20 @@ def _add_other_ext(init_merge_df, init_orphan_df, others_path, cols_list, print_
 
 
 def _change_col_names(institute, org_tup, merge_df, orphan_df):
-    """Sets new column names to the files pointed by 'merge_path' 
-    and 'orphan_path' paths.
+    """Renames the columns of the two data passed as args according to conversion dicts.
 
-    For that it uses the `build_col_conversion_dic` function 
+    The conversion dicts are built through the  the `build_col_conversion_dic` function 
     imported from `bmfuncts.rename_cols` module.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): Institute's name.
+        org_tup (tup): Contains Institute's parameters.
         merge_df (dataframe): The data of the publications list \
-        with one row per author with attributes as Institute employee.
+        with one row per author with attributes as Institute's employee.
         orphan_df (dataframe): The data of the publications list \
-        with one row per author that has not been identified as Institute employee.
+        with one row per author that has not been identified as Institute's employee.
     Returns:
-        (str): End message recalling the full paths to the modified files.
+        (tup): The  two data with renamed columns.
     """
     #  Setting useful col names
     col_rename_tup = build_col_conversion_dic(institute, org_tup)
@@ -455,8 +454,8 @@ def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_d
         with one row per author that has not been identified as Institute employee.
         verbose (bool): Status of prints (default: False).
     Returns:
-        (bool): The empty status of the publications list with authors \
-        not found in the employees' database.
+        (dataframe): The publications' list with authors \
+        not found in the employees' data.
     """
     # Internal function
     def _save_inst_col_df(_inst_col, df_to_save):
@@ -488,10 +487,7 @@ def _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, orphan_d
             new_orphan_df = new_orphan_df.drop(inst_col_df.index)
     _save_inst_col_df(inst_col_list[0], institute_df)
     _save_inst_col_df("all_undrop", new_orphan_df)
-
-    # Updating orphan status
-    orphan_status = new_orphan_df.empty
-    return new_orphan_df, orphan_status
+    return new_orphan_df
 
 
 def _set_ext_files_paths(wf_path):
@@ -558,153 +554,65 @@ def _set_merge_cols_lists():
     return return_tup
 
 
-def _config_empl(empl_dict, years, initials_col, mat_col):
-    """Replace in "empl_dict" NaN values by UNKNOWN string except 
-    in first name initials and set the values type in the "mat_col" 
-    col as string.
+def _init_year_search(search_dfs, wf_path, print_params, add_ext_cols_list,
+                      progress_params, test_params):
+    """Initializes the merge-data and the orphan-data using the most-recent year 
+    of the employee's data and the data of the external-collaborators.
 
-    Care is taken to keep 'NA' value for the first name initials
-    through the `keep_initials` function imported from the 
-    "bmfuncts.useful_functs" internal module. This is done to avoid 
-    this value to be set to NaN by default.
-
-    Args:
-        empl_dict (dict): The employees dict keyed by year 
-        and valued by employees data (dataframe).
-        years (list): The keys (str) at which the employees dict 
-        will to be modified.
-        initials_col (str): The col name of the firstnames initials.
-        mat_col (str): The col name of the employees ID (matriculate).
-    Returns:
-        (dict): The modified dict.
-    """
-    new_empl_dict = {}
-    for year in years:
-        new_empl_dict[year] = keep_initials(empl_dict[year], initials_col,
-                                            missing_fill=bm_pg.UNKNOWN)
-        new_empl_dict[year] = new_empl_dict[year].astype({mat_col: 'str'})
-    return new_empl_dict
-
-
-def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, progress_params=None,
-                          set_test_case="No test", set_test_name="No name"):
-    """Searches in the employees database of the Institute the information for the authors 
-    of the publications of a corpus.
-
-    This is done through the following steps:
-    1. The publications list dataframe with one row per Institute author for each \
-    publication is built from the results of the corpus parsing through \
-    the `build_institute_pubs_authors_data` function imported from \
-    the `bmfuncts.build_pub_authors` module.
-    2. The 'merge_df' dataframe of the publications list containing all matches \
-    between Institute authors and employee names is initialized using the most recent year \
-    of the employees database through the `build_pub_empl_data` function imported from \
-    `bmfuncts.build_year_pub_empl` module; this is done together with the initialization \
-    of 'orphan_df' dataframe of the publications list with authors not found in the \
-    employees database; these two dataframes contains one row per author of each publication.
-    3. New rows containing the information of authors that are PhD students \
+    This done through the following steps:
+    1. The merge-data and the orphan-data are created using the most-recent year \
+    of the employee's data through the `build_pub_empl_data` function imported \
+    from the `bmfuncts.build_pub_authors` module;
+    2. New rows containing the information of authors that are PhD students \
     at the Institute but not as employees of it are added through the `_add_ext_docs` \
-    internal function updating 'merge_df' and 'orphan_df' dataframes.
+    internal function for updating the merge-data and the orphan-data;
     4. New rows containing the information of authors that are under external hiring \
     contract at the Institute are added through the `_add_other_ext` internal function \
-    updating 'merge_df' and 'orphan_df' dataframes.
-    5. The 'merge_df' and 'orphan_df' dataframes are updated by search in the employees \
-    database through the `build_pub_empl_data` function using recursively items from \
-    'years' list for the search year.
-    6. The dataframes are refactored by replacing NaN values by the UNKNOWN global and \
-    modifying the publications IDs through the `set_year_pub_id` function imported from \
-    the `bmfuncts.useful_functs`module. Then they are saved as xlsx files which full \
-    paths are given by 'merge_path' and 'orphan_path', respectively.
-    7. A new column containing the job type for each author is added in the file which \
-    full path is given by 'merge_path' through the `_add_author_job_type` internal function.
-    8. A new column containing the full reference of each publication is added \
-    in the file which full path is given by 'merge_path' through the `_add_biblio_list` \
-    internal function.
-    9. Column names are changed in the two files which full path are given by respectively, \
-    'merge_path' and 'orphan_path' through the `_change_col_names` internal function.
-    10. A XLSX file containing the unique hash ID built for each publication \
-    is created through the `create_hash_id` function imported from "bmfuncts.create_hash_id" \
-    module.
+    for updating the merge-data and the orphan-data.
 
     Args:
-        orphan_file (str): The file name for saving the built data of the publications list \
-        with one row per author that has not been identified as Institute employee.
-        merge_paths (list): The full paths to (1) the folder where the built data are saved and \
-        (2, 3 and 4) the files of the built data including the Hash-IDs data.
-        empl_dict (dict): The employees database as a dict keyed by the years \
-        and valued by the employees data for each year.
-        params_list (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
+        search_dfs (list): Composed of the employees' data (dataframe) of the most recent year \
+        and of the data (dataframe) of publications with one row per authors affiliated \
+        to the Institute.
+        wf_path (path): The full path to working folder.
+        print_params (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
         for the `print_step_text` function imported from the `bmfuncts.useful_functs` module, \
         of the Institute's name (str), of the org_tup (tup) that contains parameters of Institute's \
         organization, of the full path to working folder (path), of the data combination type \
         of corpuses databases (str), and of the dict giving the name of the parsing file for each parsed item.
-        progress_params (list): Composed of the function for updating the status of the ProgressBar tkinter widget \
-        and of the initial status of ProgressBar tkinter widget (optional, default: None).
-        set_test_case (str): Optional test case for testing the `build_pub_empl_data` function (default: "No test").
-        set_test_name (str): Optional author's lastname for testing the `build_pub_empl_data` function \
-        (default: "No name").
+        add_ext_cols_list (list): The useful columns' names parameters as built through \
+        the `_set_merge_cols_lists` internal function.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar \
+        tkinter widget and of the initial status (int) of ProgressBar tkinter widget and of \
+        the increment unit (int) of the status of the ProgressBar tkinter widget.
+        test_params (list): Composed of the test case (str) and of the author's lastname (str) \
+        for testing the `build_pub_empl_data` function imported from the \
+        `bmfuncts.build_year_pub_employees` module.
     Returns:
-        (tup): (end_message (str), empty status (bool) of the publications \
-        list with authors not found in the employees database).
-    Note:
-        Care is taken to keep 'NA' value for the first name initials \
-        that are set to NaN by default through the `keep_initials` function \
-        imported from "bmfuncts.useful_functs" internal module.
+        (tup): Composed of the initialized merge-data and the orphan-data (dataframes) \
+        and of the status (int if not None) of the ProgressBar tkinter widget.
     """
-    # Setting parameters values from params_list
-    corpus_year, print_params, institute, org_tup, wf_path = params_list[0:5]
+    # Setting the progress parameters for the update of the ProgressBar Tkinter widget
+    progress_callback, inter_progress_bar_state, step = progress_params
 
-    print_step_text("\nMerge publications authors and employees information...", print_params)
+    # Setting data for search from args
+    empl_df, pub_df = search_dfs
 
-    # Setting useful params of merge files from args
-    merge_folder_path, merge_path, orphan_path, hash_id_path = merge_paths
+    # Setting parameters values for test from 'test_params' arg
+    set_test_case, set_test_name = test_params
+
+    # Building the initial dataframes
+    print_step_text(f"\n{bm_pg.TAB}- Initializing search of authors among employees data...", print_params)
+    merge_df, orphan_df = build_pub_empl_data(empl_df, pub_df, wf_path, print_params,
+                                              test_case=set_test_case, test_name=set_test_name,
+                                              init_status=True)
+    if progress_callback:
+        progress_callback(inter_progress_bar_state + step * 20)
 
     # Setting path to the file of external employees
     ext_empl_path = _set_ext_files_paths(wf_path)
 
-    # Setting useful parameters for setting col names
-    cols_param_tup = _set_merge_cols_lists()
-    (reshape_cols_list, add_ext_cols_list, add_job_cols_list, add_ref_cols_list) = cols_param_tup
-    pub_id_col, mat_col, initials_col = reshape_cols_list
-
-    # Setting local parameters
-    orphan_split_status = org_tup[9]
-
-    # Building the articles dataframe
-    progress_callback, progress_bar_state, inter_progress_bar_state, inter_progress_params = [None] * 4
-    if progress_params:
-        progress_callback, progress_bar_state = progress_params
-        inter_progress_bar_state = 70
-        inter_progress_params = [progress_callback, progress_bar_state, inter_progress_bar_state]
-    pub_df = build_institute_pubs_authors_data(params_list, inter_progress_params)
-
-    # Replace in "pub_df" NaN values by UNKNOWN string except in first name initials
-    pub_df = keep_initials(pub_df, initials_col, missing_fill=bm_pg.UNKNOWN)
-
-    # Setting the years list for recursive search of author-employee match
-    years = list(empl_dict.keys())
-
-    # Replace in "empl_dict" NaN values by UNKNOWN string except in first name initials
-    # and set type of employees IDs to string
-    empl_dict = _config_empl(empl_dict, years, initials_col, mat_col)
-    step, new_progress_bar_state, progress_bar_loop_progression = [None] * 3
-    if progress_callback:
-        step = (100 - inter_progress_bar_state) / 100
-        progress_callback(inter_progress_bar_state + step * 10)
-
-    # ************************************************************
-    # * Building recursively the `merge_df` and `orphan_df` data *
-    # *                 using `empl_dict` files of years         *
-    # ************************************************************
-
-    # Building the initial dataframes
-    print_step_text(f"\n{bm_pg.TAB}- Initializing search of authors among employees data...", print_params)
-    merge_df, orphan_df = build_pub_empl_data(empl_dict[years[0]], pub_df, wf_path, print_params,
-                                              test_case=set_test_case, test_name=set_test_name, init_status=True)
-    if progress_callback:
-        progress_callback(inter_progress_bar_state + step * 20)
-
-    # Adding authors from list of external_phd students
+    # Adding authors from list of external_PhD students
     # to 'merge_df' data and updating 'orphan_df' data
     merge_df, orphan_df = _add_ext_docs(merge_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
     if progress_callback:
@@ -713,77 +621,201 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, p
     # Adding authors from list of external employees under other hiring contract
     # to 'merge_df' data  and updating 'orphan_df' data
     merge_df, orphan_df = _add_other_ext(merge_df, orphan_df, ext_empl_path, add_ext_cols_list, print_params)
+    progress_bar_state = None
     if progress_callback:
-        new_progress_bar_state = inter_progress_bar_state + step * 30
-        progress_callback(new_progress_bar_state)
-        progress_bar_loop_progression = step * 50 // len(years)
+        progress_bar_state = inter_progress_bar_state + step * 30
+        progress_callback(progress_bar_state)
+    return merge_df, orphan_df, progress_bar_state
 
-    print_step_text(f"\n{bm_pg.TAB}- Recursive search of authors among employees data "
-                    f"on {years[1]}...{years[-1]} period", print_params)
-    txt_len = 0
-    for year in years:
-        txt_len = print_temp_text(f"{bm_pg.TAB*2}Search year:{bm_pg.TAB}{year}", txt_end=True)
-        # Updating the 'merge_df_add' and 'orphan_df' data
-        merge_df_add, orphan_df = build_pub_empl_data(empl_dict[year], orphan_df, wf_path, print_params,
-                                                      test_case=set_test_case, test_name=set_test_name)
 
-        # Updating the 'merge_df' data
-        merge_df = concat_dfs([merge_df, merge_df_add])
+def _previous_year_search(search_dfs, wf_path, print_params, progress_params,
+                          test_params):
+    """Updates the merge-data and the orphan-data using the employee's data of a year.
 
-        # Updating progress bar state
-        if progress_callback:
-            new_progress_bar_state += progress_bar_loop_progression
-            progress_callback(new_progress_bar_state)
-    print_step_text(f"{bm_pg.TAB*2}- Search period results used to update publications' data of the Institute",
-                    print_params, prev_txt_len=txt_len)
+    This done through the following steps:
+    1. The orphan-data are searched using the employee's data of the year to built the data \
+    to be added to the merge-data and updated through the `build_pub_empl_data` function \
+    imported from the `bmfuncts.build_year_pub_employees` module;
+    2. The merge-data are updated by concatenation with the data built at the previous step 1.
 
-    print_step_text(f"\n{bm_pg.TAB}- Enhancing search results...", print_params)
+    Args:
+        search_dfs (list): Composed of the employees' data (dataframe) of a year \
+        and of the previous merge-data (dataframe) and of the previous orphan-data (dataframe).
+        wf_path (path): The full path to working folder.
+        print_params (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
+        for the `print_step_text` function imported from the `bmfuncts.useful_functs` module, \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of Institute's \
+        organization, of the full path to working folder (path), of the data combination type \
+        of corpuses databases (str), and of the dict giving the name of the parsing file for each parsed item.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar \
+        tkinter widget and of the initial status (int) of ProgressBar tkinter widget and of \
+        the increment unit (int) of the status of the ProgressBar tkinter widget.
+        test_params (list): Composed of the test case (str) and of the author's lastname (str) \
+        for testing the `build_pub_empl_data` function.
+    Returns:
+        (tup): Composed of the updated merge-data and the orphan-data (dataframes) \
+        and of the status of the ProgressBar tkinter widget (int if not None).
+    """
+    # Setting the progress parameters for the update of the ProgressBar Tkinter widget
+    progress_callback, progress_bar_state, progress_bar_loop_progression = progress_params
+
+    # Setting data for search from args
+    empl_df, merge_df, orphan_df = search_dfs
+
+    # Setting parameters values for test from 'test_params' arg
+    set_test_case, set_test_name = test_params
+
+    # Updating the 'merge_df_add' and 'orphan_df' data
+    merge_df_add, orphan_df = build_pub_empl_data(empl_df, orphan_df, wf_path, print_params,
+                                                  test_case=set_test_case, test_name=set_test_name)
+
+    # Updating the merged data
+    merge_df = concat_dfs([merge_df, merge_df_add])
+
+    # Updating progress bar state
+    if progress_callback:
+        progress_bar_state += progress_bar_loop_progression
+        progress_callback(progress_bar_state)
+    return merge_df, orphan_df, progress_bar_state
+
+
+def _enhance_search_results(search_results, empl_dict, years, sub_params_list,
+                            cols_info_list, progress_params):
+    """Enhances the merge-data and orphan-data by adding complementary information.
+
+    The enhancement is performed as follows:
+    1. The merge-data and orphan-data are refactored by replacing NaN values by \
+    the UNKNOWN global except for the firstnames' initials through the `keep_initials` \
+    function imported from the `bmfuncts.useful_functs` module.
+    2. The publications' IDs in the merge-data and orphan-data are modifyed through \
+    the `set_year_pub_id` function imported from the `bmfuncts.useful_functs` module.
+    3. A column containing the job type for each author is added to the merge-data \
+    through the `_add_author_job_type` internal function.
+    4. A column containing the full reference of each publication is added to the merge-data \
+    merge-data through the `_add_biblio_list` internal function.
+    5. Column names are changed in the merge-data and orphan-data through \
+    the `_change_col_names` internal function.
+
+    Args:
+        search_results (list): Composed of the merge-data (dataframe) and of the orphan-data (dataframe) \
+        resulting from the recursive search of authors among employees'data.
+        empl_dict (dict): The employees' data as a dict keyed by the years \
+        and valued by the employees data for each year.
+        years (list): The years list for recursive search in the employees' database.
+        sub_params_list (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
+        for the `print_step_text` function imported from the `bmfuncts.useful_functs` module, \
+        of the Institute's name (str) and of the org_tup (tup) that contains parameters of Institute's \
+        organization.
+        cols_info_list (list): The useful columns' names parameters as built through \
+        the `_set_merge_cols_lists` internal function.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar \
+        tkinter widget and of the previous status (int) of ProgressBar tkinter widget and of \
+        the increment unit (int) of the status of the ProgressBar tkinter widget.
+    Returns:
+        (list): Composed of the enhanced merge-data (dataframe) \
+        and of the enhanced orphan-data (dataframe).
+    """
+    # Setting the progress parameters for the update of the ProgressBar Tkinter widget
+    progress_callback, search_progress_bar_state, step = progress_params
+
+    # Setting parameters' value from args
+    corpus_year, print_params, institute, org_tup = sub_params_list
+    initials_col, pub_id_col, add_job_cols_list, add_ref_cols_list = cols_info_list
+
+    # Setting the results to enhance from args
+    merge_df, orphan_df = search_results
 
     # Replace NaN values by UNKNOWN string except in first name initials
     merge_df = keep_initials(merge_df, initials_col, missing_fill=bm_pg.UNKNOWN)
     orphan_df = keep_initials(orphan_df, initials_col, missing_fill=bm_pg.UNKNOWN)
     print_step_text(f"{bm_pg.TAB*2}- Initials NA kept and not set to NaN", print_params)
-    orphan_status = orphan_df.empty
 
     # Changing Pub_id columns to a unique Pub_id depending on the year
     merge_df = set_year_pub_id(merge_df, corpus_year, pub_id_col)
-    print_step_text(f"{bm_pg.TAB*2}- Publication IDs tagged with corpus year", print_params)
-    if not orphan_status:
+    if not orphan_df.empty:
         orphan_df = set_year_pub_id(orphan_df, corpus_year, pub_id_col)
+    print_step_text(f"{bm_pg.TAB*2}- Publication IDs tagged with corpus year", print_params)
 
     # Adding author job type to 'merge_df' data
     merge_df = _add_author_job_type(merge_df, empl_dict, years, add_job_cols_list)
     print_step_text(f"{bm_pg.TAB*2}- Column with author job-type added", print_params)
     if progress_callback:
-        progress_callback(new_progress_bar_state + step * 5)
+        progress_callback(search_progress_bar_state + step * 5)
 
     # Adding full publication reference to 'merge_df' data
     merge_df = _add_biblio_list(merge_df, add_ref_cols_list)
     print_step_text(f"{bm_pg.TAB*2}- Column with full publication reference added", print_params)
     if progress_callback:
-        progress_callback(new_progress_bar_state + step * 10)
+        progress_callback(search_progress_bar_state + step * 10)
 
     # Renaming column names in merge_df' and 'orphan_df' data
     merge_df, orphan_df = _change_col_names(institute, org_tup, merge_df, orphan_df)
     print_step_text(f"{bm_pg.TAB*2}- Columns renamed with final names", print_params)
 
-    # Splitting orphan file in subdivisions of Institute when indicated
-    split_orphan_df = orphan_df.copy()
+    enhanced_results = [merge_df, orphan_df]
+    return enhanced_results
+
+
+def _build_and_save_final_search_results(enhanced_results, sub_params_list, merge_paths,
+                                         orphan_file, progress_params):
+    """Builds the final merge-data and orphan-data before to be saved.
+
+    The final data are built as follows:
+    1. The orphan-data are split in subdivisions of Institute when indicated by the parameters \
+    of the Institute's organization through the `_split_orphan` internal function;
+    2. A column containing the unique ID of the publications is added to the merge-data and orphan-data \
+    through the `create_hash_id` function imported from the `bmfuncts.create_hash_id` module;
+    3. The final merge-data, the final orphan-data and the built Hash-IDs data are saved as XLSX files.
+
+    Args:
+        enhanced_results (list): Composed of the merge-data (dataframe) and of the orphan-data (dataframe) \
+        enhanced through the `_enhance_search_results` internal function.
+        sub_params_list (list): Composed of the parameters (list) for the `print_step_text` function \
+        imported from the `bmfuncts.useful_functs` module, of the Institute's name (str) and of \
+        the org_tup (tup) that contains parameters of Institute's organization.
+        merge_paths (list): The full paths to (1) the folder where the built data are saved and \
+        (2, 3 and 4) the files for saving the final merge-data, the final orphan-data \
+        and the built Hash-IDs data.
+        orphan_file (str): The file name used as base for saving the split results \
+        of the orphan-data when this split is performed.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar \
+        tkinter widget and of the previous status (int) of ProgressBar tkinter widget and of \
+        the increment unit (int) of the status of the ProgressBar tkinter widget.
+    Returns:
+        (bool): The empty status of the final orphan-data.
+    """
+    # Setting the progress parameters for the update of the ProgressBar Tkinter widget
+    progress_callback, search_progress_bar_state, step = progress_params
+
+    # Setting parameters' value from args
+    print_params, institute, org_tup = sub_params_list
+    merge_folder_path, merge_path, orphan_path, hash_id_path = merge_paths
+
+    # Setting the results to further enhance before to be saved
+    merge_df, orphan_df = enhanced_results
+
+    # Setting local parameters
+    orphan_split_status = org_tup[9]
+
+    # Splitting orphan data in subdivisions of Institute when indicated
     if orphan_split_status:
-        split_orphan_df, orphan_status = _split_orphan(org_tup, merge_folder_path, orphan_path,
-                                                     orphan_file, orphan_df)
+        split_orphan_df = orphan_df.copy()
+        orphan_df = _split_orphan(org_tup, merge_folder_path, orphan_path, orphan_file, split_orphan_df)
         print_step_text(f"{bm_pg.TAB*2}- Not-found authors split in the specified subdivisions", print_params)
     if progress_callback:
-        progress_callback(new_progress_bar_state + step * 15)
+        progress_callback(search_progress_bar_state + step * 15)
 
     # Creating universal identifiers of publications independent of data extraction
-    return_tup = create_hash_id(institute, org_tup, merge_df, split_orphan_df)
-    final_merge_df, final_orphan_df, hash_id_df, hash_id_nb = return_tup
+    final_return_tup = create_hash_id(institute, org_tup, merge_df, orphan_df)
+    final_merge_df, final_orphan_df, hash_id_df, hash_id_nb = final_return_tup
 
     # Saving the data
     final_merge_df.to_excel(merge_path, index=False)
     final_orphan_df.to_excel(orphan_path, index=False)
     hash_id_df.to_excel(hash_id_path, index=False)
+
+    # Updating orphan_status
+    orphan_status = final_orphan_df.empty
 
     print_step_text(f"{bm_pg.TAB*2}- Number of publications' hash-IDs created and saved: {hash_id_nb}",
                     print_params)
@@ -793,6 +825,126 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, p
     else:
         step_txt += "with remaining authors not identified as employees or close collaborators."
     print_step_text(step_txt, print_params)
+    return orphan_status
+
+
+def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, progress_params=None,
+                          set_test_case="No test", set_test_name="No name"):
+    """Searches in the employees' data the information for the authors affiliated to the Institute.
+
+    The following short names are used for the description of this function and used internal functions:
+    - pub-data = The data of publications with one row per authors affiliated to the Institute;
+    - merge-data = The pub-data with authors found in the employees' data;
+    - orphan-data = The pub-data with authors not found in the employees' data.
+
+    The search is done through the following steps:
+    1. The pub-data are built from the results of the corpus parsing through \
+    the `build_institute_pubs_authors_data` function imported from \
+    the `bmfuncts.build_pub_authors` module;
+    2. The merge-data and orphan-data are initialized using the most-recent year \
+    of the employees' data and the external-collaborators' data through \
+    the `_init_year_search` internal function;
+    3. The merge-data and orphan-data are updated using the employees' data of all available \
+    previous years through the `_previous_year_search` internal function unless orphan-data \
+    becomes empty earlier;
+    4. The merge-data and orphan-data are added with useful information and reformatted \
+    through the `_enhance_search_results` internal function;
+    5. The merge-data and orphan-data are further enhance before to be saved through \
+    the `_build_and_save_final_search_results` internal function.
+
+    Args:
+        orphan_file (str): The file name for saving the built data of the publications list \
+        with one row per author that has not been identified as Institute employee.
+        merge_paths (list): The full paths to (1) the folder where the built data are saved and \
+        (2, 3 and 4) the files of the built data including the Hash-IDs data.
+        empl_dict (dict): The employees' data as a dict keyed by the years \
+        and valued by the employees data for each year.
+        params_list (list): Composed of the 4 digits year of the corpus (str), of the parameters (list) \
+        for the `print_step_text` function imported from the `bmfuncts.useful_functs` module, \
+        of the Institute's name (str), of the org_tup (tup) that contains parameters of Institute's \
+        organization, of the full path to working folder (path), of the data combination type \
+        of corpuses databases (str), and of the dict giving the name of the parsing file for each parsed item.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar tkinter widget \
+        and of the initial status of ProgressBar tkinter widget (optional, default: None).
+        set_test_case (str): Optional test case (default: "No test") for testing the search process.
+        set_test_name (str): Optional author's lastname (default: "No name") for testing the search process.
+    Returns:
+        (bool): The empty status of the publications list with authors not found in the employees' data.
+    """
+    # Setting parameters values from params_list
+    corpus_year, print_params, institute, org_tup, wf_path = params_list[0:5]
+
+    print_step_text("\nMerge publications authors and employees information...", print_params)
+
+    # Setting useful params of merge files from args
+    merge_folder_path, merge_path, orphan_path, hash_id_path = merge_paths
+
+    # Setting useful parameters for setting col names
+    cols_param_tup = _set_merge_cols_lists()
+    (reshape_cols_list, add_ext_cols_list, add_job_cols_list, add_ref_cols_list) = cols_param_tup
+    pub_id_col, mat_col, initials_col = reshape_cols_list
+
+    # Setting parameters list for search test
+    test_params = [set_test_case, set_test_name]
+
+    # Initialize progress parameters
+    (progress_callback, start_progress_bar_state, inter_progress_bar_state,
+     inter_progress_params) = [None] * 4
+    if progress_params:
+        progress_callback, start_progress_bar_state = progress_params
+        inter_progress_bar_state = 70
+
+    # Building the publications' data with authors affiliated to the Institute
+    start_progress_params = [progress_callback, start_progress_bar_state, inter_progress_bar_state]
+    pub_df = build_institute_pubs_authors_data(params_list, start_progress_params)
+
+    # Setting the years list for recursive search of author-employee match
+    # The years are listed in descending order
+    search_years = sorted(list(empl_dict.keys()), reverse=True)
+
+    # Updating progress parameters
+    progress_bar_loop_progression, step = [None] * 2
+    if progress_callback:
+        step = (100 - inter_progress_bar_state) / 100
+        progress_bar_loop_progression = step * 50 // len(search_years)
+
+    # Building the initial data through search using the most recent year of employees data
+    print_step_text(f"\n{bm_pg.TAB}- Initializing search of authors among employees data...", print_params)
+    init_progress_params = [progress_callback, inter_progress_bar_state, step]
+    init_search_dfs = [empl_dict[search_years[0]], pub_df]
+    init_return_tup = _init_year_search(init_search_dfs, wf_path, print_params, add_ext_cols_list,
+                                        init_progress_params, test_params)
+    merge_df, orphan_df, search_progress_bar_state = init_return_tup
+
+    print_step_text(f"\n{bm_pg.TAB}- Recursive search of authors among employees data "
+                    f"on {search_years[1]}...{search_years[-1]} period", print_params)
+    txt_len = 0
+    year_break = search_years[-1]
+    for year in search_years[1:]:
+        txt_len = print_temp_text(f"{bm_pg.TAB*2}Search year:{bm_pg.TAB}{year}", txt_end=True)
+        next_progress_params = [progress_callback, search_progress_bar_state, progress_bar_loop_progression]
+        year_search_dfs = [empl_dict[year], merge_df, orphan_df]
+        next_return_tup = _previous_year_search(year_search_dfs, wf_path, print_params,
+                                                next_progress_params, test_params)
+        merge_df, orphan_df, search_progress_bar_state = next_return_tup
+        if orphan_df.empty:
+            year_break = year
+            break
+    end_search_progress_params = [progress_callback, search_progress_bar_state, step]
+    print_step_text(f"{bm_pg.TAB*2}- Search down to {year_break} used to update publications' data of the Institute",
+                    print_params, prev_txt_len=txt_len)
+
+    print_step_text(f"\n{bm_pg.TAB}- Enhancing search results...", print_params)
+    sub_params_list = [corpus_year, print_params, institute, org_tup]
+    cols_info_list = [initials_col, pub_id_col, add_job_cols_list, add_ref_cols_list]
+    search_results = [merge_df, orphan_df]
+    enhanced_results = _enhance_search_results(search_results, empl_dict, search_years, sub_params_list,
+                                                 cols_info_list, end_search_progress_params)
+
+    print_step_text(f"\n{bm_pg.TAB}- Building and saving final search results...", print_params)
+    sub_params_list = [print_params, institute, org_tup]
+    orphan_status = _build_and_save_final_search_results(enhanced_results, sub_params_list, merge_paths,
+                                                         orphan_file, end_search_progress_params)
 
     if progress_callback:
         progress_callback(100)

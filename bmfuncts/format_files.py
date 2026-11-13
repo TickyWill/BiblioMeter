@@ -900,68 +900,49 @@ def set_df_attributes(df_title, df_cols_list, add_cols_nb=0):
         The rows attributes as dict keyed by "first_row" and "other_rows" \
         and valued by rows height (int), Num of first column to be formatted (int)).
     """
-    if df_title=='pub_list':
-        attr_tup = _set_pub_list_attributes(df_cols_list)
-
-    elif df_title=='affil_type_pub_list':
-        attr_tup = _set_affil_type_pub_list_attributes(df_cols_list, add_cols_nb)
-
-    elif df_title=='invalids':
-        attr_tup = _set_invalid_list_attributes(df_cols_list)
-
-    elif df_title=='missing_if_issn':
-        attr_tup = _set_if_issn_attributes(df_cols_list)
-
-    elif df_title=='def_otp':
-        attr_tup = _set_def_otp_attributes(df_cols_list)
-
-    elif df_title=='if_db':
-        attr_tup = _set_if_db_attributes(df_cols_list)
-
-    elif df_title=='authors':
-        attr_tup = _set_auth_attributes(df_cols_list)
-
-    elif df_title=='authors_stat':
-        attr_tup = _set_auth_stat_attributes(df_cols_list)
-
-    elif df_title=='kpi':
-        attr_tup = _set_kpi_attributes(df_cols_list)
-
-    elif df_title=='if_analysis':
-        attr_tup = _set_if_ana_attributes(df_cols_list)
-
-    elif df_title=='kw':
-        attr_tup = _set_kw_attributes(df_cols_list)
-
-    elif df_title=='geo':
-        attr_tup = _set_geo_attributes(df_cols_list)
-
-    elif df_title=='norm_affils':
-        attr_tup = _set_norm_affils_attributes(df_cols_list)
-
-    elif df_title=='affil_country_pub':
-        attr_tup = _set_affil_country_pub_attributes(df_cols_list)
-
-    elif df_title=='pub_country_affils':
-        attr_tup = _set_pub_country_affils_attributes(df_cols_list)
-
-    elif df_title=='country_affils_pub':
-        attr_tup = _set_country_affils_pub_attributes(df_cols_list)
-
-    elif df_title=='affils_distrib':
-        attr_tup = _set_affils_distrib_attributes(df_cols_list)
-
-    elif df_title=='doctype_stat':
-        attr_tup = _set_doctype_stat_attributes(df_cols_list)
-
-    elif df_title=='raw_affils':
-        attr_tup = _set_raw_affils_attributes(df_cols_list)
-
-    elif df_title=='false_addr':
-        attr_tup = _set_false_addresses_attributes(df_cols_list)
-
-    else:
-        attr_tup = _set_base_attributes(df_cols_list)
+    match df_title:
+        case 'pub_list':
+            attr_tup = _set_pub_list_attributes(df_cols_list)
+        case 'affil_type_pub_list':
+            attr_tup = _set_affil_type_pub_list_attributes(df_cols_list, add_cols_nb)
+        case 'invalids':
+            attr_tup = _set_invalid_list_attributes(df_cols_list)
+        case 'missing_if_issn':
+            attr_tup = _set_if_issn_attributes(df_cols_list)
+        case 'def_otp':
+            attr_tup = _set_def_otp_attributes(df_cols_list)
+        case 'if_db':
+            attr_tup = _set_if_db_attributes(df_cols_list)
+        case 'authors':
+            attr_tup = _set_auth_attributes(df_cols_list)
+        case 'authors_stat':
+            attr_tup = _set_auth_stat_attributes(df_cols_list)
+        case 'kpi':
+            attr_tup = _set_kpi_attributes(df_cols_list)
+        case 'if_analysis':
+            attr_tup = _set_if_ana_attributes(df_cols_list)
+        case 'kw':
+            attr_tup = _set_kw_attributes(df_cols_list)
+        case 'geo':
+            attr_tup = _set_geo_attributes(df_cols_list)
+        case 'norm_affils':
+            attr_tup = _set_norm_affils_attributes(df_cols_list)
+        case 'affil_country_pub':
+            attr_tup = _set_affil_country_pub_attributes(df_cols_list)
+        case 'pub_country_affils':
+            attr_tup = _set_pub_country_affils_attributes(df_cols_list)
+        case 'country_affils_pub':
+            attr_tup = _set_country_affils_pub_attributes(df_cols_list)
+        case 'affils_distrib':
+            attr_tup = _set_affils_distrib_attributes(df_cols_list)
+        case 'doctype_stat':
+            attr_tup = _set_doctype_stat_attributes(df_cols_list)
+        case 'raw_affils':
+            attr_tup = _set_raw_affils_attributes(df_cols_list)
+        case 'false_addr':
+            attr_tup = _set_false_addresses_attributes(df_cols_list)
+        case _:
+            attr_tup = _set_base_attributes(df_cols_list)
     return attr_tup
 
 
@@ -989,7 +970,8 @@ def format_page(df, df_title, wb=None, header=True,
         (default = None).
         idx_wrap (int): The optional maximum index of the rows \
         for which text is wrapped in the last column.
-        add_cols_nb (int): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        add_cols_nb (int): Optional (default: 0), number of supplementary \
+        attributes to set by default.
     Returns:
         (tup): (workbook of the formatted worksheet (openpyxl workbook), \
         formatted active sheet).

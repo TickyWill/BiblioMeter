@@ -25,6 +25,7 @@ from bmfuncts.read_final_results import read_final_dedup
 from bmfuncts.save_final_results import save_final_dedup
 from bmfuncts.save_final_results import set_results_folder_path
 from bmfuncts.useful_functs import concat_dfs
+from bmfuncts.useful_functs import keep_initials
 from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import print_temp_text
 from bmfuncts.useful_functs import reorder_df
@@ -671,7 +672,8 @@ def _enhance_input_data(parsing_dfs_list, enhance_params,
         enhance_cols_list (list): Lists of column names as set in the `build_institute_pubs_authors_data` \
         main function of this module through the `_set_useful_bm_cols` internal function.
         ortho_path (path): The full path to the file for correction of misspelled author names.
-        progress_params (list): # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        progress_params (list): Composed of the function for updating the status of the ProgressBar tkinter widget, \
+        of its initial status and of its final status (optional, default: None).
     Returns:
         (list): Composed of the enhanced publications' main data (dataframe) and of \
         the merged data (dataframe) of the authors' data into the authors-with-affiliations' data.
@@ -695,7 +697,7 @@ def _enhance_input_data(parsing_dfs_list, enhance_params,
     recast_cols_list = bm_auth_names_list + [co_auth_col]
     authors_df = _recasting_authors_data(authors_df, recast_cols_list, print_params)
     inter_progress_params = [None] * 3
-    if progress_params:
+    if progress_callback:
         inter_progress_state = (final_progress_state - init_progress_state) / 3
         inter_progress_params = [progress_callback, inter_progress_state, final_progress_state]
         progress_callback(inter_progress_state)
@@ -709,7 +711,7 @@ def _enhance_input_data(parsing_dfs_list, enhance_params,
     full_authors_cols_list = [pub_id_col, co_auth_col, fullname_col, authors_list_col]
     pub_authors_df = _build_authors_full_list(authors_df, full_authors_cols_list, print_params)
     enhanced_articles_df =  articles_df.merge(pub_authors_df, how='right', on=pub_id_col)
-    if progress_params:
+    if progress_callback:
         progress_callback(final_progress_state)
 
     # Combining name of author to author ID with affiliation by publication ID
@@ -717,7 +719,7 @@ def _enhance_input_data(parsing_dfs_list, enhance_params,
     authaddr_auth_df = authaddr_df.merge(authors_df, how='inner', left_on=merge_cols,
                                          right_on=merge_cols)
     enhanced_dfs_list = [enhanced_articles_df, authaddr_auth_df]
-    if progress_params:
+    if progress_callback:
         progress_callback(final_progress_state)
     return enhanced_dfs_list
 
@@ -988,6 +990,10 @@ def build_institute_pubs_authors_data(params_list, progress_params):
     Returns:
         (dataframe): Publications' list with one row per author with correction of authors' names \
         and drop of authors with inappropriate affiliation to the Institute.
+    Note:
+        Care is taken to keep 'NA' value for the first name initials \
+        that are set to NaN by default through the `keep_initials` function \
+        imported from "bmfuncts.useful_functs" internal module.
     """
     # Setting parameters values from params_list
     corpus_year, print_params, institute, org_tup, wf_path = params_list[0:5]
@@ -1002,6 +1008,7 @@ def build_institute_pubs_authors_data(params_list, progress_params):
     # Setting useful col names
     pub_id_col, auth_idx_col, co_auth_col = bp_cols_list[0:3]
     corpus_year_col, authors_list_col = bm_bonus_cols_list
+    initials_col = bm_auth_names_list[2]
 
     # Setting files parameters for authors names correction
     paths_list, sheets_list = _set_correction_file_params(corpus_year, institute, wf_path)
@@ -1024,6 +1031,9 @@ def build_institute_pubs_authors_data(params_list, progress_params):
     complements_path = paths_list[3]
     institute_merged_df = _select_institute_auth_pub_data(enhanced_dfs_list, merge_params, merge_cols,
                                                           merge_cols_lists, sheets_list, complements_path)
+
+    # Replace in "institute_merged_df" NaN values by UNKNOWN string except in first name initials
+    institute_merged_df = keep_initials(institute_merged_df, initials_col, missing_fill=bm_pg.UNKNOWN)
 
     # Building and save data of dropped publications
     pub_drop_dfs = parsing_dfs_list[0:2] + [institute_merged_df]
