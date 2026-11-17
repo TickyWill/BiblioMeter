@@ -44,6 +44,30 @@ bmgui.main\_page
    :undoc-members:
    :show-inheritance:
 
+bmgui.main\_utils
+-----------------
+
+.. automodule:: bmgui.main_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmgui.pages\_classes
+--------------------
+
+.. automodule:: bmgui.pages_classes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bmgui.pages\_utils
+------------------
+
+.. automodule:: bmgui.pages_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bmgui.parse\_corpus\_page
 -------------------------
 

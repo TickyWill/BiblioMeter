@@ -2,17 +2,22 @@
 ## Description
 Python application for bibliometric purpose based on analysis of publications metadata extracted from databases such as Scopus and WoS.<br />
 More specifically:<br />
-- Parse Scopus and WoS corpuses;
-- Merge Scopus and WoS corpuses taking care of the duplicates;
-- Recursively dispatch the articles per department using the employees' database;
-- Take care of the authors homonyms (user's action required);
-- Take care of the authors affiliated to the Institute but not found in the employees' database;
-- Computes key performance indicators (impact factors, collaborations and keywords occurrences...).
+- Parsing of Scopus and WoS corpuses with identification of incoherent metadata;
+- Merge of Scopus and WoS corpuses taking care of the duplicate publications;
+- Dispatch of the publications per units of the Institute using recursive search in the employees' database;
+- Identification of the authors affiliated to the Institute but not found in the employees' database;
+- Identification of the authors' homonyms in the employees' database;
+- Attribution of a principal scientific field to each public
+- Building of a consolidated list of Institute's publications;
+- Computing of key performance indicators (impact factors and keywords occurrences...);
+- Analysis of publications-distribution per authors affiliated to the Institute;
+- Analysis of publications-distribution per countries and per continents;
+- Analysis of co_authors's affiliations per publications and publications-distribution per co_authors's affiliations-types.
 
 ## Installation
-Run the following command to get a repository clone of the orphan_treatment_enhancement branch:
-```
-git clone https://github.com/TickyWill/BiblioMeter.git@main
+Run the following command to clone a branch of the git repository:
+```python
+git clone https://github.com/TickyWill/BiblioMeter.git@<branch>
 ```
 
 ## Requirements
@@ -62,7 +67,7 @@ app = AppMain()
 app.mainloop()
 ```
 
-**for more details on application usage refer to the user manual:** 
+**for more details on application usage refer to the user manual:**
 <p><a href=https://github.com/TickyWill/BiblioMeter/blob/main/BiblioMeterUserManual-Fr.pdf>BiblioMeter user manual
 </a></p>
 
@@ -75,6 +80,7 @@ app.mainloop()
 - 6.0.0 Enhanced OTPs treatment
 - 6.1.0 Enhanced collaborations analysis
 - 6.2.0 Introduced analysis by subjects (OTPs)
+- 6.3.0 Upgraded python version to 3.14
 
 # Meta
 	- authors: BiblioAnalysis team

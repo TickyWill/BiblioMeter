@@ -34,7 +34,7 @@ setup(name='BiblioMeter',
       classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.14',
         'Topic :: Scientific/Engineering :: Information Analysis :: Visualization',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research'

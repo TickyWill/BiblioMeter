@@ -1,4 +1,4 @@
-""" Module of functions for saving final results.
+"""Module of functions for saving final results.
 """
 
 __all__ = ['save_db_ids_data',
@@ -27,10 +27,8 @@ import os
 import shutil
 from pathlib import Path
 
-# 3rd party imports
-#import BiblioParsing as bp
-
 # Local imports
+import bmfuncts.institute_globals as bm_ig
 import bmfuncts.pub_globals as bm_pg
 from bmfuncts.rename_cols import set_final_col_names
 
@@ -206,7 +204,7 @@ def save_final_hash_ids(wf_path, corpus_year, results_folder_path):
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["hash_id"]
 
     # Setting aliases of common parts of file names
-    origin_hash_id_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    origin_hash_id_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     hash_id_file_base_alias = bm_pg.ARCHI_YEAR["hash_id file name"]
     year_hash_id_file_alias = corpus_year + " " + hash_id_file_base_alias
 
@@ -250,7 +248,7 @@ def save_final_merge(wf_path, corpus_year, results_folder_path):
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["merge"]
 
     # Setting aliases of common parts of file names
-    origin_merge_folder_alias = bm_pg.ARCHI_YEAR["bdd mensuelle"]
+    origin_merge_folder_alias = bm_pg.ARCHI_YEAR["merge folder name"]
     merge_file_base_alias = bm_pg.ARCHI_YEAR["merge file name"]
     year_merge_file_alias = corpus_year + " " + merge_file_base_alias
 
@@ -392,8 +390,8 @@ def save_final_ifs(institute, org_tup, wf_path, corpus_year, results_folder_path
     with its impact factor for the corpus year.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): Institute's name.
+        org_tup (tup): Contains Institute's parameters.
         wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
@@ -506,8 +504,8 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
     """Saves final results of number of publications per keyword for the corpus year.
 
     Args:
-        institute (str): Institute name.
-        org_tup (tup): Contains Institute parameters.
+        institute (str): Institute's name.
+        org_tup (tup): Contains Institute's parameters.
         wf_path (path): Full path to working folder.
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
@@ -519,17 +517,6 @@ def save_final_kws(institute, org_tup, wf_path, corpus_year, results_folder_path
     # Setting useful column names aliases
     _, depts_col_list = set_final_col_names(institute, org_tup)
 
-#    # Setting useful aliases
-#    auth_kw_item_alias = bp.PARSING_ITEMS_LIST[6]
-#    index_kw_item_alias = bp.PARSING_ITEMS_LIST[7]
-#    title_kw_item_alias = bp.PARSING_ITEMS_LIST[8]
-#
-#    # Setting useful filenames dict
-#    kw_item_alias_dict = {'AK' : auth_kw_item_alias,
-#                          'IK' : index_kw_item_alias,
-#                          'TK' : title_kw_item_alias,
-#                         }
-#
     # Setting aliases for saving results
     results_sub_folder_alias = bm_pg.ARCHI_RESULTS["keywords"]
 
@@ -669,7 +656,8 @@ def save_final_institute_country(wf_path, corpus_year, results_folder_path, inst
         corpus_year (str): 4 digits year of the corpus.
         results_folder_path (path): Full path to the folder where final \
         results have to be saved.
-        institute_country (str): Country of the Institute.
+        institute_country (str): Country of the institute for building \
+        the file names for saving related stat data.
     Returns:
         (str): End message recalling corpus year and full path to \
         the folder where final results have been saved.
@@ -708,7 +696,7 @@ def save_final_institute_country(wf_path, corpus_year, results_folder_path, inst
     # Copying file from origin path to target path
     shutil.copy2(origin_institute_country_file_path, target_institute_country_file_path)
 
-    end_message = (f"Final Institute country statistics for year {corpus_year} saved in folder: "
+    end_message = (f"Final Institute's country statistics for year {corpus_year} saved in folder: "
                    f"\n  '{target_countries_path}'")
     return end_message
 
@@ -726,11 +714,11 @@ def save_final_affiliations(wf_path, corpus_year, results_folder_path):
         the folder where final results have been saved.
     """
     # Setting aliases for saving results
-    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["institutions"]
+    results_sub_folder_alias = bm_pg.ARCHI_RESULTS["affiliations"]
 
     # Setting aliases of common parts of file names
     origin_analysis_folder_alias = bm_pg.ARCHI_YEAR["analyses"]
-    origin_affils_folder_alias = bm_pg.ARCHI_YEAR["institutions analysis"]
+    origin_affils_folder_alias = bm_pg.ARCHI_YEAR["affiliations analysis"]
 
     # Setting common paths
     origin_corpus_year_path = wf_path / Path(corpus_year)
@@ -808,7 +796,7 @@ def set_results_folder_path(wf_path, datatype):
 
 
 def save_final_results(params_list, results_to_save_dict, if_analysis_name="None",
-                       institute_country="None", verbose=False):
+                       verbose=False):
     """Saves final results of given datatype and corpus year according 
     to the saving status of the results.
 
@@ -829,8 +817,6 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
         results should be saved).
         if_analysis_name (str): Optional base (str) building file names \
         for saving impact-factors type of results (default: "None").
-        institute_country (str): Optional country of the institute \
-        for building the file names for saving related stat data (default: "None").
         verbose (bool): Status of prints (default: False).
     Returns:
         (str): End message recalling corpus year and full path to \
@@ -898,6 +884,7 @@ def save_final_results(params_list, results_to_save_dict, if_analysis_name="None
             print("\n",message)
 
     if results_to_save_dict["institute_country"]:
+        institute_country = bm_ig.INSTITUTES_COUNTRY_DICT[params_list[1]]
         message = save_final_institute_country(wf_path, corpus_year,
                                                results_folder_path,
                                                institute_country)

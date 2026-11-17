@@ -13,7 +13,6 @@ __all__ = ['build_and_save_dedup_db_ids',
 
 
 # Standard library imports
-import copy
 import os
 import shutil
 from pathlib import Path
@@ -38,44 +37,112 @@ from bmfuncts.useful_functs import print_step_text
 from bmfuncts.useful_functs import print_step_title
 
 
-def _get_database_file_path(database_folder_path, database_file_end):
-    """Selects the most recent file ending with 'database_file_end'.
-
-    This is done through the following steps:
-
-    1. Lists all the files with this ending present in the \
-    folder targeted by "database_folder_path".
-    2. Selects the most recent one in this list using date \
-    of last modification.
+def _set_shared_extract_info(wf_path):
+    """Sets folders and files information shared by all rawdata extractions.
 
     Args:
-        database_folder_path (path): The path to the folder where files \
-        with names ending with 'database_file_end' will be searched.
-        database_file_end (str): Ending of the names of the files \
-        to be searched.
+        wf_path (path): The path to the working folder.
     Returns:
-        (path): Path targeting the file found and selected.
+        (tup): Composed of the full path to the folder where the files of the extracted \
+        rawdata are available and of the folder name where the empty files required for \
+        specific datatypes (ex: using "WoS" datatype requires empty files for Scopus rawdata).
     """
-    list_data_base = []
-    for file in os.listdir(database_folder_path):
-        if file.endswith(database_file_end):
-            list_data_base.append(file)
-    if list_data_base:
-        database_file_path = database_folder_path / Path(list_data_base[0])
-    else:
-        database_file_path = None
-    return database_file_path
+    # Setting useful aliases independant from database
+    extract_main_folder = bm_pg.ARCHI_EXTRACT["root"]
+    empty_file_folder = bm_pg.ARCHI_EXTRACT["empty-file folder"]
+
+    # Setting useful paths independant from database
+    extract_main_folder_path = wf_path / Path(extract_main_folder)
+    return extract_main_folder_path, empty_file_folder
 
 
-def _set_database_extract_info(wf_path, datatype, database):
-    """Builds the path to database extractions and the file 
-    names ending that are specific to the data type 'datatype'.
+def _set_scopus_extract_info(wf_path, extract_main_folder_path, datatype):
+    """Builds the path to the available extracted rawdata for Scopus and the file 
+    names ending that are specific to the data type.
 
-    It also sets the folder name of the empty files required for 
-    specific data types (ex: using only "WoS" datatype requires 
-    empty files for Scopus extractions). 
-    To do that, it uses the global 'ARCHI_EXTRACT' defined 
-    in the module imported as bm_pg.
+    It also builds the paths to the categories' files. 
+    The dict built is keyed by ['extract_folder_path', 'cat_files_paths',
+    'file_end', 'bck_file_end', 'file_extent'].
+
+    Args:
+        wf_path (path): The path to the working folder.
+        extract_main_folder_path (path): The full path to the folder \
+        where the files of the extracted rawdata are available.
+        datatype (str): The data type of data combination type \
+        from databases.
+        database (str): The database selected for the analysis.
+    Returns:
+        (tup): Composed of the built paths (list of paths), of \
+        the file name ending (str) and of the extend of the rawdata files.
+    """
+    # Setting useful globals' aliases
+    database = bm_pg.SCOPUS
+    scopus_folder = bm_pg.ARCHI_EXTRACT[database]["root"]
+    scopus_file_base = bm_pg.ARCHI_EXTRACT[database][datatype]
+    scopus_bck_file_base = bm_pg.ARCHI_EXTRACT[database][bm_pg.DATATYPE_LIST[0]]
+    scopus_file_extent = bm_pg.ARCHI_EXTRACT[database]["file_extent"]
+
+    # Setting useful paths
+    scopus_folder_path = extract_main_folder_path / Path(scopus_folder)
+    scopus_cat_folder_path = scopus_folder_path / Path(bm_pg.ARCHI_EXTRACT["categories"])
+    scopus_cat_codes_path = scopus_cat_folder_path / Path(bm_pg.SCOPUS_CAT_CODES)
+    scopus_journals_issn_cat_path = scopus_cat_folder_path / Path(bm_pg.SCOPUS_JOURNALS_ISSN_CAT)
+
+    # Setting specific parameters for file names building
+    scopus_file_end = scopus_file_base + scopus_file_extent
+    scopus_bck_file_end = scopus_bck_file_base + scopus_file_extent
+
+    scopus_info_dict = {'extract_folder_path': scopus_folder_path,
+                        'cat_files_paths'    : [scopus_cat_codes_path, scopus_journals_issn_cat_path],
+                        'file_end'           : scopus_file_end,
+                        'bck_file_end'       : scopus_bck_file_end,
+                        'file_extent'        : scopus_file_extent,
+                       }
+    return scopus_info_dict
+
+
+def _set_wos_extract_info(wf_path, extract_main_folder_path, datatype):
+    """Builds the path to the available extracted rawdata for WoS and the file 
+    names ending that are specific to the data type.
+
+    The dict built is keyed by ['extract_folder_path', 'cat_files_paths',
+    'file_end', 'bck_file_end', 'file_extent'].
+
+    Args:
+        wf_path (path): The path to the working folder.
+        datatype (str): The data type of data combination-type.
+        database (str): The database selected for the analysis.
+    Returns:
+        (dict): The built dict.
+    """
+    # Setting useful globals' aliases
+    database = bm_pg.WOS
+    wos_folder = bm_pg.ARCHI_EXTRACT[database]["root"]
+    wos_file_base = bm_pg.ARCHI_EXTRACT[database][datatype]
+    wos_file_extent = bm_pg.ARCHI_EXTRACT[database]["file_extent"]
+
+    # Setting useful paths
+    wos_folder_path = extract_main_folder_path / Path(wos_folder)
+
+    # Setting specific parameters for file names building
+    wos_file_end = wos_file_base + wos_file_extent
+
+    wos_info_dict = {'extract_folder_path': wos_folder_path,
+                     'cat_files_paths'    : [],
+                     'file_end'           : wos_file_end,
+                     'bck_file_end'       : wos_file_end,
+                     'file_extent'        : wos_file_extent,
+                    }
+
+    return wos_info_dict
+
+
+def _set_extract_info(wf_path, datatype, database):
+    """Builds the folders and files information giving access to the extracted 
+    rawdata from a database.
+
+    This is done through the `_set_shared_extract_info`, `_set_scopus_extract_info` 
+    and `_set_wos_extract_info` internal functions.
 
     Args:
         wf_path (path): The path to the working folder.
@@ -83,122 +150,179 @@ def _set_database_extract_info(wf_path, datatype, database):
         from databases.
         database (str): The database selected for the analysis.
     Returns:
-        (tup): (path to database extractions (path), \
-        file name ending (str), \
-        path to the folder of empty files (path)).
+        (dict): The built dict.
     """
-    # Setting useful aliases
-    extraction_folder = bm_pg.ARCHI_EXTRACT["root"]
-    empty_file_folder = bm_pg.ARCHI_EXTRACT["empty-file folder"]
-    database_folder = bm_pg.ARCHI_EXTRACT[database]["root"]
-    database_file_base = bm_pg.ARCHI_EXTRACT[database][datatype]
-    database_file_extent = bm_pg.ARCHI_EXTRACT[database]["file_extent"]
-    database_file_end = database_file_base + database_file_extent
-
-    # Setting useful paths
-    extraction_folder_path = wf_path / Path(extraction_folder)
-    database_folder_path = extraction_folder_path / Path(database_folder)
-    database_folder_paths = [database_folder_path]
+    extract_main_folder_path, empty_file_folder = _set_shared_extract_info(wf_path)
     if database==bm_pg.SCOPUS:
-        scopus_cat_folder_path = database_folder_path / Path(bm_pg.ARCHI_EXTRACT["categories"])
-        scopus_cat_codes_path = scopus_cat_folder_path / Path(bm_pg.SCOPUS_CAT_CODES)
-        scopus_journals_issn_cat_path = scopus_cat_folder_path / Path(bm_pg.SCOPUS_JOURNALS_ISSN_CAT)
-        database_folder_paths = database_folder_paths + [scopus_cat_codes_path, scopus_journals_issn_cat_path]
+        extract_info_dict = _set_scopus_extract_info(wf_path, extract_main_folder_path, datatype)
+    if database==bm_pg.WOS:
+        extract_info_dict = _set_wos_extract_info(wf_path, extract_main_folder_path, datatype)
+    extract_info_dict['empty_file_folder'] = empty_file_folder
+    return extract_info_dict
 
-    return database_folder_paths, database_file_end, empty_file_folder, database_file_extent
 
+def _get_extract_file_path(extract_info_dict, extract_folder_name=None):
+    """Selects the first file ending with the extract_info_dict['file_end'] value.
 
-def _set_database_rawdata(set_rawdata_params, database):
-    """Sets the rawdata to be used for the data type 'datatype' analysis.
-
-    It copies the files ending with 'database_file_end' from database folder 
-    targeted by the path 'database_folder_path' to the rawdata folder 
-    targeted by the path 'rawdata_path'. 
-    To do that it uses the `_set_database_extract_info` internal function. 
-    When the data type to be analyzed is restricted to one of the possible rawdata,
-    empty files ending with 'database_file_end' are used as the unused rawdata.
+    This is done through the following steps:
+    1. Lists all the files with this ending present in the folder targeted \
+    by "extract_folder_path" and all the files ending with \
+    the extract_info_dict['bck_file_end'] value as backup rawdata;
+    2. Select the first in the list if the list is not empty.
+    If no file is found, the path is set to None or to the available backup rawdata.
 
     Args:
-        set_rawdata_params (list): Composed of the prints parameters, of the path \
-        to the working folder, of the data type of data combination type \
-        from databases and of the list of corpus years (4 digits str).
-        database (str): The database selected for the analysis.
+        extract_info_dict (dict): The folders and files information giving access \
+        to the extracted rawdata as built through the `_set_extract_info` internal function.
+        extract_folder_name (str): The name of the folder where the extracted rawdata \
+        file should be available (Optional, default=extract_info_dict['empty_file_folder']).
     Returns:
-        (str): End message recalling the database and data type used.
+        (tup): Composed of the full path targeting the file found and selected and of \
+        the status (bool) of setting backup rawdata.
+    """
+    rawdata_file_end = extract_info_dict['file_end']
+    rawdata_bck_file_end = extract_info_dict['bck_file_end']
+    if not extract_folder_name:
+        extract_folder_name = extract_info_dict['empty_file_folder']
+    extract_root_path = extract_info_dict['extract_folder_path']
+
+    extract_folder_path = extract_root_path / Path(extract_folder_name)
+    files_list = []
+    bck_files_list = []
+    bck_status = False
+    for file in os.listdir(extract_folder_path):
+        if file.endswith(rawdata_file_end):
+            files_list.append(file)
+        if file.endswith(rawdata_bck_file_end):
+            bck_files_list.append(file)
+    if files_list:
+        extract_file_path = extract_folder_path / Path(files_list[0])
+    else:
+        extract_file_path = None
+        if bck_files_list:
+            extract_file_path = extract_folder_path / Path(bck_files_list[0])
+            bck_status = True
+    return extract_file_path, bck_status
+
+
+def _set_year_rawdata(wf_path, database, rawdata_file_extent, extract_file_path, year):
+    """Copies the extracted-rawdata file found to the rawdata working-folder for a corpus year.
+
+    The rawdata working-folder is set through the `set_rawdata_and_parsing_paths` function \
+    imported from the `bmfuncts.config_utils` module.
+
+    Args:
+        wf_path (path): The path to the working folder.
+        database (str): The database selected for the analysis.
+        rawdata_file_extent (str): The extend of the rawdata files.
+        extract_file_path (path): The full path to the extracted-rawdata file.
+        year (str): The 4-digit year of the corpus.
+    """
+    rawdata_path_dict, _ = set_rawdata_and_parsing_paths(wf_path, year, bm_pg.BDD_LIST)
+    rawdata_path = rawdata_path_dict[database]
+    if os.path.exists(rawdata_path):
+        for item in os.listdir(rawdata_path):
+            if item.endswith(rawdata_file_extent):
+                os.remove(os.path.join(rawdata_path, item))
+    else:
+        os.makedirs(rawdata_path)
+    shutil.copy2(extract_file_path, rawdata_path)
+
+
+def _set_database_rawdata(database, empty_file_datatype, set_rawdata_params):
+    """Sets the rawdata to be used for the selected data type.
+
+    First, the folders and files information giving access to the extracted rawdata \
+    is built through the `_set_extract_info` internal function.
+    For each corpus year, it proceeds through the following steps:
+    1. The full path to the extracted rawdata for the year is set through the \
+    `_get_extract_file_path` internal function (when the data type is restricted \
+    to one of the possible database, the full path is set for the empty file);
+    2. The available extracted-rawdata file is copied to the rawdata working-folder \
+    through the `_set_year_rawdata` internal function.
+    The user is informed if any rawdata is missing (analysis launch will be aborted) \
+    or if backup rawdata have been set.
+
+    Args:
+        database (str): The database selected for the analysis.
+        empty_file_datatype (str): The data type case for which the rawdata \
+        should be set to empty for the selected database.
+        set_rawdata_params (list): Composed of the list of corpus years (4-digits str), \
+        of the prints parameters (list), of the path to the working folder and \
+        of the data type (str) of data-combination.
+    Returns:
+        (tup): Composed of the path to the root folder of the extracted rawdata \
+        for the selected database, of the missing rawdata (list) and of the backup rawdata (list).
     """
     # Setting parameters value from 'set_rawdata_params'
-    print_params, wf_path, datatype, years_list = set_rawdata_params
+    years_list, print_params, wf_path, datatype = set_rawdata_params
 
     print_step_text(f"\nSetting rawdata for {database}", print_params)
 
     # Getting database extractions info
-    return_tup = _set_database_extract_info(wf_path, datatype, database)
-    database_folder_paths, database_file_end, empty_file_folder, database_file_extent = return_tup
-    database_folder_path = database_folder_paths[0]
+    extract_info_dict = _set_extract_info(wf_path, datatype, database)
+    extract_root_path = extract_info_dict['extract_folder_path']
+    rawdata_file_extent = extract_info_dict['file_extent']
 
-    # Setting specific parameters for Scopus-HAL data
-    last_year_database_file_end = database_file_end
-    if datatype==bm_pg.DATATYPE_LIST[1] and database==bm_pg.SCOPUS:
-        last_year_datatype = bm_pg.DATATYPE_LIST[0]
-        return_tup = _set_database_extract_info(wf_path, last_year_datatype,
-                                                database)
-        _, last_year_database_file_end, _, _ = return_tup
-
-    # Cycling on year
+    extract_file_path, bck_status = _get_extract_file_path(extract_info_dict)
     missing_rawdata = []
+    bck_rawdata = []
     for year in years_list:
-        if database==bm_pg.SCOPUS and datatype==bm_pg.DATATYPE_LIST[2]:
-            year_database_folder_path = database_folder_path / Path(empty_file_folder)
-            year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                              database_file_end)
-        elif database==bm_pg.WOS and datatype==bm_pg.DATATYPE_LIST[3]:
-            year_database_folder_path = database_folder_path / Path(empty_file_folder)
-            year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                              database_file_end)
-        else:
-            year_database_folder_path = database_folder_path / Path(year)
-            year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                              database_file_end)
-            if not year_database_file_path:
-                year_database_file_path = _get_database_file_path(year_database_folder_path,
-                                                                  last_year_database_file_end)
-        # Checking availability of rawdata
-        if year_database_file_path:
-            rawdata_path_dict, _ = set_rawdata_and_parsing_paths(wf_path, year, bm_pg.BDD_LIST)
-            rawdata_path = rawdata_path_dict[database]
-            if os.path.exists(rawdata_path):
-                for item in os.listdir(rawdata_path):
-                    if item.endswith(database_file_extent):
-                        os.remove(os.path.join(rawdata_path, item))
-            else:
-                os.makedirs(rawdata_path)
-            shutil.copy2(year_database_file_path, rawdata_path)
+        if datatype!=empty_file_datatype:
+            extract_file_path, bck_status = _get_extract_file_path(extract_info_dict,
+                                                                   extract_folder_name=year)
+
+        # Checking availability of year's rawdata
+        if extract_file_path:
+            _set_year_rawdata(wf_path, database, rawdata_file_extent, extract_file_path, year)
         else:
             missing_rawdata.append(year)
+        if bck_status:
+            bck_rawdata.append(year)
     if missing_rawdata:
-        step_txt = ("  - Try cancelled because rawdata are missing "
+        step_txt = (f"{bm_pg.TAB}- Try cancelled because rawdata are missing in "
                     f"for {missing_rawdata}")
+    elif bck_rawdata:
+        step_txt = (f"{bm_pg.TAB}- Succeeded to set rawdata for all corpus-years "
+                    f"but with backup rawdata for {bck_rawdata}")
     else:
-        step_txt = "  - Succeeded to set rawdata for all corpus-years"
+        step_txt = f"{bm_pg.TAB}- Succeeded to set rawdata for all corpus-years"
     print_step_text(step_txt, print_params)
-    return database_folder_path, missing_rawdata
+    return extract_root_path, missing_rawdata, bck_rawdata
 
 
 def set_rawdata(set_rawdata_params):
+    """ Tries to set the rawdata in the rawdata working folder according \
+    to the selected type of data-combination.
+
+    Args:
+        set_rawdata_params (list): Composed of the list of corpus years (4-digits str), \
+        of the prints parameters (list), of the path to the working folder and \
+        of the data type (str) of data-combination.
+    Returns:
+        (tup):  Composed of the built dict of backup rawdata, of the built dict \
+        of missing rawdata and of the status (bool) of the rawdata.
+        """
     # Setting parameters value from 'set_rawdata_params'
-    print_params, _, _, years_list = set_rawdata_params
+    years_list, print_params = set_rawdata_params[0:2]
 
     print_step_title(f"TRY SETTING RAWDATA FOR {years_list}", print_params)
 
     rawdata_status = True
     missing_rawdata_dic = {}
+    bck_status = False
+    bck_rawdata_dic = {}
     for database in bm_pg.BDD_LIST:
-        rawdata_return = _set_database_rawdata(set_rawdata_params, database)
-        database_folder_path, missing_rawdata = rawdata_return
+        empty_file_datatype = bm_pg.EMPTY_FILE_DATATYPE_DIC[database]
+        rawdata_return = _set_database_rawdata(database, empty_file_datatype, set_rawdata_params)
+        extract_root_path, missing_rawdata, bck_rawdata = rawdata_return
         if missing_rawdata:
-            missing_rawdata_dic[database] = [database_folder_path, missing_rawdata]
+            missing_rawdata_dic[database] = [extract_root_path, missing_rawdata]
             rawdata_status = False
-    return missing_rawdata_dic, rawdata_status
+        if bck_rawdata:
+            bck_rawdata_dic[database] = [extract_root_path, bck_rawdata]
+            bck_status = True
+    return bck_rawdata_dic, bck_status, missing_rawdata_dic, rawdata_status
 
 
 def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
@@ -234,7 +358,7 @@ def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
             item_tsv_path = parsing_path / Path(item_tsv_file)
             if item_tsv_path.is_file():
                 try:
-                    item_df = pd.read_csv(item_tsv_path, sep = "\t")
+                    item_df = pd.read_csv(item_tsv_path, sep="\t")
                 except pd.errors.EmptyDataError:
                     item_df = pd.DataFrame()
 
@@ -244,6 +368,16 @@ def read_parsing_dict(parsing_path, parsing_filenames_dict, save_extent):
 
 
 def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
+    """!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        cols: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        in_left_authorsinst_df: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        in_left_pub_ids: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     # Setting parameters from globals
     pub_id_col = bm_pg.COL_NAMES['pub_id']
 
@@ -252,7 +386,7 @@ def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
     for col in cols:
         sub_data_dict[col] = in_left_authorsinst_df[in_left_authorsinst_df[col]==1]
         sub_data_dict[col] = sub_data_dict[col].drop_duplicates(subset=[pub_id_col])
-    sub_data_df = concat_dfs(sub_data_dict.values())
+    sub_data_df = concat_dfs(list(sub_data_dict.values()))
     sub_data_df = sub_data_df.drop_duplicates(subset=[pub_id_col])
 
     # Computing the number of publications tagged in 'col' column
@@ -269,7 +403,7 @@ def _compute_col_pub_number(cols, in_left_authorsinst_df, in_left_pub_ids):
 def compute_dedup_pub_number(org_tup, dedup_parsing_dict):
     """Computes publications numbers resulting from the deduplication of parsing results.
 
-    The function builts a dictionary keyed by the tags of Institute's publications as given 
+    The function builds a dictionary keyed by the tags of Institute's publications as given
     by the 'org_tup' parameter and valued by corresponding computed number of publications. 
     The total number of publication is given at key "all".
 
@@ -320,7 +454,7 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
     # Setting parameters from globals
     pub_id_col = bm_pg.COL_NAMES['pub_id']
     dbs_ids_col = bm_pg.DB_ID_COLS["all_dbs"]
-    source_col = bm_pg.COL_NAMES_BONUS['source']
+    source_col = bm_pg.COL_NAMES_ADD['source']
 
     # Building the list of identifiers data of each database type
     db_ids_dfs_list = []
@@ -362,6 +496,14 @@ def build_and_save_dedup_db_ids(dedup_article_df, parsing_path_dict, dedup_db_in
 
 
 def convert_parsing_keys_to_bm(bp_parsing_dict):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        bp_parsing_dict: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (dict): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     parsing_dict = {key: bp_parsing_dict[bm_pg.PARSING_KEYS_CONVERT_DIC[key]]
                     for key in bm_pg.PARSING_KEYS_DIC['all']
                     if bm_pg.PARSING_KEYS_CONVERT_DIC[key] in bp_parsing_dict.keys()}
@@ -369,6 +511,14 @@ def convert_parsing_keys_to_bm(bp_parsing_dict):
 
 
 def revers_parsing_keys_to_bp(parsing_dict):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        parsing_dict: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (dict): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     bp_parsing_dict = {key: parsing_dict[bm_pg.PARSING_KEYS_REVERT_DIC[key]]
                        for key in bm_pg.PARSING_ITEMS_LIST
                        if bm_pg.PARSING_KEYS_REVERT_DIC[key] in parsing_dict.keys()}
@@ -408,6 +558,18 @@ def _set_scopus_cat_info(wf_path):
 
 def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
                     database, progress_callback=None):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        rawparse_params: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        rawdata_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parsing_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        database: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        progress_callback: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
 
     # Setting parameters values from params_list
     (corpus_year, print_params, datatype, wf_path,
@@ -421,12 +583,12 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
     parsing_tup = bp_biblio_parser(rawdata_path, database, affil_filter_list=None,
                                    affil_params_dic=parse_affil_params_dic,
                                    scopus_cat_paths=scopus_cat_paths)
-    bp_parsing_dict, fails_dict, db_ids_df = parsing_tup[0:3]
+    bp_parsing_dict, fails_dict, db_ids_df = parsing_tup[0], parsing_tup[1], parsing_tup[2]
     parsing_dict = convert_parsing_keys_to_bm(bp_parsing_dict)
     if len(parsing_tup)>3:
         correction_dict = dict(zip(list(bm_pg.RAWDATA_CORRECT.keys()), parsing_tup[3:]))
         save_rawdata_correction(correction_dict, rawdata_path, database)
-        print_step_text("  - Data of correction in rawdata of authors and addresses saved for control",
+        print_step_text(f"{bm_pg.TAB}- Data of correction in rawdata of authors and addresses saved for control",
                         print_params)
     pubs_nb = 0
     if fails_dict:
@@ -440,7 +602,7 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
 
     save_fails_dict(fails_dict, parsing_path)
     save_db_ids_data(db_ids_df, parsing_path, database)
-    print_step_text(f"  - Parsing results built and saved for {pubs_nb} publications",
+    print_step_text(f"{bm_pg.TAB}- Parsing results built and saved for {pubs_nb} publications",
                     print_params)
     if progress_callback:
         progress_callback(95)
@@ -456,8 +618,19 @@ def rawdata_parsing(rawparse_params, rawdata_path, parsing_path,
     return raw_parse_tup
 
 
-def _set_db_parsing_data(db, datatype, db_parse_path, base_params_list):
-    _, print_params, _, parsing_filenames_dict = base_params_list
+def _set_db_parsing_data(db, datatype, db_parse_path, parse_base_params_list):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        db: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        datatype: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        db_parse_path: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parse_base_params_list: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
+    parsing_filenames_dict = parse_base_params_list[3]
 
     db_single_status = False
     db_parsing_dict = {}
@@ -468,26 +641,37 @@ def _set_db_parsing_data(db, datatype, db_parse_path, base_params_list):
         db_parsing_dict = read_parsing_dict(db_parse_path, parsing_filenames_dict,
                                              bm_pg.TSV_SAVE_EXTENT)
         # Correcting the 'db' database parsing results
-        db_params_list = [db] + base_params_list
+        db_params_list = [db] + parse_base_params_list
         correct_status = correct_parsing(db_params_list, db_parse_path,
                                          db_parsing_dict, bm_pg.UNKNOWN_COUNTRY)
         if correct_status:
             db_parsing_dict = read_parsing_dict(db_parse_path, parsing_filenames_dict,
                                                 bm_pg.TSV_SAVE_EXTENT)
 
-        if not any([db.lower() in datatype.lower() for db in other_dbs_list]):
+        if not any(db.lower() in datatype.lower() for db in other_dbs_list):
             # Managing the case of a single database by Linking other parsings
             # to Scopus parsings what would be the changes in the Scopus parsings
             db_single_status = True
     return db_parsing_dict, db_single_status
 
 
-def _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list):
+def _set_parsings_to_concat(datatype, parsing_path_dict, parse_base_params_list):
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        datatype: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parsing_path_dict: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        parse_base_params_list: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
     # Setting and correcting the parsing results to concatenate
     dbs_parsings_dict = {}
     single_db = ""
     for db in bm_pg.BDD_LIST:
-        return_tup = _set_db_parsing_data(db, datatype, parsing_path_dict[db], base_params_list)
+        return_tup = _set_db_parsing_data(db, datatype, parsing_path_dict[db],
+                                          parse_base_params_list)
         db_parsing_dict, db_single_status = return_tup
         if db_single_status:
             single_db = db
@@ -496,20 +680,20 @@ def _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list):
 
 
 def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
-    """Deduplicates cancatenated parsings results for the case of single database parsing use.
+    """Deduplicates concatenated parsings results for the case of single database parsing use.
 
     Args:
         bp_concat_parsing_dict (dict): Parsing data with original keys of BiblioParsing package.
         concat_parsing_dict (dict): Parsing data with keys of BiblioMeter package.
     Returns:
-        (tup): Composed of the deduplicated parsing data (dict) keyyed \
+        (tup): Composed of the deduplicated parsing data (dict) keyed \
         with the dedicated keys of the two packages. 
     """
     pub_id_col = bm_pg.COL_NAMES['pub_id']
     pub_parsing_item = bm_pg.PARSING_KEYS_DIC['parsing_pub']
     pub_df = concat_parsing_dict[pub_parsing_item]
-    droping_cols = list(set(pub_df.keys()) - {pub_id_col})
-    pub_df = pub_df.drop_duplicates(subset=droping_cols)
+    dropping_cols = list(set(pub_df.keys()) - {pub_id_col})
+    pub_df = pub_df.drop_duplicates(subset=dropping_cols)
     pub_ids_to_keep = list(set(pub_df[pub_id_col]))
     for key, key_df in bp_concat_parsing_dict.items():
         bp_concat_parsing_dict[key] = key_df[key_df[pub_id_col].isin(pub_ids_to_keep)]
@@ -518,9 +702,19 @@ def _dedup_concat_single_parsing(bp_concat_parsing_dict, concat_parsing_dict):
 
 
 def deduplicate_parsing(dedup_params_list, progress_callback=None):
-    (corpus_year, print_params, institute, org_tup, wf_path, datatype,
+    """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Args:
+        dedup_params_list: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+        progress_callback: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+
+    Returns:
+        (tup): !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+    """
+    (corpus_year, print_params, institute, org_tup, wf_path, datatype, parse_affil_params_dic,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
-    base_params_list = [corpus_year, print_params, dedup_affil_params_dic, parsing_filenames_dict]
+    parse_base_params_list = [corpus_year, print_params, parse_affil_params_dic, parsing_filenames_dict]
+#    dedup_base_params_list = [corpus_year, print_params, dedup_affil_params_dic, parsing_filenames_dict]
 
     print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", print_params)
 
@@ -528,11 +722,10 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     _, parsing_path_dict = set_rawdata_and_parsing_paths(wf_path, corpus_year, bm_pg.BDD_LIST)
 
     # Setting useful paths for corpus deduplication
-    scopus_parse_path, wos_parse_path = parsing_path_dict[bm_pg.SCOPUS], parsing_path_dict[bm_pg.WOS]
     concat_path, dedup_path = parsing_path_dict["concat"], parsing_path_dict["dedup"]
 
     # Setting and correcting the parsing results to concatenate
-    dbs_parsings_dict, single_db = _set_parsings_to_concat(datatype, parsing_path_dict, base_params_list)
+    dbs_parsings_dict, single_db = _set_parsings_to_concat(datatype, parsing_path_dict, parse_base_params_list)
     if progress_callback:
         progress_callback(15)
 
@@ -554,13 +747,13 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     if single_db:
         bp_concat_parsing_dict, concat_parsing_dict = _dedup_concat_single_parsing(bp_concat_parsing_dict,
                                                                                    concat_parsing_dict)
-        print_step_text("  - Single parsing data concatenated and deduplicated", print_params)
+        print_step_text(f"{bm_pg.TAB}- Single parsing data concatenated and deduplicated", print_params)
     if progress_callback:
         progress_callback(25)
 
     save_parsing_dict(concat_parsing_dict, concat_path,
                       parsing_filenames_dict, bm_pg.TSV_SAVE_EXTENT)
-    print_step_text("  - Parsing data concatenated and saved", print_params)
+    print_step_text(f"{bm_pg.TAB}- Parsing data concatenated and saved", print_params)
     if progress_callback:
         progress_callback(30)
 
@@ -570,7 +763,7 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
 
     dedup_parsing_dict = convert_parsing_keys_to_bm(bp_dedup_parsing_dict)
     dedup_pub_nb, dedup_institute_pub_nb = compute_dedup_pub_number(org_tup, dedup_parsing_dict)
-    _dedup_infos=(wf_path, datatype, corpus_year)
+    _dedup_infos= [wf_path, datatype, corpus_year]
     pubs_df = dedup_parsing_dict['pub']
     ids_nb_dict = build_and_save_dedup_db_ids(pubs_df, parsing_path_dict, _dedup_infos)
     if progress_callback:
@@ -578,11 +771,11 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
 
     save_parsing_dict(dedup_parsing_dict, dedup_path, parsing_filenames_dict, bm_pg.TSV_SAVE_EXTENT,
                       dedup_infos=_dedup_infos)
-    step_txt = ("  - All parsing results deduplicated and saved as final results "
-                f"for {dedup_pub_nb} publications "
-                f"including {dedup_institute_pub_nb} of {institute}"
-                "\n  - After deduplication, the number of kept publications from each database are:")
+
+    # Setting text to print at step end
+    step_txt = f"{bm_pg.TAB}- All parsing results saved as final results for {dedup_pub_nb} publications"
     for db_type, db_nb in ids_nb_dict.items():
-        step_txt += f"\n      - {db_nb} for {db_type}"
+        step_txt += f"\n{bm_pg.TAB}- The number of kept publications for {db_type} is {db_nb}"
+    step_txt += f"\n{bm_pg.TAB}- Only {dedup_institute_pub_nb} include an author affiliated to the {institute}"
     print_step_text(step_txt, print_params)
     return dedup_pub_nb, dedup_institute_pub_nb, ids_nb_dict

@@ -322,7 +322,8 @@ def _launch_dedup(master, corpus_year, progress_callback):
     wos_parse_status, scopus_parse_status, dedup_parse_status = dedup_status_tup
 
     dedup_params_list = [corpus_year, master.print_params, master.institute, master.org_tup, master.wf_path,
-                         master.datatype, master.dedup_affil_params_dic, master.parsing_filenames_dict]
+                         master.datatype, master.parse_affil_params_dic, master.dedup_affil_params_dic,
+                         master.parsing_filenames_dict]
     progress_callback(10)
 
     # Asking for confirmation of corpus year to concatenate and deduplicate

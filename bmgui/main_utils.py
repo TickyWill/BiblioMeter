@@ -87,13 +87,13 @@ def set_displays_widths(self, master):
 
 
 def set_institute_widgets(self, institute_val):
-    """Sets widget parameters for institute selection through 'tk.OptionMenu'.
+    """Sets widget parameters for institute's selection through 'tk.OptionMenu'.
 
     Args:
         self (instance): Instance of the calling page.
         institute_val (tk.StringVar): For tracking value in 'tk.OptionMenu'.
     """
-    # Setting label widget for institute selection
+    # Setting label widget for institute's selection
     self.inst_label_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                        size=self.select_font_size_tup[0],
                                        weight='bold')
@@ -103,14 +103,14 @@ def set_institute_widgets(self, institute_val):
     self.inst_label.place(x=self.inst_label_pos_tup[0],
                           y=self.inst_label_pos_tup[1])
 
-    # Setting button for institute selection
+    # Setting button for institute's selection
     self.inst_optionbutton_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                               size=self.select_font_size_tup[1])
     self.inst_optionbutton = tk.OptionMenu(self, institute_val,
                                            *bm_ig.INSTITUTES_LIST)
     self.inst_optionbutton.config(font=self.inst_optionbutton_font)
 
-    # Placing widgets for Institute selection
+    # Placing widgets for Institute's selection
     bm_gu.place_after(self.inst_label, self.inst_optionbutton, dy=self.opt_but_dy)
 
 
@@ -166,10 +166,10 @@ def _get_file(self, institute_select, datatype_select, set_inst_param, create_ar
 
     Args:
         self (instance): Instance of the calling page.
-        institute_select (str): Selected Institute name.
+        institute_select (str): Selected Institute's name.
         datatype_select (str): Selected datatype.
         set_inst_param (bool): Parameter for getting rid of setting \
-        Institute parameters if False.
+        Institute's parameters if False.
         create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
@@ -198,11 +198,11 @@ def set_wf_widget_param(self, institute_select, inst_wf,
 
     Args:
         self (instance): Instance of the calling page.
-        institute_select (str): Selected Institute name.
+        institute_select (str): Selected Institute's name.
         inst_wf (str): Full path as string to the working folder.
         datatype_select (str): Selected datatype.
         set_inst_param (bool): Parameter for getting rid of setting \
-        Institute parameters if False.
+        Institute's parameters if False.
         create_archi_param (bool): If true, a full corpus folder architecture \
         is built otherwise only the root corpus folder is created.
     """
@@ -228,13 +228,13 @@ def set_wf_widget_param(self, institute_select, inst_wf,
     # Setting button for changing Wf
     wf_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
                                  size=self.disp_font_size_tup[1])
-    wf_button = tk.Button(self,
-                          text=bm_gg.MAIN_BUT_LABEL_DICT['wf_change'],
-                          font=wf_button_font,
-                          command=lambda: _get_file(self, institute_select,
-                                                    datatype_select, set_inst_param,
-                                                    create_archi_param))
-    bm_gu.place_bellow(wf_entry, wf_button, dy=self.buttons_dy)
+    self.wf_button = tk.Button(self,
+                               text=bm_gg.MAIN_BUT_LABEL_DICT['wf_change'],
+                               font=wf_button_font,
+                               command=lambda: _get_file(self, institute_select,
+                                                         datatype_select, set_inst_param,
+                                                         create_archi_param))
+    bm_gu.place_bellow(wf_entry, self.wf_button, dy=self.buttons_dy)
 
 
 def try_wf_access(wf_path):
@@ -333,13 +333,13 @@ def set_corpuses_widgets_param(self, inst_wf, create_archi_param):
 
     # Setting button for corpus creation
     corpuses_button_font = tkFont.Font(family=bm_gg.FONT_NAME,
-                                    size=self.disp_font_size_tup[1])
-    corpuses_button = tk.Button(self,
-                             text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
-                             font=corpuses_button_font,
-                             command=lambda: _create_corpus(self, inst_wf,
-                                                            create_archi_param))
-    bm_gu.place_bellow(corpuses_entry, corpuses_button, dy=self.buttons_dy)
+                                       size=self.disp_font_size_tup[1])
+    self.corpuses_button = tk.Button(self,
+                                     text=bm_gg.MAIN_BUT_LABEL_DICT['corpus_add'],
+                                     font=corpuses_button_font,
+                                     command=lambda: _create_corpus(self, inst_wf,
+                                                                    create_archi_param))
+    bm_gu.place_bellow(corpuses_entry, self.corpuses_button, dy=self.buttons_dy)
     return corpuses_val
 
 
@@ -420,21 +420,21 @@ def update_app_page(self, *args):
     Args:
         self (instance): Instance of the calling page.
     """
-    # Getting from args the institute_widget that tracks value of Institute selection
+    # Getting from args the institute_widget that tracks value of Institute's selection
     institute_widget = args[0]
     institute_select = institute_widget.get()
 
-    # Setting default values for datatype selection
+    # Setting default values for datatype's selection
     default_datatype = " "
     datatype_val = tk.StringVar(self)
     datatype_val.set(default_datatype)
 
-    # Creating widgets for datatype selection
+    # Creating widgets for datatype's selection
     set_datatype_widgets_param(self, datatype_val)
 
-    # Tracing data type selection
+    # Tracing datatype's selection
     set_inst_param = True
     create_archi_param = True
-    datatype_val.trace('w',
-                       partial(_update_datatype, self, institute_select, set_inst_param,
-                               create_archi_param, datatype_widget=datatype_val))
+    datatype_val.trace_add('write',
+                           partial(_update_datatype, self, institute_select, set_inst_param,
+                                   create_archi_param, datatype_widget=datatype_val))
