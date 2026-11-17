@@ -714,7 +714,6 @@ def deduplicate_parsing(dedup_params_list, progress_callback=None):
     (corpus_year, print_params, institute, org_tup, wf_path, datatype, parse_affil_params_dic,
      dedup_affil_params_dic, parsing_filenames_dict) = dedup_params_list
     parse_base_params_list = [corpus_year, print_params, parse_affil_params_dic, parsing_filenames_dict]
-#    dedup_base_params_list = [corpus_year, print_params, dedup_affil_params_dic, parsing_filenames_dict]
 
     print_step_title(f"DEDUPLICATION OF PARSINGS FOR {corpus_year}", print_params)
 

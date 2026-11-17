@@ -58,10 +58,10 @@ def _add_author_job_type(merge_df, empl_dict, years, cols_list):
     def _get_mat_author_type(_col_name, _dic, _year_mat_df, _set_author_type):
         mat_value = ""
         if not _year_mat_df[_col_name].empty:
-            mat_value = list(_year_mat_df[_col_name])[0]
+            mat_value = list(_year_mat_df[_col_name])[0]  # mat_value = next(iter(_year_mat_df[_col_name]))
         for key, values_list in _dic.items():
             values_status = [True for value in values_list if value in mat_value]
-            if any(values_status):
+            if any(values_status):  # any(True for value in values_list if value in mat_value):
                 _set_author_type = key
         return _set_author_type
 
@@ -191,7 +191,7 @@ def _add_ext_auth(ext_row, orphan_row, new_merge_adds_df, orphan_drop_df, cols_l
 
     # Merging the two dataframes on respective full name column
     row_to_add_df = pd.merge(row_to_move_df, row_to_copy_df, left_on=[orphan_fullname_col],
-                             right_on=[ext_empl_fullname_col], how='left')
+                             right_on=[ext_empl_fullname_col], how='left', validate='m:m')
 
     # Appending the merged df to 'new_merge_adds_df' data
     new_merge_adds_df = concat_dfs([new_merge_adds_df, row_to_add_df], concat_ignore_index=True)
@@ -876,13 +876,10 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, p
 
     print_step_text("\nMerge publications authors and employees information...", print_params)
 
-    # Setting useful params of merge files from args
-    merge_folder_path, merge_path, orphan_path, hash_id_path = merge_paths
-
     # Setting useful parameters for setting col names
     cols_param_tup = _set_merge_cols_lists()
     (reshape_cols_list, add_ext_cols_list, add_job_cols_list, add_ref_cols_list) = cols_param_tup
-    pub_id_col, mat_col, initials_col = reshape_cols_list
+    pub_id_col, _, initials_col = reshape_cols_list
 
     # Setting parameters list for search test
     test_params = [set_test_case, set_test_name]
@@ -900,7 +897,7 @@ def recursive_year_search(*, orphan_file, merge_paths, empl_dict, params_list, p
 
     # Setting the years list for recursive search of author-employee match
     # The years are listed in descending order
-    search_years = sorted(list(empl_dict.keys()), reverse=True)
+    search_years = sorted(empl_dict.keys(), reverse=True)
 
     # Updating progress parameters
     progress_bar_loop_progression, step = [None] * 2

@@ -433,16 +433,16 @@ def _set_years_lists(if_db_dict, corpus_years_list):
     full_if_db_years_list = list(if_db_dict.keys())
 
     # Setting list of years of available IFs part of corpus years
-    if_db_years_list = sorted(list(set(full_if_db_years_list)\
-                                   .intersection(set(corpus_years_list))))
+    if_db_years_list = sorted(set(full_if_db_years_list)\
+                                   .intersection(set(corpus_years_list)))
 
     # Setting the list of available IFs not part of corpus years
-    kept_if_db_years_list = sorted(list(set(full_if_db_years_list)\
-                                        - set(if_db_years_list)))
+    kept_if_db_years_list = sorted(set(full_if_db_years_list)\
+                                        - set(if_db_years_list))
 
     # Setting the list of corpus years not part of the years of available IFs
-    off_if_db_years_list = sorted(list(set(corpus_years_list)\
-                                       - set(if_db_years_list)))
+    off_if_db_years_list = sorted(set(corpus_years_list)\
+                                       - set(if_db_years_list))
 
     # Setting returned tuple
     if_db_years_tup = (if_db_years_list, off_if_db_years_list,
@@ -539,7 +539,7 @@ def _clean_and_save_if_db(inst_all_if_path, journal_cols_list):
                                   left_on=[journal_col],
                                   right_on=[journal_col])
         cols_to_drop = [issn_col + "_x", eissn_col + "_x"]
-        new_year_if_df.drop(columns=cols_to_drop, inplace=True)
+        new_year_if_df = new_year_if_df.drop(columns=cols_to_drop)
         new_year_if_df.rename(columns={issn_col + "_y": issn_col,
                                        eissn_col + "_y" : eissn_col},
                               inplace=True)

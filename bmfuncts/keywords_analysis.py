@@ -113,7 +113,7 @@ def _build_kw_stat(kws_list, keywords_col, weight_col):
         (dataframe): The built keywords stat.
     """
     kw_stat_df = pd.DataFrame(columns=[keywords_col, weight_col])
-    kws_set_to_list = sorted(list(set(kws_list)))
+    kws_set_to_list = sorted(set(kws_list))
     for idx, keyword in enumerate(kws_set_to_list):
         if len(keyword)>1:
             # Removing words limited to 1 character
@@ -147,7 +147,7 @@ def _create_kw_analysis_data(institute, corpus_year, analysis_df, kw_type, kw_df
         kw_analysis_folder_path (path): Full path to the folder for saving results.
     """
     # Setting useful column names aliases
-    depts_col_list, final_pub_id_col, parsing_pub_id_col, keywords_col, weight_col = cols_tup
+    depts_col_list, _, _, keywords_col, weight_col = cols_tup
 
     # Analyzing the keywords for each of the department in 'depts_col_list'
     for dept in [institute] + depts_col_list:
