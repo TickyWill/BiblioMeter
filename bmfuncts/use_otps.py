@@ -720,7 +720,7 @@ def _set_saved_lab_otps(org_tup, otps_history_tup, use_otps_cols_dic,
     dpt_attributs_dict = org_tup[2]
 
     # Setting departments list
-    dpt_list = list(dpt_attributs_dict.keys())
+    dpt_list = dpt_attributs_dict.keys()
 
     # Setting the already attributed OTPs for each department
     for dpt in sorted(dpt_list):
@@ -841,7 +841,7 @@ def _set_saved_dept_otps(org_tup, otps_history_tup, use_otps_cols_dic,
     dpt_attributs_dict = org_tup[2]
 
     # Setting departments list
-    dpt_list = list(dpt_attributs_dict.keys())
+    dpt_list = dpt_attributs_dict.keys()
 
     # Setting the already attributed OTPs for each department
     for dpt in sorted(dpt_list):
@@ -904,8 +904,7 @@ def _get_otps_history(get_hist_file_params_list, use_otps_cols_dic):
     # Getting the kept OTPs dataframe by hash_id
     hash_otp_history_df = pd.read_excel(kept_otps_file_path,
                                         sheet_name=hash_otp_sheet)
-    hash_otp_history_df.drop_duplicates(subset=hash_id_col, keep='first',
-                                        inplace=True)
+    hash_otp_history_df = hash_otp_history_df.drop_duplicates(subset=hash_id_col, keep='first')
 
     # Building data of pub_id and OTPs to set related to hash_id
     pub_id_otp_to_set_df = pd.merge(hash_id_df,

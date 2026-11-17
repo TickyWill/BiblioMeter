@@ -355,7 +355,7 @@ def set_col_attr(institute, org_tup, columns_list):
     for _,dpt_col_name in col_names_dpt.items():
         init_col_attr[col_names_dpt[dpt_col_name]] = [10, "center"]
 
-    set_col_list = [all_col_rename_dic[key] for key in list(init_col_attr.keys())]
+    set_col_list = [all_col_rename_dic[key] for key in init_col_attr.keys()]
     col_attr_list = list(init_col_attr.values())
     final_col_attr_dict = dict(zip(set_col_list, col_attr_list))
 

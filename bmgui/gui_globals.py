@@ -103,22 +103,22 @@ def _get_displays(in_to_mm):
                  'height_mm': m.height_mm, 'name': m.name,
                  'is_primary': m.is_primary} for m in get_monitors()]
 
-    for disp, _ in enumerate(displays):
-        width_px = displays[disp]['width']
-        height_px = displays[disp]['height']
+    for disp, value in enumerate(displays):
+        width_px = value['width']
+        height_px = value['height']
         diag_px = math.sqrt(int(width_px)**2 + int(height_px)**2)
-        width_mm = displays[disp]['width_mm']
-        height_mm = displays[disp]['height_mm']
+        width_mm = value['width_mm']
+        height_mm = value['height_mm']
         if width_mm is None or height_mm is None:
             quest = 'Enter the diagonal size of the screen n°' + str(disp) + ' (inches)'
             diag_in = float(input(quest))
             width_mm = round(int(width_px) * (diag_in/diag_px) * in_to_mm, 1)
             height_mm = round(int(height_px) * (diag_in/diag_px) * in_to_mm, 1)
-            displays[disp]['width_mm'] = str(width_mm)
-            displays[disp]['height_mm'] = str(height_mm)
+            value['width_mm'] = str(width_mm)
+            value['height_mm'] = str(height_mm)
         else:
             diag_in = math.sqrt(float(width_mm) ** 2 + float(height_mm) ** 2) / in_to_mm
-        displays[disp]['ppi'] = round(diag_px/diag_in, 2)
+        value['ppi'] = round(diag_px/diag_in, 2)
 
     return displays
 

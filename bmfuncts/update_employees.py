@@ -173,7 +173,7 @@ def _update_months_history(year_months_file_path, all_months_to_add, df_months_t
         df_months_dict = pd.read_excel(year_months_file_path, sheet_name=None)
         months_to_add = all_months_to_add
         if not_replace: # we only add missing months
-            months_present = list(df_months_dict.keys())
+            months_present = df_months_dict.keys()
             months_to_add = list(set(all_months_to_add) - set(months_present))
             months_to_add = sorted(months_to_add)
         for month in months_to_add:
@@ -321,7 +321,7 @@ def _add_column_keep_history(df, empl_cols_dic):
     cols_tup_list = [(dpt_col, dpts_col), (serv_col, servs_col)]
     for cols_tup in cols_tup_list:
         col_in, col_out = cols_tup[0], cols_tup[1]
-        df[col_out] = df[col_in].apply(lambda x: [list(x) for x in list(zip(*x))])
+        df[col_out] = df[col_in].apply(lambda x: [list(x) for x in zip(*x)])
 
     # Exploding the 2 lists of 3 lists into the columns
     # 'months_cal', 'years_col', 'depts_col' and 'servs_col'
